@@ -9,12 +9,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import com.basic4gl.compiler.compConstant;
-import com.basic4gl.compiler.compParser;
 import com.basic4gl.compiler.Token.TokenType;
 import com.basic4gl.compiler.compFlowControl.compFlowControlType;
 import com.basic4gl.compiler.util.compBinOperExt;
-import com.basic4gl.compiler.util.compParamValidationCallback;
 import com.basic4gl.compiler.util.compUnOperExt;
 import com.basic4gl.util.Cast;
 import com.basic4gl.util.Mutable;
@@ -35,7 +32,7 @@ import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.types.ValType.BasicValType;
 import com.basic4gl.vm.util.Constants;
 import com.basic4gl.vm.util.Function;
-import com.basic4gl.vm.vmCode.vmOpCode;
+import com.basic4gl.vm.types.OpCode;
 
 //TODO Reimplement libraries
 //import com.basic4gl.nate.plugins.PluginDLLManager;
@@ -154,48 +151,48 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	class compOperator {
-		compOpType m_type;
-		vmOpCode m_opCode;
-		int m_params; // 1 . Calculate "op Reg" (e.g. "Not Reg")
+		compOpType mType;
+		short mOpCode;
+		int mParams; // 1 . Calculate "op Reg" (e.g. "Not Reg")
 		// 2 . Calculate "Reg2 op Reg" (e.g. "Reg2 - Reg")
-		int m_binding; // Operator binding. Higher = tighter.
+		int mBinding; // Operator binding. Higher = tighter.
 
-		compOperator(compOpType type, vmOpCode opCode, int params, int binding) {
-			m_type = type;
-			m_opCode = opCode;
-			m_params = params;
-			m_binding = binding;
+		compOperator(compOpType type, short opCode, int params, int binding) {
+			mType = type;
+			mOpCode = opCode;
+			mParams = params;
+			mBinding = binding;
 		}
 
 		compOperator() {
-			m_type = compOpType.OT_OPERATOR;
-			m_opCode = vmOpCode.OP_NOP;
-			m_params = 0;
-			m_binding = 0;
+			mType = compOpType.OT_OPERATOR;
+			mOpCode = OpCode.OP_NOP;
+			mParams = 0;
+			mBinding = 0;
 		}
 
 		compOperator(compOperator o) {
-			m_type = o.m_type;
-			m_opCode = o.m_opCode;
-			m_params = o.m_params;
-			m_binding = o.m_binding;
+			mType = o.mType;
+			mOpCode = o.mOpCode;
+			mParams = o.mParams;
+			mBinding = o.mBinding;
 		}
 	}
 
 	class compStackedOperator {
-		compOperator m_op; // Stacked operator
-		int m_lazyJumpAddr; // Address of lazy jump op code (for "and" and "or"
+		compOperator mOper; // Stacked operator
+		int mLazyJumpAddr; // Address of lazy jump op code (for "and" and "or"
 
 		// operations)
 
 		compStackedOperator(compOperator o) {
-			m_op = o;
-			m_lazyJumpAddr = -1;
+			mOper = o;
+			mLazyJumpAddr = -1;
 		}
 
 		compStackedOperator(compOperator o, int lazyJumpAddr) {
-			m_op = o;
-			m_lazyJumpAddr = lazyJumpAddr;
+			mOper = o;
+			mLazyJumpAddr = lazyJumpAddr;
 		}
 	}
 
@@ -363,45 +360,45 @@ public class TomBasicCompiler extends HasErrorState {
 		// Note: From experimentation it appears QBasic binds "xor" looser than
 		// "and" and "or". So for compatibility, we will too..
 		m_binaryOperators.put("xor", new compOperator(
-				compOpType.OT_BOOLOPERATOR, vmOpCode.OP_OP_XOR, 2, 10));
+				compOpType.OT_BOOLOPERATOR, OpCode.OP_OP_XOR, 2, 10));
 		m_binaryOperators.put("or", new compOperator(
-				compOpType.OT_BOOLOPERATOR, vmOpCode.OP_OP_OR, 2, 11));
+				compOpType.OT_BOOLOPERATOR, OpCode.OP_OP_OR, 2, 11));
 		m_binaryOperators.put("and", new compOperator(
-				compOpType.OT_BOOLOPERATOR, vmOpCode.OP_OP_AND, 2, 12));
+				compOpType.OT_BOOLOPERATOR, OpCode.OP_OP_AND, 2, 12));
 		m_binaryOperators.put("lor", new compOperator(
-				compOpType.OT_LAZYBOOLOPERATOR, vmOpCode.OP_OP_OR, 2, 11));
+				compOpType.OT_LAZYBOOLOPERATOR, OpCode.OP_OP_OR, 2, 11));
 		m_binaryOperators.put("land", new compOperator(
-				compOpType.OT_LAZYBOOLOPERATOR, vmOpCode.OP_OP_AND, 2, 12));
+				compOpType.OT_LAZYBOOLOPERATOR, OpCode.OP_OP_AND, 2, 12));
 		m_unaryOperators.put("not", new compOperator(
-				compOpType.OT_BOOLOPERATOR, vmOpCode.OP_OP_NOT, 1, 20));
+				compOpType.OT_BOOLOPERATOR, OpCode.OP_OP_NOT, 1, 20));
 		m_binaryOperators.put("=", new compOperator(
-				compOpType.OT_RETURNBOOLOPERATOR, vmOpCode.OP_OP_EQUAL, 2, 30));
+				compOpType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_EQUAL, 2, 30));
 		m_binaryOperators.put("<>", new compOperator(
-				compOpType.OT_RETURNBOOLOPERATOR, vmOpCode.OP_OP_NOT_EQUAL, 2,
+				compOpType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_NOT_EQUAL, 2,
 				30));
 		m_binaryOperators.put(">",
 				new compOperator(compOpType.OT_RETURNBOOLOPERATOR,
-						vmOpCode.OP_OP_GREATER, 2, 30));
+						OpCode.OP_OP_GREATER, 2, 30));
 		m_binaryOperators.put(">=", new compOperator(
-				compOpType.OT_RETURNBOOLOPERATOR, vmOpCode.OP_OP_GREATER_EQUAL,
+				compOpType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_GREATER_EQUAL,
 				2, 30));
 		m_binaryOperators.put("<", new compOperator(
-				compOpType.OT_RETURNBOOLOPERATOR, vmOpCode.OP_OP_LESS, 2, 30));
+				compOpType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_LESS, 2, 30));
 		m_binaryOperators.put("<=", new compOperator(
-				compOpType.OT_RETURNBOOLOPERATOR, vmOpCode.OP_OP_LESS_EQUAL, 2,
+				compOpType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_LESS_EQUAL, 2,
 				30));
 		m_binaryOperators.put("+", new compOperator(compOpType.OT_OPERATOR,
-				vmOpCode.OP_OP_PLUS, 2, 40));
+				OpCode.OP_OP_PLUS, 2, 40));
 		m_binaryOperators.put("-", new compOperator(compOpType.OT_OPERATOR,
-				vmOpCode.OP_OP_MINUS, 2, 40));
+				OpCode.OP_OP_MINUS, 2, 40));
 		m_binaryOperators.put("*", new compOperator(compOpType.OT_OPERATOR,
-				vmOpCode.OP_OP_TIMES, 2, 41));
+				OpCode.OP_OP_TIMES, 2, 41));
 		m_binaryOperators.put("/", new compOperator(compOpType.OT_OPERATOR,
-				vmOpCode.OP_OP_DIV, 2, 42));
+				OpCode.OP_OP_DIV, 2, 42));
 		m_binaryOperators.put("%", new compOperator(compOpType.OT_OPERATOR,
-				vmOpCode.OP_OP_MOD, 2, 43));
+				OpCode.OP_OP_MOD, 2, 43));
 		m_unaryOperators.put("-", new compOperator(compOpType.OT_OPERATOR,
-				vmOpCode.OP_OP_NEG, 1, 50));
+				OpCode.OP_OP_NEG, 1, 50));
 
 		// Setup reserved words
 		m_reservedWords.add( "dim");
@@ -642,7 +639,7 @@ public class TomBasicCompiler extends HasErrorState {
 			;
 
 		// Terminate program
-		AddInstruction(vmOpCode.OP_END, BasicValType.VTP_INT.getType(), new VMValue());
+		AddInstruction(OpCode.OP_END, BasicValType.VTP_INT.getType(), new VMValue());
 
 		if (!Error()) {
 			// Link up gotos
@@ -654,8 +651,8 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Point token to goto instruction, so that it will be displayed
 				// if there is an error.
-				m_token.m_line = instr.m_sourceLine;
-				m_token.m_col = instr.m_sourceChar;
+				m_token.m_line = instr.mSourceLine;
+				m_token.m_col = instr.mSourceChar;
 
 				// Label must exist
 				if (!LabelExists(jump.m_labelName)) {
@@ -665,7 +662,7 @@ public class TomBasicCompiler extends HasErrorState {
 				}
 
 				// Patch in offset
-				instr.m_value.setIntVal(Label(jump.m_labelName).m_offset);
+				instr.mValue.setIntVal(Label(jump.m_labelName).m_offset);
 			}
 
 			// Link up resets
@@ -678,8 +675,8 @@ public class TomBasicCompiler extends HasErrorState {
 				// Point token to reset instruction, so that it will be
 				// displayed
 				// if there is an error.
-				m_token.m_line = instr.m_sourceLine;
-				m_token.m_col = instr.m_sourceChar;
+				m_token.m_line = instr.mSourceLine;
+				m_token.m_col = instr.mSourceChar;
 
 				// Label must exist
 				if (!LabelExists(jump.m_labelName)) {
@@ -689,7 +686,7 @@ public class TomBasicCompiler extends HasErrorState {
 				}
 
 				// Patch in data offset
-				instr.m_value
+				instr.mValue
 				.setIntVal(Label(jump.m_labelName).m_programDataOffset);
 			}
 
@@ -921,7 +918,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Add bindcode op-code
-		AddInstruction(vmOpCode.OP_BINDCODE, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_BINDCODE, BasicValType.VTP_INT.getType(),
 				new VMValue());
 
 		return true;
@@ -949,7 +946,7 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 		// Add exec op-code
-		AddInstruction(vmOpCode.OP_EXEC, BasicValType.VTP_INT.getType(), new VMValue());
+		AddInstruction(OpCode.OP_EXEC, BasicValType.VTP_INT.getType(), new VMValue());
 
 		return true;
 	}
@@ -1085,7 +1082,7 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	// Compilation
-	void AddInstruction(vmOpCode opCode, int basictype, VMValue val) {
+	void AddInstruction(short opCode, int basictype, VMValue val) {
 
 		// Add instruction, and include source code position audit
 		int line = m_token.m_line, col = m_token.m_col;
@@ -1097,7 +1094,7 @@ public class TomBasicCompiler extends HasErrorState {
 			line = m_lastLine;
 			col = m_lastCol;
 		}
-		m_vm.AddInstruction(new vmInstruction(opCode.getCode(), (byte)basictype, val, line, col));
+		m_vm.AddInstruction(new vmInstruction(opCode, (byte)basictype, val, line, col));
 		m_lastLine = line;
 		m_lastCol = col;
 	}
@@ -1147,12 +1144,12 @@ public class TomBasicCompiler extends HasErrorState {
 		} else if (m_token.m_text.equals("goto")) {
 			if (!GetToken())
 				return false;
-			if (!CompileGoto(vmOpCode.OP_JUMP))
+			if (!CompileGoto(OpCode.OP_JUMP))
 				return false;
 		} else if (m_token.m_text.equals("gosub")) {
 			if (!GetToken())
 				return false;
-			if (!CompileGoto(vmOpCode.OP_CALL))
+			if (!CompileGoto(OpCode.OP_CALL))
 				return false;
 		} else if (m_token.m_text.equals("return")) {
 			if (!CompileReturn())
@@ -1207,12 +1204,12 @@ public class TomBasicCompiler extends HasErrorState {
 					return false;
 			} else
 				// Otherwise is "End" program instruction
-				AddInstruction(vmOpCode.OP_END, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_END, BasicValType.VTP_INT.getType(),
 						new VMValue());
 		} else if (m_token.m_text.equals("run")) {
 			if (!GetToken())
 				return false;
-			AddInstruction(vmOpCode.OP_RUN, BasicValType.VTP_INT.getType(), new VMValue());
+			AddInstruction(OpCode.OP_RUN, BasicValType.VTP_INT.getType(), new VMValue());
 		} else if (m_token.m_text.equals("const")) {
 			if (!CompileConstant())
 				return false;
@@ -1538,13 +1535,13 @@ public class TomBasicCompiler extends HasErrorState {
 					// Generate code to allocate local variable data
 					// Note: Opcode contains the index of the variable. Variable
 					// type and size data stored in the user function defn.
-					AddInstruction(vmOpCode.OP_DECLARE_LOCAL,
+					AddInstruction(OpCode.OP_DECLARE_LOCAL,
 							BasicValType.VTP_INT.getType(), new VMValue(varIndex));
 
 					// Data containing strings will need to be "destroyed" when
 					// the stack unwinds.
 					if (m_vm.DataTypes().ContainsString(type))
-						AddInstruction(vmOpCode.OP_REG_DESTRUCTOR,
+						AddInstruction(OpCode.OP_REG_DESTRUCTOR,
 								BasicValType.VTP_INT.getType(),
 								new VMValue((int) m_vm.StoreType(type)));
 
@@ -1552,7 +1549,7 @@ public class TomBasicCompiler extends HasErrorState {
 					if (m_token.m_text.equals("=")) {
 
 						// Add opcode to load variable address
-						AddInstruction(vmOpCode.OP_LOAD_LOCAL_VAR,
+						AddInstruction(OpCode.OP_LOAD_LOCAL_VAR,
 								BasicValType.VTP_INT.getType(), new VMValue(varIndex));
 
 						// Set register type
@@ -1599,14 +1596,14 @@ public class TomBasicCompiler extends HasErrorState {
 					// Note: Opcode contains the index of the variable. Variable
 					// type
 					// and size data is stored in the variable entry.
-					AddInstruction(vmOpCode.OP_DECLARE, BasicValType.VTP_INT.getType(),
+					AddInstruction(OpCode.OP_DECLARE, BasicValType.VTP_INT.getType(),
 							new VMValue(varIndex));
 
 					// Optional "= value"?
 					if (m_token.m_text.equals("=")) {
 
 						// Add opcode to load variable address
-						AddInstruction(vmOpCode.OP_LOAD_VAR,
+						AddInstruction(OpCode.OP_LOAD_VAR,
 								BasicValType.VTP_INT.getType(), new VMValue(varIndex));
 
 						// Set register type
@@ -1909,7 +1906,7 @@ public class TomBasicCompiler extends HasErrorState {
 			if (varIndex >= 0) {
 
 				// Generate code to load variable
-				AddInstruction(vmOpCode.OP_LOAD_LOCAL_VAR,
+				AddInstruction(OpCode.OP_LOAD_LOCAL_VAR,
 						BasicValType.VTP_INT.getType(), new VMValue(varIndex));
 
 				// Set register type
@@ -1929,7 +1926,7 @@ public class TomBasicCompiler extends HasErrorState {
 			if (varIndex >= 0) {
 
 				// Generate code to load variable
-				AddInstruction(vmOpCode.OP_LOAD_VAR, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_LOAD_VAR, BasicValType.VTP_INT.getType(),
 						new VMValue(varIndex));
 
 				// Set register type
@@ -1992,7 +1989,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Generate deref instruction
 		m_regType.m_pointerLevel--;
-		AddInstruction(vmOpCode.OP_DEREF, m_regType.StoredType(), new VMValue()); // Load
+		AddInstruction(OpCode.OP_DEREF, m_regType.StoredType(), new VMValue()); // Load
 		// variable
 
 		return true;
@@ -2065,7 +2062,7 @@ public class TomBasicCompiler extends HasErrorState {
 				// Reg is initially pointing to address of structure.
 				StructureField field = m_vm.DataTypes().Fields()
 						.get(fieldIndex);
-				AddInstruction(vmOpCode.OP_ADD_CONST, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_ADD_CONST, BasicValType.VTP_INT.getType(),
 						new VMValue(field.m_dataOffset));
 
 				// Reg now contains pointer to field
@@ -2116,7 +2113,7 @@ public class TomBasicCompiler extends HasErrorState {
 					// Input: reg = Array index
 					// reg2 = Array address
 					// Output: reg = Pointer to array element
-					AddInstruction(vmOpCode.OP_ARRAY_INDEX,
+					AddInstruction(OpCode.OP_ARRAY_INDEX,
 							BasicValType.VTP_INT.getType(), new VMValue());
 
 					// reg now points to an element
@@ -2169,7 +2166,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// operators
 		// on the stack.
 		m_operatorStack.add(new compStackedOperator(new compOperator(
-				compOpType.OT_STOP, vmOpCode.OP_NOP, 0, -200000))); // Stop
+				compOpType.OT_STOP, OpCode.OP_NOP, 0, -200000))); // Stop
 		// evaluation
 		// operator
 
@@ -2177,22 +2174,22 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		compOperator o = null;
-		while ((m_token.m_text.equals(")") && getOperatorTOS().m_op.m_type != compOpType.OT_STOP)
+		while ((m_token.m_text.equals(")") && getOperatorTOS().mOper.mType != compOpType.OT_STOP)
 				|| ((o = m_binaryOperators.get(m_token.m_text)) != null)) {
 
 			// Special case, right bracket
 			if (m_token.m_text.equals(")")) {
 
 				// Evaluate all operators down to left bracket
-				while (getOperatorTOS().m_op.m_type != compOpType.OT_STOP
-						&& getOperatorTOS().m_op.m_type != compOpType.OT_LBRACKET)
+				while (getOperatorTOS().mOper.mType != compOpType.OT_STOP
+						&& getOperatorTOS().mOper.mType != compOpType.OT_LBRACKET)
 					if (!CompileOperation())
 						return false;
 
 				// If operator stack is empty, then the expression terminates
 				// before
 				// the closing bracket
-				if (getOperatorTOS().m_op.m_type == compOpType.OT_STOP) {
+				if (getOperatorTOS().mOper.mType == compOpType.OT_STOP) {
 					m_operatorStack.remove(m_operatorStack.size() - 1); // Remove
 					// stopper
 					return true;
@@ -2216,22 +2213,22 @@ public class TomBasicCompiler extends HasErrorState {
 			else {
 
 				// Compare current operator with top of stack operator
-				while (getOperatorTOS().m_op.m_type != compOpType.OT_STOP
-						&& getOperatorTOS().m_op.m_binding >= o.m_binding)
+				while (getOperatorTOS().mOper.mType != compOpType.OT_STOP
+						&& getOperatorTOS().mOper.mBinding >= o.mBinding)
 					if (!CompileOperation())
 						return false;
 
 				// 14-Apr-06: Lazy evaluation.
 				// Add jumps around the second part of AND or OR operations
 				int lazyJumpAddr = -1;
-				if (o.m_type == compOpType.OT_LAZYBOOLOPERATOR) {
-					if (o.m_opCode == vmOpCode.OP_OP_AND) {
+				if (o.mType == compOpType.OT_LAZYBOOLOPERATOR) {
+					if (o.mOpCode == OpCode.OP_OP_AND) {
 						lazyJumpAddr = m_vm.InstructionCount();
-						AddInstruction(vmOpCode.OP_JUMP_FALSE,
+						AddInstruction(OpCode.OP_JUMP_FALSE,
 								BasicValType.VTP_INT.getType(), new VMValue(0));
-					} else if (o.m_opCode == vmOpCode.OP_OP_OR) {
+					} else if (o.mOpCode == OpCode.OP_OP_OR) {
 						lazyJumpAddr = m_vm.InstructionCount();
-						AddInstruction(vmOpCode.OP_JUMP_TRUE,
+						AddInstruction(OpCode.OP_JUMP_TRUE,
 								BasicValType.VTP_INT.getType(), new VMValue(0));
 					}
 				}
@@ -2252,7 +2249,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Perform remaining operations
-		while (getOperatorTOS().m_op.m_type != compOpType.OT_STOP)
+		while (getOperatorTOS().mOper.mType != compOpType.OT_STOP)
 			if (!CompileOperation())
 				return false;
 
@@ -2272,16 +2269,16 @@ public class TomBasicCompiler extends HasErrorState {
 		m_operatorStack.remove(m_operatorStack.size() - 1);
 
 		// Must not be a left bracket
-		if (o.m_op.m_type == compOpType.OT_LBRACKET) {
+		if (o.mOper.mType == compOpType.OT_LBRACKET) {
 			SetError("Expected ')'");
 			return false;
 		}
 
 		// Binary or unary operation?
-		if (o.m_op.m_params == 1) {
+		if (o.mOper.mParams == 1) {
 
 			// Try plug in language extension first
-			if (CompileExtendedUnOperation(o.m_op.m_opCode))
+			if (CompileExtendedUnOperation(o.mOper.mOpCode))
 				return true;
 
 			// Can only operate on basic types.
@@ -2294,26 +2291,26 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Special case, boolean operator.
 			// Must convert to boolean first
-			if (o.m_op.m_type == compOpType.OT_BOOLOPERATOR
-					|| o.m_op.m_type == compOpType.OT_LAZYBOOLOPERATOR)
+			if (o.mOper.mType == compOpType.OT_BOOLOPERATOR
+					|| o.mOper.mType == compOpType.OT_LAZYBOOLOPERATOR)
 				CompileConvert(BasicValType.VTP_INT.getType());
 
 			// Perform unary operation
-			AddInstruction(o.m_op.m_opCode, m_regType.m_basicType,
+			AddInstruction(o.mOper.mOpCode, m_regType.m_basicType,
 					new VMValue());
 
 			// Special case, boolean operator
 			// Result will be an integer
-			if (o.m_op.m_type == compOpType.OT_RETURNBOOLOPERATOR)
+			if (o.mOper.mType == compOpType.OT_RETURNBOOLOPERATOR)
 				m_regType.Set(BasicValType.VTP_INT);
-		} else if (o.m_op.m_params == 2) {
+		} else if (o.mOper.mParams == 2) {
 
 			// Generate code to pop first operand from stack into Reg2
 			if (!CompilePop())
 				return false;
 
 			// Try plug in language extension first
-			if (CompileExtendedBinOperation(o.m_op.m_opCode))
+			if (CompileExtendedBinOperation(o.mOper.mOpCode))
 				return true;
 
 			// Ensure operands are equal type. Generate code to convert one if
@@ -2324,8 +2321,8 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Can compare null to any pointer type. However, operator must
 				// be '=' or '<>'
-				if (o.m_op.m_opCode != vmOpCode.OP_OP_EQUAL
-						&& o.m_op.m_opCode != vmOpCode.OP_OP_NOT_EQUAL) {
+				if (o.mOper.mOpCode != OpCode.OP_OP_EQUAL
+						&& o.mOper.mOpCode != OpCode.OP_OP_NOT_EQUAL) {
 					SetError("Operator cannot be applied to this data type");
 					return false;
 				}
@@ -2349,8 +2346,8 @@ public class TomBasicCompiler extends HasErrorState {
 				// Can compare 2 pointers. However operator must be '=' or '<>'
 				// and
 				// pointer types must be exactly the same
-				if (o.m_op.m_opCode != vmOpCode.OP_OP_EQUAL
-						&& o.m_op.m_opCode != vmOpCode.OP_OP_NOT_EQUAL) {
+				if (o.mOper.mOpCode != OpCode.OP_OP_EQUAL
+						&& o.mOper.mOpCode != OpCode.OP_OP_NOT_EQUAL) {
 					SetError("Operator cannot be applied to this data type");
 					return false;
 				}
@@ -2373,11 +2370,11 @@ public class TomBasicCompiler extends HasErrorState {
 				int highest = m_regType.m_basicType;
 				if (m_reg2Type.m_basicType > highest)
 					highest = m_reg2Type.m_basicType;
-				if (o.m_op.m_type == compOpType.OT_BOOLOPERATOR
-						|| o.m_op.m_type == compOpType.OT_LAZYBOOLOPERATOR)
+				if (o.mOper.mType == compOpType.OT_BOOLOPERATOR
+						|| o.mOper.mType == compOpType.OT_LAZYBOOLOPERATOR)
 					highest = BasicValType.VTP_INT.getType();
 				if (m_syntax == compLanguageSyntax.LS_TRADITIONAL
-						&& o.m_op.m_opCode == vmOpCode.OP_OP_DIV)
+						&& o.mOper.mOpCode == OpCode.OP_OP_DIV)
 					// 14-Aug-05 Tom: In traditional mode, division is always
 					// between floating pt numbers
 					highest = BasicValType.VTP_REAL.getType();
@@ -2391,18 +2388,18 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Generate operation code
-			AddInstruction(o.m_op.m_opCode, opCodeType, new VMValue());
+			AddInstruction(o.mOper.mOpCode, opCodeType, new VMValue());
 
 			// Special case, boolean operator
 			// Result will be an integer
-			if (o.m_op.m_type == compOpType.OT_RETURNBOOLOPERATOR)
+			if (o.mOper.mType == compOpType.OT_RETURNBOOLOPERATOR)
 				m_regType.Set(BasicValType.VTP_INT);
 		} else
 			assert (false);
 
 		// Fix up lazy jumps
-		if (o.m_lazyJumpAddr >= 0)
-			m_vm.Instruction(o.m_lazyJumpAddr).m_value.setVal((int) m_vm
+		if (o.mLazyJumpAddr >= 0)
+			m_vm.Instruction(o.mLazyJumpAddr).mValue.setVal((int) m_vm
 					.InstructionCount());
 
 		return true;
@@ -2443,7 +2440,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Special case, left bracket
 			if (m_token.m_text.equals("("))
 				m_operatorStack.add(new compStackedOperator(new compOperator(
-						compOpType.OT_LBRACKET, vmOpCode.OP_NOP, 0, -10000))); // Brackets
+						compOpType.OT_LBRACKET, OpCode.OP_NOP, 0, -10000))); // Brackets
 			// bind
 			// looser
 			// than
@@ -2470,7 +2467,7 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	boolean CompileNull() {
-		AddInstruction(vmOpCode.OP_LOAD_CONST, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_INT.getType(),
 				new VMValue(0)); // Load 0 into
 		// register
 		m_regType.Set(new ValType(BasicValType.VTP_NULL, (byte) 0, (byte) 1,
@@ -2500,15 +2497,15 @@ public class TomBasicCompiler extends HasErrorState {
 				int index = m_vm.StoreStringConstant(text);
 
 				// store load instruction
-				AddInstruction(vmOpCode.OP_LOAD_CONST, BasicValType.VTP_STRING.getType(),
+				AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING.getType(),
 						new VMValue(index));
 				m_regType.Set(BasicValType.VTP_STRING);
 			} else if (m_token.m_valType == BasicValType.VTP_REAL) {
-				AddInstruction(vmOpCode.OP_LOAD_CONST, BasicValType.VTP_REAL.getType(),
+				AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_REAL.getType(),
 						new VMValue(Float.valueOf(m_token.m_text)));
 				m_regType.Set(BasicValType.VTP_REAL);
 			} else if (m_token.m_valType == BasicValType.VTP_INT) {
-				AddInstruction(vmOpCode.OP_LOAD_CONST, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_INT.getType(),
 						new VMValue(Cast.StringToInt(m_token.m_text)));
 				m_regType.Set(BasicValType.VTP_INT);
 			} else {
@@ -2529,7 +2526,7 @@ public class TomBasicCompiler extends HasErrorState {
 		m_operandStack.add(new ValType(m_regType));
 
 		// Generate push code
-		AddInstruction(vmOpCode.OP_PUSH, m_regType.StoredType(), new VMValue());
+		AddInstruction(OpCode.OP_PUSH, m_regType.StoredType(), new VMValue());
 
 		return true;
 	}
@@ -2546,7 +2543,7 @@ public class TomBasicCompiler extends HasErrorState {
 		m_operandStack.remove(m_operandStack.size() - 1);
 
 		// Generate pop code
-		AddInstruction(vmOpCode.OP_POP, m_reg2Type.StoredType(), new VMValue());
+		AddInstruction(OpCode.OP_POP, m_reg2Type.StoredType(), new VMValue());
 
 		return true;
 	}
@@ -2558,21 +2555,21 @@ public class TomBasicCompiler extends HasErrorState {
 			return true;
 
 		// Determine opcode
-		vmOpCode code = vmOpCode.OP_NOP;
+		short code = OpCode.OP_NOP;
 		if (m_regType.Equals(BasicValType.VTP_INT)) {
 			if (basictype == BasicValType.VTP_REAL.getType())
-				code = vmOpCode.OP_CONV_INT_REAL;
+				code = OpCode.OP_CONV_INT_REAL;
 			else if (basictype == BasicValType.VTP_STRING.getType())
-				code = vmOpCode.OP_CONV_INT_STRING;
+				code = OpCode.OP_CONV_INT_STRING;
 		} else if (m_regType.equals(BasicValType.VTP_REAL)) {
 			if (basictype == BasicValType.VTP_INT.getType())
-				code = vmOpCode.OP_CONV_REAL_INT;
+				code = OpCode.OP_CONV_REAL_INT;
 			else if (basictype == BasicValType.VTP_STRING.getType())
-				code = vmOpCode.OP_CONV_REAL_STRING;
+				code = OpCode.OP_CONV_REAL_STRING;
 		}
 
 		// Store instruction
-		if (code != vmOpCode.OP_NOP) {
+		if (code != OpCode.OP_NOP) {
 			AddInstruction(code, BasicValType.VTP_INT.getType(), new VMValue());
 			m_regType.Set(basictype);
 			return true;
@@ -2589,21 +2586,21 @@ public class TomBasicCompiler extends HasErrorState {
 			return true;
 
 		// Determine opcode
-		vmOpCode code = vmOpCode.OP_NOP;
+		short code = OpCode.OP_NOP;
 		if (m_reg2Type.Equals(BasicValType.VTP_INT)) {
 			if (type == BasicValType.VTP_REAL.getType())
-				code = vmOpCode.OP_CONV_INT_REAL2;
+				code = OpCode.OP_CONV_INT_REAL2;
 			else if (type == BasicValType.VTP_STRING.getType())
-				code = vmOpCode.OP_CONV_INT_STRING2;
+				code = OpCode.OP_CONV_INT_STRING2;
 		} else if (m_reg2Type.Equals(BasicValType.VTP_REAL)) {
 			if (type == BasicValType.VTP_INT.getType())
-				code = vmOpCode.OP_CONV_REAL_INT2;
+				code = OpCode.OP_CONV_REAL_INT2;
 			else if (type == BasicValType.VTP_STRING.getType())
-				code = vmOpCode.OP_CONV_REAL_STRING2;
+				code = OpCode.OP_CONV_REAL_STRING2;
 		}
 
 		// Store instruction
-		if (code != vmOpCode.OP_NOP) {
+		if (code != OpCode.OP_NOP) {
 			AddInstruction(code, BasicValType.VTP_INT.getType(), new VMValue());
 			m_reg2Type.Set(type);
 			return true;
@@ -2711,7 +2708,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Check last instruction was a deref
 		if (m_vm.InstructionCount() <= 0
-				|| m_vm.Instruction(m_vm.InstructionCount() - 1).m_opCode != vmOpCode.OP_DEREF) {
+				|| m_vm.Instruction(m_vm.InstructionCount() - 1).mOpCode != OpCode.OP_DEREF) {
 			SetError("Cannot take address of this data");
 			return false;
 		}
@@ -2777,7 +2774,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Save reg into [reg2]
-			AddInstruction(vmOpCode.OP_SAVE, m_reg2Type.m_basicType,
+			AddInstruction(OpCode.OP_SAVE, m_reg2Type.m_basicType,
 					new VMValue());
 		}
 
@@ -2791,11 +2788,11 @@ public class TomBasicCompiler extends HasErrorState {
 					|| (m_regType.m_arrayLevel == m_reg2Type.m_arrayLevel && m_regType.m_basicType == m_reg2Type.m_basicType)) {
 
 				// Validate pointer scope before saving to variable
-				AddInstruction(vmOpCode.OP_CHECK_PTR, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_CHECK_PTR, BasicValType.VTP_INT.getType(),
 						new VMValue());
 
 				// Save address to pointer
-				AddInstruction(vmOpCode.OP_SAVE, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_SAVE, BasicValType.VTP_INT.getType(),
 						new VMValue());
 			} else {
 				SetError("Types do not match");
@@ -2817,11 +2814,11 @@ public class TomBasicCompiler extends HasErrorState {
 				dataType.m_pointerLevel--;
 				dataType.m_byRef = false;
 				if (m_vm.DataTypes().ContainsPointer(dataType))
-					AddInstruction(vmOpCode.OP_CHECK_PTRS,
+					AddInstruction(OpCode.OP_CHECK_PTRS,
 							BasicValType.VTP_INT.getType(),
 							new VMValue((int) m_vm.StoreType(dataType)));
 
-				AddInstruction(vmOpCode.OP_COPY, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_COPY, BasicValType.VTP_INT.getType(),
 						new VMValue((int) m_vm.StoreType(m_regType)));
 			} else {
 				SetError("Types do not match");
@@ -2836,16 +2833,21 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	boolean CompileGoto() {
-		return CompileGoto(vmOpCode.OP_JUMP);
+		return CompileGoto(OpCode.OP_JUMP);
 	}
 
-	boolean CompileGoto(vmOpCode jumpType) {
-		assert (jumpType == vmOpCode.OP_JUMP
-				|| jumpType == vmOpCode.OP_JUMP_TRUE
-				|| jumpType == vmOpCode.OP_JUMP_FALSE || jumpType == vmOpCode.OP_CALL);
+	/**
+	 *
+	 * @param jumpType Flow control Op code
+	 * @return
+	 */
+	boolean CompileGoto(short jumpType) {
+		assert (jumpType == OpCode.OP_JUMP
+				|| jumpType == OpCode.OP_JUMP_TRUE
+				|| jumpType == OpCode.OP_JUMP_FALSE || jumpType == OpCode.OP_CALL);
 
 		// Cannot use goto inside a function or sub (can use GOSUB though)
-		if (m_inFunction && jumpType != vmOpCode.OP_CALL) {
+		if (m_inFunction && jumpType != OpCode.OP_CALL) {
 			SetError("Cannot use 'goto' inside a function or subroutine");
 			return false;
 		}
@@ -2922,7 +2924,7 @@ public class TomBasicCompiler extends HasErrorState {
 				.InstructionCount(), 0, line, col, elseif, "", !autoEndif));
 
 		// Create conditional jump
-		AddInstruction(vmOpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
 				new VMValue(0));
 
 		m_needColon = false; // Don't need colon between this and next
@@ -2955,11 +2957,11 @@ public class TomBasicCompiler extends HasErrorState {
 				top.m_blockIf));
 
 		// Generate code to jump around else block
-		AddInstruction(vmOpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(0));
+		AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(0));
 
 		// Fixup jump around IF block
 		assert (top.m_jumpOut < m_vm.InstructionCount());
-		m_vm.Instruction(top.m_jumpOut).m_value.setIntVal(m_vm
+		m_vm.Instruction(top.m_jumpOut).mValue.setIntVal(m_vm
 				.InstructionCount());
 
 		m_needColon = false; // Don't need colon between this and next
@@ -2985,7 +2987,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Fixup jump around IF or ELSE block
 		assert (top.m_jumpOut < m_vm.InstructionCount());
-		m_vm.Instruction(top.m_jumpOut).m_value.setIntVal(m_vm
+		m_vm.Instruction(top.m_jumpOut).mValue.setIntVal(m_vm
 				.InstructionCount());
 
 		// If there's an implied endif then add it
@@ -3166,7 +3168,7 @@ public class TomBasicCompiler extends HasErrorState {
 				.InstructionCount(), loopPos, line, col, false, step, false));
 
 		// Create conditional jump
-		AddInstruction(vmOpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
 				new VMValue(0));
 
 		return true;
@@ -3213,12 +3215,12 @@ public class TomBasicCompiler extends HasErrorState {
 		m_token = saveToken;
 
 		// Generate jump back instruction
-		AddInstruction(vmOpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
+		AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
 				top.m_jumpLoop));
 
 		// Fixup jump around FOR block
 		assert (top.m_jumpOut < m_vm.InstructionCount());
-		m_vm.Instruction(top.m_jumpOut).m_value.setIntVal(m_vm
+		m_vm.Instruction(top.m_jumpOut).mValue.setIntVal(m_vm
 				.InstructionCount());
 		return true;
 	}
@@ -3250,7 +3252,7 @@ public class TomBasicCompiler extends HasErrorState {
 				m_vm.InstructionCount(), loopPos, line, col));
 
 		// Create conditional jump
-		AddInstruction(vmOpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
 				new VMValue(0));
 		return true;
 	}
@@ -3270,12 +3272,12 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Generate jump back
-		AddInstruction(vmOpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
+		AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
 				top.m_jumpLoop));
 
 		// Fixup jump around WHILE block
 		assert (top.m_jumpOut < m_vm.InstructionCount());
-		m_vm.Instruction(top.m_jumpOut).m_value.setIntVal(m_vm
+		m_vm.Instruction(top.m_jumpOut).mValue.setIntVal(m_vm
 				.InstructionCount());
 		return true;
 	}
@@ -3318,8 +3320,8 @@ public class TomBasicCompiler extends HasErrorState {
 					loopPos, line, col));
 
 			// Create conditional jump
-			AddInstruction(negative ? vmOpCode.OP_JUMP_TRUE
-					: vmOpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
+			AddInstruction(negative ? OpCode.OP_JUMP_TRUE
+					: OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
 					new VMValue(0));
 
 			// Done
@@ -3379,8 +3381,8 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 			// Create conditional jump back to "do"
-			AddInstruction(negative ? vmOpCode.OP_JUMP_FALSE
-					: vmOpCode.OP_JUMP_TRUE, BasicValType.VTP_INT.getType(), new VMValue(
+			AddInstruction(negative ? OpCode.OP_JUMP_FALSE
+					: OpCode.OP_JUMP_TRUE, BasicValType.VTP_INT.getType(), new VMValue(
 							top.m_jumpLoop));
 
 			// Done
@@ -3388,14 +3390,14 @@ public class TomBasicCompiler extends HasErrorState {
 		} else {
 
 			// Jump unconditionally back to "do"
-			AddInstruction(vmOpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
+			AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
 					top.m_jumpLoop));
 
 			// If this is a precondition "do", fixup the jump around the "do"
 			// block
 			if (top.m_type == compFlowControlType.FCT_DO_PRE) {
 				assert (top.m_jumpOut < m_vm.InstructionCount());
-				m_vm.Instruction(top.m_jumpOut).m_value.setIntVal(m_vm
+				m_vm.Instruction(top.m_jumpOut).mValue.setIntVal(m_vm
 						.InstructionCount());
 			}
 
@@ -3681,7 +3683,7 @@ public class TomBasicCompiler extends HasErrorState {
 				// If parameter is an "any type" then generate code to push the
 				// parameter type to the stack.
 				if (isAnyType) {
-					AddInstruction(vmOpCode.OP_LOAD_CONST,
+					AddInstruction(OpCode.OP_LOAD_CONST,
 							BasicValType.VTP_INT.getType(),
 							new VMValue((int) m_vm.StoreType(m_regType)));
 					m_regType.Set(BasicValType.VTP_INT);
@@ -3726,7 +3728,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (spec.m_builtin)
 
 			// Builtin function
-			AddInstruction(vmOpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
 					new VMValue(spec.m_spec.getIndex()));
 		else
 
@@ -3735,7 +3737,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// The 3 low bytes are the function index within the DLL.
 			// This may be revised later...
 			AddInstruction(
-					vmOpCode.OP_CALL_DLL,
+					OpCode.OP_CALL_DLL,
 					BasicValType.VTP_INT.getType(),
 					new VMValue((spec.m_pluginIndex << 24)
 							| (spec.m_spec.getIndex() & 0x00ffffff)));
@@ -3751,7 +3753,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// be "destroyed" when temp data is unwound.
 			if (!m_regType.CanStoreInRegister()
 					&& m_vm.DataTypes().ContainsString(m_regType))
-				AddInstruction(vmOpCode.OP_REG_DESTRUCTOR,
+				AddInstruction(OpCode.OP_REG_DESTRUCTOR,
 						BasicValType.VTP_INT.getType(),
 						new VMValue((int) m_vm.StoreType(m_regType)));
 
@@ -3769,7 +3771,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Generate explicit timesharing break (if necessary)
 		if (spec.m_spec.getTimeshare())
-			AddInstruction(vmOpCode.OP_TIMESHARE, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_TIMESHARE, BasicValType.VTP_INT.getType(),
 					new VMValue());
 
 		return true;
@@ -3913,14 +3915,14 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Add instruction to free temp data (if necessary)
 		if (m_freeTempData)
-			AddInstruction(vmOpCode.OP_FREE_TEMP, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_FREE_TEMP, BasicValType.VTP_INT.getType(),
 					new VMValue());
 		m_freeTempData = false;
 
 		return true;
 	}
 
-	boolean CompileExtendedUnOperation(vmOpCode oper) {
+	boolean CompileExtendedUnOperation(short operOpCode) {
 
 		Mutable<ValType> type = new Mutable<ValType>(new ValType());
 		Mutable<Integer> opFunc = new Mutable<Integer>(-1);
@@ -3939,7 +3941,7 @@ public class TomBasicCompiler extends HasErrorState {
 			resultType.set(new ValType());
 
 			// Call function
-			found = m_unOperExts.get(i).run(type, oper, opFunc, resultType,
+			found = m_unOperExts.get(i).run(type, operOpCode, opFunc, resultType,
 					freeTempData);
 		}
 
@@ -3954,7 +3956,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Generate code to call external operator function
 		assert (opFunc.get() >= 0);
 		assert (opFunc.get() < m_vm.OperatorFunctionCount());
-		AddInstruction(vmOpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT.getType(),
 				new VMValue(opFunc.get()));
 
 		// Set register to result type
@@ -3966,7 +3968,7 @@ public class TomBasicCompiler extends HasErrorState {
 		return true;
 	}
 
-	boolean CompileExtendedBinOperation(vmOpCode oper) {
+	boolean CompileExtendedBinOperation(short operOpCode) {
 
 		Mutable<ValType> type1 = new Mutable<ValType>(new ValType());
 		Mutable<ValType> type2 = new Mutable<ValType>(new ValType());
@@ -3987,7 +3989,7 @@ public class TomBasicCompiler extends HasErrorState {
 			resultType.set(new ValType());
 
 			// Call function
-			found = m_binOperExts.get(i).run(type1, type2, oper, opFunc,
+			found = m_binOperExts.get(i).run(type1, type2, operOpCode, opFunc,
 					resultType, freeTempData);
 
 		}
@@ -4005,7 +4007,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Generate code to call external operator function
 		assert (opFunc.get() >= 0);
 		assert (opFunc.get() < m_vm.OperatorFunctionCount());
-		AddInstruction(vmOpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT.getType(),
 				new VMValue(opFunc.get()));
 
 		// Set register to result type
@@ -4089,7 +4091,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Add alloc instruction
-		AddInstruction(vmOpCode.OP_ALLOC, BasicValType.VTP_INT.getType(), new VMValue(
+		AddInstruction(OpCode.OP_ALLOC, BasicValType.VTP_INT.getType(), new VMValue(
 				(int) m_vm.StoreType(dataType)));
 
 		// Instruction automatically removes all array indices that were pushed
@@ -4109,7 +4111,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Generate code to save address to pointer
-		AddInstruction(vmOpCode.OP_SAVE, BasicValType.VTP_INT.getType(), new VMValue());
+		AddInstruction(OpCode.OP_SAVE, BasicValType.VTP_INT.getType(), new VMValue());
 
 		return true;
 	}
@@ -4140,11 +4142,11 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Look at instruction immediately before return address.
 		// This should be the gosub
-		if (m_vm.Instruction(returnAddr - 1).m_opCode != vmOpCode.OP_CALL)
+		if (m_vm.Instruction(returnAddr - 1).mOpCode != OpCode.OP_CALL)
 			return "???";
 
 		// Get target address
-		long target = m_vm.Instruction(returnAddr - 1).m_value.getIntVal();
+		long target = m_vm.Instruction(returnAddr - 1).mValue.getIntVal();
 
 		// Lookup label name
 		String name = m_labelIndex.get(target);
@@ -4188,7 +4190,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Terminate program
-		AddInstruction(vmOpCode.OP_END, BasicValType.VTP_INT.getType(), new VMValue());
+		AddInstruction(OpCode.OP_END, BasicValType.VTP_INT.getType(), new VMValue());
 
 		// Return expression result type
 		valType.Set(m_regType);
@@ -4295,14 +4297,14 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 			// Generate READ op-code
-			AddInstruction(vmOpCode.OP_DATA_READ, type.m_basicType,
+			AddInstruction(OpCode.OP_DATA_READ, type.m_basicType,
 					new VMValue());
 
 			if (!CompilePop())
 				return false;
 
 			// Save reg into [reg2]
-			AddInstruction(vmOpCode.OP_SAVE, m_reg2Type.m_basicType,
+			AddInstruction(OpCode.OP_SAVE, m_reg2Type.m_basicType,
 					new VMValue());
 		}
 		return true;
@@ -4334,7 +4336,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Add jump instruction
-		AddInstruction(vmOpCode.OP_DATA_RESET, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_DATA_RESET, BasicValType.VTP_INT.getType(),
 				new VMValue(0));
 
 		return true;
@@ -4366,7 +4368,7 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 		// Add "end program" opcode, so we can safely evaluate it
-		AddInstruction(vmOpCode.OP_END, BasicValType.VTP_INT.getType(), new VMValue());
+		AddInstruction(OpCode.OP_END, BasicValType.VTP_INT.getType(), new VMValue());
 
 		// Setup virtual machine to execute expression
 		// Note: Expressions can't branch or loop, and it's very difficult to
@@ -4434,10 +4436,10 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Create string constant entry if necessary
 			int index = m_vm.StoreStringConstant(stringValue);
-			AddInstruction(vmOpCode.OP_LOAD_CONST, BasicValType.VTP_STRING.getType(),
+			AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING.getType(),
 					new VMValue(index));
 		} else
-			AddInstruction(vmOpCode.OP_LOAD_CONST, basictype, value);
+			AddInstruction(OpCode.OP_LOAD_CONST, basictype, value);
 
 		return true;
 	}
@@ -4500,7 +4502,7 @@ public class TomBasicCompiler extends HasErrorState {
 		while (operandCount > 1) {
 			if (!CompilePop())
 				return false;
-			AddInstruction(vmOpCode.OP_OP_PLUS, BasicValType.VTP_STRING,
+			AddInstruction(OpCode.OP_OP_PLUS, BasicValType.VTP_STRING,
 					new VMValue());
 			m_regType.Set(BasicValType.VTP_STRING);
 
@@ -4525,7 +4527,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Generate code to call it
-		AddInstruction(vmOpCode.OP_CALL_FUNC, BasicValType.VTP_INT,
+		AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT,
 				new VMValue(spec.getIndex()));
 
 		// Generate code to clean up stack
@@ -4575,7 +4577,7 @@ public class TomBasicCompiler extends HasErrorState {
 			int index = m_vm.StoreStringConstant(text);
 
 			// Generate code to print it (load, push, call "print" function)
-			AddInstruction(vmOpCode.OP_LOAD_CONST, BasicValType.VTP_STRING.getType(),
+			AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING.getType(),
 					new VMValue(index));
 			m_regType.Set(BasicValType.VTP_STRING);
 			if (!CompilePush())
@@ -4585,7 +4587,7 @@ public class TomBasicCompiler extends HasErrorState {
 			compFuncSpec printSpec = FindFunction("print", 1);
 			if (printSpec == null)
 				return false;
-			AddInstruction(vmOpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
 					new VMValue(printSpec.getIndex()));
 
 			// Generate code to clean up stack
@@ -4619,9 +4621,9 @@ public class TomBasicCompiler extends HasErrorState {
 		compFuncSpec inputSpec = FindFunction("input$", 0);
 		if (inputSpec == null)
 			return false;
-		AddInstruction(vmOpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
 				new VMValue(inputSpec.getIndex()));
-		AddInstruction(vmOpCode.OP_TIMESHARE, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_TIMESHARE, BasicValType.VTP_INT.getType(),
 				new VMValue()); // Timesharing break
 		// is necessary
 		m_regType.Set(BasicValType.VTP_STRING);
@@ -4639,7 +4641,7 @@ public class TomBasicCompiler extends HasErrorState {
 			compFuncSpec valSpec = FindFunction("val", 1);
 			if (valSpec == null)
 				return false;
-			AddInstruction(vmOpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
 					new VMValue(valSpec.getIndex()));
 			m_regType.Set(BasicValType.VTP_REAL);
 
@@ -4659,7 +4661,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Generate code to save value
-		AddInstruction(vmOpCode.OP_SAVE, m_reg2Type.m_basicType, new VMValue());
+		AddInstruction(OpCode.OP_SAVE, m_reg2Type.m_basicType, new VMValue());
 
 		return true;
 	}
@@ -4934,7 +4936,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Create jump-past-function op-code
 			m_functionJumpOver = m_vm.InstructionCount();
-			AddInstruction(vmOpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
+			AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
 					0)); // Jump target will be fixed up when "endfunction" is
 			// compiled
 
@@ -5054,16 +5056,16 @@ public class TomBasicCompiler extends HasErrorState {
 		// If end of function is reached without a return value, need to trigger
 		// a runtime error.
 		if (UserPrototype().hasReturnVal)
-			AddInstruction(vmOpCode.OP_NO_VALUE_RETURNED, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_NO_VALUE_RETURNED, BasicValType.VTP_INT.getType(),
 					new VMValue(0));
 		else
 			// Add return-from-user-function instruction
-			AddInstruction(vmOpCode.OP_RETURN_USER_FUNC, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_RETURN_USER_FUNC, BasicValType.VTP_INT.getType(),
 					new VMValue(0));
 
 		// Fix up jump-past-function op-code
 		assert (m_functionJumpOver < m_vm.InstructionCount());
-		m_vm.Instruction(m_functionJumpOver).m_value.setIntVal(m_vm
+		m_vm.Instruction(m_functionJumpOver).mValue.setIntVal(m_vm
 				.InstructionCount());
 
 		// Let compiler know we have left the function
@@ -5109,10 +5111,10 @@ public class TomBasicCompiler extends HasErrorState {
 		// Add op-code to prepare function stack frame.
 		// Stack frame remains inactive while evaluating its parameters.
 		if (isRuntimeFunc)
-			AddInstruction(vmOpCode.OP_CREATE_RUNTIME_FRAME,
+			AddInstruction(OpCode.OP_CREATE_RUNTIME_FRAME,
 					BasicValType.VTP_INT.getType(), new VMValue(index));
 		else
-			AddInstruction(vmOpCode.OP_CREATE_USER_FRAME, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_CREATE_USER_FRAME, BasicValType.VTP_INT.getType(),
 					new VMValue(index));
 
 		// Expect "("
@@ -5155,7 +5157,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Add op-code to call function.
 		// Type: Unused.
 		// Value: index of function specification.
-		AddInstruction(vmOpCode.OP_CALL_USER_FUNC, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_CALL_USER_FUNC, BasicValType.VTP_INT.getType(),
 				new VMValue());
 
 		if (prototype.hasReturnVal) {
@@ -5165,7 +5167,7 @@ public class TomBasicCompiler extends HasErrorState {
 			if (!prototype.returnValType.CanStoreInRegister()
 					&& m_vm.DataTypes().ContainsString(prototype.returnValType))
 				AddInstruction(
-						vmOpCode.OP_REG_DESTRUCTOR,
+						OpCode.OP_REG_DESTRUCTOR,
 						BasicValType.VTP_INT.getType(),
 						new VMValue((int) m_vm
 								.StoreType(prototype.returnValType)));
@@ -5205,7 +5207,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Save reg into parameter
-			AddInstruction(vmOpCode.OP_SAVE_PARAM, type.m_basicType,
+			AddInstruction(OpCode.OP_SAVE_PARAM, type.m_basicType,
 					new VMValue(i));
 		}
 
@@ -5217,7 +5219,7 @@ public class TomBasicCompiler extends HasErrorState {
 			if (m_token.m_text.equals("null")) {
 				if (!CompileNull())
 					return false;
-				AddInstruction(vmOpCode.OP_SAVE_PARAM, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_SAVE_PARAM, BasicValType.VTP_INT.getType(),
 						new VMValue(i));
 			} else {
 
@@ -5233,7 +5235,7 @@ public class TomBasicCompiler extends HasErrorState {
 				if (m_regType.m_pointerLevel == type.m_pointerLevel
 						&& m_regType.m_arrayLevel == type.m_arrayLevel
 						&& m_regType.m_basicType == type.m_basicType)
-					AddInstruction(vmOpCode.OP_SAVE_PARAM,
+					AddInstruction(OpCode.OP_SAVE_PARAM,
 							BasicValType.VTP_INT.getType(), new VMValue(i));
 
 				else {
@@ -5255,10 +5257,10 @@ public class TomBasicCompiler extends HasErrorState {
 			if (m_regType.m_pointerLevel == 1 && m_regType.m_byRef
 					&& m_regType.m_arrayLevel == type.m_arrayLevel
 					&& m_regType.m_basicType == type.m_basicType) {
-				AddInstruction(vmOpCode.OP_COPY_USER_STACK,
+				AddInstruction(OpCode.OP_COPY_USER_STACK,
 						BasicValType.VTP_INT.getType(),
 						new VMValue((int) m_vm.StoreType(type)));
-				AddInstruction(vmOpCode.OP_SAVE_PARAM_PTR,
+				AddInstruction(OpCode.OP_SAVE_PARAM_PTR,
 						BasicValType.VTP_INT.getType(), new VMValue(i));
 			} else {
 				SetError("Types do not match");
@@ -5269,7 +5271,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Data containing strings will need to be "destroyed" when the stack
 		// unwinds.
 		if (m_vm.DataTypes().ContainsString(type))
-			AddInstruction(vmOpCode.OP_REG_DESTRUCTOR, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_REG_DESTRUCTOR, BasicValType.VTP_INT.getType(),
 					new VMValue((int) m_vm.StoreType(type)));
 
 		return true;
@@ -5293,27 +5295,27 @@ public class TomBasicCompiler extends HasErrorState {
 				if (!type.CanStoreInRegister()) {
 
 					// Add instruction to move that data into temp data
-					AddInstruction(vmOpCode.OP_MOVE_TEMP, BasicValType.VTP_INT.getType(),
+					AddInstruction(OpCode.OP_MOVE_TEMP, BasicValType.VTP_INT.getType(),
 							new VMValue((int) m_vm.StoreType(type)));
 
 					// Add return-from-function OP-code
 					// Note: The 0 in the instruction value indicates that temp
 					// data should NOT be freed on return (as we have just moved
 					// the return value there.)
-					AddInstruction(vmOpCode.OP_RETURN_USER_FUNC,
+					AddInstruction(OpCode.OP_RETURN_USER_FUNC,
 							BasicValType.VTP_INT.getType(), new VMValue(0));
 				} else
 					// Add return-from-function OP-code
 					// Note: The 1 in the instruction value indicates that temp
 					// data should be freed on return.
-					AddInstruction(vmOpCode.OP_RETURN_USER_FUNC,
+					AddInstruction(OpCode.OP_RETURN_USER_FUNC,
 							BasicValType.VTP_INT.getType(), new VMValue(1));
 			} else
-				AddInstruction(vmOpCode.OP_RETURN_USER_FUNC,
+				AddInstruction(OpCode.OP_RETURN_USER_FUNC,
 						BasicValType.VTP_INT.getType(), new VMValue(1));
 		} else {
 			// Add "return from Gosub" op-code
-			AddInstruction(vmOpCode.OP_RETURN, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_RETURN, BasicValType.VTP_INT.getType(),
 					new VMValue());
 		}
 

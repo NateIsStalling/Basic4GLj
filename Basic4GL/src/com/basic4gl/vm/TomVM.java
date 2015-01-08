@@ -33,7 +33,7 @@ import com.basic4gl.vm.types.ValType.BasicValType;
 import com.basic4gl.vm.util.Function;
 import com.basic4gl.vm.util.IVMDebugger;
 import com.basic4gl.vm.util.Resources;
-import com.basic4gl.vm.vmCode.vmOpCode;
+import com.basic4gl.vm.types.OpCode;
 import com.basic4gl.vm.vmVariables.vmVariable;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -317,33 +317,33 @@ public class TomVM extends HasErrorState {
 				
 				
 				instruction = mCode.get(mIp);
-				switch (instruction.m_opCode) {
-				case OP_NOP:
+				switch (instruction.mOpCode) {
+				case OpCode.OP_NOP:
 					mIp++; // Proceed to next instruction
 					continue step;
-				case OP_END:
+				case OpCode.OP_END:
 					break;
-				case OP_LOAD_CONST:
+				case OpCode.OP_LOAD_CONST:
 
 					// Load value
-					if (instruction.m_type == BasicValType.VTP_STRING.getType()) {
-						assert (instruction.m_value.getIntVal() >= 0);
-						assert (instruction.m_value.getIntVal() < mStringConstants.size());
-						setRegString(mStringConstants.get(instruction.m_value
+					if (instruction.mType == BasicValType.VTP_STRING.getType()) {
+						assert (instruction.mValue.getIntVal() >= 0);
+						assert (instruction.mValue.getIntVal() < mStringConstants.size());
+						setRegString(mStringConstants.get(instruction.mValue
 								.getIntVal()));
 					} else {
-						setReg(new VMValue(instruction.m_value));
+						setReg(new VMValue(instruction.mValue));
 					}
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_LOAD_VAR: {
+				case OpCode.OP_LOAD_VAR: {
 
 					// Load variable.
 					// Instruction contains index of variable.
-					assert (mVariables.IndexValid(instruction.m_value.getIntVal()));
+					assert (mVariables.IndexValid(instruction.mValue.getIntVal()));
 					vmVariable var = mVariables.Variables().get(
-							instruction.m_value.getIntVal());
+							instruction.mValue.getIntVal());
 					if (var.Allocated()) {
 						// Load address of variable's data into register
 						Reg().setIntVal(var.m_dataIndex);
@@ -354,7 +354,7 @@ public class TomVM extends HasErrorState {
 					break;
 				}
 
-				case OP_LOAD_LOCAL_VAR: {
+				case OpCode.OP_LOAD_LOCAL_VAR: {
 
 					// Find current stack frame
 					assert (mCurrentUserFrame >= 0);
@@ -363,7 +363,7 @@ public class TomVM extends HasErrorState {
 							.get(mCurrentUserFrame);
 
 					// Find variable
-					int index = instruction.m_value.getIntVal();
+					int index = instruction.mValue.getIntVal();
 
 					// Instruction contains index of variable.
 					if (currentFrame.localVarDataOffsets.get(index) != 0) {
@@ -376,14 +376,14 @@ public class TomVM extends HasErrorState {
 					break;
 				}
 
-				case OP_DEREF: {
+				case OpCode.OP_DEREF: {
 
 					// Dereference reg.
 					if (Reg().getIntVal() != 0) {
 						assert (mData.IndexValid(Reg().getIntVal()));
 						// Find value that reg points to
 						VMValue val = mData.Data().get(Reg().getIntVal());
-						switch (BasicValType.getType(instruction.m_type)) {
+						switch (BasicValType.getType(instruction.mType)) {
 						case VTP_INT:
 						case VTP_REAL:
 							setReg(val);
@@ -402,18 +402,18 @@ public class TomVM extends HasErrorState {
 					SetError(ERR_UNSET_POINTER);
 					break;
 				}
-				case OP_ADD_CONST:
+				case OpCode.OP_ADD_CONST:
 					// Check pointer
 					if (Reg().getIntVal() != 0) {
 						Reg().setIntVal(Reg().getIntVal()
-								+ instruction.m_value.getIntVal());
+								+ instruction.mValue.getIntVal());
 						mIp++; // Proceed to next instruction
 						continue step;
 					}
 					SetError(ERR_UNSET_POINTER);
 					break;
 
-				case OP_ARRAY_INDEX:
+				case OpCode.OP_ARRAY_INDEX:
 
 					if (Reg2().getIntVal() != 0) {
 						// Input: mReg2 = Array address
@@ -447,10 +447,10 @@ public class TomVM extends HasErrorState {
 					SetError(ERR_UNSET_POINTER);
 					break;
 
-				case OP_PUSH:
+				case OpCode.OP_PUSH:
 
 					// Push register to stack
-					if (instruction.m_type == BasicValType.VTP_STRING.getType())
+					if (instruction.mType == BasicValType.VTP_STRING.getType())
 						mStack.PushString(RegString());
 					else
 						mStack.Push(Reg());
@@ -458,10 +458,10 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_POP:
+				case OpCode.OP_POP:
 
 					// Pop reg2 from stack
-					if (instruction.m_type == BasicValType.VTP_STRING.getType()){
+					if (instruction.mType == BasicValType.VTP_STRING.getType()){
 						
 						setReg2String(mStack.PopString());
 					}else{
@@ -470,13 +470,13 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_SAVE: {
+				case OpCode.OP_SAVE: {
 
 					// Save reg into [reg2]
 					if (Reg2().getIntVal() > 0) {
 						assert (mData.IndexValid(Reg2().getIntVal()));
 						VMValue dest = mData.Data().get(Reg2().getIntVal());
-						switch (BasicValType.getType(instruction.m_type)) {
+						switch (BasicValType.getType(instruction.mType)) {
 						case VTP_INT:
 						case VTP_REAL:
 							//mData.Data().set(mReg2.getIntVal(), new VMValue(mReg));
@@ -503,22 +503,22 @@ public class TomVM extends HasErrorState {
 					break;
 				}
 
-				case OP_COPY: {
+				case OpCode.OP_COPY: {
 
 					// Copy data
 					if (CopyData(Reg().getIntVal(), Reg2().getIntVal(),
-							mTypeSet.GetValType(instruction.m_value.getIntVal()))) {
+							mTypeSet.GetValType(instruction.mValue.getIntVal()))) {
 						mIp++; // Proceed to next instruction
 						continue step;
 					} else {
 						break;
 					}
 				}
-				case OP_DECLARE: {
+				case OpCode.OP_DECLARE: {
 
 					// Allocate variable.
-					assert (mVariables.IndexValid(instruction.m_value.getIntVal()));
-					vmVariable var = mVariables.Variables().get(instruction.m_value.getIntVal());
+					assert (mVariables.IndexValid(instruction.mValue.getIntVal()));
+					vmVariable var = mVariables.Variables().get(instruction.mValue.getIntVal());
 
 					// Must not already be allocated
 					if (var.Allocated()) {
@@ -542,7 +542,7 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 				}
-				case OP_DECLARE_LOCAL: {
+				case OpCode.OP_DECLARE_LOCAL: {
 
 					// Allocate local variable
 
@@ -554,7 +554,7 @@ public class TomVM extends HasErrorState {
 					vmUserFuncPrototype prototype = mUserFunctionPrototypes.get(userFunc.prototypeIndex);
 					
 					// Find variable type
-					int index = instruction.m_value.getIntVal();
+					int index = instruction.mValue.getIntVal();
 					assert (index >= 0);
 					assert (index < prototype.localVarTypes.size());
 					ValType type = prototype.localVarTypes.get(index);
@@ -584,49 +584,49 @@ public class TomVM extends HasErrorState {
 					// Store data index in stack frame
 					currentFrame.localVarDataOffsets.set(index, dataIndex);
 
-					// Also store in register, so that OP_REG_DESTRUCTOR can be used
+					// Also store in register, so that OpCode.OP_REG_DESTRUCTOR can be used
 					Reg().setIntVal(dataIndex);
 
 					mIp++; // Proceed to next instruction
 					continue step;
 
 				}
-				case OP_JUMP:
+				case OpCode.OP_JUMP:
 
 					// Jump
-					assert (instruction.m_value.getIntVal() >= 0);
-					assert (instruction.m_value.getIntVal() < mCode.size());
-					mIp = instruction.m_value.getIntVal();
+					assert (instruction.mValue.getIntVal() >= 0);
+					assert (instruction.mValue.getIntVal() < mCode.size());
+					mIp = instruction.mValue.getIntVal();
 					continue step; // Proceed without incrementing instruction
 
-				case OP_JUMP_TRUE:
+				case OpCode.OP_JUMP_TRUE:
 
 					// Jump if reg != 0
-					assert (instruction.m_value.getIntVal() >= 0);
-					assert (instruction.m_value.getIntVal() < mCode.size());
+					assert (instruction.mValue.getIntVal() >= 0);
+					assert (instruction.mValue.getIntVal() < mCode.size());
 					if (Reg().getIntVal() != 0) {
-						mIp = instruction.m_value.getIntVal();
+						mIp = instruction.mValue.getIntVal();
 						continue step; // Proceed without incrementing instruction
 					}
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_JUMP_FALSE:
+				case OpCode.OP_JUMP_FALSE:
 
 					// Jump if reg == 0
-					assert (instruction.m_value.getIntVal() >= 0);
-					assert (instruction.m_value.getIntVal() < mCode.size());
+					assert (instruction.mValue.getIntVal() >= 0);
+					assert (instruction.mValue.getIntVal() < mCode.size());
 					if (Reg().getIntVal() == 0) {
-						mIp = instruction.m_value.getIntVal();
+						mIp = instruction.mValue.getIntVal();
 						continue step; // Proceed without incrementing instruction
 					}
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_NEG:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_NEG:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(-Reg().getIntVal());
-					else if (instruction.m_type == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == BasicValType.VTP_REAL.getType())
 						Reg().setRealVal(-Reg().getRealVal());
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -635,12 +635,12 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_PLUS:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_PLUS:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(Reg().getIntVal() + Reg2().getIntVal());
-					else if (instruction.m_type == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == BasicValType.VTP_REAL.getType())
 						Reg().setRealVal(Reg().getRealVal() + Reg2().getRealVal());
-					else if (instruction.m_type == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == BasicValType.VTP_STRING.getType())
 						setRegString(Reg2String() + RegString());
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -649,10 +649,10 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_MINUS:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_MINUS:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(Reg2().getIntVal() - Reg().getIntVal());
-					else if (instruction.m_type == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == BasicValType.VTP_REAL.getType())
 						Reg().setRealVal(Reg2().getRealVal() - Reg().getRealVal());
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -661,10 +661,10 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_TIMES:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_TIMES:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(Reg().getIntVal() * Reg2().getIntVal());
-					else if (instruction.m_type == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == BasicValType.VTP_REAL.getType())
 						Reg().setRealVal(Reg().getRealVal() * Reg2().getRealVal());
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -673,10 +673,10 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_DIV:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_DIV:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(Reg2().getIntVal() / Reg().getIntVal());
-					else if (instruction.m_type == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == BasicValType.VTP_REAL.getType())
 						Reg().setRealVal(Reg2().getRealVal() / Reg().getRealVal());
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -685,8 +685,8 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_MOD:
-					if (instruction.m_type == BasicValType.VTP_INT.getType()) {
+				case OpCode.OP_OP_MOD:
+					if (instruction.mType == BasicValType.VTP_INT.getType()) {
 						int i = Reg2().getIntVal() % Reg().getIntVal();
 						if (i >= 0)
 							Reg().setIntVal(i);
@@ -699,8 +699,8 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_NOT:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_NOT:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(Reg().getIntVal() == 0 ? -1 : 0);
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -709,14 +709,14 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_EQUAL:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_EQUAL:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(
 								Reg2().getIntVal() == Reg().getIntVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == BasicValType.VTP_REAL.getType())
 						Reg().setIntVal(
 								Reg2().getRealVal() == Reg().getRealVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == BasicValType.VTP_STRING.getType())
 						Reg().setIntVal(Reg2String().equals(RegString()) ? -1 : 0);
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -725,14 +725,14 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_NOT_EQUAL:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_NOT_EQUAL:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(
 								Reg2().getIntVal() != Reg().getIntVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == BasicValType.VTP_REAL.getType())
 						Reg().setIntVal(
 								Reg2().getRealVal() != Reg().getRealVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == BasicValType.VTP_STRING.getType())
 						Reg().setIntVal(!Reg2String().equals(RegString()) ? -1 : 0);
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -741,14 +741,14 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_GREATER:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_GREATER:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(
 								Reg2().getIntVal() > Reg().getIntVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == BasicValType.VTP_REAL.getType())
 						Reg().setIntVal(
 								Reg2().getRealVal() > Reg().getRealVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == BasicValType.VTP_STRING.getType())
 						Reg().setIntVal(
 								(Reg2String().compareTo(RegString()) > 0) ? -1 : 0);
 					else {
@@ -758,14 +758,14 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_GREATER_EQUAL:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_GREATER_EQUAL:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(
 								Reg2().getIntVal() >= Reg().getIntVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == BasicValType.VTP_REAL.getType())
 						Reg().setIntVal(
 								Reg2().getRealVal() >= Reg().getRealVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == BasicValType.VTP_STRING.getType())
 						Reg().setIntVal(
 								(Reg2String().compareTo(RegString()) >= 0) ? -1 : 0);
 					else {
@@ -775,14 +775,14 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_LESS:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_LESS:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(
 								Reg2().getIntVal() < Reg().getIntVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == BasicValType.VTP_REAL.getType())
 						Reg().setIntVal(
 								Reg2().getRealVal() < Reg().getRealVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == BasicValType.VTP_STRING.getType())
 						Reg().setIntVal(
 								(Reg2String().compareTo(RegString()) < 0) ? -1 : 0);
 					else {
@@ -792,14 +792,14 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_LESS_EQUAL:
-					if (instruction.m_type == BasicValType.VTP_INT.getType())
+				case OpCode.OP_OP_LESS_EQUAL:
+					if (instruction.mType == BasicValType.VTP_INT.getType())
 						Reg().setIntVal(
 								Reg2().getIntVal() <= Reg().getIntVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == BasicValType.VTP_REAL.getType())
 						Reg().setIntVal(
 								Reg2().getRealVal() <= Reg().getRealVal() ? -1 : 0);
-					else if (instruction.m_type == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == BasicValType.VTP_STRING.getType())
 						Reg().setIntVal(
 								(Reg2String().compareTo(RegString()) <= 0) ? -1 : 0);
 					else {
@@ -809,92 +809,92 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_CONV_INT_REAL:
+				case OpCode.OP_CONV_INT_REAL:
 					Reg().setRealVal((float)Reg().getIntVal());
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_CONV_INT_REAL2:
+				case OpCode.OP_CONV_INT_REAL2:
 					Reg2().setRealVal((float)Reg2().getIntVal());
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_CONV_REAL_INT:
+				case OpCode.OP_CONV_REAL_INT:
 					Reg().setIntVal((int)Reg().getRealVal());
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_CONV_REAL_INT2:
+				case OpCode.OP_CONV_REAL_INT2:
 					Reg2().setIntVal((int)Reg2().getRealVal());
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_CONV_INT_STRING:
+				case OpCode.OP_CONV_INT_STRING:
 					setRegString(String.valueOf(Reg().getIntVal()));
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_CONV_REAL_STRING:
+				case OpCode.OP_CONV_REAL_STRING:
 					setRegString(String.valueOf(Reg().getRealVal()));
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_CONV_INT_STRING2:
+				case OpCode.OP_CONV_INT_STRING2:
 					setReg2String(String.valueOf(Reg2().getIntVal()));
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_CONV_REAL_STRING2:
+				case OpCode.OP_CONV_REAL_STRING2:
 					setReg2String(String.valueOf(Reg2().getRealVal()));
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_AND:
+				case OpCode.OP_OP_AND:
 					Reg().setIntVal(Reg().getIntVal() & Reg2().getIntVal());
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_OR:
+				case OpCode.OP_OP_OR:
 					Reg().setIntVal(Reg().getIntVal() | Reg2().getIntVal());
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_OP_XOR:
+				case OpCode.OP_OP_XOR:
 					Reg().setIntVal(Reg().getIntVal() ^ Reg2().getIntVal());
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_CALL_FUNC:
+				case OpCode.OP_CALL_FUNC:
 
-					assert (instruction.m_value.getIntVal() >= 0);
-					assert (instruction.m_value.getIntVal() < mFunctions.size());
+					assert (instruction.mValue.getIntVal() >= 0);
+					assert (instruction.mValue.getIntVal() < mFunctions.size());
 
 					// Call external function
-					mFunctions.get(instruction.m_value.getIntVal()).run(this);
+					mFunctions.get(instruction.mValue.getIntVal()).run(this);
 					if (!Error()) {
 						mIp++; // Proceed to next instruction
 						continue step;
 					}
 					break;
 
-				case OP_CALL_OPERATOR_FUNC:
+				case OpCode.OP_CALL_OPERATOR_FUNC:
 
-					assert (instruction.m_value.getIntVal() >= 0);
-					assert (instruction.m_value.getIntVal() < mOperatorFunctions.size());
+					assert (instruction.mValue.getIntVal() >= 0);
+					assert (instruction.mValue.getIntVal() < mOperatorFunctions.size());
 
 					// Call external function
-					mOperatorFunctions.get(instruction.m_value.getIntVal()).run(this);
+					mOperatorFunctions.get(instruction.mValue.getIntVal()).run(this);
 					if (!Error()) {
 						mIp++; // Proceed to next instruction
 						continue step;
 					}
 					break;
 
-				case OP_TIMESHARE:
+				case OpCode.OP_TIMESHARE:
 					mIp++; // Move on to next instruction
 					break; // And return
 
-				case OP_FREE_TEMP:
+				case OpCode.OP_FREE_TEMP:
 
 					// Free temporary data
 					UnwindTemp();
@@ -902,10 +902,10 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_ALLOC: {
+				case OpCode.OP_ALLOC: {
 
 					// Extract type, and array dimensions
-					ValType type = mTypeSet.GetValType(instruction.m_value
+					ValType type = mTypeSet.GetValType(instruction.mValue
 							.getIntVal());
 					if (!PopArrayDimensions(type))
 						break;
@@ -922,11 +922,11 @@ public class TomVM extends HasErrorState {
 					continue step;
 				}
 
-				case OP_CALL: {
+				case OpCode.OP_CALL: {
 
 					// Call
-					assert (instruction.m_value.getIntVal() >= 0);
-					assert (instruction.m_value.getIntVal() < mCode.size());
+					assert (instruction.mValue.getIntVal() >= 0);
+					assert (instruction.mValue.getIntVal() < mCode.size());
 
 					// Check for stack overflow
 					if (mUserCallStack.size() >= VM_MAXUSERSTACKCALLS) {
@@ -940,10 +940,10 @@ public class TomVM extends HasErrorState {
 					stackFrame.InitForGosub(mIp + 1);
 
 					// Jump to subroutine
-					mIp = instruction.m_value.getIntVal();
+					mIp = instruction.mValue.getIntVal();
 					continue step; // Proceed without incrementing instruction
 				}
-				case OP_RETURN:
+				case OpCode.OP_RETURN:
 
 					// Return from GOSUB
 					
@@ -953,7 +953,7 @@ public class TomVM extends HasErrorState {
 						break;
 					}
 					// -1 means GOSUB. Should be impossible to execute 
-					// an OP_RETURN if stack top is not a GOSUB 
+					// an OpCode.OP_RETURN if stack top is not a GOSUB 
 					assert(mUserCallStack.lastElement().userFuncIndex == -1);
 					
 					tempI = mUserCallStack.lastElement().returnAddr;
@@ -967,11 +967,11 @@ public class TomVM extends HasErrorState {
 					mIp = tempI;
 					continue step; // Proceed without incrementing instruction
 
-				case OP_CALL_DLL: {
+				case OpCode.OP_CALL_DLL: {
 
 					// Call plugin DLL function
 					//TODO Reimplement libraries
-					//int index = instruction.m_value.getIntVal();
+					//int index = instruction.mValue.getIntVal();
 					//m_plugins.GetPluginDLL(index >> 24)
 					//		.GetFunction(index & 0x00ffffff).Run(m_pluginRuntime);
 					SetError(ERR_DLL_NOT_IMPLEMENTED); //Remove line when libraries are implemented
@@ -982,7 +982,7 @@ public class TomVM extends HasErrorState {
 					break;
 				}
 
-				case OP_CREATE_USER_FRAME: {
+				case OpCode.OP_CREATE_USER_FRAME: {
 
 	        // Check for stack overflow
 	        if (mUserCallStack.size () >= VM_MAXUSERSTACKCALLS) {
@@ -991,7 +991,7 @@ public class TomVM extends HasErrorState {
 	        }
 
 	        // Create and initialize stack frame
-	        int funcIndex = instruction.m_value.getIntVal();
+	        int funcIndex = instruction.mValue.getIntVal();
 	        mUserCallStack.add(new vmUserFuncStackFrame());
 	        vmUserFuncStackFrame stackFrame = mUserCallStack.lastElement();
 	        stackFrame.InitForUserFunction(
@@ -1005,14 +1005,14 @@ public class TomVM extends HasErrorState {
 					mIp++; // Proceed to next instruction
 					continue step;
 				}
-	case OP_CREATE_RUNTIME_FRAME: {
+	case OpCode.OP_CREATE_RUNTIME_FRAME: {
 	        assert(!mCodeBlocks.isEmpty());
 
 	        // Find function index
 	        int funcIndex = -1;
 
 	        // Look for function in bound code block
-	        int runtimeIndex = instruction.m_value.getIntVal();
+	        int runtimeIndex = instruction.mValue.getIntVal();
 	        if (mBoundCodeBlock > 0 && mBoundCodeBlock < mCodeBlocks.size()) {
 	            vmCodeBlock codeBlock = mCodeBlocks.get(mBoundCodeBlock);
 	            if (codeBlock.programOffset >= 0)
@@ -1029,7 +1029,7 @@ public class TomVM extends HasErrorState {
 	            break;
 	        }
 
-	        // From here on the logic is the same as OP_CREATE_USER_FRAME
+	        // From here on the logic is the same as OpCode.OP_CREATE_USER_FRAME
 	        // Check for stack overflow
 	        if (mUserCallStack.size () >= VM_MAXUSERSTACKCALLS) {
 	            SetError(ERR_STACK_OVERFLOW);
@@ -1049,7 +1049,7 @@ public class TomVM extends HasErrorState {
 	        mIp++; // Proceed to next instruction
 			continue step;
 	    }
-				case OP_CALL_USER_FUNC: {
+				case OpCode.OP_CALL_USER_FUNC: {
 
 					// Call user defined function
 					vmUserFuncStackFrame stackFrame = mUserCallStack.lastElement();
@@ -1066,7 +1066,7 @@ public class TomVM extends HasErrorState {
 					continue step; // Proceed without incrementing instruction
 				}
 
-				case OP_RETURN_USER_FUNC: {
+				case OpCode.OP_RETURN_USER_FUNC: {
 					assert (mUserCallStack.size() > 0);
 
 					// Find current stack frame
@@ -1074,7 +1074,7 @@ public class TomVM extends HasErrorState {
 					assert(stackFrame.userFuncIndex >= 0);
 					
 					// Restore previous stack frame data
-					boolean doFreeTempData = instruction.m_value.getIntVal() == 1;
+					boolean doFreeTempData = instruction.mValue.getIntVal() == 1;
 					if (doFreeTempData)
 						UnwindTemp();
 					UnwindStack(stackFrame.prevStackTop);
@@ -1093,15 +1093,15 @@ public class TomVM extends HasErrorState {
 					continue step; // Proceed without incrementing instruction
 				}
 
-				case OP_NO_VALUE_RETURNED:
+				case OpCode.OP_NO_VALUE_RETURNED:
 					SetError(ERR_NO_VALUE_RETURNED);
 					break;
-	case OP_BINDCODE:
+	case OpCode.OP_BINDCODE:
 	        mBoundCodeBlock = Reg().getIntVal();
 	        mIp++; // Proceed to next instruction
 			continue step;
 
-	    case OP_EXEC:
+	    case OpCode.OP_EXEC:
 
 	        // Call runtime compiled code block.
 	        // Call is like a GOSUB.
@@ -1110,7 +1110,7 @@ public class TomVM extends HasErrorState {
 	            vmCodeBlock codeBlock = mCodeBlocks.get(mBoundCodeBlock);
 	            if (codeBlock.programOffset >= 0) {
 
-	                // From here the code is the same as OP_CALL
+	                // From here the code is the same as OpCode.OP_CALL
 	                assert(codeBlock.programOffset >= 0);
 	                assert(codeBlock.programOffset < mCode.size ());
 
@@ -1134,25 +1134,25 @@ public class TomVM extends HasErrorState {
 	        SetError(ERR_INVALID_CODE_BLOCK);
 	        break;
 
-	    case OP_END_CALLBACK:
+	    case OpCode.OP_END_CALLBACK:
 	        break;          // Timeshare break. Calling code will then detect this op-code has been reached
 
-				case OP_DATA_READ:
+				case OpCode.OP_DATA_READ:
 
 					// Read program data into register
-					if (ReadProgramData(instruction.m_type)) {
+					if (ReadProgramData(instruction.mType)) {
 						mIp++; // Proceed to next instruction
 						continue step;
 					} else {
 						break;
 					}
-				case OP_DATA_RESET:
+				case OpCode.OP_DATA_RESET:
 
-					mProgramDataOffset = instruction.m_value.getIntVal();
+					mProgramDataOffset = instruction.mValue.getIntVal();
 					mIp++; // Proceed to next instruction
 					continue step;
 
-				case OP_SAVE_PARAM: {
+				case OpCode.OP_SAVE_PARAM: {
 
 					// Allocate parameter data
 					if (!mData.StackRoomFor(1)) {
@@ -1160,7 +1160,7 @@ public class TomVM extends HasErrorState {
 						break;
 					}
 					int dataIndex = mData.AllocateStack(1);
-					int paramIndex = instruction.m_value.getIntVal();
+					int paramIndex = instruction.mValue.getIntVal();
 
 					// Initialize parameter
 					assert (!mUserCallStack.isEmpty());
@@ -1169,7 +1169,7 @@ public class TomVM extends HasErrorState {
 
 					// Transfer register value to parameter
 					VMValue dest = mData.Data().get(dataIndex);
-					switch (BasicValType.getType(instruction.m_type)) {
+					switch (BasicValType.getType(instruction.mType)) {
 					case VTP_INT:
 					case VTP_REAL:
 						//TODO Confirm value is properly set
@@ -1188,20 +1188,20 @@ public class TomVM extends HasErrorState {
 						assert (false);
 					}
 
-					// Save parameter offset in register (so that OP_REG_DESTRUCTOR
+					// Save parameter offset in register (so that OpCode.OP_REG_DESTRUCTOR
 					// will work)
 					Reg().setIntVal(dataIndex);
 					mIp++; // Proceed to next instruction
 					continue step;
 				}
 
-				case OP_COPY_USER_STACK: {
+				case OpCode.OP_COPY_USER_STACK: {
 
 					// Copy data pointed to by mReg into next stack frame
 					// parameter.
 					// Instruction value points to the parameter data type.
 					if (CopyToParam(Reg().getIntVal(),
-							mTypeSet.GetValType(instruction.m_value.getIntVal()))) {
+							mTypeSet.GetValType(instruction.mValue.getIntVal()))) {
 						mIp++; // Proceed to next instruction
 						continue step;
 					} else {
@@ -1209,10 +1209,10 @@ public class TomVM extends HasErrorState {
 					}
 				}
 
-				case OP_MOVE_TEMP: {
+				case OpCode.OP_MOVE_TEMP: {
 
 					if (MoveToTemp(Reg().getIntVal(),
-							mTypeSet.GetValType(instruction.m_value.getIntVal()))) {
+							mTypeSet.GetValType(instruction.mValue.getIntVal()))) {
 						mIp++; // Proceed to next instruction
 						continue step;
 					} else {
@@ -1220,7 +1220,7 @@ public class TomVM extends HasErrorState {
 					}
 				}
 
-				case OP_CHECK_PTR: {
+				case OpCode.OP_CHECK_PTR: {
 
 					if (CheckPointer(Reg2().getIntVal(), Reg().getIntVal())) {
 						mIp++; // Proceed to next instruction
@@ -1231,9 +1231,9 @@ public class TomVM extends HasErrorState {
 					}
 				}
 
-				case OP_CHECK_PTRS: {
+				case OpCode.OP_CHECK_PTRS: {
 					if (CheckPointers(Reg().getIntVal(),
-							mTypeSet.GetValType(instruction.m_value.getIntVal()),
+							mTypeSet.GetValType(instruction.mValue.getIntVal()),
 							Reg2().getIntVal())) {
 						mIp++; // Proceed to next instruction
 						continue step;
@@ -1243,7 +1243,7 @@ public class TomVM extends HasErrorState {
 					}
 				}
 
-				case OP_REG_DESTRUCTOR: {
+				case OpCode.OP_REG_DESTRUCTOR: {
 
 					// Register destructor for data pointed to by mReg.
 					int ptr = Reg().getIntVal();
@@ -1256,31 +1256,31 @@ public class TomVM extends HasErrorState {
 						assert (mTempDestructors.isEmpty() || mTempDestructors
 								.lastElement().addr < ptr);
 						mTempDestructors.add(new vmStackDestructor(ptr,
-								instruction.m_value.getIntVal()));
+								instruction.mValue.getIntVal()));
 					} else if (ptr >= mData.StackTop() && ptr < mData.Permanent()) {
 
 						// Pointer into stack data found
 						assert (mStackDestructors.isEmpty() || mStackDestructors
 								.lastElement().addr > ptr);
 						mStackDestructors.add(new vmStackDestructor(ptr,
-								instruction.m_value.getIntVal()));
+								instruction.mValue.getIntVal()));
 					}
 					mIp++; // Proceed to next instruction
 					continue step;
 				}
 
-				case OP_SAVE_PARAM_PTR: {
+				case OpCode.OP_SAVE_PARAM_PTR: {
 
 					// Save register pointer into param pointer
 					assert (!mUserCallStack.isEmpty());
 					mUserCallStack.lastElement().localVarDataOffsets.set(
-							instruction.m_value.getIntVal(), Reg().getIntVal());
+							instruction.mValue.getIntVal(), Reg().getIntVal());
 
 					mIp++; // Proceed to next instruction
 					continue step;
 				}
 
-				case OP_RUN:
+				case OpCode.OP_RUN:
 
 					// If the stack is not empty, it means we are inside an
 					// Execute() call.
@@ -1295,7 +1295,7 @@ public class TomVM extends HasErrorState {
 						Reset(); // Reset program
 					break; // Timeshare break
 
-				case OP_BREAKPT:
+				case OpCode.OP_BREAKPT:
 					m_paused = true; // Pause program
 					break; // Timeshare break
 
@@ -1614,17 +1614,17 @@ public class TomVM extends HasErrorState {
 			// already.
 			// Note: Don't patch in breakpoint to last instruction of program as
 			// this is
-			// always OP_END anyway.
-			if (offset < mCode.size() - 1 && mCode.get(offset).m_opCode != vmOpCode.OP_BREAKPT) {
+			// always OpCode.OP_END anyway.
+			if (offset < mCode.size() - 1 && mCode.get(offset).mOpCode != OpCode.OP_BREAKPT) {
 
 				// Record previous op-code
 				vmPatchedBreakPt bp = new vmPatchedBreakPt();
 				bp.m_offset = offset;
-				bp.m_replacedOpCode = (vmOpCode) mCode.get(offset).m_opCode;
+				bp.m_replacedOpCode = mCode.get(offset).mOpCode;
 				mPatchedBreakPts.add(bp);
 
 				// Patch in breakpoint
-				mCode.get(offset).m_opCode = vmOpCode.OP_BREAKPT;
+				mCode.get(offset).mOpCode = OpCode.OP_BREAKPT;
 			}
 		}
 		
@@ -1633,7 +1633,7 @@ public class TomVM extends HasErrorState {
 			// Patch out breakpoints and restore program to its no breakpoint state.
 			for (vmPatchedBreakPt pt : mPatchedBreakPts)
 				if (pt.m_offset < mCode.size())
-					mCode.get(pt.m_offset).m_opCode = pt.m_replacedOpCode;
+					mCode.get(pt.m_offset).mOpCode = pt.m_replacedOpCode;
 			mPatchedBreakPts.clear();
 			m_breakPtsPatched = false;
 		}
@@ -1642,7 +1642,7 @@ public class TomVM extends HasErrorState {
 
 			// Patch breakpoint instructions into the virtual machine code program.
 			// This consists of swapping the virtual machine op-codes with
-			// OP_BREAKPT
+			// OpCode.OP_BREAKPT
 			// codes.
 			// We record the old op-code in the mPatchedBreakPts list, so we can
 			// restore
@@ -1657,7 +1657,7 @@ public class TomVM extends HasErrorState {
 				// Convert to offset
 				int offset = 0;
 				while (offset < mCode.size()
-						&& mCode.get(offset).m_sourceLine < line)
+						&& mCode.get(offset).mSourceLine < line)
 					offset++;
 
 				// Patch in breakpt
@@ -1680,10 +1680,10 @@ public class TomVM extends HasErrorState {
 		
 		int CalcBreakPtOffset(int line) {
 			int offset = 0;
-			while (offset < mCode.size() && mCode.get(offset).m_sourceLine < line)
+			while (offset < mCode.size() && mCode.get(offset).mSourceLine < line)
 				offset++;
 			// Is breakpoint line valid?
-			if (offset < mCode.size() && mCode.get(offset).m_sourceLine == line)
+			if (offset < mCode.size() && mCode.get(offset).mSourceLine == line)
 				return offset;
 			else
 				return 0xffff; // 0xffff means line invalid
@@ -1701,15 +1701,15 @@ public class TomVM extends HasErrorState {
 			// Calculate op-code range that corresponds to the current line.
 			int line, startOffset, endOffset;
 			startOffset = mIp;
-			line = mCode.get(startOffset).m_sourceLine;
+			line = mCode.get(startOffset).mSourceLine;
 
 			// Search for start of line
-			while (startOffset > 0 && mCode.get(startOffset - 1).m_sourceLine == line)
+			while (startOffset > 0 && mCode.get(startOffset - 1).mSourceLine == line)
 				startOffset--;
 
 			// Search for start of next line
 			endOffset = mIp + 1;
-			while (endOffset < mCode.size() && mCode.get(endOffset).m_sourceLine == line)
+			while (endOffset < mCode.size() && mCode.get(endOffset).mSourceLine == line)
 				endOffset++;
 
 			// Create breakpoint on next line
@@ -1719,26 +1719,26 @@ public class TomVM extends HasErrorState {
 			for (int i = startOffset; i < endOffset; i++) {
 				// TODO had to reduce dest from 0xffffffff since Java does not like unsigned values
 				int dest = 0x7fffffff;
-				switch (mCode.get(i).m_opCode) {
-				case OP_CALL:
+				switch (mCode.get(i).mOpCode) {
+				case OpCode.OP_CALL:
 					if (!stepInto) // If stepInto then fall through to JUMP
 									// handling.
 						break; // Otherwise break out, and no BP will be set.
-				case OP_JUMP:
-				case OP_JUMP_TRUE:
-				case OP_JUMP_FALSE:
-					dest = mCode.get(i).m_value.getIntVal(); // Destination jump
+				case OpCode.OP_JUMP:
+				case OpCode.OP_JUMP_TRUE:
+				case OpCode.OP_JUMP_FALSE:
+					dest = mCode.get(i).mValue.getIntVal(); // Destination jump
 																// address
 					break;
-				case OP_RETURN:
-				case OP_RETURN_USER_FUNC:
+				case OpCode.OP_RETURN:
+				case OpCode.OP_RETURN_USER_FUNC:
 					if (!mUserCallStack.isEmpty()) // Look at call stack and place
 												// breakpoint on return
 						dest = mUserCallStack.lastElement().returnAddr;
 					break;
-				case OP_CREATE_USER_FRAME:
+				case OpCode.OP_CREATE_USER_FRAME:
 					if (stepInto)
-						dest = mUserFunctions.get(mCode.get(i).m_value
+						dest = mUserFunctions.get(mCode.get(i).mValue
 								.getIntVal()).programOffset;
 					break;
 				default:
@@ -2530,14 +2530,14 @@ public class TomVM extends HasErrorState {
 		// General
 		public boolean Done() {
 			assert (IPValid());
-			return mCode.get(mIp).m_opCode == vmOpCode.OP_END; // Reached end of
+			return mCode.get(mIp).mOpCode == OpCode.OP_END; // Reached end of
 																	// program?
 		}
 		
 		public void GetIPInSourceCode(Integer line, Integer col) {
 			assert (IPValid());
-			line = mCode.get(mIp).m_sourceLine;
-			col = (int) mCode.get(mIp).m_sourceChar;
+			line = mCode.get(mIp).mSourceLine;
+			col = (int) mCode.get(mIp).mSourceChar;
 		}
 		
 		public void BindCodeBlock(int index) { mBoundCodeBlock = index; }
@@ -2834,6 +2834,6 @@ public class TomVM extends HasErrorState {
 		    // Builtin/plugin function callback support
 	    boolean IsEndCallback() {
 	        assert(IPValid());
-	        return mCode.get(mIp).m_opCode == vmOpCode.OP_END_CALLBACK;        // Reached end callback opcode?
+	        return mCode.get(mIp).mOpCode == OpCode.OP_END_CALLBACK;        // Reached end callback opcode?
 	    }
 }

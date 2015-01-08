@@ -37,7 +37,7 @@ public class compParamTypeList {
     }
     /*
     public compParamTypeList operator<< (VmValType val) {
-        m_params.add (val);
+        mParams.add (val);
         return this;
     }*/
 public void addParam(ValType val) {
