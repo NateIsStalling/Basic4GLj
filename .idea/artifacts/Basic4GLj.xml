@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Basic4GLj">
+    <output-path>$PROJECT_DIR$/out/artifacts/Basic4GLj</output-path>
+    <root id="archive" name="Basic4GLj.jar">
+      <element id="module-output" name="Basic4GLj" />
+      <element id="library" level="project" name="JXTextPane" />
+      <element id="library" level="project" name="swingx-all-1.6.3" />
+      <element id="module-output" name="Basic4GL" />
+      <element id="library" level="project" name="JOGL-2" />
+      <element id="module-output" name="JarInJar" />
+    </root>
+  </artifact>
+</component>

@@ -1,0 +1,43 @@
+Manifest-Version: 1.0
+Rsrc-Class-Path: ./ gluegen.jar gluegen-java-src.zip gluegen-rt.jar gluegen
+ -rt-android.jar gluegen-rt-android-natives-android-armv6.jar gluegen-
+ rt-android-natives-linux-amd64.jar gluegen-rt-android-natives-linux-a
+ rmv6.jar gluegen-rt-android-natives-linux-armv6hf.jar gluegen-rt-andr
+ oid-natives-linux-i586.jar gluegen-rt-android-natives-macosx-universa
+ l.jar gluegen-rt-android-natives-solaris-amd64.jar gluegen-rt-android
+ -natives-solaris-i586.jar gluegen-rt-android-natives-windows-amd64.ja
+ r gluegen-rt-android-natives-windows-i586.jar gluegen-rt-natives-andr
+ oid-armv6.jar gluegen-rt-natives-linux-amd64.jar gluegen-rt-natives-l
+ inux-armv6.jar gluegen-rt-natives-linux-armv6hf.jar gluegen-rt-native
+ s-linux-i586.jar gluegen-rt-natives-macosx-universal.jar gluegen-rt-n
+ atives-solaris-amd64.jar gluegen-rt-natives-solaris-i586.jar gluegen-
+ rt-natives-windows-amd64.jar gluegen-rt-natives-windows-i586.jar jogl
+ -all.jar jogl-all-android.jar jogl-all-android-natives-android-armv6.
+ jar jogl-all-android-natives-linux-amd64.jar jogl-all-android-natives
+ -linux-armv6.jar jogl-all-android-natives-linux-armv6hf.jar jogl-all-
+ android-natives-linux-i586.jar jogl-all-android-natives-macosx-univer
+ sal.jar jogl-all-android-natives-solaris-amd64.jar jogl-all-android-n
+ atives-solaris-i586.jar jogl-all-android-natives-windows-amd64.jar jo
+ gl-all-android-natives-windows-i586.jar jogl-all-mobile.jar jogl-all-
+ mobile-natives-android-armv6.jar jogl-all-mobile-natives-linux-amd64.
+ jar jogl-all-mobile-natives-linux-armv6.jar jogl-all-mobile-natives-l
+ inux-armv6hf.jar jogl-all-mobile-natives-linux-i586.jar jogl-all-mobi
+ le-natives-macosx-universal.jar jogl-all-mobile-natives-solaris-amd64
+ .jar jogl-all-mobile-natives-solaris-i586.jar jogl-all-mobile-natives
+ -windows-amd64.jar jogl-all-mobile-natives-windows-i586.jar jogl-all-
+ natives-android-armv6.jar jogl-all-natives-linux-amd64.jar jogl-all-n
+ atives-linux-armv6.jar jogl-all-natives-linux-armv6hf.jar jogl-all-na
+ tives-linux-i586.jar jogl-all-natives-macosx-universal.jar jogl-all-n
+ atives-solaris-amd64.jar jogl-all-natives-solaris-i586.jar jogl-all-n
+ atives-windows-amd64.jar jogl-all-natives-windows-i586.jar jogl-all-n
+ oawt.jar jogl-all-noawt-natives-android-armv6.jar jogl-all-noawt-nati
+ ves-linux-amd64.jar jogl-all-noawt-natives-linux-armv6.jar jogl-all-n
+ oawt-natives-linux-armv6hf.jar jogl-all-noawt-natives-linux-i586.jar
+ jogl-all-noawt-natives-macosx-universal.jar jogl-all-noawt-natives-so
+ laris-amd64.jar jogl-all-noawt-natives-solaris-i586.jar jogl-all-noaw
+ t-natives-windows-amd64.jar jogl-all-noawt-natives-windows-i586.jar j
+ ogl-java-src.zip swingx-all-1.6.3.jar JXTextPane.jar
+Class-Path: .
+Rsrc-Main-Class: com.basic4gl.desktop.MainWindow
+Main-Class: org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader
+
