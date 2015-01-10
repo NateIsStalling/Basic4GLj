@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import java.util.Vector;
 
 import com.basic4gl.util.Streaming;
-import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.util.Constants;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -113,7 +112,7 @@ import com.basic4gl.vm.util.Constants;
 		    return      type.m_basicType >= ValType.VTP_INT
 		            &&  type.m_basicType != ValType.VTP_UNDEFINED
 		            &&  (type.m_basicType < 0 || type.m_basicType < m_structures.size ())
-		            &&  type.m_arrayLevel < Constants.VM_MAXDIMENSIONS;
+		            &&  type.m_arrayLevel < Constants.ARRAY_MAX_DIMENSIONS;
 		}
 
 		public boolean ContainsString(ValType type) {
@@ -232,7 +231,7 @@ import com.basic4gl.vm.util.Constants;
 			// Return a string describing what the variable stores
 			String result;
 
-			// Variable type
+			// Var type
 			if (type.m_basicType >= 0)
 				result = m_structures.get(type.m_basicType).m_name
 						+ " "; // Structure type
@@ -245,7 +244,7 @@ import com.basic4gl.vm.util.Constants;
 			for (i = 0; i < type.VirtualPointerLevel(); i++)
 				result += "&";
 
-			// Variable name
+			// Var name
 			result += name;
 
 			// Append array indices

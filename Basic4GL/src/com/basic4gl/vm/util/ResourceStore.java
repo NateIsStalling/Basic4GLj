@@ -1,21 +1,21 @@
 package com.basic4gl.vm.util;
 
-import com.basic4gl.vm.VmStore;
+import com.basic4gl.vm.Store;
 
 ////////////////////////////////////////////////////////////////////////////////
 //vmResourceStore
 //
-//Template implementation of vmResources, using an internal VmStore
+//Template implementation of vmResources, using an internal Store
 
 public abstract class ResourceStore<T> extends Resources {
 
-	protected VmStore<T> m_store;
+	protected Store<T> m_store;
 
 	protected abstract void DeleteElement(int index);
 
 	@SuppressWarnings("unchecked")
 	public ResourceStore(T blankElement) {
-		m_store = (VmStore<T>) blankElement;
+		m_store = (Store<T>) blankElement;
 	}
 
 	public void Clear() {
@@ -73,7 +73,7 @@ public abstract class ResourceStore<T> extends Resources {
 		}
 	}
 
-	public VmStore<T> Store() {
+	public Store<T> Store() {
 		return m_store;
 	}
 }

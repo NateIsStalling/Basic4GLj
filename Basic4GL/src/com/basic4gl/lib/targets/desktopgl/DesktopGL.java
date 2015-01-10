@@ -14,9 +14,9 @@ import javax.media.opengl.awt.GLCanvas;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
-import com.basic4gl.compiler.compConstant;
-import com.basic4gl.compiler.compParamTypeList;
-import com.basic4gl.util.compFuncSpec;
+import com.basic4gl.compiler.Constant;
+import com.basic4gl.compiler.ParamTypeList;
+import com.basic4gl.util.FuncSpec;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.lib.util.Target;
 import com.basic4gl.lib.util.TaskCallback;
@@ -86,7 +86,7 @@ public class DesktopGL implements Library, Target{
 
 
 	@Override
-	public Map<String, compConstant> constants() {
+	public Map<String, Constant> constants() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -101,11 +101,11 @@ public class DesktopGL implements Library, Target{
 	}
 
 	@Override
-	public Map<String, List<compFuncSpec>> specs() {
+	public Map<String, List<FuncSpec>> specs() {
 		// TODO Add print functions
-		Map<String, List<compFuncSpec>> s = new HashMap<String, List<compFuncSpec>>();
-		s.put("print", new ArrayList<compFuncSpec>());
-		s.get("print").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_STRING }), false, false, ValType.VTP_INT, false, false, null));
+		Map<String, List<FuncSpec>> s = new HashMap<String, List<FuncSpec>>();
+		s.put("print", new ArrayList<FuncSpec>());
+		s.get("print").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_STRING }), false, false, ValType.VTP_INT, false, false, null));
 		return s;
 	}
 	@Override

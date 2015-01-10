@@ -49,7 +49,7 @@ public class ValType {
 	public byte m_pointerLevel; // 0 = value, 1 = pointer to value, 2 =
 								// pointer to pointer to value, ...
 	public boolean m_byRef;
-	public int[] m_arrayDims = new int[Constants.VM_MAXDIMENSIONS]; // # of
+	public int[] m_arrayDims = new int[Constants.ARRAY_MAX_DIMENSIONS]; // # of
 																	// elements
 																	// in
 																	// each
@@ -100,7 +100,7 @@ public class ValType {
 		return Set(type, (byte) 0, (byte) 0, false);
 	}
 	public ValType Set(int type, byte array, byte pointer, boolean byRef) {
-		assert (array <= Constants.VM_MAXDIMENSIONS);
+		assert (array <= Constants.ARRAY_MAX_DIMENSIONS);
 		m_basicType = type;
 		m_arrayLevel = array;
 		m_pointerLevel = pointer;
@@ -115,7 +115,7 @@ public class ValType {
 		m_arrayLevel = t.m_arrayLevel;
 		m_pointerLevel = t.m_pointerLevel;
 		m_byRef = t.m_byRef;
-		m_arrayDims = Arrays.copyOf(t.m_arrayDims, Constants.VM_MAXDIMENSIONS);
+		m_arrayDims = Arrays.copyOf(t.m_arrayDims, Constants.ARRAY_MAX_DIMENSIONS);
 		return this;
 	}
 
@@ -178,7 +178,7 @@ public class ValType {
 	}
 
 	public void AddDimension(int elements) {
-		assert (m_arrayLevel < Constants.VM_MAXDIMENSIONS);
+		assert (m_arrayLevel < Constants.ARRAY_MAX_DIMENSIONS);
 		assert (elements > 0);
 
 		// Bump up existing elements
@@ -306,7 +306,7 @@ public class ValType {
 			Streaming.WriteByte(buffer, m_arrayLevel);
 			Streaming.WriteByte(buffer, m_pointerLevel);
 			Streaming.WriteByte(buffer, (byte) (m_byRef ? 1 : 0));
-			for (int i = 0; i < Constants.VM_MAXDIMENSIONS; i++)
+			for (int i = 0; i < Constants.ARRAY_MAX_DIMENSIONS; i++)
 				Streaming.WriteLong(buffer, m_arrayDims[i]);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -322,7 +322,7 @@ public class ValType {
 			m_arrayLevel = Streaming.ReadByte(buffer);
 			m_pointerLevel = Streaming.ReadByte(buffer);
 			m_byRef = Streaming.ReadByte(buffer) == 1 ? true : false;
-			for (int i = 0; i < Constants.VM_MAXDIMENSIONS; i++)
+			for (int i = 0; i < Constants.ARRAY_MAX_DIMENSIONS; i++)
 				m_arrayDims[i] = (int) Streaming.ReadLong(buffer);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

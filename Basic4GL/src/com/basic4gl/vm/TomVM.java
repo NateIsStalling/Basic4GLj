@@ -19,11 +19,8 @@ import java.util.Vector;
 
 import com.basic4gl.util.Mutable;
 import com.basic4gl.util.Streaming;
-import com.basic4gl.vm.stackframe.vmProtectedStackRange;
-import com.basic4gl.vm.stackframe.vmStackDestructor;
-import com.basic4gl.vm.stackframe.vmUserFunc;
-import com.basic4gl.vm.stackframe.vmUserFuncPrototype;
-import com.basic4gl.vm.stackframe.vmUserFuncStackFrame;
+import com.basic4gl.vm.stackframe.*;
+import com.basic4gl.vm.stackframe.ProtectedStackRange;
 import com.basic4gl.vm.types.Structure;
 import com.basic4gl.vm.types.StructureField;
 import com.basic4gl.vm.types.TypeLibrary;
@@ -33,7 +30,7 @@ import com.basic4gl.vm.util.Function;
 import com.basic4gl.vm.util.IVMDebugger;
 import com.basic4gl.vm.util.Resources;
 import com.basic4gl.vm.types.OpCode;
-import com.basic4gl.vm.vmVariables.vmVariable;
+import com.basic4gl.vm.Variables.Var;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TomVM
@@ -61,8 +58,8 @@ public class TomVM extends HasErrorState {
 				ERR_UNDIMMED_VARIABLE = "UnDIMmed variable",
 				ERR_BAD_ARRAY_INDEX = "Array index out of range",
 				ERR_REDIMMED_VARIABLE = "ReDIMmed variable",
-				ERR_BAD_DECLARATION = "Variable declaration error",
-				ERR_VARIABLE_TOO_BIG = "Variable is too big",
+				ERR_BAD_DECLARATION = "Var declaration error",
+				ERR_VARIABLE_TOO_BIG = "Var is too big",
 				ERR_OUT_OF_MEMORY = "Ran out of variable memory",
 				ERR_BAD_OPERATOR = "Operator cannot be applied to data type",
 				ERR_RETURN_WITHOUT_GOSUB = "Return without gosub",
@@ -93,7 +90,7 @@ public class TomVM extends HasErrorState {
 
 		
 		// Registers
-		VMValue mReg, // Register values (when int or float)
+		Value mReg, // Register values (when int or float)
 				mReg2;
 		String mRegString, // Register values when string
 				mReg2String;
@@ -104,16 +101,16 @@ public class TomVM extends HasErrorState {
 		// function stack frame is the top of the stack, but is not yet active).
 
 		// Runtime stacks
-		VmValueStack mStack; // Used for expression evaluation
-		Vector<vmUserFuncStackFrame> mUserCallStack; // Call stack for user functions
+		ValueStack mStack; // Used for expression evaluation
+		Vector<UserFuncStackFrame> mUserCallStack; // Call stack for user functions
 
 		// Individual code blocks
-	    Vector<vmCodeBlock> mCodeBlocks;
+	    Vector<CodeBlock> mCodeBlocks;
 	    int mBoundCodeBlock;
 	    
 		// Data destruction
-		Vector<vmStackDestructor> mStackDestructors;
-		Vector<vmStackDestructor> mTempDestructors;
+		Vector<StackDestructor> mStackDestructors;
+		Vector<StackDestructor> mTempDestructors;
 
 		// Plugin DLLs
 		//TODO Reimplement libraries
@@ -129,18 +126,18 @@ public class TomVM extends HasErrorState {
 
 	    // Variables, data and data types
 	    TypeLibrary mDataTypes;
-	    vmData mData;
-	    vmVariables mVariables;
+	    Data mData;
+	    Variables mVariables;
 		Vector<String> mStringConstants;  // Constant strings declared in program
-	    VmStore<String> mStrings;
+	    Store<String> mStrings;
 	    List<Resources> mResources;
-	    Vector<vmUserFuncPrototype> mUserFunctionPrototypes;
-	    Vector<vmUserFunc> mUserFunctions;
+	    Vector<UserFuncPrototype> mUserFunctionPrototypes;
+	    Vector<UserFunc> mUserFunctions;
 
 		public Vector<Function> mInitFunctions;	// Initialisation functions
 	    
 		// Program data
-		Vector<VmProgramDataElement> mProgramData; // General purpose program data
+		Vector<ProgramDataElement> mProgramData; // General purpose program data
 													// (e.g declared with "DATA"
 													// keyword in BASIC)
 		int mProgramDataOffset;
@@ -149,7 +146,7 @@ public class TomVM extends HasErrorState {
 		// Code
 
 		// Instructions
-		Vector<vmInstruction> mCode;
+		Vector<Instruction> mCode;
 		ValTypeSet mTypeSet;
 
 	/**
@@ -158,8 +155,8 @@ public class TomVM extends HasErrorState {
 		private int mIp;
 
 		// Debugging
-		ArrayList<vmPatchedBreakPt> mPatchedBreakPts; // Patched in breakpoints
-		ArrayList<vmTempBreakPt> mTempBreakPts; // Temporary breakpoints, generated
+		ArrayList<PatchedBreakPt> mPatchedBreakPts; // Patched in breakpoints
+		ArrayList<TempBreakPt> mTempBreakPts; // Temporary breakpoints, generated
 													// for stepping over a line
 
 		boolean m_paused, // Set to true when program hits a breakpoint. (Or can be
@@ -181,32 +178,32 @@ public class TomVM extends HasErrorState {
 				int maxDataSize, int maxStackSize) {
 			mDebugger = debugger;
 			
-			mData = new vmData(maxDataSize, maxStackSize);
+			mData = new Data(maxDataSize, maxStackSize);
 			mDataTypes = new TypeLibrary();
-			mVariables = new vmVariables(mData, mDataTypes);
+			mVariables = new Variables(mData, mDataTypes);
 			
-			mReg = new VMValue();
-			mReg2 = new VMValue();
+			mReg = new Value();
+			mReg2 = new Value();
 			mResources = new ArrayList<Resources>();
 			
-			mStrings = new VmStore<String>("");
-			mStack = new VmValueStack(mStrings);
-			mUserCallStack = new Vector<vmUserFuncStackFrame>();
-			mStackDestructors = new Vector<vmStackDestructor>();
-			mTempDestructors = new Vector<vmStackDestructor>();
+			mStrings = new Store<String>("");
+			mStack = new ValueStack(mStrings);
+			mUserCallStack = new Vector<UserFuncStackFrame>();
+			mStackDestructors = new Vector<StackDestructor>();
+			mTempDestructors = new Vector<StackDestructor>();
 			
-			mProgramData = new Vector<VmProgramDataElement>();
-			mCodeBlocks = new Vector<vmCodeBlock>();
+			mProgramData = new Vector<ProgramDataElement>();
+			mCodeBlocks = new Vector<CodeBlock>();
 			mStringConstants = new Vector<String>();
 
 			mTypeSet = new ValTypeSet();
 			
-			mCode = new Vector<vmInstruction>();
+			mCode = new Vector<Instruction>();
 			mFunctions = new Vector<Function>();
-			mUserFunctions = new Vector<vmUserFunc>();
-			mUserFunctionPrototypes = new Vector<vmUserFuncPrototype>();
-			mPatchedBreakPts = new ArrayList<vmPatchedBreakPt>();
-			mTempBreakPts = new ArrayList<vmTempBreakPt>();
+			mUserFunctions = new Vector<UserFunc>();
+			mUserFunctionPrototypes = new Vector<UserFuncPrototype>();
+			mPatchedBreakPts = new ArrayList<PatchedBreakPt>();
+			mTempBreakPts = new ArrayList<TempBreakPt>();
 
 			mInitFunctions = new Vector<Function>();
 			//TODO Reimplement libraries
@@ -304,7 +301,7 @@ public class TomVM extends HasErrorState {
 
 			// //////////////////////////////////////////////////////////////////////////
 			// Virtual machine main loop
-			vmInstruction instruction;
+			Instruction instruction;
 			int stepCount = 0;
 			int tempI;
 
@@ -331,7 +328,7 @@ public class TomVM extends HasErrorState {
 						setRegString(mStringConstants.get(instruction.mValue
 								.getIntVal()));
 					} else {
-						setReg(new VMValue(instruction.mValue));
+						setReg(new Value(instruction.mValue));
 					}
 					mIp++; // Proceed to next instruction
 					continue step;
@@ -341,7 +338,7 @@ public class TomVM extends HasErrorState {
 					// Load variable.
 					// Instruction contains index of variable.
 					assert (mVariables.IndexValid(instruction.mValue.getIntVal()));
-					vmVariable var = mVariables.Variables().get(
+					Var var = mVariables.Variables().get(
 							instruction.mValue.getIntVal());
 					if (var.Allocated()) {
 						// Load address of variable's data into register
@@ -358,7 +355,7 @@ public class TomVM extends HasErrorState {
 					// Find current stack frame
 					assert (mCurrentUserFrame >= 0);
 					assert (mCurrentUserFrame < mUserCallStack.size());
-					vmUserFuncStackFrame currentFrame = mUserCallStack
+					UserFuncStackFrame currentFrame = mUserCallStack
 							.get(mCurrentUserFrame);
 
 					// Find variable
@@ -381,7 +378,7 @@ public class TomVM extends HasErrorState {
 					if (Reg().getIntVal() != 0) {
 						assert (mData.IndexValid(Reg().getIntVal()));
 						// Find value that reg points to
-						VMValue val = mData.Data().get(Reg().getIntVal());
+						Value val = mData.Data().get(Reg().getIntVal());
 						switch (instruction.mType) {
 						case ValType.VTP_INT:
 						case ValType.VTP_REAL:
@@ -474,11 +471,11 @@ public class TomVM extends HasErrorState {
 					// Save reg into [reg2]
 					if (Reg2().getIntVal() > 0) {
 						assert (mData.IndexValid(Reg2().getIntVal()));
-						VMValue dest = mData.Data().get(Reg2().getIntVal());
+						Value dest = mData.Data().get(Reg2().getIntVal());
 						switch (instruction.mType) {
 						case ValType.VTP_INT:
 						case ValType.VTP_REAL:
-							//mData.Data().set(mReg2.getIntVal(), new VMValue(mReg));
+							//mData.Data().set(mReg2.getIntVal(), new Value(mReg));
 							dest.setVal(Reg());
 							
 							mIp++; // Proceed to next instruction
@@ -517,7 +514,7 @@ public class TomVM extends HasErrorState {
 
 					// Allocate variable.
 					assert (mVariables.IndexValid(instruction.mValue.getIntVal()));
-					vmVariable var = mVariables.Variables().get(instruction.mValue.getIntVal());
+					Var var = mVariables.Variables().get(instruction.mValue.getIntVal());
 
 					// Must not already be allocated
 					if (var.Allocated()) {
@@ -548,9 +545,9 @@ public class TomVM extends HasErrorState {
 					// Find current stack frame
 					assert (mCurrentUserFrame >= 0);
 					assert (mCurrentUserFrame < mUserCallStack.size());
-					vmUserFuncStackFrame currentFrame = mUserCallStack.get(mCurrentUserFrame);
-					vmUserFunc userFunc = mUserFunctions.get(currentFrame.userFuncIndex);
-					vmUserFuncPrototype prototype = mUserFunctionPrototypes.get(userFunc.prototypeIndex);
+					UserFuncStackFrame currentFrame = mUserCallStack.get(mCurrentUserFrame);
+					UserFunc userFunc = mUserFunctions.get(currentFrame.userFuncIndex);
+					UserFuncPrototype prototype = mUserFunctionPrototypes.get(userFunc.prototypeIndex);
 					
 					// Find variable type
 					int index = instruction.mValue.getIntVal();
@@ -934,8 +931,8 @@ public class TomVM extends HasErrorState {
 					}
 
 					// Push stack frame, with return address
-					mUserCallStack.add(new vmUserFuncStackFrame());
-					vmUserFuncStackFrame stackFrame = mUserCallStack.lastElement();
+					mUserCallStack.add(new UserFuncStackFrame());
+					UserFuncStackFrame stackFrame = mUserCallStack.lastElement();
 					stackFrame.InitForGosub(mIp + 1);
 
 					// Jump to subroutine
@@ -991,8 +988,8 @@ public class TomVM extends HasErrorState {
 
 	        // Create and initialize stack frame
 	        int funcIndex = instruction.mValue.getIntVal();
-	        mUserCallStack.add(new vmUserFuncStackFrame());
-	        vmUserFuncStackFrame stackFrame = mUserCallStack.lastElement();
+	        mUserCallStack.add(new UserFuncStackFrame());
+	        UserFuncStackFrame stackFrame = mUserCallStack.lastElement();
 	        stackFrame.InitForUserFunction(
 	            mUserFunctionPrototypes.get(mUserFunctions.get(funcIndex).prototypeIndex),
 	            funcIndex);
@@ -1013,7 +1010,7 @@ public class TomVM extends HasErrorState {
 	        // Look for function in bound code block
 	        int runtimeIndex = instruction.mValue.getIntVal();
 	        if (mBoundCodeBlock > 0 && mBoundCodeBlock < mCodeBlocks.size()) {
-	            vmCodeBlock codeBlock = mCodeBlocks.get(mBoundCodeBlock);
+	            CodeBlock codeBlock = mCodeBlocks.get(mBoundCodeBlock);
 	            if (codeBlock.programOffset >= 0)
 	                funcIndex = codeBlock.GetRuntimeFunction(runtimeIndex).functionIndex;
 	        }
@@ -1036,8 +1033,8 @@ public class TomVM extends HasErrorState {
 	        }
 
 	        // Create and initialize stack frame
-	        mUserCallStack.add(new vmUserFuncStackFrame());
-	        vmUserFuncStackFrame stackFrame = mUserCallStack.lastElement();
+	        mUserCallStack.add(new UserFuncStackFrame());
+	        UserFuncStackFrame stackFrame = mUserCallStack.lastElement();
 	        stackFrame.InitForUserFunction(
 	            mUserFunctionPrototypes.get(mUserFunctions.get(funcIndex).prototypeIndex),
 	            funcIndex);
@@ -1051,8 +1048,8 @@ public class TomVM extends HasErrorState {
 				case OpCode.OP_CALL_USER_FUNC: {
 
 					// Call user defined function
-					vmUserFuncStackFrame stackFrame = mUserCallStack.lastElement();
-					vmUserFunc userFunc = mUserFunctions
+					UserFuncStackFrame stackFrame = mUserCallStack.lastElement();
+					UserFunc userFunc = mUserFunctions
 							.get(stackFrame.userFuncIndex);
 
 					// Make active
@@ -1069,7 +1066,7 @@ public class TomVM extends HasErrorState {
 					assert (mUserCallStack.size() > 0);
 
 					// Find current stack frame
-					vmUserFuncStackFrame stackFrame = mUserCallStack.lastElement();
+					UserFuncStackFrame stackFrame = mUserCallStack.lastElement();
 					assert(stackFrame.userFuncIndex >= 0);
 					
 					// Restore previous stack frame data
@@ -1106,7 +1103,7 @@ public class TomVM extends HasErrorState {
 	        // Call is like a GOSUB.
 	        // RETURN will return back to the next op-code
 	        if (mBoundCodeBlock > 0 && mBoundCodeBlock < mCodeBlocks.size()) {
-	            vmCodeBlock codeBlock = mCodeBlocks.get(mBoundCodeBlock);
+	            CodeBlock codeBlock = mCodeBlocks.get(mBoundCodeBlock);
 	            if (codeBlock.programOffset >= 0) {
 
 	                // From here the code is the same as OpCode.OP_CALL
@@ -1120,8 +1117,8 @@ public class TomVM extends HasErrorState {
 	                }
 
 	                // Push stack frame, with return address
-	                mUserCallStack.add(new vmUserFuncStackFrame());
-	                vmUserFuncStackFrame stackFrame = mUserCallStack.lastElement();
+	                mUserCallStack.add(new UserFuncStackFrame());
+	                UserFuncStackFrame stackFrame = mUserCallStack.lastElement();
 	                stackFrame.InitForGosub(mIp + 1);
 
 	                // Jump to subroutine
@@ -1167,7 +1164,7 @@ public class TomVM extends HasErrorState {
 							paramIndex, dataIndex);
 
 					// Transfer register value to parameter
-					VMValue dest = mData.Data().get(dataIndex);
+					Value dest = mData.Data().get(dataIndex);
 					switch (instruction.mType) {
 					case ValType.VTP_INT:
 					case ValType.VTP_REAL:
@@ -1254,14 +1251,14 @@ public class TomVM extends HasErrorState {
 						// Pointer into temp data found
 						assert (mTempDestructors.isEmpty() || mTempDestructors
 								.lastElement().addr < ptr);
-						mTempDestructors.add(new vmStackDestructor(ptr,
+						mTempDestructors.add(new StackDestructor(ptr,
 								instruction.mValue.getIntVal()));
 					} else if (ptr >= mData.StackTop() && ptr < mData.Permanent()) {
 
 						// Pointer into stack data found
 						assert (mStackDestructors.isEmpty() || mStackDestructors
 								.lastElement().addr > ptr);
-						mStackDestructors.add(new vmStackDestructor(ptr,
+						mStackDestructors.add(new StackDestructor(ptr,
 								instruction.mValue.getIntVal()));
 					}
 					mIp++; // Proceed to next instruction
@@ -1373,8 +1370,8 @@ public class TomVM extends HasErrorState {
 
 			// If type is basic string, copy string value
 			if (type.Equals(ValType.VTP_STRING)) {
-				VMValue src = mData.Data().get(sourceIndex);
-				VMValue dest = mData.Data().get(destIndex);
+				Value src = mData.Data().get(sourceIndex);
+				Value dest = mData.Data().get(destIndex);
 				if (src.getIntVal() > 0 || dest.getIntVal() > 0) {
 
 					// Allocate string space if necessary
@@ -1556,7 +1553,7 @@ public class TomVM extends HasErrorState {
 
 			// Pop and validate array indices from stack into type
 			int i;
-			VMValue v = new VMValue();
+			Value v = new Value();
 			for (i = 0; i < type.m_arrayLevel; i++) {
 				v = mStack.Pop();
 				int size = v.getIntVal() + 1;
@@ -1617,7 +1614,7 @@ public class TomVM extends HasErrorState {
 			if (offset < mCode.size() - 1 && mCode.get(offset).mOpCode != OpCode.OP_BREAKPT) {
 
 				// Record previous op-code
-				vmPatchedBreakPt bp = new vmPatchedBreakPt();
+				PatchedBreakPt bp = new PatchedBreakPt();
 				bp.m_offset = offset;
 				bp.m_replacedOpCode = mCode.get(offset).mOpCode;
 				mPatchedBreakPts.add(bp);
@@ -1630,7 +1627,7 @@ public class TomVM extends HasErrorState {
 		void InternalPatchOut() {
 
 			// Patch out breakpoints and restore program to its no breakpoint state.
-			for (vmPatchedBreakPt pt : mPatchedBreakPts)
+			for (PatchedBreakPt pt : mPatchedBreakPts)
 				if (pt.m_offset < mCode.size())
 					mCode.get(pt.m_offset).mOpCode = pt.m_replacedOpCode;
 			mPatchedBreakPts.clear();
@@ -1665,14 +1662,14 @@ public class TomVM extends HasErrorState {
 			}
 
 			// Patch in temp breakpts
-			for (vmTempBreakPt pt : mTempBreakPts)
+			for (TempBreakPt pt : mTempBreakPts)
 				PatchInBreakPt(pt.m_offset);
 
 			m_breakPtsPatched = true;
 		}
 		
-		vmTempBreakPt MakeTempBreakPt(int offset) {
-			vmTempBreakPt breakPt = new vmTempBreakPt();
+		TempBreakPt MakeTempBreakPt(int offset) {
+			TempBreakPt breakPt = new TempBreakPt();
 			breakPt.m_offset = offset;
 			return breakPt;
 		}
@@ -1765,8 +1762,8 @@ public class TomVM extends HasErrorState {
 			return false;
 		}
 		
-		public vmState GetState() {
-			vmState s = new vmState();
+		public State GetState() {
+			State s = new State();
 
 			// Instruction pointer
 			s.ip = mIp;
@@ -1786,7 +1783,7 @@ public class TomVM extends HasErrorState {
 			s.codeSize = InstructionCount();
 		    s.codeBlockCount    = mCodeBlocks.size();
 		    
-			// Variable data
+			// Var data
 			mData.SaveState(s.stackDataTop, s.tempDataLock);
 
 			// Error state
@@ -1802,7 +1799,7 @@ public class TomVM extends HasErrorState {
 			return s;
 		}
 		
-		public void SetState(vmState state) {
+		public void SetState(State state) {
 
 			// Instruction pointer
 			mIp = state.ip;
@@ -1826,7 +1823,7 @@ public class TomVM extends HasErrorState {
 		    if (state.codeBlockCount < mCodeBlocks.size())
 		        mCodeBlocks.setSize(state.codeBlockCount);
 
-			// Variable data
+			// Var data
 			UnwindTemp();
 			UnwindStack(state.stackDataTop);
 			mData.RestoreState(state.stackDataTop, state.tempDataLock, true);
@@ -1842,7 +1839,7 @@ public class TomVM extends HasErrorState {
 		}
 		
 			// Displaying data
-		public String BasicValToString(VMValue val, int type,
+		public String BasicValToString(Value val, int type,
 				boolean constant) {
 			switch (type) {
 			case ValType.VTP_INT:
@@ -1876,7 +1873,7 @@ public class TomVM extends HasErrorState {
 			}
 		}
 		
-		void Deref(VMValue val, ValType type) {
+		void Deref(Value val, ValType type) {
 			type.m_pointerLevel--;
 			if (type.m_pointerLevel == 0 && !type.IsBasic()) {
 
@@ -1894,7 +1891,7 @@ public class TomVM extends HasErrorState {
 			}
 		}
 		
-		public String ValToString(VMValue val, ValType type, Mutable<Integer> maxChars) {
+		public String ValToString(Value val, ValType type, Mutable<Integer> maxChars) {
 			assert (mDataTypes.TypeValid(type));
 			assert (type.PhysicalPointerLevel() > 0 || type.IsBasic());
 
@@ -1938,7 +1935,7 @@ public class TomVM extends HasErrorState {
 				// Enumerate elements
 				result = TrimToLength("{", maxChars);
 				for (int i = 0; i < elements && maxChars.get() > 0; i++) {
-					VMValue element = new VMValue(arrayStart + i * elementSize); // Address
+					Value element = new Value(arrayStart + i * elementSize); // Address
 																					// of
 																					// element
 					ValType elementType = type; // Element type.
@@ -1965,7 +1962,7 @@ public class TomVM extends HasErrorState {
 				for (int i = 0; i < structure.m_fieldCount && maxChars.get() > 0; i++) {
 					StructureField field = mDataTypes.Fields().get(
 							structure.m_firstField + i);
-					VMValue fieldVal = new VMValue(dataIndex + field.m_dataOffset);
+					Value fieldVal = new Value(dataIndex + field.m_dataOffset);
 					ValType fieldType = field.m_type;
 					fieldType.m_pointerLevel++;
 					Deref(fieldVal, fieldType);
@@ -1981,12 +1978,12 @@ public class TomVM extends HasErrorState {
 			return "???";
 		}
 		
-			public String VarToString(vmVariable v, int maxChars) {
+			public String VarToString(Var v, int maxChars) {
 			return DataToString(v.m_dataIndex, v.m_type, maxChars);
 		}
 
 		public String DataToString(int dataIndex, ValType type, int maxChars) {
-			VMValue val = new VMValue(dataIndex);
+			Value val = new Value(dataIndex);
 			type.m_pointerLevel++;
 			Deref(val, type);
 			return ValToString(val, type, new Mutable<Integer>(maxChars));
@@ -2003,7 +2000,7 @@ public class TomVM extends HasErrorState {
 			}
 
 			// Find program data
-			VmProgramDataElement e = mProgramData.get(mProgramDataOffset++);
+			ProgramDataElement e = mProgramData.get(mProgramDataOffset++);
 
 			// Convert to requested type
 			switch (basictype) {
@@ -2128,7 +2125,7 @@ public class TomVM extends HasErrorState {
 			// Type IS string case
 			if (type.Equals(ValType.VTP_STRING)) {
 
-				VMValue val = mData.Data().get(dataIndex);
+				Value val = mData.Data().get(dataIndex);
 				// Empty strings (index 0) can be ignored
 				if (val.getIntVal() != 0) {
 
@@ -2195,7 +2192,7 @@ public class TomVM extends HasErrorState {
 			// However, if the data being copied is in temp data, we use a
 			// protected-stack-range to prevent it being destroyed.
 			if (sourceIsTemp)
-				UnwindTemp(new vmProtectedStackRange(sourceIndex, sourceIndex
+				UnwindTemp(new ProtectedStackRange(sourceIndex, sourceIndex
 						+ StoredDataSize(sourceIndex, type)));
 			else
 				UnwindTemp();
@@ -2237,10 +2234,10 @@ public class TomVM extends HasErrorState {
 		}
 
 		void UnwindTemp() {
-			UnwindTemp(new vmProtectedStackRange());
+			UnwindTemp(new ProtectedStackRange());
 		}
 
-		void UnwindTemp(vmProtectedStackRange protect) {
+		void UnwindTemp(ProtectedStackRange protect) {
 			int newTop = mData.TempDataLock();
 
 			// Run destrution logic over data that is about to be deallocated.
@@ -2261,7 +2258,7 @@ public class TomVM extends HasErrorState {
 			while (!mStackDestructors.isEmpty()
 					&& mStackDestructors.lastElement().addr < newTop) {
 				DestroyData(mStackDestructors.lastElement(),
-						new vmProtectedStackRange());
+						new ProtectedStackRange());
 				mStackDestructors.remove(mStackDestructors.size() - 1);
 			}
 
@@ -2270,12 +2267,12 @@ public class TomVM extends HasErrorState {
 			// handle that instead.
 		}
 
-		void DestroyData(vmStackDestructor d, vmProtectedStackRange protect) {
+		void DestroyData(StackDestructor d, ProtectedStackRange protect) {
 			// Apply destructor logic to data block.
 			DestroyData(d.addr, mTypeSet.GetValType(d.dataTypeIndex), protect);
 		}
 
-		void DestroyData(int index, ValType type, vmProtectedStackRange protect) {
+		void DestroyData(int index, ValType type, ProtectedStackRange protect) {
 			assert (mDataTypes.ContainsString(type));
 			assert (!type.m_byRef);
 
@@ -2341,7 +2338,7 @@ public class TomVM extends HasErrorState {
 		}
 		
 		public int NewCodeBlock() {
-	    mCodeBlocks.add(new vmCodeBlock());
+	    mCodeBlocks.add(new CodeBlock());
 
 	    // Set pointer to code
 	    CurrentCodeBlock().programOffset = mCode.size();
@@ -2353,7 +2350,7 @@ public class TomVM extends HasErrorState {
 	    return mBoundCodeBlock;
 	}
 
-	public vmCodeBlock CurrentCodeBlock() {
+	public CodeBlock CurrentCodeBlock() {
 	    assert(!mCodeBlocks.isEmpty());
 	    return mCodeBlocks.lastElement();
 	}
@@ -2372,8 +2369,8 @@ public class TomVM extends HasErrorState {
 	    return mCodeBlocks.get(index).programOffset;
 	}
 
-	public vmRollbackPoint GetRollbackPoint() {
-	    vmRollbackPoint r = new vmRollbackPoint();
+	public RollbackPoint GetRollbackPoint() {
+	    RollbackPoint r = new RollbackPoint();
 
 	    r.codeBlockCount            = mCodeBlocks.size();
 	    r.boundCodeBlock            = mBoundCodeBlock;
@@ -2385,7 +2382,7 @@ public class TomVM extends HasErrorState {
 	    return r;
 	}
 
-	public void Rollback(vmRollbackPoint rollbackPoint) {
+	public void Rollback(RollbackPoint rollbackPoint) {
 
 	    // Rollback virtual machine
 	    mCodeBlocks.setSize(rollbackPoint.codeBlockCount);
@@ -2548,19 +2545,19 @@ public class TomVM extends HasErrorState {
 			return mIp;
 		}
 
-		public VMValue Reg() {
+		public Value Reg() {
 			return mReg;
 		}
 
-		public VMValue Reg2() {
+		public Value Reg2() {
 			return mReg2;
 		}
 
-		public void setReg(VMValue value) {
+		public void setReg(Value value) {
 			mReg.setVal(value);
 		}
 
-		public void setReg2(VMValue value) {
+		public void setReg2(Value value) {
 			mReg2.setVal(value);
 		}
 
@@ -2580,11 +2577,11 @@ public class TomVM extends HasErrorState {
 			mReg2String = string;
 		}
 
-		public VmValueStack Stack() {
+		public ValueStack Stack() {
 			return mStack;
 		}
 		
-		public void setStack(VmValueStack stack) {
+		public void setStack(ValueStack stack) {
 			mStack = stack;
 		}
 		
@@ -2594,28 +2591,28 @@ public class TomVM extends HasErrorState {
 			return mDataTypes;
 		}
 
-		public vmData Data() {
+		public Data Data() {
 			return mData;
 		}
 
-		public vmVariables Variables() {
+		public Variables Variables() {
 			return mVariables;
 		}
 
-		public Vector<VmProgramDataElement> ProgramData() {
+		public Vector<ProgramDataElement> ProgramData() {
 			return mProgramData;
 		}
 		
 		// User functions
-		public Vector<vmUserFuncPrototype> UserFunctionPrototypes() {
+		public Vector<UserFuncPrototype> UserFunctionPrototypes() {
 			return mUserFunctionPrototypes;
 		}
 
-		public Vector<vmUserFunc> UserFunctions() {
+		public Vector<UserFunc> UserFunctions() {
 			return mUserFunctions;
 		}
 
-		public Vector<vmUserFuncStackFrame> UserCallStack() {
+		public Vector<UserFuncStackFrame> UserCallStack() {
 			return mUserCallStack;
 		}
 
@@ -2678,7 +2675,7 @@ public class TomVM extends HasErrorState {
 			return mCode.size();
 		}
 
-		public void AddInstruction(vmInstruction i) {
+		public void AddInstruction(Instruction i) {
 			PatchOut();
 			mCode.add(i);
 		}
@@ -2690,7 +2687,7 @@ public class TomVM extends HasErrorState {
 				mCode.remove(mCode.size() - 1);
 		}
 		
-		public vmInstruction Instruction(int index) {
+		public Instruction Instruction(int index) {
 			assert (index < mCode.size());
 			PatchOut();
 			return mCode.get(index);
@@ -2709,8 +2706,8 @@ public class TomVM extends HasErrorState {
 		}
 
 		// Program data
-		public void StoreProgramData(int type, VMValue v) {
-			VmProgramDataElement d = new VmProgramDataElement();
+		public void StoreProgramData(int type, Value v) {
+			ProgramDataElement d = new ProgramDataElement();
 			d.setType(type);
 			d.setValue(v);
 			mProgramData.add(d);
@@ -2742,7 +2739,7 @@ public class TomVM extends HasErrorState {
 		}
 		
 		// Called by external functions
-		public VMValue GetParam(int index) {
+		public Value GetParam(int index) {
 			// Read param from param stack.
 			// Index 1 is TOS
 			// Index 2 is TOS - 1
@@ -2782,7 +2779,7 @@ public class TomVM extends HasErrorState {
 			return mStrings.StoredElements();
 		}
 
-		public VmStore<String> Strings() {
+		public Store<String> Strings() {
 			return mStrings;
 		}
 		
@@ -2797,10 +2794,10 @@ public class TomVM extends HasErrorState {
 			return result;
 		}
 
-		public VMValue GetRefParam(int index) {
+		public Value GetRefParam(int index) {
 
 			// Get reference parameter.
-			// Returns a reference to the actual VMValue object
+			// Returns a reference to the actual Value object
 			int ptr = GetIntParam(index);
 			assert (ptr > 0);
 			assert (mData.IndexValid(ptr));

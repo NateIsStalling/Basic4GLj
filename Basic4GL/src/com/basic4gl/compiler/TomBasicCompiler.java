@@ -10,22 +10,16 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 import com.basic4gl.compiler.Token.TokenType;
-import com.basic4gl.compiler.compFlowControl.compFlowControlType;
-import com.basic4gl.compiler.util.compBinOperExt;
-import com.basic4gl.compiler.util.compUnOperExt;
-import com.basic4gl.util.Cast;
-import com.basic4gl.util.Mutable;
-import com.basic4gl.util.Streaming;
-import com.basic4gl.util.compExtFuncSpec;
-import com.basic4gl.util.compFuncSpec;
-import com.basic4gl.vm.HasErrorState;
-import com.basic4gl.vm.TomVM;
-import com.basic4gl.vm.VMValue;
-import com.basic4gl.vm.vmInstruction;
-import com.basic4gl.vm.vmRollbackPoint;
-import com.basic4gl.vm.stackframe.vmRuntimeFunction;
-import com.basic4gl.vm.stackframe.vmUserFunc;
-import com.basic4gl.vm.stackframe.vmUserFuncPrototype;
+import com.basic4gl.compiler.FlowControl.FlowControlType;
+import com.basic4gl.compiler.util.BinOperExt;
+import com.basic4gl.compiler.util.UnOperExt;
+import com.basic4gl.util.*;
+import com.basic4gl.util.FuncSpec;
+import com.basic4gl.vm.*;
+import com.basic4gl.vm.Instruction;
+import com.basic4gl.vm.stackframe.RuntimeFunction;
+import com.basic4gl.vm.stackframe.UserFunc;
+import com.basic4gl.vm.stackframe.UserFuncPrototype;
 import com.basic4gl.vm.types.Structure;
 import com.basic4gl.vm.types.StructureField;
 import com.basic4gl.vm.types.ValType;
@@ -35,7 +29,7 @@ import com.basic4gl.vm.types.OpCode;
 
 //TODO Reimplement libraries
 //import com.basic4gl.nate.plugins.PluginDLLManager;
-//import com.basic4gl.nate.plugins.compExtFuncSpec;
+//import com.basic4gl.nate.plugins.ExtFuncSpec;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TomBasicCompiler
@@ -58,7 +52,7 @@ public class TomBasicCompiler extends HasErrorState {
 	TomVM m_vm;
 
 	// Parser
-	compParser m_parser;
+	Parser m_parser;
 
 	// DLL manager
 	// TODO Reimplement libraries
@@ -66,38 +60,38 @@ public class TomBasicCompiler extends HasErrorState {
 
 	// Settings
 	boolean m_caseSensitive;
-	Map<String, compOperator> m_unaryOperators; // Recognised operators. Unary
+	Map<String, Operator> m_unaryOperators; // Recognised operators. Unary
 	// have one operand (e.g NOT x)
-	Map<String, compOperator> m_binaryOperators; // Binary have to (e.g. x + y)
+	Map<String, Operator> m_binaryOperators; // Binary have to (e.g. x + y)
 	public ArrayList<String> m_reservedWords;
-	Map<String, compConstant> m_constants; // Permanent constants.
-	Map<String, compConstant> m_programConstants; // Constants declared using
+	Map<String, Constant> m_constants; // Permanent constants.
+	Map<String, Constant> m_programConstants; // Constants declared using
 	// the const command.
-	Vector<compFuncSpec> m_functions;
+	Vector<FuncSpec> m_functions;
 	public Map<String, List<Integer>> m_functionIndex; // Maps function name to index
 	// of function (in mFunctions
 	// array)
-	compLanguageSyntax m_syntax;
+	LanguageSyntax m_syntax;
 	String m_symbolPrefix = ""; // Prefix all symbols with this text
 
 	// Compiler state
 	ValType m_regType, m_reg2Type;
 	Vector<ValType> m_operandStack;
-	Vector<compStackedOperator> m_operatorStack;
+	Vector<StackedOperator> m_operatorStack;
 
-	compStackedOperator getOperatorTOS() {
+	StackedOperator getOperatorTOS() {
 		return m_operatorStack.get(m_operatorStack.size() - 1);
 	}
 
-	void setOperatorTOS(compStackedOperator operator) {
+	void setOperatorTOS(StackedOperator operator) {
 		m_operatorStack.set(m_operatorStack.size() - 1, operator);
 	}
 
-	Map<String, compLabel> m_labels;
+	Map<String, Label> m_labels;
 	Map<Integer, String> m_labelIndex;
-	Vector<compJump> m_jumps; // Jumps to fix up
-	Vector<compJump> m_resets; // Resets to fix up
-	Vector<compFlowControl> m_flowControl; // Flow control structure stack
+	Vector<Jump> m_jumps; // Jumps to fix up
+	Vector<Jump> m_resets; // Resets to fix up
+	Vector<FlowControl> m_flowControl; // Flow control structure stack
 	Token m_token;
 	boolean m_needColon; // True if next instruction must be separated by a
 	// colon (or newline)
@@ -124,24 +118,24 @@ public class TomBasicCompiler extends HasErrorState {
 	// vector,
 	// can be different in special cases (e.g. when compiler is called from
 	// debugger to evaluate an expression).
-	vmUserFuncPrototype m_userFuncPrototype; // Prototype of function being
+	UserFuncPrototype m_userFuncPrototype; // Prototype of function being
 	// declared.
-	Vector<compRuntimeFunction> m_runtimeFunctions;
+	Vector<com.basic4gl.compiler.RuntimeFunction> m_runtimeFunctions;
 	Map<String, Integer> m_runtimeFunctionIndex;
 
 	// Language extension
-	Vector<compUnOperExt> m_unOperExts; // Unary operator extensions
-	Vector<compBinOperExt> m_binOperExts; // Binary operator extensions
+	Vector<UnOperExt> m_unOperExts; // Unary operator extensions
+	Vector<BinOperExt> m_binOperExts; // Binary operator extensions
 
 	// //////////////////////////////////////////////////////////////////////////////
 	// Internal compiler types
 
-	// compOperator
+	// Operator
 	// Used for tracking which operators are about to be applied to operands.
 	// Basic4GL converts infix expressions into reverse polish using an operator
 	// stack and an operand stack.
 
-	enum compOpType {
+	enum OperType {
 		OT_OPERATOR, OT_RETURNBOOLOPERATOR, OT_BOOLOPERATOR, OT_LAZYBOOLOPERATOR, OT_LBRACKET, OT_STOP // Forces
 		// expression
 		// evaluation
@@ -149,28 +143,28 @@ public class TomBasicCompiler extends HasErrorState {
 		// stop
 	}
 
-	class compOperator {
-		compOpType mType;
+	class Operator {
+		OperType mType;
 		short mOpCode;
 		int mParams; // 1 . Calculate "op Reg" (e.g. "Not Reg")
 		// 2 . Calculate "Reg2 op Reg" (e.g. "Reg2 - Reg")
 		int mBinding; // Operator binding. Higher = tighter.
 
-		compOperator(compOpType type, short opCode, int params, int binding) {
+		Operator(OperType type, short opCode, int params, int binding) {
 			mType = type;
 			mOpCode = opCode;
 			mParams = params;
 			mBinding = binding;
 		}
 
-		compOperator() {
-			mType = compOpType.OT_OPERATOR;
+		Operator() {
+			mType = OperType.OT_OPERATOR;
 			mOpCode = OpCode.OP_NOP;
 			mParams = 0;
 			mBinding = 0;
 		}
 
-		compOperator(compOperator o) {
+		Operator(Operator o) {
 			mType = o.mType;
 			mOpCode = o.mOpCode;
 			mParams = o.mParams;
@@ -178,18 +172,18 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 	}
 
-	class compStackedOperator {
-		compOperator mOper; // Stacked operator
+	class StackedOperator {
+		Operator mOper; // Stacked operator
 		int mLazyJumpAddr; // Address of lazy jump op code (for "and" and "or"
 
 		// operations)
 
-		compStackedOperator(compOperator o) {
+		StackedOperator(Operator o) {
 			mOper = o;
 			mLazyJumpAddr = -1;
 		}
 
-		compStackedOperator(compOperator o, int lazyJumpAddr) {
+		StackedOperator(Operator o, int lazyJumpAddr) {
 			mOper = o;
 			mLazyJumpAddr = lazyJumpAddr;
 		}
@@ -197,18 +191,18 @@ public class TomBasicCompiler extends HasErrorState {
 
 	// CompLabel
 	// A program label, i.e. a named destination for "goto" and "gosub"s
-	class compLabel {
+	class Label {
 		int m_offset; // Instruction index in code
 		int m_programDataOffset; // Program data offset. (For use with
 
 		// "RESET labelname" command.)
 
-		compLabel(int offset, int dataOffset) {
+		Label(int offset, int dataOffset) {
 			m_offset = offset;
 			m_programDataOffset = dataOffset;
 		}
 
-		compLabel() {
+		Label() {
 			m_offset = 0;
 			m_programDataOffset = 0;
 		}
@@ -236,33 +230,33 @@ public class TomBasicCompiler extends HasErrorState {
 		// #endif
 	}
 
-	// compJump
+	// Jump
 	// Used to track program jumps. Actuall addresses are patched into jump
 	// instructions after the main compilation pass has completed. (Thus forward
 	// jumps are possible.)
-	class compJump {
+	class Jump {
 		int m_jumpInstruction; // Instruction containing jump instruction
 		String m_labelName; // Label to which we are jumping
 
-		compJump(int instruction, String labelName) {
+		Jump(int instruction, String labelName) {
 			m_jumpInstruction = instruction;
 			m_labelName = labelName;
 		}
 
-		compJump() {
+		Jump() {
 			m_jumpInstruction = 0;
 			m_labelName = "";
 		}
 	}
 
 	// Misc
-	class compParserPos {
+	class ParserPos {
 		int m_line;
 		int m_col;
 		Token m_token;
 	}
 
-	enum compLanguageSyntax {
+	enum LanguageSyntax {
 		LS_TRADITIONAL(0), // As compatible as possible with other BASICs
 		LS_BASIC4GL(1), // Standard Basic4GL syntax for backwards compatibility
 		// with existing code.
@@ -270,7 +264,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// standard Basic4GL syntax
 		private int mType;
 
-		compLanguageSyntax(int type) {
+		LanguageSyntax(int type) {
 			mType = type;
 		}
 
@@ -279,12 +273,12 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 	}
 
-	enum compUserFunctionType {
+	enum UserFunctionType {
 		UFT_IMPLEMENTATION, UFT_FWDDECLARATION, UFT_RUNTIMEDECLARATION
 	};
 
 	// //////////////////////////////////////////////////////////////////////////////
-	// compRollbackPoint
+	// RollbackPoint
 	//
 	// / Allows the compiler to rollback cleanly if an error occurs during
 	// / compilation. Used during runtime compilation to ensure the compiler
@@ -295,10 +289,10 @@ public class TomBasicCompiler extends HasErrorState {
 	// VM
 	// / stable. There may still be resources used (such as code instructions
 	// / allocated), but they should be benign and unreachable.
-	class compRollbackPoint {
+	class RollbackPoint {
 
 		// Virtual machine rollback
-		vmRollbackPoint vmRollback;
+		com.basic4gl.vm.RollbackPoint vmRollback;
 
 		// Runtime functions
 		int runtimeFunctionCount;
@@ -320,83 +314,83 @@ public class TomBasicCompiler extends HasErrorState {
 		// TODO Reimplement libraries
 		// m_plugins = plugins;
 		m_caseSensitive = caseSensitive;
-		m_syntax = compLanguageSyntax.LS_BASIC4GL;
+		m_syntax = LanguageSyntax.LS_BASIC4GL;
 
 		m_operandStack = new Vector<ValType>();
-		m_operatorStack = new Vector<compStackedOperator>();
-		m_jumps = new Vector<compJump>();
-		m_resets = new Vector<compJump>();
-		m_flowControl = new Vector<compFlowControl>();
+		m_operatorStack = new Vector<StackedOperator>();
+		m_jumps = new Vector<Jump>();
+		m_resets = new Vector<Jump>();
+		m_flowControl = new Vector<FlowControl>();
 
-		m_binaryOperators = new HashMap<String, compOperator>();
-		m_unaryOperators = new HashMap<String, compOperator>();
+		m_binaryOperators = new HashMap<String, Operator>();
+		m_unaryOperators = new HashMap<String, Operator>();
 
 		m_reservedWords = new ArrayList<String>();
 
-		m_parser = new compParser();
+		m_parser = new Parser();
 
-		m_programConstants = new HashMap<String, compConstant>();
-		m_labels = new HashMap<String, compLabel>();
+		m_programConstants = new HashMap<String, Constant>();
+		m_labels = new HashMap<String, Label>();
 		m_labelIndex = new HashMap<Integer, String>();
 
 		m_functionIndex = new HashMap<String, List<Integer>>();
-		m_constants = new HashMap<String, compConstant>();
+		m_constants = new HashMap<String, Constant>();
 
 		m_localUserFunctionIndex = new HashMap<String, Integer>();
 		m_globalUserFunctionIndex = new HashMap<String, Integer>();
 		m_visibleUserFunctionIndex = new HashMap<String, Integer>();
 		m_userFunctionReverseIndex = new HashMap<Integer, String>();
 		m_runtimeFunctionIndex = new HashMap<String, Integer>();
-		m_runtimeFunctions = new Vector<compRuntimeFunction>();
-		m_functions = new Vector<compFuncSpec>();
+		m_runtimeFunctions = new Vector<com.basic4gl.compiler.RuntimeFunction>();
+		m_functions = new Vector<FuncSpec>();
 
-		m_unOperExts = new Vector<compUnOperExt>();
-		m_binOperExts = new Vector<compBinOperExt>();
+		m_unOperExts = new Vector<UnOperExt>();
+		m_binOperExts = new Vector<BinOperExt>();
 
 		ClearState();
 
 		// Setup operators
 		// Note: From experimentation it appears QBasic binds "xor" looser than
 		// "and" and "or". So for compatibility, we will too..
-		m_binaryOperators.put("xor", new compOperator(
-				compOpType.OT_BOOLOPERATOR, OpCode.OP_OP_XOR, 2, 10));
-		m_binaryOperators.put("or", new compOperator(
-				compOpType.OT_BOOLOPERATOR, OpCode.OP_OP_OR, 2, 11));
-		m_binaryOperators.put("and", new compOperator(
-				compOpType.OT_BOOLOPERATOR, OpCode.OP_OP_AND, 2, 12));
-		m_binaryOperators.put("lor", new compOperator(
-				compOpType.OT_LAZYBOOLOPERATOR, OpCode.OP_OP_OR, 2, 11));
-		m_binaryOperators.put("land", new compOperator(
-				compOpType.OT_LAZYBOOLOPERATOR, OpCode.OP_OP_AND, 2, 12));
-		m_unaryOperators.put("not", new compOperator(
-				compOpType.OT_BOOLOPERATOR, OpCode.OP_OP_NOT, 1, 20));
-		m_binaryOperators.put("=", new compOperator(
-				compOpType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_EQUAL, 2, 30));
-		m_binaryOperators.put("<>", new compOperator(
-				compOpType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_NOT_EQUAL, 2,
+		m_binaryOperators.put("xor", new Operator(
+				OperType.OT_BOOLOPERATOR, OpCode.OP_OP_XOR, 2, 10));
+		m_binaryOperators.put("or", new Operator(
+				OperType.OT_BOOLOPERATOR, OpCode.OP_OP_OR, 2, 11));
+		m_binaryOperators.put("and", new Operator(
+				OperType.OT_BOOLOPERATOR, OpCode.OP_OP_AND, 2, 12));
+		m_binaryOperators.put("lor", new Operator(
+				OperType.OT_LAZYBOOLOPERATOR, OpCode.OP_OP_OR, 2, 11));
+		m_binaryOperators.put("land", new Operator(
+				OperType.OT_LAZYBOOLOPERATOR, OpCode.OP_OP_AND, 2, 12));
+		m_unaryOperators.put("not", new Operator(
+				OperType.OT_BOOLOPERATOR, OpCode.OP_OP_NOT, 1, 20));
+		m_binaryOperators.put("=", new Operator(
+				OperType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_EQUAL, 2, 30));
+		m_binaryOperators.put("<>", new Operator(
+				OperType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_NOT_EQUAL, 2,
 				30));
 		m_binaryOperators.put(">",
-				new compOperator(compOpType.OT_RETURNBOOLOPERATOR,
+				new Operator(OperType.OT_RETURNBOOLOPERATOR,
 						OpCode.OP_OP_GREATER, 2, 30));
-		m_binaryOperators.put(">=", new compOperator(
-				compOpType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_GREATER_EQUAL,
+		m_binaryOperators.put(">=", new Operator(
+				OperType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_GREATER_EQUAL,
 				2, 30));
-		m_binaryOperators.put("<", new compOperator(
-				compOpType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_LESS, 2, 30));
-		m_binaryOperators.put("<=", new compOperator(
-				compOpType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_LESS_EQUAL, 2,
+		m_binaryOperators.put("<", new Operator(
+				OperType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_LESS, 2, 30));
+		m_binaryOperators.put("<=", new Operator(
+				OperType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_LESS_EQUAL, 2,
 				30));
-		m_binaryOperators.put("+", new compOperator(compOpType.OT_OPERATOR,
+		m_binaryOperators.put("+", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_PLUS, 2, 40));
-		m_binaryOperators.put("-", new compOperator(compOpType.OT_OPERATOR,
+		m_binaryOperators.put("-", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_MINUS, 2, 40));
-		m_binaryOperators.put("*", new compOperator(compOpType.OT_OPERATOR,
+		m_binaryOperators.put("*", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_TIMES, 2, 41));
-		m_binaryOperators.put("/", new compOperator(compOpType.OT_OPERATOR,
+		m_binaryOperators.put("/", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_DIV, 2, 42));
-		m_binaryOperators.put("%", new compOperator(compOpType.OT_OPERATOR,
+		m_binaryOperators.put("%", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_MOD, 2, 43));
-		m_unaryOperators.put("-", new compOperator(compOpType.OT_OPERATOR,
+		m_unaryOperators.put("-", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_NEG, 1, 50));
 
 		// Setup reserved words
@@ -458,7 +452,7 @@ public class TomBasicCompiler extends HasErrorState {
 		m_jumps.clear();
 		m_resets.clear();
 		m_flowControl.clear();
-		m_syntax = compLanguageSyntax.LS_BASIC4GL;
+		m_syntax = LanguageSyntax.LS_BASIC4GL;
 		m_inFunction = false;
 
 		// No local user functions defined initially.
@@ -568,7 +562,7 @@ public class TomBasicCompiler extends HasErrorState {
 				// Match against constants
 
 				// Try permanent constants first
-				compConstant constant;
+				Constant constant;
 				boolean isConstant;
 				constant = m_constants.get(m_token.m_text);
 				isConstant = (constant != null);
@@ -638,15 +632,15 @@ public class TomBasicCompiler extends HasErrorState {
 			;
 
 		// Terminate program
-		AddInstruction(OpCode.OP_END, ValType.VTP_INT, new VMValue());
+		AddInstruction(OpCode.OP_END, ValType.VTP_INT, new Value());
 
 		if (!Error()) {
 			// Link up gotos
-			for (compJump jump : m_jumps) {
+			for (Jump jump : m_jumps) {
 
 				// Find instruction
 				assert (jump.m_jumpInstruction < m_vm.InstructionCount());
-				vmInstruction instr = m_vm.Instruction(jump.m_jumpInstruction);
+				Instruction instr = m_vm.Instruction(jump.m_jumpInstruction);
 
 				// Point token to goto instruction, so that it will be displayed
 				// if there is an error.
@@ -665,11 +659,11 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Link up resets
-			for (compJump jump : m_resets) {
+			for (Jump jump : m_resets) {
 
 				// Find instruction
 				assert (jump.m_jumpInstruction < m_vm.InstructionCount());
-				vmInstruction instr = m_vm.Instruction(jump.m_jumpInstruction);
+				Instruction instr = m_vm.Instruction(jump.m_jumpInstruction);
 
 				// Point token to reset instruction, so that it will be
 				// displayed
@@ -708,11 +702,11 @@ public class TomBasicCompiler extends HasErrorState {
 		if (m_flowControl.isEmpty())
 			return false;
 
-		compFlowControl top = FlowControlTOS();
+		FlowControl top = FlowControlTOS();
 
 		// Auto endif required if top-most flow control is a non-block "if" or
 		// "else"
-		return (top.m_type == compFlowControlType.FCT_IF || top.m_type == compFlowControlType.FCT_ELSE)
+		return (top.m_type == FlowControlType.FCT_IF || top.m_type == FlowControlType.FCT_ELSE)
 				&& !top.m_blockIf;
 	}
 
@@ -725,7 +719,7 @@ public class TomBasicCompiler extends HasErrorState {
 		return m_vm;
 	}
 
-	public compParser Parser() {
+	public Parser Parser() {
 		return m_parser;
 	}
 
@@ -742,31 +736,31 @@ public class TomBasicCompiler extends HasErrorState {
 	// Language extension
 
 	// Constants
-	public void AddConstant(String name, compConstant c) {
+	public void AddConstant(String name, Constant c) {
 		m_constants.put(name.toLowerCase(), c);
 	}
 
 	public void AddConstant(String name, String s) {
-		AddConstant(name, new compConstant(s));
+		AddConstant(name, new Constant(s));
 	}
 
 	public void AddConstant(String name, int i) {
-		AddConstant(name, new compConstant(i));
+		AddConstant(name, new Constant(i));
 	}
 
 	public void AddConstant(String name, long i) {
-		AddConstant(name, new compConstant(i));
+		AddConstant(name, new Constant(i));
 	}
 
 	public void AddConstant(String name, float r) {
-		AddConstant(name, new compConstant(r));
+		AddConstant(name, new Constant(r));
 	}
 
 	public void AddConstant(String name, double r) {
-		AddConstant(name, new compConstant(r));
+		AddConstant(name, new Constant(r));
 	}
 
-	public Map<String, compConstant> Constants() {
+	public Map<String, Constant> Constants() {
 		return m_constants;
 	}
 
@@ -795,7 +789,7 @@ public class TomBasicCompiler extends HasErrorState {
 		return m_runtimeFunctionIndex.containsKey(name.toLowerCase());
 	}
 
-	public Vector<compFuncSpec> Functions() {
+	public Vector<FuncSpec> Functions() {
 		return m_functions;
 	}
 
@@ -804,11 +798,11 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	// Language extension
-	public void AddUnOperExt(compUnOperExt e) {
+	public void AddUnOperExt(UnOperExt e) {
 		m_unOperExts.add(e);
 	}
 
-	public void AddBinOperExt(compBinOperExt e) {
+	public void AddBinOperExt(BinOperExt e) {
 		m_binOperExts.add(e);
 	}
 
@@ -825,7 +819,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Check DLL constants
 		// TODO Reimplement libraries
-		// compConstant compConst = new compConstant();
+		// Constant compConst = new Constant();
 		// return (m_plugins.FindConstant(text, compConst));
 		return false; // Remove line after libraries are reimplemented
 	}
@@ -852,7 +846,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 	// //////////
 	// Settings
-	public compLanguageSyntax Syntax() {
+	public LanguageSyntax Syntax() {
 		return m_syntax;
 	}
 
@@ -869,28 +863,28 @@ public class TomBasicCompiler extends HasErrorState {
 		return m_labels.containsKey(labelText);
 	}
 
-	compLabel Label(String labelText) {
+	Label Label(String labelText) {
 		assert (LabelExists(labelText));
 		return m_labels.get(labelText);
 	}
 
-	void AddLabel(String labelText, compLabel label) {
+	void AddLabel(String labelText, Label label) {
 		assert (!LabelExists(labelText));
 		m_labels.put(labelText, label);
 		m_labelIndex.put(label.m_offset, labelText);
 	}
 
-	compFlowControl FlowControlTOS() {
+	FlowControl FlowControlTOS() {
 		assert (!m_flowControl.isEmpty());
 		return m_flowControl.get(m_flowControl.size() - 1);
 	}
 
-	boolean FlowControlTopIs(compFlowControlType type) {
+	boolean FlowControlTopIs(FlowControlType type) {
 		return !m_flowControl.isEmpty() && FlowControlTOS().m_type == type;
 	}
 
 	// TODO rename
-	vmUserFunc _UserFunc() {
+	UserFunc _UserFunc() {
 		// Return function currently being declared
 		assert (m_vm.UserFunctions().size() > 0);
 		assert (m_currentFunction >= 0);
@@ -898,7 +892,7 @@ public class TomBasicCompiler extends HasErrorState {
 		return m_vm.UserFunctions().get(m_currentFunction);
 	}
 
-	vmUserFuncPrototype UserPrototype() {
+	UserFuncPrototype UserPrototype() {
 		// Return prototype of function currently being declared
 		assert (m_vm.UserFunctionPrototypes().size() > 0);
 		assert (_UserFunc().prototypeIndex >= 0);
@@ -918,7 +912,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Add bindcode op-code
 		AddInstruction(OpCode.OP_BINDCODE, ValType.VTP_INT,
-				new VMValue());
+				new Value());
 
 		return true;
 	}
@@ -945,13 +939,13 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 		// Add exec op-code
-		AddInstruction(OpCode.OP_EXEC, ValType.VTP_INT, new VMValue());
+		AddInstruction(OpCode.OP_EXEC, ValType.VTP_INT, new Value());
 
 		return true;
 	}
 
-	compRollbackPoint GetRollbackPoint() {
-		compRollbackPoint r = new compRollbackPoint();
+	RollbackPoint GetRollbackPoint() {
+		RollbackPoint r = new RollbackPoint();
 
 		// Get virtual machine rollback info
 		r.vmRollback = m_vm.GetRollbackPoint();
@@ -962,7 +956,7 @@ public class TomBasicCompiler extends HasErrorState {
 		return r;
 	}
 
-	void Rollback(compRollbackPoint rollbackPoint) {
+	void Rollback(RollbackPoint rollbackPoint) {
 
 		// Rollback virtual machine
 		m_vm.Rollback(rollbackPoint.vmRollback);
@@ -972,8 +966,8 @@ public class TomBasicCompiler extends HasErrorState {
 		// Remove new labels
 		// (We can detect these as any labels with an offset past the instruction
 		// count stored in the rollback).
-		for(Iterator<Map.Entry<String, compLabel>> it = m_labels.entrySet().iterator(); it.hasNext(); ) {
-			Map.Entry<String, compLabel> entry = it.next();
+		for(Iterator<Map.Entry<String, Label>> it = m_labels.entrySet().iterator(); it.hasNext(); ) {
+			Map.Entry<String, Label> entry = it.next();
 			if (entry.getValue().m_offset >= rollbackPoint.vmRollback.instructionCount){
 				it.remove();
 			}
@@ -1015,7 +1009,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (!m_flowControl.isEmpty()) {
 
 			// Find topmost structure
-			compFlowControl top = FlowControlTOS();
+			FlowControl top = FlowControlTOS();
 
 			// Point parser to it
 			m_parser.SetPos(top.m_sourcePos.m_sourceLine,
@@ -1081,7 +1075,7 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	// Compilation
-	void AddInstruction(short opCode, int basictype, VMValue val) {
+	void AddInstruction(short opCode, int basictype, Value val) {
 
 		// Add instruction, and include source code position audit
 		int line = m_token.m_line, col = m_token.m_col;
@@ -1093,7 +1087,7 @@ public class TomBasicCompiler extends HasErrorState {
 			line = m_lastLine;
 			col = m_lastCol;
 		}
-		m_vm.AddInstruction(new vmInstruction(opCode, basictype, val, line, col));
+		m_vm.AddInstruction(new Instruction(opCode, basictype, val, line, col));
 		m_lastLine = line;
 		m_lastCol = col;
 	}
@@ -1125,7 +1119,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Create new label
-			AddLabel(labelName, new compLabel(m_vm.InstructionCount(), m_vm
+			AddLabel(labelName, new Label(m_vm.InstructionCount(), m_vm
 					.ProgramData().size()));
 
 			// Skip label
@@ -1204,11 +1198,11 @@ public class TomBasicCompiler extends HasErrorState {
 			} else
 				// Otherwise is "End" program instruction
 				AddInstruction(OpCode.OP_END, ValType.VTP_INT,
-						new VMValue());
+						new Value());
 		} else if (m_token.m_text.equals("run")) {
 			if (!GetToken())
 				return false;
-			AddInstruction(OpCode.OP_RUN, ValType.VTP_INT, new VMValue());
+			AddInstruction(OpCode.OP_RUN, ValType.VTP_INT, new Value());
 		} else if (m_token.m_text.equals("const")) {
 			if (!CompileConstant())
 				return false;
@@ -1233,7 +1227,7 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 		} else if (m_token.m_text.equals("function")
 				|| m_token.m_text.equals("sub")) {
-			if (!CompileUserFunction(compUserFunctionType.UFT_IMPLEMENTATION))
+			if (!CompileUserFunction(UserFunctionType.UFT_IMPLEMENTATION))
 				return false;
 		} else if (m_token.m_text.equals("endfunction")) {
 			if (!CompileEndUserFunction(true))
@@ -1325,7 +1319,7 @@ public class TomBasicCompiler extends HasErrorState {
 						return false;
 
 				// Convert any remaining flow control structures to block
-				for (compFlowControl flowControl : m_flowControl)
+				for (FlowControl flowControl : m_flowControl)
 					flowControl.m_blockIf = true;
 			}
 
@@ -1524,7 +1518,7 @@ public class TomBasicCompiler extends HasErrorState {
 							return false;
 						}
 
-						// Variable already created (earlier), so fall through
+						// Var already created (earlier), so fall through
 						// to
 						// allocation code generation
 					} else
@@ -1532,24 +1526,24 @@ public class TomBasicCompiler extends HasErrorState {
 						varIndex = UserPrototype().NewLocalVar(name, type);
 
 					// Generate code to allocate local variable data
-					// Note: Opcode contains the index of the variable. Variable
+					// Note: Opcode contains the index of the variable. Var
 					// type and size data stored in the user function defn.
 					AddInstruction(OpCode.OP_DECLARE_LOCAL,
-							ValType.VTP_INT, new VMValue(varIndex));
+							ValType.VTP_INT, new Value(varIndex));
 
 					// Data containing strings will need to be "destroyed" when
 					// the stack unwinds.
 					if (m_vm.DataTypes().ContainsString(type))
 						AddInstruction(OpCode.OP_REG_DESTRUCTOR,
 								ValType.VTP_INT,
-								new VMValue((int) m_vm.StoreType(type)));
+								new Value((int) m_vm.StoreType(type)));
 
 					// Optional "= value"?
 					if (m_token.m_text.equals("=")) {
 
 						// Add opcode to load variable address
 						AddInstruction(OpCode.OP_LOAD_LOCAL_VAR,
-								ValType.VTP_INT, new VMValue(varIndex));
+								ValType.VTP_INT, new Value(varIndex));
 
 						// Set register type
 						m_regType.Set(UserPrototype().localVarTypes
@@ -1578,13 +1572,13 @@ public class TomBasicCompiler extends HasErrorState {
 					int varIndex = m_vm.Variables().GetVar(name);
 					if (varIndex >= 0) {
 						if (!(m_vm.Variables().Variables().get(varIndex).m_type == type)) {
-							SetError((String) "Variable '"
+							SetError((String) "Var '"
 									+ name
 									+ "' has already been allocated as a different type.");
 							return false;
 						}
 
-						// Variable already created (earlier), so fall through
+						// Var already created (earlier), so fall through
 						// to
 						// allocation code generation.
 					} else
@@ -1592,18 +1586,18 @@ public class TomBasicCompiler extends HasErrorState {
 						varIndex = m_vm.Variables().NewVar(name, type);
 
 					// Generate code to allocate variable data
-					// Note: Opcode contains the index of the variable. Variable
+					// Note: Opcode contains the index of the variable. Var
 					// type
 					// and size data is stored in the variable entry.
 					AddInstruction(OpCode.OP_DECLARE, ValType.VTP_INT,
-							new VMValue(varIndex));
+							new Value(varIndex));
 
 					// Optional "= value"?
 					if (m_token.m_text.equals("=")) {
 
 						// Add opcode to load variable address
 						AddInstruction(OpCode.OP_LOAD_VAR,
-								ValType.VTP_INT, new VMValue(varIndex));
+								ValType.VTP_INT, new Value(varIndex));
 
 						// Set register type
 						m_regType.Set(m_vm.Variables().Variables()
@@ -1786,9 +1780,9 @@ public class TomBasicCompiler extends HasErrorState {
 			while (m_token.m_text.equals("(") || foundComma) {
 
 				// Room for one more dimension?
-				if (type.get().m_arrayLevel >= Constants.VM_MAXDIMENSIONS) {
+				if (type.get().m_arrayLevel >= Constants.ARRAY_MAX_DIMENSIONS) {
 					SetError((String) "Arrays cannot have more than "
-							+ String.valueOf(Constants.VM_MAXDIMENSIONS)
+							+ String.valueOf(Constants.ARRAY_MAX_DIMENSIONS)
 							+ " dimensions.");
 					return false;
 				}
@@ -1811,11 +1805,11 @@ public class TomBasicCompiler extends HasErrorState {
 
 					// Evaluate constant expression
 					Integer expressionType = ValType.VTP_INT;
-					VMValue value = new VMValue();
+					Value value = new Value();
 					String stringValue = "";
 
 					Mutable<Integer> expressionTypeRef = new Mutable<Integer>(expressionType);
-					Mutable<VMValue> valueRef = new Mutable<VMValue>(value);
+					Mutable<Value> valueRef = new Mutable<Value>(value);
 					Mutable<String> stringValueRef = new Mutable<String>(
 							stringValue);
 
@@ -1906,7 +1900,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Generate code to load variable
 				AddInstruction(OpCode.OP_LOAD_LOCAL_VAR,
-						ValType.VTP_INT, new VMValue(varIndex));
+						ValType.VTP_INT, new Value(varIndex));
 
 				// Set register type
 				m_regType.Set(UserPrototype().localVarTypes.get(varIndex));
@@ -1926,7 +1920,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Generate code to load variable
 				AddInstruction(OpCode.OP_LOAD_VAR, ValType.VTP_INT,
-						new VMValue(varIndex));
+						new Value(varIndex));
 
 				// Set register type
 				m_regType
@@ -1988,7 +1982,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Generate deref instruction
 		m_regType.m_pointerLevel--;
-		AddInstruction(OpCode.OP_DEREF, m_regType.StoredType(), new VMValue()); // Load
+		AddInstruction(OpCode.OP_DEREF, m_regType.StoredType(), new Value()); // Load
 		// variable
 
 		return true;
@@ -2062,7 +2056,7 @@ public class TomBasicCompiler extends HasErrorState {
 				StructureField field = m_vm.DataTypes().Fields()
 						.get(fieldIndex);
 				AddInstruction(OpCode.OP_ADD_CONST, ValType.VTP_INT,
-						new VMValue(field.m_dataOffset));
+						new Value(field.m_dataOffset));
 
 				// Reg now contains pointer to field
 				m_regType.Set(field.m_type);
@@ -2113,7 +2107,7 @@ public class TomBasicCompiler extends HasErrorState {
 					// reg2 = Array address
 					// Output: reg = Pointer to array element
 					AddInstruction(OpCode.OP_ARRAY_INDEX,
-							ValType.VTP_INT, new VMValue());
+							ValType.VTP_INT, new Value());
 
 					// reg now points to an element
 					m_regType.Set(m_reg2Type);
@@ -2164,31 +2158,31 @@ public class TomBasicCompiler extends HasErrorState {
 		// Push "stop evaluation" operand to stack. (To protect any existing
 		// operators
 		// on the stack.
-		m_operatorStack.add(new compStackedOperator(new compOperator(
-				compOpType.OT_STOP, OpCode.OP_NOP, 0, -200000))); // Stop
+		m_operatorStack.add(new StackedOperator(new Operator(
+				OperType.OT_STOP, OpCode.OP_NOP, 0, -200000))); // Stop
 		// evaluation
 		// operator
 
 		if (!CompileExpressionLoad(mustBeConstant))
 			return false;
 
-		compOperator o = null;
-		while ((m_token.m_text.equals(")") && getOperatorTOS().mOper.mType != compOpType.OT_STOP)
+		Operator o = null;
+		while ((m_token.m_text.equals(")") && getOperatorTOS().mOper.mType != OperType.OT_STOP)
 				|| ((o = m_binaryOperators.get(m_token.m_text)) != null)) {
 
 			// Special case, right bracket
 			if (m_token.m_text.equals(")")) {
 
 				// Evaluate all operators down to left bracket
-				while (getOperatorTOS().mOper.mType != compOpType.OT_STOP
-						&& getOperatorTOS().mOper.mType != compOpType.OT_LBRACKET)
+				while (getOperatorTOS().mOper.mType != OperType.OT_STOP
+						&& getOperatorTOS().mOper.mType != OperType.OT_LBRACKET)
 					if (!CompileOperation())
 						return false;
 
 				// If operator stack is empty, then the expression terminates
 				// before
 				// the closing bracket
-				if (getOperatorTOS().mOper.mType == compOpType.OT_STOP) {
+				if (getOperatorTOS().mOper.mType == OperType.OT_STOP) {
 					m_operatorStack.remove(m_operatorStack.size() - 1); // Remove
 					// stopper
 					return true;
@@ -2212,7 +2206,7 @@ public class TomBasicCompiler extends HasErrorState {
 			else {
 
 				// Compare current operator with top of stack operator
-				while (getOperatorTOS().mOper.mType != compOpType.OT_STOP
+				while (getOperatorTOS().mOper.mType != OperType.OT_STOP
 						&& getOperatorTOS().mOper.mBinding >= o.mBinding)
 					if (!CompileOperation())
 						return false;
@@ -2220,20 +2214,20 @@ public class TomBasicCompiler extends HasErrorState {
 				// 14-Apr-06: Lazy evaluation.
 				// Add jumps around the second part of AND or OR operations
 				int lazyJumpAddr = -1;
-				if (o.mType == compOpType.OT_LAZYBOOLOPERATOR) {
+				if (o.mType == OperType.OT_LAZYBOOLOPERATOR) {
 					if (o.mOpCode == OpCode.OP_OP_AND) {
 						lazyJumpAddr = m_vm.InstructionCount();
 						AddInstruction(OpCode.OP_JUMP_FALSE,
-								ValType.VTP_INT, new VMValue(0));
+								ValType.VTP_INT, new Value(0));
 					} else if (o.mOpCode == OpCode.OP_OP_OR) {
 						lazyJumpAddr = m_vm.InstructionCount();
 						AddInstruction(OpCode.OP_JUMP_TRUE,
-								ValType.VTP_INT, new VMValue(0));
+								ValType.VTP_INT, new Value(0));
 					}
 				}
 
 				// Save operator to stack
-				m_operatorStack.add(new compStackedOperator(o, lazyJumpAddr));
+				m_operatorStack.add(new StackedOperator(o, lazyJumpAddr));
 
 				// Push first operand
 				if (!CompilePush())
@@ -2248,7 +2242,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Perform remaining operations
-		while (getOperatorTOS().mOper.mType != compOpType.OT_STOP)
+		while (getOperatorTOS().mOper.mType != OperType.OT_STOP)
 			if (!CompileOperation())
 				return false;
 
@@ -2264,11 +2258,11 @@ public class TomBasicCompiler extends HasErrorState {
 		assert (!m_operatorStack.isEmpty());
 
 		// Remove operator from stack
-		compStackedOperator o = getOperatorTOS();
+		StackedOperator o = getOperatorTOS();
 		m_operatorStack.remove(m_operatorStack.size() - 1);
 
 		// Must not be a left bracket
-		if (o.mOper.mType == compOpType.OT_LBRACKET) {
+		if (o.mOper.mType == OperType.OT_LBRACKET) {
 			SetError("Expected ')'");
 			return false;
 		}
@@ -2290,17 +2284,17 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Special case, boolean operator.
 			// Must convert to boolean first
-			if (o.mOper.mType == compOpType.OT_BOOLOPERATOR
-					|| o.mOper.mType == compOpType.OT_LAZYBOOLOPERATOR)
+			if (o.mOper.mType == OperType.OT_BOOLOPERATOR
+					|| o.mOper.mType == OperType.OT_LAZYBOOLOPERATOR)
 				CompileConvert(ValType.VTP_INT);
 
 			// Perform unary operation
 			AddInstruction(o.mOper.mOpCode, m_regType.m_basicType,
-					new VMValue());
+					new Value());
 
 			// Special case, boolean operator
 			// Result will be an integer
-			if (o.mOper.mType == compOpType.OT_RETURNBOOLOPERATOR)
+			if (o.mOper.mType == OperType.OT_RETURNBOOLOPERATOR)
 				m_regType.Set(ValType.VTP_INT);
 		} else if (o.mOper.mParams == 2) {
 
@@ -2369,10 +2363,10 @@ public class TomBasicCompiler extends HasErrorState {
 				int highest = m_regType.m_basicType;
 				if (m_reg2Type.m_basicType > highest)
 					highest = m_reg2Type.m_basicType;
-				if (o.mOper.mType == compOpType.OT_BOOLOPERATOR
-						|| o.mOper.mType == compOpType.OT_LAZYBOOLOPERATOR)
+				if (o.mOper.mType == OperType.OT_BOOLOPERATOR
+						|| o.mOper.mType == OperType.OT_LAZYBOOLOPERATOR)
 					highest = ValType.VTP_INT;
-				if (m_syntax == compLanguageSyntax.LS_TRADITIONAL
+				if (m_syntax == LanguageSyntax.LS_TRADITIONAL
 						&& o.mOper.mOpCode == OpCode.OP_OP_DIV)
 					// 14-Aug-05 Tom: In traditional mode, division is always
 					// between floating pt numbers
@@ -2387,11 +2381,11 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Generate operation code
-			AddInstruction(o.mOper.mOpCode, opCodeType, new VMValue());
+			AddInstruction(o.mOper.mOpCode, opCodeType, new Value());
 
 			// Special case, boolean operator
 			// Result will be an integer
-			if (o.mOper.mType == compOpType.OT_RETURNBOOLOPERATOR)
+			if (o.mOper.mType == OperType.OT_RETURNBOOLOPERATOR)
 				m_regType.Set(ValType.VTP_INT);
 		} else
 			assert (false);
@@ -2438,8 +2432,8 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Special case, left bracket
 			if (m_token.m_text.equals("("))
-				m_operatorStack.add(new compStackedOperator(new compOperator(
-						compOpType.OT_LBRACKET, OpCode.OP_NOP, 0, -10000))); // Brackets
+				m_operatorStack.add(new StackedOperator(new Operator(
+						OperType.OT_LBRACKET, OpCode.OP_NOP, 0, -10000))); // Brackets
 			// bind
 			// looser
 			// than
@@ -2447,9 +2441,9 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Otherwise look for recognised unary operator
 			else {
-				compOperator o = m_unaryOperators.get(m_token.m_text);
+				Operator o = m_unaryOperators.get(m_token.m_text);
 				if (o != null) // Operator found
-					m_operatorStack.add(new compStackedOperator(o)); // => Stack
+					m_operatorStack.add(new StackedOperator(o)); // => Stack
 				// it
 				else { // Not an operator
 					if (mustBeConstant)
@@ -2467,7 +2461,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 	boolean CompileNull() {
 		AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_INT,
-				new VMValue(0)); // Load 0 into
+				new Value(0)); // Load 0 into
 		// register
 		m_regType.Set(new ValType(ValType.VTP_NULL, (byte) 0, (byte) 1,
 				false)); // Type
@@ -2497,15 +2491,15 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// store load instruction
 				AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_STRING,
-						new VMValue(index));
+						new Value(index));
 				m_regType.Set(ValType.VTP_STRING);
 			} else if (m_token.m_valType == ValType.VTP_REAL) {
 				AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_REAL,
-						new VMValue(Float.valueOf(m_token.m_text)));
+						new Value(Float.valueOf(m_token.m_text)));
 				m_regType.Set(ValType.VTP_REAL);
 			} else if (m_token.m_valType == ValType.VTP_INT) {
 				AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_INT,
-						new VMValue(Cast.StringToInt(m_token.m_text)));
+						new Value(Cast.StringToInt(m_token.m_text)));
 				m_regType.Set(ValType.VTP_INT);
 			} else {
 				SetError("Unknown data type");
@@ -2525,7 +2519,7 @@ public class TomBasicCompiler extends HasErrorState {
 		m_operandStack.add(new ValType(m_regType));
 
 		// Generate push code
-		AddInstruction(OpCode.OP_PUSH, m_regType.StoredType(), new VMValue());
+		AddInstruction(OpCode.OP_PUSH, m_regType.StoredType(), new Value());
 
 		return true;
 	}
@@ -2542,7 +2536,7 @@ public class TomBasicCompiler extends HasErrorState {
 		m_operandStack.remove(m_operandStack.size() - 1);
 
 		// Generate pop code
-		AddInstruction(OpCode.OP_POP, m_reg2Type.StoredType(), new VMValue());
+		AddInstruction(OpCode.OP_POP, m_reg2Type.StoredType(), new Value());
 
 		return true;
 	}
@@ -2569,7 +2563,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Store instruction
 		if (code != OpCode.OP_NOP) {
-			AddInstruction(code, ValType.VTP_INT, new VMValue());
+			AddInstruction(code, ValType.VTP_INT, new Value());
 			m_regType.Set(basictype);
 			return true;
 		}
@@ -2600,7 +2594,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Store instruction
 		if (code != OpCode.OP_NOP) {
-			AddInstruction(code, ValType.VTP_INT, new VMValue());
+			AddInstruction(code, ValType.VTP_INT, new Value());
 			m_reg2Type.Set(type);
 			return true;
 		}
@@ -2774,7 +2768,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Save reg into [reg2]
 			AddInstruction(OpCode.OP_SAVE, m_reg2Type.m_basicType,
-					new VMValue());
+					new Value());
 		}
 
 		// Pointer case. m_reg2 must point to a pointer and m_reg1 point to a
@@ -2788,11 +2782,11 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Validate pointer scope before saving to variable
 				AddInstruction(OpCode.OP_CHECK_PTR, ValType.VTP_INT,
-						new VMValue());
+						new Value());
 
 				// Save address to pointer
 				AddInstruction(OpCode.OP_SAVE, ValType.VTP_INT,
-						new VMValue());
+						new Value());
 			} else {
 				SetError("Types do not match");
 				return false;
@@ -2815,10 +2809,10 @@ public class TomBasicCompiler extends HasErrorState {
 				if (m_vm.DataTypes().ContainsPointer(dataType))
 					AddInstruction(OpCode.OP_CHECK_PTRS,
 							ValType.VTP_INT,
-							new VMValue((int) m_vm.StoreType(dataType)));
+							new Value((int) m_vm.StoreType(dataType)));
 
 				AddInstruction(OpCode.OP_COPY, ValType.VTP_INT,
-						new VMValue((int) m_vm.StoreType(m_regType)));
+						new Value((int) m_vm.StoreType(m_regType)));
 			} else {
 				SetError("Types do not match");
 				return false;
@@ -2860,10 +2854,10 @@ public class TomBasicCompiler extends HasErrorState {
 		// Record jump, so that we can fix up the offset in the second compile
 		// pass.
 		String labelName = m_symbolPrefix + m_token.m_text;
-		m_jumps.add(new compJump(m_vm.InstructionCount(), labelName));
+		m_jumps.add(new Jump(m_vm.InstructionCount(), labelName));
 
 		// Add jump instruction
-		AddInstruction(jumpType, ValType.VTP_INT, new VMValue(0));
+		AddInstruction(jumpType, ValType.VTP_INT, new Value(0));
 
 		// Move on
 		return GetToken();
@@ -2903,7 +2897,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Determine whether this "if" has an automatic "endif" inserted at the
 		// end of the line
-		boolean autoEndif = (m_syntax == compLanguageSyntax.LS_TRADITIONAL) // Only
+		boolean autoEndif = (m_syntax == LanguageSyntax.LS_TRADITIONAL) // Only
 				// applies
 				// to
 				// traditional syntax
@@ -2919,12 +2913,12 @@ public class TomBasicCompiler extends HasErrorState {
 		// line
 
 		// Create flow control structure
-		m_flowControl.add(new compFlowControl(compFlowControlType.FCT_IF, m_vm
+		m_flowControl.add(new FlowControl(FlowControlType.FCT_IF, m_vm
 				.InstructionCount(), 0, line, col, elseif, "", !autoEndif));
 
 		// Create conditional jump
 		AddInstruction(OpCode.OP_JUMP_FALSE, ValType.VTP_INT,
-				new VMValue(0));
+				new Value(0));
 
 		m_needColon = false; // Don't need colon between this and next
 		// instruction
@@ -2934,11 +2928,11 @@ public class TomBasicCompiler extends HasErrorState {
 	boolean CompileElse(boolean elseif) {
 
 		// Find "if" on top of flow control stack
-		if (!FlowControlTopIs(compFlowControlType.FCT_IF)) {
+		if (!FlowControlTopIs(FlowControlType.FCT_IF)) {
 			SetError("'else' without 'if'");
 			return false;
 		}
-		compFlowControl top = FlowControlTOS();
+		FlowControl top = FlowControlTOS();
 		m_flowControl.remove(m_flowControl.size() - 1);
 
 		// Skip "else"
@@ -2951,12 +2945,12 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Push else to flow control stack
-		m_flowControl.add(new compFlowControl(compFlowControlType.FCT_ELSE,
+		m_flowControl.add(new FlowControl(FlowControlType.FCT_ELSE,
 				m_vm.InstructionCount(), 0, line, col, top.m_impliedEndif, "",
 				top.m_blockIf));
 
 		// Generate code to jump around else block
-		AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new VMValue(0));
+		AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new Value(0));
 
 		// Fixup jump around IF block
 		assert (top.m_jumpOut < m_vm.InstructionCount());
@@ -2971,11 +2965,11 @@ public class TomBasicCompiler extends HasErrorState {
 	boolean CompileEndIf(boolean automatic) {
 
 		// Find if or else on top of flow control stack
-		if (!(FlowControlTopIs(compFlowControlType.FCT_IF) || FlowControlTopIs(compFlowControlType.FCT_ELSE))) {
+		if (!(FlowControlTopIs(FlowControlType.FCT_IF) || FlowControlTopIs(FlowControlType.FCT_ELSE))) {
 			SetError("'endif' without 'if'");
 			return false;
 		}
-		compFlowControl top = FlowControlTOS();
+		FlowControl top = FlowControlTOS();
 		m_flowControl.remove(m_flowControl.size() - 1);
 
 		// Skip "endif"
@@ -3079,7 +3073,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Compile load variable and push
-		compParserPos savedPos = SavePos(); // Save parser position
+		ParserPos savedPos = SavePos(); // Save parser position
 		m_parser.SetPos(varLine, varCol); // Point to variable name
 		m_token = varToken;
 
@@ -3098,7 +3092,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Evaluate step. (Must be a constant expression)
 		Integer stepType = loopVarType;
-		VMValue stepValue = new VMValue();
+		Value stepValue = new Value();
 
 		if (m_token.m_text.equals("step")) {
 
@@ -3109,7 +3103,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Compile step constant (expression)
 			String stringValue = "";
 			Mutable<Integer> stepTypeRef = new Mutable<Integer>(stepType);
-			Mutable<VMValue> stepValueRef = new Mutable<VMValue>(stepValue);
+			Mutable<Value> stepValueRef = new Mutable<Value>(stepValue);
 			Mutable<String> stringValueRef = new Mutable<String>(stringValue);
 			if (!EvaluateConstantExpression(stepTypeRef, stepValueRef,
 					stringValueRef))
@@ -3125,13 +3119,13 @@ public class TomBasicCompiler extends HasErrorState {
 			// No explicit step.
 			// Use 1 as default
 			if (stepType == ValType.VTP_INT)
-				stepValue = new VMValue(1);
+				stepValue = new Value(1);
 			else
-				stepValue = new VMValue(1.0f);
+				stepValue = new Value(1.0f);
 		}
 
 		// Choose comparison operator (based on direction of step)
-		compOperator comparison;
+		Operator comparison;
 		if (stepType == ValType.VTP_INT) {
 			if (stepValue.getIntVal() > 0)
 				comparison = m_binaryOperators.get("<=");
@@ -3150,7 +3144,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Compile comparison expression
-		m_operatorStack.add(new compStackedOperator(comparison));
+		m_operatorStack.add(new StackedOperator(comparison));
 		if (!CompileOperation())
 			return false;
 
@@ -3163,12 +3157,12 @@ public class TomBasicCompiler extends HasErrorState {
 						.getIntVal()) : String.valueOf(stepValue.getRealVal()));
 
 		// Create flow control structure
-		m_flowControl.add(new compFlowControl(compFlowControlType.FCT_FOR, m_vm
+		m_flowControl.add(new FlowControl(FlowControlType.FCT_FOR, m_vm
 				.InstructionCount(), loopPos, line, col, false, step, false));
 
 		// Create conditional jump
 		AddInstruction(OpCode.OP_JUMP_FALSE, ValType.VTP_INT,
-				new VMValue(0));
+				new Value(0));
 
 		return true;
 	}
@@ -3176,11 +3170,11 @@ public class TomBasicCompiler extends HasErrorState {
 	boolean CompileNext() {
 
 		// Find for on top of flow control stack
-		if (!FlowControlTopIs(compFlowControlType.FCT_FOR)) {
+		if (!FlowControlTopIs(FlowControlType.FCT_FOR)) {
 			SetError("'next' without 'for'");
 			return false;
 		}
-		compFlowControl top = FlowControlTOS();
+		FlowControl top = FlowControlTOS();
 		m_flowControl.remove(m_flowControl.size() - 1);
 
 		// Skip "next"
@@ -3214,7 +3208,7 @@ public class TomBasicCompiler extends HasErrorState {
 		m_token = saveToken;
 
 		// Generate jump back instruction
-		AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new VMValue(
+		AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new Value(
 				top.m_jumpLoop));
 
 		// Fixup jump around FOR block
@@ -3247,23 +3241,23 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Create flow control structure
-		m_flowControl.add(new compFlowControl(compFlowControlType.FCT_WHILE,
+		m_flowControl.add(new FlowControl(FlowControlType.FCT_WHILE,
 				m_vm.InstructionCount(), loopPos, line, col));
 
 		// Create conditional jump
 		AddInstruction(OpCode.OP_JUMP_FALSE, ValType.VTP_INT,
-				new VMValue(0));
+				new Value(0));
 		return true;
 	}
 
 	boolean CompileWend() {
 
 		// Find while on top of flow control stack
-		if (!FlowControlTopIs(compFlowControlType.FCT_WHILE)) {
+		if (!FlowControlTopIs(FlowControlType.FCT_WHILE)) {
 			SetError("'wend' without 'while'");
 			return false;
 		}
-		compFlowControl top = FlowControlTOS();
+		FlowControl top = FlowControlTOS();
 		m_flowControl.remove(m_flowControl.size() - 1);
 
 		// Skip "wend"
@@ -3271,7 +3265,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Generate jump back
-		AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new VMValue(
+		AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new Value(
 				top.m_jumpLoop));
 
 		// Fixup jump around WHILE block
@@ -3314,14 +3308,14 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 			// Create flow control structure
-			m_flowControl.add(new compFlowControl(
-					compFlowControlType.FCT_DO_PRE, m_vm.InstructionCount(),
+			m_flowControl.add(new FlowControl(
+					FlowControlType.FCT_DO_PRE, m_vm.InstructionCount(),
 					loopPos, line, col));
 
 			// Create conditional jump
 			AddInstruction(negative ? OpCode.OP_JUMP_TRUE
 					: OpCode.OP_JUMP_FALSE, ValType.VTP_INT,
-					new VMValue(0));
+					new Value(0));
 
 			// Done
 			return true;
@@ -3329,8 +3323,8 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Post condition DO.
 			// Create flow control structure
-			m_flowControl.add(new compFlowControl(
-					compFlowControlType.FCT_DO_POST, m_vm.InstructionCount(),
+			m_flowControl.add(new FlowControl(
+					FlowControlType.FCT_DO_POST, m_vm.InstructionCount(),
 					loopPos, line, col));
 			return true;
 		}
@@ -3338,13 +3332,13 @@ public class TomBasicCompiler extends HasErrorState {
 
 	boolean CompileLoop() {
 
-		if (!(FlowControlTopIs(compFlowControlType.FCT_DO_PRE) || FlowControlTopIs(compFlowControlType.FCT_DO_POST))) {
+		if (!(FlowControlTopIs(FlowControlType.FCT_DO_PRE) || FlowControlTopIs(FlowControlType.FCT_DO_POST))) {
 			SetError("'loop' without 'do'");
 			return false;
 		}
 
 		// Find DO details
-		compFlowControl top = FlowControlTOS();
+		FlowControl top = FlowControlTOS();
 		m_flowControl.remove(m_flowControl.size() - 1);
 
 		// Skip "DO"
@@ -3355,7 +3349,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (m_token.m_text.equals("while") || m_token.m_text.equals("until")) {
 
 			// This must be a post condition "do"
-			if (top.m_type != compFlowControlType.FCT_DO_POST) {
+			if (top.m_type != FlowControlType.FCT_DO_POST) {
 				SetError("'until' or 'while' condition has already been specified for this 'do'");
 				return false;
 			}
@@ -3381,7 +3375,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Create conditional jump back to "do"
 			AddInstruction(negative ? OpCode.OP_JUMP_FALSE
-					: OpCode.OP_JUMP_TRUE, ValType.VTP_INT, new VMValue(
+					: OpCode.OP_JUMP_TRUE, ValType.VTP_INT, new Value(
 							top.m_jumpLoop));
 
 			// Done
@@ -3389,12 +3383,12 @@ public class TomBasicCompiler extends HasErrorState {
 		} else {
 
 			// Jump unconditionally back to "do"
-			AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new VMValue(
+			AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new Value(
 					top.m_jumpLoop));
 
 			// If this is a precondition "do", fixup the jump around the "do"
 			// block
-			if (top.m_type == compFlowControlType.FCT_DO_PRE) {
+			if (top.m_type == FlowControlType.FCT_DO_PRE) {
 				assert (top.m_jumpOut < m_vm.InstructionCount());
 				m_vm.Instruction(top.m_jumpOut).mValue.setIntVal(m_vm
 						.InstructionCount());
@@ -3421,7 +3415,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 		return true;
 	}
-	public void AddConstants(Map<String, compConstant> constants){
+	public void AddConstants(Map<String, Constant> constants){
 		if (constants == null)
 			return;
 		//TODO Check if constant already exists before adding
@@ -3429,12 +3423,12 @@ public class TomBasicCompiler extends HasErrorState {
 			m_constants.put(key, constants.get(key));
 	}
 	public void AddFunctions(Map<String, List<Function>> functions,
-			Map<String, List<compFuncSpec>> specs) {
+			Map<String, List<FuncSpec>> specs) {
 		int specIndex;
 		int vmIndex;
 		int i;
 
-		compFuncSpec spec;
+		FuncSpec spec;
 		if(functions == null|| specs == null)
 			return;
 		for (String name : functions.keySet()) {
@@ -3477,7 +3471,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// We collect the possible candidates in an array, and prune out the
 		// ones
 		// whose paramater types are incompatible as we go..)
-		compExtFuncSpec[] functions = new compExtFuncSpec[TC_MAXOVERLOADEDFUNCTIONS];
+		ExtFuncSpec[] functions = new ExtFuncSpec[TC_MAXOVERLOADEDFUNCTIONS];
 		int functionCount = 0;
 
 		// Find builtin functions
@@ -3485,13 +3479,13 @@ public class TomBasicCompiler extends HasErrorState {
 		for (Integer i : m_functionIndex.get(m_token.m_text)) {
 			if (!(functionCount < TC_MAXOVERLOADEDFUNCTIONS))
 				break;
-			compFuncSpec spec = m_functions.get(i); // Get specification
+			FuncSpec spec = m_functions.get(i); // Get specification
 			found = true;
 
 			// Check whether function returns a value (if we need one)
 			if (!needResult || spec.isFunction()) {
 				if (functions[functionCount] == null)
-					functions[functionCount] = new compExtFuncSpec();
+					functions[functionCount] = new ExtFuncSpec();
 				functions[functionCount].m_spec = spec;
 				functions[functionCount].m_builtin = true;
 				functionCount++;
@@ -3530,7 +3524,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// instances
 		// should have no brackets.)
 		boolean brackets = functions[0].m_spec.hasBrackets();
-		if (m_syntax == compLanguageSyntax.LS_TRADITIONAL && brackets) { // Special
+		if (m_syntax == LanguageSyntax.LS_TRADITIONAL && brackets) { // Special
 			// brackets
 			// rules
 			// for
@@ -3684,7 +3678,7 @@ public class TomBasicCompiler extends HasErrorState {
 				if (isAnyType) {
 					AddInstruction(OpCode.OP_LOAD_CONST,
 							ValType.VTP_INT,
-							new VMValue((int) m_vm.StoreType(m_regType)));
+							new Value((int) m_vm.StoreType(m_regType)));
 					m_regType.Set(ValType.VTP_INT);
 					CompilePush();
 					pushCount++;
@@ -3710,7 +3704,7 @@ public class TomBasicCompiler extends HasErrorState {
 				SetError("Expected ','");
 			return false;
 		}
-		compExtFuncSpec spec = functions[matchIndex];
+		ExtFuncSpec spec = functions[matchIndex];
 
 		// Expect closing bracket
 		if (brackets) {
@@ -3728,7 +3722,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Builtin function
 			AddInstruction(OpCode.OP_CALL_FUNC, ValType.VTP_INT,
-					new VMValue(spec.m_spec.getIndex()));
+					new Value(spec.m_spec.getIndex()));
 		else
 
 			// DLL function
@@ -3738,7 +3732,7 @@ public class TomBasicCompiler extends HasErrorState {
 			AddInstruction(
 					OpCode.OP_CALL_DLL,
 					ValType.VTP_INT,
-					new VMValue((spec.m_pluginIndex << 24)
+					new Value((spec.m_pluginIndex << 24)
 							| (spec.m_spec.getIndex() & 0x00ffffff)));
 
 		// If function has return type, it will have changed the type in the
@@ -3754,7 +3748,7 @@ public class TomBasicCompiler extends HasErrorState {
 					&& m_vm.DataTypes().ContainsString(m_regType))
 				AddInstruction(OpCode.OP_REG_DESTRUCTOR,
 						ValType.VTP_INT,
-						new VMValue((int) m_vm.StoreType(m_regType)));
+						new Value((int) m_vm.StoreType(m_regType)));
 
 			if (!CompileDataLookup(false))
 				return false;
@@ -3771,7 +3765,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Generate explicit timesharing break (if necessary)
 		if (spec.m_spec.getTimeshare())
 			AddInstruction(OpCode.OP_TIMESHARE, ValType.VTP_INT,
-					new VMValue());
+					new Value());
 
 		return true;
 	}
@@ -3874,11 +3868,11 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 			// Compile constant expression
-			VMValue value = new VMValue();
+			Value value = new Value();
 			String stringValue = "";
 
 			Mutable<Integer> typeRef = new Mutable<Integer>(type);
-			Mutable<VMValue> valueRef = new Mutable<VMValue>(value);
+			Mutable<Value> valueRef = new Mutable<Value>(value);
 			Mutable<String> stringValueRef = new Mutable<String>(stringValue);
 
 			if (!EvaluateConstantExpression(typeRef, valueRef, stringValueRef))
@@ -3892,14 +3886,14 @@ public class TomBasicCompiler extends HasErrorState {
 			switch (type) {
 			case ValType.VTP_INT:
 				m_programConstants.put(name,
-						new compConstant(value.getIntVal()));
+						new Constant(value.getIntVal()));
 				break;
 			case ValType.VTP_REAL:
 				m_programConstants.put(name,
-						new compConstant(value.getRealVal()));
+						new Constant(value.getRealVal()));
 				break;
 			case ValType.VTP_STRING:
-				m_programConstants.put(name, new compConstant(
+				m_programConstants.put(name, new Constant(
 						(String) ("S" + stringValue)));
 				break;
 			default:
@@ -3915,7 +3909,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Add instruction to free temp data (if necessary)
 		if (m_freeTempData)
 			AddInstruction(OpCode.OP_FREE_TEMP, ValType.VTP_INT,
-					new VMValue());
+					new Value());
 		m_freeTempData = false;
 
 		return true;
@@ -3956,7 +3950,7 @@ public class TomBasicCompiler extends HasErrorState {
 		assert (opFunc.get() >= 0);
 		assert (opFunc.get() < m_vm.OperatorFunctionCount());
 		AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, ValType.VTP_INT,
-				new VMValue(opFunc.get()));
+				new Value(opFunc.get()));
 
 		// Set register to result type
 		m_regType.Set(resultType.get());
@@ -4007,7 +4001,7 @@ public class TomBasicCompiler extends HasErrorState {
 		assert (opFunc.get() >= 0);
 		assert (opFunc.get() < m_vm.OperatorFunctionCount());
 		AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, ValType.VTP_INT,
-				new VMValue(opFunc.get()));
+				new Value(opFunc.get()));
 
 		// Set register to result type
 		m_regType.Set(resultType.get());
@@ -4090,7 +4084,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Add alloc instruction
-		AddInstruction(OpCode.OP_ALLOC, ValType.VTP_INT, new VMValue(
+		AddInstruction(OpCode.OP_ALLOC, ValType.VTP_INT, new Value(
 				(int) m_vm.StoreType(dataType)));
 
 		// Instruction automatically removes all array indices that were pushed
@@ -4110,22 +4104,22 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Generate code to save address to pointer
-		AddInstruction(OpCode.OP_SAVE, ValType.VTP_INT, new VMValue());
+		AddInstruction(OpCode.OP_SAVE, ValType.VTP_INT, new Value());
 
 		return true;
 	}
 
-	compParserPos SavePos() {
+	ParserPos SavePos() {
 
 		// Save the current parser position, so we can return to it later.
-		compParserPos pos = new compParserPos();
+		ParserPos pos = new ParserPos();
 		pos.m_line = m_parser.Line();
 		pos.m_col = m_parser.Col();
 		pos.m_token = m_token;
 		return pos;
 	}
 
-	void RestorePos(compParserPos pos) {
+	void RestorePos(ParserPos pos) {
 
 		// Restore parser position
 		m_parser.SetPos(pos.m_line, pos.m_col);
@@ -4189,7 +4183,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Terminate program
-		AddInstruction(OpCode.OP_END, ValType.VTP_INT, new VMValue());
+		AddInstruction(OpCode.OP_END, ValType.VTP_INT, new Value());
 
 		// Return expression result type
 		valType.Set(m_regType);
@@ -4221,11 +4215,11 @@ public class TomBasicCompiler extends HasErrorState {
 			if (m_token.m_text.equals(",") || AtSeparatorOrSpecial()) {
 
 				// Store a blank string
-				m_vm.StoreProgramData(ValType.VTP_STRING, new VMValue(0));
+				m_vm.StoreProgramData(ValType.VTP_STRING, new Value(0));
 			} else {
 
 				// Extract value
-				VMValue v = new VMValue();
+				Value v = new Value();
 				if (m_token.m_valType == ValType.VTP_STRING) {
 
 					// Allocate new string constant
@@ -4297,14 +4291,14 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Generate READ op-code
 			AddInstruction(OpCode.OP_DATA_READ, type.m_basicType,
-					new VMValue());
+					new Value());
 
 			if (!CompilePop())
 				return false;
 
 			// Save reg into [reg2]
 			AddInstruction(OpCode.OP_SAVE, m_reg2Type.m_basicType,
-					new VMValue());
+					new Value());
 		}
 		return true;
 	}
@@ -4327,7 +4321,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Record reset, so that we can fix up the offset in the second
 			// compile pass.
 			String labelName = m_symbolPrefix + m_token.m_text;
-			m_resets.add(new compJump(m_vm.InstructionCount(), labelName));
+			m_resets.add(new Jump(m_vm.InstructionCount(), labelName));
 
 			// Skip label name
 			if (!GetToken())
@@ -4336,13 +4330,13 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Add jump instruction
 		AddInstruction(OpCode.OP_DATA_RESET, ValType.VTP_INT,
-				new VMValue(0));
+				new Value(0));
 
 		return true;
 	}
 
 	boolean EvaluateConstantExpression(Mutable<Integer> basictype,
-			Mutable<VMValue> result, Mutable<String> stringResult) {
+			Mutable<Value> result, Mutable<String> stringResult) {
 
 		// Note: If type is passed in as VTP_UNDEFINED, then any constant
 		// expression
@@ -4367,7 +4361,7 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 		// Add "end program" opcode, so we can safely evaluate it
-		AddInstruction(OpCode.OP_END, ValType.VTP_INT, new VMValue());
+		AddInstruction(OpCode.OP_END, ValType.VTP_INT, new Value());
 
 		// Setup virtual machine to execute expression
 		// Note: Expressions can't branch or loop, and it's very difficult to
@@ -4414,12 +4408,12 @@ public class TomBasicCompiler extends HasErrorState {
 	boolean CompileConstantExpression(int basictype) {
 
 		// Evaluate constant expression
-		VMValue value = new VMValue();
+		Value value = new Value();
 		String stringValue = "";
 
 		// Create wrappers to pass values by reference
 		Mutable<Integer> typeRef = new Mutable<Integer>(basictype);
-		Mutable<VMValue> valueRef = new Mutable<VMValue>(value);
+		Mutable<Value> valueRef = new Mutable<Value>(value);
 		Mutable<String> stringValueRef = new Mutable<String>(stringValue);
 
 		if (!EvaluateConstantExpression(typeRef, valueRef, stringValueRef))
@@ -4436,20 +4430,20 @@ public class TomBasicCompiler extends HasErrorState {
 			// Create string constant entry if necessary
 			int index = m_vm.StoreStringConstant(stringValue);
 			AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_STRING,
-					new VMValue(index));
+					new Value(index));
 		} else
 			AddInstruction(OpCode.OP_LOAD_CONST, basictype, value);
 
 		return true;
 	}
 
-	compFuncSpec FindFunction(String name, int paramCount) {
+	FuncSpec FindFunction(String name, int paramCount) {
 
 		// Search for function with matching name & param count
 		List<Integer> l = m_functionIndex.get(name);
 		if (l != null)
 			for (Integer i : l) {
-				compFuncSpec spec = m_functions.get(i);
+				FuncSpec spec = m_functions.get(i);
 				if (spec.getParamTypes().Params().size() == paramCount)
 					return spec;
 			}
@@ -4502,7 +4496,7 @@ public class TomBasicCompiler extends HasErrorState {
 			if (!CompilePop())
 				return false;
 			AddInstruction(OpCode.OP_OP_PLUS, BasicValType.VTP_STRING,
-					new VMValue());
+					new Value());
 			m_regType.Set(BasicValType.VTP_STRING);
 
 			operandCount--;
@@ -4515,19 +4509,19 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Find print/printr function
 		boolean newLine = forceNewLine
-				|| ((m_syntax == compLanguageSyntax.LS_TRADITIONAL || m_syntax == compLanguageSyntax.LS_TRADITIONAL_PRINT) && !foundSemiColon);
+				|| ((m_syntax == LanguageSyntax.LS_TRADITIONAL || m_syntax == LanguageSyntax.LS_TRADITIONAL_PRINT) && !foundSemiColon);
 
 		if (!newLine && operandCount == 0) // Nothing to print?
 			return true; // Do nothing!
 
-		compFuncSpec spec = FindFunction(newLine ? "printr" : "print",
+		FuncSpec spec = FindFunction(newLine ? "printr" : "print",
 				operandCount);
 		if (spec == null)
 			return false;
 
 		// Generate code to call it
 		AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT,
-				new VMValue(spec.getIndex()));
+				new Value(spec.getIndex()));
 
 		// Generate code to clean up stack
 		if (operandCount == 1)
@@ -4577,17 +4571,17 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Generate code to print it (load, push, call "print" function)
 			AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_STRING,
-					new VMValue(index));
+					new Value(index));
 			m_regType.Set(ValType.VTP_STRING);
 			if (!CompilePush())
 				return false;
 
 			// Generate code to call "print" function
-			compFuncSpec printSpec = FindFunction("print", 1);
+			FuncSpec printSpec = FindFunction("print", 1);
 			if (printSpec == null)
 				return false;
 			AddInstruction(OpCode.OP_CALL_FUNC, ValType.VTP_INT,
-					new VMValue(printSpec.getIndex()));
+					new Value(printSpec.getIndex()));
 
 			// Generate code to clean up stack
 			if (!CompilePop())
@@ -4617,13 +4611,13 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Generate code to call "input$()" function
-		compFuncSpec inputSpec = FindFunction("input$", 0);
+		FuncSpec inputSpec = FindFunction("input$", 0);
 		if (inputSpec == null)
 			return false;
 		AddInstruction(OpCode.OP_CALL_FUNC, ValType.VTP_INT,
-				new VMValue(inputSpec.getIndex()));
+				new Value(inputSpec.getIndex()));
 		AddInstruction(OpCode.OP_TIMESHARE, ValType.VTP_INT,
-				new VMValue()); // Timesharing break
+				new Value()); // Timesharing break
 		// is necessary
 		m_regType.Set(ValType.VTP_STRING);
 
@@ -4637,11 +4631,11 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 			// Generate code to call "val()" function
-			compFuncSpec valSpec = FindFunction("val", 1);
+			FuncSpec valSpec = FindFunction("val", 1);
 			if (valSpec == null)
 				return false;
 			AddInstruction(OpCode.OP_CALL_FUNC, ValType.VTP_INT,
-					new VMValue(valSpec.getIndex()));
+					new Value(valSpec.getIndex()));
 			m_regType.Set(ValType.VTP_REAL);
 
 			// Clean up stack
@@ -4660,7 +4654,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Generate code to save value
-		AddInstruction(OpCode.OP_SAVE, m_reg2Type.m_basicType, new VMValue());
+		AddInstruction(OpCode.OP_SAVE, m_reg2Type.m_basicType, new Value());
 
 		return true;
 	}
@@ -4674,11 +4668,11 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Expect syntax type
 		if (m_token.m_text.equals("traditional"))
-			m_syntax = compLanguageSyntax.LS_TRADITIONAL;
+			m_syntax = LanguageSyntax.LS_TRADITIONAL;
 		else if (m_token.m_text.equals("basic4gl"))
-			m_syntax = compLanguageSyntax.LS_BASIC4GL;
+			m_syntax = LanguageSyntax.LS_BASIC4GL;
 		else if (m_token.m_text.equals("traditional_print"))
-			m_syntax = compLanguageSyntax.LS_TRADITIONAL_PRINT;
+			m_syntax = LanguageSyntax.LS_TRADITIONAL_PRINT;
 		else {
 			SetError("Expected 'traditional', 'basic4gl' or 'traditional_print'");
 			return false;
@@ -4698,7 +4692,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Look for "sub" or "function"
-		return CompileUserFunction(compUserFunctionType.UFT_FWDDECLARATION);
+		return CompileUserFunction(UserFunctionType.UFT_FWDDECLARATION);
 	}
 
 	boolean CompileUserFunctionRuntimeDecl() {
@@ -4706,10 +4700,10 @@ public class TomBasicCompiler extends HasErrorState {
 		if (!GetToken())
 			return false;
 
-		return CompileUserFunction(compUserFunctionType.UFT_RUNTIMEDECLARATION);
+		return CompileUserFunction(UserFunctionType.UFT_RUNTIMEDECLARATION);
 	}
 
-	boolean CompileUserFunction(compUserFunctionType funcType) {
+	boolean CompileUserFunction(UserFunctionType funcType) {
 		// Function or sub?
 		boolean hasReturnVal;
 		if (m_token.m_text == "function")
@@ -4820,9 +4814,9 @@ public class TomBasicCompiler extends HasErrorState {
 			while (m_token.m_text.equals("(")) {
 
 				// Room for one more dimension?
-				if (type.m_arrayLevel >= Constants.VM_MAXDIMENSIONS) {
+				if (type.m_arrayLevel >= Constants.ARRAY_MAX_DIMENSIONS) {
 					SetError((String) "Arrays cannot have more than "
-							+ String.valueOf(Constants.VM_MAXDIMENSIONS)
+							+ String.valueOf(Constants.ARRAY_MAX_DIMENSIONS)
 							+ " dimensions.");
 					return false;
 				}
@@ -4867,10 +4861,10 @@ public class TomBasicCompiler extends HasErrorState {
 			m_userFuncPrototype.hasReturnVal = false;
 
 		// Store function, and get its index (in m_currentFunction)
-		Vector<vmUserFunc> functions = m_vm.UserFunctions();
-		Vector<vmUserFuncPrototype> prototypes = m_vm.UserFunctionPrototypes();
+		Vector<UserFunc> functions = m_vm.UserFunctions();
+		Vector<UserFuncPrototype> prototypes = m_vm.UserFunctionPrototypes();
 
-		if (funcType == compUserFunctionType.UFT_FWDDECLARATION) {
+		if (funcType == UserFunctionType.UFT_FWDDECLARATION) {
 			// Forward declaration.
 
 			// Function name must not already have been used
@@ -4891,7 +4885,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Allocate new function
 			prototypes.add(m_userFuncPrototype);
-			functions.add(new vmUserFunc(prototypes.size() - 1, false));
+			functions.add(new UserFunc(prototypes.size() - 1, false));
 			m_currentFunction = functions.size() - 1;
 
 			// Map name to function
@@ -4902,7 +4896,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Build reverse index (for debugger)
 			m_userFunctionReverseIndex.put(m_currentFunction, name);
-		} else if (funcType == compUserFunctionType.UFT_RUNTIMEDECLARATION) {
+		} else if (funcType == UserFunctionType.UFT_RUNTIMEDECLARATION) {
 
 			// Function name must not already have been used
 			if (IsLocalUserFunction(name)) {
@@ -4924,18 +4918,18 @@ public class TomBasicCompiler extends HasErrorState {
 			prototypes.add(m_userFuncPrototype);
 
 			// Store runtime function
-			m_runtimeFunctions.add(new compRuntimeFunction(
+			m_runtimeFunctions.add(new com.basic4gl.compiler.RuntimeFunction(
 					prototypes.size() - 1));
 
 			// Map name to runtime function
 			m_runtimeFunctionIndex.put(name, m_runtimeFunctions.size() - 1);
-		} else if (funcType == compUserFunctionType.UFT_IMPLEMENTATION) {
+		} else if (funcType == UserFunctionType.UFT_IMPLEMENTATION) {
 
 			// Function implementation
 
 			// Create jump-past-function op-code
 			m_functionJumpOver = m_vm.InstructionCount();
-			AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new VMValue(
+			AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new Value(
 					0)); // Jump target will be fixed up when "endfunction" is
 			// compiled
 
@@ -4943,7 +4937,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Implementation of runtime function
 				int index = m_runtimeFunctionIndex.get(name);
-				vmRuntimeFunction runtimeFunction = m_vm.CurrentCodeBlock()
+				RuntimeFunction runtimeFunction = m_vm.CurrentCodeBlock()
 						.GetRuntimeFunction(index);
 
 				// Check if already implemented
@@ -4962,7 +4956,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Allocate new function
 				prototypes.add(m_userFuncPrototype);
-				functions.add(new vmUserFunc(prototypes.size() - 1, true, m_vm
+				functions.add(new UserFunc(prototypes.size() - 1, true, m_vm
 						.InstructionCount()));
 				m_currentFunction = functions.size() - 1;
 
@@ -5002,7 +4996,7 @@ public class TomBasicCompiler extends HasErrorState {
 					prototypes.add(m_userFuncPrototype);
 
 					// Allocate a new function
-					functions.add(new vmUserFunc(prototypes.size() - 1, true,
+					functions.add(new UserFunc(prototypes.size() - 1, true,
 							m_vm.InstructionCount()));
 					m_currentFunction = functions.size() - 1;
 				}
@@ -5056,11 +5050,11 @@ public class TomBasicCompiler extends HasErrorState {
 		// a runtime error.
 		if (UserPrototype().hasReturnVal)
 			AddInstruction(OpCode.OP_NO_VALUE_RETURNED, ValType.VTP_INT,
-					new VMValue(0));
+					new Value(0));
 		else
 			// Add return-from-user-function instruction
 			AddInstruction(OpCode.OP_RETURN_USER_FUNC, ValType.VTP_INT,
-					new VMValue(0));
+					new Value(0));
 
 		// Fix up jump-past-function op-code
 		assert (m_functionJumpOver < m_vm.InstructionCount());
@@ -5099,7 +5093,7 @@ public class TomBasicCompiler extends HasErrorState {
 			index = m_visibleUserFunctionIndex.get(name);
 			prototypeIndex = m_vm.UserFunctions().get(index).prototypeIndex;
 		}
-		vmUserFuncPrototype prototype = m_vm.UserFunctionPrototypes().get(
+		UserFuncPrototype prototype = m_vm.UserFunctionPrototypes().get(
 				prototypeIndex);
 
 		if (mustReturnValue && !prototype.hasReturnVal) {
@@ -5111,10 +5105,10 @@ public class TomBasicCompiler extends HasErrorState {
 		// Stack frame remains inactive while evaluating its parameters.
 		if (isRuntimeFunc)
 			AddInstruction(OpCode.OP_CREATE_RUNTIME_FRAME,
-					ValType.VTP_INT, new VMValue(index));
+					ValType.VTP_INT, new Value(index));
 		else
 			AddInstruction(OpCode.OP_CREATE_USER_FRAME, ValType.VTP_INT,
-					new VMValue(index));
+					new Value(index));
 
 		// Expect "("
 		if (!m_token.m_text.equals("(")) {
@@ -5137,7 +5131,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 			needComma = true;
 
-			Mutable<vmUserFuncPrototype> funcRef = new Mutable<vmUserFuncPrototype>(
+			Mutable<UserFuncPrototype> funcRef = new Mutable<UserFuncPrototype>(
 					prototype);
 			if (!CompileUserFuncParam(funcRef, i))
 				return false;
@@ -5157,7 +5151,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Type: Unused.
 		// Value: index of function specification.
 		AddInstruction(OpCode.OP_CALL_USER_FUNC, ValType.VTP_INT,
-				new VMValue());
+				new Value());
 
 		if (prototype.hasReturnVal) {
 
@@ -5168,7 +5162,7 @@ public class TomBasicCompiler extends HasErrorState {
 				AddInstruction(
 						OpCode.OP_REG_DESTRUCTOR,
 						ValType.VTP_INT,
-						new VMValue((int) m_vm
+						new Value((int) m_vm
 								.StoreType(prototype.returnValType)));
 
 			// Set register type to value returned from function (if applies)
@@ -5187,7 +5181,7 @@ public class TomBasicCompiler extends HasErrorState {
 		return true;
 	}
 
-	boolean CompileUserFuncParam(Mutable<vmUserFuncPrototype> prototype, int i) {
+	boolean CompileUserFuncParam(Mutable<UserFuncPrototype> prototype, int i) {
 
 		// Generate code to store result as a function parameter
 		ValType type = prototype.get().localVarTypes.get(i);
@@ -5207,7 +5201,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Save reg into parameter
 			AddInstruction(OpCode.OP_SAVE_PARAM, type.m_basicType,
-					new VMValue(i));
+					new Value(i));
 		}
 
 		// Pointer case. Parameter must be a pointer and m_reg must point to a
@@ -5219,7 +5213,7 @@ public class TomBasicCompiler extends HasErrorState {
 				if (!CompileNull())
 					return false;
 				AddInstruction(OpCode.OP_SAVE_PARAM, ValType.VTP_INT,
-						new VMValue(i));
+						new Value(i));
 			} else {
 
 				// Otherwise we implicitly take the address of any variable
@@ -5235,7 +5229,7 @@ public class TomBasicCompiler extends HasErrorState {
 						&& m_regType.m_arrayLevel == type.m_arrayLevel
 						&& m_regType.m_basicType == type.m_basicType)
 					AddInstruction(OpCode.OP_SAVE_PARAM,
-							ValType.VTP_INT, new VMValue(i));
+							ValType.VTP_INT, new Value(i));
 
 				else {
 					SetError("Types do not match");
@@ -5258,9 +5252,9 @@ public class TomBasicCompiler extends HasErrorState {
 					&& m_regType.m_basicType == type.m_basicType) {
 				AddInstruction(OpCode.OP_COPY_USER_STACK,
 						ValType.VTP_INT,
-						new VMValue((int) m_vm.StoreType(type)));
+						new Value((int) m_vm.StoreType(type)));
 				AddInstruction(OpCode.OP_SAVE_PARAM_PTR,
-						ValType.VTP_INT, new VMValue(i));
+						ValType.VTP_INT, new Value(i));
 			} else {
 				SetError("Types do not match");
 				return false;
@@ -5271,7 +5265,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// unwinds.
 		if (m_vm.DataTypes().ContainsString(type))
 			AddInstruction(OpCode.OP_REG_DESTRUCTOR, ValType.VTP_INT,
-					new VMValue((int) m_vm.StoreType(type)));
+					new Value((int) m_vm.StoreType(type)));
 
 		return true;
 	}
@@ -5295,27 +5289,27 @@ public class TomBasicCompiler extends HasErrorState {
 
 					// Add instruction to move that data into temp data
 					AddInstruction(OpCode.OP_MOVE_TEMP, ValType.VTP_INT,
-							new VMValue((int) m_vm.StoreType(type)));
+							new Value((int) m_vm.StoreType(type)));
 
 					// Add return-from-function OP-code
 					// Note: The 0 in the instruction value indicates that temp
 					// data should NOT be freed on return (as we have just moved
 					// the return value there.)
 					AddInstruction(OpCode.OP_RETURN_USER_FUNC,
-							ValType.VTP_INT, new VMValue(0));
+							ValType.VTP_INT, new Value(0));
 				} else
 					// Add return-from-function OP-code
 					// Note: The 1 in the instruction value indicates that temp
 					// data should be freed on return.
 					AddInstruction(OpCode.OP_RETURN_USER_FUNC,
-							ValType.VTP_INT, new VMValue(1));
+							ValType.VTP_INT, new Value(1));
 			} else
 				AddInstruction(OpCode.OP_RETURN_USER_FUNC,
-						ValType.VTP_INT, new VMValue(1));
+						ValType.VTP_INT, new Value(1));
 		} else {
 			// Add "return from Gosub" op-code
 			AddInstruction(OpCode.OP_RETURN, ValType.VTP_INT,
-					new VMValue());
+					new Value());
 		}
 
 		return true;
@@ -5396,7 +5390,7 @@ public class TomBasicCompiler extends HasErrorState {
 			while (!name.equals("")) {
 
 				// Read constant details
-				compConstant constant = new compConstant();
+				Constant constant = new Constant();
 				constant.StreamIn(buffer);
 
 				// Store constant
@@ -5412,7 +5406,7 @@ public class TomBasicCompiler extends HasErrorState {
 			while (!name.equals("")) {
 
 				// Read label details
-				compLabel label = new compLabel();
+				Label label = new Label();
 				label.StreamIn(buffer);
 
 				// Store label

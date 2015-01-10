@@ -4,9 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.compConstant;
-import com.basic4gl.util.compFuncSpec;
+import com.basic4gl.compiler.Constant;
+import com.basic4gl.util.FuncSpec;
 import com.basic4gl.vm.TomVM;
 import com.basic4gl.vm.util.Function;
 
@@ -66,7 +65,7 @@ public interface Library {
 	 * Returns a list of constants for the compiler to use
 	 * @param comp
 	 */
-	public abstract Map<String, compConstant> constants();
+	public abstract Map<String, Constant> constants();
 	
 	/**
 	 * Initialize and register functions and constants with the compiler.
@@ -80,7 +79,7 @@ public interface Library {
 	 * comp.AddFunction() comp.AddConstant()
 	 * @param comp
 	 */
-	public abstract Map<String, List<compFuncSpec>> specs();
+	public abstract Map<String, List<FuncSpec>> specs();
 	
 	/**
 	 * Documentation for functions and constants included in library; 
