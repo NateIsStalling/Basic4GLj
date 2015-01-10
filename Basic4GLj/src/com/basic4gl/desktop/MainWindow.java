@@ -6,6 +6,7 @@ import com.basic4gl.lib.util.Library;
 import com.basic4gl.lib.util.Target;
 import com.basic4gl.lib.util.TaskCallback;
 import com.basic4gl.vm.TomVM;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -257,14 +258,16 @@ public class MainWindow {
 		mTabControl.addTab(editor.getTitle(), editor.pane);
 
 		//TODO get current editor
-		mFileEditors.get(0).editorPane.setKeywordColor(mKeywords);
+		//TODO set colors
+		//mFileEditors.get(0).editorPane.setKeywordColor(mKeywords);
 	}
 	public void addTab(FileEditor editor) {
 		mFileEditors.add(editor);
 		mTabControl.addTab(editor.getTitle(), editor.pane);
 
 		//TODO get current editor
-		mFileEditors.get(0).editorPane.setKeywordColor(mKeywords);
+		//TODO set colors
+		//mFileEditors.get(0).editorPane.setKeywordColor(mKeywords);
 	}
 	/**
 	 * Configure menu bar to display at the top of the window
@@ -385,19 +388,18 @@ public class MainWindow {
 			mTabControl.setSelectedIndex(index);
 	}
 
-	private void LoadParser(LineNumbersTextPane editor) // Load editor text into parser
+	private void LoadParser(RSyntaxTextArea editorPane) // Load editor text into parser
 	{
-		Element root = editor.getStyledDocument().getDefaultRootElement();
 		int start, stop; // line offsets
 		String line; // line to add
 		// TODO read JTextPane line by line
 		// Load editor text into parser (appended to bottom)
 		try {
-			for (int i = 0; i < root.getElementCount(); i++) {
-				start = root.getElement(i).getStartOffset();
-				stop = root.getElement(i).getEndOffset();
+			for (int i = 0; i < editorPane.getLineCount(); i++) {
+				start = editorPane.getLineStartOffset(i);
+				stop = editorPane.getLineEndOffset(i);
 
-				line = editor.getStyledDocument().getText(start, stop - start);
+				line = editorPane.getText(start, stop - start);
 
 				m_comp.Parser().SourceCode().add(line);
 

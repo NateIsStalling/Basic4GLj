@@ -9,7 +9,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Basic4GL" />
-    <orderEntry type="library" name="JXTextPane" level="project" />
-    <orderEntry type="library" name="swingx-all-1.6.3" level="project" />
+    <orderEntry type="library" name="RSyntaxTextArea" level="project" />
   </component>
 </module>

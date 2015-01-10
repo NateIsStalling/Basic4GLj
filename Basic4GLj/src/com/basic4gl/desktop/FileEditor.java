@@ -7,23 +7,26 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import javax.swing.CodeEditorPane;
-import javax.swing.JFileChooser;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 public class FileEditor {
 	public static final String DEFAULT_NAME = "[Unnamed]";
-	public CodeEditorPane editorPane;
-	public Container pane;
+	public RSyntaxTextArea editorPane;
+	public JScrollPane pane;
 
 	private String mFilename;	//Filename without path
 	private String mFilePath;	//Full path including name
 	private boolean mIsModified;
 
 	public FileEditor(){
-		editorPane = new CodeEditorPane();
-		pane = editorPane.getContainerWithLines();
-		
+		editorPane = new RSyntaxTextArea(20, 60);
+		TextLineNumber tln = new TextLineNumber(editorPane);
+		pane = new JScrollPane(editorPane);
+
+		pane.setRowHeaderView( tln );
 		//editorPane.syntaxDocumentFilter= null;
 		//editorPane.setContentType("text/basic4gl");
 		mFilename = "";

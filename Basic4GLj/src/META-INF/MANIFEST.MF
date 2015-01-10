@@ -36,7 +36,7 @@ Rsrc-Class-Path: ./ gluegen.jar gluegen-java-src.zip gluegen-rt.jar gluegen
  jogl-all-noawt-natives-macosx-universal.jar jogl-all-noawt-natives-so
  laris-amd64.jar jogl-all-noawt-natives-solaris-i586.jar jogl-all-noaw
  t-natives-windows-amd64.jar jogl-all-noawt-natives-windows-i586.jar j
- ogl-java-src.zip swingx-all-1.6.3.jar JXTextPane.jar
+ ogl-java-src.zip RSyntaxTextArea.jar
 Class-Path: .
 Rsrc-Main-Class: com.basic4gl.desktop.MainWindow
 Main-Class: org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader
