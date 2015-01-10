@@ -24,7 +24,7 @@ public class MainWindow {
 
 	//Window Constants
 	private static final boolean DISPLAY_VERSION_INFO = true;
-	private static final String VERSION_NAME =  "Alpha 0.1.1";
+	private static final String VERSION_NAME =  "Alpha 0.1.2";
 
 	enum RunMode {
 		RM_STOPPED, RM_PAUSED, RM_RUNNING
