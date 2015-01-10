@@ -23,7 +23,6 @@ import com.basic4gl.vm.stackframe.UserFuncPrototype;
 import com.basic4gl.vm.types.Structure;
 import com.basic4gl.vm.types.StructureField;
 import com.basic4gl.vm.types.ValType;
-import com.basic4gl.vm.util.Constants;
 import com.basic4gl.vm.util.Function;
 import com.basic4gl.vm.types.OpCode;
 
@@ -1780,9 +1779,9 @@ public class TomBasicCompiler extends HasErrorState {
 			while (m_token.m_text.equals("(") || foundComma) {
 
 				// Room for one more dimension?
-				if (type.get().m_arrayLevel >= Constants.ARRAY_MAX_DIMENSIONS) {
+				if (type.get().m_arrayLevel >= TomVM.ARRAY_MAX_DIMENSIONS) {
 					SetError((String) "Arrays cannot have more than "
-							+ String.valueOf(Constants.ARRAY_MAX_DIMENSIONS)
+							+ String.valueOf(TomVM.ARRAY_MAX_DIMENSIONS)
 							+ " dimensions.");
 					return false;
 				}
@@ -4814,9 +4813,9 @@ public class TomBasicCompiler extends HasErrorState {
 			while (m_token.m_text.equals("(")) {
 
 				// Room for one more dimension?
-				if (type.m_arrayLevel >= Constants.ARRAY_MAX_DIMENSIONS) {
+				if (type.m_arrayLevel >= TomVM.ARRAY_MAX_DIMENSIONS) {
 					SetError((String) "Arrays cannot have more than "
-							+ String.valueOf(Constants.ARRAY_MAX_DIMENSIONS)
+							+ String.valueOf(TomVM.ARRAY_MAX_DIMENSIONS)
 							+ " dimensions.");
 					return false;
 				}

@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.Vector;
 
 import com.basic4gl.util.Streaming;
-import com.basic4gl.vm.util.Constants;
+import com.basic4gl.vm.TomVM;
 
 ////////////////////////////////////////////////////////////////////////////////
 	// VmTypeLibrary
@@ -112,7 +112,7 @@ import com.basic4gl.vm.util.Constants;
 		    return      type.m_basicType >= ValType.VTP_INT
 		            &&  type.m_basicType != ValType.VTP_UNDEFINED
 		            &&  (type.m_basicType < 0 || type.m_basicType < m_structures.size ())
-		            &&  type.m_arrayLevel < Constants.ARRAY_MAX_DIMENSIONS;
+		            &&  type.m_arrayLevel < TomVM.ARRAY_MAX_DIMENSIONS;
 		}
 
 		public boolean ContainsString(ValType type) {

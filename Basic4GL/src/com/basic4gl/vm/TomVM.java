@@ -39,15 +39,16 @@ import com.basic4gl.vm.Variables.Var;
 public class TomVM extends HasErrorState {
 	// Constants
 	
-		public static final int VM_STEPS = 1000;
+	public static final int VM_STEPS = 1000;
 	// 10,000 user function stack calls
-		public static final int VM_MAXUSERSTACKCALLS = 10000;
+	public static final int MAX_USER_STACK_CALLS = 10000;
 	// 100,000,000 variables (.4 gig of memory)
-		public static final int VM_MAXDATA = 100000000;
+	public static final int MAX_DATA = 100000000;
 	// First 250,000 (1 meg) reserved for stack/temp data space
-		public static final int VM_MAXSTACK = 250000;
+	public static final int MAX_STACK = 250000;
 
-		public static final int VM_DATATOSTRINGMAXCHARS = 800; // Any more gets annoying...
+	public static final int DATA_TO_STRING_MAX_CHARS = 800; // Any more gets annoying...
+	public static final int ARRAY_MAX_DIMENSIONS = 10; // Maximum dimensions in an array
 
 	public static final String 		STREAM_HEADER = "Basic4GL stream";
 	public static final int         STREAM_VERSION = 2;
@@ -78,7 +79,8 @@ public class TomVM extends HasErrorState {
 				ERR_INVALID_CODE_BLOCK = "Could not find runtime code to execute",
 				ERR_DLL_NOT_IMPLEMENTED = "DLL plugins are not implemented in this version of Basic4GL";
 
-			// External functions
+
+	// External functions
 		public Vector<Function> mFunctions;
 		public Vector<Function> mOperatorFunctions;
 		// mFunctions are standard functions where the parameters are pushed
@@ -169,7 +171,7 @@ public class TomVM extends HasErrorState {
 	//TODO Reimplement libraries
 		//public TomVM(PluginDLLManager plugins, IVMDebugger debugger) {
 		public TomVM(IVMDebugger debugger) {
-			this(debugger, VM_MAXDATA, VM_MAXSTACK);
+			this(debugger, MAX_DATA, MAX_STACK);
 		}
 		//TODO Reimplement libraries
 		//public TomVM(PluginDLLManager plugins, IVMDebugger debugger,
@@ -925,7 +927,7 @@ public class TomVM extends HasErrorState {
 					assert (instruction.mValue.getIntVal() < mCode.size());
 
 					// Check for stack overflow
-					if (mUserCallStack.size() >= VM_MAXUSERSTACKCALLS) {
+					if (mUserCallStack.size() >= MAX_USER_STACK_CALLS) {
 						SetError(ERR_STACK_OVERFLOW);
 						break;
 					}
@@ -981,7 +983,7 @@ public class TomVM extends HasErrorState {
 				case OpCode.OP_CREATE_USER_FRAME: {
 
 	        // Check for stack overflow
-	        if (mUserCallStack.size () >= VM_MAXUSERSTACKCALLS) {
+	        if (mUserCallStack.size () >= MAX_USER_STACK_CALLS) {
 	            SetError(ERR_STACK_OVERFLOW);
 	            break;
 	        }
@@ -1027,7 +1029,7 @@ public class TomVM extends HasErrorState {
 
 	        // From here on the logic is the same as OpCode.OP_CREATE_USER_FRAME
 	        // Check for stack overflow
-	        if (mUserCallStack.size () >= VM_MAXUSERSTACKCALLS) {
+	        if (mUserCallStack.size () >= MAX_USER_STACK_CALLS) {
 	            SetError(ERR_STACK_OVERFLOW);
 	            break;
 	        }
@@ -1111,7 +1113,7 @@ public class TomVM extends HasErrorState {
 	                assert(codeBlock.programOffset < mCode.size ());
 
 	                // Check for stack overflow
-	                if (mUserCallStack.size () >= VM_MAXUSERSTACKCALLS) {
+	                if (mUserCallStack.size () >= MAX_USER_STACK_CALLS) {
 	                    SetError(ERR_STACK_OVERFLOW);
 	                    break;
 	                }
