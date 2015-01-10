@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import com.basic4gl.util.Streaming;
-import com.basic4gl.vm.types.ValType.BasicValType;
+import com.basic4gl.vm.types.ValType;
 
 ////////////////////////////////////////////////////////////////////////////////
 // VmStructure
@@ -33,7 +33,7 @@ public class StructureField {
 
 	public StructureField() {
 		m_name = "";
-		m_type.Set(BasicValType.VTP_INT);
+		m_type.Set(ValType.VTP_INT);
 		m_dataOffset = 0;
 	}
 

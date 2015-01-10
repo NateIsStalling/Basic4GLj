@@ -6,7 +6,6 @@ import com.basic4gl.vm.types.Structure;
 import com.basic4gl.vm.types.StructureField;
 import com.basic4gl.vm.types.TypeLibrary;
 import com.basic4gl.vm.types.ValType;
-import com.basic4gl.vm.types.ValType.BasicValType;
 
 public class vmData {
 
@@ -290,7 +289,7 @@ public class vmData {
 			ValType type, // Data type
 			List<T> array, // Destination array
 			int maxSize) { // Maximum # of elements
-		assert (type.m_basicType == BasicValType.VTP_INT.getType() || type.m_basicType == BasicValType.VTP_REAL.getType());
+		assert (type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
 		assert (type.VirtualPointerLevel() == 0);
 		assert (type.m_arrayLevel > 0);
 		assert (data.IndexValid(index));
@@ -314,13 +313,13 @@ public class vmData {
 						elementType, (List<T>) array.get(arrayOffset), maxSize
 								- arrayOffset);
 			return arrayOffset;
-		} else if (elementType.Equals(BasicValType.VTP_INT)) {
+		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				array.set(i, (T)Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()));
 			return elementCount;
-		} else if (elementType.Equals(BasicValType.VTP_REAL)) {
+		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
@@ -336,7 +335,7 @@ public class vmData {
 			ValType type, // Data type
 			List<T> array, // Destination array
 			int maxSize) { // Maximum # of elements
-		assert (type.m_basicType == BasicValType.VTP_INT.getType() || type.m_basicType == BasicValType.VTP_REAL.getType());
+		assert (type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
 		assert (type.VirtualPointerLevel() == 0);
 		assert (type.m_arrayLevel > 0);
 		assert (data.IndexValid(index));
@@ -360,14 +359,14 @@ public class vmData {
 						elementType, (List<T>) array.get(arrayOffset), maxSize
 								- arrayOffset);
 			return arrayOffset;
-		} else if (elementType.Equals(BasicValType.VTP_INT)) {
+		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i)
 						.setIntVal((Integer) array.get(i));
 			return elementCount;
-		} else if (elementType.Equals(BasicValType.VTP_REAL)) {
+		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
@@ -401,7 +400,7 @@ public class vmData {
 	}
 
 	public static int TempArray(vmData data, TypeLibrary typeLib,
-			BasicValType elementType, int arraySize) {
+			int elementType, int arraySize) {
 		assert (arraySize > 0);
 
 		// Setup a basic 1D array of Integers
@@ -419,7 +418,7 @@ public class vmData {
 		assert (array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray(data, typeLib, BasicValType.VTP_INT,
+		int dataIndex = TempArray(data, typeLib, ValType.VTP_INT,
 				arraySize);
 
 		// Translate C array into data
@@ -436,7 +435,7 @@ public class vmData {
 		assert (array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray(data, typeLib, BasicValType.VTP_REAL,
+		int dataIndex = TempArray(data, typeLib, ValType.VTP_REAL,
 				arraySize);
 
 		// Translate C array into data
@@ -448,7 +447,7 @@ public class vmData {
 	}
 
 	public static int TempArray2D(vmData data, TypeLibrary typeLib,
-			BasicValType elementType, int arraySize1, int arraySize2) {
+			int elementType, int arraySize1, int arraySize2) {
 		assert (arraySize1 > 0);
 		assert (arraySize2 > 0);
 
@@ -468,7 +467,7 @@ public class vmData {
 		assert (array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray2D(data, typeLib, BasicValType.VTP_INT,
+		int dataIndex = TempArray2D(data, typeLib, ValType.VTP_INT,
 				arraySize1, arraySize2);
 
 		// Translate C array into data
@@ -490,7 +489,7 @@ public class vmData {
 		assert (array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray2D(data, typeLib, BasicValType.VTP_REAL,
+		int dataIndex = TempArray2D(data, typeLib, ValType.VTP_REAL,
 				arraySize1, arraySize2);
 
 		// Translate C array into data

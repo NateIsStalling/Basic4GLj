@@ -1,6 +1,6 @@
 package com.basic4gl.compiler;
 
-import com.basic4gl.vm.types.ValType.BasicValType;
+import com.basic4gl.vm.types.ValType;
 
 class Token {
 	public static enum TokenType {
@@ -21,7 +21,7 @@ class Token {
 	
 	String m_text;
 	TokenType m_type;
-	BasicValType m_valType; // For constants. Defines the value type.
+	int m_valType; // For constants. Defines the value type.
 	boolean m_newLine; // True if immediately preceeded by newline
 	int m_line, m_col;
 }

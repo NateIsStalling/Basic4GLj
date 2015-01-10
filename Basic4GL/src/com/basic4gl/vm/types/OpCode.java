@@ -1,10 +1,5 @@
 package com.basic4gl.vm.types;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.basic4gl.vm.types.ValType.BasicValType;
-
 public class OpCode {
 	// Enumerated opcodes
 

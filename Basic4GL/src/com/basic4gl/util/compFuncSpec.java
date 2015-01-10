@@ -3,7 +3,6 @@ package com.basic4gl.util;
 import com.basic4gl.compiler.compParamTypeList;
 import com.basic4gl.compiler.util.compParamValidationCallback;
 import com.basic4gl.vm.types.ValType;
-import com.basic4gl.vm.types.ValType.BasicValType;
 
 ////////////////////////////////////////////////////////////////////////////////
 //compFuncSpec
@@ -93,7 +92,7 @@ public class compFuncSpec {
 	}
 	
 	public compFuncSpec(compParamTypeList paramTypes, boolean brackets,
-			boolean isFunction, BasicValType returnType, boolean timeshare, boolean freeTempData,
+			boolean isFunction, int returnType, boolean timeshare, boolean freeTempData,
 			compParamValidationCallback paramValidationCallback) {
 		mParamTypes = paramTypes;
 		mBrackets = brackets;

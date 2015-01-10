@@ -14,7 +14,6 @@ import com.basic4gl.util.compFuncSpec;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.vm.TomVM;
 import com.basic4gl.vm.types.ValType;
-import com.basic4gl.vm.types.ValType.BasicValType;
 import com.basic4gl.vm.util.Function;
 
 public class Standard implements Library{
@@ -639,58 +638,58 @@ public class Standard implements Library{
 		//				timeshare, vmIndex, freeTempData, paramValidationCallback)
 
 		//AddFunction(String name, Function func, compParamTypeList params, boolean brackets, boolean isFunction,
-		//		BasicValType returnType, boolean timeshare, boolean freeTempData,
+		//		ValType returnType, boolean timeshare, boolean freeTempData,
 		//		compParamValidationCallback paramValidationCallback)
 		///////////////////////
 		// Register functions
 
-		s.get("abs").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_REAL, false, false, null));
-		s.get("asc").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_STRING }), true, true, BasicValType.VTP_INT, false, false, null));
-		s.get("atn").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_REAL, false, false, null));
-		s.get("chr$").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_INT }), true, true, BasicValType.VTP_STRING, false, false, null));
-		s.get("cos").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_REAL, false, false, null));
-		s.get("exp").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_REAL, false, false, null));
-		s.get("int").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_INT, false, false, null));
-		s.get("left$").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_STRING, BasicValType.VTP_INT }), true, true, BasicValType.VTP_STRING, false, false, null));
-		s.get("len").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_STRING }), true, true, BasicValType.VTP_INT, false, false, null));
-		s.get("log").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_REAL, false, false, null));
-		s.get("mid$").add( new compFuncSpec(new compParamTypeList(new BasicValType[] {	BasicValType.VTP_STRING, BasicValType.VTP_INT,	BasicValType.VTP_INT }), true, true, BasicValType.VTP_STRING, false, false, null));
-		s.get("pow").add( new compFuncSpec(new compParamTypeList(new BasicValType[] {	BasicValType.VTP_REAL, BasicValType.VTP_REAL }), true, true, BasicValType.VTP_REAL, false, false, null));
-		s.get("right$").add( new compFuncSpec(new compParamTypeList(new BasicValType[] {BasicValType.VTP_STRING, BasicValType.VTP_INT }), true, true, BasicValType.VTP_STRING, false, false, null));
-		s.get("rnd").add( new compFuncSpec(new compParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null));
-		s.get("sgn").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_INT, false, false, null));
-		s.get("sin").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_REAL, false, false, null));
-		s.get("sqrt").add( new compFuncSpec(new compParamTypeList( new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_REAL, false, false, null));
-		s.get("sqr").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_REAL, false, false, null)); // sqr = Synonym for sqrt
-		s.get("str$").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true,	BasicValType.VTP_STRING, false, false, null));
-		s.get("tan").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true,	BasicValType.VTP_REAL, false, false, null));
-		s.get("tanh").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_REAL, false, false, null));
-		s.get("val").add( new compFuncSpec(new compParamTypeList( new BasicValType[] { BasicValType.VTP_STRING }), true, true, BasicValType.VTP_REAL, false, false, null));
-		s.get("sind").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true,	BasicValType.VTP_REAL, false, false, null));
-		s.get("cosd").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true,	BasicValType.VTP_REAL, false, false, null));
-		s.get("tand").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_REAL }), true, true,BasicValType.VTP_REAL, false, false, null));
-		s.get("atand").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_REAL }), true, true,BasicValType.VTP_REAL, false, false, null));
-		s.get("atnd").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_REAL }), true, true,BasicValType.VTP_REAL, false, false, null));
-		s.get("atn2").add( new compFuncSpec(new compParamTypeList(new BasicValType[] {	BasicValType.VTP_REAL, BasicValType.VTP_REAL }), true, true,BasicValType.VTP_REAL, false, false, null));
-		s.get("atn2d").add( new compFuncSpec(new compParamTypeList(new BasicValType[] {BasicValType.VTP_REAL, BasicValType.VTP_REAL }), true, true,BasicValType.VTP_REAL, false, false, null));
-		s.get("lcase$").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_STRING }), true, true, BasicValType.VTP_STRING, false, false, null));
-		s.get("ucase$").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_STRING }), true, true, BasicValType.VTP_STRING, false, false, null));
-		s.get("randomize").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_INT }), false, true, BasicValType.VTP_INT, false, false, null));
-		s.get("randomize").add( new compFuncSpec(new compParamTypeList(), false, true,	BasicValType.VTP_INT, false, false, null));
-		s.get("divbyzero").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_REAL }), true, true, BasicValType.VTP_REAL, false, false, null));
+		s.get("abs").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
+		s.get("asc").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_STRING }), true, true, ValType.VTP_INT, false, false, null));
+		s.get("atn").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
+		s.get("chr$").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_INT }), true, true, ValType.VTP_STRING, false, false, null));
+		s.get("cos").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
+		s.get("exp").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
+		s.get("int").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_INT, false, false, null));
+		s.get("left$").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_STRING, ValType.VTP_INT }), true, true, ValType.VTP_STRING, false, false, null));
+		s.get("len").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_STRING }), true, true, ValType.VTP_INT, false, false, null));
+		s.get("log").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
+		s.get("mid$").add( new compFuncSpec(new compParamTypeList(new Integer[] {	ValType.VTP_STRING, ValType.VTP_INT,	ValType.VTP_INT }), true, true, ValType.VTP_STRING, false, false, null));
+		s.get("pow").add( new compFuncSpec(new compParamTypeList(new Integer[] {	ValType.VTP_REAL, ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
+		s.get("right$").add( new compFuncSpec(new compParamTypeList(new Integer[] {ValType.VTP_STRING, ValType.VTP_INT }), true, true, ValType.VTP_STRING, false, false, null));
+		s.get("rnd").add( new compFuncSpec(new compParamTypeList(), true, true, ValType.VTP_INT, false, false, null));
+		s.get("sgn").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_INT, false, false, null));
+		s.get("sin").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
+		s.get("sqrt").add( new compFuncSpec(new compParamTypeList( new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
+		s.get("sqr").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null)); // sqr = Synonym for sqrt
+		s.get("str$").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true,	ValType.VTP_STRING, false, false, null));
+		s.get("tan").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true,	ValType.VTP_REAL, false, false, null));
+		s.get("tanh").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
+		s.get("val").add( new compFuncSpec(new compParamTypeList( new Integer[] { ValType.VTP_STRING }), true, true, ValType.VTP_REAL, false, false, null));
+		s.get("sind").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true,	ValType.VTP_REAL, false, false, null));
+		s.get("cosd").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true,	ValType.VTP_REAL, false, false, null));
+		s.get("tand").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true,ValType.VTP_REAL, false, false, null));
+		s.get("atand").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_REAL }), true, true,ValType.VTP_REAL, false, false, null));
+		s.get("atnd").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_REAL }), true, true,ValType.VTP_REAL, false, false, null));
+		s.get("atn2").add( new compFuncSpec(new compParamTypeList(new Integer[] {	ValType.VTP_REAL, ValType.VTP_REAL }), true, true,ValType.VTP_REAL, false, false, null));
+		s.get("atn2d").add( new compFuncSpec(new compParamTypeList(new Integer[] {ValType.VTP_REAL, ValType.VTP_REAL }), true, true,ValType.VTP_REAL, false, false, null));
+		s.get("lcase$").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_STRING }), true, true, ValType.VTP_STRING, false, false, null));
+		s.get("ucase$").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_STRING }), true, true, ValType.VTP_STRING, false, false, null));
+		s.get("randomize").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_INT }), false, true, ValType.VTP_INT, false, false, null));
+		s.get("randomize").add( new compFuncSpec(new compParamTypeList(), false, true,	ValType.VTP_INT, false, false, null));
+		s.get("divbyzero").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
 
 		// Timer
-		s.get("inittimer").add( new compFuncSpec(new compParamTypeList(), false, true,	BasicValType.VTP_INT, false, false, null));
-		s.get("waittimer").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_INT }), false, true, BasicValType.VTP_INT, true, false, null));
-		s.get("synctimer").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_INT }), true, true, BasicValType.VTP_INT, false, false, null));
-		s.get("synctimercatchup").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_INT }), false, true, BasicValType.VTP_INT, false, false, null));
+		s.get("inittimer").add( new compFuncSpec(new compParamTypeList(), false, true,	ValType.VTP_INT, false, false, null));
+		s.get("waittimer").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_INT }), false, true, ValType.VTP_INT, true, false, null));
+		s.get("synctimer").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_INT }), true, true, ValType.VTP_INT, false, false, null));
+		s.get("synctimercatchup").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_INT }), false, true, ValType.VTP_INT, false, false, null));
 
 		// Program arguments
-		s.get("argcount").add( new compFuncSpec(new compParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null));
-		s.get("arg").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_INT }), true, true,	BasicValType.VTP_STRING, false, false, null));
+		s.get("argcount").add( new compFuncSpec(new compParamTypeList(), true, true, ValType.VTP_INT, false, false, null));
+		s.get("arg").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_INT }), true, true,	ValType.VTP_STRING, false, false, null));
 
 		// Array size
-		s.get("arraymax").add( new compFuncSpec(new compParamTypeList(new BasicValType[] { BasicValType.VTP_UNDEFINED }), true, true, BasicValType.VTP_INT, false, false, new ValidateArrayMaxParam()));
+		s.get("arraymax").add( new compFuncSpec(new compParamTypeList(new Integer[] { ValType.VTP_UNDEFINED }), true, true, ValType.VTP_INT, false, false, new ValidateArrayMaxParam()));
 
 		return s;
 	}

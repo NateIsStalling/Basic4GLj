@@ -8,7 +8,6 @@ import com.basic4gl.util.Streaming;
 import com.basic4gl.vm.vmData;
 import com.basic4gl.vm.types.TypeLibrary;
 import com.basic4gl.vm.types.ValType;
-import com.basic4gl.vm.types.ValType.BasicValType;
 
 //An array of variables.
 public class vmVariables {
@@ -21,7 +20,7 @@ public class vmVariables {
 		public vmVariable() {
 			m_name = "";
 			m_dataIndex = 0;
-			m_type = new ValType(BasicValType.VTP_INT);
+			m_type = new ValType(ValType.VTP_INT);
 		}
 
 		public vmVariable(String name, ValType type) {

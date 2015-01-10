@@ -29,7 +29,6 @@ import com.basic4gl.vm.stackframe.vmUserFuncPrototype;
 import com.basic4gl.vm.types.Structure;
 import com.basic4gl.vm.types.StructureField;
 import com.basic4gl.vm.types.ValType;
-import com.basic4gl.vm.types.ValType.BasicValType;
 import com.basic4gl.vm.util.Constants;
 import com.basic4gl.vm.util.Function;
 import com.basic4gl.vm.types.OpCode;
@@ -451,8 +450,8 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	void ClearState() {
-		m_regType = new ValType(BasicValType.VTP_INT);
-		m_reg2Type = new ValType(BasicValType.VTP_INT);
+		m_regType = new ValType(ValType.VTP_INT);
+		m_reg2Type = new ValType(ValType.VTP_INT);
 		m_freeTempData = false;
 		m_operandStack.clear();
 		m_operatorStack.clear();
@@ -591,24 +590,24 @@ public class TomBasicCompiler extends HasErrorState {
 					m_token.m_type = TokenType.CTT_CONSTANT;
 
 					// Replace text with text value of constant
-					switch (constant.mValType) {
-					case VTP_INT:
+					switch (constant.mBasicType) {
+					case ValType.VTP_INT:
 						m_token.m_text = String.valueOf(constant.mIntVal);
 						break;
-					case VTP_REAL:
+					case ValType.VTP_REAL:
 						m_token.m_text = String.valueOf(constant.mRealVal);
 						break;
-					case VTP_STRING:
+					case ValType.VTP_STRING:
 						m_token.m_text = constant.mStringVal;
 						break;
 					default:
 						break;
 					}
-					m_token.m_valType = constant.mValType;
+					m_token.m_valType = constant.mBasicType;
 				}
 			}
 		} else if (m_token.m_type == TokenType.CTT_CONSTANT
-				&& m_token.m_valType == BasicValType.VTP_STRING) {
+				&& m_token.m_valType == ValType.VTP_STRING) {
 
 			// 19-Jul-2003
 			// Prefix string text constants with "S". This prevents them
@@ -639,7 +638,7 @@ public class TomBasicCompiler extends HasErrorState {
 			;
 
 		// Terminate program
-		AddInstruction(OpCode.OP_END, BasicValType.VTP_INT.getType(), new VMValue());
+		AddInstruction(OpCode.OP_END, ValType.VTP_INT, new VMValue());
 
 		if (!Error()) {
 			// Link up gotos
@@ -914,11 +913,11 @@ public class TomBasicCompiler extends HasErrorState {
 		if (!CompileExpression())
 			return false;
 
-		if (!CompileConvert(BasicValType.VTP_INT.getType()))
+		if (!CompileConvert(ValType.VTP_INT))
 			return false;
 
 		// Add bindcode op-code
-		AddInstruction(OpCode.OP_BINDCODE, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_BINDCODE, ValType.VTP_INT,
 				new VMValue());
 
 		return true;
@@ -946,7 +945,7 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 		// Add exec op-code
-		AddInstruction(OpCode.OP_EXEC, BasicValType.VTP_INT.getType(), new VMValue());
+		AddInstruction(OpCode.OP_EXEC, ValType.VTP_INT, new VMValue());
 
 		return true;
 	}
@@ -1094,7 +1093,7 @@ public class TomBasicCompiler extends HasErrorState {
 			line = m_lastLine;
 			col = m_lastCol;
 		}
-		m_vm.AddInstruction(new vmInstruction(opCode, (byte)basictype, val, line, col));
+		m_vm.AddInstruction(new vmInstruction(opCode, basictype, val, line, col));
 		m_lastLine = line;
 		m_lastCol = col;
 	}
@@ -1204,12 +1203,12 @@ public class TomBasicCompiler extends HasErrorState {
 					return false;
 			} else
 				// Otherwise is "End" program instruction
-				AddInstruction(OpCode.OP_END, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_END, ValType.VTP_INT,
 						new VMValue());
 		} else if (m_token.m_text.equals("run")) {
 			if (!GetToken())
 				return false;
-			AddInstruction(OpCode.OP_RUN, BasicValType.VTP_INT.getType(), new VMValue());
+			AddInstruction(OpCode.OP_RUN, ValType.VTP_INT, new VMValue());
 		} else if (m_token.m_text.equals("const")) {
 			if (!CompileConstant())
 				return false;
@@ -1536,13 +1535,13 @@ public class TomBasicCompiler extends HasErrorState {
 					// Note: Opcode contains the index of the variable. Variable
 					// type and size data stored in the user function defn.
 					AddInstruction(OpCode.OP_DECLARE_LOCAL,
-							BasicValType.VTP_INT.getType(), new VMValue(varIndex));
+							ValType.VTP_INT, new VMValue(varIndex));
 
 					// Data containing strings will need to be "destroyed" when
 					// the stack unwinds.
 					if (m_vm.DataTypes().ContainsString(type))
 						AddInstruction(OpCode.OP_REG_DESTRUCTOR,
-								BasicValType.VTP_INT.getType(),
+								ValType.VTP_INT,
 								new VMValue((int) m_vm.StoreType(type)));
 
 					// Optional "= value"?
@@ -1550,7 +1549,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 						// Add opcode to load variable address
 						AddInstruction(OpCode.OP_LOAD_LOCAL_VAR,
-								BasicValType.VTP_INT.getType(), new VMValue(varIndex));
+								ValType.VTP_INT, new VMValue(varIndex));
 
 						// Set register type
 						m_regType.Set(UserPrototype().localVarTypes
@@ -1596,7 +1595,7 @@ public class TomBasicCompiler extends HasErrorState {
 					// Note: Opcode contains the index of the variable. Variable
 					// type
 					// and size data is stored in the variable entry.
-					AddInstruction(OpCode.OP_DECLARE, BasicValType.VTP_INT.getType(),
+					AddInstruction(OpCode.OP_DECLARE, ValType.VTP_INT,
 							new VMValue(varIndex));
 
 					// Optional "= value"?
@@ -1604,7 +1603,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 						// Add opcode to load variable address
 						AddInstruction(OpCode.OP_LOAD_VAR,
-								BasicValType.VTP_INT.getType(), new VMValue(varIndex));
+								ValType.VTP_INT, new VMValue(varIndex));
 
 						// Set register type
 						m_regType.Set(m_vm.Variables().Variables()
@@ -1668,7 +1667,7 @@ public class TomBasicCompiler extends HasErrorState {
 	boolean CompileDataType(Mutable<String> name, Mutable<ValType> type,
 			Mutable<TokenType> tokenType) {
 
-		type.get().Set(BasicValType.VTP_UNDEFINED);
+		type.get().Set(ValType.VTP_UNDEFINED);
 		name.set("");
 
 		// Look for structure type
@@ -1697,13 +1696,13 @@ public class TomBasicCompiler extends HasErrorState {
 		char last = '\0';
 		if (name.get().length() > 0)
 			last = name.get().charAt(name.get().length() - 1);
-		if (type.get().m_basicType == BasicValType.VTP_UNDEFINED.getType()) {
+		if (type.get().m_basicType == ValType.VTP_UNDEFINED) {
 			if (last == '$')
-				type.get().m_basicType = BasicValType.VTP_STRING.getType();
+				type.get().m_basicType = ValType.VTP_STRING;
 			else if (last == '#')
-				type.get().m_basicType = BasicValType.VTP_REAL.getType();
+				type.get().m_basicType = ValType.VTP_REAL;
 			else if (last == '%')
-				type.get().m_basicType = BasicValType.VTP_INT.getType();
+				type.get().m_basicType = ValType.VTP_INT;
 		} else {
 			if (last == '$' || last == '#' || last == '%') {
 				SetError((String) "\""
@@ -1717,7 +1716,7 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	boolean CompileAs(Mutable<String> name, Mutable<ValType> type) {
-		if (type.get().m_basicType != BasicValType.VTP_UNDEFINED.getType()) {
+		if (type.get().m_basicType != ValType.VTP_UNDEFINED) {
 			SetError("'" + name
 					+ "'s type has already been defined. Cannot use 'as' here.");
 			return false;
@@ -1734,7 +1733,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 		}
 		if (m_token.m_text.equals("integer"))
-			type.get().m_basicType = BasicValType.VTP_INT.getType();
+			type.get().m_basicType = ValType.VTP_INT;
 		else if (m_token.m_text.equals("single")
 				|| m_token.m_text.equals("double"))
 
@@ -1742,9 +1741,9 @@ public class TomBasicCompiler extends HasErrorState {
 			// We will accept both keywords, but simply allocate a real (=
 			// single
 			// precision) floating point number each time.
-			type.get().m_basicType = BasicValType.VTP_REAL.getType();
+			type.get().m_basicType = ValType.VTP_REAL;
 		else if (m_token.m_text.equals("string"))
-			type.get().m_basicType = BasicValType.VTP_STRING.getType();
+			type.get().m_basicType = ValType.VTP_STRING;
 		else {
 
 			// Look for recognised structure name
@@ -1811,7 +1810,7 @@ public class TomBasicCompiler extends HasErrorState {
 				else if (forStruc) {
 
 					// Evaluate constant expression
-					Integer expressionType = BasicValType.VTP_INT.getType();
+					Integer expressionType = ValType.VTP_INT;
 					VMValue value = new VMValue();
 					String stringValue = "";
 
@@ -1842,7 +1841,7 @@ public class TomBasicCompiler extends HasErrorState {
 				// stack.
 				else {
 					if (!(CompileExpression()
-							&& CompileConvert(BasicValType.VTP_INT.getType()) && CompilePush()))
+							&& CompileConvert(ValType.VTP_INT) && CompilePush()))
 						return false;
 					type.get().m_arrayLevel++;
 				}
@@ -1868,8 +1867,8 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// If data type still not specified, default to integer
-		if (type.get().m_basicType == BasicValType.VTP_UNDEFINED.getType())
-			type.get().m_basicType = BasicValType.VTP_INT.getType();
+		if (type.get().m_basicType == ValType.VTP_UNDEFINED)
+			type.get().m_basicType = ValType.VTP_INT;
 
 		return true;
 	}
@@ -1907,7 +1906,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Generate code to load variable
 				AddInstruction(OpCode.OP_LOAD_LOCAL_VAR,
-						BasicValType.VTP_INT.getType(), new VMValue(varIndex));
+						ValType.VTP_INT, new VMValue(varIndex));
 
 				// Set register type
 				m_regType.Set(UserPrototype().localVarTypes.get(varIndex));
@@ -1926,7 +1925,7 @@ public class TomBasicCompiler extends HasErrorState {
 			if (varIndex >= 0) {
 
 				// Generate code to load variable
-				AddInstruction(OpCode.OP_LOAD_VAR, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_LOAD_VAR, ValType.VTP_INT,
 						new VMValue(varIndex));
 
 				// Set register type
@@ -2062,7 +2061,7 @@ public class TomBasicCompiler extends HasErrorState {
 				// Reg is initially pointing to address of structure.
 				StructureField field = m_vm.DataTypes().Fields()
 						.get(fieldIndex);
-				AddInstruction(OpCode.OP_ADD_CONST, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_ADD_CONST, ValType.VTP_INT,
 						new VMValue(field.m_dataOffset));
 
 				// Reg now contains pointer to field
@@ -2098,7 +2097,7 @@ public class TomBasicCompiler extends HasErrorState {
 					// Evaluate array index, and convert to an integer.
 					if (!CompileExpression())
 						return false;
-					if (!CompileConvert(BasicValType.VTP_INT.getType())) {
+					if (!CompileConvert(ValType.VTP_INT)) {
 						SetError("Array index must be a number. "
 								+ m_vm.DataTypes().DescribeVariable("",
 										m_regType) + " is not a number");
@@ -2114,7 +2113,7 @@ public class TomBasicCompiler extends HasErrorState {
 					// reg2 = Array address
 					// Output: reg = Pointer to array element
 					AddInstruction(OpCode.OP_ARRAY_INDEX,
-							BasicValType.VTP_INT.getType(), new VMValue());
+							ValType.VTP_INT, new VMValue());
 
 					// reg now points to an element
 					m_regType.Set(m_reg2Type);
@@ -2225,11 +2224,11 @@ public class TomBasicCompiler extends HasErrorState {
 					if (o.mOpCode == OpCode.OP_OP_AND) {
 						lazyJumpAddr = m_vm.InstructionCount();
 						AddInstruction(OpCode.OP_JUMP_FALSE,
-								BasicValType.VTP_INT.getType(), new VMValue(0));
+								ValType.VTP_INT, new VMValue(0));
 					} else if (o.mOpCode == OpCode.OP_OP_OR) {
 						lazyJumpAddr = m_vm.InstructionCount();
 						AddInstruction(OpCode.OP_JUMP_TRUE,
-								BasicValType.VTP_INT.getType(), new VMValue(0));
+								ValType.VTP_INT, new VMValue(0));
 					}
 				}
 
@@ -2293,7 +2292,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Must convert to boolean first
 			if (o.mOper.mType == compOpType.OT_BOOLOPERATOR
 					|| o.mOper.mType == compOpType.OT_LAZYBOOLOPERATOR)
-				CompileConvert(BasicValType.VTP_INT.getType());
+				CompileConvert(ValType.VTP_INT);
 
 			// Perform unary operation
 			AddInstruction(o.mOper.mOpCode, m_regType.m_basicType,
@@ -2302,7 +2301,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Special case, boolean operator
 			// Result will be an integer
 			if (o.mOper.mType == compOpType.OT_RETURNBOOLOPERATOR)
-				m_regType.Set(BasicValType.VTP_INT);
+				m_regType.Set(ValType.VTP_INT);
 		} else if (o.mOper.mParams == 2) {
 
 			// Generate code to pop first operand from stack into Reg2
@@ -2338,7 +2337,7 @@ public class TomBasicCompiler extends HasErrorState {
 					if (!CompileConvert2(m_regType))
 						return false;
 
-				opCodeType = BasicValType.VTP_INT.getType(); // Integer comparison is
+				opCodeType = ValType.VTP_INT; // Integer comparison is
 				// used internally
 			} else if (m_regType.VirtualPointerLevel() > 0
 					|| m_reg2Type.VirtualPointerLevel() > 0) {
@@ -2356,7 +2355,7 @@ public class TomBasicCompiler extends HasErrorState {
 					return false;
 				}
 
-				opCodeType = BasicValType.VTP_INT.getType(); // Integer comparison is
+				opCodeType = ValType.VTP_INT; // Integer comparison is
 				// used internally
 			} else {
 
@@ -2372,12 +2371,12 @@ public class TomBasicCompiler extends HasErrorState {
 					highest = m_reg2Type.m_basicType;
 				if (o.mOper.mType == compOpType.OT_BOOLOPERATOR
 						|| o.mOper.mType == compOpType.OT_LAZYBOOLOPERATOR)
-					highest = BasicValType.VTP_INT.getType();
+					highest = ValType.VTP_INT;
 				if (m_syntax == compLanguageSyntax.LS_TRADITIONAL
 						&& o.mOper.mOpCode == OpCode.OP_OP_DIV)
 					// 14-Aug-05 Tom: In traditional mode, division is always
 					// between floating pt numbers
-					highest = BasicValType.VTP_REAL.getType();
+					highest = ValType.VTP_REAL;
 
 				if (!CompileConvert(highest))
 					return false;
@@ -2393,7 +2392,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Special case, boolean operator
 			// Result will be an integer
 			if (o.mOper.mType == compOpType.OT_RETURNBOOLOPERATOR)
-				m_regType.Set(BasicValType.VTP_INT);
+				m_regType.Set(ValType.VTP_INT);
 		} else
 			assert (false);
 
@@ -2467,10 +2466,10 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	boolean CompileNull() {
-		AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_INT,
 				new VMValue(0)); // Load 0 into
 		// register
-		m_regType.Set(new ValType(BasicValType.VTP_NULL, (byte) 0, (byte) 1,
+		m_regType.Set(new ValType(ValType.VTP_NULL, (byte) 0, (byte) 1,
 				false)); // Type
 		// is
 		// pointer
@@ -2489,7 +2488,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (m_token.m_type == TokenType.CTT_CONSTANT) {
 
 			// Special case, string constants
-			if (m_token.m_valType == BasicValType.VTP_STRING) {
+			if (m_token.m_valType == ValType.VTP_STRING) {
 
 				// Allocate new string constant
 				String text;
@@ -2497,17 +2496,17 @@ public class TomBasicCompiler extends HasErrorState {
 				int index = m_vm.StoreStringConstant(text);
 
 				// store load instruction
-				AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING.getType(),
+				AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_STRING,
 						new VMValue(index));
-				m_regType.Set(BasicValType.VTP_STRING);
-			} else if (m_token.m_valType == BasicValType.VTP_REAL) {
-				AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_REAL.getType(),
+				m_regType.Set(ValType.VTP_STRING);
+			} else if (m_token.m_valType == ValType.VTP_REAL) {
+				AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_REAL,
 						new VMValue(Float.valueOf(m_token.m_text)));
-				m_regType.Set(BasicValType.VTP_REAL);
-			} else if (m_token.m_valType == BasicValType.VTP_INT) {
-				AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_INT.getType(),
+				m_regType.Set(ValType.VTP_REAL);
+			} else if (m_token.m_valType == ValType.VTP_INT) {
+				AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_INT,
 						new VMValue(Cast.StringToInt(m_token.m_text)));
-				m_regType.Set(BasicValType.VTP_INT);
+				m_regType.Set(ValType.VTP_INT);
 			} else {
 				SetError("Unknown data type");
 				return false;
@@ -2556,21 +2555,21 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Determine opcode
 		short code = OpCode.OP_NOP;
-		if (m_regType.Equals(BasicValType.VTP_INT)) {
-			if (basictype == BasicValType.VTP_REAL.getType())
+		if (m_regType.Equals(ValType.VTP_INT)) {
+			if (basictype == ValType.VTP_REAL)
 				code = OpCode.OP_CONV_INT_REAL;
-			else if (basictype == BasicValType.VTP_STRING.getType())
+			else if (basictype == ValType.VTP_STRING)
 				code = OpCode.OP_CONV_INT_STRING;
-		} else if (m_regType.equals(BasicValType.VTP_REAL)) {
-			if (basictype == BasicValType.VTP_INT.getType())
+		} else if (m_regType.equals(ValType.VTP_REAL)) {
+			if (basictype == ValType.VTP_INT)
 				code = OpCode.OP_CONV_REAL_INT;
-			else if (basictype == BasicValType.VTP_STRING.getType())
+			else if (basictype == ValType.VTP_STRING)
 				code = OpCode.OP_CONV_REAL_STRING;
 		}
 
 		// Store instruction
 		if (code != OpCode.OP_NOP) {
-			AddInstruction(code, BasicValType.VTP_INT.getType(), new VMValue());
+			AddInstruction(code, ValType.VTP_INT, new VMValue());
 			m_regType.Set(basictype);
 			return true;
 		}
@@ -2587,21 +2586,21 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Determine opcode
 		short code = OpCode.OP_NOP;
-		if (m_reg2Type.Equals(BasicValType.VTP_INT)) {
-			if (type == BasicValType.VTP_REAL.getType())
+		if (m_reg2Type.Equals(ValType.VTP_INT)) {
+			if (type == ValType.VTP_REAL)
 				code = OpCode.OP_CONV_INT_REAL2;
-			else if (type == BasicValType.VTP_STRING.getType())
+			else if (type == ValType.VTP_STRING)
 				code = OpCode.OP_CONV_INT_STRING2;
-		} else if (m_reg2Type.Equals(BasicValType.VTP_REAL)) {
-			if (type == BasicValType.VTP_INT.getType())
+		} else if (m_reg2Type.Equals(ValType.VTP_REAL)) {
+			if (type == ValType.VTP_INT)
 				code = OpCode.OP_CONV_REAL_INT2;
-			else if (type == BasicValType.VTP_STRING.getType())
+			else if (type == ValType.VTP_STRING)
 				code = OpCode.OP_CONV_REAL_STRING2;
 		}
 
 		// Store instruction
 		if (code != OpCode.OP_NOP) {
-			AddInstruction(code, BasicValType.VTP_INT.getType(), new VMValue());
+			AddInstruction(code, ValType.VTP_INT, new VMValue());
 			m_reg2Type.Set(type);
 			return true;
 		}
@@ -2788,11 +2787,11 @@ public class TomBasicCompiler extends HasErrorState {
 					|| (m_regType.m_arrayLevel == m_reg2Type.m_arrayLevel && m_regType.m_basicType == m_reg2Type.m_basicType)) {
 
 				// Validate pointer scope before saving to variable
-				AddInstruction(OpCode.OP_CHECK_PTR, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_CHECK_PTR, ValType.VTP_INT,
 						new VMValue());
 
 				// Save address to pointer
-				AddInstruction(OpCode.OP_SAVE, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_SAVE, ValType.VTP_INT,
 						new VMValue());
 			} else {
 				SetError("Types do not match");
@@ -2815,10 +2814,10 @@ public class TomBasicCompiler extends HasErrorState {
 				dataType.m_byRef = false;
 				if (m_vm.DataTypes().ContainsPointer(dataType))
 					AddInstruction(OpCode.OP_CHECK_PTRS,
-							BasicValType.VTP_INT.getType(),
+							ValType.VTP_INT,
 							new VMValue((int) m_vm.StoreType(dataType)));
 
-				AddInstruction(OpCode.OP_COPY, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_COPY, ValType.VTP_INT,
 						new VMValue((int) m_vm.StoreType(m_regType)));
 			} else {
 				SetError("Types do not match");
@@ -2864,7 +2863,7 @@ public class TomBasicCompiler extends HasErrorState {
 		m_jumps.add(new compJump(m_vm.InstructionCount(), labelName));
 
 		// Add jump instruction
-		AddInstruction(jumpType, BasicValType.VTP_INT.getType(), new VMValue(0));
+		AddInstruction(jumpType, ValType.VTP_INT, new VMValue(0));
 
 		// Move on
 		return GetToken();
@@ -2882,7 +2881,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Generate code to convert to integer
-		if (!CompileConvert(BasicValType.VTP_INT.getType()))
+		if (!CompileConvert(ValType.VTP_INT))
 			return false;
 
 		// Free any temporary data expression may have created
@@ -2924,7 +2923,7 @@ public class TomBasicCompiler extends HasErrorState {
 				.InstructionCount(), 0, line, col, elseif, "", !autoEndif));
 
 		// Create conditional jump
-		AddInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_JUMP_FALSE, ValType.VTP_INT,
 				new VMValue(0));
 
 		m_needColon = false; // Don't need colon between this and next
@@ -2957,7 +2956,7 @@ public class TomBasicCompiler extends HasErrorState {
 				top.m_blockIf));
 
 		// Generate code to jump around else block
-		AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(0));
+		AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new VMValue(0));
 
 		// Fixup jump around IF block
 		assert (top.m_jumpOut < m_vm.InstructionCount());
@@ -3017,7 +3016,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Verify variable is numeric
 		boolean found = false;
-		Integer loopVarType = BasicValType.VTP_INT.getType();
+		Integer loopVarType = ValType.VTP_INT;
 
 		// Check local variable first
 		if (m_inFunction) {
@@ -3031,8 +3030,8 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Check type is INT or REAL
 				ValType type = UserPrototype().localVarTypes.get(varIndex);
-				if (!(type.Equals(BasicValType.VTP_INT) || type
-						.Equals(BasicValType.VTP_REAL))) {
+				if (!(type.Equals(ValType.VTP_INT) || type
+						.Equals(ValType.VTP_REAL))) {
 					SetError("Loop variable must be an Integer or Real");
 					return false;
 				}
@@ -3048,8 +3047,8 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Check type is INT or REAL
 				ValType type = m_vm.Variables().Variables().get(varIndex).m_type;
-				if (!(type.Equals(BasicValType.VTP_INT) || type
-						.Equals(BasicValType.VTP_REAL))) {
+				if (!(type.Equals(ValType.VTP_INT) || type
+						.Equals(ValType.VTP_REAL))) {
 					SetError("Loop variable must be an Integer or Real");
 					return false;
 				}
@@ -3125,7 +3124,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// No explicit step.
 			// Use 1 as default
-			if (stepType == BasicValType.VTP_INT.getType())
+			if (stepType == ValType.VTP_INT)
 				stepValue = new VMValue(1);
 			else
 				stepValue = new VMValue(1.0f);
@@ -3133,7 +3132,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Choose comparison operator (based on direction of step)
 		compOperator comparison;
-		if (stepType == BasicValType.VTP_INT.getType()) {
+		if (stepType == ValType.VTP_INT) {
 			if (stepValue.getIntVal() > 0)
 				comparison = m_binaryOperators.get("<=");
 			else if (stepValue.getIntVal() < 0)
@@ -3141,7 +3140,7 @@ public class TomBasicCompiler extends HasErrorState {
 			else
 				comparison = m_binaryOperators.get("<>");
 		} else {
-			assert (stepType == BasicValType.VTP_REAL.getType());
+			assert (stepType == ValType.VTP_REAL);
 			if (stepValue.getRealVal() > 0)
 				comparison = m_binaryOperators.get("<=");
 			else if (stepValue.getRealVal() < 0)
@@ -3160,7 +3159,7 @@ public class TomBasicCompiler extends HasErrorState {
 				+ " = "
 				+ loopVarUnprefixed
 				+ " + "
-				+ (stepType == BasicValType.VTP_INT.getType() ? String.valueOf(stepValue
+				+ (stepType == ValType.VTP_INT ? String.valueOf(stepValue
 						.getIntVal()) : String.valueOf(stepValue.getRealVal()));
 
 		// Create flow control structure
@@ -3168,7 +3167,7 @@ public class TomBasicCompiler extends HasErrorState {
 				.InstructionCount(), loopPos, line, col, false, step, false));
 
 		// Create conditional jump
-		AddInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_JUMP_FALSE, ValType.VTP_INT,
 				new VMValue(0));
 
 		return true;
@@ -3215,7 +3214,7 @@ public class TomBasicCompiler extends HasErrorState {
 		m_token = saveToken;
 
 		// Generate jump back instruction
-		AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
+		AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new VMValue(
 				top.m_jumpLoop));
 
 		// Fixup jump around FOR block
@@ -3240,7 +3239,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Generate code to convert to integer
-		if (!CompileConvert(BasicValType.VTP_INT.getType()))
+		if (!CompileConvert(ValType.VTP_INT))
 			return false;
 
 		// Free any temporary data expression may have created
@@ -3252,7 +3251,7 @@ public class TomBasicCompiler extends HasErrorState {
 				m_vm.InstructionCount(), loopPos, line, col));
 
 		// Create conditional jump
-		AddInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_JUMP_FALSE, ValType.VTP_INT,
 				new VMValue(0));
 		return true;
 	}
@@ -3272,7 +3271,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Generate jump back
-		AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
+		AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new VMValue(
 				top.m_jumpLoop));
 
 		// Fixup jump around WHILE block
@@ -3307,7 +3306,7 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 			// Generate code to convert to integer
-			if (!CompileConvert(BasicValType.VTP_INT.getType()))
+			if (!CompileConvert(ValType.VTP_INT))
 				return false;
 
 			// Free any temporary data expression may have created
@@ -3321,7 +3320,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Create conditional jump
 			AddInstruction(negative ? OpCode.OP_JUMP_TRUE
-					: OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT.getType(),
+					: OpCode.OP_JUMP_FALSE, ValType.VTP_INT,
 					new VMValue(0));
 
 			// Done
@@ -3373,7 +3372,7 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 			// Generate code to convert to integer
-			if (!CompileConvert(BasicValType.VTP_INT.getType()))
+			if (!CompileConvert(ValType.VTP_INT))
 				return false;
 
 			// Free any temporary data expression may have created
@@ -3382,7 +3381,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Create conditional jump back to "do"
 			AddInstruction(negative ? OpCode.OP_JUMP_FALSE
-					: OpCode.OP_JUMP_TRUE, BasicValType.VTP_INT.getType(), new VMValue(
+					: OpCode.OP_JUMP_TRUE, ValType.VTP_INT, new VMValue(
 							top.m_jumpLoop));
 
 			// Done
@@ -3390,7 +3389,7 @@ public class TomBasicCompiler extends HasErrorState {
 		} else {
 
 			// Jump unconditionally back to "do"
-			AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
+			AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new VMValue(
 					top.m_jumpLoop));
 
 			// If this is a precondition "do", fixup the jump around the "do"
@@ -3613,7 +3612,7 @@ public class TomBasicCompiler extends HasErrorState {
 						.get(count);
 
 				// Check for undefined type parameter
-				if (type.Equals(BasicValType.VTP_UNDEFINED)) {
+				if (type.Equals(ValType.VTP_UNDEFINED)) {
 
 					// Function definition indicates whether parameter type is
 					// valid
@@ -3684,9 +3683,9 @@ public class TomBasicCompiler extends HasErrorState {
 				// parameter type to the stack.
 				if (isAnyType) {
 					AddInstruction(OpCode.OP_LOAD_CONST,
-							BasicValType.VTP_INT.getType(),
+							ValType.VTP_INT,
 							new VMValue((int) m_vm.StoreType(m_regType)));
-					m_regType.Set(BasicValType.VTP_INT);
+					m_regType.Set(ValType.VTP_INT);
 					CompilePush();
 					pushCount++;
 				}
@@ -3728,7 +3727,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (spec.m_builtin)
 
 			// Builtin function
-			AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_CALL_FUNC, ValType.VTP_INT,
 					new VMValue(spec.m_spec.getIndex()));
 		else
 
@@ -3738,7 +3737,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// This may be revised later...
 			AddInstruction(
 					OpCode.OP_CALL_DLL,
-					BasicValType.VTP_INT.getType(),
+					ValType.VTP_INT,
 					new VMValue((spec.m_pluginIndex << 24)
 							| (spec.m_spec.getIndex() & 0x00ffffff)));
 
@@ -3754,7 +3753,7 @@ public class TomBasicCompiler extends HasErrorState {
 			if (!m_regType.CanStoreInRegister()
 					&& m_vm.DataTypes().ContainsString(m_regType))
 				AddInstruction(OpCode.OP_REG_DESTRUCTOR,
-						BasicValType.VTP_INT.getType(),
+						ValType.VTP_INT,
 						new VMValue((int) m_vm.StoreType(m_regType)));
 
 			if (!CompileDataLookup(false))
@@ -3771,7 +3770,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Generate explicit timesharing break (if necessary)
 		if (spec.m_spec.getTimeshare())
-			AddInstruction(OpCode.OP_TIMESHARE, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_TIMESHARE, ValType.VTP_INT,
 					new VMValue());
 
 		return true;
@@ -3821,19 +3820,19 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 			// Determine constant type from last character of constant name
-			Integer type = BasicValType.VTP_UNDEFINED.getType();
+			Integer type = ValType.VTP_UNDEFINED;
 			if (name.length() > 0) {
 				char last = name.charAt(name.length() - 1);
 				if (last == '$')
-					type = BasicValType.VTP_STRING.getType();
+					type = ValType.VTP_STRING;
 				else if (last == '#')
-					type = BasicValType.VTP_REAL.getType();
+					type = ValType.VTP_REAL;
 				else if (last == '%')
-					type = BasicValType.VTP_INT.getType();
+					type = ValType.VTP_INT;
 			}
 
 			if (m_token.m_text.equals("as")) {
-				if (type != BasicValType.VTP_UNDEFINED.getType()) {
+				if (type != ValType.VTP_UNDEFINED) {
 					SetError("'"
 							+ name
 							+ "'s type has already been defined. Cannot use 'as' here.");
@@ -3842,7 +3841,7 @@ public class TomBasicCompiler extends HasErrorState {
 				if (!GetToken())
 					return false;
 				if (m_token.m_text.equals("integer"))
-					type = BasicValType.VTP_INT.getType();
+					type = ValType.VTP_INT;
 				else if (m_token.m_text.equals("single")
 						|| m_token.m_text.equals("double"))
 
@@ -3851,9 +3850,9 @@ public class TomBasicCompiler extends HasErrorState {
 					// We will accept both keywords, but simply allocate a real
 					// (= single
 					// precision) floating point number each time.
-					type = BasicValType.VTP_REAL.getType();
+					type = ValType.VTP_REAL;
 				else if (m_token.m_text.equals("string"))
-					type = BasicValType.VTP_STRING.getType();
+					type = ValType.VTP_STRING;
 				else {
 					SetError("Expected 'integer', 'single', 'double', 'string'");
 					return false;
@@ -3863,8 +3862,8 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Default type to integer if not defined
-			if (type == BasicValType.VTP_UNDEFINED.getType())
-				type = BasicValType.VTP_INT.getType();
+			if (type == ValType.VTP_UNDEFINED)
+				type = ValType.VTP_INT;
 
 			// Expect =
 			if (!m_token.m_text.equals("=")) {
@@ -3890,16 +3889,16 @@ public class TomBasicCompiler extends HasErrorState {
 			value = valueRef.get();
 			stringValue = stringValueRef.get();
 
-			switch (BasicValType.getType(type)) {
-			case VTP_INT:
+			switch (type) {
+			case ValType.VTP_INT:
 				m_programConstants.put(name,
 						new compConstant(value.getIntVal()));
 				break;
-			case VTP_REAL:
+			case ValType.VTP_REAL:
 				m_programConstants.put(name,
 						new compConstant(value.getRealVal()));
 				break;
-			case VTP_STRING:
+			case ValType.VTP_STRING:
 				m_programConstants.put(name, new compConstant(
 						(String) ("S" + stringValue)));
 				break;
@@ -3915,7 +3914,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Add instruction to free temp data (if necessary)
 		if (m_freeTempData)
-			AddInstruction(OpCode.OP_FREE_TEMP, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_FREE_TEMP, ValType.VTP_INT,
 					new VMValue());
 		m_freeTempData = false;
 
@@ -3956,7 +3955,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Generate code to call external operator function
 		assert (opFunc.get() >= 0);
 		assert (opFunc.get() < m_vm.OperatorFunctionCount());
-		AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, ValType.VTP_INT,
 				new VMValue(opFunc.get()));
 
 		// Set register to result type
@@ -4007,7 +4006,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Generate code to call external operator function
 		assert (opFunc.get() >= 0);
 		assert (opFunc.get() < m_vm.OperatorFunctionCount());
-		AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, ValType.VTP_INT,
 				new VMValue(opFunc.get()));
 
 		// Set register to result type
@@ -4078,7 +4077,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Generate code to evaluate array index, and convert to an integer.
 			if (!CompileExpression())
 				return false;
-			if (!CompileConvert(BasicValType.VTP_INT.getType())) {
+			if (!CompileConvert(ValType.VTP_INT)) {
 				SetError("Array index must be a number. "
 						+ m_vm.DataTypes().DescribeVariable("", m_regType)
 						+ " is not a number");
@@ -4091,7 +4090,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Add alloc instruction
-		AddInstruction(OpCode.OP_ALLOC, BasicValType.VTP_INT.getType(), new VMValue(
+		AddInstruction(OpCode.OP_ALLOC, ValType.VTP_INT, new VMValue(
 				(int) m_vm.StoreType(dataType)));
 
 		// Instruction automatically removes all array indices that were pushed
@@ -4111,7 +4110,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Generate code to save address to pointer
-		AddInstruction(OpCode.OP_SAVE, BasicValType.VTP_INT.getType(), new VMValue());
+		AddInstruction(OpCode.OP_SAVE, ValType.VTP_INT, new VMValue());
 
 		return true;
 	}
@@ -4190,7 +4189,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Terminate program
-		AddInstruction(OpCode.OP_END, BasicValType.VTP_INT.getType(), new VMValue());
+		AddInstruction(OpCode.OP_END, ValType.VTP_INT, new VMValue());
 
 		// Return expression result type
 		valType.Set(m_regType);
@@ -4222,18 +4221,18 @@ public class TomBasicCompiler extends HasErrorState {
 			if (m_token.m_text.equals(",") || AtSeparatorOrSpecial()) {
 
 				// Store a blank string
-				m_vm.StoreProgramData(BasicValType.VTP_STRING, new VMValue(0));
+				m_vm.StoreProgramData(ValType.VTP_STRING, new VMValue(0));
 			} else {
 
 				// Extract value
 				VMValue v = new VMValue();
-				if (m_token.m_valType == BasicValType.VTP_STRING) {
+				if (m_token.m_valType == ValType.VTP_STRING) {
 
 					// Allocate new string constant
 					String text = m_token.m_text.substring(1,
 							m_token.m_text.length() - 1); // Remove S prefix
 					v.setIntVal(m_vm.StoreStringConstant(text));
-				} else if (m_token.m_valType == BasicValType.VTP_INT)
+				} else if (m_token.m_valType == ValType.VTP_INT)
 					v.setIntVal(Cast.StringToInt(m_token.m_text));
 				else
 					v.setRealVal(Float.valueOf(m_token.m_text));
@@ -4336,7 +4335,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Add jump instruction
-		AddInstruction(OpCode.OP_DATA_RESET, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_DATA_RESET, ValType.VTP_INT,
 				new VMValue(0));
 
 		return true;
@@ -4363,12 +4362,12 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Convert to required type
-		if (basictype.get() != BasicValType.VTP_UNDEFINED.getType())
+		if (basictype.get() != ValType.VTP_UNDEFINED)
 			if (!CompileConvert(basictype.get()))
 				return false;
 
 		// Add "end program" opcode, so we can safely evaluate it
-		AddInstruction(OpCode.OP_END, BasicValType.VTP_INT.getType(), new VMValue());
+		AddInstruction(OpCode.OP_END, ValType.VTP_INT, new VMValue());
 
 		// Setup virtual machine to execute expression
 		// Note: Expressions can't branch or loop, and it's very difficult to
@@ -4400,7 +4399,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Set return values
 		basictype.set(m_regType.m_basicType);
-		if (basictype.get() == BasicValType.VTP_STRING.getType())
+		if (basictype.get() == ValType.VTP_STRING)
 			stringResult.set(m_vm.RegString());
 		else
 			result.set(m_vm.Reg());
@@ -4409,7 +4408,7 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	boolean CompileConstantExpression() {
-		return CompileConstantExpression(BasicValType.VTP_UNDEFINED.getType());
+		return CompileConstantExpression(ValType.VTP_UNDEFINED);
 	}
 
 	boolean CompileConstantExpression(int basictype) {
@@ -4432,11 +4431,11 @@ public class TomBasicCompiler extends HasErrorState {
 		stringValue = stringValueRef.get();
 
 		// Generate "load constant" instruction
-		if (basictype == BasicValType.VTP_STRING.getType()) {
+		if (basictype == ValType.VTP_STRING) {
 
 			// Create string constant entry if necessary
 			int index = m_vm.StoreStringConstant(stringValue);
-			AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING.getType(),
+			AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_STRING,
 					new VMValue(index));
 		} else
 			AddInstruction(OpCode.OP_LOAD_CONST, basictype, value);
@@ -4552,7 +4551,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Check for prompt
 		if (m_token.m_type == TokenType.CTT_CONSTANT
-				&& m_token.m_valType == BasicValType.VTP_STRING) {
+				&& m_token.m_valType == ValType.VTP_STRING) {
 
 			// Allocate new string constant
 			String text = m_token.m_text.substring(1,
@@ -4577,9 +4576,9 @@ public class TomBasicCompiler extends HasErrorState {
 			int index = m_vm.StoreStringConstant(text);
 
 			// Generate code to print it (load, push, call "print" function)
-			AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING.getType(),
+			AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_STRING,
 					new VMValue(index));
-			m_regType.Set(BasicValType.VTP_STRING);
+			m_regType.Set(ValType.VTP_STRING);
 			if (!CompilePush())
 				return false;
 
@@ -4587,7 +4586,7 @@ public class TomBasicCompiler extends HasErrorState {
 			compFuncSpec printSpec = FindFunction("print", 1);
 			if (printSpec == null)
 				return false;
-			AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_CALL_FUNC, ValType.VTP_INT,
 					new VMValue(printSpec.getIndex()));
 
 			// Generate code to clean up stack
@@ -4621,17 +4620,17 @@ public class TomBasicCompiler extends HasErrorState {
 		compFuncSpec inputSpec = FindFunction("input$", 0);
 		if (inputSpec == null)
 			return false;
-		AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_CALL_FUNC, ValType.VTP_INT,
 				new VMValue(inputSpec.getIndex()));
-		AddInstruction(OpCode.OP_TIMESHARE, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_TIMESHARE, ValType.VTP_INT,
 				new VMValue()); // Timesharing break
 		// is necessary
-		m_regType.Set(BasicValType.VTP_STRING);
+		m_regType.Set(ValType.VTP_STRING);
 
 		// If the variable is not a string, then we need to convert it to the
 		// target
 		// type. We do this by inserting an implicit call to the val() function.
-		if (variableType != BasicValType.VTP_STRING.getType()) {
+		if (variableType != ValType.VTP_STRING) {
 
 			// Push register back as input to val function
 			if (!CompilePush())
@@ -4641,9 +4640,9 @@ public class TomBasicCompiler extends HasErrorState {
 			compFuncSpec valSpec = FindFunction("val", 1);
 			if (valSpec == null)
 				return false;
-			AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_CALL_FUNC, ValType.VTP_INT,
 					new VMValue(valSpec.getIndex()));
-			m_regType.Set(BasicValType.VTP_REAL);
+			m_regType.Set(ValType.VTP_REAL);
 
 			// Clean up stack
 			if (!CompilePop())
@@ -4742,7 +4741,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Compile data type
 		TokenType tokenType = TokenType.CTT_CONSTANT;
-		ValType type = new ValType(BasicValType.VTP_UNDEFINED);
+		ValType type = new ValType(ValType.VTP_UNDEFINED);
 		String name = "";
 		Mutable<TokenType> tokenTypeRef = new Mutable<TokenType>(tokenType);
 		Mutable<ValType> typeRef = new Mutable<ValType>(type);
@@ -4858,8 +4857,8 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Default basic type to int if undefined
-			if (type.m_basicType == BasicValType.VTP_UNDEFINED.getType())
-				type.m_basicType = BasicValType.VTP_INT.getType();
+			if (type.m_basicType == ValType.VTP_UNDEFINED)
+				type.m_basicType = ValType.VTP_INT;
 
 			// Store function return value type
 			m_userFuncPrototype.hasReturnVal = true;
@@ -4936,7 +4935,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Create jump-past-function op-code
 			m_functionJumpOver = m_vm.InstructionCount();
-			AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT.getType(), new VMValue(
+			AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new VMValue(
 					0)); // Jump target will be fixed up when "endfunction" is
 			// compiled
 
@@ -5056,11 +5055,11 @@ public class TomBasicCompiler extends HasErrorState {
 		// If end of function is reached without a return value, need to trigger
 		// a runtime error.
 		if (UserPrototype().hasReturnVal)
-			AddInstruction(OpCode.OP_NO_VALUE_RETURNED, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_NO_VALUE_RETURNED, ValType.VTP_INT,
 					new VMValue(0));
 		else
 			// Add return-from-user-function instruction
-			AddInstruction(OpCode.OP_RETURN_USER_FUNC, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_RETURN_USER_FUNC, ValType.VTP_INT,
 					new VMValue(0));
 
 		// Fix up jump-past-function op-code
@@ -5112,9 +5111,9 @@ public class TomBasicCompiler extends HasErrorState {
 		// Stack frame remains inactive while evaluating its parameters.
 		if (isRuntimeFunc)
 			AddInstruction(OpCode.OP_CREATE_RUNTIME_FRAME,
-					BasicValType.VTP_INT.getType(), new VMValue(index));
+					ValType.VTP_INT, new VMValue(index));
 		else
-			AddInstruction(OpCode.OP_CREATE_USER_FRAME, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_CREATE_USER_FRAME, ValType.VTP_INT,
 					new VMValue(index));
 
 		// Expect "("
@@ -5157,7 +5156,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Add op-code to call function.
 		// Type: Unused.
 		// Value: index of function specification.
-		AddInstruction(OpCode.OP_CALL_USER_FUNC, BasicValType.VTP_INT.getType(),
+		AddInstruction(OpCode.OP_CALL_USER_FUNC, ValType.VTP_INT,
 				new VMValue());
 
 		if (prototype.hasReturnVal) {
@@ -5168,7 +5167,7 @@ public class TomBasicCompiler extends HasErrorState {
 					&& m_vm.DataTypes().ContainsString(prototype.returnValType))
 				AddInstruction(
 						OpCode.OP_REG_DESTRUCTOR,
-						BasicValType.VTP_INT.getType(),
+						ValType.VTP_INT,
 						new VMValue((int) m_vm
 								.StoreType(prototype.returnValType)));
 
@@ -5219,7 +5218,7 @@ public class TomBasicCompiler extends HasErrorState {
 			if (m_token.m_text.equals("null")) {
 				if (!CompileNull())
 					return false;
-				AddInstruction(OpCode.OP_SAVE_PARAM, BasicValType.VTP_INT.getType(),
+				AddInstruction(OpCode.OP_SAVE_PARAM, ValType.VTP_INT,
 						new VMValue(i));
 			} else {
 
@@ -5236,7 +5235,7 @@ public class TomBasicCompiler extends HasErrorState {
 						&& m_regType.m_arrayLevel == type.m_arrayLevel
 						&& m_regType.m_basicType == type.m_basicType)
 					AddInstruction(OpCode.OP_SAVE_PARAM,
-							BasicValType.VTP_INT.getType(), new VMValue(i));
+							ValType.VTP_INT, new VMValue(i));
 
 				else {
 					SetError("Types do not match");
@@ -5258,10 +5257,10 @@ public class TomBasicCompiler extends HasErrorState {
 					&& m_regType.m_arrayLevel == type.m_arrayLevel
 					&& m_regType.m_basicType == type.m_basicType) {
 				AddInstruction(OpCode.OP_COPY_USER_STACK,
-						BasicValType.VTP_INT.getType(),
+						ValType.VTP_INT,
 						new VMValue((int) m_vm.StoreType(type)));
 				AddInstruction(OpCode.OP_SAVE_PARAM_PTR,
-						BasicValType.VTP_INT.getType(), new VMValue(i));
+						ValType.VTP_INT, new VMValue(i));
 			} else {
 				SetError("Types do not match");
 				return false;
@@ -5271,7 +5270,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Data containing strings will need to be "destroyed" when the stack
 		// unwinds.
 		if (m_vm.DataTypes().ContainsString(type))
-			AddInstruction(OpCode.OP_REG_DESTRUCTOR, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_REG_DESTRUCTOR, ValType.VTP_INT,
 					new VMValue((int) m_vm.StoreType(type)));
 
 		return true;
@@ -5295,7 +5294,7 @@ public class TomBasicCompiler extends HasErrorState {
 				if (!type.CanStoreInRegister()) {
 
 					// Add instruction to move that data into temp data
-					AddInstruction(OpCode.OP_MOVE_TEMP, BasicValType.VTP_INT.getType(),
+					AddInstruction(OpCode.OP_MOVE_TEMP, ValType.VTP_INT,
 							new VMValue((int) m_vm.StoreType(type)));
 
 					// Add return-from-function OP-code
@@ -5303,19 +5302,19 @@ public class TomBasicCompiler extends HasErrorState {
 					// data should NOT be freed on return (as we have just moved
 					// the return value there.)
 					AddInstruction(OpCode.OP_RETURN_USER_FUNC,
-							BasicValType.VTP_INT.getType(), new VMValue(0));
+							ValType.VTP_INT, new VMValue(0));
 				} else
 					// Add return-from-function OP-code
 					// Note: The 1 in the instruction value indicates that temp
 					// data should be freed on return.
 					AddInstruction(OpCode.OP_RETURN_USER_FUNC,
-							BasicValType.VTP_INT.getType(), new VMValue(1));
+							ValType.VTP_INT, new VMValue(1));
 			} else
 				AddInstruction(OpCode.OP_RETURN_USER_FUNC,
-						BasicValType.VTP_INT.getType(), new VMValue(1));
+						ValType.VTP_INT, new VMValue(1));
 		} else {
 			// Add "return from Gosub" op-code
-			AddInstruction(OpCode.OP_RETURN, BasicValType.VTP_INT.getType(),
+			AddInstruction(OpCode.OP_RETURN, ValType.VTP_INT,
 					new VMValue());
 		}
 

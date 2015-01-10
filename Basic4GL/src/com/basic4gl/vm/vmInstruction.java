@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 
 import com.basic4gl.util.Streaming;
 import com.basic4gl.vm.types.OpCode;
-import com.basic4gl.vm.types.ValType.BasicValType;
+import com.basic4gl.vm.types.ValType;
 
 // //////////////////////////////////////////////////////////////////////////////
 // vmInstruction
@@ -19,14 +19,14 @@ public class vmInstruction {
 	// Single byte fields are last, as their alignment is unimportant.
 	public VMValue mValue; // Value
 	public int mSourceLine; // For debugging
-	public short mSourceChar;
+	public int mSourceChar;
 	public short mOpCode; // (vmOpCode)
-	public byte mType; // (vmBasicVarType)
+	public int mType; // (vmBasicVarType)
 
 	public vmInstruction() {
 		mOpCode = OpCode.OP_NOP;
 		// TODO Original source initializes with 0 instead of -1
-		mType = (byte) BasicValType.VTP_UNDEFINED.getType();
+		mType = ValType.VTP_UNDEFINED;
 		mSourceLine = 0;
 		mSourceChar = 0;
 		mValue = new VMValue();
@@ -40,17 +40,17 @@ public class vmInstruction {
 		mValue = i.mValue;
 	}
 
-	public vmInstruction(short opCode, byte type, VMValue val) {
+	public vmInstruction(short opCode, int type, VMValue val) {
 		this(opCode, type, val, 0, 0);
 	}
 
-	public vmInstruction(short opCode, byte type, VMValue val, int sourceLine,
+	public vmInstruction(short opCode, int type, VMValue val, int sourceLine,
 			int sourceChar) {
 		mOpCode = opCode;
 		mType = type;
 		mValue = val;
 		mSourceLine = sourceLine;
-		mSourceChar = (short) sourceChar;
+		mSourceChar = sourceChar;
 	}
 
 	// Streaming
@@ -58,11 +58,11 @@ public class vmInstruction {
 	void StreamOut(ByteBuffer buffer) {
 		try {
 			Streaming.WriteShort(buffer, mOpCode);
-			Streaming.WriteByte(buffer, mType);
+			Streaming.WriteLong(buffer, mType);
 			mValue.StreamOut(buffer);
 
 			Streaming.WriteLong(buffer, mSourceLine);
-			Streaming.WriteShort(buffer, mSourceChar);
+			Streaming.WriteLong(buffer, mSourceChar);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -72,7 +72,7 @@ public class vmInstruction {
 	void StreamIn(ByteBuffer buffer) {
 		try {
 			mOpCode = Streaming.ReadShort(buffer);
-			mType = Streaming.ReadByte(buffer);
+			mType = (int)Streaming.ReadLong(buffer);
 			mValue.StreamIn(buffer);
 			
 			mSourceLine = (int) Streaming.ReadLong(buffer);

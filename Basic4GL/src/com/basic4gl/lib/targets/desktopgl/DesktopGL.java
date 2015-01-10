@@ -21,7 +21,7 @@ import com.basic4gl.lib.util.Library;
 import com.basic4gl.lib.util.Target;
 import com.basic4gl.lib.util.TaskCallback;
 import com.basic4gl.vm.TomVM;
-import com.basic4gl.vm.types.ValType.BasicValType;
+import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.util.Function;
 
 public class DesktopGL implements Library, Target{
@@ -105,7 +105,7 @@ public class DesktopGL implements Library, Target{
 		// TODO Add print functions
 		Map<String, List<compFuncSpec>> s = new HashMap<String, List<compFuncSpec>>();
 		s.put("print", new ArrayList<compFuncSpec>());
-		s.get("print").add( new compFuncSpec(new compParamTypeList(	new BasicValType[] { BasicValType.VTP_STRING }), false, false, BasicValType.VTP_INT, false, false, null));
+		s.get("print").add( new compFuncSpec(new compParamTypeList(	new Integer[] { ValType.VTP_STRING }), false, false, ValType.VTP_INT, false, false, null));
 		return s;
 	}
 	@Override

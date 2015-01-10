@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.Vector;
 
 import com.basic4gl.util.Streaming;
-import com.basic4gl.vm.types.ValType.BasicValType;
+import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.util.Constants;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -110,8 +110,8 @@ import com.basic4gl.vm.util.Constants;
 
 		public boolean TypeValid(ValType type)
 		{
-		    return      type.m_basicType >= BasicValType.VTP_INT.getType()
-		            &&  BasicValType.getType(type.m_basicType) != BasicValType.VTP_UNDEFINED
+		    return      type.m_basicType >= ValType.VTP_INT
+		            &&  type.m_basicType != ValType.VTP_UNDEFINED
 		            &&  (type.m_basicType < 0 || type.m_basicType < m_structures.size ())
 		            &&  type.m_arrayLevel < Constants.VM_MAXDIMENSIONS;
 		}
@@ -126,7 +126,7 @@ import com.basic4gl.vm.util.Constants;
 
 			// Examine data type
 			if (type.m_basicType < 0)
-				return BasicValType.getType(type.m_basicType) == BasicValType.VTP_STRING;
+				return type.m_basicType == ValType.VTP_STRING;
 			else
 				return m_structures.get(type.m_basicType).m_containsString;
 		}

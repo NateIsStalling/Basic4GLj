@@ -3,7 +3,6 @@ package com.basic4gl.compiler;
 import java.util.*;
 
 import com.basic4gl.vm.types.ValType;
-import com.basic4gl.vm.types.ValType.BasicValType;
 
 ////////////////////////////////////////////////////////////////////////////////
 //  Compile time parameter validation callback.
@@ -28,11 +27,11 @@ public class compParamTypeList {
     public compParamTypeList (ValType[] list){
     	m_params = new Vector<ValType>(Arrays.asList(list));
     }
-    public compParamTypeList (BasicValType[] list){
+    public compParamTypeList (Integer[] list){
     	m_params = new Vector<ValType>();
-    	List<BasicValType> l = Arrays.asList(list);
-    	for (BasicValType t : l)
-    		m_params.add (new ValType(t));
+    	List<Integer> l = Arrays.asList(list);
+    	for (Integer type : l)
+    		m_params.add (new ValType(type));
     	
     }
     /*

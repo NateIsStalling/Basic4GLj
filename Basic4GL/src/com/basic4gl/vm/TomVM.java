@@ -29,7 +29,6 @@ import com.basic4gl.vm.types.StructureField;
 import com.basic4gl.vm.types.TypeLibrary;
 import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.types.ValTypeSet;
-import com.basic4gl.vm.types.ValType.BasicValType;
 import com.basic4gl.vm.util.Function;
 import com.basic4gl.vm.util.IVMDebugger;
 import com.basic4gl.vm.util.Resources;
@@ -326,7 +325,7 @@ public class TomVM extends HasErrorState {
 				case OpCode.OP_LOAD_CONST:
 
 					// Load value
-					if (instruction.mType == BasicValType.VTP_STRING.getType()) {
+					if (instruction.mType == ValType.VTP_STRING) {
 						assert (instruction.mValue.getIntVal() >= 0);
 						assert (instruction.mValue.getIntVal() < mStringConstants.size());
 						setRegString(mStringConstants.get(instruction.mValue
@@ -383,13 +382,13 @@ public class TomVM extends HasErrorState {
 						assert (mData.IndexValid(Reg().getIntVal()));
 						// Find value that reg points to
 						VMValue val = mData.Data().get(Reg().getIntVal());
-						switch (BasicValType.getType(instruction.mType)) {
-						case VTP_INT:
-						case VTP_REAL:
+						switch (instruction.mType) {
+						case ValType.VTP_INT:
+						case ValType.VTP_REAL:
 							setReg(val);
 							mIp++; // Proceed to next instruction
 							continue step;
-						case VTP_STRING:
+						case ValType.VTP_STRING:
 							assert (mStrings.IndexValid(val.getIntVal()));
 							setRegString(mStrings.Value(val.getIntVal()));
 							mIp++; // Proceed to next instruction
@@ -450,7 +449,7 @@ public class TomVM extends HasErrorState {
 				case OpCode.OP_PUSH:
 
 					// Push register to stack
-					if (instruction.mType == BasicValType.VTP_STRING.getType())
+					if (instruction.mType == ValType.VTP_STRING)
 						mStack.PushString(RegString());
 					else
 						mStack.Push(Reg());
@@ -461,7 +460,7 @@ public class TomVM extends HasErrorState {
 				case OpCode.OP_POP:
 
 					// Pop reg2 from stack
-					if (instruction.mType == BasicValType.VTP_STRING.getType()){
+					if (instruction.mType == ValType.VTP_STRING){
 						
 						setReg2String(mStack.PopString());
 					}else{
@@ -476,15 +475,15 @@ public class TomVM extends HasErrorState {
 					if (Reg2().getIntVal() > 0) {
 						assert (mData.IndexValid(Reg2().getIntVal()));
 						VMValue dest = mData.Data().get(Reg2().getIntVal());
-						switch (BasicValType.getType(instruction.mType)) {
-						case VTP_INT:
-						case VTP_REAL:
+						switch (instruction.mType) {
+						case ValType.VTP_INT:
+						case ValType.VTP_REAL:
 							//mData.Data().set(mReg2.getIntVal(), new VMValue(mReg));
 							dest.setVal(Reg());
 							
 							mIp++; // Proceed to next instruction
 							continue step;
-						case VTP_STRING:
+						case ValType.VTP_STRING:
 
 							// Allocate string space if necessary
 							if (dest.getIntVal() == 0)
@@ -624,9 +623,9 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_NEG:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(-Reg().getIntVal());
-					else if (instruction.mType == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == ValType.VTP_REAL)
 						Reg().setRealVal(-Reg().getRealVal());
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -636,11 +635,11 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_PLUS:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(Reg().getIntVal() + Reg2().getIntVal());
-					else if (instruction.mType == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == ValType.VTP_REAL)
 						Reg().setRealVal(Reg().getRealVal() + Reg2().getRealVal());
-					else if (instruction.mType == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == ValType.VTP_STRING)
 						setRegString(Reg2String() + RegString());
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -650,9 +649,9 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_MINUS:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(Reg2().getIntVal() - Reg().getIntVal());
-					else if (instruction.mType == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == ValType.VTP_REAL)
 						Reg().setRealVal(Reg2().getRealVal() - Reg().getRealVal());
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -662,9 +661,9 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_TIMES:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(Reg().getIntVal() * Reg2().getIntVal());
-					else if (instruction.mType == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == ValType.VTP_REAL)
 						Reg().setRealVal(Reg().getRealVal() * Reg2().getRealVal());
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -674,9 +673,9 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_DIV:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(Reg2().getIntVal() / Reg().getIntVal());
-					else if (instruction.mType == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == ValType.VTP_REAL)
 						Reg().setRealVal(Reg2().getRealVal() / Reg().getRealVal());
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -686,7 +685,7 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_MOD:
-					if (instruction.mType == BasicValType.VTP_INT.getType()) {
+					if (instruction.mType == ValType.VTP_INT) {
 						int i = Reg2().getIntVal() % Reg().getIntVal();
 						if (i >= 0)
 							Reg().setIntVal(i);
@@ -700,7 +699,7 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_NOT:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(Reg().getIntVal() == 0 ? -1 : 0);
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -710,13 +709,13 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_EQUAL:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(
 								Reg2().getIntVal() == Reg().getIntVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == ValType.VTP_REAL)
 						Reg().setIntVal(
 								Reg2().getRealVal() == Reg().getRealVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == ValType.VTP_STRING)
 						Reg().setIntVal(Reg2String().equals(RegString()) ? -1 : 0);
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -726,13 +725,13 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_NOT_EQUAL:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(
 								Reg2().getIntVal() != Reg().getIntVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == ValType.VTP_REAL)
 						Reg().setIntVal(
 								Reg2().getRealVal() != Reg().getRealVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == ValType.VTP_STRING)
 						Reg().setIntVal(!Reg2String().equals(RegString()) ? -1 : 0);
 					else {
 						SetError(ERR_BAD_OPERATOR);
@@ -742,13 +741,13 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_GREATER:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(
 								Reg2().getIntVal() > Reg().getIntVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == ValType.VTP_REAL)
 						Reg().setIntVal(
 								Reg2().getRealVal() > Reg().getRealVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == ValType.VTP_STRING)
 						Reg().setIntVal(
 								(Reg2String().compareTo(RegString()) > 0) ? -1 : 0);
 					else {
@@ -759,13 +758,13 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_GREATER_EQUAL:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(
 								Reg2().getIntVal() >= Reg().getIntVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == ValType.VTP_REAL)
 						Reg().setIntVal(
 								Reg2().getRealVal() >= Reg().getRealVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == ValType.VTP_STRING)
 						Reg().setIntVal(
 								(Reg2String().compareTo(RegString()) >= 0) ? -1 : 0);
 					else {
@@ -776,13 +775,13 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_LESS:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(
 								Reg2().getIntVal() < Reg().getIntVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == ValType.VTP_REAL)
 						Reg().setIntVal(
 								Reg2().getRealVal() < Reg().getRealVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == ValType.VTP_STRING)
 						Reg().setIntVal(
 								(Reg2String().compareTo(RegString()) < 0) ? -1 : 0);
 					else {
@@ -793,13 +792,13 @@ public class TomVM extends HasErrorState {
 					continue step;
 
 				case OpCode.OP_OP_LESS_EQUAL:
-					if (instruction.mType == BasicValType.VTP_INT.getType())
+					if (instruction.mType == ValType.VTP_INT)
 						Reg().setIntVal(
 								Reg2().getIntVal() <= Reg().getIntVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_REAL.getType())
+					else if (instruction.mType == ValType.VTP_REAL)
 						Reg().setIntVal(
 								Reg2().getRealVal() <= Reg().getRealVal() ? -1 : 0);
-					else if (instruction.mType == BasicValType.VTP_STRING.getType())
+					else if (instruction.mType == ValType.VTP_STRING)
 						Reg().setIntVal(
 								(Reg2String().compareTo(RegString()) <= 0) ? -1 : 0);
 					else {
@@ -1169,14 +1168,14 @@ public class TomVM extends HasErrorState {
 
 					// Transfer register value to parameter
 					VMValue dest = mData.Data().get(dataIndex);
-					switch (BasicValType.getType(instruction.mType)) {
-					case VTP_INT:
-					case VTP_REAL:
+					switch (instruction.mType) {
+					case ValType.VTP_INT:
+					case ValType.VTP_REAL:
 						//TODO Confirm value is properly set
 						//TODO Check other "dest" variables
 						dest.setVal(Reg());
 						break;
-					case VTP_STRING:
+					case ValType.VTP_STRING:
 
 						// Allocate string space
 						dest.setIntVal(mStrings.Alloc());
@@ -1373,7 +1372,7 @@ public class TomVM extends HasErrorState {
 			assert (mDataTypes.TypeValid(type));
 
 			// If type is basic string, copy string value
-			if (type.Equals(BasicValType.VTP_STRING)) {
+			if (type.Equals(ValType.VTP_STRING)) {
 				VMValue src = mData.Data().get(sourceIndex);
 				VMValue dest = mData.Data().get(destIndex);
 				if (src.getIntVal() > 0 || dest.getIntVal() > 0) {
@@ -1845,12 +1844,12 @@ public class TomVM extends HasErrorState {
 			// Displaying data
 		public String BasicValToString(VMValue val, int type,
 				boolean constant) {
-			switch (BasicValType.getType(type)) {
-			case VTP_INT:
+			switch (type) {
+			case ValType.VTP_INT:
 				return String.valueOf(val.getIntVal());
-			case VTP_REAL:
+			case ValType.VTP_REAL:
 				return String.valueOf(val.getRealVal());
-			case VTP_STRING:
+			case ValType.VTP_STRING:
 				if (constant) {
 					if (val.getIntVal() >= 0
 							&& val.getIntVal() < mStringConstants.size())
@@ -1993,7 +1992,7 @@ public class TomVM extends HasErrorState {
 			return ValToString(val, type, new Mutable<Integer>(maxChars));
 		}
 		
-		boolean ReadProgramData(byte basictype) {
+		boolean ReadProgramData(int basictype) {
 
 			// Read program data into register.
 
@@ -2007,20 +2006,20 @@ public class TomVM extends HasErrorState {
 			VmProgramDataElement e = mProgramData.get(mProgramDataOffset++);
 
 			// Convert to requested type
-			switch (BasicValType.getType(basictype)) {
-			case VTP_STRING:
+			switch (basictype) {
+			case ValType.VTP_STRING:
 
 				// Convert type to int.
 				switch (e.getType()) {
-				case VTP_STRING:
+				case ValType.VTP_STRING:
 					assert (e.getValue().getIntVal() >= 0);
 					assert (e.getValue().getIntVal() < mStringConstants.size());
 					setRegString(mStringConstants.get(e.getValue().getIntVal()));
 					return true;
-				case VTP_INT:
+				case ValType.VTP_INT:
 					setRegString(String.valueOf(e.getValue().getIntVal()));
 					return true;
-				case VTP_REAL:
+				case ValType.VTP_REAL:
 					setRegString(String.valueOf(e.getValue().getRealVal()));
 					return true;
 				default:
@@ -2028,15 +2027,15 @@ public class TomVM extends HasErrorState {
 				}
 				break;
 
-			case VTP_INT:
+			case ValType.VTP_INT:
 				switch (e.getType()) {
-				case VTP_STRING:
+				case ValType.VTP_STRING:
 					SetError(ERR_DATA_IS_STRING);
 					return false;
-				case VTP_INT:
+				case ValType.VTP_INT:
 					Reg().setIntVal(e.getValue().getIntVal());
 					return true;
-				case VTP_REAL:
+				case ValType.VTP_REAL:
 					Reg().setIntVal((int)e.getValue().getRealVal());
 					return true;
 				default:
@@ -2044,15 +2043,15 @@ public class TomVM extends HasErrorState {
 				}
 				break;
 
-			case VTP_REAL:
+			case ValType.VTP_REAL:
 				switch (e.getType()) {
-				case VTP_STRING:
+				case ValType.VTP_STRING:
 					SetError(ERR_DATA_IS_STRING);
 					return false;
-				case VTP_INT:
+				case ValType.VTP_INT:
 					Reg().setRealVal((float)e.getValue().getIntVal());
 					return true;
-				case VTP_REAL:
+				case ValType.VTP_REAL:
 					Reg().setRealVal(e.getValue().getRealVal());
 					return true;
 				default:
@@ -2127,7 +2126,7 @@ public class TomVM extends HasErrorState {
 			assert (type.m_pointerLevel == 0);
 
 			// Type IS string case
-			if (type.Equals(BasicValType.VTP_STRING)) {
+			if (type.Equals(ValType.VTP_STRING)) {
 
 				VMValue val = mData.Data().get(dataIndex);
 				// Empty strings (index 0) can be ignored
@@ -2284,7 +2283,7 @@ public class TomVM extends HasErrorState {
 			// stored
 			// in the data. (But could later be extended to something more general
 			// purpose.)
-			if (type.Equals(BasicValType.VTP_STRING)) {
+			if (type.Equals(ValType.VTP_STRING)) {
 
 				// Don't destroy if in protected range
 				if (protect.ContainsAddr(index))
@@ -2710,9 +2709,9 @@ public class TomVM extends HasErrorState {
 		}
 
 		// Program data
-		public void StoreProgramData(BasicValType t, VMValue v) {
+		public void StoreProgramData(int type, VMValue v) {
 			VmProgramDataElement d = new VmProgramDataElement();
-			d.setType(t);
+			d.setType(type);
 			d.setValue(v);
 			mProgramData.add(d);
 		}

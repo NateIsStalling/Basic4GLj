@@ -6,7 +6,6 @@ import java.util.*;
 
 import com.basic4gl.util.Streaming;
 import com.basic4gl.vm.types.ValType;
-import com.basic4gl.vm.types.ValType.BasicValType;
 
 //---------------------------------------------------------------------------
 //Created 8-Dec-07: Thomas Mulgrew
@@ -41,7 +40,7 @@ public class vmUserFuncPrototype {
 		localVarTypes.clear();
 		localVarIndex.clear();
 		hasReturnVal = false;
-		returnValType = new ValType(BasicValType.VTP_UNDEFINED);
+		returnValType = new ValType(ValType.VTP_UNDEFINED);
 	}
 
 	// Return index of local variable, or if not found

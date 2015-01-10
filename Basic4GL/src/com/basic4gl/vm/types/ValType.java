@@ -3,11 +3,8 @@ package com.basic4gl.vm.types;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.basic4gl.util.Streaming;
-import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.util.Constants;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,29 +38,11 @@ public class ValType {
 	// Note: Basic value types are loaded into registers directly.
 	// Other types (arrays and structures) are loaded as pointers.
 
-	public enum BasicValType {
-		VTP_INT(-5), VTP_REAL(-4), VTP_STRING(-3), VTP_NULL(-2), VTP_UNDEFINED(-1);
-		static private Map<Integer, BasicValType> mValues = new HashMap<Integer, BasicValType>();
-		private int mType;
-
-		BasicValType(int type) {
-			mType = type;
-		}
-
-		public int getType() {
-			return mType;
-		}
-
-		public static BasicValType getType(int type) {
-			return mValues.get(type);
-		}
-
-		static {
-			for (BasicValType t : BasicValType.values()) {
-				BasicValType.mValues.put(t.getType(), t);
-			}
-		}
-	}
+	public static final int	VTP_INT = -5;
+	public static final int	VTP_REAL = -4;
+	public static final int	VTP_STRING = -3;
+	public static final int	VTP_NULL = -2;
+	public static final int	VTP_UNDEFINED = -1;
 
 	public int m_basicType; // Basic type
 	public byte m_arrayLevel; // 0 = value, 1 = array, 2 = 2D array
@@ -78,31 +57,28 @@ public class ValType {
 																	// dimension
 
 	public ValType() {
-		Set(BasicValType.VTP_UNDEFINED);
+		Set(VTP_UNDEFINED);
 	}
-	public ValType(int t) {
-		Set(t);
-	}
-	public ValType(BasicValType t) {
-		Set(t);
+	public ValType(int type) {
+		Set(type);
 	}
 
-	public ValType(ValType t) {
-		Set(t);
+	public ValType(ValType type) {
+		Set(type);
 	}
 
-	public ValType(BasicValType t, byte array) {
-		this(t, array, (byte) 0, false);
+	public ValType(int type, byte array) {
+		this(type, array, (byte) 0, false);
 	}
 
-	public ValType(BasicValType t, byte array, byte pointer, boolean byRef) {
-		Set(t, array, pointer, byRef);
+	public ValType(int type, byte array, byte pointer, boolean byRef) {
+		Set(type, array, pointer, byRef);
 	}
 
 	// Displaying basic types and values
 	static String BasicValTypeName(int type) {
 		if (type < 0) {
-			switch (BasicValType.getType(type)) {
+			switch (type) {
 			case VTP_INT:
 				return "INT";
 			case VTP_REAL:
@@ -120,25 +96,12 @@ public class ValType {
 			return "ADVANCED TYPE";
 	}
 
-	public ValType Set(BasicValType t) {
-		return Set(t, (byte) 0, (byte) 0, false);
+	public ValType Set(int type) {
+		return Set(type, (byte) 0, (byte) 0, false);
 	}
-	public ValType Set(int t) {
-		return Set(t, (byte) 0, (byte) 0, false);
-	}
-	public ValType Set(int t, byte array, byte pointer, boolean byRef) {
+	public ValType Set(int type, byte array, byte pointer, boolean byRef) {
 		assert (array <= Constants.VM_MAXDIMENSIONS);
-		m_basicType = t;
-		m_arrayLevel = array;
-		m_pointerLevel = pointer;
-		m_byRef = byRef;
-
-		Arrays.fill(m_arrayDims, 0);
-		return this;
-	}
-	public ValType Set(BasicValType t, byte array, byte pointer, boolean byRef) {
-		assert (array <= Constants.VM_MAXDIMENSIONS);
-		m_basicType = t.getType();
+		m_basicType = type;
 		m_arrayLevel = array;
 		m_pointerLevel = pointer;
 		m_byRef = byRef;
@@ -173,14 +136,11 @@ public class ValType {
 		return true;
 	}
 
-	public boolean Equals(BasicValType t) {
-		return Equals(new ValType(t));
-	}
-	public boolean Equals(int t) {
-		return Equals(new ValType(t));
+	public boolean Equals(int type) {
+		return Equals(new ValType(type));
 	}
 
-	public boolean ExactEquals(ValType t) {
+	public boolean ExactEquals(ValType type) {
 
 		// Equals returns true if the types are identical in implementation.
 		// This means it will return true if one is a pointer and the other
@@ -192,21 +152,21 @@ public class ValType {
 
 		// Note: The overloaded == operator uses Equals function.
 
-		if (!Equals(t))
+		if (!Equals(type))
 			return false;
 
-		if (m_byRef != t.m_byRef)
+		if (m_byRef != type.m_byRef)
 			return false;
 
 		return true;
 	}
 
-	public boolean ExactEquals(BasicValType t) {
-		return ExactEquals(new ValType(t));
+	public boolean ExactEquals(int type) {
+		return ExactEquals(new ValType(type));
 	}
 
 	public boolean IsNull() {
-		return m_basicType == BasicValType.VTP_NULL.getType();
+		return m_basicType == VTP_NULL;
 	}
 
 	public int PhysicalPointerLevel() {
@@ -328,7 +288,7 @@ public class ValType {
 		if (m_pointerLevel == 0 && m_arrayLevel == 0)
 			return m_basicType;
 		else
-			return BasicValType.VTP_INT.getType();
+			return VTP_INT;
 	}
 
 	public boolean IsBasic() {
@@ -358,7 +318,7 @@ public class ValType {
 
 		// Read VmValType from stream
 		try {
-			m_basicType = (int) Streaming.ReadLong(buffer);
+			m_basicType = (int)Streaming.ReadLong(buffer);
 			m_arrayLevel = Streaming.ReadByte(buffer);
 			m_pointerLevel = Streaming.ReadByte(buffer);
 			m_byRef = Streaming.ReadByte(buffer) == 1 ? true : false;
