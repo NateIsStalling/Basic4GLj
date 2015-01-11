@@ -23,6 +23,7 @@ public class FileEditor {
 
 	public FileEditor(){
 		editorPane = new RSyntaxTextArea(20, 60);
+		editorPane.setSyntaxEditingStyle("text/basic4gl");
 		TextLineNumber tln = new TextLineNumber(editorPane);
 		pane = new JScrollPane(editorPane);
 

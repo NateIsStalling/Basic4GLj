@@ -6,7 +6,9 @@ import com.basic4gl.lib.util.Library;
 import com.basic4gl.lib.util.Target;
 import com.basic4gl.lib.util.TaskCallback;
 import com.basic4gl.vm.TomVM;
+import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -144,6 +146,10 @@ public class MainWindow {
 		});
 		mToolBar.add(mButtonRun);
 		mToolBar.setAlignmentY(1);
+
+		//Initialize syntax highlighting
+		AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
+		atmf.putMapping("text/basic4gl", "com.basic4gl.desktop.BasicTokenMaker");
 
 		// Tabs
 		mTabControl = new JTabbedPane();
