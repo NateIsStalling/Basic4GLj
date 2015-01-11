@@ -6,9 +6,7 @@ import com.basic4gl.lib.util.Library;
 import com.basic4gl.lib.util.Target;
 import com.basic4gl.lib.util.TaskCallback;
 import com.basic4gl.vm.TomVM;
-import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
+import org.fife.ui.rsyntaxtextarea.*;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -50,8 +48,7 @@ public class MainWindow {
 	JLabel mLabelCol; // Cursor Column
 	JLabel mLabelStatus; // Compiler/VM Status
 
-	//Code highlighting
-	HashMap<String, Color> mKeywords;
+	//TODO add documentation when mouse hovers over text
 	HashMap<String, String> mKeywordTips;
 
 	// Compiler and VM
@@ -452,9 +449,11 @@ public class MainWindow {
 		 */
 		i = 0;
 		for (FileEditor editor: mFileEditors){
+
 			mTabControl.setTitleAt(i, editor.getTitle());
 			i++;
 		}
+
 		// Set the application caption
 		if (mFileEditors.get(0).getTitle().equals(FileEditor.DEFAULT_NAME) ||mFileEditors.get(0).getTitle().equals(""))
 			mFrame.setTitle("Basic4GLj" + (!getVersionInfo().equals("") ? " - " + getVersionInfo(): ""));
@@ -643,7 +642,7 @@ public class MainWindow {
 		 * m_glWin.SetTextGrid (m_glText);
 		 */
 
-		// TODO Implement a standard library
+		// TODO Implement standard libraries
 		// Plug in constant and function libraries
 		/*
 		 * InitTomStdBasicLib (m_comp); // Standard library
@@ -676,13 +675,24 @@ public class MainWindow {
 			mCurrentTarget = 0;
 
 		//Initialize highlighting
-		mKeywords = new HashMap<String,Color>();
-		for (String s: m_comp.Constants().keySet())
-			mKeywords.put(s, Color.DARK_GRAY);
+		//mKeywords = new HashMap<String,Color>();
+		BasicTokenMaker.mReservedWords.clear();
+		BasicTokenMaker.mFunctions.clear();
+		BasicTokenMaker.mConstants.clear();
+		BasicTokenMaker.mOperators.clear();
 		for (String s: m_comp.m_reservedWords)
-			mKeywords.put(s, Color.BLUE);
+			BasicTokenMaker.mReservedWords.add(s);
+
+		for (String s: m_comp.Constants().keySet())
+			BasicTokenMaker.mConstants.add(s);
+
 		for (String s: m_comp.m_functionIndex.keySet())
-			mKeywords.put(s, new Color(128,0,128));
+			BasicTokenMaker.mFunctions.add(s);
+
+		for (String s: m_comp.getBinaryOperators())
+			BasicTokenMaker.mOperators.add(s);
+		for (String s: m_comp.getUnaryOperators())
+			BasicTokenMaker.mOperators.add(s);
 
 	}
 

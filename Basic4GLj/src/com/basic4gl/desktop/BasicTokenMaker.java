@@ -6,11 +6,19 @@ import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMap;
 
 import javax.swing.text.Segment;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Nate on 1/10/2015.
  */
 public class BasicTokenMaker extends AbstractTokenMaker {
+    static final char CHAR_COMMENT = '\'';
+    static List<String> mReservedWords = new ArrayList<String>();
+    static List<String> mFunctions = new ArrayList<String>();
+    static List<String> mConstants = new ArrayList<String>();
+    static List<String> mOperators = new ArrayList<String>();
+
     @Override
     public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {
         // This assumes all keywords, etc. were parsed as "identifiers."
@@ -27,14 +35,18 @@ public class BasicTokenMaker extends AbstractTokenMaker {
     public TokenMap getWordsToHighlight() {
         TokenMap tokenMap = new TokenMap();
 
-        tokenMap.put("case",  Token.RESERVED_WORD);
-        tokenMap.put("for",   Token.RESERVED_WORD);
-        tokenMap.put("if",    Token.RESERVED_WORD);
-        tokenMap.put("while", Token.RESERVED_WORD);
+        for (String token:mReservedWords)
+            tokenMap.put(token,  Token.RESERVED_WORD);
 
-        tokenMap.put("printf", Token.FUNCTION);
-        tokenMap.put("scanf",  Token.FUNCTION);
-        tokenMap.put("fopen",  Token.FUNCTION);
+        for (String token:mFunctions)
+            tokenMap.put(token,  Token.FUNCTION);
+
+        for (String token:mConstants)
+            tokenMap.put(token,  Token.DATA_TYPE);
+
+        for (String token:mOperators)
+            tokenMap.put(token,  Token.OPERATOR);
+
 
         return tokenMap;
     }
@@ -78,7 +90,7 @@ public class BasicTokenMaker extends AbstractTokenMaker {
                             currentTokenType = Token.LITERAL_STRING_DOUBLE_QUOTE;
                             break;
 
-                        case '#':
+                        case CHAR_COMMENT:
                             currentTokenType = Token.COMMENT_EOL;
                             break;
 
@@ -114,7 +126,7 @@ public class BasicTokenMaker extends AbstractTokenMaker {
                             currentTokenType = Token.LITERAL_STRING_DOUBLE_QUOTE;
                             break;
 
-                        case '#':
+                        case CHAR_COMMENT:
                             addToken(text, currentTokenStart,i-1, Token.WHITESPACE, newStartOffset+currentTokenStart);
                             currentTokenStart = i;
                             currentTokenType = Token.COMMENT_EOL;

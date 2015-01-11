@@ -59,9 +59,9 @@ public class TomBasicCompiler extends HasErrorState {
 
 	// Settings
 	boolean m_caseSensitive;
-	Map<String, Operator> m_unaryOperators; // Recognised operators. Unary
+	Map<String, Operator> mUnaryOperators; // Recognised operators. Unary
 	// have one operand (e.g NOT x)
-	Map<String, Operator> m_binaryOperators; // Binary have to (e.g. x + y)
+	Map<String, Operator> mBinaryOperators; // Binary have to (e.g. x + y)
 	public ArrayList<String> m_reservedWords;
 	Map<String, Constant> m_constants; // Permanent constants.
 	Map<String, Constant> m_programConstants; // Constants declared using
@@ -321,8 +321,8 @@ public class TomBasicCompiler extends HasErrorState {
 		m_resets = new Vector<Jump>();
 		m_flowControl = new Vector<FlowControl>();
 
-		m_binaryOperators = new HashMap<String, Operator>();
-		m_unaryOperators = new HashMap<String, Operator>();
+		mBinaryOperators = new HashMap<String, Operator>();
+		mUnaryOperators = new HashMap<String, Operator>();
 
 		m_reservedWords = new ArrayList<String>();
 
@@ -351,45 +351,45 @@ public class TomBasicCompiler extends HasErrorState {
 		// Setup operators
 		// Note: From experimentation it appears QBasic binds "xor" looser than
 		// "and" and "or". So for compatibility, we will too..
-		m_binaryOperators.put("xor", new Operator(
+		mBinaryOperators.put("xor", new Operator(
 				OperType.OT_BOOLOPERATOR, OpCode.OP_OP_XOR, 2, 10));
-		m_binaryOperators.put("or", new Operator(
+		mBinaryOperators.put("or", new Operator(
 				OperType.OT_BOOLOPERATOR, OpCode.OP_OP_OR, 2, 11));
-		m_binaryOperators.put("and", new Operator(
+		mBinaryOperators.put("and", new Operator(
 				OperType.OT_BOOLOPERATOR, OpCode.OP_OP_AND, 2, 12));
-		m_binaryOperators.put("lor", new Operator(
+		mBinaryOperators.put("lor", new Operator(
 				OperType.OT_LAZYBOOLOPERATOR, OpCode.OP_OP_OR, 2, 11));
-		m_binaryOperators.put("land", new Operator(
+		mBinaryOperators.put("land", new Operator(
 				OperType.OT_LAZYBOOLOPERATOR, OpCode.OP_OP_AND, 2, 12));
-		m_unaryOperators.put("not", new Operator(
+		mUnaryOperators.put("not", new Operator(
 				OperType.OT_BOOLOPERATOR, OpCode.OP_OP_NOT, 1, 20));
-		m_binaryOperators.put("=", new Operator(
+		mBinaryOperators.put("=", new Operator(
 				OperType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_EQUAL, 2, 30));
-		m_binaryOperators.put("<>", new Operator(
+		mBinaryOperators.put("<>", new Operator(
 				OperType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_NOT_EQUAL, 2,
 				30));
-		m_binaryOperators.put(">",
+		mBinaryOperators.put(">",
 				new Operator(OperType.OT_RETURNBOOLOPERATOR,
 						OpCode.OP_OP_GREATER, 2, 30));
-		m_binaryOperators.put(">=", new Operator(
+		mBinaryOperators.put(">=", new Operator(
 				OperType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_GREATER_EQUAL,
 				2, 30));
-		m_binaryOperators.put("<", new Operator(
+		mBinaryOperators.put("<", new Operator(
 				OperType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_LESS, 2, 30));
-		m_binaryOperators.put("<=", new Operator(
+		mBinaryOperators.put("<=", new Operator(
 				OperType.OT_RETURNBOOLOPERATOR, OpCode.OP_OP_LESS_EQUAL, 2,
 				30));
-		m_binaryOperators.put("+", new Operator(OperType.OT_OPERATOR,
+		mBinaryOperators.put("+", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_PLUS, 2, 40));
-		m_binaryOperators.put("-", new Operator(OperType.OT_OPERATOR,
+		mBinaryOperators.put("-", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_MINUS, 2, 40));
-		m_binaryOperators.put("*", new Operator(OperType.OT_OPERATOR,
+		mBinaryOperators.put("*", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_TIMES, 2, 41));
-		m_binaryOperators.put("/", new Operator(OperType.OT_OPERATOR,
+		mBinaryOperators.put("/", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_DIV, 2, 42));
-		m_binaryOperators.put("%", new Operator(OperType.OT_OPERATOR,
+		mBinaryOperators.put("%", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_MOD, 2, 43));
-		m_unaryOperators.put("-", new Operator(OperType.OT_OPERATOR,
+		mUnaryOperators.put("-", new Operator(OperType.OT_OPERATOR,
 				OpCode.OP_OP_NEG, 1, 50));
 
 		// Setup reserved words
@@ -440,6 +440,13 @@ public class TomBasicCompiler extends HasErrorState {
 		m_reservedWords.add( "runtime");
 		m_reservedWords.add( "bindcode");
 		m_reservedWords.add( "exec");
+	}
+
+	public List<String> getUnaryOperators(){
+		return new ArrayList<String>(mUnaryOperators.keySet());
+	}
+	public List<String> getBinaryOperators(){
+		return new ArrayList<String>(mBinaryOperators.keySet());
 	}
 
 	void ClearState() {
@@ -824,11 +831,11 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	public boolean IsBinaryOperator(String text) {
-		return m_binaryOperators.containsKey(text);
+		return mBinaryOperators.containsKey(text);
 	}
 
 	public boolean IsUnaryOperator(String text) {
-		return m_unaryOperators.containsKey(text);
+		return mUnaryOperators.containsKey(text);
 	}
 
 	public boolean IsOperator(String text) {
@@ -2167,7 +2174,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		Operator o = null;
 		while ((m_token.m_text.equals(")") && getOperatorTOS().mOper.mType != OperType.OT_STOP)
-				|| ((o = m_binaryOperators.get(m_token.m_text)) != null)) {
+				|| ((o = mBinaryOperators.get(m_token.m_text)) != null)) {
 
 			// Special case, right bracket
 			if (m_token.m_text.equals(")")) {
@@ -2440,7 +2447,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Otherwise look for recognised unary operator
 			else {
-				Operator o = m_unaryOperators.get(m_token.m_text);
+				Operator o = mUnaryOperators.get(m_token.m_text);
 				if (o != null) // Operator found
 					m_operatorStack.add(new StackedOperator(o)); // => Stack
 				// it
@@ -3127,19 +3134,19 @@ public class TomBasicCompiler extends HasErrorState {
 		Operator comparison;
 		if (stepType == ValType.VTP_INT) {
 			if (stepValue.getIntVal() > 0)
-				comparison = m_binaryOperators.get("<=");
+				comparison = mBinaryOperators.get("<=");
 			else if (stepValue.getIntVal() < 0)
-				comparison = m_binaryOperators.get(">=");
+				comparison = mBinaryOperators.get(">=");
 			else
-				comparison = m_binaryOperators.get("<>");
+				comparison = mBinaryOperators.get("<>");
 		} else {
 			assert (stepType == ValType.VTP_REAL);
 			if (stepValue.getRealVal() > 0)
-				comparison = m_binaryOperators.get("<=");
+				comparison = mBinaryOperators.get("<=");
 			else if (stepValue.getRealVal() < 0)
-				comparison = m_binaryOperators.get(">=");
+				comparison = mBinaryOperators.get(">=");
 			else
-				comparison = m_binaryOperators.get("<>");
+				comparison = mBinaryOperators.get("<>");
 		}
 
 		// Compile comparison expression
