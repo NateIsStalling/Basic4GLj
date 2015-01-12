@@ -15,10 +15,7 @@ import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.util.*;
 
@@ -284,11 +281,13 @@ public class MainWindow {
 		// Create the menu bar.
 		menuBar = new JMenuBar();
 
+		//File menu
 		menu = new JMenu("File");
 		menuBar.add(menu);
 
 		// a group of JMenuItems
-		menuItem = new JMenuItem("New Program");
+		menuItem = new JMenuItem("New Program",KeyEvent.VK_N);
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -296,7 +295,8 @@ public class MainWindow {
 			}
 		});
 		menu.add(menuItem);
-		menuItem = new JMenuItem("Open Program...");
+		menuItem = new JMenuItem("Open Program...", KeyEvent.VK_O);
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -304,7 +304,8 @@ public class MainWindow {
 			}
 		});
 		menu.add(menuItem);
-		menuItem = new JMenuItem("Save");
+		menuItem = new JMenuItem("Save", KeyEvent.VK_S);
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -319,6 +320,17 @@ public class MainWindow {
 				SaveAsActionExecute();
 			}
 		});
+		menu.add(menuItem);
+		menu.add(new JSeparator());
+
+		menuItem = new JMenuItem("Exit");
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+		menu.add(menuItem);
 		//TODO Implement save all
 		/*menu.add(menuItem);
 		menuItem = new JMenuItem("Save All");
@@ -327,8 +339,8 @@ public class MainWindow {
 			public void actionPerformed(ActionEvent e) {
 				SaveAllActionExecute();
 			}
-		});*/
-		menu.add(menuItem);
+		});
+		menu.add(menuItem);*/
 		//TODO Implement export
 		/*menuItem = new JMenuItem("Export...");
 		menuItem.addActionListener(new ActionListener() {
@@ -343,6 +355,81 @@ public class MainWindow {
 			}
 		});
 		menu.add(menuItem);*/
+		//Edit menu
+		menu = new JMenu("Edit");
+		menuBar.add(menu);
+
+		menuItem = new JMenuItem("Undo");
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int i = mTabControl.getSelectedIndex();
+				if (mFileEditors != null && i > -1 && i < mFileEditors.size())
+					if (mFileEditors.get(i).editorPane.canUndo())
+						mFileEditors.get(i).editorPane.undoLastAction();
+			}
+		});
+		menu.add(menuItem);
+		menuItem = new JMenuItem("Redo");
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int i = mTabControl.getSelectedIndex();
+				if (mFileEditors != null && i > -1 && i < mFileEditors.size())
+					if (mFileEditors.get(i).editorPane.canRedo())
+						mFileEditors.get(i).editorPane.redoLastAction();
+			}
+		});
+		menu.add(menuItem);
+		menu.add(new JSeparator());
+		menuItem = new JMenuItem("Cut");
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int i = mTabControl.getSelectedIndex();
+				if (mFileEditors != null && i > -1 && i < mFileEditors.size())
+					mFileEditors.get(i).editorPane.cut();
+			}
+		});
+		menu.add(menuItem);
+		menuItem = new JMenuItem("Copy");
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int i = mTabControl.getSelectedIndex();
+				if (mFileEditors != null && i > -1 && i < mFileEditors.size())
+					mFileEditors.get(i).editorPane.copy();
+			}
+		});
+		menu.add(menuItem);
+		menuItem = new JMenuItem("Paste");
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int i = mTabControl.getSelectedIndex();
+				if (mFileEditors != null && i > -1 && i < mFileEditors.size())
+					mFileEditors.get(i).editorPane.paste();
+			}
+		});
+		menu.add(menuItem);
+
+		menu.add(new JSeparator());
+		menuItem = new JMenuItem("Select All");
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK));
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int i = mTabControl.getSelectedIndex();
+				if (mFileEditors != null && i > -1 && i < mFileEditors.size())
+					mFileEditors.get(i).editorPane.selectAll();
+			}
+		});
+		menu.add(menuItem);
 
 		/*
 		menu = new JMenu("Help");
@@ -351,6 +438,7 @@ public class MainWindow {
 		menuItem.addActionListener(this);
 		menu.add(menuItem);
 		 */
+
 
 		return menuBar;
 	}
