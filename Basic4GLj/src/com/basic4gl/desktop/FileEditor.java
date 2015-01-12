@@ -13,44 +13,54 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
 import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
 import org.fife.ui.rsyntaxtextarea.TokenTypes;
+import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 public class FileEditor {
 	public static final String DEFAULT_NAME = "[Unnamed]";
 	public RSyntaxTextArea editorPane;
-	public JScrollPane pane;	//Alternatively RTextScrollPane
+	public RTextScrollPane pane;	//Alternatively RTextScrollPane
 
 	private String mFilename;	//Filename without path
 	private String mFilePath;	//Full path including name
 	private boolean mIsModified;
 
 	public FileEditor(){
-
+		int i, t;
 		SyntaxScheme scheme;
+
+		mFilename = "";
+		mFilePath = "";
+		mIsModified = false;
 
 		editorPane = new RSyntaxTextArea(20, 60);
 		editorPane.setSyntaxEditingStyle("text/basic4gl");
-		TextLineNumber tln = new TextLineNumber(editorPane);
-		pane = new JScrollPane(editorPane);
+		pane = new RTextScrollPane(editorPane);
 
-		//Comment out if using RTextScrollPane
-		pane.setRowHeaderView( tln );
+		pane.setIconRowHeaderEnabled(true);
+		pane.setFoldIndicatorEnabled(false);
 
+		//Enable bookmarks
+		Gutter gutter = pane.getGutter();
+		gutter.setBookmarkIcon(MainWindow.createImageIcon("images/bookmark.png"));
+		gutter.setBookmarkingEnabled(true);
+
+		// Configure popup context menu
+		JPopupMenu popup = editorPane.getPopupMenu();
+		popup.remove(popup.getComponents().length-1);	//Remove folding option
+		popup.remove(popup.getComponents().length-1);	//Remove separator
+
+		//Set default color scheme
 		scheme = editorPane.getSyntaxScheme();
 		scheme.setStyle(TokenTypes.IDENTIFIER,  new Style(new Color(0,0,128)));	//Normal text
 		scheme.setStyle(TokenTypes.LITERAL_NUMBER_DECIMAL_INT, new Style(new Color(0,0,128)));
 
 		scheme.setStyle(TokenTypes.COMMENT_EOL, new Style(new Color(101,124,167))); //Comment
 		scheme.setStyle(TokenTypes.RESERVED_WORD, new Style(new Color(0,0,255)));	//Keyword
+		scheme.setStyle(TokenTypes.RESERVED_WORD_2, new Style(new Color(0,128,255)));	//Constants
 		scheme.setStyle(TokenTypes.LITERAL_STRING_DOUBLE_QUOTE, new Style(new Color(0,128,0)));	//String
 		scheme.setStyle(TokenTypes.FUNCTION, new Style(new Color (255,0,0))); //Function
 		scheme.setStyle(TokenTypes.OPERATOR, new Style(new Color (128,0,128))); //Operator
-		//editorPane.syntaxDocumentFilter= null;
-		//editorPane.setContentType("text/basic4gl");
-		mFilename = "";
-		mFilePath = "";
-		mIsModified = false;
-
 	}
 
 	public String getTitle(){
@@ -72,9 +82,9 @@ public class FileEditor {
 	public boolean isModified(){return mIsModified;}
 	public void setModified(){mIsModified = true;}
 
-	public void save(boolean saveas){
+	public void save(boolean saveAs){
 		boolean save = true;
-		if (saveas || mFilePath.equals("")){
+		if (saveAs || mFilePath.equals("")){
 			JFileChooser dialog = new JFileChooser();
 			dialog.setAcceptAllFileFilterUsed(false);
 			dialog.addChoosableFileFilter(new FileNameExtensionFilter("GLBasic Program (*.gb)", "gb"));
@@ -113,7 +123,6 @@ public class FileEditor {
 		if (result == JFileChooser.APPROVE_OPTION){
 			editor = new FileEditor();
 			try {
-				//TODO Change tabs when opening file
 				FileReader fr = new FileReader(dialog.getSelectedFile().getAbsolutePath());
 				editor.mFilePath = dialog.getSelectedFile().getAbsolutePath();
 				editor.mFilename = dialog.getSelectedFile().getName();
@@ -123,8 +132,9 @@ public class FileEditor {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			editor.editorPane.invalidate();
+			editor.editorPane.discardAllEdits();	//Otherwise 'undo' will clear the text area after loading
 		}
+
 		return editor;
 	}
 

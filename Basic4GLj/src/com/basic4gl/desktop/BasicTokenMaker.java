@@ -42,7 +42,7 @@ public class BasicTokenMaker extends AbstractTokenMaker {
             tokenMap.put(token,  Token.FUNCTION);
 
         for (String token:mConstants)
-            tokenMap.put(token,  Token.DATA_TYPE);
+            tokenMap.put(token,  Token.RESERVED_WORD_2);
 
         for (String token:mOperators)
             tokenMap.put(token,  Token.OPERATOR);

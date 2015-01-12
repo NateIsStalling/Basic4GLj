@@ -7,6 +7,7 @@ import com.basic4gl.lib.util.Target;
 import com.basic4gl.lib.util.TaskCallback;
 import com.basic4gl.vm.TomVM;
 import org.fife.ui.rsyntaxtextarea.*;
+import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -144,7 +145,7 @@ public class MainWindow {
 		mToolBar.add(mButtonRun);
 		mToolBar.setAlignmentY(1);
 
-		//Initialize syntax highlighting
+		//Initialize syntax highlighting and folding
 		AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
 		atmf.putMapping("text/basic4gl", "com.basic4gl.desktop.BasicTokenMaker");
 
@@ -355,7 +356,7 @@ public class MainWindow {
 	}
 
 	/** Returns an ImageIcon, or null if the path was invalid. */
-	private static ImageIcon createImageIcon(String path) {
+	public static ImageIcon createImageIcon(String path) {
 		java.net.URL imgURL = ClassLoader.getSystemClassLoader().getResource(
 				path);
 		if (imgURL != null) {
