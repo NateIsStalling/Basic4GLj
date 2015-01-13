@@ -7,23 +7,38 @@ import com.basic4gl.lib.util.Target;
 import com.basic4gl.lib.util.TaskCallback;
 import com.basic4gl.vm.TomVM;
 import org.fife.ui.rsyntaxtextarea.*;
-import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Element;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
 import java.util.*;
 
 public class MainWindow {
 
 	//Window Constants
+	public static final String APPLICATION_NAME =  "Basic4GLj";
+	public static final String APPLICATION_VERSION =  "Alpha 0.2.0 preview";
+	public static final String APPLICATION_BUILD_DATE =  "1/12/2015";
+	public static final String APPLICATION_COPYRIGHT =  "(c) 2015, Nathaniel Nielsen";
+	public static final String APPLICATION_DESCRIPTION =  "Basic4GL java port";
+	public static final String APPLICATION_WEBSITE = "blog.crazynatestudios.com";
+	public static final String APPLICATION_CONTACT = "support@crazynatestudios.com";
+
+	public static final String ICON_LOGO_SMALL = "images/logox32.png";
+	public static final String ICON_LOGO_LARGE = "images/logox128.png";
+
+	private static final String ICON_RUN_APP = "images/icon_play.png";
+	private static final String ICON_STOP_APP = "images/icon_stop.png";
+	private static final String ICON_NEW = "images/icon_new.png";
+	private static final String ICON_OPEN = "images/icon_open.png";
+	private static final String ICON_SAVE = "images/icon_save.png";
+
 	private static final boolean DISPLAY_VERSION_INFO = true;
-	private static final String VERSION_NAME =  "Alpha 0.1.2";
 
 	enum RunMode {
 		RM_STOPPED, RM_PAUSED, RM_RUNNING
@@ -31,6 +46,7 @@ public class MainWindow {
 
 	// Window
 	JFrame mFrame;
+	JPanel mMainPanel;
 	JPanel mStatusPanel;
 	JMenuBar mMenuBar;
 	JToolBar mToolBar;
@@ -42,9 +58,8 @@ public class MainWindow {
 	JButton mButtonOpen;
 	JButton mButtonRun;
 	// Labels
-	JLabel mLabelRow; // Cursor Row
-	JLabel mLabelCol; // Cursor Column
 	JLabel mLabelStatus; // Compiler/VM Status
+	JLabel mLabelCursor; // Cursor Position
 
 	//TODO add documentation when mouse hovers over text
 	HashMap<String, String> mKeywordTips;
@@ -84,8 +99,9 @@ public class MainWindow {
 		mFileEditors = new Vector<FileEditor>();
 
 		// Create and set up the window.
-		mFrame = new JFrame("Basic4GLj" + (!getVersionInfo().equals("") ? " - " + getVersionInfo(): ""));
+		mFrame = new JFrame(APPLICATION_NAME);
 		// Configure window
+		mFrame.setIconImage(createImageIcon(ICON_LOGO_SMALL).getImage());
 		mFrame.setPreferredSize(new Dimension(696, 480));
 		mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -98,15 +114,19 @@ public class MainWindow {
 		mStatusPanel.setPreferredSize(new Dimension(mFrame.getWidth(), 24));
 		mStatusPanel.setLayout(new BoxLayout(mStatusPanel, BoxLayout.X_AXIS));
 		// TODO Add mLabelRow and mLabelCol to status bar
-		mLabelStatus = new JLabel("");
+		mLabelStatus = new JLabel(" ");
 		mLabelStatus.setBorder(new BevelBorder(BevelBorder.LOWERED));
 		mStatusPanel.add(mLabelStatus, BorderLayout.CENTER);
+
+		mLabelCursor = new JLabel("0:0");
+		mLabelCursor.setBorder(new BevelBorder(BevelBorder.LOWERED));
+		mStatusPanel.add(mLabelCursor, BorderLayout.EAST);
 		// Add controls
 
 		// Toolbar
 		mToolBar = new JToolBar();
 		mToolBar.setFloatable(false);
-		mButtonNew = new JButton(createImageIcon("images/ImgNew.png"));
+		mButtonNew = new JButton(createImageIcon(ICON_NEW));
 		mButtonNew.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -114,7 +134,7 @@ public class MainWindow {
 			}
 		});
 		mToolBar.add(mButtonNew);
-		mButtonOpen = new JButton(createImageIcon("images/ImgOpen.png"));
+		mButtonOpen = new JButton(createImageIcon(ICON_OPEN));
 		mButtonOpen.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -122,7 +142,7 @@ public class MainWindow {
 			}
 		});
 		mToolBar.add(mButtonOpen);
-		mButtonSave = new JButton(createImageIcon("images/ImgSave.png"));
+		mButtonSave = new JButton(createImageIcon(ICON_SAVE));
 		mButtonSave.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -131,7 +151,7 @@ public class MainWindow {
 		});
 		mToolBar.add(mButtonSave);
 		mToolBar.addSeparator();
-		mButtonRun = new JButton(createImageIcon("images/ImgGo.png"));
+		mButtonRun = new JButton(createImageIcon(ICON_RUN_APP));
 		mButtonRun.setToolTipText("Run the program!");
 		mButtonRun.addActionListener(new ActionListener() {
 			@Override
@@ -247,17 +267,38 @@ public class MainWindow {
 
 	public String getVersionInfo(){
 		if (DISPLAY_VERSION_INFO)
-			return VERSION_NAME;
+			return APPLICATION_VERSION;
 		return "";
 	}
 
 
 
 	public void addTab() {
-		FileEditor editor = new FileEditor();
+		final FileEditor editor = new FileEditor();
 		mFileEditors.add(editor);
 		mTabControl.addTab(editor.getTitle(), editor.pane);
 
+		//Allow user to see cursor position
+		editor.editorPane.addCaretListener(new CaretListener() {
+			@Override
+			public void caretUpdate(CaretEvent e) {
+				JTextArea component = (JTextArea)e.getSource();
+				int caretpos = component.getCaretPosition();
+				int row = 0;
+				int column = 0;
+				try {
+					row = component.getLineOfOffset(caretpos);
+					column = caretpos - component.getLineStartOffset(row);
+
+					mLabelCursor.setText((column + 1) + ":" + (row + 1));
+				} catch (BadLocationException ex) {
+					mLabelCursor.setText(0 + ":" + 0 );
+					ex.printStackTrace();
+
+				}
+
+			}
+		});
 		//TODO get current editor
 		//TODO set colors
 		//mFileEditors.get(0).editorPane.setKeywordColor(mKeywords);
@@ -431,13 +472,20 @@ public class MainWindow {
 		});
 		menu.add(menuItem);
 
-		/*
+		//Help menu
 		menu = new JMenu("Help");
 		menuBar.add(menu);
-		menuItem = new JMenuItem("Libraries...");	//List available libraries and functions/constants
-		menuItem.addActionListener(this);
+		//menuItem = new JMenuItem("Libraries...");	//List available libraries and functions/constants
+		//menuItem.addActionListener(this);
+		//menu.add(menuItem);
+		menuItem = new JMenuItem("About");	//List available libraries and functions/constants
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new About(mFrame);
+			}
+		});
 		menu.add(menuItem);
-		 */
 
 
 		return menuBar;
@@ -542,12 +590,6 @@ public class MainWindow {
 			mTabControl.setTitleAt(i, editor.getTitle());
 			i++;
 		}
-
-		// Set the application caption
-		if (mFileEditors.get(0).getTitle().equals(FileEditor.DEFAULT_NAME) ||mFileEditors.get(0).getTitle().equals(""))
-			mFrame.setTitle("Basic4GLj" + (!getVersionInfo().equals("") ? " - " + getVersionInfo(): ""));
-		else
-			mFrame.setTitle("Basic4GLj - " + mFileEditors.get(0).getTitle() );
 	}
 
 	private boolean CheckModified() {
@@ -607,7 +649,7 @@ public class MainWindow {
 		mLabelStatus.setText("Program stopped");
 
 		// Update UI
-		mButtonRun.setIcon(createImageIcon("images/ImgGo.png"));
+		mButtonRun.setIcon(createImageIcon(ICON_RUN_APP));
 		mButtonRun.setToolTipText("Run the program!");
 		mButtonRun.setEnabled(true);
 
@@ -624,7 +666,7 @@ public class MainWindow {
 		mLabelStatus.setText("Running...");
 
 		// Update UI
-		mButtonRun.setIcon(createImageIcon("images/ImgStop.png"));
+		mButtonRun.setIcon(createImageIcon(ICON_STOP_APP));
 		mButtonRun.setToolTipText("Stop the program!");
 		mButtonRun.setEnabled(true);
 
@@ -641,7 +683,7 @@ public class MainWindow {
 		mLabelStatus.setText("Program paused");
 
 		// Update UI
-		mButtonRun.setIcon(createImageIcon("images/ImgStop.png"));
+		mButtonRun.setIcon(createImageIcon(ICON_STOP_APP));
 		mButtonRun.setToolTipText("Stop the program!");
 		mButtonRun.setEnabled(true);
 
