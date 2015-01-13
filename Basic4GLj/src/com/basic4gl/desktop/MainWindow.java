@@ -10,6 +10,7 @@ import org.fife.ui.rsyntaxtextarea.*;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
@@ -58,21 +59,21 @@ public class MainWindow {
 	JButton mButtonOpen;
 	JButton mButtonRun;
 	// Labels
-	JLabel mLabelStatus; // Compiler/VM Status
-	JLabel mLabelCursor; // Cursor Position
+	JLabel mLabelStatusInfo; // Compiler/VM Status
+	JLabel mLabelStatusCursor; // Cursor Position
 
-	//TODO add documentation when mouse hovers over text
+	//TODO add library viewer to display documentation
 	HashMap<String, String> mKeywordTips;
 
 	// Compiler and VM
-	private TomBasicCompiler m_comp;
-	private TomVM m_vm;
+	private TomBasicCompiler mComp;
+	private TomVM mVm;
 
 	// Editors
 	Vector<FileEditor> mFileEditors;
 
 	// State
-	private RunMode m_runMode;
+	private RunMode mRunMode;
 
 	//Window to run Basic4GL virtual machine in
 	private Target mTarget;
@@ -88,9 +89,9 @@ public class MainWindow {
 	}
 
 	public MainWindow() {
-		m_runMode = RunMode.RM_STOPPED;
-		m_vm = new TomVM(null);
-		m_comp = new TomBasicCompiler(m_vm);
+		mRunMode = RunMode.RM_STOPPED;
+		mVm = new TomVM(null);
+		mComp = new TomBasicCompiler(mVm);
 
 		mLibraries = new ArrayList<Library>();
 		mTargets = new ArrayList<Integer>();
@@ -105,23 +106,32 @@ public class MainWindow {
 		mFrame.setPreferredSize(new Dimension(696, 480));
 		mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		mMenuBar = setupMenuBar();
+		//Initialize menu bar
+		mMenuBar 		= setupMenuBar();
+
+		//Initialize other components
+		mStatusPanel 	= new JPanel();
+		mLabelStatusInfo = new JLabel("");
+		mLabelStatusCursor = new JLabel("0:0");
+		JPanel panelStatusInfo = new JPanel(new BorderLayout());
+		JPanel panelStatusCursor = new JPanel();
+
+		mStatusPanel.setLayout(new BoxLayout(mStatusPanel, BoxLayout.LINE_AXIS));
+
+		//Add components to Status Panel
+		mFrame.add(mStatusPanel, BorderLayout.SOUTH);
+		mStatusPanel.add(panelStatusCursor);
+		mStatusPanel.add(new JSeparator(JSeparator.VERTICAL));
+		mStatusPanel.add(panelStatusInfo);
+		panelStatusInfo.add(mLabelStatusInfo, BorderLayout.LINE_START);
+		panelStatusCursor.add(mLabelStatusCursor, BorderLayout.CENTER);
 
 		// Setup Status Panel
-		mStatusPanel = new JPanel();
 		mStatusPanel.setBorder(new BevelBorder(BevelBorder.RAISED));
-		mFrame.add(mStatusPanel, BorderLayout.SOUTH);
-		mStatusPanel.setPreferredSize(new Dimension(mFrame.getWidth(), 24));
-		mStatusPanel.setLayout(new BoxLayout(mStatusPanel, BoxLayout.X_AXIS));
-		// TODO Add mLabelRow and mLabelCol to status bar
-		mLabelStatus = new JLabel(" ");
-		mLabelStatus.setBorder(new BevelBorder(BevelBorder.LOWERED));
-		mStatusPanel.add(mLabelStatus, BorderLayout.CENTER);
-
-		mLabelCursor = new JLabel("0:0");
-		mLabelCursor.setBorder(new BevelBorder(BevelBorder.LOWERED));
-		mStatusPanel.add(mLabelCursor, BorderLayout.EAST);
-		// Add controls
+		panelStatusInfo.setBorder(new EmptyBorder(0,5,0,5));
+		panelStatusInfo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
+		panelStatusCursor.setBorder(new EmptyBorder(0,5,0,5));
+		panelStatusCursor.setMaximumSize(new Dimension(96, 24));
 
 		// Toolbar
 		mToolBar = new JToolBar();
@@ -207,7 +217,7 @@ public class MainWindow {
 		mFrame.setVisible(true);
 	}
 	void GoStopActionExecute() {
-		switch (m_runMode) {
+		switch (mRunMode) {
 			case RM_STOPPED:
 				if (Compile())
 					Run();
@@ -290,9 +300,9 @@ public class MainWindow {
 					row = component.getLineOfOffset(caretpos);
 					column = caretpos - component.getLineStartOffset(row);
 
-					mLabelCursor.setText((column + 1) + ":" + (row + 1));
+					mLabelStatusCursor.setText((column + 1) + ":" + (row + 1));
 				} catch (BadLocationException ex) {
-					mLabelCursor.setText(0 + ":" + 0 );
+					mLabelStatusCursor.setText(0 + ":" + 0);
 					ex.printStackTrace();
 
 				}
@@ -541,7 +551,7 @@ public class MainWindow {
 
 				line = editorPane.getText(start, stop - start);
 
-				m_comp.Parser().SourceCode().add(line);
+				mComp.Parser().SourceCode().add(line);
 
 			}
 		} catch (BadLocationException e) {
@@ -553,7 +563,7 @@ public class MainWindow {
 	private void PutCursor(int line, int col) {
 		// CODE HERE!!!
 		//Temporary
-		this.mLabelStatus.setText(mLabelStatus.getText() + " - Line: " + (line + 1));
+		this.mLabelStatusInfo.setText("Line: " + (line + 1) + " - " + mLabelStatusInfo.getText());
 		// TODO was not implemented in original source
 	}
 
@@ -561,7 +571,7 @@ public class MainWindow {
 		// TODO Possibly remove
 		// Find IP
 		Integer line = 0, col = 0;
-		m_vm.GetIPInSourceCode(line, col);
+		mVm.GetIPInSourceCode(line, col);
 
 		// Put cursor there
 		PutCursor(line, col);
@@ -601,7 +611,7 @@ public class MainWindow {
 	private boolean Compile() {
 
 		// Clear source code from parser
-		m_comp.Parser().SourceCode().clear();
+		mComp.Parser().SourceCode().clear();
 
 		// Reload in from editors
 		// Load included files first (if any)
@@ -613,15 +623,15 @@ public class MainWindow {
 		LoadParser(mFileEditors.get(0).editorPane);
 
 		// Compile
-		m_comp.ClearError();
-		m_comp.Compile();
+		mComp.ClearError();
+		mComp.Compile();
 
 		// Return result
-		if (m_comp.Error()) {
+		if (mComp.Error()) {
 
 			// Show error
-			mLabelStatus.setText(m_comp.GetError());
-			PutCursor((int) m_comp.Line(), (int) m_comp.Col());
+			mLabelStatusInfo.setText(mComp.GetError());
+			PutCursor((int) mComp.Line(), (int) mComp.Col());
 			return false;
 		}
 		return true;
@@ -632,7 +642,7 @@ public class MainWindow {
 		// Run from start
 
 		// Reset virtual machine
-		m_vm.Reset();
+		mVm.Reset();
 
 		// Setup to start program from start
 		SetupForRun();
@@ -644,9 +654,9 @@ public class MainWindow {
 	private void Stop() {
 
 		// Stop program
-		m_runMode = RunMode.RM_STOPPED;
+		mRunMode = RunMode.RM_STOPPED;
 		DeactivateForStop();
-		mLabelStatus.setText("Program stopped");
+		mLabelStatusInfo.setText("Program stopped");
 
 		// Update UI
 		mButtonRun.setIcon(createImageIcon(ICON_RUN_APP));
@@ -661,9 +671,9 @@ public class MainWindow {
 	}
 
 	private void Continue() {
-		m_runMode = RunMode.RM_RUNNING;
+		mRunMode = RunMode.RM_RUNNING;
 		ActivateForContinue();
-		mLabelStatus.setText("Running...");
+		mLabelStatusInfo.setText("Running...");
 
 		// Update UI
 		mButtonRun.setIcon(createImageIcon(ICON_STOP_APP));
@@ -678,9 +688,9 @@ public class MainWindow {
 	}
 
 	private void Pause() {
-		m_runMode = RunMode.RM_PAUSED;
+		mRunMode = RunMode.RM_PAUSED;
 		DeactivateForStop();
-		mLabelStatus.setText("Program paused");
+		mLabelStatusInfo.setText("Program paused");
 
 		// Update UI
 		mButtonRun.setIcon(createImageIcon(ICON_STOP_APP));
@@ -776,26 +786,26 @@ public class MainWindow {
 		// TODO Implement standard libraries
 		// Plug in constant and function libraries
 		/*
-		 * InitTomStdBasicLib (m_comp); // Standard library
-		 * InitTomWindowsBasicLib (m_comp, &m_files); // Windows specific
-		 * library InitTomOpenGLBasicLib (m_comp, m_glWin, &m_files); // OpenGL
-		 * InitTomTextBasicLib (m_comp, m_glWin, m_glText); // Basic
-		 * text/sprites InitGLBasicLib_gl (m_comp); InitGLBasicLib_glu (m_comp);
-		 * InitTomJoystickBasicLib (m_comp, m_glWin); // Joystick support
-		 * InitTomTrigBasicLib (m_comp); // Trigonometry library
-		 * InitTomFileIOBasicLib (m_comp, &m_files); // File I/O library
-		 * InitTomNetBasicLib (m_comp); // Networking
+		 * InitTomStdBasicLib (mComp); // Standard library
+		 * InitTomWindowsBasicLib (mComp, &m_files); // Windows specific
+		 * library InitTomOpenGLBasicLib (mComp, m_glWin, &m_files); // OpenGL
+		 * InitTomTextBasicLib (mComp, m_glWin, m_glText); // Basic
+		 * text/sprites InitGLBasicLib_gl (mComp); InitGLBasicLib_glu (mComp);
+		 * InitTomJoystickBasicLib (mComp, m_glWin); // Joystick support
+		 * InitTomTrigBasicLib (mComp); // Trigonometry library
+		 * InitTomFileIOBasicLib (mComp, &m_files); // File I/O library
+		 * InitTomNetBasicLib (mComp); // Networking
 		 */
 
 		//TODO Load libraries dynamically
 		mLibraries.add(new com.basic4gl.lib.standard.Standard());
-		mLibraries.add(new DesktopGL(m_vm));
+		mLibraries.add(new DesktopGL(mVm));
 
 		//TODO Add more libraries
 		int i = 0;
 		for (Library lib: mLibraries){
-			m_comp.AddConstants(lib.constants());
-			m_comp.AddFunctions(lib.functions(), lib.specs());
+			mComp.AddConstants(lib.constants());
+			mComp.AddFunctions(lib.functions(), lib.specs());
 			if (lib.isTarget()){
 				mTargets.add(i);
 			}
@@ -811,18 +821,18 @@ public class MainWindow {
 		BasicTokenMaker.mFunctions.clear();
 		BasicTokenMaker.mConstants.clear();
 		BasicTokenMaker.mOperators.clear();
-		for (String s: m_comp.m_reservedWords)
+		for (String s: mComp.m_reservedWords)
 			BasicTokenMaker.mReservedWords.add(s);
 
-		for (String s: m_comp.Constants().keySet())
+		for (String s: mComp.Constants().keySet())
 			BasicTokenMaker.mConstants.add(s);
 
-		for (String s: m_comp.m_functionIndex.keySet())
+		for (String s: mComp.m_functionIndex.keySet())
 			BasicTokenMaker.mFunctions.add(s);
 
-		for (String s: m_comp.getBinaryOperators())
+		for (String s: mComp.getBinaryOperators())
 			BasicTokenMaker.mOperators.add(s);
-		for (String s: m_comp.getUnaryOperators())
+		for (String s: mComp.getUnaryOperators())
 			BasicTokenMaker.mOperators.add(s);
 
 	}
@@ -830,7 +840,7 @@ public class MainWindow {
 	private void ShutDownLibraries() {
 
 		// Clear virtual machine state
-		m_vm.Clr();
+		mVm.Clr();
 
 		// TODO Implement OpenGL
 		// Free text display
@@ -853,9 +863,9 @@ public class MainWindow {
 		public void complete(boolean success, String message) {
 			Stop();
 			if (success){
-				mLabelStatus.setText(message);
+				mLabelStatusInfo.setText(message);
 			} else {
-				mLabelStatus.setText(m_vm.GetError());
+				mLabelStatusInfo.setText(mVm.GetError());
 				PutCursorAtIP();
 			}
 		}
