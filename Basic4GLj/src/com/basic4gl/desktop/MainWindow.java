@@ -216,6 +216,27 @@ public class MainWindow {
 		mFrame.setLocationRelativeTo(null);
 		mFrame.setVisible(true);
 	}
+
+	private CaretListener TrackCaretPosition = new CaretListener() {
+		@Override
+		public void caretUpdate(CaretEvent e) {
+			JTextArea component = (JTextArea)e.getSource();
+			int caretpos = component.getCaretPosition();
+			int row = 0;
+			int column = 0;
+			try {
+				row = component.getLineOfOffset(caretpos);
+				column = caretpos - component.getLineStartOffset(row);
+
+				mLabelStatusCursor.setText((column + 1) + ":" + (row + 1));
+			} catch (BadLocationException ex) {
+				mLabelStatusCursor.setText(0 + ":" + 0);
+				ex.printStackTrace();
+
+			}
+
+		}
+	};
 	void GoStopActionExecute() {
 		switch (mRunMode) {
 			case RM_STOPPED:
@@ -289,26 +310,9 @@ public class MainWindow {
 		mTabControl.addTab(editor.getTitle(), editor.pane);
 
 		//Allow user to see cursor position
-		editor.editorPane.addCaretListener(new CaretListener() {
-			@Override
-			public void caretUpdate(CaretEvent e) {
-				JTextArea component = (JTextArea)e.getSource();
-				int caretpos = component.getCaretPosition();
-				int row = 0;
-				int column = 0;
-				try {
-					row = component.getLineOfOffset(caretpos);
-					column = caretpos - component.getLineStartOffset(row);
+		editor.editorPane.addCaretListener(TrackCaretPosition);
+		mLabelStatusCursor.setText(0 + ":" + 0); //Reset label
 
-					mLabelStatusCursor.setText((column + 1) + ":" + (row + 1));
-				} catch (BadLocationException ex) {
-					mLabelStatusCursor.setText(0 + ":" + 0);
-					ex.printStackTrace();
-
-				}
-
-			}
-		});
 		//TODO get current editor
 		//TODO set colors
 		//mFileEditors.get(0).editorPane.setKeywordColor(mKeywords);
@@ -316,6 +320,10 @@ public class MainWindow {
 	public void addTab(FileEditor editor) {
 		mFileEditors.add(editor);
 		mTabControl.addTab(editor.getTitle(), editor.pane);
+
+		//Allow user to see cursor position
+		editor.editorPane.addCaretListener(TrackCaretPosition);
+		mLabelStatusCursor.setText(0 + ":" + 0); //Reset label
 
 		//TODO get current editor
 		//TODO set colors
@@ -561,10 +569,23 @@ public class MainWindow {
 	}
 
 	private void PutCursor(int line, int col) {
+		int offset;
 		// CODE HERE!!!
 		//Temporary
 		this.mLabelStatusInfo.setText("Line: " + (line + 1) + " - " + mLabelStatusInfo.getText());
-		// TODO was not implemented in original source
+
+		if (!(this.mFileEditors.isEmpty() && this.mTabControl.getSelectedIndex() != -1)) {
+			try {
+				offset = mFileEditors.get(mTabControl.getSelectedIndex()).editorPane.getLineStartOffset(line);
+				offset += col;
+				mFileEditors.get(mTabControl.getSelectedIndex()).editorPane.grabFocus();
+				mFileEditors.get(mTabControl.getSelectedIndex()).editorPane.setCaretPosition(offset);
+			} catch (BadLocationException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// TODO note was not implemented in original source
 	}
 
 	private void PutCursorAtIP() {
