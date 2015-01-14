@@ -163,6 +163,12 @@ public class DesktopGL implements Library, Target{
 		mFrame.setVisible(false);
 
 	}
+	@Override
+	public void stop() {
+
+		mWorker.cancel(true);
+
+	}
 
 	@Override
 	public boolean isFullscreen() {
@@ -180,6 +186,7 @@ public class DesktopGL implements Library, Target{
 
 		@Override
 		protected Object doInBackground() throws Exception {
+			boolean noError;
 			if (mVm == null)
 				return null;	//TODO Throw exception
 			
@@ -190,7 +197,10 @@ public class DesktopGL implements Library, Target{
 				driveVm();
 			
 			}
-			mCallbacks.complete(true, "Program completed");
+			if (mCallbacks != null) {
+				noError = !mVm.Error();
+				mCallbacks.complete(noError, noError ? "Program completed" : mVm.GetError());
+			}
 			return null;
 		}
 
@@ -206,22 +216,11 @@ public class DesktopGL implements Library, Target{
 			}
 
 			// Check for error
-			if (mVm.Error()) {
-
-
-			} else if (mVm.Done()) {
-				if (mCallbacks != null)
-					mCallbacks.complete(true, "Program completed");
+			if (mVm.Error() || mVm.Done() || isClosing()) {
 				if (isClosing() || isFullscreen())
-					hide();
-			}
-			// TODO Implement OpenGL
-
-			else if (mVm.Done() || isClosing()) { 
-				if (mCallbacks != null)
-					mCallbacks.complete(true, "Program completed");
-				if (isClosing() || isFullscreen())
-					hide();
+					hide();	//Stop program and close window
+				else
+					stop(); //Just stop the worker thread;
 			}
 		}
 

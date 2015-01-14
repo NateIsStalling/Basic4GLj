@@ -2532,10 +2532,10 @@ public class TomVM extends HasErrorState {
 																	// program?
 		}
 		
-		public void GetIPInSourceCode(Integer line, Integer col) {
+		public void GetIPInSourceCode(Mutable<Integer> line, Mutable<Integer> col) {
 			assert (IPValid());
-			line = mCode.get(mIp).mSourceLine;
-			col = (int) mCode.get(mIp).mSourceChar;
+			line.set(mCode.get(mIp).mSourceLine);
+			col.set(mCode.get(mIp).mSourceChar);
 		}
 		
 		public void BindCodeBlock(int index) { mBoundCodeBlock = index; }

@@ -12,6 +12,7 @@ public interface Target {
 	
 	public abstract void show(TaskCallback callbacks);
 	public abstract void hide();
+	public abstract void stop();
 	
 	public abstract boolean isFullscreen();
 	public abstract boolean isVisible();

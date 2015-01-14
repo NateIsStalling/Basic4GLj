@@ -5,6 +5,7 @@ import com.basic4gl.lib.targets.desktopgl.DesktopGL;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.lib.util.Target;
 import com.basic4gl.lib.util.TaskCallback;
+import com.basic4gl.util.Mutable;
 import com.basic4gl.vm.TomVM;
 import org.fife.ui.rsyntaxtextarea.*;
 
@@ -591,11 +592,11 @@ public class MainWindow {
 	private void PutCursorAtIP() {
 		// TODO Possibly remove
 		// Find IP
-		Integer line = 0, col = 0;
+		Mutable<Integer> line = new Mutable<Integer>(0), col = new Mutable<Integer>(0);
 		mVm.GetIPInSourceCode(line, col);
 
 		// Put cursor there
-		PutCursor(line, col);
+		PutCursor(line.get(), col.get());
 	}
 
 	private void SynchroniseTabs() {
