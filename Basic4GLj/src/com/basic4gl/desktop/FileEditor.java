@@ -1,6 +1,7 @@
 package com.basic4gl.desktop;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -8,12 +9,12 @@ import java.io.IOException;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.BadLocationException;
 
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.Style;
-import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
-import org.fife.ui.rsyntaxtextarea.TokenTypes;
+import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.Gutter;
+import org.fife.ui.rtextarea.GutterIconInfo;
+import org.fife.ui.rtextarea.RTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 public class FileEditor {
@@ -138,4 +139,71 @@ public class FileEditor {
 		return editor;
 	}
 
+
+	public void gotoNextBookmark(boolean forward) {
+		//Copied from org.fife.ui.rtextarea.RTextAreaEditorKit.NextBookmarkAction
+		Gutter gutter = RSyntaxUtilities.getGutter(editorPane);
+		if (gutter!=null) {
+
+			try {
+
+				GutterIconInfo[] bookmarks = gutter.getBookmarks();
+				if (bookmarks.length==0) {
+					UIManager.getLookAndFeel().
+							provideErrorFeedback(editorPane);
+					return;
+				}
+
+				GutterIconInfo moveTo = null;
+				int curLine = editorPane.getCaretLineNumber();
+
+				if (forward) {
+					for (int i=0; i<bookmarks.length; i++) {
+						GutterIconInfo bookmark = bookmarks[i];
+						int offs = bookmark.getMarkedOffset();
+						int line = editorPane.getLineOfOffset(offs);
+						if (line>curLine) {
+							moveTo = bookmark;
+							break;
+						}
+					}
+					if (moveTo==null) { // Loop back to beginning
+						moveTo = bookmarks[0];
+					}
+				}
+				else {
+					for (int i=bookmarks.length-1; i>=0; i--) {
+						GutterIconInfo bookmark = bookmarks[i];
+						int offs = bookmark.getMarkedOffset();
+						int line = editorPane.getLineOfOffset(offs);
+						if (line<curLine) {
+							moveTo = bookmark;
+							break;
+						}
+					}
+					if (moveTo==null) { // Loop back to end
+						moveTo = bookmarks[bookmarks.length-1];
+					}
+				}
+
+				int offs = moveTo.getMarkedOffset();
+				if (editorPane instanceof RSyntaxTextArea) {
+					RSyntaxTextArea rsta = (RSyntaxTextArea)editorPane;
+					if (rsta.isCodeFoldingEnabled()) {
+						rsta.getFoldManager().
+								ensureOffsetNotInClosedFold(offs);
+					}
+				}
+				int line = editorPane.getLineOfOffset(offs);
+				offs = editorPane.getLineStartOffset(line);
+				editorPane.setCaretPosition(offs);
+
+			} catch (BadLocationException ble) { // Never happens
+				UIManager.getLookAndFeel().
+						provideErrorFeedback(editorPane);
+				ble.printStackTrace();
+			}
+		}
+
+	}
 }

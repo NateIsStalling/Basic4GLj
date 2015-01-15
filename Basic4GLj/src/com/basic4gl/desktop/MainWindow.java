@@ -8,6 +8,8 @@ import com.basic4gl.lib.util.TaskCallback;
 import com.basic4gl.util.Mutable;
 import com.basic4gl.vm.TomVM;
 import org.fife.ui.rsyntaxtextarea.*;
+import org.fife.ui.rtextarea.Gutter;
+import org.fife.ui.rtextarea.RTextArea;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -335,7 +337,7 @@ public class MainWindow {
 	 */
 	private JMenuBar setupMenuBar() {
 		JMenuBar menuBar;
-		JMenu menu;
+		JMenu menu, submenu;
 		JMenuItem menuItem;
 
 		// Create the menu bar.
@@ -491,6 +493,63 @@ public class MainWindow {
 		});
 		menu.add(menuItem);
 
+		//View menu
+		menu = new JMenu("View");
+		menuBar.add(menu);
+		submenu = new JMenu("Bookmarks");
+		menu.add(submenu);
+		menuItem = new JMenuItem("Next");
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0));
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JTextArea component;
+				int line = -1;
+				int i = mTabControl.getSelectedIndex();
+				if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
+					mFileEditors.get(i).gotoNextBookmark(true);
+				}
+			}
+		});
+		submenu.add(menuItem);
+		menuItem = new JMenuItem("Previous");
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, ActionEvent.SHIFT_MASK));
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JTextArea component;
+				int line = -1;
+				int i = mTabControl.getSelectedIndex();
+				if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
+					mFileEditors.get(i).gotoNextBookmark(false);
+				}
+			}
+		});
+		submenu.add(menuItem);
+		submenu.add(new JSeparator());
+		menuItem = new JMenuItem("Toggle Bookmark");
+		menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, ActionEvent.CTRL_MASK));
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JTextArea component;
+				int line = -1;
+				int i = mTabControl.getSelectedIndex();
+				if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
+					component = mFileEditors.get(i).editorPane;
+					try {
+						line = component.getLineOfOffset(component.getCaretPosition());
+						mFileEditors.get(i).pane.getGutter().toggleBookmark(line);
+
+					} catch (BadLocationException ex) {
+						line = -1;
+						ex.printStackTrace();
+						System.out.println(component.getCaretPosition());
+					}
+				}
+			}
+		});
+		submenu.add(menuItem);
 		//Help menu
 		menu = new JMenu("Help");
 		menuBar.add(menu);
@@ -878,6 +937,7 @@ public class MainWindow {
 		mTargets.clear();
 		mCurrentTarget = -1;
 	}
+
 
 	public class DebugCallback implements TaskCallback {
 
