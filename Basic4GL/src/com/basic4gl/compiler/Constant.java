@@ -48,6 +48,9 @@ public class Constant {
 	mIntVal =c.mIntVal;
 	mStringVal = c.mStringVal; }
 
+	public int getType(){
+		return mBasicType;
+	}
 	public String ToString() {
 		switch(mBasicType) {
 		case ValType.VTP_INT:    return String.valueOf(mIntVal);
