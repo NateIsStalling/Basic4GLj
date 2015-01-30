@@ -556,7 +556,18 @@ public class MainWindow {
 		//menuItem = new JMenuItem("Libraries...");	//List available libraries and functions/constants
 		//menuItem.addActionListener(this);
 		//menu.add(menuItem);
-		menuItem = new JMenuItem("About");	//List available libraries and functions/constants
+		menuItem = new JMenuItem("Function List");	//List available functions/constants; replace with Libraries later
+		menuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ReferenceWindow window = new ReferenceWindow(mFrame);
+				window.populate(mComp);
+				window.setVisible(true);
+			}
+		});
+		menu.add(menuItem);
+		menu.add(new JSeparator());
+		menuItem = new JMenuItem("About");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -610,7 +621,6 @@ public class MainWindow {
 	{
 		int start, stop; // line offsets
 		String line; // line to add
-		// TODO read JTextPane line by line
 		// Load editor text into parser (appended to bottom)
 		try {
 			for (int i = 0; i < editorPane.getLineCount(); i++) {
