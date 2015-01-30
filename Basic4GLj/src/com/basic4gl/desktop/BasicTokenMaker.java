@@ -22,7 +22,7 @@ public class BasicTokenMaker extends AbstractTokenMaker {
     @Override
     public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {
         // This assumes all keywords, etc. were parsed as "identifiers."
-        if (tokenType==Token.IDENTIFIER) {
+        if (tokenType == Token.IDENTIFIER) {
             int value = wordsToHighlight.get(segment, start, end);
             if (value != -1) {
                 tokenType = value;
@@ -35,17 +35,17 @@ public class BasicTokenMaker extends AbstractTokenMaker {
     public TokenMap getWordsToHighlight() {
         TokenMap tokenMap = new TokenMap();
 
-        for (String token:mReservedWords)
-            tokenMap.put(token,  Token.RESERVED_WORD);
+        for (String token : mReservedWords)
+            tokenMap.put(token, Token.RESERVED_WORD);
 
-        for (String token:mFunctions)
-            tokenMap.put(token,  Token.FUNCTION);
+        for (String token : mFunctions)
+            tokenMap.put(token, Token.FUNCTION);
 
-        for (String token:mConstants)
-            tokenMap.put(token,  Token.RESERVED_WORD_2);
+        for (String token : mConstants)
+            tokenMap.put(token, Token.RESERVED_WORD_2);
 
-        for (String token:mOperators)
-            tokenMap.put(token,  Token.OPERATOR);
+        for (String token : mOperators)
+            tokenMap.put(token, Token.OPERATOR);
 
 
         return tokenMap;
@@ -67,9 +67,9 @@ public class BasicTokenMaker extends AbstractTokenMaker {
         int newStartOffset = startOffset - offset;
 
         int currentTokenStart = offset;
-        int currentTokenType  = startTokenType;
+        int currentTokenType = startTokenType;
 
-        for (int i=offset; i<end; i++) {
+        for (int i = offset; i < end; i++) {
 
             char c = array[i];
 
@@ -98,8 +98,7 @@ public class BasicTokenMaker extends AbstractTokenMaker {
                             if (RSyntaxUtilities.isDigit(c)) {
                                 currentTokenType = Token.LITERAL_NUMBER_DECIMAL_INT;
                                 break;
-                            }
-                            else if (RSyntaxUtilities.isLetter(c) || c=='/' || c=='_') {
+                            } else if (RSyntaxUtilities.isLetter(c) || c == '/' || c == '_') {
                                 currentTokenType = Token.IDENTIFIER;
                                 break;
                             }
@@ -121,27 +120,26 @@ public class BasicTokenMaker extends AbstractTokenMaker {
                             break;   // Still whitespace.
 
                         case '"':
-                            addToken(text, currentTokenStart,i-1, Token.WHITESPACE, newStartOffset+currentTokenStart);
+                            addToken(text, currentTokenStart, i - 1, Token.WHITESPACE, newStartOffset + currentTokenStart);
                             currentTokenStart = i;
                             currentTokenType = Token.LITERAL_STRING_DOUBLE_QUOTE;
                             break;
 
                         case CHAR_COMMENT:
-                            addToken(text, currentTokenStart,i-1, Token.WHITESPACE, newStartOffset+currentTokenStart);
+                            addToken(text, currentTokenStart, i - 1, Token.WHITESPACE, newStartOffset + currentTokenStart);
                             currentTokenStart = i;
                             currentTokenType = Token.COMMENT_EOL;
                             break;
 
                         default:   // Add the whitespace token and start anew.
 
-                            addToken(text, currentTokenStart,i-1, Token.WHITESPACE, newStartOffset+currentTokenStart);
+                            addToken(text, currentTokenStart, i - 1, Token.WHITESPACE, newStartOffset + currentTokenStart);
                             currentTokenStart = i;
 
                             if (RSyntaxUtilities.isDigit(c)) {
                                 currentTokenType = Token.LITERAL_NUMBER_DECIMAL_INT;
                                 break;
-                            }
-                            else if (RSyntaxUtilities.isLetter(c) || c=='/' || c=='_') {
+                            } else if (RSyntaxUtilities.isLetter(c) || c == '/' || c == '_') {
                                 currentTokenType = Token.IDENTIFIER;
                                 break;
                             }
@@ -160,19 +158,19 @@ public class BasicTokenMaker extends AbstractTokenMaker {
 
                         case ' ':
                         case '\t':
-                            addToken(text, currentTokenStart,i-1, Token.IDENTIFIER, newStartOffset+currentTokenStart);
+                            addToken(text, currentTokenStart, i - 1, Token.IDENTIFIER, newStartOffset + currentTokenStart);
                             currentTokenStart = i;
                             currentTokenType = Token.WHITESPACE;
                             break;
 
                         case '"':
-                            addToken(text, currentTokenStart,i-1, Token.IDENTIFIER, newStartOffset+currentTokenStart);
+                            addToken(text, currentTokenStart, i - 1, Token.IDENTIFIER, newStartOffset + currentTokenStart);
                             currentTokenStart = i;
                             currentTokenType = Token.LITERAL_STRING_DOUBLE_QUOTE;
                             break;
 
                         default:
-                            if (RSyntaxUtilities.isLetterOrDigit(c) || c=='/' || c=='_') {
+                            if (RSyntaxUtilities.isLetterOrDigit(c) || c == '/' || c == '_') {
                                 break;   // Still an identifier of some type.
                             }
                             // Otherwise, we're still an identifier (?).
@@ -187,13 +185,13 @@ public class BasicTokenMaker extends AbstractTokenMaker {
 
                         case ' ':
                         case '\t':
-                            addToken(text, currentTokenStart,i-1, Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset+currentTokenStart);
+                            addToken(text, currentTokenStart, i - 1, Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset + currentTokenStart);
                             currentTokenStart = i;
                             currentTokenType = Token.WHITESPACE;
                             break;
 
                         case '"':
-                            addToken(text, currentTokenStart,i-1, Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset+currentTokenStart);
+                            addToken(text, currentTokenStart, i - 1, Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset + currentTokenStart);
                             currentTokenStart = i;
                             currentTokenType = Token.LITERAL_STRING_DOUBLE_QUOTE;
                             break;
@@ -205,7 +203,7 @@ public class BasicTokenMaker extends AbstractTokenMaker {
                             }
 
                             // Otherwise, remember this was a number and start over.
-                            addToken(text, currentTokenStart,i-1, Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset+currentTokenStart);
+                            addToken(text, currentTokenStart, i - 1, Token.LITERAL_NUMBER_DECIMAL_INT, newStartOffset + currentTokenStart);
                             i--;
                             currentTokenType = Token.NULL;
 
@@ -215,14 +213,14 @@ public class BasicTokenMaker extends AbstractTokenMaker {
 
                 case Token.COMMENT_EOL:
                     i = end - 1;
-                    addToken(text, currentTokenStart,i, currentTokenType, newStartOffset+currentTokenStart);
+                    addToken(text, currentTokenStart, i, currentTokenType, newStartOffset + currentTokenStart);
                     // We need to set token type to null so at the bottom we don't add one more token.
                     currentTokenType = Token.NULL;
                     break;
 
                 case Token.LITERAL_STRING_DOUBLE_QUOTE:
-                    if (c=='"') {
-                        addToken(text, currentTokenStart,i, Token.LITERAL_STRING_DOUBLE_QUOTE, newStartOffset+currentTokenStart);
+                    if (c == '"') {
+                        addToken(text, currentTokenStart, i, Token.LITERAL_STRING_DOUBLE_QUOTE, newStartOffset + currentTokenStart);
                         currentTokenType = Token.NULL;
                     }
                     break;
@@ -235,7 +233,7 @@ public class BasicTokenMaker extends AbstractTokenMaker {
 
             // Remember what token type to begin the next line with.
             case Token.LITERAL_STRING_DOUBLE_QUOTE:
-                addToken(text, currentTokenStart,end-1, currentTokenType, newStartOffset+currentTokenStart);
+                addToken(text, currentTokenStart, end - 1, currentTokenType, newStartOffset + currentTokenStart);
                 break;
 
             // Do nothing if everything was okay.
@@ -245,7 +243,7 @@ public class BasicTokenMaker extends AbstractTokenMaker {
 
             // All other token types don't continue to the next line...
             default:
-                addToken(text, currentTokenStart,end-1, currentTokenType, newStartOffset+currentTokenStart);
+                addToken(text, currentTokenStart, end - 1, currentTokenType, newStartOffset + currentTokenStart);
                 addNullToken();
 
         }
