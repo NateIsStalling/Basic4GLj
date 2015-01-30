@@ -11,9 +11,9 @@ import java.net.URISyntaxException;
 /**
  * Created by Nate on 1/12/2015.
  */
-public class About {
+public class AboutDialog {
     JDialog mDialog;
-    public About(Frame parent){
+    public AboutDialog(Frame parent){
         mDialog = new JDialog(parent);
 
         mDialog.setTitle("About");

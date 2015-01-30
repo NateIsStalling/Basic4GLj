@@ -8,8 +8,6 @@ import com.basic4gl.lib.util.TaskCallback;
 import com.basic4gl.util.Mutable;
 import com.basic4gl.vm.TomVM;
 import org.fife.ui.rsyntaxtextarea.*;
-import org.fife.ui.rtextarea.Gutter;
-import org.fife.ui.rtextarea.RTextArea;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -571,7 +569,7 @@ public class MainWindow {
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new About(mFrame);
+				new AboutDialog(mFrame);
 			}
 		});
 		menu.add(menuItem);
