@@ -3,6 +3,8 @@ package com.basic4gl.lib.targets.desktopgl;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -237,7 +239,37 @@ public class DesktopGL implements Library, Target{
 		// TODO Auto-generated method stub
 		return mCanvas;
 	}
-	
+
+	@Override
+	public OutputStream getState() {
+		return null;
+	}
+
+	@Override
+	public void loadState(InputStream stream) {
+
+	}
+
+	@Override
+	public Map<String, List<String>> getSettings() {
+		return null;
+	}
+
+	@Override
+	public Map<String, List<String>> getConfiguration() {
+		return null;
+	}
+
+	@Override
+	public void setConfiguration(Map<String, List<String>> settings) {
+
+	}
+
+	@Override
+	public OutputStream export() {
+		return null;
+	}
+
 	public final class WrapPrint implements Function{
 
 		@Override
