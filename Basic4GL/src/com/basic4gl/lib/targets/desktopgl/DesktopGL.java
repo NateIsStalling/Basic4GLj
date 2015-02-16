@@ -3,21 +3,23 @@ package com.basic4gl.lib.targets.desktopgl;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarOutputStream;
 
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLCanvas;
-import javax.swing.JOptionPane;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
+import com.basic4gl.lib.util.Configuration;
 import com.basic4gl.util.FuncSpec;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.lib.util.Target;
@@ -39,6 +41,17 @@ public class DesktopGL implements Library, Target{
 	private TaskCallback mCallbacks;
 	private boolean mClosing;
 
+
+	private Configuration mConfiguration;
+	private static final int SETTING_TITLE 			= 0; //Index of window title setting in config
+	private static final int SETTING_WIDTH 			= 1; //Index of window width setting in config
+	private static final int SETTING_HEIGHT 		= 2; //Index of window height setting in config
+	private static final int SETTING_RESIZABLE 		= 3; //Index of window resizable setting in config
+	private static final int SETTING_SCREEN_MODE	= 4; //Index of screen mode setting in config
+
+	private static final int MODE_WINDOWED = 0;
+	private static final int MODE_FULLSCREEN = 1;
+
 	public static void main(String[] args) {
 		instance = new DesktopGL(new TomVM(null));
 		instance.activate();
@@ -49,9 +62,12 @@ public class DesktopGL implements Library, Target{
 		mVm = vm;
 	}
 	
-	
+
 	@Override
 	public boolean isTarget() { return true;}	//Library is a build target
+
+	@Override
+	public  boolean isRunnable() { return true;} //Build target can be run as an application
 
 	@Override
 	public String name() { return "OpenGL Window";}
@@ -60,13 +76,13 @@ public class DesktopGL implements Library, Target{
 	public String version() { return "0.1";}
 
 	@Override
-	public String description() { return "Uses jogl";}
+	public String description() { return "Desktop application with OpenGL capabilities.";}
 
 	@Override
 	public String author() { return "Nathaniel Nielsen";}
 
 	@Override
-	public String contact() { return "Twitter: @crazynate_";}
+	public String contact() { return "support@crazynatestudios.com";}
 
 	@Override
 	public String id() { return "desktopgl";}
@@ -127,13 +143,34 @@ public class DesktopGL implements Library, Target{
 	public void activate() {
 		mClosing = false;
 
+		//Get settings
+		if (mConfiguration == null)
+			mConfiguration = getSettings();
+		//TODO load config from file
+
+		String title = mConfiguration.getValue(SETTING_TITLE);
+		int width = Integer.valueOf(mConfiguration.getValue(SETTING_WIDTH));
+		int height = Integer.valueOf(mConfiguration.getValue(SETTING_HEIGHT));
+		boolean resizable = Boolean.valueOf(mConfiguration.getValue(SETTING_RESIZABLE));
+		int mode = Integer.valueOf(mConfiguration.getValue(SETTING_SCREEN_MODE));
+
+
 		GLProfile glp = GLProfile.getDefault();
 		GLCapabilities caps = new GLCapabilities(glp);
 		GLCanvas mCanvas = new GLCanvas(caps);
 
-		mFrame = new Frame("AWT Window Test");
-		mFrame.setSize(300, 300);
+		mFrame = new Frame(title);
+		mFrame.setSize(width, height);
+		mFrame.setResizable(resizable);
+		if (mode == MODE_FULLSCREEN) {
+			mFrame.setUndecorated(true);
+			mFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		} else {
+			mFrame.setUndecorated(false);
+			mFrame.setExtendedState(JFrame.NORMAL);
+		}
 		mFrame.add(mCanvas);
+
 
 		// by default, an AWT Frame doesn't do anything when you click
 		// the close button; this bit of code will terminate the program when
@@ -241,33 +278,46 @@ public class DesktopGL implements Library, Target{
 	}
 
 	@Override
-	public OutputStream getState() {
+	public OutputStream getState() throws IOException{
 		return null;
 	}
 
 	@Override
-	public void loadState(InputStream stream) {
+	public void loadState(InputStream stream) throws IOException{
 
 	}
 
 	@Override
-	public Map<String, List<String>> getSettings() {
-		return null;
+	public Configuration getSettings() {
+		Configuration settings = new Configuration();
+
+		settings.addSetting(new String[]{"Window Title"}, Configuration.PARAM_STRING, "My Application");
+		settings.addSetting(new String[]{"Window Width"}, Configuration.PARAM_INT, "640");
+		settings.addSetting(new String[]{"Window Height"}, Configuration.PARAM_INT, "480");
+		settings.addSetting(new String[]{"Resizable"}, Configuration.PARAM_BOOL, "false");
+		settings.addSetting(new String[]{"Screen Mode",
+											"Windowed",
+											"Fullscreen"},
+											Configuration.PARAM_CHOICE, "0");
+
+		return settings;
 	}
 
 	@Override
-	public Map<String, List<String>> getConfiguration() {
-		return null;
+	public Configuration getConfiguration() {
+		if (mConfiguration == null)
+			return getSettings();
+		return mConfiguration;
 	}
 
 	@Override
-	public void setConfiguration(Map<String, List<String>> settings) {
-
+	public void setConfiguration(Configuration config) {
+		mConfiguration = config;
 	}
 
 	@Override
-	public OutputStream export() {
-		return null;
+	public OutputStream export() throws IOException{
+		return new JarOutputStream(null);
 	}
 
 	public final class WrapPrint implements Function{

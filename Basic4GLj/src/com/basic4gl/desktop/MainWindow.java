@@ -552,6 +552,21 @@ public class MainWindow {
             }
         });
         submenu.add(menuItem);
+        //Application menu
+        menu = new JMenu("Application");
+        menuBar.add(menu);
+        menuItem = new JMenuItem("Project Settings"); //Configure launch and build settings
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ProjectSettingsDialog dialog = new ProjectSettingsDialog(mFrame);
+                dialog.setLibraries(mLibraries, mTargets, mCurrentTarget);
+                dialog.setVisible(true);
+                mCurrentTarget = dialog.getCurrentTarget();
+            }
+        });
+        menu.add(menuItem);
+
         //Help menu
         menu = new JMenu("Help");
         menuBar.add(menu);
