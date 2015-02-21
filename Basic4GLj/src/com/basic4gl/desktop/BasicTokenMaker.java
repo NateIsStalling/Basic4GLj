@@ -33,7 +33,7 @@ public class BasicTokenMaker extends AbstractTokenMaker {
 
     @Override
     public TokenMap getWordsToHighlight() {
-        TokenMap tokenMap = new TokenMap();
+        TokenMap tokenMap = new TokenMap(true);
 
         for (String token : mReservedWords)
             tokenMap.put(token, Token.RESERVED_WORD);
