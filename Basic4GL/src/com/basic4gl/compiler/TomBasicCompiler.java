@@ -3539,7 +3539,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// If one is found, then we require brackets. Otherwise we don't.
 			for (int i = 0; i < functionCount && !brackets; i++)
 				brackets = functions[i].m_spec.isFunction();
-			// && functions.get(i).m_paramTypes.Params().size() > 0; // Need to
+			// && functions.get(i).m_paramTypes.getParams().size() > 0; // Need to
 			// rethink below loop before we can enable this
 		}
 
@@ -3568,7 +3568,7 @@ public class TomBasicCompiler extends HasErrorState {
 			int src, dst;
 			dst = 0;
 			for (src = 0; src < functionCount; src++)
-				if (functions[src].m_spec.getParamTypes().Params().size() > count)
+				if (functions[src].m_spec.getParamTypes().getParams().size() > count)
 					functions[dst++] = functions[src];
 			functionCount = dst;
 
@@ -3602,7 +3602,7 @@ public class TomBasicCompiler extends HasErrorState {
 			boolean isAnyType = false;
 			int i;
 			for (i = 0; i < functionCount && matchIndex < 0; i++) {
-				ValType type = functions[i].m_spec.getParamTypes().Params()
+				ValType type = functions[i].m_spec.getParamTypes().getParams()
 						.get(count);
 
 				// Check for undefined type parameter
@@ -3638,7 +3638,7 @@ public class TomBasicCompiler extends HasErrorState {
 				ClearError();
 
 				ValType type = functions[matchIndex].m_spec.getParamTypes()
-						.Params().get(count);
+						.getParams().get(count);
 
 				// Filter out all functions whose "count" parameter doesn't
 				// match "type".
@@ -3659,7 +3659,7 @@ public class TomBasicCompiler extends HasErrorState {
 						// parameter type, then all other overloads must require
 						// that
 						// same type.
-						if (functions[src].m_spec.getParamTypes().Params()
+						if (functions[src].m_spec.getParamTypes().getParams()
 								.get(count) == type)
 							functions[dst++] = functions[src];
 					}
@@ -3695,7 +3695,7 @@ public class TomBasicCompiler extends HasErrorState {
 		int matchIndex = -1;
 		int i;
 		for (i = 0; i < functionCount && matchIndex < 0; i++)
-			if (functions[i].m_spec.getParamTypes().Params().size() == count)
+			if (functions[i].m_spec.getParamTypes().getParams().size() == count)
 				matchIndex = i;
 		if (matchIndex < 0) {
 			if (count == 0)
@@ -4444,7 +4444,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (l != null)
 			for (Integer i : l) {
 				FuncSpec spec = m_functions.get(i);
-				if (spec.getParamTypes().Params().size() == paramCount)
+				if (spec.getParamTypes().getParams().size() == paramCount)
 					return spec;
 			}
 

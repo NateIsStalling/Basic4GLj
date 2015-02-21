@@ -146,7 +146,7 @@ public class ReferenceWindow {
                 else
                     line = line + " ";
                 boolean needComma = false;
-                Vector<ValType> params = spec.getParamTypes().Params();
+                Vector<ValType> params = spec.getParamTypes().getParams();
                 if (params != null)
                     for (ValType type : params) {
                         if (needComma)

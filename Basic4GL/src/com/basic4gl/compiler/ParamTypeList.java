@@ -17,30 +17,25 @@ import com.basic4gl.vm.types.ValType;
 
 
 public class ParamTypeList {
-    Vector<ValType> m_params;
+    private Vector<ValType> mParams;
 
-    public ParamTypeList() { ; }
+    public ParamTypeList() { mParams = new Vector<ValType>(); }
     public ParamTypeList(ParamTypeList list){
-    	for (ValType val: list.m_params)
-    		m_params.add (new ValType(val));
+        for (ValType val: list.mParams)
+            mParams.add (new ValType(val));
     }
     public ParamTypeList(ValType[] list){
-    	m_params = new Vector<ValType>(Arrays.asList(list));
+        mParams = new Vector<ValType>(Arrays.asList(list));
     }
     public ParamTypeList(Integer[] list){
-    	m_params = new Vector<ValType>();
-    	List<Integer> l = Arrays.asList(list);
-    	for (Integer type : l)
-    		m_params.add (new ValType(type));
-    	
+        mParams = new Vector<ValType>();
+        List<Integer> l = Arrays.asList(list);
+        for (Integer type : l)
+            mParams.add (new ValType(type));
+
     }
-    /*
-    public ParamTypeList operator<< (VmValType val) {
-        mParams.add (val);
-        return this;
-    }*/
-public void addParam(ValType val) {
-    m_params.add (val);
-}
-    public Vector<ValType> Params() { return m_params; }
+    public void addParam(ValType val) {
+        mParams.add(val);
+    }
+    public Vector<ValType> getParams() { return mParams; }
 }
