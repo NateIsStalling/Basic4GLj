@@ -1,45 +1,16 @@
 Manifest-Version: 1.0
 Class-Path: . jar/gluegen.jar jar/gluegen-java-src.zip jar/gluegen-rt.
- jar jar/gluegen-rt-android.jar jar/gluegen-rt-android-natives-android
- -armv6.jar jar/gluegen-rt-android-natives-linux-amd64.jar jar/gluegen
- -rt-android-natives-linux-armv6.jar jar/gluegen-rt-android-natives-li
- nux-armv6hf.jar jar/gluegen-rt-android-natives-linux-i586.jar jar/glu
- egen-rt-android-natives-macosx-universal.jar jar/gluegen-rt-android-n
- atives-solaris-amd64.jar jar/gluegen-rt-android-natives-solaris-i586.
- jar jar/gluegen-rt-android-natives-windows-amd64.jar jar/gluegen-rt-a
- ndroid-natives-windows-i586.jar jar/gluegen-rt-natives-android-armv6.
  jar jar/gluegen-rt-natives-linux-amd64.jar jar/gluegen-rt-natives-lin
  ux-armv6.jar jar/gluegen-rt-natives-linux-armv6hf.jar jar/gluegen-rt-
  natives-linux-i586.jar jar/gluegen-rt-natives-macosx-universal.jar ja
  r/gluegen-rt-natives-solaris-amd64.jar jar/gluegen-rt-natives-solaris
  -i586.jar jar/gluegen-rt-natives-windows-amd64.jar jar/gluegen-rt-nat
- ives-windows-i586.jar jar/jogl-all.jar jar/jogl-all-android.jar jar/j
- ogl-all-android-natives-android-armv6.jar jar/jogl-all-android-native
- s-linux-amd64.jar jar/jogl-all-android-natives-linux-armv6.jar jar/jo
- gl-all-android-natives-linux-armv6hf.jar jar/jogl-all-android-natives
- -linux-i586.jar jar/jogl-all-android-natives-macosx-universal.jar jar
- /jogl-all-android-natives-solaris-amd64.jar jar/jogl-all-android-nati
- ves-solaris-i586.jar jar/jogl-all-android-natives-windows-amd64.jar j
- ar/jogl-all-android-natives-windows-i586.jar jar/jogl-all-mobile.jar 
- jar/jogl-all-mobile-natives-android-armv6.jar jar/jogl-all-mobile-nat
- ives-linux-amd64.jar jar/jogl-all-mobile-natives-linux-armv6.jar jar/
- jogl-all-mobile-natives-linux-armv6hf.jar jar/jogl-all-mobile-natives
- -linux-i586.jar jar/jogl-all-mobile-natives-macosx-universal.jar jar/
- jogl-all-mobile-natives-solaris-amd64.jar jar/jogl-all-mobile-natives
- -solaris-i586.jar jar/jogl-all-mobile-natives-windows-amd64.jar jar/j
- ogl-all-mobile-natives-windows-i586.jar jar/jogl-all-natives-android-
- armv6.jar jar/jogl-all-natives-linux-amd64.jar jar/jogl-all-natives-l
- inux-armv6.jar jar/jogl-all-natives-linux-armv6hf.jar jar/jogl-all-na
- tives-linux-i586.jar jar/jogl-all-natives-macosx-universal.jar jar/jo
- gl-all-natives-solaris-amd64.jar jar/jogl-all-natives-solaris-i586.ja
- r jar/jogl-all-natives-windows-amd64.jar jar/jogl-all-natives-windows
- -i586.jar jar/jogl-all-noawt.jar jar/jogl-all-noawt-natives-android-a
- rmv6.jar jar/jogl-all-noawt-natives-linux-amd64.jar jar/jogl-all-noaw
- t-natives-linux-armv6.jar jar/jogl-all-noawt-natives-linux-armv6hf.ja
- r jar/jogl-all-noawt-natives-linux-i586.jar jar/jogl-all-noawt-native
- s-macosx-universal.jar jar/jogl-all-noawt-natives-solaris-amd64.jar j
- ar/jogl-all-noawt-natives-solaris-i586.jar jar/jogl-all-noawt-natives
- -windows-amd64.jar jar/jogl-all-noawt-natives-windows-i586.jar jar/jo
- gl-java-src.zip jar/RSyntaxTextArea.jar
+ ives-windows-i586.jar jar/jogl-all.jar jar/jogl-all-natives-linux-amd
+ 64.jar jar/jogl-all-natives-linux-armv6.jar jar/jogl-all-natives-linu
+ x-armv6hf.jar jar/jogl-all-natives-linux-i586.jar jar/jogl-all-native
+ s-macosx-universal.jar jar/jogl-all-natives-solaris-amd64.jar jar/jog
+ l-all-natives-solaris-i586.jar jar/jogl-all-natives-windows-amd64.jar
+  jar/jogl-all-natives-windows-i586.jar jar/jogl-java-src.zip jar/RSyn
+ taxTextArea.jar
 Main-Class: com.basic4gl.desktop.MainWindow
 
