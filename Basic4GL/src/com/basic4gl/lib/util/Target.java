@@ -12,7 +12,10 @@ import java.util.Map;
  * @author Nate
  *
  */
-public interface Target {
+public interface Target extends Library {
+	public abstract String getFileDescription();
+	public abstract String getFileExtension();
+
 	public abstract boolean isRunnable();
 	public abstract void reset();
 	public abstract void activate();
@@ -37,18 +40,6 @@ public interface Target {
 	public abstract Object getContextGL();
 
 	/**
-	 * Call when pausing application to store the VM's state.
-	 * @return VM state as stream
-	 */
-	public abstract OutputStream getState() throws IOException;
-
-	/**
-	 * Call when starting application to resume application from a stored VM state
-	 * @param stream Stored VM state
-	 */
-	public abstract void loadState(InputStream stream) throws IOException;
-
-	/**
 	 * Get list of properties the compiler can configure for
 	 * building or running the application.
 	 * @example Window size or target OS
@@ -69,11 +60,35 @@ public interface Target {
 	public abstract void setConfiguration(Configuration config);
 
 	/**
+	 * Load target's configuration from a file system
+	 * @throws Exception
+	 */
+	public abstract void loadConfiguration(InputStream stream) throws Exception;
+
+	/**
+	 * Save target's configuration to a file system
+	 * @throws Exception
+	 */
+	public abstract void saveConfiguration(OutputStream stream) throws Exception;
+
+	/**
+	 * Call when pausing application to store the VM's state.
+	 * @return VM state as stream
+	 */
+	public abstract void saveState(OutputStream stream) throws Exception;
+
+	/**
+	 * Call when starting application to resume application from a stored VM state
+	 * @param stream Stored VM state
+	 */
+	public abstract void loadState(InputStream stream) throws Exception;
+
+	/**
 	 * Bundle the target in a stream to store a standalone copy on the filesystem.
 	 * Used by the compiler.
 	 * @return
 	 */
-	public abstract OutputStream export() throws IOException;
+	public abstract boolean export(OutputStream stream, TaskCallback callback) throws Exception;
 
 
 }

@@ -1,8 +1,10 @@
 package com.basic4gl.util;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
+
 public class Streaming {
 
 	// Inline streaming functions.
@@ -11,73 +13,81 @@ public class Streaming {
 	// compiler be ported to a big-endian machine).
 	// Long and short integers are stored in little-endian format within the
 	// stream.
-	public static void WriteLong (ByteBuffer buffer, long l) throws IOException {
-		buffer.order( ByteOrder.LITTLE_ENDIAN);
-		buffer.putLong(l);
+	public static void WriteLong (DataOutputStream stream, long l) throws IOException {
+		//stream.write(ByteBuffer.allocate(Long.SIZE / Byte.SIZE).order(ByteOrder.LITTLE_ENDIAN).putLong(l).array());
+		stream.writeLong(l);
 	}
-	public static void WriteShort (ByteBuffer buffer, short s) throws IOException {
-		buffer.order( ByteOrder.LITTLE_ENDIAN);
-		buffer.putShort (s);
+	public static void WriteShort (DataOutputStream stream, short s) throws IOException {
+		//stream.write(ByteBuffer.allocate(Short.SIZE / Byte.SIZE).order(ByteOrder.LITTLE_ENDIAN).putLong(s).array());
+		stream.writeShort(s);
 	}
-	public static void WriteByte (ByteBuffer buffer, byte b) throws IOException {
-		buffer.order( ByteOrder.LITTLE_ENDIAN);
-		buffer.put (b);
+	public static void WriteByte (DataOutputStream stream, byte b) throws IOException {
+		stream.write(b);
 	}
-	public static void WriteFloat(ByteBuffer buffer, float f) throws IOException {
-		buffer.order( ByteOrder.LITTLE_ENDIAN);
-		buffer.putFloat(f);
+	public static void WriteFloat(DataOutputStream stream, float f) throws IOException {
+		//stream.write(ByteBuffer.allocate(Float.SIZE / Byte.SIZE).order(ByteOrder.LITTLE_ENDIAN).putFloat(f).array());
+		stream.writeFloat(f);
 	}
-	public static long ReadLong (ByteBuffer buffer) throws IOException {
-	    long l;
-	    buffer.order( ByteOrder.LITTLE_ENDIAN);
-	    l = buffer.getLong();
+	public static long ReadLong (DataInputStream stream) throws IOException {
+		long l;
+		l = stream.readLong();
 	    return l;
 	}
-	public static short ReadShort (ByteBuffer buffer) throws IOException {
-	    short s;
-	    buffer.order( ByteOrder.LITTLE_ENDIAN);
-	    s = buffer.getShort();
+	public static short ReadShort (DataInputStream stream) throws IOException {
+		short s;
+	    s = stream.readShort();
 	    return s;
 	}
-	public static byte ReadByte (ByteBuffer buffer)  throws IOException{
+	public static byte ReadByte (DataInputStream stream)  throws IOException{
 	    byte b;
-	    buffer.order( ByteOrder.LITTLE_ENDIAN);
-	    b = buffer.get();
+	    b = stream.readByte();
 	    return b;
 	}
-	public static float ReadFloat(ByteBuffer buffer) throws IOException {
+	public static float ReadFloat(DataInputStream stream) throws IOException {
 	    float f;
-	    buffer.order( ByteOrder.LITTLE_ENDIAN);
-	    f = buffer.getFloat();
+	    f = stream.readFloat();
 	    return f;
 	}
-	public static void WriteString (ByteBuffer buffer, String s) throws IOException {
-	    buffer.order( ByteOrder.LITTLE_ENDIAN);
-	    buffer.putLong(s.length());
-	    buffer.put(s.getBytes());
+	public static void WriteString (DataOutputStream stream, String s) throws IOException {
+	    stream.writeInt(s.length());
+		stream.write(s.getBytes(Charset.forName("UTF-8")));
+	    //stream.writeBytes(s);
 	}
-	public static String ReadString (ByteBuffer buffer) throws IOException {
-		buffer.order( ByteOrder.LITTLE_ENDIAN);
-		    
-	    // Get length of string
-	    long length = buffer.getLong();
-	    String s = "";
+	public static String ReadString (DataInputStream stream) throws IOException {
 
+	    // Get length of string
+	    int length = stream.readInt();// * Character.SIZE / Byte.SIZE;
+		byte[] buffer = new byte[length];
+		int bytesRead = stream.read(buffer);
+		String s = new String(buffer, 0, bytesRead, "UTF-8");
+		/*char[] buffer = new char[length];
+		String s = "";
+
+		InputStreamReader is = new InputStreamReader(stream, "UTF-8");
+		StringBuilder sb=new StringBuilder();
+		//BufferedReader br = new BufferedReader(is);
+		//br.read(buffer, 0, length);
+		int l = is.read(buffer, 0, length);
+		sb.append(buffer);
+		s = sb.toString();*/
+		//byte[] b = ByteBuffer.allocate(length).array();
+		//stream.read(b);
+		//s = String.valueOf(b);
+		/*
 	    // If longer than 4096 characters, read in chunks
 	    byte[] b =  new byte[4097];
 	    while (length > 4096) {
-	        buffer.get(b, 0, 4096);
+	        stream.read(b, 0, 4096);
 	        b [4096] = 0;              // Terminate string
 	        s = s + b;
 	        length -= 4096;
 	    }
 
 	    // Read < 4096 bit
-	    buffer.get(b, 0, (int)length);
+	    stream.read(b, 0, (int) length);
 	    b [(int)length] = 0;                // Terminate string
-	    s = s + buffer;
-
+	    s = s + stream;
+*/
 	    return s;
 	}
-
 }

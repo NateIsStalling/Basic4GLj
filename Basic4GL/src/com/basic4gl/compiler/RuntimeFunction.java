@@ -1,12 +1,15 @@
 package com.basic4gl.compiler;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.basic4gl.util.Streamable;
 import com.basic4gl.util.Streaming;
 
 /// A runtime function
-public class RuntimeFunction {
+public class RuntimeFunction implements Streamable {
 
 	int prototypeIndex;
 
@@ -17,23 +20,14 @@ public class RuntimeFunction {
 	public RuntimeFunction(int _prototypeIndex) {
 		prototypeIndex = _prototypeIndex;
 	}
-
-	void StreamOut(ByteBuffer buffer) {
-		try {
-			Streaming.WriteLong(buffer, prototypeIndex);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	@Override
+	public void StreamOut(DataOutputStream stream) throws IOException{
+		Streaming.WriteLong(stream, prototypeIndex);
 	}
-
-	void StreamIn(ByteBuffer buffer) {
-		try {
-			prototypeIndex = (int) Streaming.ReadLong(buffer);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	@Override
+	public boolean StreamIn(DataInputStream stream) throws IOException{
+		prototypeIndex = (int) Streaming.ReadLong(stream);
+		return true;
 	}
 
 }

@@ -1,9 +1,11 @@
 package com.basic4gl.vm.types;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import com.basic4gl.util.Streamable;
 import com.basic4gl.util.Streaming;
 import com.basic4gl.vm.TomVM;
 
@@ -22,7 +24,7 @@ import com.basic4gl.vm.TomVM;
 // This is a pointer 'pretending' to be a value. Used to refer to
 // structures and anything else that can't fit into a register.
 
-public class ValType {
+public class ValType implements Streamable{
 	// //////////////////////////////////////////////////////////////////////////////
 	// BasicValType
 	//
@@ -47,14 +49,14 @@ public class ValType {
 	public int m_basicType; // Basic type
 	public byte m_arrayLevel; // 0 = value, 1 = array, 2 = 2D array
 	public byte m_pointerLevel; // 0 = value, 1 = pointer to value, 2 =
-								// pointer to pointer to value, ...
+	// pointer to pointer to value, ...
 	public boolean m_byRef;
 	public int[] m_arrayDims = new int[TomVM.ARRAY_MAX_DIMENSIONS]; // # of
-																	// elements
-																	// in
-																	// each
-																	// array
-																	// dimension
+	// elements
+	// in
+	// each
+	// array
+	// dimension
 
 	public ValType() {
 		Set(VTP_UNDEFINED);
@@ -79,18 +81,18 @@ public class ValType {
 	static String BasicValTypeName(int type) {
 		if (type < 0) {
 			switch (type) {
-			case VTP_INT:
-				return "INT";
-			case VTP_REAL:
-				return "REAL";
-			case VTP_STRING:
-				return "STRING";
-			case VTP_NULL:
-				return "null";
-			case VTP_UNDEFINED:
-				return "UNDEFINED";
-			default:
-				return "???";
+				case VTP_INT:
+					return "INT";
+				case VTP_REAL:
+					return "REAL";
+				case VTP_STRING:
+					return "STRING";
+				case VTP_NULL:
+					return "null";
+				case VTP_UNDEFINED:
+					return "UNDEFINED";
+				default:
+					return "???";
 			}
 		} else
 			return "ADVANCED TYPE";
@@ -250,9 +252,9 @@ public class ValType {
 	public boolean CanStoreInRegister() {
 		return m_pointerLevel > 0 || // Pointers fit in a register
 				(m_arrayLevel == 0 && m_basicType < 0); // Or
-																	// single
-																	// basic
-																	// types
+		// single
+		// basic
+		// types
 	}
 
 	public ValType RegisterType() {
@@ -297,37 +299,32 @@ public class ValType {
 	}
 
 	// Streaming
-	public void StreamOut(ByteBuffer buffer) {
+	public void StreamOut(DataOutputStream stream) throws IOException{
 
 		// Write VmValType to stream
-		try {
-			Streaming.WriteLong(buffer, m_basicType);
+		Streaming.WriteLong(stream, m_basicType);
 
-			Streaming.WriteByte(buffer, m_arrayLevel);
-			Streaming.WriteByte(buffer, m_pointerLevel);
-			Streaming.WriteByte(buffer, (byte) (m_byRef ? 1 : 0));
-			for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++)
-				Streaming.WriteLong(buffer, m_arrayDims[i]);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Streaming.WriteByte(stream, m_arrayLevel);
+		Streaming.WriteByte(stream, m_pointerLevel);
+		Streaming.WriteByte(stream, (byte) (m_byRef ? 1 : 0));
+
+		for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++)
+			Streaming.WriteLong(stream, m_arrayDims[i]);
 	}
 
-	public void StreamIn(ByteBuffer buffer) {
+	public boolean StreamIn(DataInputStream stream) throws IOException{
 
 		// Read VmValType from stream
-		try {
-			m_basicType = (int)Streaming.ReadLong(buffer);
-			m_arrayLevel = Streaming.ReadByte(buffer);
-			m_pointerLevel = Streaming.ReadByte(buffer);
-			m_byRef = Streaming.ReadByte(buffer) == 1 ? true : false;
-			for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++)
-				m_arrayDims[i] = (int) Streaming.ReadLong(buffer);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		m_basicType = (int)Streaming.ReadLong(stream);
+
+		m_arrayLevel = Streaming.ReadByte(stream);
+		m_pointerLevel = Streaming.ReadByte(stream);
+		m_byRef = Streaming.ReadByte(stream) == 1 ? true : false;
+
+		for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++)
+			m_arrayDims[i] = (int) Streaming.ReadLong(stream);
+
+		return true;
 	}
 
 }

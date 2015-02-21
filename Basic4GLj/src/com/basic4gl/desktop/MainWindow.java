@@ -2,6 +2,7 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.targets.desktopgl.DesktopGL;
+import com.basic4gl.lib.util.CallbackMessage;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.lib.util.Target;
 import com.basic4gl.lib.util.TaskCallback;
@@ -22,7 +23,7 @@ import java.util.*;
 
 public class MainWindow {
 
-    //Window Constants
+    //Application Constants
     public static final String APPLICATION_NAME = "Basic4GLj";
     public static final String APPLICATION_VERSION = "Alpha 0.2.0";
     public static final String APPLICATION_BUILD_DATE = "1/24/2015";
@@ -31,6 +32,7 @@ public class MainWindow {
     public static final String APPLICATION_WEBSITE = "blog.crazynatestudios.com";
     public static final String APPLICATION_CONTACT = "support@crazynatestudios.com";
 
+    //Resource Constants
     public static final String ICON_LOGO_SMALL = "images/logox32.png";
     public static final String ICON_LOGO_LARGE = "images/logox128.png";
 
@@ -40,33 +42,26 @@ public class MainWindow {
     private static final String ICON_OPEN = "images/icon_open.png";
     private static final String ICON_SAVE = "images/icon_save.png";
 
-    private static final boolean DISPLAY_VERSION_INFO = true;
-
     enum RunMode {
         RM_STOPPED, RM_PAUSED, RM_RUNNING
     }
 
-    ;
-
     // Window
     JFrame mFrame;
-    JPanel mMainPanel;
     JPanel mStatusPanel;
     JMenuBar mMenuBar;
     JToolBar mToolBar;
     JTabbedPane mTabControl;
-    LayoutManager mManager;
+
     // Buttons
     JButton mButtonSave;
     JButton mButtonNew;
     JButton mButtonOpen;
     JButton mButtonRun;
-    // Labels
-    JLabel mLabelStatusInfo; // Compiler/VM Status
-    JLabel mLabelStatusCursor; // Cursor Position
 
-    //TODO add library viewer to display documentation
-    HashMap<String, String> mKeywordTips;
+    // Labels
+    JLabel mLabelStatusInfo;    // Compiler/VM Status
+    JLabel mLabelStatusCursor;  // Cursor Position
 
     // Compiler and VM
     private TomBasicCompiler mComp;
@@ -78,13 +73,11 @@ public class MainWindow {
     // State
     private RunMode mRunMode;
 
-    //Window to run Basic4GL virtual machine in
-    private Target mTarget;
-
     //Libraries
     private java.util.List<Library> mLibraries;
-    private java.util.List<Integer> mTargets;        //Indexes of libraries that can be launch targets
-    private int mCurrentTarget;            //Index value of target in mTargets
+    private java.util.List<Integer> mTargets;   //Indexes of libraries that can be launch targets
+    private Target mTarget;                     //Build target for user's code
+    private int mCurrentTarget;                 //Index of mTarget in mTargets
 
     public static void main(String[] args) {
         new MainWindow();
@@ -300,13 +293,6 @@ public class MainWindow {
         this.SynchroniseTabs();
     }
 
-    public String getVersionInfo() {
-        if (DISPLAY_VERSION_INFO)
-            return APPLICATION_VERSION;
-        return "";
-    }
-
-
     public void addTab() {
         final FileEditor editor = new FileEditor();
         mFileEditors.add(editor);
@@ -385,18 +371,8 @@ public class MainWindow {
             }
         });
         menu.add(menuItem);
-        menu.add(new JSeparator());
-
-        menuItem = new JMenuItem("Exit");
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-        menu.add(menuItem);
         //TODO Implement save all
-        /*menu.add(menuItem);
+        /*
         menuItem = new JMenuItem("Save All");
 		menuItem.addActionListener(new ActionListener() {
 			@Override
@@ -405,20 +381,20 @@ public class MainWindow {
 			}
 		});
 		menu.add(menuItem);*/
-        //TODO Implement export
-		/*menuItem = new JMenuItem("Export...");
-		menuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					new Exporter().run(mTarget, mLibraries);
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
-		menu.add(menuItem);*/
+        menu.add(new JSeparator());
+        menuItem = new JMenuItem("Export...");
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SetupForRun();
+                ExportDialog dialog = new ExportDialog(mFrame, mComp, mVm, mFileEditors);
+                dialog.setLibraries(mLibraries, mTargets, mCurrentTarget);
+                dialog.setVisible(true);
+                mCurrentTarget = dialog.getCurrentTarget();
+            }
+        });
+        menu.add(menuItem);
+
         //Edit menu
         menu = new JMenu("Edit");
         menuBar.add(menu);
@@ -766,23 +742,22 @@ public class MainWindow {
         // Stop program
         mRunMode = RunMode.RM_STOPPED;
         DeactivateForStop();
-        mLabelStatusInfo.setText("Program stopped");
+            mLabelStatusInfo.setText("Program stopped");
 
-        // Update UI
-        mButtonRun.setIcon(createImageIcon(ICON_RUN_APP));
-        mButtonRun.setToolTipText("Run the program!");
-        mButtonRun.setEnabled(true);
+            // Update UI
+            mButtonRun.setIcon(createImageIcon(ICON_RUN_APP));
+            mButtonRun.setToolTipText("Run the program!");
+            mButtonRun.setEnabled(true);
 
-        mButtonNew.setEnabled(true);
-        mButtonOpen.setEnabled(true);
-        mButtonSave.setEnabled(CheckModified());
-        // TODO Implement Save as
-        // SaveAsAction.Enabled = true;
+            mButtonNew.setEnabled(true);
+            mButtonOpen.setEnabled(true);
+            mButtonSave.setEnabled(CheckModified());
+            // TODO Implement Save as
+            // SaveAsAction.Enabled = true;
     }
 
     private void Continue() {
         mRunMode = RunMode.RM_RUNNING;
-        ActivateForContinue();
         mLabelStatusInfo.setText("Running...");
 
         // Update UI
@@ -793,6 +768,8 @@ public class MainWindow {
         mButtonNew.setEnabled(false);
         mButtonOpen.setEnabled(false);
         mButtonSave.setEnabled(false);
+
+        ActivateForContinue();
         // TODO Implement Save as
         // SaveAsAction.Enabled = true;
     }
@@ -844,11 +821,14 @@ public class MainWindow {
         // m_glWin.Show();
         // m_glWin.Activate();
         //mTarget.activate();
-        if (mTarget != null) {
+
+        if(mTarget!=null)
+
+        {
+            mTarget.activate();
             mTarget.reset();
             mTarget.show(new DebugCallback());
         }
-
     }
 
     private void DeactivateForStop() {
@@ -866,32 +846,7 @@ public class MainWindow {
         // Create OpenGL window
         // TODO Implement OpenGL
         //TODO Move settings to target
-        // m_glWin = null;
-        // m_glText = null;
 
-        // Default settings
-        // boolean fullScreen = false, border = true;
-        // int width = 640, height = 480, bpp = 0;
-        // ResetGLModeType resetGLMode = RGM_RESETSTATE;
-
-        // Create window
-		/*
-		 * m_glWin = new glTextGridWindow ( fullScreen, border, width, height,
-		 * bpp, "Basic4GL", resetGLMode);
-		 *
-		 * // Check for errors if (m_glWin.Error ()) { MessageDlg ( (AnsiString)
-		 * m_glWin.GetError().c_str(), mtError, TMsgDlgButtons() << mbOK, 0);
-		 * Application.Terminate (); return; } m_glWin.Hide ();
-		 *
-		 * // Create OpenGL text grid m_glText = new glSpriteEngine (
-		 * (ExtractFilePath (Application.ExeName) + "charset.png").c_str (),
-		 * &m_files, 25, 40, 16, 16);
-		 *
-		 * // Check for errors if (m_glText.Error ()) { MessageDlg (
-		 * (AnsiString) + m_glText.GetError ().c_str (), mtError,
-		 * TMsgDlgButtons() << mbOK, 0); Application.Terminate (); return; }
-		 * m_glWin.SetTextGrid (m_glText);
-		 */
 
         // TODO Implement standard libraries
         // Plug in constant and function libraries
@@ -909,7 +864,7 @@ public class MainWindow {
 
         //TODO Load libraries dynamically
         mLibraries.add(new com.basic4gl.lib.standard.Standard());
-        mLibraries.add(new DesktopGL(mVm));
+        mLibraries.add(new DesktopGL(mComp));
 
         //TODO Add more libraries
         int i = 0;
@@ -971,12 +926,13 @@ public class MainWindow {
     public class DebugCallback implements TaskCallback {
 
         @Override
-        public void complete(boolean success, String message) {
+        public void message(CallbackMessage message) {
+            if (message.status == CallbackMessage.WORKING)
+                return;
+
             Stop();
-            if (success) {
-                mLabelStatusInfo.setText(message);
-            } else {
-                mLabelStatusInfo.setText(mVm.GetError());
+            mLabelStatusInfo.setText(message.text);
+            if (message.status == CallbackMessage.FAILED) {
                 PutCursorAtIP();
             }
         }

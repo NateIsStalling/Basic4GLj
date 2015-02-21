@@ -1,8 +1,11 @@
 package com.basic4gl.compiler;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.basic4gl.util.Streamable;
 import com.basic4gl.util.Streaming;
 import com.basic4gl.vm.types.ValType;
 
@@ -10,7 +13,7 @@ import com.basic4gl.vm.types.ValType;
 //
 // Recognised constants (e.g. "true", "false")
 
-public class Constant {
+public class Constant implements Streamable{
 	int mBasicType;          // Value type
 	int     mIntVal;           // Value
 	float	mRealVal;
@@ -59,36 +62,30 @@ public class Constant {
 		default:    return "???";
 		}
 	}
-
-	void StreamOut(ByteBuffer buffer)
+	@Override
+	public void StreamOut(DataOutputStream stream) throws IOException
 	{
-		try {
-			Streaming.WriteLong(buffer, mBasicType);
+			Streaming.WriteLong(stream, mBasicType);
 
 			switch(mBasicType) {
-			case ValType.VTP_INT:       Streaming.WriteLong(buffer, mIntVal);        break;
-			case ValType.VTP_REAL:      Streaming.WriteFloat(buffer, mRealVal);      break;
-			case ValType.VTP_STRING:    Streaming.WriteString(buffer, mStringVal);   break;
+			case ValType.VTP_INT:       Streaming.WriteLong(stream, mIntVal);        break;
+			case ValType.VTP_REAL:      Streaming.WriteFloat(stream, mRealVal);      break;
+			case ValType.VTP_STRING:    Streaming.WriteString(stream, mStringVal);   break;
 			default:
 				break;
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
-	void StreamIn(ByteBuffer buffer)
+	@Override
+	public boolean StreamIn(DataInputStream stream) throws IOException
 	{
-		try {
-			mBasicType = (int)Streaming.ReadLong(buffer);
+			mBasicType = (int)Streaming.ReadLong(stream);
 			switch(mBasicType) {
-			case ValType.VTP_INT:       mIntVal    = (int) Streaming.ReadLong(buffer);     break;
-			case ValType.VTP_REAL:      mRealVal   = Streaming.ReadFloat(buffer);    break;
-			case ValType.VTP_STRING:    mStringVal = Streaming.ReadString(buffer);   break;
+			case ValType.VTP_INT:       mIntVal    = (int) Streaming.ReadLong(stream);     break;
+			case ValType.VTP_REAL:      mRealVal   = Streaming.ReadFloat(stream);    break;
+			case ValType.VTP_STRING:    mStringVal = Streaming.ReadString(stream);   break;
 			default:
 				break;
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		return true;
 	}
 }

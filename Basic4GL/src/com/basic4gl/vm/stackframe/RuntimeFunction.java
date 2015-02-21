@@ -1,14 +1,16 @@
 package com.basic4gl.vm.stackframe;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
+import com.basic4gl.util.Streamable;
 import com.basic4gl.util.Streaming;
 
 ////////////////////////////////////////////////////////////////////////////////
 //RuntimeFunction
 //
-public class RuntimeFunction {
+public class RuntimeFunction implements Streamable{
 
 	// / Index of implementing function, or -1 if none.
 	public int functionIndex;
@@ -21,21 +23,15 @@ public class RuntimeFunction {
 		functionIndex = _functionIndex;
 	}
 
-	public void StreamOut(ByteBuffer buffer) {
-		try {
-			Streaming.WriteLong(buffer, functionIndex);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	@Override
+	public void StreamOut(DataOutputStream stream) throws IOException{
+		Streaming.WriteLong(stream, functionIndex);
 	}
 
-	public void StreamIn(ByteBuffer buffer) {
-		try {
-			functionIndex = (int) Streaming.ReadLong(buffer);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	@Override
+	public boolean StreamIn(DataInputStream stream) throws IOException{
+		functionIndex = (int) Streaming.ReadLong(stream);
+
+		return true;
 	}
 }

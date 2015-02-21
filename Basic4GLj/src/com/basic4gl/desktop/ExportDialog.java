@@ -1,30 +1,44 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.lib.util.Configuration;
-import com.basic4gl.lib.util.Library;
-import com.basic4gl.lib.util.Target;
+import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.lib.util.*;
+import com.basic4gl.vm.TomVM;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
+import javax.swing.text.BadLocationException;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Created by Nate on 2/5/2015.
  */
-public class ProjectSettingsDialog {
+public class ExportDialog {
+    private TomBasicCompiler mComp;
+    private TomVM mVM;
+    private Vector<FileEditor> mFileEditors;
 
-    JDialog mDialog;
+    private JDialog mDialog;
+    private JTabbedPane mTabs;
+    private JComboBox mTargetComboBox;
+    private JLabel mTargetRunnableLabel;
 
-    JComboBox mTargetComboBox;
-    JLabel mTargetDescriptionLabel;
-    JLabel mTargetRunnableLabel;
+    private JTextField mFilePathTextField;
 
-    JTextPane mTargetInfoTextPane;
-    JPanel mTargetConfigPane;
+    private JTextPane mTargetInfoTextPane;
+    private JPanel mTargetConfigPane;
+
+    private JButton mExportButton;
     //Libraries
     private java.util.List<Library> mLibraries;
     private java.util.List<Integer> mTargets;        //Indexes of libraries that can be launch targets
@@ -32,70 +46,118 @@ public class ProjectSettingsDialog {
 
     private java.util.List<JComponent> mSettingComponents = new ArrayList<JComponent>();
     private Configuration mCurrentConfig;
-    public ProjectSettingsDialog(Frame parent) {
+    public ExportDialog(JFrame parent, TomBasicCompiler compiler, TomVM vm, Vector<FileEditor> editors) {
         mDialog = new JDialog(parent);
+        mComp = compiler;
+        mVM = vm;
+        mFileEditors = editors;
 
-        mDialog.setTitle("Project Settings");
+        mDialog.setTitle("Export Project");
         mDialog.setResizable(false);
         mDialog.setModal(true);
 
-        JTabbedPane tabbedPane = new JTabbedPane();
-        mDialog.add(tabbedPane);
+        mTabs = new JTabbedPane();
+        mDialog.add(mTabs);
 
         JPanel buttonPane = new JPanel();
         mDialog.add(buttonPane, BorderLayout.SOUTH);
-        JButton applyButton = new JButton("Apply");
-        JButton acceptButton = new JButton("Accept");
+        mExportButton = new JButton("Export");
         JButton cancelButton = new JButton("Cancel");
-        applyButton.addActionListener(new ActionListener() {
+        mExportButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (mCurrentTarget != -1)
-                    applyConfig();
-            }
-        });
-        acceptButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (mCurrentTarget != -1)
-                    applyConfig();
-                ProjectSettingsDialog.this.setVisible(false);
+                export();
             }
         });
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ProjectSettingsDialog.this.setVisible(false);
+                ExportDialog.this.setVisible(false);
             }
         });
         buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
         buttonPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         buttonPane.add(Box.createHorizontalGlue());
-        buttonPane.add(applyButton);
-        buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
-        buttonPane.add(acceptButton);
+        buttonPane.add(mExportButton);
         buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
         buttonPane.add(cancelButton);
 
 
-        SwingUtilities.updateComponentTreeUI(tabbedPane);
-        tabbedPane.setUI(new BasicTabbedPaneUI() {
+        SwingUtilities.updateComponentTreeUI(mTabs);
+        mTabs.setUI(new BasicTabbedPaneUI() {
             @Override
             protected void installDefaults() {
                 super.installDefaults();
             }
         });
-        tabbedPane.setBackground(Color.LIGHT_GRAY);
+        mTabs.setBackground(Color.LIGHT_GRAY);
 
         // The following line enables to use scrolling tabs.
-        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        mTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-        JPanel buildPane = new JPanel();
-        buildPane.setLayout(new BorderLayout());
-        tabbedPane.addTab("Build", buildPane);
+        //File tab
+        JPanel filePane = new JPanel();
+        filePane.setLayout(new BoxLayout(filePane, BoxLayout.LINE_AXIS));
+        mTabs.addTab("File", filePane);
 
+        //Settings tab; duplicate of the build tab in ProjectSettingsDialog
+        JPanel targetPane = new JPanel();
+        targetPane.setLayout(new BorderLayout());
+        mTabs.addTab("Settings", targetPane);
+
+        //Configure File tab
+        filePane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        mFilePathTextField = new JTextField();
+        mFilePathTextField.setMaximumSize(new Dimension((int)mFilePathTextField.getMaximumSize().getWidth(), 28));
+        JButton fileButton = new JButton("...");
+        fileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FileNameExtensionFilter currentFilter = null;
+                JFileChooser dialog = new JFileChooser();
+                dialog.setAcceptAllFileFilterUsed(false);
+                for (int i = 0; i < mTargets.size(); i++) {
+                    Target target = (Target)mLibraries.get(mTargets.get(i));
+                    FileNameExtensionFilter filter = new FileNameExtensionFilter(target.getFileDescription(),
+                            target.getFileExtension());
+                    if (i == mCurrentTarget)
+                        currentFilter = filter;
+                    dialog.addChoosableFileFilter(filter);
+                }
+                if (currentFilter != null)
+                    dialog.setFileFilter(currentFilter);
+
+                int result = dialog.showSaveDialog(mDialog);
+
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    String path = dialog.getSelectedFile().getAbsolutePath();
+                    if(((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions().length > 0) {
+                        //Append extension if needed
+                        String extension = ((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions()[0];
+                        if (!path.endsWith("." + extension))
+                            path += "." + extension;
+                    }
+
+                    //Update file path
+                    mFilePathTextField.setText(path);
+
+                    //Change current target to match file extension if applicable
+                    int index = Arrays.asList(dialog.getChoosableFileFilters()).indexOf(dialog.getFileFilter());
+                    if (index != mCurrentTarget)
+                        mTargetComboBox.setSelectedIndex(index);
+                }
+            }
+        });
+
+        filePane.add(new JLabel("File name:"));
+        filePane.add(Box.createRigidArea(new Dimension(10, 0)));
+        filePane.add(mFilePathTextField);
+        filePane.add(Box.createRigidArea(new Dimension(10, 0)));
+        filePane.add(fileButton);
+
+        //Configure Settings tab
         JPanel targetSelectionPane = new JPanel();
-        buildPane.add(targetSelectionPane, BorderLayout.NORTH);
+        targetPane.add(targetSelectionPane, BorderLayout.NORTH);
         targetSelectionPane.setLayout(new BoxLayout(targetSelectionPane, BoxLayout.LINE_AXIS));
         targetSelectionPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -110,7 +172,7 @@ public class ProjectSettingsDialog {
         targetSelectionPane.add(mTargetRunnableLabel);
 
         JPanel buildInfoPane = new JPanel();
-        buildPane.add(buildInfoPane, BorderLayout.CENTER);
+        targetPane.add(buildInfoPane, BorderLayout.CENTER);
         GridLayout buildInfoPaneLayout = new GridLayout(1, 2);
         buildInfoPane.setLayout(buildInfoPaneLayout);
 
@@ -134,7 +196,7 @@ public class ProjectSettingsDialog {
 
         propertiesPanel.setLayout(new BorderLayout());
         propertiesPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 5));
-        JLabel propertiesLabel = new JLabel("Configuration:");
+        JLabel propertiesLabel = new JLabel("Properties:");
         propertiesLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         propertiesPanel.add(propertiesLabel, BorderLayout.PAGE_START);
         mTargetConfigPane = new JPanel();
@@ -147,23 +209,6 @@ public class ProjectSettingsDialog {
         mTargetConfigPane.setLayout(new BoxLayout(mTargetConfigPane, BoxLayout.Y_AXIS));
         mTargetConfigPane.setAlignmentX(0f);
 
-/*
-        JPanel descriptionPanel = new JPanel();
-        infoPanel.add(descriptionPanel);
-        BoxLayout descriptionLayout = new BoxLayout(descriptionPanel, BoxLayout.Y_AXIS);
-
-        descriptionPanel.setLayout(descriptionLayout);
-        descriptionPanel.setBorder(new EmptyBorder(10, 5, 10, 5));
-
-        mTargetDescriptionLabel = new JLabel(MainWindow.APPLICATION_DESCRIPTION);
-        mTargetDescriptionLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        mTargetDescriptionLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
-        descriptionPanel.add(mTargetDescriptionLabel);
-
-        descriptionPanel.add(Box.createVerticalGlue());
-*/
-
-
 
         mTargetComboBox.addActionListener(new ActionListener() {
             @Override
@@ -175,8 +220,8 @@ public class ProjectSettingsDialog {
                 Library target = mLibraries.get(mTargets.get(mCurrentTarget));
 
                 mTargetRunnableLabel.setText(((Target)target).isRunnable() ?
-                    "Build target is runnable":
-                    "Build target is NOT runnable");
+                        "Build target is runnable":
+                        "Build target is NOT runnable");
 
                 //TODO Display target info
                 mTargetInfoTextPane.setText(target.description());
@@ -310,5 +355,170 @@ public class ProjectSettingsDialog {
         return mCurrentTarget;
     }
 
+    private void export(){
+        try {
+            File dest;
+            int decision;
 
+            Target target;
+            Library lib = mLibraries.get(mTargets.get(mCurrentTarget));
+            if (lib instanceof Target) {
+                target = (Target) lib;
+            } else {
+                JOptionPane.showMessageDialog(mDialog,"Cannot build application. \n" + lib.name() + " is not a valid build target.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            applyConfig();
+            if (!mFilePathTextField.getText().equals("")) {
+                dest = new File(mFilePathTextField.getText());
+                if (dest.isDirectory()){
+                    JOptionPane.showMessageDialog(mDialog,"Please enter a filename.");
+                    return;
+                }
+                if (!mFilePathTextField.getText().endsWith("." + target.getFileExtension()))
+                    dest = new File(mFilePathTextField.getText() + "." + target.getFileExtension());
+
+                if (dest.exists()){
+                    Object[] options = {"Yes",
+                            "No"};
+                    decision = JOptionPane.showOptionDialog(mDialog, "File already exists! Overwrite?",
+                            "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+                            options, options[1]);
+                    if (decision == 1)
+                        return;
+                }
+                enableComponents(mTabs, false);
+                mExportButton.setEnabled(false);
+                ExportWorker export = new ExportWorker(target, dest, new ExportCallback());
+                export.execute();
+            } else {
+                JOptionPane.showMessageDialog(mDialog,"Please enter a filename.");
+                return;
+            }
+        } catch (Exception e1) {
+            enableComponents(mTabs, true);
+            mExportButton.setEnabled(true);
+            e1.printStackTrace();
+        }
+    }
+    private class ExportWorker extends SwingWorker<Object, CallbackMessage>{
+        private Target mTarget;
+        private File mDest;
+        private ExportCallback mCallback;
+        private CallbackMessage mMessage;
+        public ExportWorker(Target target, File dest, ExportCallback callback){
+            mTarget = target;
+            mDest = dest;
+            mCallback = callback;
+        }
+        @Override
+        protected void done(){
+            int success;
+            if (mCallback != null) {
+                publish(mMessage);
+            }
+        }
+        @Override
+        protected void process(java.util.List<CallbackMessage> chunks) {
+            for (CallbackMessage message : chunks) {
+                mCallback.message(message);
+            }
+        }
+
+        @Override
+        protected Object doInBackground() throws Exception {
+            mMessage = new CallbackMessage(CallbackMessage.WORKING, "");
+            if (!Compile())
+                return null; //TODO Throw error
+            //Export to file
+            FileOutputStream stream = new FileOutputStream(mDest);
+            mTarget.export(stream, mCallback);
+            mMessage.status = CallbackMessage.SUCCESS;
+            mMessage.text = "Exported successful";
+            return null;
+        }
+
+        // Program control
+        private boolean Compile() {
+
+            // Clear source code from parser
+            mComp.Parser().SourceCode().clear();
+
+            // Reload in from editors
+            // Load included files first (if any)
+            // int i;
+            for (int i = 1; i < mFileEditors.size(); i++)
+                LoadParser(mFileEditors.get(i).editorPane);
+
+            // Load main file last.
+            LoadParser(mFileEditors.get(0).editorPane);
+
+            // Compile
+            mComp.ClearError();
+            mComp.Compile();
+
+            // Return result
+            if (mComp.Error()) {
+                mMessage.status = CallbackMessage.FAILED;
+                mMessage.text = mComp.GetError();
+                return false;
+            }
+            mMessage.status = CallbackMessage.WORKING;
+            mMessage.text = "User's code compiled";
+            return true;
+        }
+
+        private void LoadParser(RSyntaxTextArea editorPane) // Load editor text into parser
+        {
+            int start, stop; // line offsets
+            String line; // line to add
+            // Load editor text into parser (appended to bottom)
+            try {
+                for (int i = 0; i < editorPane.getLineCount(); i++) {
+                    start = editorPane.getLineStartOffset(i);
+                    stop = editorPane.getLineEndOffset(i);
+
+                    line = editorPane.getText(start, stop - start);
+
+                    mComp.Parser().SourceCode().add(line);
+
+                }
+            } catch (BadLocationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+    public void enableComponents(Container container, boolean enable) {
+        Component[] components = container.getComponents();
+        for (Component component : components) {
+            component.setEnabled(enable);
+            if (component instanceof Container) {
+                enableComponents((Container)component, enable);
+            }
+        }
+    }
+    public class ExportCallback implements TaskCallback {
+
+        @Override
+        public void message(CallbackMessage message) {
+            if (message.status == CallbackMessage.WORKING){
+                //TODO display build progress
+                System.out.println("Exporting...");
+                return;
+            }
+            if (message.status == CallbackMessage.SUCCESS) {
+                System.out.println("Export successful.");
+                JOptionPane.showMessageDialog(mDialog, "Export successful.");
+                mDialog.setVisible(false);
+            } else if (message.status == CallbackMessage.FAILED){
+                System.out.println("Export failed.");
+                JOptionPane.showMessageDialog(mDialog, message,"Export failed.", JOptionPane.OK_OPTION);
+            }
+            enableComponents(mTabs, true);
+            mExportButton.setEnabled(true);
+        }
+
+
+    }
 }

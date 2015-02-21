@@ -100,8 +100,17 @@ public class FileEditor {
             int result = dialog.showSaveDialog(pane);
 
             if (result == JFileChooser.APPROVE_OPTION) {
-                mFilePath = dialog.getSelectedFile().getAbsolutePath();
-                mFilename = dialog.getSelectedFile().getName();
+                String path = dialog.getSelectedFile().getAbsolutePath();
+                if (dialog.getFileFilter() instanceof FileNameExtensionFilter) {
+                    //Append extension if needed
+                    if(((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions().length > 0){
+                        String extension = ((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions()[0];
+                        if (!path.endsWith("." + extension))
+                            path += "." + extension;
+                    }
+                }
+                mFilePath = path;
+                mFilename = new File(path).getName();
             } else {
                 save = false;
             }

@@ -1,9 +1,11 @@
 package com.basic4gl.vm.stackframe;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.*;
 
+import com.basic4gl.util.Streamable;
 import com.basic4gl.util.Streaming;
 import com.basic4gl.vm.types.ValType;
 
@@ -17,14 +19,14 @@ import com.basic4gl.vm.types.ValType;
 //
 /// Describes a user function call signiture and return value
 
-public class UserFuncPrototype {
+public class UserFuncPrototype implements Streamable {
 
 	// Paramter and local variable types
 	// 0..paramCount-1 -> Parameters
 	// paramCount..localVarTypes.size()-1 -> Local variables
 	public Vector<ValType> localVarTypes; // Local variable data types
 	public Map<String, Integer> localVarIndex; // Name->index lookup (parameters and
-										// local vars)
+	// local vars)
 	public int paramCount;
 	public boolean hasReturnVal;
 	public ValType returnValType;
@@ -134,54 +136,46 @@ public class UserFuncPrototype {
 		return true;
 	}
 
-	public void StreamOut(ByteBuffer buffer) {
-		try {
-			// Return value
-			Streaming.WriteByte(buffer, hasReturnVal ? (byte) 1 : 0);
-			if (hasReturnVal)
-				returnValType.StreamOut(buffer);
+	public void StreamOut(DataOutputStream stream) throws IOException{
+		// Return value
+		Streaming.WriteByte(stream, hasReturnVal ? (byte) 1 : 0);
+		if (hasReturnVal)
+			returnValType.StreamOut(stream);
 
-			// Parameters/local variables
-			Streaming.WriteLong(buffer, localVarTypes.size());
-			for (int i = 0; i < localVarTypes.size(); i++) {
-				// #ifdef STREAM_NAMES
-				String name = GetLocalVarName(i);
-				Streaming.WriteString(buffer, name);
-				// #endif
-				localVarTypes.get(i).StreamOut(buffer);
-			}
-			Streaming.WriteLong(buffer, paramCount);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		// Parameters/local variables
+		Streaming.WriteLong(stream, localVarTypes.size());
+		for (int i = 0; i < localVarTypes.size(); i++) {
+			// #ifdef STREAM_NAMES
+			String name = GetLocalVarName(i);
+			Streaming.WriteString(stream, name);
+			// #endif
+			localVarTypes.get(i).StreamOut(stream);
 		}
+		Streaming.WriteLong(stream, paramCount);
 	}
 
-	public void StreamIn(ByteBuffer buffer) {
+	public boolean StreamIn(DataInputStream stream) throws IOException{
 		Reset();
 
-		try {
-			// Return value
-			hasReturnVal = Streaming.ReadByte(buffer) != 0;
+		// Return value
+		hasReturnVal = Streaming.ReadByte(stream) != 0;
 
-			if (hasReturnVal)
-				returnValType.StreamIn(buffer);
+		if (hasReturnVal)
+			returnValType.StreamIn(stream);
 
-			// Parameters/local variables
-			int count = (int) Streaming.ReadLong(buffer);
-			localVarTypes.setSize(count);
-			for (int i = 0; i < localVarTypes.size(); i++) {
-				// #ifdef STREAM_NAMES
-				String name = Streaming.ReadString(buffer);
-				localVarIndex.put(name, i);
-				// #endif
-				localVarTypes.get(i).StreamIn(buffer);
-			}
-			paramCount = (int) Streaming.ReadLong(buffer);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		// Parameters/local variables
+		int count = (int) Streaming.ReadLong(stream);
+		localVarTypes.setSize(count);
+		for (int i = 0; i < localVarTypes.size(); i++) {
+			// #ifdef STREAM_NAMES
+			String name = Streaming.ReadString(stream);
+			localVarIndex.put(name, i);
+			// #endif
+			localVarTypes.set(i, new ValType());
+			localVarTypes.get(i).StreamIn(stream);
 		}
+		paramCount = (int) Streaming.ReadLong(stream);
+		return true;
 	}
 
 }

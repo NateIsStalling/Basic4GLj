@@ -5,8 +5,9 @@ package com.basic4gl.compiler;
  Used to compile source code in BASIC language to TomVM Op codes.
  */
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.*;
 
 import com.basic4gl.compiler.Token.TokenType;
@@ -48,7 +49,7 @@ public class TomBasicCompiler extends HasErrorState {
 	// Basic4GL v2 language compiler.
 
 	// Virtual machine
-	TomVM m_vm;
+	TomVM mVM;
 
 	// Parser
 	Parser m_parser;
@@ -190,7 +191,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 	// CompLabel
 	// A program label, i.e. a named destination for "goto" and "gosub"s
-	class Label {
+	class Label implements Streamable{
 		int m_offset; // Instruction index in code
 		int m_programDataOffset; // Program data offset. (For use with
 
@@ -207,24 +208,17 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// #ifdef VM_STATE_STREAMING
-		void StreamOut(ByteBuffer buffer) {
-			try {
-				Streaming.WriteLong(buffer, m_offset);
-				Streaming.WriteLong(buffer, m_programDataOffset);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		public void StreamOut(DataOutputStream stream) throws IOException{
+			Streaming.WriteLong(stream, m_offset);
+			Streaming.WriteLong(stream, m_programDataOffset);
+
 		}
 
-		void StreamIn(ByteBuffer buffer) {
-			try {
-				m_offset = (int) Streaming.ReadLong(buffer);
-				m_programDataOffset = (int) Streaming.ReadLong(buffer);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		public boolean StreamIn(DataInputStream stream) throws IOException{
+			m_offset = (int) Streaming.ReadLong(stream);
+			m_programDataOffset = (int) Streaming.ReadLong(stream);
+
+			return true;
 		}
 		// #endif
 	}
@@ -309,7 +303,7 @@ public class TomBasicCompiler extends HasErrorState {
 	// public TomBasicCompiler(TomVM vm, PluginDLLManager plugins,
 	// boolean caseSensitive) {
 	public TomBasicCompiler(TomVM vm, boolean caseSensitive) {
-		m_vm = vm;
+		mVM = vm;
 		// TODO Reimplement libraries
 		// m_plugins = plugins;
 		m_caseSensitive = caseSensitive;
@@ -470,7 +464,7 @@ public class TomBasicCompiler extends HasErrorState {
 	public void New() {
 
 		// Clear existing program
-		m_vm.New();
+		mVM.New();
 		m_lastLine = 0;
 		m_lastCol = 0;
 
@@ -527,7 +521,7 @@ public class TomBasicCompiler extends HasErrorState {
 	// TODO Reimplement libraries
 	/*
 	 * void InitPlugins() {
-	 * m_plugins.StructureManager().AddVMStructures(m_vm.DataTypes());
+	 * m_plugins.StructureManager().AddVMStructures(mVM.DataTypes());
 	 * m_plugins.CreateVMFunctionSpecs(); }
 	 */
 
@@ -623,7 +617,7 @@ public class TomBasicCompiler extends HasErrorState {
 	void InternalCompile() {
 
 		// Allocate a new code block
-		m_vm.NewCodeBlock();
+		mVM.NewCodeBlock();
 
 		// Clear error state
 		ClearError();
@@ -645,8 +639,8 @@ public class TomBasicCompiler extends HasErrorState {
 			for (Jump jump : m_jumps) {
 
 				// Find instruction
-				assert (jump.m_jumpInstruction < m_vm.InstructionCount());
-				Instruction instr = m_vm.Instruction(jump.m_jumpInstruction);
+				assert (jump.m_jumpInstruction < mVM.InstructionCount());
+				Instruction instr = mVM.Instruction(jump.m_jumpInstruction);
 
 				// Point token to goto instruction, so that it will be displayed
 				// if there is an error.
@@ -668,8 +662,8 @@ public class TomBasicCompiler extends HasErrorState {
 			for (Jump jump : m_resets) {
 
 				// Find instruction
-				assert (jump.m_jumpInstruction < m_vm.InstructionCount());
-				Instruction instr = m_vm.Instruction(jump.m_jumpInstruction);
+				assert (jump.m_jumpInstruction < mVM.InstructionCount());
+				Instruction instr = mVM.Instruction(jump.m_jumpInstruction);
 
 				// Point token to reset instruction, so that it will be
 				// displayed
@@ -722,7 +716,7 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	public TomVM VM() {
-		return m_vm;
+		return mVM;
 	}
 
 	public Parser Parser() {
@@ -892,19 +886,19 @@ public class TomBasicCompiler extends HasErrorState {
 	// TODO rename
 	UserFunc _UserFunc() {
 		// Return function currently being declared
-		assert (m_vm.UserFunctions().size() > 0);
+		assert (mVM.UserFunctions().size() > 0);
 		assert (m_currentFunction >= 0);
-		assert (m_currentFunction < m_vm.UserFunctions().size());
-		return m_vm.UserFunctions().get(m_currentFunction);
+		assert (m_currentFunction < mVM.UserFunctions().size());
+		return mVM.UserFunctions().get(m_currentFunction);
 	}
 
 	UserFuncPrototype UserPrototype() {
 		// Return prototype of function currently being declared
-		assert (m_vm.UserFunctionPrototypes().size() > 0);
-		assert (_UserFunc().prototypeIndex >= 0);
-		assert (_UserFunc().prototypeIndex < m_vm.UserFunctionPrototypes()
+		assert (mVM.UserFunctionPrototypes().size() > 0);
+		assert (_UserFunc().mPrototypeIndex >= 0);
+		assert (_UserFunc().mPrototypeIndex < mVM.UserFunctionPrototypes()
 				.size());
-		return m_vm.UserFunctionPrototypes().get(_UserFunc().prototypeIndex);
+		return mVM.UserFunctionPrototypes().get(_UserFunc().mPrototypeIndex);
 	}
 
 	boolean InternalCompileBindCode() {
@@ -954,7 +948,7 @@ public class TomBasicCompiler extends HasErrorState {
 		RollbackPoint r = new RollbackPoint();
 
 		// Get virtual machine rollback info
-		r.vmRollback = m_vm.GetRollbackPoint();
+		r.vmRollback = mVM.GetRollbackPoint();
 
 		// Get compiler rollback info
 		r.runtimeFunctionCount = m_runtimeFunctions.size();
@@ -965,7 +959,7 @@ public class TomBasicCompiler extends HasErrorState {
 	void Rollback(RollbackPoint rollbackPoint) {
 
 		// Rollback virtual machine
-		m_vm.Rollback(rollbackPoint.vmRollback);
+		mVM.Rollback(rollbackPoint.vmRollback);
 
 		// Rollback compiler
 
@@ -1021,7 +1015,7 @@ public class TomBasicCompiler extends HasErrorState {
 			m_parser.SetPos(top.m_sourcePos.m_sourceLine,
 					top.m_sourcePos.m_sourceCol);
 
-			// Set error message
+			// Set error text
 			switch (FlowControlTOS().m_type) {
 			case FCT_IF:
 				SetError("'if' without 'endif'");
@@ -1070,7 +1064,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Look for function that is declared, but not yet implemented
 		for (String key : m_localUserFunctionIndex.keySet()) {
-			if (!m_vm.UserFunctions().get(m_localUserFunctionIndex.get(key)).implemented) {
+			if (!mVM.UserFunctions().get(m_localUserFunctionIndex.get(key)).mImplemented) {
 				SetError((String) "Function/sub '" + key
 						+ "' was DECLAREd, but not implemented");
 				return false;
@@ -1093,7 +1087,7 @@ public class TomBasicCompiler extends HasErrorState {
 			line = m_lastLine;
 			col = m_lastCol;
 		}
-		m_vm.AddInstruction(new Instruction(opCode, basictype, val, line, col));
+		mVM.AddInstruction(new Instruction(opCode, basictype, val, line, col));
 		m_lastLine = line;
 		m_lastCol = col;
 	}
@@ -1125,7 +1119,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Create new label
-			AddLabel(labelName, new Label(m_vm.InstructionCount(), m_vm
+			AddLabel(labelName, new Label(mVM.InstructionCount(), mVM
 					.ProgramData().size()));
 
 			// Skip label
@@ -1362,7 +1356,7 @@ public class TomBasicCompiler extends HasErrorState {
 		String name = m_symbolPrefix + m_token.m_text;
 		if (!CheckName(name))
 			return false;
-		if (m_vm.DataTypes().StrucStored(name)) { // Must be unused
+		if (mVM.DataTypes().StrucStored(name)) { // Must be unused
 			SetError("'" + name + "' has already been used as a structure name");
 			return false;
 		}
@@ -1373,7 +1367,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Create structure
-		m_vm.DataTypes().NewStruc(name);
+		mVM.DataTypes().NewStruc(name);
 
 		// Expect at least one field
 		if (m_token.m_text.equals("endstruc") || m_token.m_text.equals("end")) {
@@ -1474,22 +1468,22 @@ public class TomBasicCompiler extends HasErrorState {
 			if (forStruc) {
 
 				// Validate field name and type
-				Structure struc = m_vm.DataTypes().CurrentStruc();
-				if (m_vm.DataTypes().FieldStored(struc, name)) {
+				Structure struc = mVM.DataTypes().CurrentStruc();
+				if (mVM.DataTypes().FieldStored(struc, name)) {
 					SetError((String) "Field '" + name
 							+ "' has already been DIMmed in structure '"
 							+ struc.m_name + "'");
 					return false;
 				}
 				if (type.m_pointerLevel == 0
-						&& type.m_basicType == m_vm.DataTypes()
+						&& type.m_basicType == mVM.DataTypes()
 						.GetStruc(struc.m_name)) {
 					SetError("Structure cannot contain an element of its own type");
 					return false;
 				}
 
 				// Add field to structure
-				m_vm.DataTypes().NewField(name, type);
+				mVM.DataTypes().NewField(name, type);
 			} else if (forFuncParam) {
 
 				// Check parameter of the same name has not already been added
@@ -1539,10 +1533,10 @@ public class TomBasicCompiler extends HasErrorState {
 
 					// Data containing strings will need to be "destroyed" when
 					// the stack unwinds.
-					if (m_vm.DataTypes().ContainsString(type))
+					if (mVM.DataTypes().ContainsString(type))
 						AddInstruction(OpCode.OP_REG_DESTRUCTOR,
 								ValType.VTP_INT,
-								new Value((int) m_vm.StoreType(type)));
+								new Value((int) mVM.StoreType(type)));
 
 					// Optional "= value"?
 					if (m_token.m_text.equals("=")) {
@@ -1575,9 +1569,9 @@ public class TomBasicCompiler extends HasErrorState {
 					// Check if variable has already been DIMmed. (This is
 					// allowed, but
 					// only if DIMed to the same type.)
-					int varIndex = m_vm.Variables().GetVar(name);
+					int varIndex = mVM.Variables().getVariableIndex(name);
 					if (varIndex >= 0) {
-						if (!(m_vm.Variables().Variables().get(varIndex).m_type == type)) {
+						if (!(mVM.Variables().getVariables().get(varIndex).m_type == type)) {
 							SetError((String) "Var '"
 									+ name
 									+ "' has already been allocated as a different type.");
@@ -1589,7 +1583,7 @@ public class TomBasicCompiler extends HasErrorState {
 						// allocation code generation.
 					} else
 						// Create new variable
-						varIndex = m_vm.Variables().NewVar(name, type);
+						varIndex = mVM.Variables().NewVar(name, type);
 
 					// Generate code to allocate variable data
 					// Note: Opcode contains the index of the variable. Var
@@ -1606,7 +1600,7 @@ public class TomBasicCompiler extends HasErrorState {
 								ValType.VTP_INT, new Value(varIndex));
 
 						// Set register type
-						m_regType.Set(m_vm.Variables().Variables()
+						m_regType.Set(mVM.Variables().getVariables()
 								.get(varIndex).m_type);
 						m_regType.m_pointerLevel++;
 
@@ -1673,7 +1667,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Look for structure type
 		if (m_token.m_type == TokenType.CTT_TEXT) {
 			String structureName = m_symbolPrefix + m_token.m_text;
-			int i = m_vm.DataTypes().GetStruc(structureName);
+			int i = mVM.DataTypes().GetStruc(structureName);
 			if (i >= 0) {
 				type.get().m_basicType = i;
 				if (!GetToken()) // Skip token type keyword
@@ -1748,7 +1742,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Look for recognised structure name
 			String structureName = m_symbolPrefix + m_token.m_text;
-			int i = m_vm.DataTypes().GetStruc(structureName);
+			int i = mVM.DataTypes().GetStruc(structureName);
 			if (i < 0) {
 				SetError("Expected 'single', 'double', 'integer', 'string' or type name");
 				return false;
@@ -1920,7 +1914,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (!found) {
 
 			// Look for variable
-			int varIndex = m_vm.Variables().GetVar(varName);
+			int varIndex = mVM.Variables().getVariableIndex(varName);
 
 			if (varIndex >= 0) {
 
@@ -1930,7 +1924,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Set register type
 				m_regType
-				.Set(m_vm.Variables().Variables().get(varIndex).m_type);
+				.Set(mVM.Variables().getVariables().get(varIndex).m_type);
 				m_regType.m_pointerLevel++;
 
 				found = true;
@@ -1959,7 +1953,7 @@ public class TomBasicCompiler extends HasErrorState {
 	boolean CompileDeref() {
 
 		// Generate code to dereference pointer in reg. (i.e reg = [reg]).
-		assert (m_vm.DataTypes().TypeValid(m_regType));
+		assert (mVM.DataTypes().TypeValid(m_regType));
 
 		// Not a pointer?
 		if (m_regType.VirtualPointerLevel() <= 0) {
@@ -2031,7 +2025,7 @@ public class TomBasicCompiler extends HasErrorState {
 					SetError("Unexpected '.'");
 					return false;
 				}
-				assert (m_vm.DataTypes().TypeValid(m_regType));
+				assert (mVM.DataTypes().TypeValid(m_regType));
 
 				// Skip "."
 				if (!GetToken())
@@ -2047,9 +2041,9 @@ public class TomBasicCompiler extends HasErrorState {
 					return false;
 
 				// Validate field
-				Structure s = m_vm.DataTypes().Structures()
+				Structure s = mVM.DataTypes().Structures()
 						.get(m_regType.m_basicType);
-				int fieldIndex = m_vm.DataTypes().GetField(s, fieldName);
+				int fieldIndex = mVM.DataTypes().GetField(s, fieldName);
 				if (fieldIndex < 0) {
 					SetError((String) "'" + fieldName
 							+ "' is not a field of structure '" + s.m_name
@@ -2059,7 +2053,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Generate code to calculate address of field
 				// Reg is initially pointing to address of structure.
-				StructureField field = m_vm.DataTypes().Fields()
+				StructureField field = mVM.DataTypes().Fields()
 						.get(fieldIndex);
 				AddInstruction(OpCode.OP_ADD_CONST, ValType.VTP_INT,
 						new Value(field.m_dataOffset));
@@ -2099,7 +2093,7 @@ public class TomBasicCompiler extends HasErrorState {
 						return false;
 					if (!CompileConvert(ValType.VTP_INT)) {
 						SetError("Array index must be a number. "
-								+ m_vm.DataTypes().DescribeVariable("",
+								+ mVM.DataTypes().DescribeVariable("",
 										m_regType) + " is not a number");
 						return false;
 					}
@@ -2222,11 +2216,11 @@ public class TomBasicCompiler extends HasErrorState {
 				int lazyJumpAddr = -1;
 				if (o.mType == OperType.OT_LAZYBOOLOPERATOR) {
 					if (o.mOpCode == OpCode.OP_OP_AND) {
-						lazyJumpAddr = m_vm.InstructionCount();
+						lazyJumpAddr = mVM.InstructionCount();
 						AddInstruction(OpCode.OP_JUMP_FALSE,
 								ValType.VTP_INT, new Value(0));
 					} else if (o.mOpCode == OpCode.OP_OP_OR) {
-						lazyJumpAddr = m_vm.InstructionCount();
+						lazyJumpAddr = mVM.InstructionCount();
 						AddInstruction(OpCode.OP_JUMP_TRUE,
 								ValType.VTP_INT, new Value(0));
 					}
@@ -2398,7 +2392,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Fix up lazy jumps
 		if (o.mLazyJumpAddr >= 0)
-			m_vm.Instruction(o.mLazyJumpAddr).mValue.setVal((int) m_vm
+			mVM.Instruction(o.mLazyJumpAddr).mValue.setVal((int) mVM
 					.InstructionCount());
 
 		return true;
@@ -2493,7 +2487,7 @@ public class TomBasicCompiler extends HasErrorState {
 				// Allocate new string constant
 				String text;
 				text = m_token.m_text.substring(1,	m_token.m_text.length()); // Remove S prefix
-				int index = m_vm.StoreStringConstant(text);
+				int index = mVM.StoreStringConstant(text);
 
 				// store load instruction
 				AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_STRING,
@@ -2615,7 +2609,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (m_regType.IsNull()) {
 			if (type.VirtualPointerLevel() <= 0) {
 				SetError("Cannot convert null to "
-						+ m_vm.DataTypes().DescribeVariable("", type));
+						+ mVM.DataTypes().DescribeVariable("", type));
 				return false;
 			}
 
@@ -2656,7 +2650,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// that programs use the correct type.)
 
 		SetError("Cannot convert to "
-				+ m_vm.DataTypes().DescribeVariable("", type));
+				+ mVM.DataTypes().DescribeVariable("", type));
 		return false;
 	}
 
@@ -2666,7 +2660,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (m_reg2Type.IsNull()) {
 			if (type.VirtualPointerLevel() <= 0) {
 				SetError("Cannot convert null to "
-						+ m_vm.DataTypes().DescribeVariable("", type));
+						+ mVM.DataTypes().DescribeVariable("", type));
 				return false;
 			}
 
@@ -2688,7 +2682,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// that programs use the correct type.)
 
 		SetError("Cannot convert to "
-				+ m_vm.DataTypes().DescribeVariable("", type));
+				+ mVM.DataTypes().DescribeVariable("", type));
 		return false;
 	}
 
@@ -2706,14 +2700,14 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Check last instruction was a deref
-		if (m_vm.InstructionCount() <= 0
-				|| m_vm.Instruction(m_vm.InstructionCount() - 1).mOpCode != OpCode.OP_DEREF) {
+		if (mVM.InstructionCount() <= 0
+				|| mVM.Instruction(mVM.InstructionCount() - 1).mOpCode != OpCode.OP_DEREF) {
 			SetError("Cannot take address of this data");
 			return false;
 		}
 
 		// Remove it
-		m_vm.RemoveLastInstruction();
+		mVM.RemoveLastInstruction();
 		m_regType.m_pointerLevel++;
 
 		return true;
@@ -2812,13 +2806,13 @@ public class TomBasicCompiler extends HasErrorState {
 				ValType dataType = new ValType(m_regType);
 				dataType.m_pointerLevel--;
 				dataType.m_byRef = false;
-				if (m_vm.DataTypes().ContainsPointer(dataType))
+				if (mVM.DataTypes().ContainsPointer(dataType))
 					AddInstruction(OpCode.OP_CHECK_PTRS,
 							ValType.VTP_INT,
-							new Value((int) m_vm.StoreType(dataType)));
+							new Value((int) mVM.StoreType(dataType)));
 
 				AddInstruction(OpCode.OP_COPY, ValType.VTP_INT,
-						new Value((int) m_vm.StoreType(m_regType)));
+						new Value((int) mVM.StoreType(m_regType)));
 			} else {
 				SetError("Types do not match");
 				return false;
@@ -2860,7 +2854,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Record jump, so that we can fix up the offset in the second compile
 		// pass.
 		String labelName = m_symbolPrefix + m_token.m_text;
-		m_jumps.add(new Jump(m_vm.InstructionCount(), labelName));
+		m_jumps.add(new Jump(mVM.InstructionCount(), labelName));
 
 		// Add jump instruction
 		AddInstruction(jumpType, ValType.VTP_INT, new Value(0));
@@ -2919,7 +2913,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// line
 
 		// Create flow control structure
-		m_flowControl.add(new FlowControl(FlowControlType.FCT_IF, m_vm
+		m_flowControl.add(new FlowControl(FlowControlType.FCT_IF, mVM
 				.InstructionCount(), 0, line, col, elseif, "", !autoEndif));
 
 		// Create conditional jump
@@ -2952,15 +2946,15 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Push else to flow control stack
 		m_flowControl.add(new FlowControl(FlowControlType.FCT_ELSE,
-				m_vm.InstructionCount(), 0, line, col, top.m_impliedEndif, "",
+				mVM.InstructionCount(), 0, line, col, top.m_impliedEndif, "",
 				top.m_blockIf));
 
 		// Generate code to jump around else block
 		AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new Value(0));
 
 		// Fixup jump around IF block
-		assert (top.m_jumpOut < m_vm.InstructionCount());
-		m_vm.Instruction(top.m_jumpOut).mValue.setIntVal(m_vm
+		assert (top.m_jumpOut < mVM.InstructionCount());
+		mVM.Instruction(top.m_jumpOut).mValue.setIntVal(mVM
 				.InstructionCount());
 
 		m_needColon = false; // Don't need colon between this and next
@@ -2985,8 +2979,8 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Fixup jump around IF or ELSE block
-		assert (top.m_jumpOut < m_vm.InstructionCount());
-		m_vm.Instruction(top.m_jumpOut).mValue.setIntVal(m_vm
+		assert (top.m_jumpOut < mVM.InstructionCount());
+		mVM.Instruction(top.m_jumpOut).mValue.setIntVal(mVM
 				.InstructionCount());
 
 		// If there's an implied endif then add it
@@ -3041,12 +3035,12 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Check global variable
 		if (!found) {
-			int varIndex = m_vm.Variables().GetVar(loopVar);
+			int varIndex = mVM.Variables().getVariableIndex(loopVar);
 			if (varIndex >= 0) {
 				found = true;
 
 				// Check type is INT or REAL
-				ValType type = m_vm.Variables().Variables().get(varIndex).m_type;
+				ValType type = mVM.Variables().getVariables().get(varIndex).m_type;
 				if (!(type.Equals(ValType.VTP_INT) || type
 						.Equals(ValType.VTP_REAL))) {
 					SetError("Loop variable must be an Integer or Real");
@@ -3068,7 +3062,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Save loop back position
-		int loopPos = m_vm.InstructionCount();
+		int loopPos = mVM.InstructionCount();
 
 		// Expect "to"
 		if (!m_token.m_text.equals("to")) {
@@ -3163,7 +3157,7 @@ public class TomBasicCompiler extends HasErrorState {
 						.getIntVal()) : String.valueOf(stepValue.getRealVal()));
 
 		// Create flow control structure
-		m_flowControl.add(new FlowControl(FlowControlType.FCT_FOR, m_vm
+		m_flowControl.add(new FlowControl(FlowControlType.FCT_FOR, mVM
 				.InstructionCount(), loopPos, line, col, false, step, false));
 
 		// Create conditional jump
@@ -3218,8 +3212,8 @@ public class TomBasicCompiler extends HasErrorState {
 				top.m_jumpLoop));
 
 		// Fixup jump around FOR block
-		assert (top.m_jumpOut < m_vm.InstructionCount());
-		m_vm.Instruction(top.m_jumpOut).mValue.setIntVal(m_vm
+		assert (top.m_jumpOut < mVM.InstructionCount());
+		mVM.Instruction(top.m_jumpOut).mValue.setIntVal(mVM
 				.InstructionCount());
 		return true;
 	}
@@ -3227,7 +3221,7 @@ public class TomBasicCompiler extends HasErrorState {
 	boolean CompileWhile() {
 
 		// Save loop position
-		int loopPos = m_vm.InstructionCount();
+		int loopPos = mVM.InstructionCount();
 
 		// Skip "while"
 		int line = m_parser.Line(), col = m_parser.Col();
@@ -3248,7 +3242,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Create flow control structure
 		m_flowControl.add(new FlowControl(FlowControlType.FCT_WHILE,
-				m_vm.InstructionCount(), loopPos, line, col));
+				mVM.InstructionCount(), loopPos, line, col));
 
 		// Create conditional jump
 		AddInstruction(OpCode.OP_JUMP_FALSE, ValType.VTP_INT,
@@ -3275,8 +3269,8 @@ public class TomBasicCompiler extends HasErrorState {
 				top.m_jumpLoop));
 
 		// Fixup jump around WHILE block
-		assert (top.m_jumpOut < m_vm.InstructionCount());
-		m_vm.Instruction(top.m_jumpOut).mValue.setIntVal(m_vm
+		assert (top.m_jumpOut < mVM.InstructionCount());
+		mVM.Instruction(top.m_jumpOut).mValue.setIntVal(mVM
 				.InstructionCount());
 		return true;
 	}
@@ -3284,7 +3278,7 @@ public class TomBasicCompiler extends HasErrorState {
 	boolean CompileDo() {
 
 		// Save loop position
-		int loopPos = m_vm.InstructionCount();
+		int loopPos = mVM.InstructionCount();
 
 		// Skip "do"
 		int line = m_parser.Line(), col = m_parser.Col();
@@ -3315,7 +3309,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Create flow control structure
 			m_flowControl.add(new FlowControl(
-					FlowControlType.FCT_DO_PRE, m_vm.InstructionCount(),
+					FlowControlType.FCT_DO_PRE, mVM.InstructionCount(),
 					loopPos, line, col));
 
 			// Create conditional jump
@@ -3330,7 +3324,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Post condition DO.
 			// Create flow control structure
 			m_flowControl.add(new FlowControl(
-					FlowControlType.FCT_DO_POST, m_vm.InstructionCount(),
+					FlowControlType.FCT_DO_POST, mVM.InstructionCount(),
 					loopPos, line, col));
 			return true;
 		}
@@ -3395,8 +3389,8 @@ public class TomBasicCompiler extends HasErrorState {
 			// If this is a precondition "do", fixup the jump around the "do"
 			// block
 			if (top.m_type == FlowControlType.FCT_DO_PRE) {
-				assert (top.m_jumpOut < m_vm.InstructionCount());
-				m_vm.Instruction(top.m_jumpOut).mValue.setIntVal(m_vm
+				assert (top.m_jumpOut < mVM.InstructionCount());
+				mVM.Instruction(top.m_jumpOut).mValue.setIntVal(mVM
 						.InstructionCount());
 			}
 
@@ -3441,7 +3435,7 @@ public class TomBasicCompiler extends HasErrorState {
 			i = 0;
 			for (Function func : functions.get(name)) {
 				// Register wrapper function to virtual machine
-				vmIndex = m_vm.AddFunction(func);
+				vmIndex = mVM.AddFunction(func);
 
 				// Register function spec to compiler
 				specIndex = m_functions.size();
@@ -3684,7 +3678,7 @@ public class TomBasicCompiler extends HasErrorState {
 				if (isAnyType) {
 					AddInstruction(OpCode.OP_LOAD_CONST,
 							ValType.VTP_INT,
-							new Value((int) m_vm.StoreType(m_regType)));
+							new Value((int) mVM.StoreType(m_regType)));
 					m_regType.Set(ValType.VTP_INT);
 					CompilePush();
 					pushCount++;
@@ -3751,10 +3745,10 @@ public class TomBasicCompiler extends HasErrorState {
 			// to
 			// be "destroyed" when temp data is unwound.
 			if (!m_regType.CanStoreInRegister()
-					&& m_vm.DataTypes().ContainsString(m_regType))
+					&& mVM.DataTypes().ContainsString(m_regType))
 				AddInstruction(OpCode.OP_REG_DESTRUCTOR,
 						ValType.VTP_INT,
-						new Value((int) m_vm.StoreType(m_regType)));
+						new Value((int) mVM.StoreType(m_regType)));
 
 			if (!CompileDataLookup(false))
 				return false;
@@ -3954,7 +3948,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Generate code to call external operator function
 		assert (opFunc.get() >= 0);
-		assert (opFunc.get() < m_vm.OperatorFunctionCount());
+		assert (opFunc.get() < mVM.OperatorFunctionCount());
 		AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, ValType.VTP_INT,
 				new Value(opFunc.get()));
 
@@ -4005,7 +3999,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Generate code to call external operator function
 		assert (opFunc.get() >= 0);
-		assert (opFunc.get() < m_vm.OperatorFunctionCount());
+		assert (opFunc.get() < mVM.OperatorFunctionCount());
 		AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, ValType.VTP_INT,
 				new Value(opFunc.get()));
 
@@ -4079,7 +4073,7 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 			if (!CompileConvert(ValType.VTP_INT)) {
 				SetError("Array index must be a number. "
-						+ m_vm.DataTypes().DescribeVariable("", m_regType)
+						+ mVM.DataTypes().DescribeVariable("", m_regType)
 						+ " is not a number");
 				return false;
 			}
@@ -4091,7 +4085,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Add alloc instruction
 		AddInstruction(OpCode.OP_ALLOC, ValType.VTP_INT, new Value(
-				(int) m_vm.StoreType(dataType)));
+				(int) mVM.StoreType(dataType)));
 
 		// Instruction automatically removes all array indices that were pushed
 		// to
@@ -4136,16 +4130,16 @@ public class TomBasicCompiler extends HasErrorState {
 	public String DescribeStackCall(int returnAddr) {
 
 		// Return a string describing the gosub call
-		if (returnAddr == 0 || returnAddr >= m_vm.InstructionCount())
+		if (returnAddr == 0 || returnAddr >= mVM.InstructionCount())
 			return "???";
 
 		// Look at instruction immediately before return address.
 		// This should be the gosub
-		if (m_vm.Instruction(returnAddr - 1).mOpCode != OpCode.OP_CALL)
+		if (mVM.Instruction(returnAddr - 1).mOpCode != OpCode.OP_CALL)
 			return "???";
 
 		// Get target address
-		long target = m_vm.Instruction(returnAddr - 1).mValue.getIntVal();
+		long target = mVM.Instruction(returnAddr - 1).mValue.getIntVal();
 
 		// Lookup label name
 		String name = m_labelIndex.get(target);
@@ -4221,7 +4215,7 @@ public class TomBasicCompiler extends HasErrorState {
 			if (m_token.m_text.equals(",") || AtSeparatorOrSpecial()) {
 
 				// Store a blank string
-				m_vm.StoreProgramData(ValType.VTP_STRING, new Value(0));
+				mVM.StoreProgramData(ValType.VTP_STRING, new Value(0));
 			} else {
 
 				// Extract value
@@ -4231,14 +4225,14 @@ public class TomBasicCompiler extends HasErrorState {
 					// Allocate new string constant
 					String text = m_token.m_text.substring(1,
 							m_token.m_text.length() - 1); // Remove S prefix
-					v.setIntVal(m_vm.StoreStringConstant(text));
+					v.setIntVal(mVM.StoreStringConstant(text));
 				} else if (m_token.m_valType == ValType.VTP_INT)
 					v.setIntVal(Cast.StringToInt(m_token.m_text));
 				else
 					v.setRealVal(Float.valueOf(m_token.m_text));
 
 				// Store data in VM
-				m_vm.StoreProgramData(m_token.m_valType, v);
+				mVM.StoreProgramData(m_token.m_valType, v);
 
 				// Next token
 				if (!GetToken())
@@ -4327,7 +4321,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Record reset, so that we can fix up the offset in the second
 			// compile pass.
 			String labelName = m_symbolPrefix + m_token.m_text;
-			m_resets.add(new Jump(m_vm.InstructionCount(), labelName));
+			m_resets.add(new Jump(mVM.InstructionCount(), labelName));
 
 			// Skip label name
 			if (!GetToken())
@@ -4355,7 +4349,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Mark the current size of the program. This is where the expression
 		// will start
-		int expressionStart = m_vm.InstructionCount();
+		int expressionStart = mVM.InstructionCount();
 
 		// Compile expression, specifying that it must be constant
 		if (!CompileExpression(true))
@@ -4375,17 +4369,17 @@ public class TomBasicCompiler extends HasErrorState {
 		// one that evaluates to a large number of op-codes. Therefore we won't
 		// worry
 		// about processing windows messages or checking for pause state etc.
-		m_vm.ClearError();
-		m_vm.GotoInstruction(expressionStart);
+		mVM.ClearError();
+		mVM.GotoInstruction(expressionStart);
 		try {
 			do {
-				m_vm.Continue(1000);
-			} while (!m_vm.Error() && !m_vm.Done());
+				mVM.Continue(1000);
+			} while (!mVM.Error() && !mVM.Done());
 		} catch (Exception e) {
 			SetError("Error evaluating constant expression");
 			return false;
 		}
-		if (m_vm.Error()) {
+		if (mVM.Error()) {
 			SetError("Error evaluating constant expression");
 			return false;
 		}
@@ -4394,15 +4388,15 @@ public class TomBasicCompiler extends HasErrorState {
 		// AND the virtual machine has its value stored in the register.
 
 		// Roll back all the expression op-codes
-		m_vm.GotoInstruction(0);
-		m_vm.RollbackProgram(expressionStart);
+		mVM.GotoInstruction(0);
+		mVM.RollbackProgram(expressionStart);
 
 		// Set return values
 		basictype.set(m_regType.m_basicType);
 		if (basictype.get() == ValType.VTP_STRING)
-			stringResult.set(m_vm.RegString());
+			stringResult.set(mVM.RegString());
 		else
-			result.set(m_vm.Reg());
+			result.set(mVM.Reg());
 
 		return true;
 	}
@@ -4434,7 +4428,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (basictype == ValType.VTP_STRING) {
 
 			// Create string constant entry if necessary
-			int index = m_vm.StoreStringConstant(stringValue);
+			int index = mVM.StoreStringConstant(stringValue);
 			AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_STRING,
 					new Value(index));
 		} else
@@ -4573,7 +4567,7 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 			// Create new string constant
-			int index = m_vm.StoreStringConstant(text);
+			int index = mVM.StoreStringConstant(text);
 
 			// Generate code to print it (load, push, call "print" function)
 			AddInstruction(OpCode.OP_LOAD_CONST, ValType.VTP_STRING,
@@ -4777,13 +4771,13 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Must not be a variable name
-		if (m_vm.Variables().GetVar(name) >= 0) {
+		if (mVM.Variables().getVariableIndex(name) >= 0) {
 			SetError("'" + name + "' has already been used as a variable name");
 			return false;
 		}
 
 		// Must not be a structure name
-		if (m_vm.DataTypes().GetStruc(name) >= 0) {
+		if (mVM.DataTypes().GetStruc(name) >= 0) {
 			SetError("'" + name + "' has already been used as a structure name");
 			return false;
 		}
@@ -4867,8 +4861,8 @@ public class TomBasicCompiler extends HasErrorState {
 			m_userFuncPrototype.hasReturnVal = false;
 
 		// Store function, and get its index (in m_currentFunction)
-		Vector<UserFunc> functions = m_vm.UserFunctions();
-		Vector<UserFuncPrototype> prototypes = m_vm.UserFunctionPrototypes();
+		Vector<UserFunc> functions = mVM.UserFunctions();
+		Vector<UserFuncPrototype> prototypes = mVM.UserFunctionPrototypes();
 
 		if (funcType == UserFunctionType.UFT_FWDDECLARATION) {
 			// Forward declaration.
@@ -4934,7 +4928,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Function implementation
 
 			// Create jump-past-function op-code
-			m_functionJumpOver = m_vm.InstructionCount();
+			m_functionJumpOver = mVM.InstructionCount();
 			AddInstruction(OpCode.OP_JUMP, ValType.VTP_INT, new Value(
 					0)); // Jump target will be fixed up when "endfunction" is
 			// compiled
@@ -4943,7 +4937,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Implementation of runtime function
 				int index = m_runtimeFunctionIndex.get(name);
-				RuntimeFunction runtimeFunction = m_vm.CurrentCodeBlock()
+				RuntimeFunction runtimeFunction = mVM.CurrentCodeBlock()
 						.GetRuntimeFunction(index);
 
 				// Check if already implemented
@@ -4962,7 +4956,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Allocate new function
 				prototypes.add(m_userFuncPrototype);
-				functions.add(new UserFunc(prototypes.size() - 1, true, m_vm
+				functions.add(new UserFunc(prototypes.size() - 1, true, mVM
 						.InstructionCount()));
 				m_currentFunction = functions.size() - 1;
 
@@ -4975,7 +4969,7 @@ public class TomBasicCompiler extends HasErrorState {
 					m_currentFunction = m_localUserFunctionIndex.get(name);
 
 					// Must not be already implemented
-					if (functions.get(m_currentFunction).implemented) {
+					if (functions.get(m_currentFunction).mImplemented) {
 						SetError("'"
 								+ name
 								+ "' has already been used as a function/subroutine name");
@@ -4984,15 +4978,15 @@ public class TomBasicCompiler extends HasErrorState {
 
 					// Function prototypes must match
 					if (!m_userFuncPrototype.Matches(prototypes.get(functions
-							.get(m_currentFunction).prototypeIndex))) {
+							.get(m_currentFunction).mPrototypeIndex))) {
 						SetError((String) "Function/subroutine does not match how it was DECLAREd");
 						return false;
 					}
 
 					// Save updated function spec
 					// Function starts at next offset
-					functions.get(m_currentFunction).implemented = true;
-					functions.get(m_currentFunction).programOffset = m_vm
+					functions.get(m_currentFunction).mImplemented = true;
+					functions.get(m_currentFunction).mProgramOffset = mVM
 							.InstructionCount();
 				} else {
 
@@ -5003,7 +4997,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 					// Allocate a new function
 					functions.add(new UserFunc(prototypes.size() - 1, true,
-							m_vm.InstructionCount()));
+							mVM.InstructionCount()));
 					m_currentFunction = functions.size() - 1;
 				}
 
@@ -5063,8 +5057,8 @@ public class TomBasicCompiler extends HasErrorState {
 					new Value(0));
 
 		// Fix up jump-past-function op-code
-		assert (m_functionJumpOver < m_vm.InstructionCount());
-		m_vm.Instruction(m_functionJumpOver).mValue.setIntVal(m_vm
+		assert (m_functionJumpOver < mVM.InstructionCount());
+		mVM.Instruction(m_functionJumpOver).mValue.setIntVal(mVM
 				.InstructionCount());
 
 		// Let compiler know we have left the function
@@ -5097,9 +5091,9 @@ public class TomBasicCompiler extends HasErrorState {
 			prototypeIndex = m_runtimeFunctions.get(index).prototypeIndex;
 		} else {
 			index = m_visibleUserFunctionIndex.get(name);
-			prototypeIndex = m_vm.UserFunctions().get(index).prototypeIndex;
+			prototypeIndex = mVM.UserFunctions().get(index).mPrototypeIndex;
 		}
-		UserFuncPrototype prototype = m_vm.UserFunctionPrototypes().get(
+		UserFuncPrototype prototype = mVM.UserFunctionPrototypes().get(
 				prototypeIndex);
 
 		if (mustReturnValue && !prototype.hasReturnVal) {
@@ -5164,11 +5158,11 @@ public class TomBasicCompiler extends HasErrorState {
 			// Data containing strings will need to be "destroyed" when the
 			// stack unwinds.
 			if (!prototype.returnValType.CanStoreInRegister()
-					&& m_vm.DataTypes().ContainsString(prototype.returnValType))
+					&& mVM.DataTypes().ContainsString(prototype.returnValType))
 				AddInstruction(
 						OpCode.OP_REG_DESTRUCTOR,
 						ValType.VTP_INT,
-						new Value((int) m_vm
+						new Value((int) mVM
 								.StoreType(prototype.returnValType)));
 
 			// Set register type to value returned from function (if applies)
@@ -5258,7 +5252,7 @@ public class TomBasicCompiler extends HasErrorState {
 					&& m_regType.m_basicType == type.m_basicType) {
 				AddInstruction(OpCode.OP_COPY_USER_STACK,
 						ValType.VTP_INT,
-						new Value((int) m_vm.StoreType(type)));
+						new Value((int) mVM.StoreType(type)));
 				AddInstruction(OpCode.OP_SAVE_PARAM_PTR,
 						ValType.VTP_INT, new Value(i));
 			} else {
@@ -5269,9 +5263,9 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Data containing strings will need to be "destroyed" when the stack
 		// unwinds.
-		if (m_vm.DataTypes().ContainsString(type))
+		if (mVM.DataTypes().ContainsString(type))
 			AddInstruction(OpCode.OP_REG_DESTRUCTOR, ValType.VTP_INT,
-					new Value((int) m_vm.StoreType(type)));
+					new Value((int) mVM.StoreType(type)));
 
 		return true;
 	}
@@ -5295,7 +5289,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 					// Add instruction to move that data into temp data
 					AddInstruction(OpCode.OP_MOVE_TEMP, ValType.VTP_INT,
-							new Value((int) m_vm.StoreType(type)));
+							new Value((int) mVM.StoreType(type)));
 
 					// Add return-from-function OP-code
 					// Note: The 0 in the instruction value indicates that temp
@@ -5327,31 +5321,31 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	// State streaming
-	public void StreamOut(ByteBuffer buffer) {
+	public void StreamOut(DataOutputStream stream) {
 		try {
 			// Stream out VM state
-			m_vm.StreamOut(buffer);
+			mVM.StreamOut(stream);
 
 			// Stream out constants
 			for (String key : m_programConstants.keySet()) {
-				Streaming.WriteString(buffer, key);
-				m_programConstants.get(key).StreamOut(buffer);
+				Streaming.WriteString(stream, key);
+				m_programConstants.get(key).StreamOut(stream);
 			}
-			Streaming.WriteString(buffer, "");
+			Streaming.WriteString(stream, "");
 
 			// Stream out labels
 			for (String key : m_labels.keySet()) {
-				Streaming.WriteString(buffer, key);
-				m_labels.get(key).StreamOut(buffer);
+				Streaming.WriteString(stream, key);
+				m_labels.get(key).StreamOut(stream);
 			}
-			Streaming.WriteString(buffer, "");
+			Streaming.WriteString(stream, "");
 
 			// Stream out user function/subroutine names
 			for (String key : m_globalUserFunctionIndex.keySet()) {
-				Streaming.WriteString(buffer, key);
-				Streaming.WriteLong(buffer, m_globalUserFunctionIndex.get(key));
+				Streaming.WriteString(stream, key);
+				Streaming.WriteLong(stream, m_globalUserFunctionIndex.get(key));
 			}
-			Streaming.WriteString(buffer, "");
+			Streaming.WriteString(stream, "");
 
 			// Stream out runtime functions
 			// Note that strictly speaking these aren't "names", but because
@@ -5359,23 +5353,23 @@ public class TomBasicCompiler extends HasErrorState {
 			// required when name information is present, and not required when
 			// it is
 			// absent, we are bundling them into the same #ifdef
-			Streaming.WriteLong(buffer, m_runtimeFunctions.size());
+			Streaming.WriteLong(stream, m_runtimeFunctions.size());
 			for (int i = 0; i < m_runtimeFunctions.size(); i++)
-				m_runtimeFunctions.get(i).StreamOut(buffer);
+				m_runtimeFunctions.get(i).StreamOut(stream);
 
 			// Stream out runtime function names
 			for (String key : m_runtimeFunctionIndex.keySet()) {
-				Streaming.WriteString(buffer, key);
-				Streaming.WriteLong(buffer, m_runtimeFunctionIndex.get(key));
+				Streaming.WriteString(stream, key);
+				Streaming.WriteLong(stream, m_runtimeFunctionIndex.get(key));
 			}
-			Streaming.WriteString(buffer, "");
+			Streaming.WriteString(stream, "");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	public boolean StreamIn(ByteBuffer buffer) {
+	public boolean StreamIn(DataInputStream stream) {
 		try {
 
 			// TODO Reimplement Libraries
@@ -5386,56 +5380,56 @@ public class TomBasicCompiler extends HasErrorState {
 			New();
 
 			// Stream in VM state
-			if (!m_vm.StreamIn(buffer)) {
-				SetError(m_vm.GetError());
+			if (!mVM.StreamIn(stream)) {
+				SetError(mVM.GetError());
 				return false;
 			}
 
 			// Stream in constant names
-			String name = Streaming.ReadString(buffer);
+			String name = Streaming.ReadString(stream);
 			while (!name.equals("")) {
 
 				// Read constant details
 				Constant constant = new Constant();
-				constant.StreamIn(buffer);
+				constant.StreamIn(stream);
 
 				// Store constant
 				m_programConstants.put(name, constant);
 
 				// Next constant
-				name = Streaming.ReadString(buffer);
+				name = Streaming.ReadString(stream);
 			}
 
 			// Stream in label names
-			name = Streaming.ReadString(buffer);
+			name = Streaming.ReadString(stream);
 
 			while (!name.equals("")) {
 
 				// Read label details
 				Label label = new Label();
-				label.StreamIn(buffer);
+				label.StreamIn(stream);
 
 				// Store label
 				m_labels.put(name, label);
 				m_labelIndex.put(label.m_offset, name);
 
 				// Next label
-				name = Streaming.ReadString(buffer);
+				name = Streaming.ReadString(stream);
 
 			}
 
 			// Stream in user function/subroutine names
-			name = Streaming.ReadString(buffer);
+			name = Streaming.ReadString(stream);
 			while (!name.equals("")) {
 
 				// Read function details
-				int index = (int) Streaming.ReadLong(buffer);
+				int index = (int) Streaming.ReadLong(stream);
 
 				// Store function index
 				m_globalUserFunctionIndex.put(name, index);
 
 				// Next function
-				name = Streaming.ReadString(buffer);
+				name = Streaming.ReadString(stream);
 			}
 			// Stream in runtime functions
 			// Note that strictly speaking these aren't "names", but because
@@ -5443,26 +5437,30 @@ public class TomBasicCompiler extends HasErrorState {
 			// required when name information is present, and not required when
 			// it is
 			// absent, we are bundling them into the same #ifdef
-			int count = (int) Streaming.ReadLong(buffer);
+			int count = (int) Streaming.ReadLong(stream);
 			m_runtimeFunctions.setSize(count);
-			for (int i = 0; i < count; i++)
-				m_runtimeFunctions.get(i).StreamIn(buffer);
+			for (int i = 0; i < count; i++) {
+				com.basic4gl.compiler.RuntimeFunction function = new com.basic4gl.compiler.RuntimeFunction();
+				function.StreamIn(stream);
 
-			name = Streaming.ReadString(buffer);
+				m_runtimeFunctions.set(i, function);
+			}
+			name = Streaming.ReadString(stream);
 			while (!name.equals("")) {
 
 				// Read runtime function details
-				int index = (int) Streaming.ReadLong(buffer);
+				int index = (int) Streaming.ReadLong(stream);
 
 				// Store runtime function index
 				m_runtimeFunctionIndex.put(name, index);
 
 				// Next function
-				name = Streaming.ReadString(buffer);
+				name = Streaming.ReadString(stream);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return false;
 		}
 		return true;
 	}

@@ -1,52 +1,46 @@
 package com.basic4gl.vm.stackframe;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
+import com.basic4gl.util.Streamable;
 import com.basic4gl.util.Streaming;
 
-public class UserFunc {
-	public int prototypeIndex;
-	public boolean implemented;
-	public int programOffset;
+public class UserFunc implements Streamable{
+	public int mPrototypeIndex;
+	public boolean mImplemented;
+	public int mProgramOffset;
 
 	public UserFunc() {
 	};
 
-	public UserFunc(int _prototypeIndex, boolean _implemented) {
-		this(_prototypeIndex, _implemented, -1);
+	public UserFunc(int prototypeIndex, boolean implemented) {
+		this(prototypeIndex, implemented, -1);
 	}
 
-	public UserFunc(int _prototypeIndex, boolean _implemented,
-					int _programOffset) {
-		prototypeIndex = _prototypeIndex;
-		implemented = _implemented;
-		programOffset = _programOffset;
+	public UserFunc(int prototypeIndex, boolean implemented, int programOffset) {
+		mPrototypeIndex = prototypeIndex;
+		mImplemented = implemented;
+		mProgramOffset = programOffset;
 	}
 
-	public void StreamOut(ByteBuffer buffer) {
-
+	public void StreamOut(DataOutputStream stream) throws IOException{
 		// Assume program is complete, i.e all functions are implemented, before
 		// streaming occurs.
-		assert (implemented);
-		try {
-			Streaming.WriteLong(buffer, prototypeIndex);
-			Streaming.WriteLong(buffer, programOffset);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		assert (mImplemented);
+
+		Streaming.WriteLong(stream, mPrototypeIndex);
+		Streaming.WriteLong(stream, mProgramOffset);
 	}
 
-	public void StreamIn(ByteBuffer buffer) {
-		try {
-			prototypeIndex = (int) Streaming.ReadLong(buffer);
-			programOffset = (int) Streaming.ReadLong(buffer);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		implemented = true;
+	public boolean StreamIn(DataInputStream stream) throws IOException{
+		mPrototypeIndex = (int) Streaming.ReadLong(stream);
+		mProgramOffset = (int) Streaming.ReadLong(stream);
+
+		mImplemented = true;
+
+		return true;
 	}
 
 }

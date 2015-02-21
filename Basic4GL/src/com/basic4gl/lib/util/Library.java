@@ -86,15 +86,10 @@ public interface Library {
 	 * @return HashMap<name, description>
 	 */
 	public abstract HashMap<String, String> getTokenTips();
-	
-	/**
-	 * 
-	 * @return List of files required by library
-	 */
-	public abstract List<String> getDependencies();
+
 	/**
 	 * 
 	 * @return List of files required by library to add to the class path
 	 */
-	public abstract List<String> getDependenciesForClassPath();
+	public abstract List<String> getDependencies();
 }

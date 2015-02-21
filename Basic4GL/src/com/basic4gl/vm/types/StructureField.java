@@ -1,8 +1,11 @@
 package com.basic4gl.vm.types;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.basic4gl.util.Streamable;
 import com.basic4gl.util.Streaming;
 import com.basic4gl.vm.types.ValType;
 
@@ -16,7 +19,7 @@ import com.basic4gl.vm.types.ValType;
 // dim angle#, names$ (100), x, y
 // EndStruc
 
-public class StructureField {
+public class StructureField implements Streamable{
 	public String m_name; // Field name
 	public ValType m_type; // Data type
 	public int m_dataOffset; // Data offset from top of structure
@@ -33,33 +36,26 @@ public class StructureField {
 
 	public StructureField() {
 		m_name = "";
-		m_type.Set(ValType.VTP_INT);
+		m_type = new ValType(ValType.VTP_INT);
 		m_dataOffset = 0;
 	}
 
-	// #ifdef VM_STATE_STREAMING
 	// Streaming
-	public void StreamOut(ByteBuffer buffer) {
-		try {
-			Streaming.WriteString(buffer, m_name);
+	public void StreamOut(DataOutputStream stream) throws IOException{
 
-			m_type.StreamOut(buffer);
-			Streaming.WriteLong(buffer, m_dataOffset);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Streaming.WriteString(stream, m_name);
+
+		m_type.StreamOut(stream);
+		Streaming.WriteLong(stream, m_dataOffset);
 	}
 
-	public void StreamIn(ByteBuffer buffer) {
-		try {
-			m_name = Streaming.ReadString(buffer);
+	public boolean StreamIn(DataInputStream stream) throws IOException{
 
-			m_type.StreamIn(buffer);
-			m_dataOffset = (int) Streaming.ReadLong(buffer);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		m_name = Streaming.ReadString(stream);
+
+		m_type.StreamIn(stream);
+		m_dataOffset = (int) Streaming.ReadLong(stream);
+
+		return true;
 	}
 }

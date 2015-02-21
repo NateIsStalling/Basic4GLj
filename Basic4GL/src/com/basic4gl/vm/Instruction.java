@@ -1,8 +1,11 @@
 package com.basic4gl.vm;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.basic4gl.util.Streamable;
 import com.basic4gl.util.Streaming;
 import com.basic4gl.vm.types.OpCode;
 import com.basic4gl.vm.types.ValType;
@@ -10,7 +13,7 @@ import com.basic4gl.vm.types.ValType;
 // //////////////////////////////////////////////////////////////////////////////
 // Instruction
 // #pragma pack (push, 1)
-public class Instruction {
+public class Instruction implements Streamable{
 
 	// Note: Instruction size = 12 bytes.
 	// Ordering of member fields is important, as the two 4 byte members
@@ -44,8 +47,7 @@ public class Instruction {
 		this(opCode, type, val, 0, 0);
 	}
 
-	public Instruction(short opCode, int type, Value val, int sourceLine,
-					   int sourceChar) {
+	public Instruction(short opCode, int type, Value val, int sourceLine, int sourceChar) {
 		mOpCode = opCode;
 		mType = type;
 		mValue = val;
@@ -55,31 +57,22 @@ public class Instruction {
 
 	// Streaming
 	// #ifdef VM_STATE_STREAMING
-	void StreamOut(ByteBuffer buffer) {
-		try {
-			Streaming.WriteShort(buffer, mOpCode);
-			Streaming.WriteLong(buffer, mType);
-			mValue.StreamOut(buffer);
+	public void StreamOut(DataOutputStream stream) throws IOException {
+		Streaming.WriteShort(stream, mOpCode);
+		Streaming.WriteLong(stream, mType);
+		mValue.StreamOut(stream);
 
-			Streaming.WriteLong(buffer, mSourceLine);
-			Streaming.WriteLong(buffer, mSourceChar);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Streaming.WriteLong(stream, mSourceLine);
+		Streaming.WriteLong(stream, mSourceChar);
 	}
 
-	void StreamIn(ByteBuffer buffer) {
-		try {
-			mOpCode = Streaming.ReadShort(buffer);
-			mType = (int)Streaming.ReadLong(buffer);
-			mValue.StreamIn(buffer);
-			
-			mSourceLine = (int) Streaming.ReadLong(buffer);
-			mSourceChar = Streaming.ReadShort(buffer);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public boolean StreamIn(DataInputStream stream) throws IOException {
+		mOpCode = Streaming.ReadShort(stream);
+		mType = (int)Streaming.ReadLong(stream);
+		mValue.StreamIn(stream);
+
+		mSourceLine = (int) Streaming.ReadLong(stream);
+		mSourceChar = (int) Streaming.ReadLong(stream);
+		return true;
 	}
 }

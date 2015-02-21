@@ -1,11 +1,14 @@
 package com.basic4gl.vm.types;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.basic4gl.util.Streamable;
 import com.basic4gl.util.Streaming;
 
-public class Structure {
+public class Structure implements Streamable{
 	public String m_name; // Type name
 	public int m_firstField; // Index of first field
 	public int m_fieldCount; // # of fields in structure
@@ -32,36 +35,28 @@ public class Structure {
 		m_containsPointer = false;
 	}
 
-	// #ifdef VM_STATE_STREAMING
 	// Streaming
-	public void StreamOut(ByteBuffer buffer) {
-		
-		try {
-		Streaming.WriteString(buffer, m_name);
+	@Override
+	public void StreamOut(DataOutputStream stream) throws IOException{
+		Streaming.WriteString(stream, m_name);
 
-		Streaming.WriteLong(buffer, m_firstField);
-		Streaming.WriteLong(buffer, m_fieldCount);
-		Streaming.WriteLong(buffer, m_dataSize);
-		Streaming.WriteByte(buffer, (byte)(m_containsString ? 1 : 0));
-		Streaming.WriteByte(buffer, (byte)(m_containsArray ? 1 : 0));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Streaming.WriteLong(stream, m_firstField);
+		Streaming.WriteLong(stream, m_fieldCount);
+		Streaming.WriteLong(stream, m_dataSize);
+		Streaming.WriteByte(stream, (byte)(m_containsString ? 1 : 0));
+		Streaming.WriteByte(stream, (byte)(m_containsArray ? 1 : 0));
 	}
 
-	public void StreamIn(ByteBuffer buffer) {
-		try {
-		m_name = Streaming.ReadString(buffer);
+	@Override
+	public boolean StreamIn(DataInputStream stream) throws IOException{
+		m_name = Streaming.ReadString(stream);
 
-		m_firstField = (int)Streaming.ReadLong(buffer);
-		m_fieldCount = (int)Streaming.ReadLong(buffer);
-		m_dataSize = (int)Streaming.ReadLong(buffer);
-		m_containsString = (Streaming.ReadByte(buffer)==1);
-		m_containsArray = (Streaming.ReadByte(buffer)==1);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		m_firstField = (int)Streaming.ReadLong(stream);
+		m_fieldCount = (int)Streaming.ReadLong(stream);
+		m_dataSize = (int)Streaming.ReadLong(stream);
+		m_containsString = (Streaming.ReadByte(stream)==1);
+		m_containsArray = (Streaming.ReadByte(stream)==1);
+
+		return true;
 	}
 }

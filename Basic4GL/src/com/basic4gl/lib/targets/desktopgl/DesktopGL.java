@@ -3,14 +3,15 @@ package com.basic4gl.lib.targets.desktopgl;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLProfile;
@@ -19,20 +20,22 @@ import javax.swing.*;
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
-import com.basic4gl.lib.util.Configuration;
+import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.lib.util.*;
+import com.basic4gl.util.Exporter;
 import com.basic4gl.util.FuncSpec;
-import com.basic4gl.lib.util.Library;
-import com.basic4gl.lib.util.Target;
-import com.basic4gl.lib.util.TaskCallback;
 import com.basic4gl.vm.TomVM;
 import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.util.Function;
 
-public class DesktopGL implements Library, Target{
+public class DesktopGL implements Target{
 
+	//Libraries
+	private java.util.List<Library> mLibraries;
 	private static DesktopGL instance;
 
-	private TomVM 	mVm;
+	private TomBasicCompiler mComp;
+	private TomVM mVM;
 	private VmWorker mWorker;
 
 	private Frame mFrame;
@@ -41,27 +44,91 @@ public class DesktopGL implements Library, Target{
 	private TaskCallback mCallbacks;
 	private boolean mClosing;
 
-
 	private Configuration mConfiguration;
-	private static final int SETTING_TITLE 			= 0; //Index of window title setting in config
-	private static final int SETTING_WIDTH 			= 1; //Index of window width setting in config
-	private static final int SETTING_HEIGHT 		= 2; //Index of window height setting in config
-	private static final int SETTING_RESIZABLE 		= 3; //Index of window resizable setting in config
-	private static final int SETTING_SCREEN_MODE	= 4; //Index of screen mode setting in config
+
+	private static final int SETTING_TITLE 				= 1; //Index of window title setting in config
+	private static final int SETTING_WIDTH 				= 2; //Index of window width setting in config
+	private static final int SETTING_HEIGHT 			= 3; //Index of window height setting in config
+	private static final int SETTING_RESIZABLE 			= 4; //Index of window resizable setting in config
+	private static final int SETTING_SCREEN_MODE		= 5; //Index of screen mode setting in config
+	private static final int SETTING_SUPPORT_WINDOWS	= 8; //Index of Windows support setting in config
+	private static final int SETTING_SUPPORT_MAC		= 9; //Index of Mac support setting in config
+	private static final int SETTING_SUPPORT_LINUX		= 10; //Index of Linux support setting in config
+	private static final int SETTING_SUPPORT_SOLARIS	= 11; //Index of Solaris support setting in config
+
+	private static final int SUPPORT_WINDOWS_32_64		= 0;
+	private static final int SUPPORT_WINDOWS_32			= 1;
+	private static final int SUPPORT_WINDOWS_64			= 2;
+	private static final int SUPPORT_WINDOWS_NO			= 3;
+
+	private static final int SUPPORT_MAC_32_64			= 0;
+	private static final int SUPPORT_MAC_NO				= 1;
+
+	private static final int SUPPORT_LINUX_32_64		= 0;
+	private static final int SUPPORT_LINUX_32			= 1;
+	private static final int SUPPORT_LINUX_64			= 2;
+	private static final int SUPPORT_LINUX_ARMV6		= 3;
+	private static final int SUPPORT_LINUX_ARMV6HF		= 4;
+
+	private static final int SUPPORT_SOLARIS_32_64		= 0;
+	private static final int SUPPORT_SOLARIS_32			= 1;
+	private static final int SUPPORT_SOLARIS_64			= 2;
+	private static final int SUPPORT_SOLARIS_NO			= 3;
 
 	private static final int MODE_WINDOWED = 0;
 	private static final int MODE_FULLSCREEN = 1;
 
+	private static final String CONFIG_FILE			= "config.ser";	//Filename for configuration file
+	private static final String STATE_FILE			= "state.bin";	//Filename for stored VM state
+
 	public static void main(String[] args) {
-		instance = new DesktopGL(new TomVM(null));
+		//Debug only, makes it easier to attach a remote debugger
+		//JOptionPane.showMessageDialog(null, "Waiting...");
+
+		instance = new DesktopGL(new TomBasicCompiler(new TomVM(null)));
+		instance.mLibraries = new ArrayList<Library>();
+		//TODO Load libraries dynamically
+		//TODO Save/Load list of libraries in order they should be added
+		instance.mLibraries.add(new com.basic4gl.lib.standard.Standard());
+		// Register library functions
+		for (Library lib : instance.mLibraries) {
+			instance.mComp.AddConstants(lib.constants());
+			instance.mComp.AddFunctions(lib.functions(), lib.specs());
+		}
+		// Register DesktopGL's functions
+		instance.mComp.AddConstants(instance.constants());
+		instance.mComp.AddFunctions(instance.functions(), instance.specs());
+
+		//Load VM's state from file
+		try {
+			instance.loadState(instance.getClass().getResourceAsStream("/" + STATE_FILE));
+		} catch (Exception ex){
+			ex.printStackTrace();
+			System.err.println("VM state could not be loaded");
+		}
+		//Load window configuration
+		try {
+			instance.loadConfiguration(instance.getClass().getResourceAsStream("/" + CONFIG_FILE));
+		} catch (Exception ex){
+			ex.printStackTrace();
+			System.err.println("Configuration file could not be loaded");
+		}
+
+		//Initialize window and setup VM
 		instance.activate();
 		instance.reset();
 		instance.show(null);
 	}
-	public DesktopGL(TomVM vm){
-		mVm = vm;
+	public DesktopGL(TomBasicCompiler compiler){
+		mComp = compiler;
+		mVM = mComp.VM();
 	}
 	
+	@Override
+	public String getFileDescription() { return "Java Application (*.jar)";}
+
+	@Override
+	public String getFileExtension() { return "jar";}
 
 	@Override
 	public boolean isTarget() { return true;}	//Library is a build target
@@ -111,7 +178,7 @@ public class DesktopGL implements Library, Target{
 
 	@Override
 	public Map<String, List<Function>> functions() {
-		// TODO Add print functions
+		//TODO move functions to separate library
 		Map<String, List<Function>> f = new HashMap<String, List<Function>>();
 		f.put("print", new ArrayList<Function>());
 		f.get("print").add(new WrapPrint());
@@ -120,7 +187,7 @@ public class DesktopGL implements Library, Target{
 
 	@Override
 	public Map<String, List<FuncSpec>> specs() {
-		// TODO Add print functions
+		//TODO move functions to separate library
 		Map<String, List<FuncSpec>> s = new HashMap<String, List<FuncSpec>>();
 		s.put("print", new ArrayList<FuncSpec>());
 		s.get("print").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_STRING }), false, false, ValType.VTP_INT, false, false, null));
@@ -133,7 +200,6 @@ public class DesktopGL implements Library, Target{
 	
 	@Override
 	public void reset() {
-		// TODO Auto-generated method stub
 		if (mWorker != null)
 			mWorker.cancel(true);
 		mWorker = new VmWorker();
@@ -159,6 +225,33 @@ public class DesktopGL implements Library, Target{
 		GLCapabilities caps = new GLCapabilities(glp);
 		GLCanvas mCanvas = new GLCanvas(caps);
 
+		// m_glWin = null;
+		// m_glText = null;
+
+		// Default settings
+		// boolean fullScreen = false, border = true;
+		// int width = 640, height = 480, bpp = 0;
+		// ResetGLModeType resetGLMode = RGM_RESETSTATE;
+
+		// Create window
+		/*
+		 * m_glWin = new glTextGridWindow ( fullScreen, border, width, height,
+		 * bpp, "Basic4GL", resetGLMode);
+		 *
+		 * // Check for errors if (m_glWin.Error ()) { MessageDlg ( (AnsiString)
+		 * m_glWin.GetError().c_str(), mtError, TMsgDlgButtons() << mbOK, 0);
+		 * Application.Terminate (); return; } m_glWin.Hide ();
+		 *
+		 * // Create OpenGL text grid m_glText = new glSpriteEngine (
+		 * (ExtractFilePath (Application.ExeName) + "charset.png").c_str (),
+		 * &m_files, 25, 40, 16, 16);
+		 *
+		 * // Check for errors if (m_glText.Error ()) { MessageDlg (
+		 * (AnsiString) + m_glText.GetError ().c_str (), mtError,
+		 * TMsgDlgButtons() << mbOK, 0); Application.Terminate (); return; }
+		 * m_glWin.SetTextGrid (m_glText);
+		 */
+
 		mFrame = new Frame(title);
 		mFrame.setSize(width, height);
 		mFrame.setResizable(resizable);
@@ -179,8 +272,10 @@ public class DesktopGL implements Library, Target{
 			public void windowClosing(WindowEvent e) {
 				mWorker.cancel(true);
 				mClosing = true;
-				if (mCallbacks != null)
-					mCallbacks.complete(true, "Program completed");
+				if (mCallbacks != null) {
+					//mFrame.setVisible(false);
+					mCallbacks.message(new CallbackMessage(CallbackMessage.SUCCESS, "Program completed"));
+				}
 				else
 					System.exit(0);
 			}
@@ -221,25 +316,30 @@ public class DesktopGL implements Library, Target{
 		return mClosing;
 	}
 
-	private class VmWorker extends SwingWorker{
+	private class VmWorker extends SwingWorker<Object, CallbackMessage>{
 
+		@Override
+		protected void process(List<CallbackMessage> chunks) {
+			super.process(chunks);
+			for (CallbackMessage message : chunks) {
+				mCallbacks.message(message);
+			}
+		}
 		@Override
 		protected Object doInBackground() throws Exception {
 			boolean noError;
-			if (mVm == null)
+			System.out.println("Running...");
+			if (mVM == null)
 				return null;	//TODO Throw exception
 			
-			while (!this.isCancelled() && !mVm.Done()){
+			while (!this.isCancelled() && !mVM.Done()){
 				if (isClosing())
 					break;
 				
 				driveVm();
 			
 			}
-			if (mCallbacks != null) {
-				noError = !mVm.Error();
-				mCallbacks.complete(noError, noError ? "Program completed" : mVm.GetError());
-			}
+
 			return null;
 		}
 
@@ -249,17 +349,32 @@ public class DesktopGL implements Library, Target{
 
 			// Execute a number of VM steps
 			try {
-				mVm.Continue(TomVM.VM_STEPS);
+				mVM.Continue(TomVM.VM_STEPS);
 			} catch (Exception e) {
-				mVm.MiscError("An exception occured!");
+				mVM.MiscError("An exception occured!");
 			}
 
 			// Check for error
-			if (mVm.Error() || mVm.Done() || isClosing()) {
+			if (mVM.Error() || mVM.Done() || isClosing()) {
 				if (isClosing() || isFullscreen())
 					hide();	//Stop program and close window
 				else
 					stop(); //Just stop the worker thread;
+			}
+
+			int success;
+			if (mCallbacks != null) {
+				try {
+					success = !mVM.Error()
+							? CallbackMessage.SUCCESS
+							: CallbackMessage.FAILED;
+					publish(new CallbackMessage(success, success == CallbackMessage.SUCCESS
+							? "Program completed"
+							: mVM.GetError()));
+
+				} catch (Exception ex){
+					ex.printStackTrace();
+				}
 			}
 		}
 
@@ -278,27 +393,43 @@ public class DesktopGL implements Library, Target{
 	}
 
 	@Override
-	public OutputStream getState() throws IOException{
-		return null;
-	}
-
-	@Override
-	public void loadState(InputStream stream) throws IOException{
-
-	}
-
-	@Override
 	public Configuration getSettings() {
 		Configuration settings = new Configuration();
-
+		settings.addSetting(new String[]{"Window Config"}, Configuration.PARAM_HEADING, "");
 		settings.addSetting(new String[]{"Window Title"}, Configuration.PARAM_STRING, "My Application");
 		settings.addSetting(new String[]{"Window Width"}, Configuration.PARAM_INT, "640");
 		settings.addSetting(new String[]{"Window Height"}, Configuration.PARAM_INT, "480");
-		settings.addSetting(new String[]{"Resizable"}, Configuration.PARAM_BOOL, "false");
+		settings.addSetting(new String[]{"Resizable Window"}, Configuration.PARAM_BOOL, "false");
 		settings.addSetting(new String[]{"Screen Mode",
 											"Windowed",
 											"Fullscreen"},
 											Configuration.PARAM_CHOICE, "0");
+		settings.addSetting(new String[]{}, Configuration.PARAM_DIVIDER, "");
+		settings.addSetting(new String[]{"Platforms"}, Configuration.PARAM_HEADING, "");
+		settings.addSetting(new String[]{"Windows Support",
+						"32/64-bit",
+						"32-bit",
+						"64-bit",
+						"Do not support"},
+				Configuration.PARAM_CHOICE, "0");
+		settings.addSetting(new String[]{"Mac Support",
+						"32/64-bit",
+						"Do not support"},
+				Configuration.PARAM_CHOICE, "0");
+		settings.addSetting(new String[]{"Linux Support",
+						"32/64-bit",
+						"32-bit",
+						"64-bit",
+						"ARMv6",
+						"ARMv6hf",
+						"Do not support"},
+				Configuration.PARAM_CHOICE, "0");
+		settings.addSetting(new String[]{"Solaris Support",
+						"32/64-bit",
+						"32-bit",
+						"64-bit",
+						"Do not support"},
+				Configuration.PARAM_CHOICE, "3");
 
 		return settings;
 	}
@@ -316,8 +447,120 @@ public class DesktopGL implements Library, Target{
 	}
 
 	@Override
-	public OutputStream export() throws IOException{
-		return new JarOutputStream(null);
+	public void loadConfiguration(InputStream stream) throws Exception{
+		InputStream buffer = new BufferedInputStream(stream);
+		ObjectInput input = new ObjectInputStream (buffer);
+		mConfiguration = (Configuration)input.readObject();
+		input.close();
+		buffer.close();
+	}
+
+	@Override
+	public void saveConfiguration(OutputStream stream) throws Exception{
+		//Serialize configuration
+		ObjectOutput output = new ObjectOutputStream(stream);
+		output.writeObject(mConfiguration);
+	}
+
+	@Override
+	public void saveState(OutputStream stream) throws IOException{
+		DataOutputStream output = new DataOutputStream(stream);
+		mComp.StreamOut(output);
+	}
+
+	@Override
+	public void loadState(InputStream stream) throws IOException{
+		DataInputStream input = new DataInputStream(stream);
+		mComp.StreamIn(input);
+	}
+
+	@Override
+	public boolean export(OutputStream stream, TaskCallback callback) throws Exception{
+		int i;
+		String path;
+		//TODO set this as a parameter or global constant
+		String libRoot = "jar/"; //External folder where dependencies should be located
+		JarEntry entry;
+
+		//TODO Add build option for single Jar
+		boolean singleJar = true;	//Should be exported using JarInJar
+
+		ClassLoader loader = getClass().getClassLoader();
+		List<String> dependencies;
+
+		//Create application's manifest
+		Manifest manifest = new Manifest();
+
+		path = singleJar ? "./" : "";
+		//Generate class path
+		dependencies = getDependencies();
+		i = 0;
+		if (dependencies != null)
+			for (String dependency: dependencies) {
+				path += ((i != 0 || singleJar) ? " " : "") + (singleJar ? "" : libRoot) + dependency;
+				i++;
+			}
+		manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+		if (singleJar) {
+			manifest.getMainAttributes().put(new Attributes.Name("Rsrc-Class-Path"), path);
+			manifest.getMainAttributes().put(new Attributes.Name("Rsrc-Main-Class"), getClass().getName());
+			manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, ".");
+			manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS,
+					org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader.class.getName());
+		} else {
+			manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, path);
+			manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS,
+					getClass().getName());
+		}
+		JarOutputStream target = new JarOutputStream(stream, manifest);
+
+		//Add Basic4GLj classes to new Jar
+		System.out.println("Adding source files");
+		List<String> files = new ArrayList<String>();
+		files.add("com/basic4gl/compiler");
+		files.add("com/basic4gl/lib");
+		files.add("com/basic4gl/util");
+		files.add("com/basic4gl/vm");
+		if (singleJar)
+			files.add("org/eclipse/jdt/internal/jarinjarloader");
+		Exporter.addSource(files,target);
+
+		//Save VM's initial state to Jar
+		mVM.Reset();
+		entry = new JarEntry(STATE_FILE);
+		target.putNextEntry(entry);
+		saveState(target);
+		target.closeEntry();
+
+		//Serialize the build configuration and add to Jar
+		entry = new JarEntry(CONFIG_FILE);
+		target.putNextEntry(entry);
+		saveConfiguration(target);
+		target.closeEntry();
+
+		//Add external libraries
+		if (singleJar){
+			System.out.println("Adding dependencies");
+			if (dependencies != null)
+				for (String file: dependencies) {
+					File source = new File(libRoot + file);
+					if (!source.exists())
+						continue;
+					FileInputStream input = new FileInputStream(source);
+
+					entry = new JarEntry(file);
+					entry.setTime(source.lastModified());
+
+					target.putNextEntry(entry);
+					for (int c = input.read(); c != -1; c = input.read()) {
+						target.write(c);
+					}
+					target.closeEntry();
+				}
+		}
+
+		target.close();
+		return true;
 	}
 
 	public final class WrapPrint implements Function{
@@ -326,133 +569,88 @@ public class DesktopGL implements Library, Target{
 		public void run(TomVM vm) {
 			System.out.print("debug: ");
 			System.out.println(vm.GetStringParam(1));
-			
+
 			JOptionPane.showMessageDialog(null, vm.GetStringParam(1));
-			
 		}
 		
 	}
 
 	@Override
 	public List<String> getDependencies() {
-		// TODO Confirm files needed		
+
+		//Get settings
+		if (mConfiguration == null)
+			mConfiguration = getSettings();
+
 		List<String> list = new ArrayList<String>();
-		//list.add("jogl-all.jar");
-		//list.add("gluegen.jar");
-		//list.add("gluegen-rt.jar");
-		
-		// TODO Return different dependencies depending on settings
-		//Native libraries
-		list.add("jogl/android-armv6/libgluegen-rt.so");
-		list.add("jogl/android-armv6/libjoal.so");
-		list.add("jogl/android-armv6/libjocl.so");
-		list.add("jogl/android-armv6/libjogl_mobile.so");
-		list.add("jogl/android-armv6/libnewt.so");
-		list.add("jogl/android-armv6/libopenal.so");
 
-		list.add("jogl/linux-amd64/libgluegen-rt.so");
-		list.add("jogl/linux-amd64/libjoal.so");
-		list.add("jogl/linux-amd64/libjocl.so");
-		list.add("jogl/linux-amd64/libjogl_cg.so");
-		list.add("jogl/linux-amd64/libjogl_desktop.so");
-		list.add("jogl/linux-amd64/libjogl_mobile.so");
-		list.add("jogl/linux-amd64/libnativewindow_awt.so");
-		list.add("jogl/linux-amd64/libnativewindow_x11.so");
-		list.add("jogl/linux-amd64/libnewt.so");
-		list.add("jogl/linux-amd64/libopenal.so");
+		//Get supported platforms
+		int windows = Integer.valueOf(mConfiguration.getValue(SETTING_SUPPORT_WINDOWS));
+		int mac 	= Integer.valueOf(mConfiguration.getValue(SETTING_SUPPORT_MAC));
+		int linux 	= Integer.valueOf(mConfiguration.getValue(SETTING_SUPPORT_LINUX));
+		int solaris = Integer.valueOf(mConfiguration.getValue(SETTING_SUPPORT_SOLARIS));
 
-		list.add("jogl/linux-armv6/libgluegen-rt.so");
-		list.add("jogl/linux-armv6/libjoal.so");
-		list.add("jogl/linux-armv6/libjocl.so");
-		list.add("jogl/linux-armv6/libjogl_cg.so");
-		list.add("jogl/linux-armv6/libjogl_desktop.so");
-		list.add("jogl/linux-armv6/libjogl_mobile.so");
-		list.add("jogl/linux-armv6/libnativewindow_awt.so");
-		list.add("jogl/linux-armv6/libnativewindow_x11.so");
-		list.add("jogl/linux-armv6/libnewt.so");
-		list.add("jogl/linux-armv6/libopenal.so");
+		//Common
+		list.add("gluegen-rt.jar");
+		list.add("jogl-all.jar");
 
-		list.add("jogl/linux-armv6hf/libgluegen-rt.so");
-		list.add("jogl/linux-armv6hf/libjoal.so");
-		list.add("jogl/linux-armv6hf/libjocl.so");
-		list.add("jogl/linux-armv6hf/libjogl_cg.so");
-		list.add("jogl/linux-armv6hf/libjogl_desktop.so");
-		list.add("jogl/linux-armv6hf/libjogl_mobile.so");
-		list.add("jogl/linux-armv6hf/libnativewindow_awt.so");
-		list.add("jogl/linux-armv6hf/libnativewindow_x11.so");
-		list.add("jogl/linux-armv6hf/libnewt.so");
-		list.add("jogl/linux-armv6hf/libopenal.so");
+		//Source; Not sure if needed and they significantly increase output file size
+		//list.add("gluegen-java-src.zip");
+		//list.add("jogl-java-src.zip");
 
-		list.add("jogl/linux-i586/libgluegen-rt.so");
-		list.add("jogl/linux-i586/libjoal.so");
-		list.add("jogl/linux-i586/libjocl.so");
-		list.add("jogl/linux-i586/libjogl_cg.so");
-		list.add("jogl/linux-i586/libjogl_desktop.so");
-		list.add("jogl/linux-i586/libjogl_mobile.so");
-		list.add("jogl/linux-i586/libnativewindow_awt.so");
-		list.add("jogl/linux-i586/libnativewindow_x11.so");
-		list.add("jogl/linux-i586/libnewt.so");
-		list.add("jogl/linux-i586/libopenal.so");
+		//Windows
+		if (windows == SUPPORT_WINDOWS_32_64 || windows == SUPPORT_WINDOWS_64) {
+			//64-bit JOGL Windows libraries
+			list.add("gluegen-rt-natives-windows-amd64.jar");
+			list.add("jogl-all-natives-windows-amd64.jar");
+		}
+		if (windows == SUPPORT_WINDOWS_32_64 || windows == SUPPORT_WINDOWS_32) {
+			//32-bit JOGL Windows libraries
+			list.add("gluegen-rt-natives-windows-i586.jar");
+			list.add("jogl-all-natives-windows-i586.jar");
+		}
+		//Mac
+		if (mac == SUPPORT_MAC_32_64) {
+			//Universal JOGL Mac libraries
+			list.add("gluegen-rt-natives-macosx-universal.jar");
+			list.add("jogl-all-natives-macosx-universal.jar");
+		}
+		//Linux
+		if (linux == SUPPORT_LINUX_32_64 || linux == SUPPORT_LINUX_64) {
+			//64-bit JOGL Linux libraries
+			list.add("gluegen-rt-natives-linux-amd64.jar");
+			list.add("jogl-all-natives-linux-amd64.jar");
+		}
+		if (linux == SUPPORT_LINUX_32_64 || linux == SUPPORT_LINUX_32) {
+			//32-bit JOGL Linux libraries
+			list.add("gluegen-rt-natives-linux-i586.jar");
+			list.add("jogl-all-natives-linux-i586.jar");
+		}
+		if (linux == SUPPORT_LINUX_ARMV6) {
+			//ARMv6 JOGL Linux libraries
+			list.add("gluegen-rt-natives-linux-armv6.jar");
+			list.add("jogl-all-natives-linux-armv6.jar");
+		}
+		if (linux == SUPPORT_LINUX_ARMV6HF) {
+			//ARMv6hf JOGL Linux libraries
+			list.add("gluegen-rt-natives-linux-armv6hf.jar");
+			list.add("jogl-all-natives-linux-armv6hf.jar");
+		}
 
-		list.add("jogl/macosx-universal/libgluegen-rt.jnilib");
-		list.add("jogl/macosx-universal/libjoal.jnilib");
-		list.add("jogl/macosx-universal/libjocl.jnilib");
-		list.add("jogl/macosx-universal/libjogl_cg.jnilib");
-		list.add("jogl/macosx-universal/libjogl_desktop.jnilib");
-		list.add("jogl/macosx-universal/libjogl_mobile.jnilib");
-		list.add("jogl/macosx-universal/libnativewindow_awt.jnilib");
-		list.add("jogl/macosx-universal/libnativewindow_macosx.jnilib");
-		list.add("jogl/macosx-universal/libnewt.jnilib");
-		list.add("jogl/macosx-universal/libopenal.1.15.1.dylib");
-		list.add("jogl/macosx-universal/libopenal.1.dylib");
-		list.add("jogl/macosx-universal/libopenal.dylib");
-		
-		list.add("jogl/solaris-amd64/libgluegen-rt.so");
-		list.add("jogl/solaris-amd64/libjoal.so");
-		list.add("jogl/solaris-amd64/libjocl.so");
-		list.add("jogl/solaris-amd64/libjogl_cg.so");
-		list.add("jogl/solaris-amd64/libjogl_desktop.so");
-		list.add("jogl/solaris-amd64/libjogl_mobile.so");
-		list.add("jogl/solaris-amd64/libnativewindow_awt.so");
-		list.add("jogl/solaris-amd64/libnativewindow_x11.so");
-		list.add("jogl/solaris-amd64/libnewt.so");
-		
-		list.add("jogl/solaris-i586/libgluegen-rt.so");
-		list.add("jogl/solaris-i586/libjoal.so");
-		list.add("jogl/solaris-i586/libjocl.so");
-		list.add("jogl/solaris-i586/libjogl_cg.so");
-		list.add("jogl/solaris-i586/libjogl_desktop.so");
-		list.add("jogl/solaris-i586/libjogl_mobile.so");
-		list.add("jogl/solaris-i586/libnativewindow_awt.so");
-		list.add("jogl/solaris-i586/libnativewindow_x11.so");
-		list.add("jogl/solaris-i586/libnewt.so");
-
-		list.add("jogl/windows-amd64/gluegen-rt.dll");
-		list.add("jogl/windows-amd64/joal.dll");
-		list.add("jogl/windows-amd64/jocl.dll");
-		list.add("jogl/windows-amd64/jogl_cg.dll");
-		list.add("jogl/windows-amd64/jogl_desktop.dll");
-		list.add("jogl/windows-amd64/jogl_mobile.dll");
-		list.add("jogl/windows-amd64/nativewindow_awt.dll");
-		list.add("jogl/windows-amd64/nativewindow_win32.dll");
-		list.add("jogl/windows-amd64/newt.dll");
-		list.add("jogl/windows-amd64/soft_oal.dll");
-
-		list.add("jogl/windows-i586/gluegen-rt.dll");
-		list.add("jogl/windows-i586/joal.dll");
-		list.add("jogl/windows-i586/jocl.dll");
-		list.add("jogl/windows-i586/jogl_cg.dll");
-		list.add("jogl/windows-i586/jogl_desktop.dll");
-		list.add("jogl/windows-i586/jogl_mobile.dll");
-		list.add("jogl/windows-i586/nativewindow_awt.dll");
-		list.add("jogl/windows-i586/nativewindow_win32.dll");
-		list.add("jogl/windows-i586/newt.dll");
-		list.add("jogl/windows-i586/soft_oal.dll");
-		
-		list.add("jogl/gluegen-java-src.zip");
-		list.add("jogl/gluegen-rt.jar");
-		list.add("jogl/jogl-all.jar");
-		list.add("jogl/jogl-java-src.zip");
+		//Solaris
+		if (solaris == SUPPORT_SOLARIS_32_64 || solaris == SUPPORT_SOLARIS_64) {
+			//64-bit JOGL Solaris libraries
+			list.add("gluegen-rt-natives-solaris-amd64.jar");
+			list.add("jogl-all-natives-solaris-amd64.jar");
+		}
+		if (solaris == SUPPORT_SOLARIS_32_64 || solaris == SUPPORT_SOLARIS_64) {
+			//32-bit JOGL Solaris libraries
+			list.add("gluegen-rt-natives-solaris-i586.jar");
+			list.add("jogl-all-natives-solaris-i586.jar");
+		}
+		/*
+		//Possibly unnecessary files
+		list.add("gluegen.jar");
 
 		list.add("gluegen-rt-android-natives-android-armv6.jar");
 		list.add("gluegen-rt-android-natives-linux-amd64.jar");
@@ -466,18 +664,7 @@ public class DesktopGL implements Library, Target{
 		list.add("gluegen-rt-android-natives-windows-i586.jar");
 		list.add("gluegen-rt-android.jar");
 		list.add("gluegen-rt-natives-android-armv6.jar");
-		list.add("gluegen-rt-natives-linux-amd64.jar");
-		list.add("gluegen-rt-natives-linux-armv6.jar");
-		list.add("gluegen-rt-natives-linux-armv6hf.jar");
-		list.add("gluegen-rt-natives-linux-i586.jar");
-		list.add("gluegen-rt-natives-macosx-universal.jar");
-		list.add("gluegen-rt-natives-solaris-amd64.jar");
-		list.add("gluegen-rt-natives-solaris-i586.jar");
-		list.add("gluegen-rt-natives-windows-amd64.jar");
-		list.add("gluegen-rt-natives-windows-i586.jar");
-		list.add("gluegen-rt.jar");
-		list.add("gluegen.jar");
-		
+
 		list.add("jogl-all-android-natives-android-armv6.jar");
 		list.add("jogl-all-android-natives-linux-amd64.jar");
 		list.add("jogl-all-android-natives-linux-armv6.jar");
@@ -500,16 +687,9 @@ public class DesktopGL implements Library, Target{
 		list.add("jogl-all-mobile-natives-windows-amd64.jar");
 		list.add("jogl-all-mobile-natives-windows-i586.jar");
 		list.add("jogl-all-mobile.jar");
+
 		list.add("jogl-all-natives-android-armv6.jar");
-		list.add("jogl-all-natives-linux-amd64.jar");
-		list.add("jogl-all-natives-linux-armv6.jar");
-		list.add("jogl-all-natives-linux-armv6hf.jar");
-		list.add("jogl-all-natives-linux-i586.jar");
-		list.add("jogl-all-natives-macosx-universal.jar");
-		list.add("jogl-all-natives-solaris-amd64.jar");
-		list.add("jogl-all-natives-solaris-i586.jar");
-		list.add("jogl-all-natives-windows-amd64.jar");
-		list.add("jogl-all-natives-windows-i586.jar");
+
 		list.add("jogl-all-noawt-natives-android-armv6.jar");
 		list.add("jogl-all-noawt-natives-linux-amd64.jar");
 		list.add("jogl-all-noawt-natives-linux-armv6.jar");
@@ -521,82 +701,7 @@ public class DesktopGL implements Library, Target{
 		list.add("jogl-all-noawt-natives-windows-amd64.jar");
 		list.add("jogl-all-noawt-natives-windows-i586.jar");
 		list.add("jogl-all-noawt.jar");
-		list.add("jogl-all.jar");
-		
-		
-		return list;
-	}
-	@Override
-	public List<String> getDependenciesForClassPath() {
-		List<String> list = new ArrayList<String>();
-		list.add("gluegen-rt-android-natives-android-armv6.jar");
-		list.add("gluegen-rt-android-natives-linux-amd64.jar");
-		list.add("gluegen-rt-android-natives-linux-armv6.jar");
-		list.add("gluegen-rt-android-natives-linux-armv6hf.jar");
-		list.add("gluegen-rt-android-natives-linux-i586.jar");
-		list.add("gluegen-rt-android-natives-macosx-universal.jar");
-		list.add("gluegen-rt-android-natives-solaris-amd64.jar");
-		list.add("gluegen-rt-android-natives-solaris-i586.jar");
-		list.add("gluegen-rt-android-natives-windows-amd64.jar");
-		list.add("gluegen-rt-android-natives-windows-i586.jar");
-		list.add("gluegen-rt-android.jar");
-		list.add("gluegen-rt-natives-android-armv6.jar");
-		list.add("gluegen-rt-natives-linux-amd64.jar");
-		list.add("gluegen-rt-natives-linux-armv6.jar");
-		list.add("gluegen-rt-natives-linux-armv6hf.jar");
-		list.add("gluegen-rt-natives-linux-i586.jar");
-		list.add("gluegen-rt-natives-macosx-universal.jar");
-		list.add("gluegen-rt-natives-solaris-amd64.jar");
-		list.add("gluegen-rt-natives-solaris-i586.jar");
-		list.add("gluegen-rt-natives-windows-amd64.jar");
-		list.add("gluegen-rt-natives-windows-i586.jar");
-		list.add("gluegen-rt.jar");
-		list.add("gluegen.jar");
-		
-		list.add("jogl-all-android-natives-android-armv6.jar");
-		list.add("jogl-all-android-natives-linux-amd64.jar");
-		list.add("jogl-all-android-natives-linux-armv6.jar");
-		list.add("jogl-all-android-natives-linux-armv6hf.jar");
-		list.add("jogl-all-android-natives-linux-i586.jar");
-		list.add("jogl-all-android-natives-macosx-universal.jar");
-		list.add("jogl-all-android-natives-solaris-amd64.jar");
-		list.add("jogl-all-android-natives-solaris-i586.jar");
-		list.add("jogl-all-android-natives-windows-amd64.jar");
-		list.add("jogl-all-android-natives-windows-i586.jar");
-		list.add("jogl-all-android.jar");
-		list.add("jogl-all-mobile-natives-android-armv6.jar");
-		list.add("jogl-all-mobile-natives-linux-amd64.jar");
-		list.add("jogl-all-mobile-natives-linux-armv6.jar");
-		list.add("jogl-all-mobile-natives-linux-armv6hf.jar");
-		list.add("jogl-all-mobile-natives-linux-i586.jar");
-		list.add("jogl-all-mobile-natives-macosx-universal.jar");
-		list.add("jogl-all-mobile-natives-solaris-amd64.jar");
-		list.add("jogl-all-mobile-natives-solaris-i586.jar");
-		list.add("jogl-all-mobile-natives-windows-amd64.jar");
-		list.add("jogl-all-mobile-natives-windows-i586.jar");
-		list.add("jogl-all-mobile.jar");
-		list.add("jogl-all-natives-android-armv6.jar");
-		list.add("jogl-all-natives-linux-amd64.jar");
-		list.add("jogl-all-natives-linux-armv6.jar");
-		list.add("jogl-all-natives-linux-armv6hf.jar");
-		list.add("jogl-all-natives-linux-i586.jar");
-		list.add("jogl-all-natives-macosx-universal.jar");
-		list.add("jogl-all-natives-solaris-amd64.jar");
-		list.add("jogl-all-natives-solaris-i586.jar");
-		list.add("jogl-all-natives-windows-amd64.jar");
-		list.add("jogl-all-natives-windows-i586.jar");
-		list.add("jogl-all-noawt-natives-android-armv6.jar");
-		list.add("jogl-all-noawt-natives-linux-amd64.jar");
-		list.add("jogl-all-noawt-natives-linux-armv6.jar");
-		list.add("jogl-all-noawt-natives-linux-armv6hf.jar");
-		list.add("jogl-all-noawt-natives-linux-i586.jar");
-		list.add("jogl-all-noawt-natives-macosx-universal.jar");
-		list.add("jogl-all-noawt-natives-solaris-amd64.jar");
-		list.add("jogl-all-noawt-natives-solaris-i586.jar");
-		list.add("jogl-all-noawt-natives-windows-amd64.jar");
-		list.add("jogl-all-noawt-natives-windows-i586.jar");
-		list.add("jogl-all-noawt.jar");
-		list.add("jogl-all.jar");
+		*/
 
 		return list;
 	}

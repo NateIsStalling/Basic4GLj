@@ -1,7 +1,11 @@
 package com.basic4gl.vm;
 
+import com.basic4gl.util.Streamable;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 ////////////////////////////////////////////////////////////////////////////////
 //Value
@@ -10,7 +14,7 @@ import java.nio.ByteOrder;
 //Used internally by registers, stack entries and variables.
 
 //#pragma pack (push, 1)
-public class Value {
+public class Value implements Streamable{
 	private boolean mIsInt;
 	private Integer m_intVal;
 	private Float m_realVal;
@@ -76,20 +80,24 @@ public class Value {
 	}
 
 	// Streaming
-	void StreamOut(ByteBuffer buffer) {
+	public void StreamOut(DataOutputStream stream) throws IOException{
 
 		// There may be some potential cross-platform streaming issues because:
 		// 1. We are unioning two data types together.
 		// 2. We don't know at stream time what data type it is.
-		buffer.order( ByteOrder.LITTLE_ENDIAN);
+		//buffer.order( ByteOrder.LITTLE_ENDIAN);
 		if (mIsInt)
-			buffer.putInt(m_intVal);
+			stream.writeInt(m_intVal);
 		else
-			buffer.putFloat(m_realVal);
+			//stream.write(ByteBuffer.allocate(4).putFloat(m_realVal).array());
+			stream.writeFloat(m_realVal);
 	}
 
-	void StreamIn(ByteBuffer buffer) {
-		buffer.order( ByteOrder.LITTLE_ENDIAN);
-		setIntVal(buffer.getInt());
+	public boolean StreamIn(DataInputStream stream) throws IOException{
+		byte[] b = new byte[Float.SIZE / Byte.SIZE];
+		stream.read(b);
+		m_intVal = ByteBuffer.wrap(b).getInt();
+		m_realVal = ByteBuffer.wrap(b).getFloat();
+		return true;
 	}
 }

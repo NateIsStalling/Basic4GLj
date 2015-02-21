@@ -1,24 +1,26 @@
 package com.basic4gl.vm;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
+import com.basic4gl.util.Streamable;
 import com.basic4gl.util.Streaming;
 
 ////////////////////////////////////////////////////////////////////////////////
 //vmProgramDataElement
 //
 //General purpose program data (as allocated with "DATA" statement in BASIC).
-class ProgramDataElement {
+class ProgramDataElement implements Streamable{
 	int mBasicType;
-	Value m_value;
+	Value mValue;
 
 	public int getType() {
 		return mBasicType;
 	}
 
 	public Value getValue() {
-		return m_value;
+		return mValue;
 	}
 
 	public void setType(int type) {
@@ -26,27 +28,18 @@ class ProgramDataElement {
 	}
 
 	public void setValue(Value value) {
-		m_value = value;
+		mValue = value;
 	}
 
 	// Streaming
-	public void StreamOut(ByteBuffer buffer) {
-		try {
-			Streaming.WriteLong(buffer, mBasicType);
-
-			m_value.StreamOut(buffer);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void StreamOut(DataOutputStream stream) throws IOException{
+		Streaming.WriteLong(stream, mBasicType);
+		mValue.StreamOut(stream);
 	}
 
-	public void StreamIn(ByteBuffer buffer) {
-		try {
-			mBasicType = (int)Streaming.ReadLong(buffer);
-
-			m_value.StreamIn(buffer);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public boolean StreamIn(DataInputStream stream) throws IOException{
+		mBasicType = (int)Streaming.ReadLong(stream);
+		mValue.StreamIn(stream);
+		return true;
 	}
 }

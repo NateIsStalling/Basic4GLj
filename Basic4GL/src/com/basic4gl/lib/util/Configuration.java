@@ -1,16 +1,19 @@
 package com.basic4gl.lib.util;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Nate on 2/15/2015.
  */
-public class Configuration {
-    public static final int PARAM_STRING = 0;
-    public static final int PARAM_INT = 1;
-    public static final int PARAM_BOOL = 2;
-    public static final int PARAM_CHOICE = 3;
+public class Configuration implements Serializable {
+    public static final int PARAM_HEADING = -1;
+    public static final int PARAM_DIVIDER = 0;
+    public static final int PARAM_STRING = 1;
+    public static final int PARAM_INT = 2;
+    public static final int PARAM_BOOL = 3;
+    public static final int PARAM_CHOICE = 4;
 
     private List<String[]> mFields = new ArrayList<String[]>();
     private List<Integer> mParameters = new ArrayList<Integer>();

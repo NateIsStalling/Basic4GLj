@@ -698,9 +698,4 @@ public class Standard implements Library{
 		// TODO Auto-generated method stub
 		return null;
 	}
-	@Override
-	public List<String> getDependenciesForClassPath() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

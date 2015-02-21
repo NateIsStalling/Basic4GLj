@@ -1,77 +1,74 @@
 package com.basic4gl.vm.types;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Vector;
 
+import com.basic4gl.util.Streamable;
 import com.basic4gl.util.Streaming;
 
 ////////////////////////////////////////////////////////////////////////////////
-	// VmValTypeSet
-	//
-	// A small number of VM op-codes operate on VmValType advanced data types
-	// (e.g. OP_COPY). Op-codes don't have storage space to specify an advanced
-	// data
-	// type, so instead they specify an index into this set array.
-	public class ValTypeSet {
-		
-		Vector<ValType> m_types;
+// VmValTypeSet
+//
+// A small number of VM op-codes operate on VmValType advanced data types
+// (e.g. OP_COPY). Op-codes don't have storage space to specify an advanced
+// data
+// type, so instead they specify an index into this set array.
+public class ValTypeSet implements Streamable{
 
-		public ValTypeSet(){
-			m_types = new Vector<ValType>();
-		}
-		
-		public void Clear() {
-			m_types.clear();
-		}
+	private Vector<ValType> mTypes;
 
-		public int GetIndex(ValType type) {
-
-			// Get index of type "type" in our set.
-			// If type is not present, create a new one and return an index to
-			// that.
-
-			// Look for type
-			int i;
-			for (i = 0; i < m_types.size(); i++)
-				if (m_types.get(i).Equals(type))
-					return i;
-
-			// Otherwise create new one
-			i = m_types.size();
-			m_types.add(type);
-			return i;
-		}
-
-		public ValType GetValType(int index) {
-			assert (index >= 0);
-			assert (index < m_types.size());
-			return m_types.get(index);
-		}
-
-		// Streaming
-		public void StreamOut(ByteBuffer buffer) {
-			try {
-				Streaming.WriteLong(buffer, m_types.size());
-				for (int i = 0; i < m_types.size(); i++)
-					m_types.get(i).StreamOut(buffer);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		public void StreamIn(ByteBuffer buffer) {
-			int count;
-			try {
-				count = (int) Streaming.ReadLong(buffer);
-
-				m_types.setSize(count);
-				for (int i = 0; i < count; i++)
-					m_types.get(i).StreamIn(buffer);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+	public ValTypeSet(){
+		mTypes = new Vector<ValType>();
 	}
+
+	public void clear() {
+		mTypes.clear();
+	}
+
+	public int getIndex(ValType type) {
+
+		// Get index of type "type" in our set.
+		// If type is not present, create a new one and return an index to
+		// that.
+
+		// Look for type
+		int i;
+		for (i = 0; i < mTypes.size(); i++)
+			if (mTypes.get(i).Equals(type))
+				return i;
+
+		// Otherwise create new one
+		i = mTypes.size();
+		mTypes.add(type);
+		return i;
+	}
+
+	public ValType getValType(int index) {
+		if (index >= 0 && index < mTypes.size())
+			return mTypes.get(index);
+		return null;
+	}
+
+	// Streaming
+	public void StreamOut(DataOutputStream stream) throws IOException{
+
+		Streaming.WriteLong(stream, mTypes.size());
+		for (int i = 0; i < mTypes.size(); i++)
+			mTypes.get(i).StreamOut(stream);
+
+	}
+
+	public boolean StreamIn(DataInputStream stream) throws IOException{
+		int count;
+		count = (int) Streaming.ReadLong(stream);
+
+		mTypes.setSize(count);
+		for (int i = 0; i < count; i++) {
+			mTypes.set(i, new ValType());
+			mTypes.get(i).StreamIn(stream);
+		}
+		return true;
+	}
+}
