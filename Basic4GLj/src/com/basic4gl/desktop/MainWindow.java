@@ -25,8 +25,8 @@ public class MainWindow {
 
     //Application Constants
     public static final String APPLICATION_NAME = "Basic4GLj";
-    public static final String APPLICATION_VERSION = "Alpha 0.2.0";
-    public static final String APPLICATION_BUILD_DATE = "1/24/2015";
+    public static final String APPLICATION_VERSION = "Alpha 0.2.1";
+    public static final String APPLICATION_BUILD_DATE = "2/22/2015";
     public static final String APPLICATION_COPYRIGHT = "(c) 2015, Nathaniel Nielsen";
     public static final String APPLICATION_DESCRIPTION = "Basic4GL for java";
     public static final String APPLICATION_WEBSITE = "blog.crazynatestudios.com";

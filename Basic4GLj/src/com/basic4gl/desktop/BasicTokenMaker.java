@@ -154,6 +154,33 @@ public class BasicTokenMaker extends AbstractTokenMaker {
                             currentTokenType = Token.COMMENT_EOL;
                             break;
 
+                        case '.':
+                        case ',':
+                        case ';':
+                        case '/':
+                        case '\\':
+                        case '|':
+                        case '{':
+                        case '}':
+                        case '[':
+                        case ']':
+                        case '(':
+                        case ')':
+                        case '<':
+                        case '>':
+                        case '-':
+                        case '+':
+                        case '*':
+                        case '%':
+                        case '@':
+                        case '!':
+                        case '~':
+                        case '^':
+                        case '?':
+                            addToken(text, currentTokenStart, i - 1, Token.WHITESPACE, newStartOffset + currentTokenStart);
+                            currentTokenStart = i;
+                            currentTokenType = Token.OPERATOR;
+                            break;
                         default:   // Add the whitespace token and start anew.
 
                             addToken(text, currentTokenStart, i - 1, Token.WHITESPACE, newStartOffset + currentTokenStart);
