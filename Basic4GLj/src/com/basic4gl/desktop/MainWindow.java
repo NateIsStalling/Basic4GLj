@@ -15,10 +15,12 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.event.HyperlinkEvent;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.util.*;
 
 public class MainWindow {
@@ -69,7 +71,7 @@ public class MainWindow {
 
     // Editors
     Vector<FileEditor> mFileEditors;
-
+    IncludeLinkGenerator mLinkGenerator;
     // State
     private RunMode mRunMode;
 
@@ -93,6 +95,7 @@ public class MainWindow {
         mCurrentTarget = -1;
 
         mFileEditors = new Vector<FileEditor>();
+        mLinkGenerator = new IncludeLinkGenerator();
 
         // Create and set up the window.
         mFrame = new JFrame(APPLICATION_NAME);
@@ -260,7 +263,7 @@ public class MainWindow {
     }
 
     void OpenActionExecute() {
-        FileEditor editor = FileEditor.open(mFrame);
+        FileEditor editor = FileEditor.open(mFrame, mLinkGenerator);
         if (editor != null) {
             //TODO Check if file should open as new tab or project
             //For now just open as new project
@@ -294,7 +297,7 @@ public class MainWindow {
     }
 
     public void addTab() {
-        final FileEditor editor = new FileEditor();
+        final FileEditor editor = new FileEditor(mLinkGenerator);
         mFileEditors.add(editor);
         mTabControl.addTab(editor.getTitle(), editor.pane);
 
@@ -624,6 +627,7 @@ public class MainWindow {
 
                 line = editorPane.getText(start, stop - start);
 
+                //TODO Load include files
                 mComp.Parser().SourceCode().add(line);
 
             }
@@ -688,6 +692,17 @@ public class MainWindow {
         }
     }
 
+    private int getTabIndex(String title){
+        int i = 0;
+        boolean found = false;
+        for (; i < mFileEditors.size(); i++){
+            if (mFileEditors.get(i).getTitle().equals(title)){
+                found = true;
+                break;
+            }
+        }
+        return found ? i : -1;
+    }
     private boolean CheckModified() {
         // TODO Check if files in editor have changed
         return true;
@@ -937,6 +952,103 @@ public class MainWindow {
             }
         }
 
+    }
+
+
+    public class IncludeLinkGenerator implements LinkGenerator
+    {
+        static final String INCLUDE = "include ";
+
+        /**
+         * Separators used to determine words in text.
+         */
+        private final java.util.List<String> textSeparators =
+                Arrays.asList(",", ";", "\n", "|", "{", "}", "[", "]", "=", "\"", "'", "*", "%", "&", "?");
+
+        @Override
+        public LinkGeneratorResult isLinkAtOffset ( RSyntaxTextArea source, final int pos )
+        {
+            final String code = source.getText ();
+            final int wordStart = getWordStart ( code, pos );
+            final int wordEnd = getWordEnd ( code, pos );
+            final String word = code.substring ( wordStart, wordEnd );
+            final String link;
+            final Dimension key;
+
+
+            final LinkGeneratorResult value;
+            if (word.startsWith(INCLUDE)){
+                link = code.substring ( wordStart + INCLUDE.length(), wordEnd ).trim();
+                key = new Dimension ( wordStart + INCLUDE.length(), wordEnd );
+            } else {
+                return null;
+            }
+
+            if ( word != null )
+            {
+                value = new LinkGeneratorResult ()
+                {
+                    @Override
+                    public HyperlinkEvent execute ()
+                    {
+                        int index;
+                        index = getTabIndex(link);
+                        if (index != -1) {
+                            mTabControl.setSelectedIndex(index);
+                        } else {
+                            MainWindow.this.addTab(FileEditor.open(new File(link), mLinkGenerator));
+                            mTabControl.setSelectedIndex(mTabControl.getTabCount() - 1);
+                        }
+                        return new HyperlinkEvent ( this, HyperlinkEvent.EventType.EXITED, null );
+                    }
+
+                    @Override
+                    public int getSourceOffset ()
+                    {
+                        return wordStart;
+                    }
+                };
+            }
+            else
+            {
+                value = null;
+            }
+            return value;
+        }
+
+        /**
+         * Returns a word start index at the specified location.
+         *
+         * @param text     text to retrieve the word start index from
+         * @param location word location
+         * @return word start index
+         */
+        public int getWordStart ( final String text, final int location )
+        {
+            int wordStart = location;
+            while ( wordStart > 0 && !textSeparators.contains ( text.substring ( wordStart - 1, wordStart ) ) )
+            {
+                wordStart--;
+            }
+            return wordStart;
+        }
+
+        /**
+         * Returns a word end index at the specified location.
+         *
+         * @param text     text to retrieve the word end index from
+         * @param location word location
+         * @return word end index
+         */
+        public int getWordEnd ( final String text, final int location )
+        {
+            int wordEnd = location;
+            while ( wordEnd < text.length () && !textSeparators.contains ( text.substring ( wordEnd, wordEnd + 1 ) ) )
+            {
+                wordEnd++;
+            }
+            return wordEnd;
+        }
     }
 
 }

@@ -13,6 +13,7 @@ import java.util.List;
  * Created by Nate on 1/10/2015.
  */
 public class BasicTokenMaker extends AbstractTokenMaker {
+    static final String INCLUDE = "include ";
     static final char CHAR_COMMENT = '\'';
     static List<String> mReservedWords = new ArrayList<String>();
     static List<String> mFunctions = new ArrayList<String>();
@@ -68,7 +69,10 @@ public class BasicTokenMaker extends AbstractTokenMaker {
 
         int currentTokenStart = offset;
         int currentTokenType = startTokenType;
-
+        if (offset + INCLUDE.length() < end &&
+                String.valueOf(array).toLowerCase().substring(offset, offset + INCLUDE.length()).startsWith(INCLUDE)) {
+            currentTokenType = Token.PREPROCESSOR;
+        }
         for (int i = offset; i < end; i++) {
 
             char c = array[i];
@@ -376,6 +380,9 @@ public class BasicTokenMaker extends AbstractTokenMaker {
 
                     }
 
+                    break;
+                case Token.PREPROCESSOR:
+                    //Preprocessor goes till EOL
                     break;
                 case Token.COMMENT_EOL:
                     i = end - 1;

@@ -5,8 +5,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 
@@ -24,7 +28,7 @@ public class FileEditor {
     private String mFilePath;    //Full path including name
     private boolean mIsModified;
 
-    public FileEditor() {
+    public FileEditor(LinkGenerator linkGenerator) {
         int i, t;
         SyntaxScheme scheme;
 
@@ -34,6 +38,10 @@ public class FileEditor {
 
         editorPane = new RSyntaxTextArea(20, 60);
         editorPane.setSyntaxEditingStyle("text/basic4gl");
+        if (linkGenerator != null) {
+            editorPane.setHyperlinksEnabled(true);
+            editorPane.setLinkGenerator(linkGenerator);
+        }
         pane = new RTextScrollPane(editorPane);
 
         pane.setIconRowHeaderEnabled(true);
@@ -96,7 +104,7 @@ public class FileEditor {
             dialog.addChoosableFileFilter(new FileNameExtensionFilter("GLBasic Program (*.gb)", "gb"));
             dialog.addChoosableFileFilter(new FileNameExtensionFilter("Text File (*.txt)", "txt"));
             dialog.setAcceptAllFileFilterUsed(true);    //Move "All Files" to bottom of filter list
-            dialog.setCurrentDirectory(new File(".gb"));
+            dialog.setCurrentDirectory(new File(mFilename));
             int result = dialog.showSaveDialog(pane);
 
             if (result == JFileChooser.APPROVE_OPTION) {
@@ -126,7 +134,7 @@ public class FileEditor {
             }
     }
 
-    public static FileEditor open(Frame parent) {
+    public static FileEditor open(Frame parent, LinkGenerator linkGenerator) {
         FileEditor editor = null;
         JFileChooser dialog = new JFileChooser();
         dialog.setAcceptAllFileFilterUsed(false);
@@ -137,7 +145,7 @@ public class FileEditor {
         int result = dialog.showOpenDialog(parent);
 
         if (result == JFileChooser.APPROVE_OPTION) {
-            editor = new FileEditor();
+            editor = new FileEditor(linkGenerator);
             try {
                 FileReader fr = new FileReader(dialog.getSelectedFile().getAbsolutePath());
                 editor.mFilePath = dialog.getSelectedFile().getAbsolutePath();
@@ -153,7 +161,28 @@ public class FileEditor {
 
         return editor;
     }
+    public static FileEditor open(File file, LinkGenerator linkGenerator) {
+        FileEditor editor = null;
+        editor = new FileEditor(linkGenerator);
+        if (file.exists()) {
+            try {
+                FileReader fr = new FileReader(file);
+                editor.mFilePath = file.getAbsolutePath();
+                editor.mFilename = file.getName();
+                editor.editorPane.read(fr, null);
+                fr.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        else {
+            editor.mFilename = file.getName();
+        }
+        editor.editorPane.discardAllEdits();    //Otherwise 'undo' will clear the text area after loading
 
+        return editor;
+    }
 
     public void gotoNextBookmark(boolean forward) {
         //Copied from org.fife.ui.rtextarea.RTextAreaEditorKit.NextBookmarkAction
@@ -220,4 +249,5 @@ public class FileEditor {
         }
 
     }
+
 }
