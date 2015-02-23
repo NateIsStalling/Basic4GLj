@@ -355,7 +355,7 @@ public class DesktopGL implements Target{
 			}
 
 			// Check for error
-			if (mVM.Error() || mVM.Done() || isClosing()) {
+			if (mVM.hasError() || mVM.Done() || isClosing()) {
 				if (isClosing() || isFullscreen())
 					hide();	//Stop program and close window
 				else
@@ -365,12 +365,12 @@ public class DesktopGL implements Target{
 			int success;
 			if (mCallbacks != null) {
 				try {
-					success = !mVM.Error()
+					success = !mVM.hasError()
 							? CallbackMessage.SUCCESS
 							: CallbackMessage.FAILED;
 					publish(new CallbackMessage(success, success == CallbackMessage.SUCCESS
 							? "Program completed"
-							: mVM.GetError()));
+							: mVM.getError()));
 
 				} catch (Exception ex){
 					ex.printStackTrace();

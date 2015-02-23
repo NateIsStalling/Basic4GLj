@@ -454,13 +454,13 @@ public class ExportDialog {
             LoadParser(mFileEditors.get(0).editorPane);
 
             // Compile
-            mComp.ClearError();
+            mComp.clearError();
             mComp.Compile();
 
             // Return result
-            if (mComp.Error()) {
+            if (mComp.hasError()) {
                 mMessage.status = CallbackMessage.FAILED;
-                mMessage.text = mComp.GetError();
+                mMessage.text = mComp.getError();
                 return false;
             }
             mMessage.status = CallbackMessage.WORKING;

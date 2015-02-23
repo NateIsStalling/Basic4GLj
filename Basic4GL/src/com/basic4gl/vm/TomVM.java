@@ -274,7 +274,7 @@ public class TomVM extends HasErrorState implements Streamable {
     public void Reset() {
 
         // Clear error state
-        ClearError();
+        clearError();
 
         // Deallocate variables
         Clr();
@@ -296,7 +296,7 @@ public class TomVM extends HasErrorState implements Streamable {
     public void Continue(int steps) // Continue execution from last position
     {
 
-        ClearError();
+        clearError();
         m_paused = false;
 
         // //////////////////////////////////////////////////////////////////////////
@@ -347,7 +347,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         mIp++; // Proceed to next instruction
                         continue step;
                     }
-                    SetError(ERR_UNDIMMED_VARIABLE);
+                    setError(ERR_UNDIMMED_VARIABLE);
                     break;
                 }
 
@@ -369,7 +369,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         mIp++; // Proceed to next instruction
                         continue step;
                     }
-                    SetError(ERR_UNDIMMED_VARIABLE);
+                    setError(ERR_UNDIMMED_VARIABLE);
                     break;
                 }
 
@@ -396,7 +396,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         }
                         assert (false);
                     }
-                    SetError(ERR_UNSET_POINTER);
+                    setError(ERR_UNSET_POINTER);
                     break;
                 }
                 case OpCode.OP_ADD_CONST:
@@ -407,7 +407,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         mIp++; // Proceed to next instruction
                         continue step;
                     }
-                    SetError(ERR_UNSET_POINTER);
+                    setError(ERR_UNSET_POINTER);
                     break;
 
                 case OpCode.OP_ARRAY_INDEX:
@@ -438,10 +438,10 @@ public class TomVM extends HasErrorState implements Streamable {
                             mIp++; // Proceed to next instruction
                             continue step;
                         }
-                        SetError(ERR_BAD_ARRAY_INDEX);
+                        setError(ERR_BAD_ARRAY_INDEX);
                         break;
                     }
-                    SetError(ERR_UNSET_POINTER);
+                    setError(ERR_UNSET_POINTER);
                     break;
 
                 case OpCode.OP_PUSH:
@@ -496,7 +496,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         }
                         assert (false);
                     }
-                    SetError(ERR_UNSET_POINTER);
+                    setError(ERR_UNSET_POINTER);
                     break;
                 }
 
@@ -519,7 +519,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Must not already be allocated
                     if (var.Allocated()) {
-                        SetError(ERR_REDIMMED_VARIABLE);
+                        setError(ERR_REDIMMED_VARIABLE);
                         break;
                     }
 
@@ -558,7 +558,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Must not already be allocated
                     if (currentFrame.localVarDataOffsets.get(index) != 0) {
-                        SetError(ERR_REDIMMED_VARIABLE);
+                        setError(ERR_REDIMMED_VARIABLE);
                         break;
                     }
 
@@ -626,7 +626,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     else if (instruction.mType == ValType.VTP_REAL)
                         Reg().setRealVal(-Reg().getRealVal());
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -640,7 +640,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     else if (instruction.mType == ValType.VTP_STRING)
                         setRegString(Reg2String() + RegString());
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -652,7 +652,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     else if (instruction.mType == ValType.VTP_REAL)
                         Reg().setRealVal(Reg2().getRealVal() - Reg().getRealVal());
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -664,7 +664,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     else if (instruction.mType == ValType.VTP_REAL)
                         Reg().setRealVal(Reg().getRealVal() * Reg2().getRealVal());
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -676,7 +676,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     else if (instruction.mType == ValType.VTP_REAL)
                         Reg().setRealVal(Reg2().getRealVal() / Reg().getRealVal());
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -690,7 +690,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         else
                             Reg().setIntVal(Reg().getIntVal() + i);
                     } else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -700,7 +700,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     if (instruction.mType == ValType.VTP_INT)
                         Reg().setIntVal(Reg().getIntVal() == 0 ? -1 : 0);
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -716,7 +716,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     else if (instruction.mType == ValType.VTP_STRING)
                         Reg().setIntVal(Reg2String().equals(RegString()) ? -1 : 0);
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -732,7 +732,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     else if (instruction.mType == ValType.VTP_STRING)
                         Reg().setIntVal(!Reg2String().equals(RegString()) ? -1 : 0);
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -749,7 +749,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         Reg().setIntVal(
                                 (Reg2String().compareTo(RegString()) > 0) ? -1 : 0);
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -766,7 +766,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         Reg().setIntVal(
                                 (Reg2String().compareTo(RegString()) >= 0) ? -1 : 0);
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -783,7 +783,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         Reg().setIntVal(
                                 (Reg2String().compareTo(RegString()) < 0) ? -1 : 0);
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -800,7 +800,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         Reg().setIntVal(
                                 (Reg2String().compareTo(RegString()) <= 0) ? -1 : 0);
                     else {
-                        SetError(ERR_BAD_OPERATOR);
+                        setError(ERR_BAD_OPERATOR);
                         break;
                     }
                     mIp++; // Proceed to next instruction
@@ -868,7 +868,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Call external function
                     mFunctions.get(instruction.mValue.getIntVal()).run(this);
-                    if (!Error()) {
+                    if (!hasError()) {
                         mIp++; // Proceed to next instruction
                         continue step;
                     }
@@ -881,7 +881,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Call external function
                     mOperatorFunctions.get(instruction.mValue.getIntVal()).run(this);
-                    if (!Error()) {
+                    if (!hasError()) {
                         mIp++; // Proceed to next instruction
                         continue step;
                     }
@@ -927,7 +927,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Check for stack overflow
                     if (mUserCallStack.size() >= MAX_USER_STACK_CALLS) {
-                        SetError(ERR_STACK_OVERFLOW);
+                        setError(ERR_STACK_OVERFLOW);
                         break;
                     }
 
@@ -946,7 +946,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Pop and validate return address
                     if (mUserCallStack.isEmpty()) {
-                        SetError(ERR_RETURN_WITHOUT_GOSUB);
+                        setError(ERR_RETURN_WITHOUT_GOSUB);
                         break;
                     }
                     // -1 means GOSUB. Should be impossible to execute
@@ -956,7 +956,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     tempI = mUserCallStack.lastElement().returnAddr;
                     mUserCallStack.remove(mUserCallStack.size() - 1);
                     if (tempI >= mCode.size()) {
-                        SetError(ERR_STACK_ERROR);
+                        setError(ERR_STACK_ERROR);
                         break;
                     }
 
@@ -971,8 +971,8 @@ public class TomVM extends HasErrorState implements Streamable {
                     //int index = instruction.mValue.getIntVal();
                     //m_plugins.GetPluginDLL(index >> 24)
                     //		.GetFunction(index & 0x00ffffff).Run(m_pluginRuntime);
-                    SetError(ERR_DLL_NOT_IMPLEMENTED); //Remove line when libraries are implemented
-                    if (!Error()) {
+                    setError(ERR_DLL_NOT_IMPLEMENTED); //Remove line when libraries are implemented
+                    if (!hasError()) {
                         mIp++; // Proceed to next instruction
                         continue step;
                     }
@@ -983,7 +983,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Check for stack overflow
                     if (mUserCallStack.size() >= MAX_USER_STACK_CALLS) {
-                        SetError(ERR_STACK_OVERFLOW);
+                        setError(ERR_STACK_OVERFLOW);
                         break;
                     }
 
@@ -1022,14 +1022,14 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // No function => Runtime error
                     if (funcIndex < 0) {
-                        SetError(ERR_NO_RUNTIME_FUNCTION);
+                        setError(ERR_NO_RUNTIME_FUNCTION);
                         break;
                     }
 
                     // From here on the logic is the same as OpCode.OP_CREATE_USER_FRAME
                     // Check for stack overflow
                     if (mUserCallStack.size() >= MAX_USER_STACK_CALLS) {
-                        SetError(ERR_STACK_OVERFLOW);
+                        setError(ERR_STACK_OVERFLOW);
                         break;
                     }
 
@@ -1091,7 +1091,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 }
 
                 case OpCode.OP_NO_VALUE_RETURNED:
-                    SetError(ERR_NO_VALUE_RETURNED);
+                    setError(ERR_NO_VALUE_RETURNED);
                     break;
                 case OpCode.OP_BINDCODE:
                     mBoundCodeBlock = Reg().getIntVal();
@@ -1113,7 +1113,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                             // Check for stack overflow
                             if (mUserCallStack.size() >= MAX_USER_STACK_CALLS) {
-                                SetError(ERR_STACK_OVERFLOW);
+                                setError(ERR_STACK_OVERFLOW);
                                 break;
                             }
 
@@ -1128,7 +1128,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         }
                     }
 
-                    SetError(ERR_INVALID_CODE_BLOCK);
+                    setError(ERR_INVALID_CODE_BLOCK);
                     break;
 
                 case OpCode.OP_END_CALLBACK:
@@ -1153,7 +1153,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Allocate parameter data
                     if (!mData.StackRoomFor(1)) {
-                        SetError(ERR_USER_FUNC_STACK_OVERFLOW);
+                        setError(ERR_USER_FUNC_STACK_OVERFLOW);
                         break;
                     }
                     int dataIndex = mData.AllocateStack(1);
@@ -1223,7 +1223,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         mIp++; // Proceed to next instruction
                         continue step;
                     } else {
-                        SetError(ERR_POINTER_SCOPE_ERROR);
+                        setError(ERR_POINTER_SCOPE_ERROR);
                         break;
                     }
                 }
@@ -1235,7 +1235,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         mIp++; // Proceed to next instruction
                         continue step;
                     } else {
-                        SetError(ERR_POINTER_SCOPE_ERROR);
+                        setError(ERR_POINTER_SCOPE_ERROR);
                         break;
                     }
                 }
@@ -1287,7 +1287,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     // present when
                     // it returns.
                     if (!mStack.Empty())
-                        SetError(ERR_RUN_CALLED_INSIDE_EXECUTE);
+                        setError(ERR_RUN_CALLED_INSIDE_EXECUTE);
                     else
                         Reset(); // Reset program
                     break; // Timeshare break
@@ -1297,7 +1297,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     break; // Timeshare break
 
                 default:
-                    SetError(ERR_INVALID);
+                    setError(ERR_INVALID);
             }
             break; //DO NOT LOOP
         }
@@ -1414,7 +1414,7 @@ public class TomVM extends HasErrorState implements Streamable {
         // Check pointers are valid
         if (!mData.IndexValid(sourceIndex) || !mData.IndexValid(destIndex)
                 || sourceIndex == 0 || destIndex == 0) {
-            SetError(ERR_UNSET_POINTER);
+            setError(ERR_UNSET_POINTER);
             return false;
         }
 
@@ -1434,7 +1434,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 assert (mData.IndexValid(d));
                 assert (mData.IndexValid(d + 1));
                 if (mData.Data().get(s).getIntVal() != mData.Data().get(d).getIntVal()) {
-                    SetError(ERR_ARRAY_SIZE_MISMATCH);
+                    setError(ERR_ARRAY_SIZE_MISMATCH);
                     return false;
                 }
 
@@ -1561,7 +1561,7 @@ public class TomVM extends HasErrorState implements Streamable {
             v = mStack.Pop();
             int size = v.getIntVal() + 1;
             if (size < 1) {
-                SetError(ERR_ZERO_LENGTH_ARRAY);
+                setError(ERR_ZERO_LENGTH_ARRAY);
                 return false;
             }
             type.m_arrayDims[i] = size;
@@ -1577,12 +1577,12 @@ public class TomVM extends HasErrorState implements Streamable {
         // amounts
         // of data.
         if (mDataTypes.DataSizeBiggerThan(type, mData.MaxDataSize())) {
-            SetError(ERR_VARIABLE_TOO_BIG);
+            setError(ERR_VARIABLE_TOO_BIG);
             return false;
         }
 
         if (!mData.RoomFor(mDataTypes.DataSize(type))) {
-            SetError(ERR_OUT_OF_MEMORY);
+            setError(ERR_OUT_OF_MEMORY);
             return false;
         }
 
@@ -1595,12 +1595,12 @@ public class TomVM extends HasErrorState implements Streamable {
         // amounts
         // of data.
         if (mDataTypes.DataSizeBiggerThan(type, mData.MaxDataSize())) {
-            SetError(ERR_VARIABLE_TOO_BIG);
+            setError(ERR_VARIABLE_TOO_BIG);
             return false;
         }
 
         if (!mData.StackRoomFor(mDataTypes.DataSize(type))) {
-            SetError(ERR_USER_FUNC_STACK_OVERFLOW);
+            setError(ERR_USER_FUNC_STACK_OVERFLOW);
             return false;
         }
 
@@ -1789,9 +1789,9 @@ public class TomVM extends HasErrorState implements Streamable {
         mData.SaveState(s.stackDataTop, s.tempDataLock);
 
         // Error state
-        s.error = Error();
+        s.error = hasError();
         if (s.error)
-            s.errorString = GetError();
+            s.errorString = getError();
         else
             s.errorString = "";
 
@@ -1832,9 +1832,9 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // Error state
         if (state.error)
-            SetError(state.errorString);
+            setError(state.errorString);
         else
-            ClearError();
+            clearError();
 
         // Other state
         m_paused = state.paused;
@@ -1997,7 +1997,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // Check for out-of-data.
         if (mProgramDataOffset >= mProgramData.size()) {
-            SetError(ERR_OUT_OF_DATA);
+            setError(ERR_OUT_OF_DATA);
             return false;
         }
 
@@ -2029,7 +2029,7 @@ public class TomVM extends HasErrorState implements Streamable {
             case ValType.VTP_INT:
                 switch (e.getType()) {
                     case ValType.VTP_STRING:
-                        SetError(ERR_DATA_IS_STRING);
+                        setError(ERR_DATA_IS_STRING);
                         return false;
                     case ValType.VTP_INT:
                         Reg().setIntVal(e.getValue().getIntVal());
@@ -2045,7 +2045,7 @@ public class TomVM extends HasErrorState implements Streamable {
             case ValType.VTP_REAL:
                 switch (e.getType()) {
                     case ValType.VTP_STRING:
-                        SetError(ERR_DATA_IS_STRING);
+                        setError(ERR_DATA_IS_STRING);
                         return false;
                     case ValType.VTP_INT:
                         Reg().setRealVal((float) e.getValue().getIntVal());
@@ -2080,7 +2080,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // Check source index is valid
         if (!mData.IndexValid(sourceIndex) || sourceIndex == 0) {
-            SetError(ERR_UNSET_POINTER);
+            setError(ERR_UNSET_POINTER);
             return false;
         }
 
@@ -2092,7 +2092,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // Allocate data for parameter on stack
         if (!mData.StackRoomFor(size)) {
-            SetError(ERR_USER_FUNC_STACK_OVERFLOW);
+            setError(ERR_USER_FUNC_STACK_OVERFLOW);
             return false;
         }
         int dataIndex = mData.AllocateStack(size);
@@ -2210,7 +2210,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // Allocate data for parameter on stack
         if (!mData.StackRoomFor(size)) {
-            SetError(ERR_USER_FUNC_STACK_OVERFLOW);
+            setError(ERR_USER_FUNC_STACK_OVERFLOW);
             return false;
         }
         int dataIndex = mData.AllocateTemp(size, false);
@@ -2455,7 +2455,7 @@ public class TomVM extends HasErrorState implements Streamable {
         //TODO Reimplement libraries
                 /*
 			    if (!m_plugins.StreamIn(stream)) {
-			        SetError(m_plugins.Error());
+			        setError(m_plugins.Error());
 			        return false;
 			    }
 
@@ -2821,11 +2821,11 @@ public class TomVM extends HasErrorState implements Streamable {
     }
 
     public void FunctionError(String name) {
-        SetError((String) "Function error: " + name);
+        setError((String) "Function error: " + name);
     }
 
     public void MiscError(String name) {
-        SetError(name);
+        setError(name);
     }
 
 

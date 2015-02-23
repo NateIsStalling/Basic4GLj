@@ -89,7 +89,7 @@ public class Preprocessor extends HasErrorState {
         CloseAll();
         visitedFiles.clear();
         lineNumberMap.Clear();
-        ClearError();
+        clearError();
 
         // Clear the parser
         parser.SourceCode().clear();
@@ -98,7 +98,7 @@ public class Preprocessor extends HasErrorState {
         openFiles.add(mainFile);
 
         // Process files
-        while (!openFiles.isEmpty() && !Error()) {
+        while (!openFiles.isEmpty() && !hasError()) {
             // Check for Eof
             if (openFiles.lastElement().Eof()) {
 
@@ -124,7 +124,7 @@ public class Preprocessor extends HasErrorState {
                         // Open next file
                         ISourceFile file = OpenFile(filename);
                         if (file == null)
-                            SetError("Unable to open file: " + line.substring(8, line.length()));
+                            setError("Unable to open file: " + line.substring(8, line.length()));
                         else {
                             // This becomes the new innermost file
                             openFiles.add(file);
@@ -144,7 +144,7 @@ public class Preprocessor extends HasErrorState {
         }
 
         // Return true if no error encountered
-        return !Error();     
+        return !hasError();
     }
     /// Member access
     public LineNumberMapping LineNumberMap() { return lineNumberMap; }

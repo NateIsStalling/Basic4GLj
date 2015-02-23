@@ -77,7 +77,7 @@ public class Parser extends HasErrorState {
 		SetNormal();
 		m_line = line;
 		m_col = col;
-		ClearError();
+		clearError();
 	}
 
 	public void Reset() {
@@ -105,7 +105,7 @@ public class Parser extends HasErrorState {
 
 	public Token NextToken(boolean skipEOL, boolean dataMode) {
 
-		ClearError();
+		clearError();
 
 		// Create token, with some defaults
 		Token t = new Token();
@@ -185,7 +185,7 @@ public class Parser extends HasErrorState {
 			boolean done = false;
 			boolean hex = false;
 
-			while (!done && !Error()) {
+			while (!done && !hasError()) {
 
 				// Determine whether found end of token
 				switch (t.m_type) {
@@ -195,7 +195,7 @@ public class Parser extends HasErrorState {
 							done = true;
 							GetChar(false); // Skip terminating quote
 						} else if (c == 0 || c == 13) {
-							SetError("Unterminated string");
+							setError("Unterminated string");
 							done = true;
 						}
 					} else {
@@ -225,7 +225,7 @@ public class Parser extends HasErrorState {
 					done = !(IsComparison(t.m_text.charAt(0)) && IsComparison(c));
 					break;
 				default:
-					SetError("Bad token");
+					setError("Bad token");
 				}
 
 				// Store character
@@ -241,7 +241,7 @@ public class Parser extends HasErrorState {
 	                    // Check integer number is valid
 	                    char last = t.m_text.charAt(t.m_text.length() - 1);
 	                    if (last == 'x' || last == 'X')
-	                        SetError("'" + t.m_text + "' is not a valid number");
+	                        setError("'" + t.m_text + "' is not a valid number");
 	                }
 	            }
 
@@ -257,7 +257,7 @@ public class Parser extends HasErrorState {
 			boolean whiteSpaceFound = false;
 			byte lcase = (byte) Character.toLowerCase(c);
 
-			while (!done && !Error()) {
+			while (!done && !hasError()) {
 
 				// Comma, colon, return, newline and eof are separators
 				// Double quotes are not allowed (syntactically), so we truncate
@@ -309,7 +309,7 @@ public class Parser extends HasErrorState {
 	                    // Check integer number is valid
 	                    char last = t.m_text.charAt(t.m_text.length() - 1);
 	                    if (last == 'x' || last == 'X')
-	                        SetError("'" + t.m_text + "' is not a valid number");
+	                        setError("'" + t.m_text + "' is not a valid number");
 	                }
 	            }
 
@@ -341,7 +341,7 @@ public class Parser extends HasErrorState {
 		// Restore position. (Except on error, when we leave the cursor pointing
 		// to
 		// the error position.)
-		if (!Error()) {
+		if (!hasError()) {
 			m_line = line;
 			m_col = col;
 		}

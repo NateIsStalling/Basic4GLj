@@ -709,14 +709,14 @@ public class MainWindow {
         LoadParser(mFileEditors.get(0).editorPane);
 
         // Compile
-        mComp.ClearError();
+        mComp.clearError();
         mComp.Compile();
 
         // Return result
-        if (mComp.Error()) {
+        if (mComp.hasError()) {
 
             // Show error
-            mLabelStatusInfo.setText(mComp.GetError());
+            mLabelStatusInfo.setText(mComp.getError());
             PutCursor((int) mComp.Line(), (int) mComp.Col());
             return false;
         }
