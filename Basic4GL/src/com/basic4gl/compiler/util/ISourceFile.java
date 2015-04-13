@@ -4,7 +4,7 @@ package com.basic4gl.compiler.util;
 	// ISourceFile
 	//
 	// / Interface to a source file.
-	public abstract class ISourceFile {
+	public interface ISourceFile {
 
 		// / Return the next line of source code
 		public abstract String GetNextLine();

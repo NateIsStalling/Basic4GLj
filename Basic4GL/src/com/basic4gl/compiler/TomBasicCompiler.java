@@ -249,7 +249,7 @@ public class TomBasicCompiler extends HasErrorState {
 		Token m_token;
 	}
 
-	enum LanguageSyntax {
+	public enum LanguageSyntax {
 		LS_TRADITIONAL(0), // As compatible as possible with other BASICs
 		LS_BASIC4GL(1), // Standard Basic4GL syntax for backwards compatibility
 		// with existing code.
@@ -4137,7 +4137,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return "???";
 
 		// Get target address
-		long target = mVM.Instruction(returnAddr - 1).mValue.getIntVal();
+		int target = mVM.Instruction(returnAddr - 1).mValue.getIntVal();
 
 		// Lookup label name
 		String name = m_labelIndex.get(target);

@@ -14,7 +14,7 @@ public abstract class ILineNumberMapping {
 
 	// / Return the filename and line number corresponding to a main line
 	// number.
-	public abstract void SourceFromMain(String filename, Mutable<Integer> fileLineNo,
+	public abstract void SourceFromMain(Mutable<String> filename, Mutable<Integer> fileLineNo,
 			int lineNo);
 
 	// / Return line number within a specific file that corresponds to a

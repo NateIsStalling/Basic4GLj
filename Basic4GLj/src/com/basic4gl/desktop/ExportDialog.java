@@ -1,6 +1,9 @@
 package com.basic4gl.desktop;
 
+import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.desktop.MainWindow;
+import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.vm.TomVM;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -10,21 +13,20 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import javax.swing.text.BadLocationException;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 
 /**
  * Created by Nate on 2/5/2015.
  */
 public class ExportDialog {
+    private MainWindow mMainWindow;
     private TomBasicCompiler mComp;
+    private Preprocessor mPreprocessor;
     private TomVM mVM;
     private Vector<FileEditor> mFileEditors;
 
@@ -46,11 +48,14 @@ public class ExportDialog {
 
     private java.util.List<JComponent> mSettingComponents = new ArrayList<JComponent>();
     private Configuration mCurrentConfig;
-    public ExportDialog(JFrame parent, TomBasicCompiler compiler, TomVM vm, Vector<FileEditor> editors) {
-        mDialog = new JDialog(parent);
+    public ExportDialog(MainWindow window, TomBasicCompiler compiler, Preprocessor preprocessor, Vector<FileEditor> editors) {
+        mMainWindow = window;
         mComp = compiler;
-        mVM = vm;
+        mPreprocessor = preprocessor;
+        mVM = mComp.VM();
         mFileEditors = editors;
+
+        mDialog = new JDialog(window.getFrame());
 
         mDialog.setTitle("Export Project");
         mDialog.setResizable(false);
@@ -303,7 +308,7 @@ public class ExportDialog {
         //JScrollPane scrollPane = new ScrollPane(textLicenses);
         mDialog.pack();
         mDialog.setSize(new Dimension(464, 346));
-        mDialog.setLocationRelativeTo(parent);
+        mDialog.setLocationRelativeTo(mMainWindow.getFrame());
     }
 
     private void applyConfig(){
@@ -428,6 +433,7 @@ public class ExportDialog {
         @Override
         protected Object doInBackground() throws Exception {
             mMessage = new CallbackMessage(CallbackMessage.WORKING, "");
+
             if (!Compile())
                 return null; //TODO Throw error
             //Export to file
@@ -441,17 +447,21 @@ public class ExportDialog {
         // Program control
         private boolean Compile() {
 
+            if (mFileEditors.isEmpty()) {
+                mMessage.status = CallbackMessage.FAILED;
+                mMessage.text = "No files are open";
+                return false;
+            }
+
             // Clear source code from parser
             mComp.Parser().SourceCode().clear();
 
-            // Reload in from editors
-            // Load included files first (if any)
-            // int i;
-            for (int i = 1; i < mFileEditors.size(); i++)
-                LoadParser(mFileEditors.get(i).editorPane);
-
-            // Load main file last.
-            LoadParser(mFileEditors.get(0).editorPane);
+            // Load code into preprocessor; may be unnecessary
+            if (!LoadProgramIntoCompiler()) {
+                mMessage.status = CallbackMessage.FAILED;
+                mMessage.text = mPreprocessor.getError();
+                return false;
+            }
 
             // Compile
             mComp.clearError();
@@ -463,11 +473,21 @@ public class ExportDialog {
                 mMessage.text = mComp.getError();
                 return false;
             }
+
+            // Reset Virtual machine
+            //mVM.Reset ();
+
             mMessage.status = CallbackMessage.WORKING;
             mMessage.text = "User's code compiled";
             return true;
         }
-
+        // Compilation and execution routines
+        private boolean LoadProgramIntoCompiler (){
+            //TODO Get editor assigned as main file
+            return mPreprocessor.Preprocess(
+                    new EditorSourceFile(mFileEditors.get(0).editorPane, mFileEditors.get(0).getFilePath()),
+                    mComp.Parser());
+        }
         private void LoadParser(RSyntaxTextArea editorPane) // Load editor text into parser
         {
             int start, stop; // line offsets
@@ -509,11 +529,11 @@ public class ExportDialog {
             }
             if (message.status == CallbackMessage.SUCCESS) {
                 System.out.println("Export successful.");
-                JOptionPane.showMessageDialog(mDialog, "Export successful.");
+                JOptionPane.showMessageDialog(mDialog, "Export successful!","Success", JOptionPane.INFORMATION_MESSAGE);
                 mDialog.setVisible(false);
             } else if (message.status == CallbackMessage.FAILED){
                 System.out.println("Export failed.");
-                JOptionPane.showMessageDialog(mDialog, message,"Export failed.", JOptionPane.OK_OPTION);
+                JOptionPane.showMessageDialog(mDialog, message.text,"Export failed.", JOptionPane.ERROR_MESSAGE);
             }
             enableComponents(mTabs, true);
             mExportButton.setEnabled(true);

@@ -7,7 +7,7 @@ package com.basic4gl.vm;
 // (Debugger uses this to run small sections of code, without interrupting the
 // main program.)
 
-class State {
+public class VMState {
 
 	// Instruction pointer
 	int ip;

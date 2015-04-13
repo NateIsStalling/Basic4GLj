@@ -1,5 +1,6 @@
 package com.basic4gl.compiler;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
@@ -13,10 +14,10 @@ import com.basic4gl.util.Mutable;
 /// Maps line numbers of the expanded file back to their corresponding source file.
 /// Used by debugging code so that lines correctly match up with program addresses.
 public class LineNumberMapping extends ILineNumberMapping {
-	Vector<String> filenames;
-	Map<String,Integer> filenameLookup;
-	Vector<SourcePos> mapping;
-	Vector<Vector<Integer>> reverseMapping;
+	Vector<String> filenames = new Vector<String>();
+	Map<String,Integer> filenameLookup = new HashMap<String, Integer>();
+	Vector<SourcePos> mapping = new Vector<SourcePos>();
+	Vector<Vector<Integer>> reverseMapping = new Vector<Vector<Integer>>();
 
 	int GetFileIndex(String filename)
 	{
@@ -76,20 +77,20 @@ public class LineNumberMapping extends ILineNumberMapping {
 
 	// ILineNumberMapping methods
 	@Override
-	public void SourceFromMain(String filename, Mutable<Integer> fileLineNo, int lineNo)
+	public void SourceFromMain(Mutable<String> filename, Mutable<Integer> fileLineNo, int lineNo)
 	{
 
 		// Is source line valid
 		if (lineNo >= 0 && lineNo < mapping.size()) {
 
 			// Return filename and line number
-			filename = filenames.get(mapping.get(lineNo).getFileIndex());
+			filename.set(filenames.get(mapping.get(lineNo).getFileIndex()));
 			fileLineNo.set( mapping.get(lineNo).getFileLineNo());
 		}
 		else {
 
 			// Invalid source line
-			filename = "?";
+			filename.set("?");
 			fileLineNo.set(-1);
 		}
 	}

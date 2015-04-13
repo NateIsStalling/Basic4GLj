@@ -15,10 +15,10 @@ import java.util.List;
 public class BasicTokenMaker extends AbstractTokenMaker {
     static final String INCLUDE = "include ";
     static final char CHAR_COMMENT = '\'';
-    static List<String> mReservedWords = new ArrayList<String>();
-    static List<String> mFunctions = new ArrayList<String>();
-    static List<String> mConstants = new ArrayList<String>();
-    static List<String> mOperators = new ArrayList<String>();
+    public static List<String> mReservedWords = new ArrayList<String>();
+    public static List<String> mFunctions = new ArrayList<String>();
+    public static List<String> mConstants = new ArrayList<String>();
+    public static List<String> mOperators = new ArrayList<String>();
 
     @Override
     public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {

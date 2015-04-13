@@ -146,7 +146,8 @@ public class TomVM extends HasErrorState implements Streamable {
     // Code
 
     // Instructions
-    Vector<Instruction> mCode;
+    //TODO make private
+    public Vector<Instruction> mCode;
     ValTypeSet mTypeSet;
 
     /**
@@ -265,6 +266,9 @@ public class TomVM extends HasErrorState implements Streamable {
         mProgramDataOffset = 0;
     }
 
+    public IVMDebugger getDebugger(){
+        return mDebugger;
+    }
     public void ClearResources() {
         // Clear resources
         for (Resources res : mResources)
@@ -1764,8 +1768,8 @@ public class TomVM extends HasErrorState implements Streamable {
         return false;
     }
 
-    public State GetState() {
-        State s = new State();
+    public VMState getState() {
+        VMState s = new VMState();
 
         // Instruction pointer
         s.ip = mIp;
@@ -1801,7 +1805,7 @@ public class TomVM extends HasErrorState implements Streamable {
         return s;
     }
 
-    public void SetState(State state) {
+    public void SetState(VMState state) {
 
         // Instruction pointer
         mIp = state.ip;

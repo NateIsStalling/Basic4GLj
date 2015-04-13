@@ -8,6 +8,7 @@ public class CallbackMessage {
     public static final int STOPPED = 0;
     public static final int WORKING = 1;
     public static final int SUCCESS = 2;
+    public static final int PAUSED = 3;
 
     public int status;
     public String text;

@@ -23,5 +23,6 @@ class Token {
 	TokenType m_type;
 	int m_valType; // For constants. Defines the value type.
 	boolean m_newLine; // True if immediately preceeded by newline
-	int m_line, m_col;
+	int m_line;
+	int m_col;
 }

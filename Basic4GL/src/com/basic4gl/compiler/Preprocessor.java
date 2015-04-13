@@ -28,17 +28,17 @@ import com.basic4gl.vm.HasErrorState;
 public class Preprocessor extends HasErrorState {
 
     // Registered source file servers
-    ArrayList<ISourceFileServer> fileServers;
+    List<ISourceFileServer> fileServers = new ArrayList<ISourceFileServer>();
 
     // Stack of currently opened files.
     // openFiles.back() is the current file being parsed
-    Vector<ISourceFile> openFiles;
+    Vector<ISourceFile> openFiles = new Vector<ISourceFile>();
 
     // Filenames of visited source files. (To prevent circular includes)
-    ArrayList<String> visitedFiles;
+    List<String> visitedFiles = new ArrayList<String>();
 
     // Source file <=> Processed file mapping
-    LineNumberMapping lineNumberMap;
+    LineNumberMapping lineNumberMap = new LineNumberMapping();
 
     void CloseAll()
     {
@@ -50,7 +50,7 @@ public class Preprocessor extends HasErrorState {
     }
     ISourceFile OpenFile(String filename)
     {
-
+        System.out.println("Preprocessing include file: \n" + filename);
         // Query file servers in order until one returns an open file.
     	for(ISourceFileServer server: fileServers){
             ISourceFile file = server.OpenSourceFile(filename);
@@ -113,18 +113,21 @@ public class Preprocessor extends HasErrorState {
                 String line = openFiles.lastElement().GetNextLine();
 
                 // Check for #include
-                if (line.substring(0, 8).toLowerCase().equals("include ")) {
+                boolean include = (line.length() >= 8 && line.substring(0, 8).toLowerCase().equals("include "));
+                if (include) {
 
                     // Get filename
-                    String filename = new File(line.substring(8, line.length())).getAbsolutePath();
+                    String parent = new File(mainFile.Filename()).getParent();  //Parent directory
+                    String filename = new File(parent, line.substring(8, line.length()).trim()).getAbsolutePath();
 
                     // Check this file hasn't been included already
                     if (!visitedFiles.contains(filename)) {
 
                         // Open next file
                         ISourceFile file = OpenFile(filename);
-                        if (file == null)
-                            setError("Unable to open file: " + line.substring(8, line.length()));
+                        if (file == null) {
+                            setError("Unable to open file: " + line.substring(8, line.length()).trim());
+                        }
                         else {
                             // This becomes the new innermost file
                             openFiles.add(file);
@@ -132,6 +135,8 @@ public class Preprocessor extends HasErrorState {
                             // Add to visited files list
                             visitedFiles.add(0,filename);
                         }
+                    } else {
+                        //setError("File already included: " + line.substring(8, line.length()));
                     }
                 }
                 else {
