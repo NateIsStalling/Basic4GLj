@@ -8,12 +8,14 @@ package com.basic4gl.compiler;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.*;
 
 import com.basic4gl.compiler.Token.TokenType;
 import com.basic4gl.compiler.FlowControl.FlowControlType;
 import com.basic4gl.compiler.util.BinOperExt;
 import com.basic4gl.compiler.util.UnOperExt;
+import com.basic4gl.lib.util.Library;
 import com.basic4gl.util.*;
 import com.basic4gl.util.FuncSpec;
 import com.basic4gl.vm.*;
@@ -65,12 +67,11 @@ public class TomBasicCompiler extends HasErrorState {
 	Map<String, Operator> mBinaryOperators; // Binary have to (e.g. x + y)
 	public ArrayList<String> m_reservedWords;
 	Map<String, Constant> m_constants; // Permanent constants.
-	Map<String, Constant> m_programConstants; // Constants declared using
-	// the const command.
+	Map<String, Constant> m_programConstants; // Constants declared using the const command.
+
+	Vector<Library> mLibraries = new Vector<Library>();
 	Vector<FuncSpec> m_functions;
-	public Map<String, List<Integer>> m_functionIndex; // Maps function name to index
-	// of function (in mFunctions
-	// array)
+	public Map<String, List<Integer>> m_functionIndex; // Maps function name to index of function (in mFunctions array)
 	LanguageSyntax m_syntax;
 	String m_symbolPrefix = ""; // Prefix all symbols with this text
 
@@ -787,6 +788,7 @@ public class TomBasicCompiler extends HasErrorState {
 		return m_runtimeFunctionIndex.containsKey(name.toLowerCase());
 	}
 
+	public Vector<Library> getLibraries() { return mLibraries;}
 	public Vector<FuncSpec> Functions() {
 		return m_functions;
 	}
@@ -3420,28 +3422,44 @@ public class TomBasicCompiler extends HasErrorState {
 		for (String key: constants.keySet())
 			m_constants.put(key, constants.get(key));
 	}
-	public void AddFunctions(Map<String, List<Function>> functions,
-			Map<String, List<FuncSpec>> specs) {
+	public void AddFunctions(Library library, Map<String, FuncSpec[]> specs) {
 		int specIndex;
 		int vmIndex;
 		int i;
 
-		FuncSpec spec;
-		if(functions == null|| specs == null)
+		if(library == null || specs == null)
 			return;
-		for (String name : functions.keySet()) {
+		mLibraries.add(library);
+		for (String name : specs.keySet()) {
 			i = 0;
-			for (Function func : functions.get(name)) {
+			for (FuncSpec func : specs.get(name)) {
+				//Initialize function
+				Object instance;
+				//TODO Only initialize functions that are used
+				try {
+					Constructor<?> constructor = func.getFunctionClass().getConstructor(library.getClass());
+					instance = constructor.newInstance(library);
+				} catch (NoSuchMethodException e1) {
+					e1.printStackTrace();
+					return;
+				} catch (Exception e2) {
+					e2.printStackTrace();
+					return;
+				}
+
 				// Register wrapper function to virtual machine
-				vmIndex = mVM.AddFunction(func);
+				if (instance != null && instance instanceof Function)
+					vmIndex = mVM.AddFunction((Function)instance);
+				else
+					return;
 
 				// Register function spec to compiler
 				specIndex = m_functions.size();
-				spec = specs.get(name).get(i);
-				// TODO Add handling for if spec is null or i is out of bounds
-				spec.setIndex(vmIndex);
 
-				m_functions.add(spec);
+				// TODO Add handling for if spec is null or i is out of bounds
+				func.setIndex(vmIndex);
+
+				m_functions.add(func);
 
 				// Add function name . function spec mapping
 				List<Integer> l = m_functionIndex.get(name.toLowerCase());

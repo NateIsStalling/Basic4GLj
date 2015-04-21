@@ -9,6 +9,7 @@ import com.basic4gl.vm.types.ValType;
 //
 //Specifies a function and parameters
 public class FuncSpec {
+	Class<?> mFunctionClass;	//Canonical name of function wrapper class
 	ParamTypeList mParamTypes;
 	boolean mBrackets, 		// True if function requires brackets around parameters
 			mIsFunction; 	// True if function returns a value
@@ -20,6 +21,7 @@ public class FuncSpec {
 							// should be freed before the next instruction
 	ParamValidationCallback mParamValidationCallback;
 
+	public Class<?> getFunctionClass() {return mFunctionClass;}
 	public ParamTypeList getParamTypes() {
 		return mParamTypes;
 	}
@@ -91,9 +93,11 @@ public class FuncSpec {
 		mParamValidationCallback = null;
 	}
 	
-	public FuncSpec(ParamTypeList paramTypes, boolean brackets,
+	public FuncSpec(Class functionClass,
+					ParamTypeList paramTypes, boolean brackets,
 					boolean isFunction, int returnType, boolean timeshare, boolean freeTempData,
 					ParamValidationCallback paramValidationCallback) {
+		mFunctionClass = functionClass;
 		mParamTypes = paramTypes;
 		mBrackets = brackets;
 		mIsFunction = isFunction;
@@ -102,9 +106,11 @@ public class FuncSpec {
 		mFreeTempData = freeTempData;
 		mParamValidationCallback = paramValidationCallback;
 	}
-	public FuncSpec(ParamTypeList paramTypes, boolean brackets,
+	public FuncSpec(Class functionClass,
+					ParamTypeList paramTypes, boolean brackets,
 					boolean isFunction, ValType returnType, boolean timeshare, boolean freeTempData,
 					ParamValidationCallback paramValidationCallback) {
+		mFunctionClass = functionClass;
 		mParamTypes = paramTypes;
 		mBrackets = brackets;
 		mIsFunction = isFunction;

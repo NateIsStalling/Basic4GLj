@@ -57,7 +57,7 @@ public class Standard implements Library{
 	// //////////////////////////////////////////////////////////////////////////////
 	// Pre-run initialisation
 	@Override
-	public void init(TomVM vm) {
+	public void initVM(TomVM vm) {
 		/////////////////////
 		// Initialise state
 		rnd = new Random();
@@ -479,160 +479,8 @@ public class Standard implements Library{
 		return c;
 	}
 	@Override
-	public Map<String, List<Function>> functions() {
-		Map<String, List<Function>> f = new HashMap<String, List<Function>>();
-
-		//Prototypes
-		f.put("abs",        new ArrayList<Function>());
-		f.put("asc",        new ArrayList<Function>());
-		f.put("atn",        new ArrayList<Function>());
-		f.put("chr$",       new ArrayList<Function>());
-		f.put("cos",        new ArrayList<Function>());
-		f.put("exp",        new ArrayList<Function>());
-		f.put("int",        new ArrayList<Function>());
-		f.put("left$",      new ArrayList<Function>());
-		f.put("len",        new ArrayList<Function>());
-		f.put("log",        new ArrayList<Function>());
-		f.put("mid$",       new ArrayList<Function>());
-		f.put("pow",        new ArrayList<Function>());
-		f.put("right$",     new ArrayList<Function>());
-		f.put("rnd",        new ArrayList<Function>());
-		f.put("sgn",        new ArrayList<Function>());
-		f.put("sin",        new ArrayList<Function>());
-		f.put("sqrt",       new ArrayList<Function>());
-		f.put("sqr",        new ArrayList<Function>());      // sqr = Synonym for sqrt
-		f.put("str$",       new ArrayList<Function>());
-		f.put("tan",        new ArrayList<Function>());
-		f.put("tanh",       new ArrayList<Function>());
-		f.put("val",        new ArrayList<Function>());
-		f.put("sind",       new ArrayList<Function>());
-		f.put("cosd",       new ArrayList<Function>());
-		f.put("tand",       new ArrayList<Function>());
-		f.put("atand",      new ArrayList<Function>());
-		f.put("atnd",       new ArrayList<Function>());
-		f.put("atn2",       new ArrayList<Function>());
-		f.put("atn2d",      new ArrayList<Function>());
-		f.put("lcase$",     new ArrayList<Function>());
-		f.put("ucase$",     new ArrayList<Function>());
-		f.put("randomize",  new ArrayList<Function>());
-		f.put("divbyzero",  new ArrayList<Function>());
-
-		// Timer
-		f.put("inittimer",  new ArrayList<Function>());
-		f.put("waittimer",  new ArrayList<Function>());
-		f.put("synctimer",  new ArrayList<Function>());
-		f.put("synctimercatchup",  new ArrayList<Function>());
-
-		// Program arguments
-		f.put("argcount",    new ArrayList<Function>());
-		f.put("arg",         new ArrayList<Function>());
-
-		// Array size
-		f.put("arraymax",    new ArrayList<Function>());
-
-		///////////////////////
-		// Register functions
-		f.get("abs").add(        new WrapAbs());
-		f.get("asc").add(        new WrapAsc());
-		f.get("atn").add(        new WrapAtn());
-		f.get("chr$").add(       new WrapChr());
-		f.get("cos").add(        new WrapCos());
-		f.get("exp").add(        new WrapExp());
-		f.get("int").add(        new WrapInt());
-		f.get("left$").add(      new WrapLeft());
-		f.get("len").add(        new WrapLen());
-		f.get("log").add(        new WrapLog());
-		f.get("mid$").add(       new WrapMid());
-		f.get("pow").add(        new WrapPow());
-		f.get("right$").add(     new WrapRight());
-		f.get("rnd").add(        new WrapRnd());
-		f.get("sgn").add(        new WrapSgn());
-		f.get("sin").add(        new WrapSin());
-		f.get("sqrt").add(       new WrapSqrt());
-		f.get("sqr").add(        new WrapSqrt());      // sqr = Synonym for sqrt
-		f.get("str$").add(       new WrapStr());
-		f.get("tan").add(        new WrapTan());
-		f.get("tanh").add(       new WrapTanh());
-		f.get("val").add(        new WrapVal());
-		f.get("sind").add(       new WrapSinD());
-		f.get("cosd").add(       new WrapCosD());
-		f.get("tand").add(       new WrapTanD());
-		f.get("atand").add(      new WrapATanD());
-		f.get("atnd").add(       new WrapATanD());
-		f.get("atn2").add(       new WrapATan2());
-		f.get("atn2d").add(      new WrapATan2D());
-		f.get("lcase$").add(     new WrapLCase());
-		f.get("ucase$").add(     new WrapUCase());
-		f.get("randomize").add(  new WrapRandomize());
-		f.get("randomize").add(  new WrapRandomize_2());
-		f.get("divbyzero").add(  new WrapDivByZero());
-
-		// Timer
-		f.get("inittimer").add(  new WrapInitTimer());
-		f.get("waittimer").add(  new WrapWaitTimer());
-		f.get("synctimer").add(  new WrapSyncTimer());
-		f.get("synctimercatchup").add(  new WrapSyncTimerCatchup());
-
-		// Program arguments
-		f.get("argcount").add(    new WrapArgCount());
-		f.get("arg").add(         new WrapArg());
-
-		// Array size
-		f.get("arraymax").add(    new WrapArrayMax());
-
-		return f;
-	}
-	@Override
-	public Map<String, List<FuncSpec>> specs() {
-		Map<String, List<FuncSpec>> s = new HashMap<String, List<FuncSpec>>();
-
-		//Prototypes
-		s.put("abs",        new ArrayList<FuncSpec>());
-		s.put("asc",        new ArrayList<FuncSpec>());
-		s.put("atn",        new ArrayList<FuncSpec>());
-		s.put("chr$",       new ArrayList<FuncSpec>());
-		s.put("cos",        new ArrayList<FuncSpec>());
-		s.put("exp",        new ArrayList<FuncSpec>());
-		s.put("int",        new ArrayList<FuncSpec>());
-		s.put("left$",      new ArrayList<FuncSpec>());
-		s.put("len",        new ArrayList<FuncSpec>());
-		s.put("log",        new ArrayList<FuncSpec>());
-		s.put("mid$",       new ArrayList<FuncSpec>());
-		s.put("pow",        new ArrayList<FuncSpec>());
-		s.put("right$",     new ArrayList<FuncSpec>());
-		s.put("rnd",        new ArrayList<FuncSpec>());
-		s.put("sgn",        new ArrayList<FuncSpec>());
-		s.put("sin",        new ArrayList<FuncSpec>());
-		s.put("sqrt",       new ArrayList<FuncSpec>());
-		s.put("sqr",        new ArrayList<FuncSpec>());      // sqr = Synonym for sqrt
-		s.put("str$",       new ArrayList<FuncSpec>());
-		s.put("tan",        new ArrayList<FuncSpec>());
-		s.put("tanh",       new ArrayList<FuncSpec>());
-		s.put("val",        new ArrayList<FuncSpec>());
-		s.put("sind",       new ArrayList<FuncSpec>());
-		s.put("cosd",       new ArrayList<FuncSpec>());
-		s.put("tand",       new ArrayList<FuncSpec>());
-		s.put("atand",      new ArrayList<FuncSpec>());
-		s.put("atnd",       new ArrayList<FuncSpec>());
-		s.put("atn2",       new ArrayList<FuncSpec>());
-		s.put("atn2d",      new ArrayList<FuncSpec>());
-		s.put("lcase$",     new ArrayList<FuncSpec>());
-		s.put("ucase$",     new ArrayList<FuncSpec>());
-		s.put("randomize",  new ArrayList<FuncSpec>());
-		s.put("divbyzero",  new ArrayList<FuncSpec>());
-
-		// Timer
-		s.put("inittimer",  new ArrayList<FuncSpec>());
-		s.put("waittimer",  new ArrayList<FuncSpec>());
-		s.put("synctimer",  new ArrayList<FuncSpec>());
-		s.put("synctimercatchup",  new ArrayList<FuncSpec>());
-
-		// Program arguments
-		s.put("argcount",    new ArrayList<FuncSpec>());
-		s.put("arg",         new ArrayList<FuncSpec>());
-
-		// Array size
-		s.put("arraymax",    new ArrayList<FuncSpec>());
+	public Map<String, FuncSpec[]> specs() {
+		Map<String, FuncSpec[]> s = new HashMap<String, FuncSpec[]>();
 
 		//new FuncSpec(params, isFunction, brackets,	new ValType(returnType),
 		//				timeshare, vmIndex, freeTempData, paramValidationCallback)
@@ -642,7 +490,7 @@ public class Standard implements Library{
 		//		ParamValidationCallback paramValidationCallback)
 		///////////////////////
 		// Register functions
-
+/*
 		s.get("abs").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
 		s.get("asc").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_STRING }), true, true, ValType.VTP_INT, false, false, null));
 		s.get("atn").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
@@ -690,12 +538,17 @@ public class Standard implements Library{
 
 		// Array size
 		s.get("arraymax").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_UNDEFINED }), true, true, ValType.VTP_INT, false, false, new ValidateArrayMaxParam()));
-
+*/
 		return s;
 	}
 	@Override
 	public List<String> getDependencies() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void setContext(Object context) {
+
 	}
 }

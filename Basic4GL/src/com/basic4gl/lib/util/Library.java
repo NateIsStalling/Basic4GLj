@@ -59,27 +59,17 @@ public interface Library {
 	 * before the virtual machine is started.
 	 * @param vm
 	 */
-	public abstract void init(TomVM vm);
+	public abstract void initVM(TomVM vm);
 	
 	/**
 	 * Returns a list of constants for the compiler to use
-	 * @param comp
 	 */
 	public abstract Map<String, Constant> constants();
-	
+
 	/**
 	 * Initialize and register functions and constants with the compiler.
-	 * comp.AddFunction() comp.AddConstant()
-	 * @param comp
 	 */
-	public abstract Map<String, List<Function>> functions();
-	
-	/**
-	 * Initialize and register functions and constants with the compiler.
-	 * comp.AddFunction() comp.AddConstant()
-	 * @param comp
-	 */
-	public abstract Map<String, List<FuncSpec>> specs();
+	public abstract Map<String, FuncSpec[]> specs();
 	
 	/**
 	 * Documentation for functions and constants included in library; 
@@ -92,4 +82,6 @@ public interface Library {
 	 * @return List of files required by library to add to the class path
 	 */
 	public abstract List<String> getDependencies();
+
+	public abstract void setContext(Object context);
 }

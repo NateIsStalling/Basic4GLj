@@ -13,8 +13,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLProfile;
+import javax.media.opengl.*;
 import javax.media.opengl.awt.GLCanvas;
 import javax.swing.*;
 
@@ -28,7 +27,7 @@ import com.basic4gl.vm.TomVM;
 import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.util.Function;
 
-public class DesktopGL implements Target{
+public class DesktopGL implements Target, GLEventListener {
 
 	//Libraries
 	private java.util.List<Library> mLibraries;
@@ -40,7 +39,7 @@ public class DesktopGL implements Target{
 
 	private Frame mFrame;
 	private GLCanvas mCanvas;
-
+	private GL2 gl;
 	private TaskCallback mCallbacks;
 	private CallbackMessage mMessage;
 	private boolean mClosing;
@@ -91,14 +90,15 @@ public class DesktopGL implements Target{
 		//TODO Load libraries dynamically
 		//TODO Save/Load list of libraries in order they should be added
 		instance.mLibraries.add(new com.basic4gl.lib.standard.Standard());
+		instance.mLibraries.add(new com.basic4gl.lib.targets.desktopgl.GLBasicLib_gl());
 		// Register library functions
 		for (Library lib : instance.mLibraries) {
-			instance.mComp.AddConstants(lib.constants());
-			instance.mComp.AddFunctions(lib.functions(), lib.specs());
+			//instance.mComp.AddConstants(lib.constants());
+			instance.mComp.AddFunctions(lib, lib.specs());
 		}
 		// Register DesktopGL's functions
 		instance.mComp.AddConstants(instance.constants());
-		instance.mComp.AddFunctions(instance.functions(), instance.specs());
+		instance.mComp.AddFunctions(instance, instance.specs());
 
 		//Load VM's state from file
 		try {
@@ -159,7 +159,7 @@ public class DesktopGL implements Target{
 	public String[] compat() { return null;}
 
 	@Override
-	public void init(TomVM vm) {
+	public void initVM(TomVM vm) {
 		// TODO Auto-generated method stub
 
 	}
@@ -178,20 +178,12 @@ public class DesktopGL implements Target{
 	}
 
 	@Override
-	public Map<String, List<Function>> functions() {
+	public Map<String, FuncSpec[]> specs() {
 		//TODO move functions to separate library
-		Map<String, List<Function>> f = new HashMap<String, List<Function>>();
-		f.put("print", new ArrayList<Function>());
-		f.get("print").add(new WrapPrint());
-		return f;
-	}
-
-	@Override
-	public Map<String, List<FuncSpec>> specs() {
-		//TODO move functions to separate library
-		Map<String, List<FuncSpec>> s = new HashMap<String, List<FuncSpec>>();
-		s.put("print", new ArrayList<FuncSpec>());
-		s.get("print").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_STRING }), false, false, ValType.VTP_INT, false, false, null));
+		Map<String, FuncSpec[]> s = new HashMap<String, FuncSpec[]>();
+		s.put("print", new FuncSpec[]{
+				new FuncSpec(WrapPrint.class,new ParamTypeList(new Integer[]{ValType.VTP_STRING}), false, false, ValType.VTP_INT, false, false, null)
+		});
 		return s;
 	}
 	@Override
@@ -229,8 +221,8 @@ public class DesktopGL implements Target{
 
 		GLProfile glp = GLProfile.getDefault();
 		GLCapabilities caps = new GLCapabilities(glp);
-		GLCanvas mCanvas = new GLCanvas(caps);
-
+		mCanvas = new GLCanvas(caps);
+		mCanvas.addGLEventListener(this);
 		// m_glWin = null;
 		// m_glText = null;
 
@@ -295,6 +287,10 @@ public class DesktopGL implements Target{
 			}
 		});
 		mFrame.setLocationRelativeTo(null);
+		if (mLibraries!= null)
+		for (Library lib : mLibraries) {
+			lib.setContext(getContextGL());
+		}
 	}
 
 	@Override
@@ -328,6 +324,26 @@ public class DesktopGL implements Target{
 	public boolean isClosing() {
 		// TODO Auto-generated method stub
 		return mClosing;
+	}
+
+	@Override
+	public void init(GLAutoDrawable drawable) {
+		gl = drawable.getGL().getGL2();
+	}
+
+	@Override
+	public void dispose(GLAutoDrawable drawable) {
+
+	}
+
+	@Override
+	public void display(GLAutoDrawable drawable) {
+
+	}
+
+	@Override
+	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
+
 	}
 
 	private class VmWorker extends SwingWorker<Object, CallbackMessage>{
@@ -456,12 +472,12 @@ public class DesktopGL implements Target{
 	@Override
 	public Object getContext() {
 		// TODO Auto-generated method stub
-		return mFrame;
+		return getContextGL();
 	}
 	@Override
 	public Object getContextGL() {
 		// TODO Auto-generated method stub
-		return mCanvas;
+		return gl;
 	}
 
 	@Override
@@ -636,7 +652,7 @@ public class DesktopGL implements Target{
 	}
 
 	public final class WrapPrint implements Function{
-
+		public WrapPrint(){};
 		@Override
 		public void run(TomVM vm) {
 			System.out.print("debug: ");
@@ -776,6 +792,11 @@ public class DesktopGL implements Target{
 		*/
 
 		return list;
+	}
+
+	@Override
+	public void setContext(Object context) {
+
 	}
 
 
