@@ -1,16 +1,4 @@
 Manifest-Version: 1.0
-Class-Path: . jar/gluegen.jar jar/gluegen-java-src.zip jar/gluegen-rt.
- jar jar/gluegen-rt-natives-linux-amd64.jar jar/gluegen-rt-natives-lin
- ux-armv6.jar jar/gluegen-rt-natives-linux-armv6hf.jar jar/gluegen-rt-
- natives-linux-i586.jar jar/gluegen-rt-natives-macosx-universal.jar ja
- r/gluegen-rt-natives-solaris-amd64.jar jar/gluegen-rt-natives-solaris
- -i586.jar jar/gluegen-rt-natives-windows-amd64.jar jar/gluegen-rt-nat
- ives-windows-i586.jar jar/jogl-all.jar jar/jogl-all-natives-linux-amd
- 64.jar jar/jogl-all-natives-linux-armv6.jar jar/jogl-all-natives-linu
- x-armv6hf.jar jar/jogl-all-natives-linux-i586.jar jar/jogl-all-native
- s-macosx-universal.jar jar/jogl-all-natives-solaris-amd64.jar jar/jog
- l-all-natives-solaris-i586.jar jar/jogl-all-natives-windows-amd64.jar
-  jar/jogl-all-natives-windows-i586.jar jar/jogl-java-src.zip jar/RSyn
- taxTextArea.jar
+Class-Path: . jar/lwjgl.jar jar/RSyntaxTextArea.jar
 Main-Class: com.basic4gl.desktop.MainWindow
 

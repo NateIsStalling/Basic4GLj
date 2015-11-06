@@ -8,8 +8,11 @@
         <element id="module-output" name="Basic4GLj" />
       </element>
       <element id="directory" name="jar">
-        <element id="library" level="project" name="JOGL-2" />
         <element id="library" level="project" name="RSyntaxTextArea" />
+        <element id="library" level="project" name="lwjgl" />
+      </element>
+      <element id="directory" name="native">
+        <element id="dir-copy" path="$PROJECT_DIR$/native" />
       </element>
     </root>
   </artifact>
