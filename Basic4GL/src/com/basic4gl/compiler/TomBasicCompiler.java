@@ -1218,7 +1218,12 @@ public class TomBasicCompiler extends HasErrorState {
 		} else if (m_token.m_text.equals("reset")) {
 			if (!CompileDataReset())
 				return false;
-		//TODO Remove compile input and move to library
+		} else if (m_token.m_text.equals("print")) {
+			if (!CompilePrint(false))
+				return false;
+		} else if (m_token.m_text.equals("printr")) {
+			if (!CompilePrint(true))
+				return false;
 		} else if (m_token.m_text.equals("input")) {
 			if (!CompileInput())
 				return false;
@@ -4469,11 +4474,11 @@ public class TomBasicCompiler extends HasErrorState {
 		return null;
 	}
 
-	/*
+
 	boolean CompilePrint(boolean forceNewLine) {
 
 		// The print function has a special syntax, and must be compiled
-		// separtely
+		// separately
 
 		// Skip "print"
 		if (!GetToken())
@@ -4500,7 +4505,7 @@ public class TomBasicCompiler extends HasErrorState {
 						return false;
 
 				// Evaluate expression & convert it to string
-				if (!(CompileExpression() && CompileConvert(BasicValType.VTP_STRING)))
+				if (!(CompileExpression() && CompileConvert(ValType.VTP_STRING)))
 					return false;
 
 				operandCount++;
@@ -4511,9 +4516,9 @@ public class TomBasicCompiler extends HasErrorState {
 		while (operandCount > 1) {
 			if (!CompilePop())
 				return false;
-			AddInstruction(OpCode.OP_OP_PLUS, BasicValType.VTP_STRING,
+			AddInstruction(OpCode.OP_OP_PLUS, ValType.VTP_STRING,
 					new Value());
-			m_regType.Set(BasicValType.VTP_STRING);
+			m_regType.Set(ValType.VTP_STRING);
 
 			operandCount--;
 		}
@@ -4536,7 +4541,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Generate code to call it
-		AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT,
+		AddInstruction(OpCode.OP_CALL_FUNC, ValType.VTP_INT,
 				new Value(spec.getIndex()));
 
 		// Generate code to clean up stack
@@ -4545,7 +4550,7 @@ public class TomBasicCompiler extends HasErrorState {
 				return false;
 
 		return true;
-	}*/
+	}
 
 	boolean CompileInput() {
 
