@@ -1,0 +1,115 @@
+TextMode (TEXT_BUFFERED)
+locate 0, 3
+printr "              !Stick Dude!"
+printr
+printr "      Use arrow keys and space bar"
+
+' Load in all image frames
+dim allImages(ImageStripFrames("data\StickDude.png") - 1)
+allImages = LoadImageStrip("data\StickDude.png")
+
+' Split up frames into separate animations
+dim standImage, jumpImage, walkAnim(3), climpAnim(3)
+
+' Frame 0 is standing still
+standImage      = allImages(0)
+
+' Frames 1-4 are walking (right)
+walkAnim(0)     = allImages(1)
+walkAnim(1)     = allImages(2)
+walkAnim(2)     = allImages(3)
+walkAnim(3)     = allImages(4)
+
+' Frame 5 is jumping
+jumpImage       = allImages(5)
+
+' Frames 6-9 are climbing (up)
+climpAnim(0)    = allImages(6)
+climpAnim(1)    = allImages(7)
+climpAnim(2)    = allImages(8)
+climpAnim(3)    = allImages(9)
+
+' Display animation frames
+dim i
+for i = 0 to 9
+    NewSprite(allImages(i))
+    SprSetPos(i * 64 + 32, 448)
+    locate i * 4 + 1, 22: print i
+next
+                                        
+' Create the sprite
+dim sprite
+Sprite = NewSprite(standImage)
+SprSetPos(320, 240)
+
+' Main animation loop
+while true
+
+    ' Set the sprite animation and direction based on the
+    ' key being pressed
+    if ScanKeyDown(VK_SPACE) then
+    
+        ' Display jump image
+        SprSetTexture(jumpImage)
+
+    elseif ScanKeyDown(VK_LEFT) then
+    
+        ' Display walk animation
+        SprSetTextures(walkAnim)
+        SprSetAnimSpeed(.2)
+        
+        ' Flip it so it faces left
+        SprSetXFlip(true)
+        
+        ' Move sprite left
+        SprSetVel(-1, 0)  
+
+    elseif ScanKeyDown(VK_RIGHT) then
+    
+        ' Display walk animation
+        SprSetTextures(walkAnim)
+        SprSetAnimSpeed(.2)
+        
+        ' Unflipped, so it faces right
+        SprSetXFlip(false)
+        
+        ' Move sprite right    
+        SprSetVel(1, 0)    
+
+    elseif ScanKeyDown(VK_UP) then
+    
+        ' Display climp animation
+        SprSetTextures(climpAnim)
+        SprSetAnimSpeed(.2)
+        
+        ' Move sprite up
+        SprSetVel(0, -2)
+
+    elseif ScanKeyDown(VK_DOWN) then
+    
+        ' Display climb animation, going backwards
+        SprSetTextures(climpAnim)
+        SprSetAnimSpeed(-.2)
+        
+        ' Move sprite down
+        SprSetVel(0, 2)   
+
+    else
+        
+        ' Display standing image
+        SprSetTexture(standImage)
+        
+        ' Stop sprite
+        SprSetVel(0, 0)
+
+    endif    
+    
+    ' AnimateSprites automatically animates and moves all sprites
+    AnimateSprites()
+    
+    ' DrawText draws the sprites to screen
+    DrawText()
+    
+    ' WaitTimer slows down the main loop so things don't happen too fast
+    WaitTimer(20)
+wend

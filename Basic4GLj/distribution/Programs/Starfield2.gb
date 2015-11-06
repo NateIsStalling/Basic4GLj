@@ -1,0 +1,55 @@
+' Star field demo 2
+'
+' Varying star's brightness by explicitly setting the colour
+
+' Note:
+' This demo is based on the source code from the previous one.
+' I've removed most of the explanation comments from the previous demo, 
+' and just commented the new pieces.
+' 
+'   * I've upped the number of stars, and doubled the movement speed also
+
+const maxStars = 1000
+
+dim stars#(maxStars)(2)
+dim i, intensity#
+
+' Populate star field
+for i = 1 to maxStars
+    stars#(i) = vec3 (rnd () % 401 - 200, rnd () % 401 - 200, -i)
+next
+
+glDisable (GL_DEPTH_TEST)
+
+' Main loop
+while true    
+    glClear (GL_COLOR_BUFFER_BIT)       
+
+    for i = 1 to maxStars
+    
+        ' Move the star forward, by adding 1 to Z
+        stars#(i) = stars#(i) + vec3 (0, 0, 2)
+
+        ' If the Z goes positive (behind the screen), move it to the back again.
+        if stars#(i)(2) >= 0 then stars#(i)(2) = -maxStars endif
+        
+        ' Calculate the star's intensity. 
+        ' We want this to come out as a value between 0 and 1.
+        ' So the furthest away stars have intensity 0, and the closest have 1.
+        intensity# = (stars#(i)(2) + maxStars) / maxStars
+        glBegin (GL_POINTS)
+        
+            ' Set the star's colour
+            glColor3f (intensity#, intensity#, intensity#)
+            ' This is a form of the glColor command.
+            ' The last 2 characters tell us:
+            '   3 = Takes a 3D vector
+            '   F = Floating point values   
+            ' 3 parameters are: Red component, Blue component, Green component
+
+            glVertex3fv (stars#(i))
+        glEnd ()
+    next
+    SwapBuffers ()
+    WaitTimer (20)
+wend

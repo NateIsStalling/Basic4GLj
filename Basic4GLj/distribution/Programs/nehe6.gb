@@ -1,0 +1,67 @@
+	dim xrot#, yrot#, zrot#								' X,Y and Z axis rotation
+	dim texture										' OpenGL texture handle
+
+	' Load texture
+	' 
+	' There are a few of ways to load a texture in Basic4GL. The simplest one is used here.
+	' Alternatively the texture can be loaded as an image, and then uploaded into OpenGL
+	' using glTexImage2D or gluBuild2DMipmaps.
+	'
+	' TextureDemo.gb demonstrates different methods for loading textures.
+	texture = LoadMipmapTexture ("Data/NeHe.bmp")
+	if texture = 0 then print "Failed to load texture": end: endif
+	
+	glEnable (GL_TEXTURE_2D)
+	glEnable (GL_CULL_FACE)
+
+	while true
+		glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)		' Clear screen and depth buffer
+		glLoadIdentity()                       				' Reset the current modelview matrix
+
+		glTranslatef(0.0,0.0,-5.0)          					' Move into the screen 5 units
+
+		glRotatef(xrot#,1.0,0.0,0.0)						' Rotate on the X axis
+		glRotatef(yrot#,0.0,1.0,0.0)						' Rotate on the Y axis
+		glRotatef(zrot#,0.0,0.0,1.0)						' Rotate on the Z axis
+
+     		glBindTexture(GL_TEXTURE_2D, texture)       			' Select our texture
+
+        	glBegin(GL_QUADS)
+			' Front face
+			glTexCoord2f(0.0, 0.0): glVertex3f(-1.0, -1.0,  1.0)	' Bottom left of the texture and quad
+			glTexCoord2f(1.0, 0.0): glVertex3f( 1.0, -1.0,  1.0)	' Bottom right of the texture and quad
+			glTexCoord2f(1.0, 1.0): glVertex3f( 1.0,  1.0,  1.0)	' Top right of the texture and quad
+			glTexCoord2f(0.0, 1.0): glVertex3f(-1.0,  1.0,  1.0)	' Top left of the texture and quad
+			' Back face
+			glTexCoord2f(1.0, 0.0): glVertex3f(-1.0, -1.0, -1.0)	' Bottom right of the texture and quad
+			glTexCoord2f(1.0, 1.0): glVertex3f(-1.0,  1.0, -1.0)	' Top right of the texture and quad
+			glTexCoord2f(0.0, 1.0): glVertex3f( 1.0,  1.0, -1.0)	' Top left of the texture and quad
+			glTexCoord2f(0.0, 0.0): glVertex3f( 1.0, -1.0, -1.0)	' Bottom left of the texture and quad
+			' Top face
+			glTexCoord2f(0.0, 1.0): glVertex3f(-1.0,  1.0, -1.0)	' Top left of the texture and quad
+			glTexCoord2f(0.0, 0.0): glVertex3f(-1.0,  1.0,  1.0)	' Bottom left of the texture and quad
+			glTexCoord2f(1.0, 0.0): glVertex3f( 1.0,  1.0,  1.0)	' Bottom right of the texture and quad
+			glTexCoord2f(1.0, 1.0): glVertex3f( 1.0,  1.0, -1.0)	' Top right of the texture and quad
+			' Bottom face
+			glTexCoord2f(1.0, 1.0): glVertex3f(-1.0, -1.0, -1.0)	' Top right of the texture and quad
+			glTexCoord2f(0.0, 1.0): glVertex3f( 1.0, -1.0, -1.0)	' Top left of the texture and quad
+			glTexCoord2f(0.0, 0.0): glVertex3f( 1.0, -1.0,  1.0)	' Bottom left of the texture and quad
+			glTexCoord2f(1.0, 0.0): glVertex3f(-1.0, -1.0,  1.0)	' Bottom right of the texture and quad
+			' Right face
+			glTexCoord2f(1.0, 0.0): glVertex3f( 1.0, -1.0, -1.0)	' Bottom right of the texture and quad
+			glTexCoord2f(1.0, 1.0): glVertex3f( 1.0,  1.0, -1.0)	' Top right of the texture and quad
+			glTexCoord2f(0.0, 1.0): glVertex3f( 1.0,  1.0,  1.0)	' Top left of the texture and quad
+			glTexCoord2f(0.0, 0.0): glVertex3f( 1.0, -1.0,  1.0)	' Bottom left of the texture and quad
+			' Left face
+			glTexCoord2f(0.0, 0.0): glVertex3f(-1.0, -1.0, -1.0)	' Bottom left of the texture and quad
+			glTexCoord2f(1.0, 0.0): glVertex3f(-1.0, -1.0,  1.0)	' Bottom right of the texture and quad
+			glTexCoord2f(1.0, 1.0): glVertex3f(-1.0,  1.0,  1.0)	' Top right of the texture and quad
+			glTexCoord2f(0.0, 1.0): glVertex3f(-1.0,  1.0, -1.0)	' Top left of the texture and quad
+		glEnd()
+	
+		SwapBuffers ()
+
+		xrot# = xrot# + 0.3						' X axis rotation
+		yrot# = yrot# + 0.2						' Y axis rotation
+		zrot# = zrot# + 0.4						' Z axis rotation
+	wend

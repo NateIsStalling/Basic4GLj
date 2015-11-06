@@ -1,0 +1,211 @@
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Cube and pyramid demo
+
+' Modified from nehe's tutorial 5.
+
+dim frames, timer, fps
+dim texture, groundTex, skyTex (4)
+texture         = LoadMipmapTexture ("textures\00003.jpg")
+groundTex         = LoadMipmapTexture ("textures\00006.jpg")
+skyTex (0)     = LoadMipmapTexture ("textures\t003.jpg")
+skyTex (1)     = LoadMipmapTexture ("textures\l003.jpg")
+skyTex (2)     = LoadMipmapTexture ("textures\f003.jpg")
+skyTex (3)     = LoadMipmapTexture ("textures\r003.jpg")
+skyTex (4)     = LoadMipmapTexture ("textures\b003.jpg")
+
+resizetext (30, 21)
+textmode (TEXT_OVERLAID)
+dim x, y, ang#, sep#, a$, i: sep# = 90
+y = textrows () / 2 - 2
+a$ = "Cube": gosub msg
+y = y + 1: a$ = "and": gosub msg
+y = y + 1: a$ = "Pyramid": gosub msg
+
+glEnable (GL_CULL_FACE)
+
+while true
+    glClear (GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
+
+    ' Sky box
+    glDisable (GL_DEPTH_TEST)
+    glDisable (GL_CULL_FACE)
+    glEnable (GL_TEXTURE_2D)
+    glColor3f (1, 1, 1)
+    glMatrixMode (GL_MODELVIEW)
+    glLoadIdentity ()
+'    glTranslatef (0, -1, 0)
+    glRotatef (ang#, 0, 1, 0)
+    glPushMatrix ()
+    
+    ' Top
+    glBindTexture (GL_TEXTURE_2D, skyTex (0))
+    glBegin (GL_QUADS)
+        glTexCoord2f (0, 0): glVertex3f (-2.05, 2, -2.05)
+        glTexCoord2f (0, 1): glVertex3f ( 2.05, 2, -2.05)
+        glTexCoord2f (1, 1): glVertex3f ( 2.05, 2,  2.05)
+        glTexCoord2f (1, 0): glVertex3f (-2.05, 2,  2.05)
+    glEnd ()
+
+    ' Sides
+    for i = 1 to 4
+        glBindTexture (GL_TEXTURE_2D, skyTex (i))
+        glBegin (GL_QUADS)
+            glTexCoord2f (1, 1): glVertex3f (-2.05, 2.05, -2)
+            glTexCoord2f (0, 1): glVertex3f ( 2.05, 2.05, -2)
+            glTexCoord2f (0, 0): glVertex3f ( 2.05,-0.05, -2)
+            glTexCoord2f (1, 0): glVertex3f (-2.05,-0.05, -2)
+        glEnd ()
+        glRotatef (90, 0, 1, 0)
+    next        
+
+    ' Ground
+    glPopMatrix ()
+    glTranslatef (0, -1, 0)
+    glBindTexture (GL_TEXTURE_2D, groundTex)
+    glBegin (GL_QUADS)
+        glTexCoord2f (0,  0): glVertex3f (-20, 0, 20)
+        glTexCoord2f (16, 0): glVertex3f ( 20, 0, 20)
+        glTexCoord2f (16, 16): glVertex3f ( 20, 0,-20)
+        glTexCoord2f (0,  16): glVertex3f (-20, 0,-20)
+    glEnd ()
+
+    glEnable (GL_DEPTH_TEST)
+    glEnable (GL_CULL_FACE)
+
+    glMatrixMode (GL_MODELVIEW)
+    glLoadIdentity ()
+    glTranslatef (0, 0, -10)    
+    glRotatef (ang#, 0, 1, 0)
+    glTranslatef (-20, -sin (sep#) * 4, -20)
+    glCullFace (GL_BACK)
+    gosub scene
+
+    glLoadIdentity ()
+    glTranslatef (0, 0, -10)    
+    glRotatef (-ang#, 0, 1, 0)
+    glScalef (1, -1, 1)
+    glTranslatef (-20, -sin (sep#) * 4, -20)
+    glCullFace (GL_FRONT)
+    gosub scene
+
+    frames = frames + 1
+    locate 0, 0: print fps + "   "
+
+    DrawText ()
+    SwapBuffers ()
+
+    if frames >= 100 then 
+        fps = Int (frames / ((TickCount () - timer) / 1000.0))
+        frames = 0
+        timer = TickCount ()
+    endif
+
+    while SyncTimer (10)
+        gosub Animate
+    wend
+wend
+end
+
+scene:
+    for y = 0 to 10
+        glPushMatrix ()
+        for x = 0 to 10
+            if (x+y)%2 = 0 then 
+                gosub pyramid
+            else
+                gosub cube
+            endif
+            glTranslatef (4, 0, 0)
+        next
+        glPopMatrix ()
+        glTranslatef (0, 0, 4)
+    next
+    return        
+
+
+pyramid:
+    glDisable (GL_TEXTURE_2D)
+        glBegin(GL_TRIANGLES)                        ' Drawing using triangles
+                    glColor3f(1.0,0.0,0.0)                  ' Red
+            glVertex3f( 0.0, 1.0, 0.0)            ' Top of triangle (front)
+            glColor3f(0.0,1.0,0.0)                ' Green
+            glVertex3f(-1.0,-1.0, 1.0)            ' Left of triangle (front)
+            glColor3f(0.0,0.0,1.0)                ' Blue
+            glVertex3f( 1.0,-1.0, 1.0)            ' Right of triangle (front)
+
+                    glColor3f(1.0,0.0,0.0)                ' Red
+            glVertex3f( 0.0, 1.0, 0.0)            ' Top of triangle (right)
+            glColor3f(0.0,0.0,1.0)                ' Blue
+            glVertex3f( 1.0,-1.0, 1.0)            ' Left of triangle (right)
+            glColor3f(0.0,1.0,0.0)                ' Green
+            glVertex3f( 1.0,-1.0, -1.0)            ' Right of triangle (right)
+
+                    glColor3f(1.0,0.0,0.0)                ' Red
+            glVertex3f( 0.0, 1.0, 0.0)            ' Top of triangle (back)
+            glColor3f(0.0,1.0,0.0)                ' Green
+            glVertex3f( 1.0,-1.0, -1.0)            ' Left of triangle (back)
+            glColor3f(0.0,0.0,1.0)                ' Blue
+                    glVertex3f(-1.0,-1.0, -1.0)            ' Right of triangle (back)
+
+                    glColor3f(1.0,0.0,0.0)                ' Red
+            glVertex3f( 0.0, 1.0, 0.0)            ' Top of triangle (left)
+            glColor3f(0.0,0.0,1.0)                ' Blue
+            glVertex3f(-1.0,-1.0,-1.0)            ' Left of triangle (left)
+            glColor3f(0.0,1.0,0.0)                ' Green
+            glVertex3f(-1.0,-1.0, 1.0)            ' Right of triangle (left)
+        glEnd()                            ' Finished Drawing The Triangle
+        return
+
+cube:
+        glEnable (GL_TEXTURE_2D)
+        glBindTexture (GL_TEXTURE_2D, texture)
+        glBegin(GL_QUADS)                        ' Draw a quad
+            glColor3f(0.0,1.0,0.0)                ' Set the color to green
+            glTexCoord2f(0,0):glVertex3f( 1.0, 1.0,-1.0)            ' Top right of the quad (top)
+            glTexCoord2f(1,0):glVertex3f(-1.0, 1.0,-1.0)            ' Top left of the quad (top)
+            glTexCoord2f(1,1):glVertex3f(-1.0, 1.0, 1.0)            ' Bottom left of the quad (top)
+            glTexCoord2f(0,1):glVertex3f( 1.0, 1.0, 1.0)            ' Bottom right of the quad (top)
+                    glColor3f(1.0,0.5,0.0)                ' Set the color to orange
+            glTexCoord2f(0,0):glVertex3f( 1.0,-1.0, 1.0)            ' Top right of the quad (bottom)
+            glTexCoord2f(1,0):glVertex3f(-1.0,-1.0, 1.0)            ' Top left of the quad (bottom)
+            glTexCoord2f(1,1):glVertex3f(-1.0,-1.0,-1.0)            ' Bottom left of the quad (bottom)
+            glTexCoord2f(0,1):glVertex3f( 1.0,-1.0,-1.0)            ' Bottom right of the quad (bottom)
+
+                    glColor3f(1.0,0.0,0.0)                ' Set the color to red
+            glTexCoord2f(0,0):glVertex3f( 1.0, 1.0, 1.0)            ' Top right of the quad (front)
+            glTexCoord2f(1,0):glVertex3f(-1.0, 1.0, 1.0)            ' Top left of the quad (front)
+            glTexCoord2f(1,1):glVertex3f(-1.0,-1.0, 1.0)            ' Bottom left of the quad (front)
+            glTexCoord2f(0,1):glVertex3f( 1.0,-1.0, 1.0)            ' Bottom right of the quad (front)
+
+                    glColor3f(1.0,1.0,0.0)                ' Set the color to yellow
+            glTexCoord2f(0,0):glVertex3f( 1.0,-1.0,-1.0)            ' Bottom left of the quad (back)
+            glTexCoord2f(1,0):glVertex3f(-1.0,-1.0,-1.0)            ' Bottom right of the quad (back)
+            glTexCoord2f(1,1):glVertex3f(-1.0, 1.0,-1.0)            ' Top right of the quad (back)
+            glTexCoord2f(0,1):glVertex3f( 1.0, 1.0,-1.0)            ' Top left of the quad (back)
+
+                    glColor3f(0.0,0.0,1.0)                  ' Set the color to blue
+            glTexCoord2f(0,0):glVertex3f(-1.0, 1.0, 1.0)            ' Top right of the quad (left)
+            glTexCoord2f(1,0):glVertex3f(-1.0, 1.0,-1.0)            ' Top left of the quad (left)
+            glTexCoord2f(1,1):glVertex3f(-1.0,-1.0,-1.0)            ' Bottom left of the quad (left)
+            glTexCoord2f(0,1):glVertex3f(-1.0,-1.0, 1.0)            ' Bottom right of the quad (left)
+
+                    glColor3f(1.0,0.0,1.0)                ' Set the color to violet
+            glTexCoord2f(0,0):glVertex3f( 1.0, 1.0,-1.0)            ' Top right of the quad (right)
+            glTexCoord2f(1,0):glVertex3f( 1.0, 1.0, 1.0)            ' Top left of the quad (right)
+            glTexCoord2f(1,1):glVertex3f( 1.0,-1.0, 1.0)            ' Bottom left of the quad (right)
+            glTexCoord2f(0,1):glVertex3f( 1.0,-1.0,-1.0)            ' Bottom right of the quad (right)
+        glEnd()
+        return
+
+
+msg: 
+
+    locate (TextCols () - len (a$)) / 2, y
+    print a$
+    y = y + 1
+    return    
+
+Animate:
+    ang# = ang# + 0.3
+'    sep# = sep# + 0.02
+    return

@@ -1,0 +1,76 @@
+' Bounce server
+
+' Variables
+dim connected  
+dim server
+dim connection
+dim text$, reversed$, i
+dim message
+
+gosub CreateServer
+
+while true
+    gosub WaitForConnection
+    
+    while connected
+        gosub ReceiveText 
+        gosub ReverseText
+        gosub SendText
+        gosub CheckConnection
+    wend
+    gosub CloseConnection
+wend   
+
+CreateServer:
+    ' Create server
+    server = NewServer(8000)    
+    return
+    
+WaitForConnection:
+    ' Wait for connection request
+    printr "Waiting for connection..."
+    while not ConnectionPending(server)
+        Sleep(100)
+    wend
+    
+    ' Accept connection
+    connection = AcceptConnection(server) 
+    printr "Accepted connection"
+    connected = true
+
+    return
+
+CloseConnection:
+    DeleteConnection(connection)
+    connection = 0
+    return
+    
+CheckConnection:
+    connected = ConnectionConnected(connection)
+    return
+
+SendText:
+    message = SendMessage(connection, 1, true, false)
+    WriteString(message, text$)
+    CloseFile(message)
+    return
+    
+ReceiveText:
+    while not MessagePending(connection)
+        Sleep(100)
+    wend
+    
+    message = ReceiveMessage(connection)
+    text$ = ReadLine(message) 
+    CloseFile(message)
+    
+    printr ">"; text$
+    return
+
+ReverseText:
+    reversed$ = ""
+    for i = len(text$) to 1 step -1
+        reversed$ = reversed$ + mid$(text$, i, 1)
+    next
+    text$ = reversed$
+    return

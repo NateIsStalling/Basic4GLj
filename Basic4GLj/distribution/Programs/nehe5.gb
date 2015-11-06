@@ -1,0 +1,88 @@
+	dim rtri#										' Angle for the triangle
+	dim rquad#										' Angle for the quad    
+
+	glEnable (GL_CULL_FACE)
+
+	while true
+		glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)	' Clear screen and depth buffer
+		glLoadIdentity()       						' Reset the current modelview matrix
+	
+		glTranslatef(-1.5,0.0,-6.0)         		' Move left 1.5 units and into the screen 6.0
+		glRotatef(rtri#,0.0,1.0,0.0)			' Rotate the triangle on the Y axis ( NEW )
+
+		glBegin(GL_TRIANGLES)		        		' Drawing using triangles
+	     		glColor3f(1.0,0.0,0.0)      		' Red
+			glVertex3f( 0.0, 1.0, 0.0)			' Top of triangle (front)
+			glColor3f(0.0,1.0,0.0)			' Green
+			glVertex3f(-1.0,-1.0, 1.0)			' Left of triangle (front)
+			glColor3f(0.0,0.0,1.0)			' Blue
+			glVertex3f( 1.0,-1.0, 1.0)			' Right of triangle (front)
+
+	     		glColor3f(1.0,0.0,0.0)			' Red
+			glVertex3f( 0.0, 1.0, 0.0)			' Top of triangle (right)
+			glColor3f(0.0,0.0,1.0)			' Blue
+			glVertex3f( 1.0,-1.0, 1.0)			' Left of triangle (right)
+			glColor3f(0.0,1.0,0.0)			' Green
+			glVertex3f( 1.0,-1.0, -1.0)		' Right of triangle (right)
+
+			glColor3f(1.0,0.0,0.0)			' Red
+			glVertex3f( 0.0, 1.0, 0.0)			' Top of triangle (back)
+			glColor3f(0.0,1.0,0.0)			' Green
+			glVertex3f( 1.0,-1.0, -1.0)		' Left of triangle (back)
+			glColor3f(0.0,0.0,1.0)			' Blue
+			glVertex3f(-1.0,-1.0, -1.0)		' Right of triangle (back)
+
+			glColor3f(1.0,0.0,0.0)			' Red
+			glVertex3f( 0.0, 1.0, 0.0)			' Top of triangle (left)
+			glColor3f(0.0,0.0,1.0)			' Blue
+			glVertex3f(-1.0,-1.0,-1.0)			' Left of triangle (left)
+			glColor3f(0.0,1.0,0.0)			' Green
+			glVertex3f(-1.0,-1.0, 1.0)			' Right of triangle (left)
+		glEnd()							' Finished Drawing The Triangle
+
+		glLoadIdentity()					' Reset the current modelview matrix
+		glTranslatef(1.5,0.0,-6.0)				' Move right 1.5 units and into the screen 6.0
+		glRotatef(rquad#,1.0,0.0,0.0)			' Rotate the quad on the X axis ( NEW )
+		glColor3f(0.5,0.5,1.0)				' Set the color to blue one time only
+
+		glBegin(GL_QUADS)		        		' Draw a quad
+			glColor3f(0.0,1.0,0.0)			' Set the color to green
+			glVertex3f( 1.0, 1.0,-1.0)			' Top right of the quad (top)
+			glVertex3f(-1.0, 1.0,-1.0)			' Top left of the quad (top)
+			glVertex3f(-1.0, 1.0, 1.0)			' Bottom left of the quad (top)
+			glVertex3f( 1.0, 1.0, 1.0)			' Bottom right of the quad (top)
+			glColor3f(1.0,0.5,0.0)			' Set the color to orange
+			glVertex3f( 1.0,-1.0, 1.0)			' Top right of the quad (bottom)
+			glVertex3f(-1.0,-1.0, 1.0)			' Top left of the quad (bottom)
+			glVertex3f(-1.0,-1.0,-1.0)			' Bottom left of the quad (bottom)
+			glVertex3f( 1.0,-1.0,-1.0)			' Bottom right of the quad (bottom)
+
+			glColor3f(1.0,0.0,0.0)			' Set the color to red
+			glVertex3f( 1.0, 1.0, 1.0)			' Top right of the quad (front)
+			glVertex3f(-1.0, 1.0, 1.0)			' Top left of the quad (front)
+			glVertex3f(-1.0,-1.0, 1.0)			' Bottom left of the quad (front)
+			glVertex3f( 1.0,-1.0, 1.0)			' Bottom right of the quad (front)
+
+			glColor3f(1.0,1.0,0.0)			' Set the color to yellow
+			glVertex3f( 1.0,-1.0,-1.0)			' Bottom left of the quad (back)
+			glVertex3f(-1.0,-1.0,-1.0)			' Bottom right of the quad (back)
+			glVertex3f(-1.0, 1.0,-1.0)			' Top right of the quad (back)
+			glVertex3f( 1.0, 1.0,-1.0)			' Top left of the quad (back)
+
+			glColor3f(0.0,0.0,1.0)      		' Set the color to blue
+			glVertex3f(-1.0, 1.0, 1.0)			' Top right of the quad (left)
+			glVertex3f(-1.0, 1.0,-1.0)			' Top left of the quad (left)
+			glVertex3f(-1.0,-1.0,-1.0)			' Bottom left of the quad (left)
+			glVertex3f(-1.0,-1.0, 1.0)			' Bottom right of the quad (left)
+
+			glColor3f(1.0,0.0,1.0)			' Set the color to violet
+			glVertex3f( 1.0, 1.0,-1.0)			' Top right of the quad (right)
+			glVertex3f( 1.0, 1.0, 1.0)			' Top left of the quad (right)
+			glVertex3f( 1.0,-1.0, 1.0)			' Bottom left of the quad (right)
+			glVertex3f( 1.0,-1.0,-1.0)			' Bottom right of the quad (right)
+		glEnd()
+
+		rtri# = rtri# + 0.2                    	' Increase the rotation variable for the triangle 
+		rquad# = rquad# - 0.15 				' Decrease the rotation variable for the quad     
+		SwapBuffers ()
+	wend

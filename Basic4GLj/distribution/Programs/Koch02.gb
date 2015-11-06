@@ -1,0 +1,86 @@
+' Von Bon Koch
+' Written by Scott Brosious
+const width = 640, height = 480  
+
+dim a: a = 84 ' Start using this angle
+dim nops
+nops = 256   
+dim mainloop
+mainloop = 20
+dim ang(339) 
+
+ang(0) = 0
+ang(1) = 72
+ang(2) = 288
+ang(3) = 0
+
+dim p,s,f,i,j
+
+p = 4 ' Point to where you are at
+
+s = 0:f = 3 ' Start and Finish where you are calculating sets of 4
+
+for j = 0 to mainloop
+for i = s to f
+
+ang(p) = ang(i)
+ang(p + 4) = ang(i) + 72
+ang(p + 8) = ang(i) - 72
+ang(p + 12) = ang(i)
+
+p = p + 1
+
+next
+
+p = p + 12
+
+s = s + 4
+f = s + 3
+
+next
+
+' Set 2D mode
+glMatrixMode (GL_PROJECTION)
+glLoadIdentity ()
+glOrtho (0, width, 0, height, -1, 1)
+glMatrixMode (GL_MODELVIEW)
+glDisable (GL_DEPTH_TEST)
+
+' Clear screen
+glClear (GL_COLOR_BUFFER_BIT)
+
+dim lenght
+lenght = 13 ' Lenght of vector (magnitude)
+
+dim xs#(nops) ' Screen x & y location on the screen
+dim ys#(nops) ' Add one for last pixel
+
+xs#(0) = 0 ' Start drawing from here
+ys#(0) = height / 2
+
+dim xv#,yv#
+
+' Draw some lines
+glBegin (GL_LINES)
+    
+    for i = 0 to (nops -1)
+    
+    xv# = xs#(i) +  cosd(ang(a)) * lenght
+    yv# = ys#(i) +  sind(ang(a)) * lenght
+    
+    glColor3f (1, 1, 1)
+    glVertex2f (xs#(i),ys#(i))
+    glVertex2f (xv#,yv#)
+    
+    xs#(i + 1) = xv#
+    ys#(i + 1) = yv#
+    
+    a = a + 1 ' Progess through the angles
+
+    next
+
+glEnd ()
+
+' Display output
+SwapBuffers ()
+

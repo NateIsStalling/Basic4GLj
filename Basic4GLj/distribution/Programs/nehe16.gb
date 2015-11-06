@@ -1,0 +1,158 @@
+    dim light                       ' Lighting ON / OFF
+    dim xrot#                       ' X Rotation
+    dim yrot#                       ' Y Rotation
+    dim xspeed#                     ' X Rotation Speed
+    dim yspeed#                     ' Y Rotation Speed
+    dim z#                          ' Depth Into The Screen    
+    z# = -5
+    dim LightAmbient# (3)           ' Ambient Light Values
+    LightAmbient# = Vec4 (.5, .5, .5, 1)
+    dim LightDiffuse# (3)           ' Diffuse Light Values 
+    LightDiffuse# = Vec4 (1, 1, 1, 1)
+    dim LightPosition# (3)          ' Light Position
+    LightPosition# = Vec4 (0, 0, 2, 1)
+    dim filter                      ' Which Filter To Use
+    dim fogMode(2)
+    fogMode (0) = GL_EXP
+    fogMode (1) = GL_EXP2
+    fogMode (2) = GL_LINEAR         ' Storage For Three Types Of Fog
+    dim fogfilter                   ' Which Fog To Use
+    fogfilter = 0
+    dim fogColor#(3)                ' Fog Color
+    fogColor# = vec4(0.5, 0.5, 0.5, 1.0)     
+    dim texture(2)                  ' Storage for 3 textures
+    dim image
+    dim a$
+
+    ' Load textures
+
+    glGenTextures (3, texture)                      ' Generate 3 textures
+    dim i
+
+    image = LoadImage ("Data/Crate.bmp")            ' Load crate image
+
+    glBindTexture (GL_TEXTURE_2D, texture (0))
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+    glTexImage2D (GL_TEXTURE_2D, 0, 3, ImageWidth(image), ImageHeight(image), 0, ImageFormat(image), ImageDataType(image), image)
+    
+    glBindTexture (GL_TEXTURE_2D, texture (1))
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexImage2D (GL_TEXTURE_2D, 0, 3, ImageWidth(image), ImageHeight(image), 0, ImageFormat(image), ImageDataType(image), image)
+    
+    glBindTexture (GL_TEXTURE_2D, texture (2))
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST)
+    gluBuild2DMipmaps (GL_TEXTURE_2D, 3, ImageWidth(image), ImageHeight(image), ImageFormat(image), ImageDataType(image), image)
+
+    DeleteImage (image)
+    
+    ' Init OpenGL
+    
+    glEnable(GL_TEXTURE_2D)                             ' Enable Texture Mapping
+    glShadeModel(GL_SMOOTH)                             ' Enable Smooth Shading
+    glClearColor(0.5,0.5,0.5,1.0)                       ' We'll Clear To The Color Of The Fog ( Modified )
+
+    glFogi(GL_FOG_MODE, fogMode(fogfilter))             ' Fog Mode
+    glFogfv(GL_FOG_COLOR, fogColor#)                    ' Set Fog Color
+    glFogf(GL_FOG_DENSITY, 0.35)                        ' How Dense Will The Fog Be
+    glHint(GL_FOG_HINT, GL_DONT_CARE)                   ' Fog Hint Value
+    glFogf(GL_FOG_START, 1.0)                           ' Fog Start Depth
+    glFogf(GL_FOG_END, 5.0)                             ' Fog End Depth
+    glEnable(GL_FOG)                                    ' Enables GL_FOG
+
+    glClearDepth(1.0)                                   ' Depth Buffer Setup
+    glEnable(GL_DEPTH_TEST)                             ' Enables Depth Testing
+    glDepthFunc(GL_LEQUAL)                              ' The Type Of Depth Testing To Do
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)   ' Really Nice Perspective Calculations
+
+    glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbient#)     ' Setup The Ambient Light
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse#)     ' Setup The Diffuse Light
+    glLightfv(GL_LIGHT1, GL_POSITION,LightPosition#)    ' Position The Light
+    glEnable(GL_LIGHT1)                                 ' Enable Light One
+
+    ' Main loop
+    while true
+        
+        ' Draw scene        
+        glClear (GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)    ' Clear The Screen And The Depth Buffer
+        glLoadIdentity ()                                       ' Reset The View       
+        glTranslatef (0.0,0.0,z#)
+    
+        glRotatef(xrot#,1.0,0.0,0.0)
+        glRotatef(yrot#,0.0,1.0,0.0)
+    
+        glBindTexture(GL_TEXTURE_2D, texture (filter))
+    
+        glBegin(GL_QUADS)
+            ' Front Face
+            glNormal3f( 0.0, 0.0, 1.0)
+            glTexCoord2f(0.0, 0.0): glVertex3f(-1.0, -1.0,  1.0)
+            glTexCoord2f(1.0, 0.0): glVertex3f( 1.0, -1.0,  1.0)
+            glTexCoord2f(1.0, 1.0): glVertex3f( 1.0,  1.0,  1.0)
+            glTexCoord2f(0.0, 1.0): glVertex3f(-1.0,  1.0,  1.0)
+            ' Back Face
+            glNormal3f( 0.0, 0.0,-1.0)
+            glTexCoord2f(1.0, 0.0): glVertex3f(-1.0, -1.0, -1.0)
+            glTexCoord2f(1.0, 1.0): glVertex3f(-1.0,  1.0, -1.0)
+            glTexCoord2f(0.0, 1.0): glVertex3f( 1.0,  1.0, -1.0)
+            glTexCoord2f(0.0, 0.0): glVertex3f( 1.0, -1.0, -1.0)
+            ' Top Face
+            glNormal3f( 0.0, 1.0, 0.0)
+            glTexCoord2f(0.0, 1.0): glVertex3f(-1.0,  1.0, -1.0)
+            glTexCoord2f(0.0, 0.0): glVertex3f(-1.0,  1.0,  1.0)
+            glTexCoord2f(1.0, 0.0): glVertex3f( 1.0,  1.0,  1.0)
+            glTexCoord2f(1.0, 1.0): glVertex3f( 1.0,  1.0, -1.0)
+            ' Bottom Face
+            glNormal3f( 0.0,-1.0, 0.0)
+            glTexCoord2f(1.0, 1.0): glVertex3f(-1.0, -1.0, -1.0)
+            glTexCoord2f(0.0, 1.0): glVertex3f( 1.0, -1.0, -1.0)
+            glTexCoord2f(0.0, 0.0): glVertex3f( 1.0, -1.0,  1.0)
+            glTexCoord2f(1.0, 0.0): glVertex3f(-1.0, -1.0,  1.0)
+            ' Right face
+            glNormal3f( 1.0, 0.0, 0.0)
+            glTexCoord2f(1.0, 0.0): glVertex3f( 1.0, -1.0, -1.0)
+            glTexCoord2f(1.0, 1.0): glVertex3f( 1.0,  1.0, -1.0)
+            glTexCoord2f(0.0, 1.0): glVertex3f( 1.0,  1.0,  1.0)
+            glTexCoord2f(0.0, 0.0): glVertex3f( 1.0, -1.0,  1.0)
+            ' Left Face
+            glNormal3f(-1.0, 0.0, 0.0)
+            glTexCoord2f(0.0, 0.0): glVertex3f(-1.0, -1.0, -1.0)
+            glTexCoord2f(1.0, 0.0): glVertex3f(-1.0, -1.0,  1.0)
+            glTexCoord2f(1.0, 1.0): glVertex3f(-1.0,  1.0,  1.0)
+            glTexCoord2f(0.0, 1.0): glVertex3f(-1.0,  1.0, -1.0)
+        glEnd()    
+        xrot# = xrot# + xspeed#
+        yrot# = yrot# + yspeed#
+        SwapBuffers ()
+        
+        a$ = inkey$()
+        if a$ = "L" or a$ = "l" then
+            light = not light
+            if not light then
+                glDisable (GL_LIGHTING)
+            else
+                glEnable (GL_LIGHTING)
+            endif
+        endif
+        if a$ = "F" or a$ = "f" then
+            filter = filter + 1
+            if filter > 2 then
+                filter = 0
+            endif
+        endif      
+        if a$ = "G" or a$ = "g" then
+            fogfilter = fogfilter + 1
+            if fogfilter > 2 then 
+                fogfilter = 0
+            endif
+            glFogi (GL_FOG_MODE, fogMode (fogfilter))
+        endif
+        if ScanKeyDown (VK_PRIOR)   then    z# = z# - 0.2               endif
+        if ScanKeyDown (VK_NEXT)    then    z# = z# + 0.2               endif
+        if ScanKeyDown (VK_UP)      then    xspeed# = xspeed# - 0.01    endif
+        if ScanKeyDown (VK_DOWN)    then    xspeed# = xspeed# + 0.01    endif
+        if ScanKeyDown (VK_RIGHT)   then    yspeed# = yspeed# + 0.01    endif
+        if ScanKeyDown (VK_LEFT)    then    yspeed# = yspeed# - 0.01    endif        
+    wend

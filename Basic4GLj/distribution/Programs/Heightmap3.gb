@@ -1,0 +1,125 @@
+' Heightmap demo 3
+'
+' Texturemapping
+'
+const heightScale# = 10 ' Height map scale factor
+const texScale# = 0.1   ' Number of textures per grid square
+dim xSize, ySize
+dim xMask, yMask        ' bitmasks to apply to X and Y coordinates
+dim file                ' File handle
+dim x, y                ' Working variables
+dim angle#              ' Viewing angle (used for animation)
+dim texture             ' OpenGL texture handle for our texture
+dim tx#, ty#            ' Texture coordinates
+
+goto Start
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Routines
+CheckError:
+    ' Check for file error
+    if FileError () <> "" then
+        print FileError ()
+        CloseFile (file)
+        end
+    endif
+    return
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Main program stars here    
+Start:
+
+' Open file
+file = OpenFileRead ("Files\Hills01.dat")
+    ' Note: Basic4GL will only open files in the "files" subfolder of the folder
+    '       where the program is saved.
+gosub CheckError
+
+' Read X and Y size
+xSize = Val (ReadLine (file))
+ySize = Val (ReadLine (file))
+gosub CheckError
+
+' Now that size is known, we can dim our 2D array
+dim h#(xSize - 1)(ySize - 1)        
+xMask = xSize - 1
+yMask = ySize - 1
+
+for y = 0 to ySize - 1
+    for x = 0 to xSize - 1
+        h#(x)(y) = val (ReadText (file, true)) * heightScale#
+        gosub CheckError
+    next
+next          
+CloseFile (file)
+
+' Load texture file 
+texture = LoadMipmapTexture ("textures\00005.jpg")
+
+' Enable texture mapping
+glEnable (GL_TEXTURE_2D)
+
+' Tell OpenGL to use our texture that we just loaded.
+' This is called "bind"ing the texture.
+' We will only be using one texture, so we can simply bind it here 
+' at the start of the program and leave it bound.
+glBindTexture (GL_TEXTURE_2D, texture)
+
+while true
+    
+    ' Clear the screen
+    glClear (GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+    ' Note: We are drawing texture mapped squares. These are solid, so therefore
+    ' we need to use the Z buffer to ensure the ones infront are drawn over the
+    ' ones behind.
+    ' Because we are using the Z buffer, we need to clear it each time.
+    ' Hence the GL_DEPTH_BUFFER_BIT part
+        
+    ' Setup the transformations
+    glLoadIdentity ()                       ' Clear out any existing transformations
+    glTranslatef (0, 0, -50)                ' "push" map away
+    glRotatef (20, 1, 0, 0)                 ' Elevation rotation
+    glRotatef (angle#, 0, 1, 0)             ' Animation rotation
+    glTranslatef (-xSize/2, 0, -ySize/2)    ' Centre the map    
+
+    ' Draw the heightmap points
+    for x = 0 to xSize - 2
+        for y = 0 to ySize - 2
+        
+            ' Draw the textured grid square.
+            ' We will use the quad, which draws a solid filled 4 sided object.
+            ' For each vertex we must ALSO specify texture coordinates.
+            ' These are 2D coordinates, where (0, 0) = the bottom left
+            ' and (1, 1) = the top right of the texture.
+            ' Note that we can go outside the 0-1 range, in which case the texture
+            ' repeats itself.
+            
+            ' Calculate the texture coordinates
+            tx# = x * texScale#
+            ty# = y * texScale#
+
+            ' Draw a grid square.
+            glBegin (GL_QUADS)
+                glTexCoord2f (tx#            , ty#)
+                glVertex3f (x  , h#(x  )(y  ), y  )
+                
+                glTexCoord2f (tx# + texScale#, ty#)
+                glVertex3f (x+1, h#(x+1)(y  ), y  )
+
+                glTexCoord2f (tx# + texScale#, ty# + texScale#)
+                glVertex3f (x+1, h#(x+1)(y+1), y+1)
+
+                glTexCoord2f (tx#            , ty# + texScale#)
+                glVertex3f (x  , h#(x  )(y+1), y+1)
+            glEnd ()
+        next
+    next
+    
+    ' Show the result
+    SwapBuffers ()
+    
+    ' Animation
+    while SyncTimer (20)
+        angle# = angle# + 0.8
+    wend
+wend

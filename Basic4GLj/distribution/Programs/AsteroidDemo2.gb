@@ -1,0 +1,474 @@
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Asteroid demo
+
+    ' Screen mode
+    TextMode (TEXT_BUFFERED)        ' Don't draw sprites until explicitly told to do so
+    ResizeSpriteArea (800, 600)
+    
+    ' Player state
+    struc SPlayer
+        dim sprite
+        dim index
+        dim lives, score, deadCounter, invincibleCounter, ingame
+        dim leftKey, rightKey, thrustKey, shootKey
+        dim wasShooting
+        dim col#(3)
+    endstruc
+    
+    ' Bullets
+    struc SBullet
+        dim sprite, life, SPlayer &player
+    endstruc
+    
+    ' Asteroids
+    struc SAsteroid
+        dim sprite, dir#
+    endstruc
+    
+    ' Initialise gamestate
+    const maxPlayers = 2
+    const maxBullets = 200
+    const maxAsteroids = 200
+    const maxExplosions = 200
+    dim SPlayer players(maxPlayers), SPlayer &player 
+    dim SBullet bullets(maxBullets), SBullet &bullet, bulletCount
+    dim SAsteroid asteroids(maxAsteroids), SAsteroid &asteroid, SAsteroid &newAsteroid, asteroidCount
+    dim explosions(maxExplosions), explosionCount
+    dim levelCounter, counter
+    dim level, dead
+    dim i, j, k, temp#, vec#(1), centreVec#(1), size#, maxSize#, count
+    
+    ' Sprite textures
+    dim shipTex, rockTex, ballTex 
+    shipTex = LoadTexture ("data\F117.png")
+    rockTex = LoadTexture ("data\asteroid.png")
+    ballTex = LoadTexture ("data\ball.png")
+    
+    ' Animations
+    dim explodeTex (ImageStripFrames ("data\explode.png") - 1)
+    explodeTex = LoadMipmapImageStrip ("data\explode.png") 
+    
+    ' Tile textures
+    dim tileTex (ImageStripFrames ("data\spacetiles.png") - 1)
+    tileTex = LoadMipmapImageStrip ("data\spaceTiles.png")
+    
+    ' Setup tile map
+    dim tileMap, t(9)(9)
+    tileMap = NewTileMap (tileTex)  
+    data 2,2,3,1,2,1,1,3,2,3
+    data 3,3,2,3,2,3,2,3,2,2
+    data 3,1,2,3,3,4,3,2,3,3
+    data 2,1,4,2,5,3,3,1,2,1
+    data 2,3,2,3,3,1,2,3,3,3
+    data 2,2,2,1,2,2,3,1,3,2
+    data 3,1,3,1,2,2,2,2,1,3
+    data 2,1,2,4,1,3,2,3,2,3
+    data 2,2,3,2,3,3,2,3,3,1
+    data 3,2,1,2,3,2,1,2,2,1
+    for i = 0 to 9
+        for j = 0 to 9
+            read t(i)(j)
+        next
+    next
+    SprSetTiles (t)
+    SprSetZOrder (100)      ' Push tile map to back
+    SprSetScale (2)
+    
+    ' Sound effects
+    dim shootSound, explodeSound
+    shootSound   = LoadSound ("sounds\laser.wav")
+    explodeSound = LoadSound ("sounds\gunshot5.wav")
+    
+    ' Setup keys
+    players(1).index     = 1
+    players(1).leftKey   = VK_LEFT
+    players(1).rightKey  = VK_RIGHT
+    players(1).thrustKey = VK_UP
+    players(1).shootKey  = VK_SPACE
+    players(1).col#      = vec4(.7,.7,.6,1)
+    players(2).index     = 2
+    players(2).leftKey   = Asc("A")
+    players(2).rightKey  = Asc("D")
+    players(2).thrustKey = Asc("W")
+    players(2).shootKey  = Asc("F")
+    players(2).col#      = vec4(.3,.6,.8,1)
+    
+    goto start
+    
+    return
+    
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Routines
+NewPlayer:
+
+    ' Create player sprite
+    player.sprite   = NewSprite (shipTex)
+    SprSetSize (32, 32)    
+    SprSetColor (player.col#)
+    
+    ' Initialise player settings
+    player.ingame   = true
+    player.lives    = 3
+    player.score    = 0
+    
+    ' Spawn player at centre
+    gosub Spawn
+    return
+    
+Spawn:
+
+    ' Set player alive again
+    player.deadCounter       = 0
+    BindSprite (player.sprite)
+    SprSetVisible (true)     ' Show sprite
+    
+    ' Place player at centre of screen
+    gosub CentrePlayer
+    return
+    
+CentrePlayer:
+    player.invincibleCounter = 300
+    BindSprite (player.sprite)
+    SprSetPos   (SpriteAreaWidth () / 2, SpriteAreaHeight () / 2)
+    SprSetAngle (0)
+    SprSetVel   (0, 0)
+    return
+    
+Clamp:
+    ' Clamp sprite s to screen range
+    if SprX () < -32 then
+        SprSetX (SprX () + SpriteAreaWidth () + 64)
+    endif
+    if SprX () >= SpriteAreaWidth () + 32 then
+        SprSetX (SprX () - (SpriteAreaWidth () + 64))
+    endif
+    if SprY () < -32 then
+        SprSetY (SprY () + SpriteAreaHeight () + 64)
+    endif
+    if SprY () >= SpriteAreaHeight () + 32 then
+        SprSetY (SprY () - (SpriteAreaHeight () + 64))
+    endif
+    return
+    
+MakeExplosion:
+    
+    ' Make explosion at vec#
+    if explosionCount < maxExplosions then        
+        explosionCount = explosionCount + 1
+        explosions (explosionCount) = NewSprite (explodeTex)
+        SprSetSize (64, 64)
+        SprSetPos (vec#)
+        SprSetAnimSpeed (.4 / size#)
+        SprSetAnimLoop (false)
+        SprSetScale (size#)
+    endif
+    return
+    
+MakeExplosions:
+    
+    ' Make explosions
+    for k = 1 to count
+        vec#  = centreVec# + vec2 (Rnd () % 21 - 10, Rnd () % 21 - 10)
+        size# = maxSize# * (Rnd () % 6 + 5) / 10.0
+        gosub MakeExplosion
+    next
+    return
+    
+MakeSmoke:
+    if explosionCount < maxExplosions then        
+        explosionCount = explosionCount + 1
+        explosions (explosionCount) = NewSprite (explodeTex)
+        SprSetSize (64, 64)
+        SprSetPos (vec#)
+        SprSetFrame (10)
+        SprSetAnimSpeed (.1)
+        SprSetAnimLoop (false)
+        SprSetScale (.4)
+    endif
+    return    
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Mainloop
+start:
+
+NextLevel:
+
+    level = level + 1
+    levelCounter = 200
+    
+    ' Create asteroids
+    asteroidCount = level * 2 + 1
+    for i = 1 to asteroidCount
+        &asteroid = &asteroids (i)
+        asteroid.sprite = NewSprite (rockTex)
+        SprSetSize (24, 24)
+        SprSetScale (4)
+        SprSetZOrder (SprScale ())
+        SprSetPos (rnd () % int (SpriteAreaWidth ()), rnd () % int (SpriteAreaHeight ()))
+        SprSetSpin (.25)
+        asteroid.dir# = rnd () % 360
+        SprSetVel (MatrixRotateZ (asteroid.dir#) * vec2 (0, 2) / SprScale ())
+    next
+                        
+    ' Delete player bullets
+    for i = 1 to bulletCount
+        DeleteSprite (bullets (i).sprite)
+    next
+    bulletCount = 0
+    
+    ' Delete explosions
+    for i = 1 to explosionCount
+        DeleteSprite (explosions (i))
+    next
+    explosionCount = 0
+    
+    ' Recentre players
+    for i = 1 to maxPlayers
+        &player = &players (i)
+        if player.inGame and player.deadCounter = 0 then
+            gosub CentrePlayer
+        endif
+    next 
+
+    locate 16, 12: print "Level " + level
+    DrawText ()
+    Sleep (1000)
+
+    while asteroidCount > 0 or levelCounter > 0        
+        if asteroidCount = 0 then 
+            levelCounter = levelCounter - 1
+        endif
+        
+        ' Update gameplay
+        Joy_Keys ()
+        while SyncTimer (10)
+            counter = counter + 1
+            AnimateSprites ()
+            
+            ' Move players   
+            for i = 1 to MaxPlayers
+                &player = &players (i)
+
+                ' Counters
+                if player.inGame then
+                    if player.deadCounter > 0 then
+                        player.deadCounter = player.deadCounter - 1
+                        if player.deadCounter = 0 then
+                            if player.lives > 0 then                            
+                                player.lives = player.lives - 1
+                                gosub Spawn
+                            else
+                                player.ingame = false
+                            endif
+                        endif
+                    endif
+                    if player.invincibleCounter > 0 then
+                        player.invincibleCounter = player.invincibleCounter - 1
+                        BindSprite (player.sprite)
+                        SprSetVisible ((player.invincibleCounter and 16) = 0)
+                    endif
+                endif
+
+                ' Shooting/spawning
+                if ScanKeyDown (player.shootKey) then
+                    if not player.wasShooting then                    
+                        if not player.inGame then
+                        
+                            ' Put player in game
+                            gosub NewPlayer
+                        else
+                            if player.deadCounter = 0 and player.invincibleCounter = 0 and bulletCount < maxBullets then
+                            
+                                ' Shoot bullet
+                                bulletCount = bulletCount + 1
+                                &bullet = &bullets (bulletCount)
+                                bullet.sprite = NewSprite (ballTex)
+                                SprSetZOrder (10)
+                                SprSetSize (16, 16)
+                                SprSetPos (SprPos (player.sprite))
+                                SprSetVel (SprVel (player.sprite) + MatrixRotateZ (SprAngle (player.sprite)) * vec2 (0, -3.5))
+                                bullet.life = 100
+                                &bullet.player = &player
+                                PlaySound (shootSound)
+                            endif
+                        endif
+                    endif  
+                    player.wasShooting = true
+                else
+                    player.wasShooting = false
+                endif
+                
+                if player.inGame and player.deadCounter = 0 then
+                    
+                    ' Moving
+                    BindSprite (player.sprite)
+                    if ScanKeyDown (player.leftKey) then
+                        SprSetAngle (SprAngle () - 3)
+                    endif
+                    if ScanKeyDown (player.rightKey) then
+                        SprSetAngle (SprAngle (player.sprite) + 3)
+                    endif
+                    if ScanKeyDown (player.thrustKey) then
+                        SprSetVel (SprVel () + MatrixRotateZ (SprAngle ()) * vec2 (0, -.035))
+                        vec# = SprPos () + MatrixRotateZ (SprAngle ()) * vec2 (0, 15)
+                        if (counter and 7) = 0 then
+                            gosub MakeSmoke
+                        endif
+                    endif
+                    gosub Clamp
+
+                    ' Check for collisions with asteroids
+                    if player.invincibleCounter = 0 then
+                        for j = 1 to asteroidCount 
+                            &asteroid = &asteroids (j)
+                            BindSprite (asteroid.sprite)
+                            if Length (SprPos () - SprPos (player.sprite)) < SprScale () * SprXSize () / 2 + 4 then                                        
+                                
+                                ' Make explosions
+                                centrevec# = SprPos (player.sprite)
+                                count      = 5
+                                maxSize#   = 2
+                                gosub MakeExplosions
+                                
+                                ' Explosion sound
+                                PlaySound (explodeSound)
+                                
+                                ' Hide player sprite
+                                BindSprite (player.sprite)
+                                SprSetVisible (false)
+                                
+                                ' Mark player as dead 
+                                player.deadCounter = 300
+                            endif
+                        next                                
+                    endif             
+                endif
+            next
+            
+            ' Move bullets
+            i = 1
+            while i <= bulletCount
+                &bullet = &bullets(i)
+                
+                ' Clamp bullet pos
+                BindSprite (bullet.sprite)
+                gosub Clamp
+                
+                ' Bullet has only limited life
+                bullet.life = bullet.life - 1
+                dead = bullet.life <= 0
+                
+                ' Test for collisions with asteroids
+                j = 1
+                while j <= asteroidCount
+                    &asteroid = &asteroids (j)
+                    BindSprite (asteroid.sprite)
+                    if Length (SprPos () - SprPos (bullet.sprite)) < SprScale () * SprXSize () / 2 then                                        
+
+                        ' Make explosion
+                        centrevec# = SprPos ()
+                        count = SprScale () * 2
+                        maxSize# = (SprScale () + 1) * 0.3
+                        gosub MakeExplosions
+                        
+                        ' Need to rebind after explosion routine
+                        BindSprite (asteroid.sprite)
+
+                        ' Destroy small asteroids
+                        if SprScale () <= 1 then
+                            DeleteSprite (asteroid.sprite)
+                            asteroid = asteroids (asteroidCount)
+                            asteroidCount = asteroidCount - 1
+                            if asteroidCount = 0 then
+                                bullet.player.score = bullet.player.score + 200
+                            endif
+                            bullet.player.score = bullet.player.score + 20
+                        else
+                            ' Otherwise split them
+                            ' Shrink existing one
+                            SprSetScale (SprScale () / 2)
+                            SprSetZOrder (SprScale ())
+                            SprSetSpin (SprSpin () * 4)
+                            
+                            ' Create new duplicate asteroid
+                            asteroidCount = asteroidCount + 1
+                            &newAsteroid = &asteroids (asteroidCount)
+                            newAsteroid = asteroid
+                            newAsteroid.sprite = NewSprite ()
+                            CopySprite (asteroid.sprite)
+                      
+                            ' Add some random directional deviation
+                            temp# = rnd () % 35 + 10
+                            asteroid.dir#       = asteroid.dir#     + temp#
+                            newAsteroid.dir#    = newAsteroid.dir#  - temp#
+                            
+                            ' Recalculate velocities
+                            BindSprite (asteroid.sprite)
+                            SprSetVel (MatrixRotateZ (asteroid.dir#) * vec2 (0, 2) / SprScale ())
+                            BindSprite (newAsteroid.sprite)
+                            SprSetVel (MatrixRotateZ (newasteroid.dir#) * vec2 (0, 2) / SprScale ())                            
+                            bullet.player.score = bullet.player.score + 10  
+                        endif
+                        PlaySound (explodeSound, 1, false)
+                        j = asteroidCount + 1
+                        dead = true
+                    else
+                        j = j + 1
+                    endif
+                wend
+
+                if dead then    
+                    
+                    ' Delete bullet
+                    vec# = SprPos (bullet.sprite)
+                    gosub MakeSmoke
+                    DeleteSprite (bullet.sprite)
+                    bullet = bullets (bulletCount)
+                    bulletCount = bulletCount - 1
+                else
+                    i = i + 1
+                endif
+            wend
+            
+            ' Move asteroids
+            for i = 1 to asteroidCount
+                BindSprite (asteroids (i).sprite)
+                gosub Clamp
+            next
+            
+            ' Remove completed explosion animations
+            i = 1
+            while i <= explosionCount
+                if SprAnimDone (explosions (i)) then
+                    DeleteSprite (explosions (i))
+                    explosions (i) = explosions (explosionCount)
+                    explosionCount = explosionCount - 1
+                else
+                    i = i + 1
+                endif
+            wend
+            
+            ' Animate tile map
+            BindSprite (tileMap)
+            SprSetPos (SprPos () + vec2 (.1, .2))
+        wend
+        
+        ' Update display
+        cls
+        if players (1).inGame then
+            locate 0, 0: print "Score=" + players (1).score
+            locate 0, 1: print "Lives=" + players (1).lives
+        endif
+        if players (2).inGame then
+            locate 30, 0: print "Score=" + players (2).score
+            locate 30, 1: print "Lives=" + players (2).lives
+        endif
+        if not (players (1).inGame or players (2).inGame) then 
+            locate 10, 12: print "Press Space to Start"
+        endif
+
+        ' Draw sprites
+        DrawText ()
+    wend
+
+    goto NextLevel

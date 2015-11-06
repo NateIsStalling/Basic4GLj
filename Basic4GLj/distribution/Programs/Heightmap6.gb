@@ -1,0 +1,208 @@
+' Heightmap demo 6
+'
+' Flying around!
+'
+const heightScale# = 10 ' Height map scale factor
+const texScale# = 0.1   ' Number of textures per grid square
+const viewRange = 50    ' Number of cells visible
+dim xSize, ySize
+dim xMask, yMask        ' bitmasks to apply to X and Y coordinates
+dim file                ' File handle
+dim x, y                ' Working variables
+dim texture             ' OpenGL texture handle for our texture
+dim tx#, ty#            ' Texture coordinates
+dim a#(2), b#(2), c#(2), d#(2), norm#(2) ' Temporary vectors used for lighting
+dim intensity#
+dim cameraMatrix#(3)(3) ' Camera position
+dim cameraPos#(3)
+dim startX, startY, start#(3)      ' Start of viewable grid range
+dim inputX#, inputY#
+
+goto Start
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Routines
+CheckError:
+    ' Check for file error
+    if FileError () <> "" then
+        print FileError ()
+        CloseFile (file)
+        end
+    endif
+    return
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Main program stars here    
+Start:
+
+' Open file
+file = OpenFileRead ("Files\Hills01.dat")
+    ' Note: Basic4GL will only open files in the "files" subfolder of the folder
+    '       where the program is saved.
+gosub CheckError
+
+' Read X and Y size
+xSize = Val (ReadLine (file))
+ySize = Val (ReadLine (file))
+gosub CheckError
+
+' Now that size is known, we can dim our 2D array
+dim h#(xSize - 1)(ySize - 1)        
+xMask = xSize - 1
+yMask = ySize - 1
+
+for y = 0 to ySize - 1
+    for x = 0 to xSize - 1
+        h#(x)(y) = val (ReadText (file, true)) * heightScale#
+        gosub CheckError
+    next
+next          
+CloseFile (file)
+
+' Create light map
+dim lightSource#(2)
+lightSource# = vec3(0, -1, 0)           ' Light shines straight down.
+lightSource# = Normalize (lightSource#) ' Light source must be length 1
+
+' Create light map
+dim l# (xSize - 1)(ySize - 1)
+for x = 0 to xSize - 1
+    for y = 0 to ySize - 1
+        a# = vec3 (x,   h#(x)(y),                             y)
+        b# = vec3 (x+1, h#((x+1) and xMask)(y),               y)
+        c# = vec3 (x  , h#(x              )((y+1) and yMask), y+1)        
+        d# = vec3 (x+1, h#((x+1) and xMask)((y+1) and yMask), y+1)
+
+        norm# = Normalize (CrossProduct (d# - a#, b# - c#))        
+
+        intensity# = norm# * -lightSource#
+
+        intensity# = intensity# * intensity# * intensity#
+        if intensity# < 0.2 then intensity# = 0.2 endif
+            
+        l#(x)(y) = intensity#
+    next
+next
+
+' Load texture file 
+texture = LoadMipmapTexture ("textures\00005.jpg")
+
+' Enable texture mapping, and bind our texture
+glEnable (GL_TEXTURE_2D)
+glBindTexture (GL_TEXTURE_2D, texture)
+
+' Setup fog
+glEnable (GL_FOG)
+glFogi (GL_FOG_MODE, GL_LINEAR)
+glFogf (GL_FOG_START, viewRange * .3)
+glFogf (GL_FOG_END, viewRange * .8)
+glFogfv (GL_FOG_COLOR, vec4 (0, 0, 0, 1))
+
+glEnable (GL_CULL_FACE)   
+' "Cull face" is a speed optimisation that tells OpenGL not to draw any
+' polygons that are facing away from the camera.
+' The order that the polygon points are drawn in determines which way
+' the polygon is said to be facing.
+' When the polygon is facing towards the camera, all its points must
+' be in anti-clockwise order.
+
+' Set camera's start position
+cameraMatrix# = MatrixRotateY (45)
+cameraPos# = vec4 (0, 10, 0, 1)
+' The camera is a little bit complicated to explain.
+' We represent it as a rotation matrix, and a position vector.
+
+' Text instructions
+TextMode (TEXT_OVERLAID)
+locate 4, 4: print "Use the arrow keys to fly around"
+
+while true
+    
+    ' Clear the screen
+    glClear (GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+        
+    ' Setup camera transformation
+
+    ' To draw the scene relative to the camera, we create a rotation and translation 
+    ' matrix that describes the CAMERA RELATIVE TO THE SCREEN
+    ' We then INVERT the matrix, which describes the SCREEN RELATIVE TO THE CAMERA.
+    ' We load that matrix into OpenGL, which then replaces all the OpenGL transformations.  
+    glLoadMatrixf (RTInvert (MatrixTranslate (cameraPos#(0), cameraPos#(1), cameraPos#(2)) * cameraMatrix#))
+    ' RTInvert is a simple matrix inversion function that ONLY works 
+    ' on matrices that are rotations, translations, or some combination
+    ' of the two.
+    
+    ' We now figure out which part of the grid to draw by finding a square area
+    ' immediately in front of the camera.
+    start# = cameraPos# + cameraMatrix# * vec4 (0, 0, -viewRange / 2, 1)
+    startX = start# (0) - viewRange / 2.0
+    startY = start# (2) - viewRange / 2.0
+
+    ' Draw the grid area
+    for x = startX to startX + viewRange - 1
+        for y = startY to startY + viewRange - 1
+        
+            ' Calculate the texture coordinates
+            tx# = x * texScale#
+            ty# = y * texScale#
+
+            ' Draw a grid square.
+            glBegin (GL_QUADS)
+                
+                ' By "and"ing the coordinates with the xMask or yMask, we
+                ' are clamping them to that range, giving the map an infinite
+                ' wrap-around effect.
+
+                intensity# = l#(x and xMask)(y and yMask)
+                glColor3f (intensity#, intensity#, intensity#)
+                glTexCoord2f (tx#            , ty#)
+                glVertex3f (x  , h#(x and xMask  )(y and yMask  ), y  )
+                
+                intensity# = l#(x and xMask)(y+1 and yMask)
+                glColor3f (intensity#, intensity#, intensity#)
+                glTexCoord2f (tx#            , ty# + texScale#)
+                glVertex3f (x  , h#(x and xMask  )(y+1 and yMask), y+1)
+
+                intensity# = l#(x+1 and xMask)(y+1 and yMask)
+                glColor3f (intensity#, intensity#, intensity#)
+                glTexCoord2f (tx# + texScale#, ty# + texScale#)
+                glVertex3f (x+1, h#(x+1 and xMask)(y+1 and yMask), y+1)
+
+                intensity# = l#(x+1 and xMask)(y and yMask)
+                glColor3f (intensity#, intensity#, intensity#)
+                glTexCoord2f (tx# + texScale#, ty#)
+                glVertex3f (x+1, h#(x+1 and xMask)(y and yMask  ), y  )
+            glEnd ()
+        next
+    next
+    
+    ' Draw the text instructions
+    DrawText ()
+
+    ' Show the result
+    SwapBuffers ()
+    
+    ' Animation
+    while SyncTimer (20)
+        
+        ' Move camera around
+        
+        ' Rotate the camera by multiplying more rotations into the camera rotation matrix.
+        inputX# = 0
+        inputY# = 0
+        if ScanKeyDown (VK_LEFT)    then inputX# = inputX# + 1 endif
+        if ScanKeyDown (VK_RIGHT)   then inputX# = inputX# - 1 endif
+        if ScanKeyDown (VK_UP)      then inputY# = inputY# - 1 endif
+        if ScanKeyDown (VK_DOWN)    then inputY# = inputY# + 1 endif        
+        cameraMatrix# = MatrixRotateY (cameraMatrix# (0)(1) * 0.4) * cameraMatrix# * MatrixRotateZ (inputX#) * MatrixRotateX (inputY#) 
+        cameraMatrix# = Orthonormalize (cameraMatrix#)
+        ' All these multiplications can produce rounding errors, which can eventually build up
+        ' and do weird things.
+        ' Therefore we call Orthonormalize, which ensures that the rotation matrix is orthonormal
+        ' (meaning it is a proper rotation matrix.)
+
+        cameraPos# = cameraPos# + cameraMatrix# * vec4 (0, 0, -.1, 1)
+        ' Move the camera forward, by multiplying the forward vector (0, 0, -.1) by the
+        ' cameras rotation matrix, and adding it to the position
+    wend
+wend

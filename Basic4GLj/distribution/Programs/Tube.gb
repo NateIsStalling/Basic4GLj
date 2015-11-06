@@ -1,0 +1,156 @@
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Tube
+
+' Settings
+const l = 20, w = 20            ' Tunnel length and width in segments
+const segl# = 10, segw# = 20    ' Segment size
+const cMax = 255, cMin = 1, cRnd = 15
+
+' Tube map
+' 2D grid of colour components
+struc Cell
+    dim r, g, b, ang#
+endstruc
+dim Cell cells (w)(l)
+
+' Viewpoint & velocity
+dim vz#, vang#, voffset
+dim vzSpeed#, vangSpeed#
+vzSpeed# = 1.0: vangSpeed# = 0.3
+
+' Working
+dim x, y, i1, i2, i3, i4, t, counter#, scale#
+dim Cell &curCell, Cell &lCell, Cell &mCell, Cell &rCell
+dim Cell &tl, Cell &bl, Cell &tr, Cell &br
+
+' Textures
+dim tex
+tex = LoadMipmapTexture ("textures\00004.jpg")
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Subroutines
+goto start
+
+GenerateRow:
+    
+    ' Generate a row of colours based on the previous one
+    i1 = y * w
+    i2 = ((y + l - 1) % l) * w
+    for x = 0 to w - 1
+
+        &curCell = &cells (x) (y)
+        &lCell = &cells ((x + w - 1) % w) ((y + l - 1) % l)
+        &mCell = &cells ((x + w    ) % w) ((y + l - 1) % l)
+        &rCell = &cells ((x +     1) % w) ((y + l - 1) % l)
+
+        ' Average colours from previous row
+        curCell.r = (lCell.r + mCell.r*2 + rCell.r) / 4
+        curCell.g = (lCell.g + mCell.g*2 + rCell.g) / 4
+        curCell.b = (lCell.b + mCell.b*2 + rCell.b) / 4
+
+        ' Add random offset
+        curCell.r = curCell.r + rnd()%(cRnd*2+1)-cRnd
+        curCell.g = curCell.g + rnd()%(cRnd*2+1)-cRnd
+        curCell.b = curCell.b + rnd()%(cRnd*2+1)-cRnd
+
+        ' Clamp colour components
+        if curCell.r < cMin then curCell.r = cMin endif
+        if curCell.g < cMin then curCell.g = cMin endif
+        if curCell.b < cMin then curCell.b = cMin endif
+        if curCell.r > cMax then curCell.r = cMax endif
+        if curCell.g > cMax then curCell.g = cMax endif
+        if curCell.b > cMax then curCell.b = cMax endif
+
+        ' Setup angle
+        curCell.ang# = 2 * m_pi / w * (x + (rnd()%100)/100.0)
+    next
+    return
+
+start:
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Setup original map
+    ' Use random values for first row
+    y = 0: gosub generateRow
+    for x = 0 to w - 1
+        cells(x)(0).r = rnd()%100
+        cells(x)(0).g = rnd()%100
+        cells(x)(0).b = rnd()%100
+    next
+
+    ' Generate remaining rows
+    for y = 1 to l - 1
+        gosub GenerateRow
+    next
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Setup OpenGL
+    glDisable (GL_CULL_FACE)
+    glEnable (GL_TEXTURE_2D)
+    glBindTexture (GL_TEXTURE_2D, tex)
+    
+    TextMode (TEXT_OVERLAID)
+    dim a$: a$ = "Tube"
+    locate (TextCols () - len(a$)) / 2, TextRows() / 2
+    print a$
+    
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Main loop
+
+'    scale# = segw# / cMax * 0.8
+    while true
+        
+        ' Render tunnel
+        glClear (GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+        glMatrixMode (GL_MODELVIEW)
+        glLoadIdentity ()
+        glTranslatef (0, 0, vz#)
+        glRotatef (vang#, 0, 0, 1)
+
+        for t = 0 to l - 2
+            y = (t + voffset) % l
+            for x = 0 to w
+                
+                ' Find vertex indices
+                &tl = &cells (x)((y+1)%l)
+                &tr = &cells ((x+1)%w)((y+1)%l)
+                &bl = &cells (x)(y)
+                &br = &cells ((x+1)%w)(y)
+                
+                ' Render slice of tube
+                glBegin (GL_QUADS)
+                    glTexCoord2f (0, 0): glColor3ub (tl.r, tl.g, tl.b): glVertex3f (sin(tl.ang#) * segw#, cos(tl.ang#) * segw#, -segl#)
+                    glTexCoord2f (1, 0): glColor3ub (tr.r, tr.g, tr.b): glVertex3f (sin(tr.ang#) * segw#, cos(tr.ang#) * segw#, -segl#)
+                    glTexCoord2f (1, 1): glColor3ub (br.r, br.g, br.b): glVertex3f (sin(br.ang#) * segw#, cos(br.ang#) * segw#, 0)
+                    glTexCoord2f (0, 1): glColor3ub (bl.r, bl.g, bl.b): glVertex3f (sin(bl.ang#) * segw#, cos(bl.ang#) * segw#, 0)
+                glEnd ()
+            next
+
+            glTranslatef (0, 0, -segl#)
+        next
+                
+        DrawText ()
+        SwapBuffers ()        
+
+        ' Update camera position
+        while SyncTimer (10)
+
+            ' Respond to keyboard
+            if ScanKeyDown (VK_LEFT)  then vangSpeed# = vangSpeed# - 0.01 endif
+            if ScanKeyDown (VK_RIGHT) then vangSpeed# = vangSpeed# + 0.01 endif
+            if ScanKeyDown (VK_UP)    then vzSpeed# = vzSpeed# + 0.01 endif
+            if ScanKeyDown (VK_DOWN)  then vzSpeed# = vzSpeed# - 0.01 endif
+            if vzSpeed# < 0 then vzSpeed# = 0 endif
+
+            ' Move camera forwards
+            vz# = vz# + vzSpeed#
+            while vz# > segl#
+                vz# = vz# - segl#
+                y = voffset % l
+                gosub GenerateRow
+                voffset = voffset + 1
+            wend
+
+            ' Rotate camera
+            vang# = vang# + vangSpeed#
+        wend                
+    wend

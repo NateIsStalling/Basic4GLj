@@ -1,0 +1,189 @@
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' SnakeDemo
+
+    ' Set screen mode first.
+    textmode (TEXT_BUFFERED)
+    settextscroll (false)
+    resizetext (40, 25)
+
+    ' Variables
+
+    ' Snake tail
+    const maxTail = 4000            ' Maximum tail length in characters
+    dim tx (maxTail), ty (maxTail)
+    dim head, tail                  ' Head will walk the array writing positions as head is drawn
+                                    ' Tail will walk the array reading positions as tail is erased
+    dim stretch                     ' Used to stretch the snake
+
+    ' Snake head position and direction
+    dim x, y, xd, yd
+
+    ' Bug position
+    dim bx, by
+
+    ' Timing
+    dim delay
+
+    ' Working variables
+    dim t, a$, key, score
+    
+    goto start
+
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Subroutines
+
+showMessage:
+    locate (textcols () - len (a$)) / 2, y
+    print a$    
+    y = y + 1
+    return
+
+waitKey:
+    DrawText ()            ' Show screen
+    while inkey$ () <> "": wend
+    while inkey$ () = "" and not Joy_Button (0): wend
+    y = y + 1
+    return
+
+setupScreen:
+    ' Setup screen
+    ' Draw borders
+    cls
+    locate 0, 0
+    color (230, 230, 230)
+    for t = 1 to textCols (): print "#": next       ' Top border
+    locate 0, textRows () - 1
+    for t = 1 to textCols (): print "#": next   ' Bottom border
+    color (200, 200, 200)
+    for t = 1 to textRows () - 2
+        locate 0, t: print"#"                       ' Left border
+        locate textCols () - 1, t: print "#"        ' Right border
+    next
+    return
+
+makeBug:
+    ' Place bug in a random position
+    bx = rnd () % (textCols () - 2) + 1
+    by = rnd () % (textRows () - 2) + 1
+    return
+
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Level start
+
+start:
+nextLevel:
+
+    ' Setup screen
+    gosub setupScreen
+
+    ' Show instructions
+    color (180, 200, 230)
+    y = textRows () / 2 - 3
+    a$ = "Snake demo": gosub showMessage
+    y = y + 1
+    a$ = "ARROW KEYS turn snake": gosub showMessage
+    y = y + 1
+    a$ = "Press any key to start": gosub showMessage
+    gosub waitKey
+
+    ' Redraw screen (to get rid of message)
+    gosub setupScreen
+
+    ' Setup snake
+    head = 0: tail = 0
+    stretch = 5
+    x = textCols () / 2
+    y = textRows () - 2
+    xd = 0
+    yd = -1
+
+    ' Setup timing
+    delay = 150        ' 150 msec 
+
+    ' Setup bug
+    gosub makebug
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Main loop
+
+    while true
+
+        ' Draw bug
+        color (255, 255, 255)
+        locate bx, by: print "o"
+        
+        ' Read input
+        Joy_Keys ()
+        key = inscankey()
+        if key = VK_UP    and yd <>  1 then yd = -1: xd = 0 endif
+        if key = VK_DOWN  and yd <> -1 then yd =  1: xd = 0 endif
+        if key = VK_LEFT  and xd <>  1 then xd = -1: yd = 0 endif
+        if key = VK_RIGHT and xd <> -1 then xd =  1: yd = 0 endif
+
+        ' Move snake's head
+        x = x + xd: y = y + yd
+
+        ' Did we get the bug?
+        if x = bx and y = by then 
+            stretch = stretch + 10            ' Stretch the tail
+            gosub MakeBug                    ' Move bug to new position
+            delay   = delay - 8
+            if delay < 10 then delay = 10 endif
+        else     
+            ' Otherwise, did we crash into something?
+            if charat$ (x, y) <> " " then goto dead endif
+        endif
+
+        ' Draw snake's head
+        color (20, 255, 20)
+        locate x, y: print "X"
+
+        ' Add head position to tail
+        tx (head) = x
+        ty (head) = y
+        head = (head + 1) % maxTail
+
+        ' Move or stretch tail
+        if stretch > 0 then
+            stretch = stretch - 1                    ' Don't advance the tail while stretching
+        else
+            locate tx (tail), ty (tail): print " "    ' Erase tail
+            tail = (tail + 1) % maxTail            ' Advance tail
+        endif
+
+        ' Display updated screen
+        DrawText ()
+        WaitTimer (delay)
+    wend
+
+dead:
+
+    ' Draw crashed head
+    color (255, 255, 155)
+    locate x, y: print "*"
+
+    ' Calculate snake length.
+    ' (This is the player's score)
+    score = head - tail
+    if score < 0 then score = score + maxTail endif
+
+    ' Draw crashed message
+    color (180, 200, 230)
+    y = textRows () / 2 - 2
+    a$ = "Game Over!": gosub showMessage
+    y = y + 1
+    a$ = "You scored: " + (head - tail) % maxTail: gosub showMessage
+    DrawText ()                            ' Let player see updated screen
+    
+    ' Pause for 1 second
+    ' This gives the player time to stop bashing keys :-)
+    sleep (1000)
+
+    y = y + 1
+    a$ = "Press any key": gosub showMessage
+                    
+    ' Wait for keypress
+    gosub waitkey    
+    
+    ' Restart the game
+    run

@@ -1,0 +1,69 @@
+const balls = 75
+dim x#(balls), y#(balls), z#(balls), mag#(balls), r(balls), g(balls), b(balls), scale#(balls)
+dim brightness
+dim texStar
+dim t, t2, t3, zOffset#, zLimit#
+dim vz#
+
+brightness = 2: zLimit# = 50
+
+texStar = LoadMipmapTexture ("data\star.bmp")
+
+for t = 0 to balls 
+    x#(t) = (rnd()%2000-1000)/100.0
+    y#(t) = (rnd()%2000-1000)/100.0
+    z#(t) = (rnd()%2000     )/1000.0*zLimit#
+    r(t)  = rnd()%196+64 
+    g(t)  = rnd()%196+64 
+    b(t)  = rnd()%196+64 
+    scale#(t)=(rnd()%1000)/200.0
+next
+
+glEnable (GL_TEXTURE_2D)
+glBindTexture (GL_TEXTURE_2D, texStar)
+glEnable (GL_BLEND)
+glBlendFunc (GL_SRC_COLOR, GL_ONE)
+glDisable (GL_DEPTH_TEST)
+
+while true
+    glClear (GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
+    glLoadIdentity ()
+    
+    for t = 1 to balls
+        
+        glPushMatrix ()
+        zOffset# = z#(t) - vz#
+        zOffset# = zOffset# - zLimit# * Int (zOffset# / zLimit#)
+        if zOffset# < 0 then 
+            zOffset# = zOffset# + zLimit#
+        endif
+        
+        glTranslatef (x#(t), y#(t), -zOffset#)
+        glScalef (scale#(t), scale#(t), scale#(t))
+
+        for t2 = 1 to brightness
+            t3 = (t+t2)%balls            
+            glColor3ub (r(t3), g(t3), b(t3))
+            glBegin (GL_QUADS)
+                glTexCoord2f (1, 0):    glVertex2f ( 1, 1)
+                glTexCoord2f (0, 0):    glVertex2f (-1, 1)
+                glTexCoord2f (0, 1):    glVertex2f (-1,-1)
+                glTexCoord2f (1, 1):    glVertex2f ( 1,-1)
+            glEnd ()
+            glRotatef (45, 0, 0, 1)
+        next
+        glPopMatrix ()
+    next
+    SwapBuffers ()
+
+'    WaitTimer (10)
+'    gosub Animate
+    while SyncTimer (20)
+        gosub Animate
+    wend
+wend
+end
+
+Animate:
+    vz# = vz# + 0.2
+    return

@@ -1,0 +1,78 @@
+' Star field demo 4
+'
+' Using textured stars
+
+const maxStars = 500
+
+dim stars#(maxStars)(2)
+dim i, texture
+
+' Populate star field
+for i = 1 to maxStars
+    stars#(i) = vec3 (rnd () % 301 - 150, rnd () % 301 - 150, -i)
+next
+
+' Setup OpenGL fog.
+glEnable (GL_FOG)
+glFogi (GL_FOG_MODE, GL_LINEAR)             ' Objects fade out linearly
+glFogf (GL_FOG_END, maxStars)               ' Objects past this distance are totally faded
+glFogf (GL_FOG_START, 0)                    ' Objects before this distance are totally un-faded
+glFogfv (GL_FOG_COLOR, vec3 (0, 0, 0))      ' Fog colour = black
+
+' Load star texture.
+' This will return an OpenGL texture handle, which is a number that identifies
+' the texture.
+texture = LoadTexture ("data\star.bmp")
+' Note: 
+'   LoadTexture is actually a Basic4GL function, not an OpenGL function as such,
+'   (although it uses the OpenGL texture allocation and loading functions internally).
+
+' Enable texture mapping
+glEnable (GL_TEXTURE_2D)
+
+' Note: We are NOT disabling the depth buffer, because we want it to ensure that
+' nearer stars are correctly drawn INFRONT of further stars.
+' Because we are using the depth buffer, we will need to clear it each frame
+
+' Main loop
+while true    
+    glClear (GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+    ' Clear the colour buffer AND the depth buffer
+    ' ("or" combines the two masks into a single bitmask that specifies BOTH buffers)
+    
+    ' "Bind" the star texture. This tells OpenGL that we are drawing with this texture.
+    glBindTexture (GL_TEXTURE_2D, texture)
+
+    for i = 1 to maxStars
+    
+        ' Move the star forward, by adding 1 to Z
+        stars#(i) = stars#(i) + vec3 (0, 0, 1)
+
+        ' If the Z goes positive (behind the screen), move it to the back again.
+        if stars#(i)(2) >= 0 then stars#(i)(2) = -maxStars endif
+        
+        ' This time we're drawing a quad (a four sided object, in our case a square)
+        ' Each corner will correspond to a corner of the texture.
+        glBegin (GL_QUADS)
+            ' We need to enter 4 vertices, with texture coordinates for each.
+            ' A texture coordinate is a 2D vector, where (0, 0) is the bottom
+            ' left hand of the texture, and (1, 1) is the top right.
+            ' We must specify the texture coordinate FIRST, then the corresponding
+            ' vertex
+            
+            glTexCoord2f (0, 1)                         ' Top left
+            glVertex3fv (stars#(i) + vec3(-1, 1, 0))
+
+            glTexCoord2f (0, 0)                         ' Bottom left
+            glVertex3fv (stars#(i) + vec3(-1,-1, 0))
+            
+            glTexCoord2f (1, 0)                         ' Bottom right
+            glVertex3fv (stars#(i) + vec3( 1,-1, 0))
+
+            glTexCoord2f (1, 1)                         ' Top right
+            glVertex3fv (stars#(i) + vec3( 1, 1, 0))
+        glEnd ()
+    next
+    SwapBuffers ()
+    WaitTimer (20)
+wend

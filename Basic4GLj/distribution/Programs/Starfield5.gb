@@ -1,0 +1,75 @@
+' Star field demo 5
+'
+' Different coloured stars
+
+const maxStars = 500
+
+dim stars#(maxStars)(2), starCols(maxStars)(2)
+dim i, texture
+
+' Populate star field
+for i = 1 to maxStars
+    stars#(i) = vec3 (rnd () % 301 - 150, rnd () % 301 - 150, -i)
+    
+    ' Choose star colour.
+    ' The starCols array is an array of 3D INTEGER vectors (no # means integers).
+    ' We are going to use the byte version of glColor. With the byte version, each
+    ' colour component ranges from 0 (no intensity) to 255 (full intensity)
+    starCols(i)(0) = rnd () % 256
+    starCols(i)(1) = rnd () % 256
+    starCols(i)(2) = rnd () % 256
+next
+
+' Setup OpenGL fog.
+glEnable (GL_FOG)
+glFogi (GL_FOG_MODE, GL_LINEAR)             ' Objects fade out linearly
+glFogf (GL_FOG_END, maxStars)               ' Objects past this distance are totally faded
+glFogf (GL_FOG_START, 0)                    ' Objects before this distance are totally un-faded
+glFogfv (GL_FOG_COLOR, vec3 (0, 0, 0))      ' Fog colour = black
+
+' Load star texture.
+texture = LoadTexture ("data\star.bmp")
+
+' Enable texture mapping
+glEnable (GL_TEXTURE_2D)
+
+' Main loop
+while true    
+    glClear (GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)    
+    glBindTexture (GL_TEXTURE_2D, texture)
+
+    for i = 1 to maxStars
+    
+        ' Move the star forward, by adding 1 to Z
+        stars#(i) = stars#(i) + vec3 (0, 0, 1)
+
+        ' If the Z goes positive (behind the screen), move it to the back again.
+        if stars#(i)(2) >= 0 then stars#(i)(2) = -maxStars endif
+        
+        ' Draw star
+        glBegin (GL_QUADS)
+        
+            ' Set the star's colour.
+            glColor3bv (starCols (i))
+            ' Note: Again, the last 3 characters tell us what version of glColor
+            ' we are using:
+            '   3 = 3 element vector
+            '   b = Byte values
+            '   v = Array            
+            
+            glTexCoord2f (0, 1)                         ' Top left
+            glVertex3fv (stars#(i) + vec3(-1, 1, 0))
+
+            glTexCoord2f (0, 0)                         ' Bottom left
+            glVertex3fv (stars#(i) + vec3(-1,-1, 0))
+            
+            glTexCoord2f (1, 0)                         ' Bottom right
+            glVertex3fv (stars#(i) + vec3( 1,-1, 0))
+
+            glTexCoord2f (1, 1)                         ' Top right
+            glVertex3fv (stars#(i) + vec3( 1, 1, 0))
+        glEnd ()
+    next
+    SwapBuffers ()
+    WaitTimer (20)
+wend

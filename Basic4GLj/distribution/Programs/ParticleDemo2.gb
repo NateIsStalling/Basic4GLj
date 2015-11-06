@@ -1,0 +1,236 @@
+' Here's a pretty random particle demo, with coloured stars zipping 
+' around a 3D city scape.
+'
+' The key points to note are:
+'   * Billboarding. The stars are always drawn facing the camera (see 
+'     comments around the glGetFloatv(GL_MODELVIEW_MATRIX) code)
+'   * Interaction between solid polygon objects and transparent 
+'     star particles. This is done by drawing the solid objects first
+'     then turning off writing to the Z-buffer and drawing transparent
+'     ones.
+
+' Buildings
+const rows = 10, cols = 10
+dim heights#(rows)(cols), height#
+
+' Particles
+const particleCount = 200
+dim starTex
+type SParticle
+    active as integer
+    texture as integer  ' Texture. (We only have one texture, but a real implementation might have many different types)
+    pos(2) as single    ' Position
+    vel(2) as single    ' Velocity
+    col(2) as single
+    size as single
+    brightness as single
+    fadeRate as single
+end type
+dim particles(particleCount) as SParticle
+
+' Working
+dim i, row, col
+dim matrix#(3)(3)
+
+' Camera angle
+dim yaxis#, xaxis#, zoom#
+zoom# = 15
+xaxis# = 15
+
+' Generate random heights for buildings
+for row = 1 to rows
+    for col = 1 to cols
+        heights#(col)(row) = rnd()%9 + 1
+    next
+next
+
+' Load particle texture
+starTex = LoadTexture("data\star.bmp")
+TextMode(TEXT_OVERLAID)
+print"(Move the mouse around!)"
+
+while true
+
+    ' Render the scene
+    ' Clear screen
+    glClear(GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
+    
+    ' Set view position
+    glLoadIdentity()
+    glTranslatef(0, -3, -zoom#)
+    glRotatef(xaxis#, 1, 0, 0)
+    glRotatef(yaxis#, 0, 1, 0)
+    
+    ' When combining transparent objects and solid objects, we 
+    ' must draw the solid objects FIRST.
+    for col = 1 to cols
+        for row = 1 to rows
+        
+            ' Translate to building position
+            glPushMatrix()
+            glTranslatef((col - cols/2) * 3, 0, (row - rows/2) * 3)
+            
+            ' Draw building
+            height# = heights#(col)(row)
+            glBegin(GL_QUADS)
+                glColor3f(.25, .25, .25)
+                glVertex3f(-1, 0,       -1)
+                glVertex3f( 1, 0,       -1)
+                glVertex3f( 1, height#, -1)
+                glVertex3f(-1, height#, -1)
+                glVertex3f(-1, 0,        1)
+                glVertex3f( 1, 0,        1)
+                glVertex3f( 1, height#,  1)
+                glVertex3f(-1, height#,  1)
+                glColor3f(.5, .5, .5)
+                glVertex3f(-1, 0,       -1)
+                glVertex3f(-1, 0,        1)
+                glVertex3f(-1, height#,  1)
+                glVertex3f(-1, height#, -1)
+                glVertex3f( 1, 0,       -1)
+                glVertex3f( 1, 0,        1)
+                glVertex3f( 1, height#,  1)
+                glVertex3f( 1, height#, -1)
+                glColor3f(.4, .4, .4)
+                glVertex3f(-1, height#, -1)
+                glVertex3f(-1, height#,  1)
+                glVertex3f( 1, height#,  1)
+                glVertex3f( 1, height#, -1)
+            glEnd()
+            
+            glPopMatrix()
+        next
+    next
+
+    ' Now that the solid objects have been drawn, we can draw the 
+    ' transparent ones.
+    ' We need to change the way things are drawn a little bit though.
+    ' The solid objects have been drawn to the screen, but they have
+    ' also been drawn to the Z-Buffer. We will use this information to
+    ' allow particles to pass infront of and behind solid objects 
+    ' correctly.
+    ' However, we DON'T want to update the Z-buffer when we draw the
+    ' particles themselves, as they are see through. (The Z-buffer
+    ' would stop us being able to see through particles, which is 
+    ' incorrect.)   
+    glDepthMask(0)
+    
+    ' Turn on colour blending.
+    ' We will use simple addition of colours, as this is the easiest
+    ' for particle systems (other transparency models require drawing
+    ' objects from furthest to nearest, which would be a pain..)
+    glBlendFunc(GL_SRC_COLOR, GL_ONE)
+    glEnable(GL_BLEND)
+    
+    ' Enable textures
+    glEnable(GL_TEXTURE_2D)
+    for i = 1 to particleCount
+        if particles(i).active then 
+        
+            ' Translate to the particle's position
+            glPushMatrix()
+            glTranslatef(particles(i).pos(0), particles(i).pos(1), particles(i).pos(2))
+            
+            ' We are going to "billboard" the particle.
+            ' This means we draw the particle facing the camera.
+            ' If we were to draw the particle now, it would most likely
+            ' be facing in the wrong direction, and would appear like
+            ' a flat cardboard cutout.
+            ' We can force the particle to face the camera with a simple trick.        
+            ' 1. We get the current model view matrix.
+            '    This is the matrix in OpenGL containing all the transformations
+            '    (glTranslate, glRotate etc) that we've done so far.
+            glGetFloatv(GL_MODELVIEW_MATRIX, matrix#)
+            
+            ' 2. We clear out the rotation component by setting the 
+            '    first 3 columns back to an identity matrix.
+            matrix#(0) = vec4(1, 0, 0, 0)
+            matrix#(1) = vec4(0, 1, 0, 0)
+            matrix#(2) = vec4(0, 0, 1, 0)
+            
+            ' 3. We load it back into OpenGL, replacing the previous 
+            '    matrix.
+            glLoadMatrixf(matrix#)
+            ' Now anything that we draw will still be in the same 
+            ' position, but will be facing the camera!
+
+            ' Setup to draw the particle
+            glScalef(particles(i).size, particles(i).size, 1)
+            glBindTexture(GL_TEXTURE_2D, particles(i).texture)
+            glColor3fv(particles(i).col * particles(i).brightness)
+            
+            ' Draw the particle as a textured square quad
+            glBegin(GL_QUADS)
+                glTexCoord2f(0, 0): glVertex2f(-1, -1)
+                glTexCoord2f(1, 0): glVertex2f( 1, -1)
+                glTexCoord2f(1, 1): glVertex2f( 1,  1)
+                glTexCoord2f(0, 1): glVertex2f(-1,  1)
+            glEnd()
+            glPopMatrix()
+        endif
+    next
+    
+    ' Restore OpenGL state ready to draw the solid objects
+    ' in the next frame.
+    glDepthMask(1)
+    glDisable(GL_BLEND)
+    glDisable(GL_TEXTURE_2D)
+    
+    DrawText()
+    SwapBuffers()
+    
+    ' Update the camera position
+    xaxis# = xaxis# + mouse_yd() * 50
+    yaxis# = yaxis# + mouse_xd() * 50
+    zoom# = zoom# - mouse_wheel()     
+    if xaxis# < 0 then xaxis# = 0
+    elseif xaxis# > 90 then xaxis# = 90
+    endif
+    if zoom# < 1 then zoom# = 1 endif
+    
+    ' Animate particles
+    while SyncTimer(10)
+        
+        ' Generate new particles
+        if rnd() % 1 = 0 then
+            i = rnd() % particleCount + 1
+            if not particles(i).active then
+                particles(i).active = true
+                particles(i).texture = starTex
+                particles(i).pos = vec3((rnd()%2001-1000)/1000.0, (rnd()%2001-1000)/1000.0, (rnd()%2001-1000)/1000.0) * 15
+                particles(i).vel = vec3((rnd()%2001-1000)/1000.0, (rnd()%2001-1000)/1000.0, (rnd()%2001-1000)/1000.0) * .04
+                particles(i).col = vec3((rnd()%2001     )/1000.0, (rnd()%2001     )/1000.0, (rnd()%2001     )/1000.0)
+                particles(i).size = (rnd()%1000) / 1000.0
+                particles(i).brightness = 2
+                particles(i).faderate = 0.01
+            endif
+        endif
+        
+        ' Animate active particles
+        for i = 1 to particleCount
+            if particles(i).active then
+            
+                ' This is a very simple particle engine.
+                ' Particles simply move at a constant speed and fade out.
+                ' A fuller implementation might have various different
+                ' types of particles that behave in various different ways.
+                ' Some examples:
+                '   * Particles that are accellerated down by gravity
+                '   * Smoke particles expand as they fade out
+                '   * Particles that don't fade out (or don't fade out
+                '     linearly)
+                '   * Animated particles (with different textures
+                '     for different stages of the animation.)
+                particles(i).pos = particles(i).pos + particles(i).vel
+                particles(i).brightness = particles(i).brightness - particles(i).faderate
+                if particles(i).pos(1) < 0 then
+                    particles(i).pos(1) = 0
+                    particles(i).vel(1) = abs(particles(i).vel(1))
+                endif
+                if particles(i).brightness < 0 then
+                    particles(i).active = false
+                endif
+            endif
+        next
+    wend
+wend

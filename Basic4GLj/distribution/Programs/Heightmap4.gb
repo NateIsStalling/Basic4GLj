@@ -1,0 +1,162 @@
+' Heightmap demo 4
+'
+' Vertex lighting
+'
+const heightScale# = 10 ' Height map scale factor
+const texScale# = 0.1   ' Number of textures per grid square
+dim xSize, ySize
+dim xMask, yMask        ' bitmasks to apply to X and Y coordinates
+dim file                ' File handle
+dim x, y                ' Working variables
+dim angle#              ' Viewing angle (used for animation)
+dim texture             ' OpenGL texture handle for our texture
+dim tx#, ty#            ' Texture coordinates
+dim a#(2), b#(2), c#(2), d#(2), norm#(2) ' Temporary vectors used for lighting
+dim intensity#
+
+goto Start
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Routines
+CheckError:
+    ' Check for file error
+    if FileError () <> "" then
+        print FileError ()
+        CloseFile (file)
+        end
+    endif
+    return
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Main program stars here    
+Start:
+
+' Open file
+file = OpenFileRead ("Files\Hills01.dat")
+    ' Note: Basic4GL will only open files in the "files" subfolder of the folder
+    '       where the program is saved.
+gosub CheckError
+
+' Read X and Y size
+xSize = Val (ReadLine (file))
+ySize = Val (ReadLine (file))
+gosub CheckError
+
+' Now that size is known, we can dim our 2D array
+dim h#(xSize - 1)(ySize - 1)        
+xMask = xSize - 1
+yMask = ySize - 1
+
+for y = 0 to ySize - 1
+    for x = 0 to xSize - 1
+        h#(x)(y) = val (ReadText (file, true)) * heightScale#
+        gosub CheckError
+    next
+next          
+CloseFile (file)
+
+' Create light map
+' This will be a 2D grid stating the light intensity at each heightmap point, as a
+' value between 0 (fully dark) to 1 (fully lit)
+' To calculate the light map, we need to have a light source, to define the direction
+' of the light.
+dim lightSource#(2)
+lightSource# = vec3(0, -1, 0)           ' Light shines straight down.
+' (Try changing the light source direction for different effects).
+
+lightSource# = Normalize (lightSource#) ' Light source must be length 1
+
+' Create light map
+dim l# (xSize - 1)(ySize - 1)
+for x = 0 to xSize - 1
+    for y = 0 to ySize - 1
+        ' A . B
+        ' . P .
+        ' C . D
+        
+        ' To calculate the lighting at point P, we cross product the vectors (D-A)
+        ' and (B-C) and normalize, to give the normal at point P.
+        ' We then dot product the result with the negated light vector.
+        ' This will give us a value where 1 = light shining directly onto surface,
+        ' and 0 (or below) = surface pointing away from the light.
+        ' We raise it to the power of 3 to give a slightly specular effect, and
+        ' clamp it at 0.2 to apply an ambient light level.
+        a# = vec3 (x,   h#(x)(y),                             y)
+        b# = vec3 (x+1, h#((x+1) and xMask)(y),               y)
+        c# = vec3 (x  , h#(x              )((y+1) and yMask), y+1)        
+        d# = vec3 (x+1, h#((x+1) and xMask)((y+1) and yMask), y+1)
+
+        norm# = Normalize (CrossProduct (d# - a#, b# - c#))        
+
+        intensity# = norm# * -lightSource#
+
+        intensity# = intensity# * intensity# * intensity#
+        if intensity# < 0.2 then intensity# = 0.2 endif
+            
+        l#(x)(y) = intensity#
+    next
+next
+
+' Load texture file 
+texture = LoadMipmapTexture ("textures\00005.jpg")
+
+' Enable texture mapping, and bind our texture
+glEnable (GL_TEXTURE_2D)
+glBindTexture (GL_TEXTURE_2D, texture)
+
+while true
+    
+    ' Clear the screen
+    glClear (GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+        
+    ' Setup the transformations
+    glLoadIdentity ()                       ' Clear out any existing transformations
+    glTranslatef (0, 0, -50)                ' "push" map away
+    glRotatef (20, 1, 0, 0)                 ' Elevation rotation
+    glRotatef (angle#, 0, 1, 0)             ' Animation rotation
+    glTranslatef (-xSize/2, 0, -ySize/2)    ' Centre the map    
+
+    ' Draw the heightmap points
+    for x = 0 to xSize - 2
+        for y = 0 to ySize - 2
+        
+            ' Calculate the texture coordinates
+            tx# = x * texScale#
+            ty# = y * texScale#
+
+            ' Draw a grid square.
+            ' Apply the lightmap, by setting the colour at each corner.
+            ' We will multiply the colour white (1,1,1) as a vector by the light
+            ' intensity. Then use the resulting vector as our colour coordinates
+            glBegin (GL_QUADS)
+                intensity# = l#(x)(y)
+                glColor3f (intensity#, intensity#, intensity#)
+                glTexCoord2f (tx#            , ty#)
+                glVertex3f (x  , h#(x  )(y  ), y  )
+                
+                intensity# = l#(x+1)(y)
+                glColor3f (intensity#, intensity#, intensity#)
+                glTexCoord2f (tx# + texScale#, ty#)
+                glVertex3f (x+1, h#(x+1)(y  ), y  )
+
+                intensity# = l#(x+1)(y+1)
+                glColor3f (intensity#, intensity#, intensity#)
+                glTexCoord2f (tx# + texScale#, ty# + texScale#)
+                glVertex3f (x+1, h#(x+1)(y+1), y+1)
+
+                intensity# = l#(x)(y+1)
+                glColor3f (intensity#, intensity#, intensity#)
+                glTexCoord2f (tx#            , ty# + texScale#)
+                glVertex3f (x  , h#(x  )(y+1), y+1)
+            glEnd ()
+        next
+    next
+    
+    ' Show the result
+    SwapBuffers ()
+    
+    ' Animation
+    while SyncTimer (20)
+        angle# = angle# + 0.8
+    wend
+wend

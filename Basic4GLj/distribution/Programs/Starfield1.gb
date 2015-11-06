@@ -1,0 +1,82 @@
+' Star field demo 1
+'
+' This is also a bit of a tutorial on OpenGL and how Basic4GL does things.
+
+const maxStars = 200
+
+dim stars#(maxStars)(2)
+' Note: An array of maxStars 3D vectors.
+' The # after it means floating point. Otherwise it would store integers (the default in Basic4GL)
+
+dim i               ' Note: ALL variables must be declared before use, with DIM
+
+' Populate star field
+for i = 1 to maxStars
+    stars#(i) = vec3 (rnd () % 201 - 100, rnd () % 201 - 100, -i)
+    ' Vec3 creates a 3D vector. Parameters are X, Y and Z
+    ' Rnd() returns a number between 0 and MAXINT (MAXINT = about 2 billion),
+    ' So we use the % (mod) operator to convert it to a number between 0 and 200.
+    
+    ' We have to setup our vectors with respect to the coordinate system.
+    ' In OpenGL, the coordinate system says that:
+    '   X = How many units to the RIGHT.
+    '   Y = How many units UP.
+    '   Z = How many units OUT OF THE SCREEN.
+    ' 
+    ' So because we want our stars to appear INTO the screen, we have to use a 
+    ' NEGATIVE Z value.
+next
+
+glDisable (GL_DEPTH_TEST)
+' This disables the Z buffer. 
+' (The Z buffer automatically determines which pixels are infront of the other ones.
+'  We don't need it for a star field though.)
+
+' Main loop
+while true    
+    glClear (GL_COLOR_BUFFER_BIT)       
+    ' This clears the screen.
+    ' The "colour buffer" refers to the actual image that we are going to draw.
+    ' There are other buffers (like the Z buffer) that we could clear also if we
+    ' were using them. But we're not :)
+
+    for i = 1 to maxStars
+    
+        ' Move the star forward, by adding 1 to Z
+        stars#(i) = stars#(i) + vec3 (0, 0, 1)
+
+        ' If the Z goes positive (infront of the screen), move it to the back again.
+        if stars#(i)(2) >= 0 then stars#(i)(2) = -maxStars endif
+        ' Note: All "if" statements must have an "endif", even if they are 
+        ' only on 1 line.
+        
+        ' Draw the star.
+        ' In OpenGL you don't actually access the pixels directly.
+        ' Instead you pass 3D data into OpenGL. It will do the 3D maths for you
+        ' and draw the appropriate image on the screen.
+        
+        ' You place the 3D data between a glBegin() and a glEnd().
+        ' We want it to plot points (each point is a star), so we pass GL_POINTS
+        ' to glBegin ()
+        glBegin (GL_POINTS)
+            glVertex3fv (stars#(i))
+            ' This is a form of the glVertex command.
+            ' The last 3 characters give us information about this particular
+            ' version.
+            ' 3 = Takes a 3D vector
+            ' F = Floating point values
+            ' V = Vector is passed in as an array
+        glEnd ()
+    next
+    
+    SwapBuffers ()
+    ' Basic4GL uses "double buffered" mode.
+    ' All drawing happens in the off-screen buffer.
+    ' When we're finished, we "swap" it to the onscreen buffer by calling SwapBuffers()
+
+    WaitTimer (20)
+    ' Wait timer slows us down. Parameter is the interval.
+    ' Note: Frames per second (FPS) = 1000 / Interval
+    '
+    ' So 1000 / 20 = 50 frames per second
+wend

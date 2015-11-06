@@ -1,0 +1,125 @@
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Allocate data
+    dim twinkle                         ' Twinkling stars
+    dim tp                        ' 'T' Key pressed?
+    
+    dim num: num = 50                ' Number of stars to draw
+    
+    ' Stars:
+    ' Basic4GL doesn't support structures.
+    ' We will use parallel arrays instead
+    struc SStar
+        dim r, g, b                ' Stars color
+        dim dist#                    ' Distance from centre
+        dim angle#                    ' Stars current angle
+    endstruc
+    dim SStar star(50), SStar &curStar
+    
+    dim zoom#: zoom# = -15.0            ' Viewing distance away from stars
+    dim tilt#: tilt# =  90            ' Tilt the view
+    dim spin#                        ' Spin twinkling stars
+    
+    dim loopVar                        ' General loop variable
+    dim key$                        ' General input variable
+    dim texture                    ' Storage for one texture
+    
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Load bitmap
+    texture = LoadTexture ("Data\Star.bmp")
+    if texture = 0 then print "Failed to load bitmap": end: endif
+    
+    ' Make linear filtered texture
+    glBindTexture(GL_TEXTURE_2D, texture)
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR)
+    
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Setup
+    
+    ' Setup OpenGL state
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE)    ' Set the blending function for translucency
+    glEnable (GL_BLEND)                ' Enable blending
+    glEnable (GL_TEXTURE_2D)
+    glDisable (GL_DEPTH_TEST)
+    
+    ' Setup stars
+    for loopVar = 1 to num
+        &curStar = &star (loopVar)
+        curStar.angle# = 0                ' Start all the stars at angle zero
+        curStar.dist# = (loopVar * 5.0) / num    ' Calculate distance from the center
+        curStar.r = rnd () % 256            ' Give star[loopVar] A random red intensity
+        curStar.g = rnd () % 256            ' Give star[loopVar] A random green intensity
+        curStar.b = rnd () % 256            ' Give star[loopVar] A random blue intensity
+    next
+        
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Main loop
+    while true
+
+        ' Render frame
+    
+        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)    ' Clear the screen and the depth buffer
+        glBindTexture(GL_TEXTURE_2D, texture)                ' Select our texture
+
+        for loopVar = 1 to num                            ' Loop through all the stars
+            &curStar = &star (loopVar)
+            glLoadIdentity()                        ' Reset the view before we draw each star
+            glTranslatef(0.0,0.0,zoom#)                       ' Zoom into the screen (Using the value in 'zoom')
+            glRotatef(tilt#,1.0,0.0,0.0)                    ' Tilt the view (Using the value in 'tilt')
+            glRotatef(curStar.angle#,0.0,1.0,0.0)         ' Rotate to the current stars angle
+            glTranslatef(curStar.dist#,0.0,0.0)            ' Move forward on the X plane
+            glRotatef(-curStar.angle#,0.0,1.0,0.0)        ' Cancel the current stars angle
+            glRotatef(-tilt#,1.0,0.0,0.0)                ' Cancel the screen tilt
+            
+            if twinkle then
+                glColor4ub(star((num-loopVar)+1).r,star((num-loopVar)+1).g, star((num-loopVar)+1).b,255)
+                glBegin(GL_QUADS)
+                    glTexCoord2f(0.0, 0.0): glVertex3f(-1.0,-1.0, 0.0)
+                    glTexCoord2f(1.0, 0.0): glVertex3f( 1.0,-1.0, 0.0)
+                    glTexCoord2f(1.0, 1.0): glVertex3f( 1.0, 1.0, 0.0)
+                    glTexCoord2f(0.0, 1.0): glVertex3f(-1.0, 1.0, 0.0)
+                glEnd()
+            endif
+
+            glRotatef(spin#,0.0,0.0,1.0)
+            glColor4ub(curStar.r,curStar.g,curStar.b,255)
+            glBegin(GL_QUADS)
+                glTexCoord2f(0.0, 0.0): glVertex3f(-1.0,-1.0, 0.0)
+                glTexCoord2f(1.0, 0.0): glVertex3f( 1.0,-1.0, 0.0)
+                glTexCoord2f(1.0, 1.0): glVertex3f( 1.0, 1.0, 0.0)
+                glTexCoord2f(0.0, 1.0): glVertex3f(-1.0, 1.0, 0.0)
+            glEnd()
+    
+            spin# = spin# + 0.01
+            curStar.angle# = curStar.angle# + (loopVar + 0.0)/num
+            curStar.dist# = curStar.dist# - 0.01
+            if curStar.dist# < 0.0 then
+                curStar.dist# = curStar.dist# + 5.0
+                curStar.r = rnd ()%256
+                curStar.g = rnd ()%256
+                curStar.b = rnd ()%256
+            endif
+        next
+
+        SwapBuffers ()
+        
+
+        ' User interface
+
+        key$ = inkey$ ()
+        if key$ = "t" or key$ = "T" then
+            twinkle = not twinkle
+        endif
+        if ScanKeyDown (VK_UP) then
+            tilt# = tilt# - 0.5
+        endif
+        if ScanKeyDown (VK_DOWN) then
+            tilt# = tilt# + 0.5
+        endif
+        if ScanKeyDown (VK_PRIOR) then
+            zoom# = zoom# - 0.2
+        endif
+        if ScanKeyDown (VK_NEXT) then
+            zoom# = zoom# + 0.2
+        endif
+    wend

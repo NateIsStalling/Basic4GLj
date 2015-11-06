@@ -1,0 +1,75 @@
+' Bounce client
+
+' Variables
+dim connected
+dim netAddress$
+dim connection
+dim text$
+dim message
+
+gosub ConnectToServer
+
+if connected then
+
+    ' Main loop
+    while connected
+        gosub SendText
+        gosub ReceiveText
+        gosub CheckConnection    
+    wend
+    gosub CloseConnection
+else
+    printr "Failed to connect to server"
+endif
+
+end
+
+ConnectToServer:
+    input"Network address"; netAddress$
+    printr "Connecting to "; netAddress$; ":8000"
+    connection = NewConnection(netAddress$, 8000)
+    
+    ' Wait for handshake to finish
+    printr "Handshaking..."
+    while ConnectionConnected(connection) and ConnectionHandshaking(connection)
+        Sleep(100)
+    wend
+    
+    gosub CheckConnection   
+    if connected then
+        printr "Connected"
+    else
+        printr "Unable to connect"
+    endif
+
+    return
+    
+CloseConnection:
+    DeleteConnection(connection)
+    connection = 0
+    return
+
+CheckConnection:
+    connected = ConnectionConnected(connection)
+    return
+
+SendText:
+    ' Get text from user
+    input">",text$
+    
+    message = SendMessage(connection, 1, true, false)
+    WriteString(message, text$)
+    CloseFile(message)
+    return
+    
+ReceiveText:
+    while not MessagePending(connection)
+        Sleep(100)
+    wend
+    
+    message = ReceiveMessage(connection)
+    text$ = ReadLine(message) 
+    CloseFile(message)
+    
+    printr "<"; text$
+    return

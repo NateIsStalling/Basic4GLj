@@ -1,0 +1,251 @@
+' Globals
+    
+    dim blend                       ' Blending ON/OFF
+    const piover180# = 0.0174532925
+    dim heading#
+    dim xpos#
+    dim zpos#
+
+    dim yrot#                       ' Y Rotation
+    dim walkbias#
+    dim walkbiasangle#
+    dim lookupdown#
+    dim z#                          ' Depth Into The Screen
+
+    dim filter                      ' Which Filter To Use
+    dim texture(2)                  ' Storage For 3 Textures
+
+' Data structures
+
+    struc SVERTEX
+        dim x#, y#, z#
+        dim u#, v#
+    endstruc
+    
+    struc STRIANGLE
+        dim SVERTEX vertex(2)
+    endstruc
+    
+    struc SSECTOR
+        dim numtriangles
+        dim STRIANGLE &triangle()
+    endstruc
+    
+    dim SSECTOR sector1             ' Our Model Goes Here
+
+' Working variables
+    
+    dim file, oneline$, numtriangles, loopVar, vert, tempstr$, tempval#
+    dim _x#, _y#, _z#, _u#, _v#
+
+    goto start
+    
+' Routines
+
+CheckError:
+    if FileError () <> "" then print FileError (): end endif
+    return
+
+LoadLine:
+    ' Read a line
+    gosub CheckError
+    oneline$ = ReadLine (file)
+    
+    ' Skip comment line(s)
+    if len (oneline$) > 2 and left$ (oneline$, 2) = "//" then goto LoadLine endif
+    return
+    
+ScanFloat:
+    ' Skip whitespace
+    while oneline$ <> "" and left$ (oneline$, 1) <= " "
+        oneline$ = mid$ (oneline$, 2, 999)
+    wend
+    
+    ' Extract non whitespace
+    tempstr$ = ""
+    while oneline$ <> "" and left$ (oneline$, 1) > " "
+        tempstr$ = tempstr$ + left$ (oneline$, 1)
+        oneline$ = mid$ (oneline$, 2, 999)
+    wend
+    
+    ' Convert to floating point value
+    tempval# = val (tempstr$)
+    return
+
+start:
+
+    ' Load world file
+
+    file = OpenFileRead ("files/world.txt")     ' File To Load World Data From
+    gosub CheckError
+    
+    gosub LoadLine
+    numtriangles = val (mid$ (oneline$, len ("NUMPOLLIES "), 999))
+    alloc sector1.triangle, numtriangles 
+    sector1.numtriangles = numtriangles
+    for loopVar = 0 to numtriangles - 1
+        for vert = 0 to 2
+            gosub LoadLine
+            gosub ScanFloat: _x# = tempVal#
+            gosub ScanFloat: _y# = tempVal#
+            gosub ScanFloat: _z# = tempVal#
+            gosub ScanFloat: _u# = tempVal#
+            gosub ScanFloat: _v# = tempVal#
+            sector1.triangle (loopVar).vertex (vert).x# = _x#
+            sector1.triangle (loopVar).vertex (vert).y# = _y#
+            sector1.triangle (loopVar).vertex (vert).z# = _z#
+            sector1.triangle (loopVar).vertex (vert).u# = _u#
+            sector1.triangle (loopVar).vertex (vert).v# = _v#
+        next
+    next
+    CloseFile (file)
+    
+    ' Load texture
+    
+    dim image
+    image = LoadImage ("Data/Mud.bmp")                  
+    glGenTextures (3, texture)
+    
+    glBindTexture (GL_TEXTURE_2D, texture (0))
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+    glTexImage2D (GL_TEXTURE_2D, 0, 3, ImageWidth(image), ImageHeight(image), 0, ImageFormat(image), ImageDataType(image), image)
+    
+    glBindTexture (GL_TEXTURE_2D, texture (1))
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexImage2D (GL_TEXTURE_2D, 0, 3, ImageWidth(image), ImageHeight(image), 0, ImageFormat(image), ImageDataType(image), image)
+    
+    glBindTexture (GL_TEXTURE_2D, texture (2))
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST)
+    gluBuild2DMipmaps (GL_TEXTURE_2D, 3, ImageWidth(image), ImageHeight(image), ImageFormat(image), ImageDataType(image), image)
+
+    DeleteImage (image)
+
+    ' Setup OpenGL
+
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE)                    ' Set The Blending Function For Translucency
+    glEnable (GL_TEXTURE_2D)
+    glMatrixMode (GL_PROJECTION)
+    glLoadIdentity ()
+    gluPerspective (45, WindowWidth () * 1.0 / WindowHeight (), 0.1, 100)
+    glMatrixMode (GL_MODELVIEW)
+    
+    ' Main loop    
+    
+    dim x_m#, y_m#, z_m#, u_m#, v_m#
+    dim xtrans#, ytrans#, ztrans#
+    dim sceneroty#
+    dim loop_m
+    dim key$
+    while true 
+    
+        ' Draw scene
+        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)  ' Clear The Screen And The Depth Buffer
+        glLoadIdentity()                                     ' Reset The View
+        
+        xtrans# = -xpos#
+        ztrans# = -zpos#
+        ytrans# = -walkbias#-0.25
+        sceneroty# = 360.0 - yrot#
+
+        glRotatef(lookupdown#,1.0,0,0)
+        glRotatef(sceneroty#,0,1.0,0)
+    
+        glTranslatef(xtrans#, ytrans#, ztrans#)
+        glBindTexture(GL_TEXTURE_2D, texture (filter))
+    
+        numtriangles = sector1.numtriangles
+    
+        ' Process Each Triangle
+
+        for loop_m = 0 to numtriangles - 1
+
+            glBegin(GL_TRIANGLES)
+                glNormal3f( 0.0, 0.0, 1.0)
+                x_m# = sector1.triangle(loop_m).vertex(0).x#
+                y_m# = sector1.triangle(loop_m).vertex(0).y#
+                z_m# = sector1.triangle(loop_m).vertex(0).z#
+                u_m# = sector1.triangle(loop_m).vertex(0).u#
+                v_m# = sector1.triangle(loop_m).vertex(0).v#
+                glTexCoord2f(u_m#,v_m#): glVertex3f(x_m#,y_m#,z_m#)
+            
+                x_m# = sector1.triangle(loop_m).vertex(1).x#
+                y_m# = sector1.triangle(loop_m).vertex(1).y#
+                z_m# = sector1.triangle(loop_m).vertex(1).z#
+                u_m# = sector1.triangle(loop_m).vertex(1).u#
+                v_m# = sector1.triangle(loop_m).vertex(1).v#
+                glTexCoord2f(u_m#,v_m#): glVertex3f(x_m#,y_m#,z_m#)
+            
+                x_m# = sector1.triangle(loop_m).vertex(2).x#
+                y_m# = sector1.triangle(loop_m).vertex(2).y#
+                z_m# = sector1.triangle(loop_m).vertex(2).z#
+                u_m# = sector1.triangle(loop_m).vertex(2).u#
+                v_m# = sector1.triangle(loop_m).vertex(2).v#
+                glTexCoord2f(u_m#,v_m#): glVertex3f(x_m#,y_m#,z_m#)
+            glEnd()
+        next
+        SwapBuffers ()
+
+        ' Move around
+        
+        key$ = inkey$ ()
+        if key$ = "B" or key$ = "b" then 
+            blend = not blend 
+            if not blend then
+                glDisable (GL_BLEND)
+                glEnable (GL_DEPTH_TEST)
+            else
+                glEnable (GL_BLEND)
+                glDisable (GL_DEPTH_TEST)
+            endif
+        endif
+        if key$ = "F" or key$ = "f" then
+            filter = filter + 1
+            if filter > 2 then 
+                filter = 0 
+            endif
+        endif
+        if ScanKeyDown (VK_PRIOR) then
+            z# = z# - 0.02
+        endif
+        if ScanKeyDown (VK_NEXT) then
+            z# = z# + 0.02
+        endif
+        if ScanKeyDown (VK_UP) then
+            xpos# = xpos# - sin (heading# * piover180#) * 0.05
+            zpos# = zpos# - cos (heading# * piover180#) * 0.05
+            if walkbiasangle# >= 359 then
+                walkbiasangle# = 0
+            else
+                walkbiasangle# = walkbiasangle# + 10
+            endif
+            walkbias# = sin(walkbiasangle# * piover180#) / 20
+        endif
+        if ScanKeyDown (VK_DOWN) then
+            xpos# = xpos# + sin (heading# * piover180#) * 0.05
+            zpos# = zpos# + cos (heading# * piover180#) * 0.05
+            if walkbiasangle# <= 1 then
+                walkbiasangle# = 359
+            else
+                walkbiasangle# = walkbiasangle# - 10
+            endif
+            walkbias# = sin(walkbiasangle# * piover180#) / 20
+        endif
+        if ScanKeyDown (VK_RIGHT) then
+            heading# = heading# - 1
+            yrot# = heading#
+        endif
+        if ScanKeyDown (VK_LEFT) then
+            heading# = heading# + 1
+            yrot# = heading#
+        endif
+
+        if ScanKeyDown (VK_PRIOR) then
+            lookupdown# = lookupdown# - 1
+        endif
+        if ScanKeyDown (VK_NEXT) then
+            lookupdown# = lookupdown# + 1
+        endif
+    wend

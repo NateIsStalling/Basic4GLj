@@ -1,0 +1,90 @@
+' Flames01.gb
+'
+' Original version by Scott Brosious
+' Converted to Basic4GL by Tom Mulgrew
+
+const width = 128           ' Width of bitmap. Must be a power of 2 (so we can load it into an OpenGL texture)
+const height = 64           ' Height of bitmap. Must be a power of 2 (so we can load it into an OpenGL texture)
+dim a1(height-1)(width-1)   ' Due to the way Basic4GL stores arrays, the first dimension
+dim a2(height-1)(width-1)   ' actually ends up as the Y, and the second as the X when the texture is loaded into OpenGL
+
+' Working variables
+dim x, y, c1, c2, nohs, i, j
+
+' Setup OpenGL
+glMatrixMode (GL_PROJECTION)        ' Use a 2D projection (2D mode)
+glLoadIdentity ()
+gluOrtho2D (0, 1, 0, 1)
+glMatrixMode (GL_MODELVIEW)
+
+' Setup an OpenGL texture.
+' We will copy our image into this texture and draw it as a quad
+dim tex
+glEnable (GL_TEXTURE_2D)
+tex = glGenTexture ()
+glBindTexture (GL_TEXTURE_2D, tex)
+glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+
+FOR x = 0 TO width - 1
+    C1 = (RND() % 25) + 50
+    C2 = (RND() % 25) + 50
+    a1(height-2)(x) = c1
+    a1(height-1)(x) = c2
+next
+
+while true
+nohs = INT(RND() % 15) + 15
+FOR i = 1 TO nohs
+    x = INT(RND() % (width - 3)) + 1
+    a1(height-3)(x-1) = 255
+    a1(height-3)(x  ) = 255
+    a1(height-3)(x+1) = 255
+    a1(height-2)(x-1) = 255
+    a1(height-2)(x  ) = 255
+    a1(height-2)(x+1) = 255
+    a1(height-1)(x-1) = 255
+    a1(height-1)(x  ) = 255
+    a1(height-1)(x+1) = 255
+NEXT 
+
+for x = 1 to width - 2
+    for y = 1 to height - 2
+        a2 (y-1)(x) = (a1(y)(x-1) + a1(y)(x+1) + a1(y-1)(x) + a1(y+1)(x)) / 4 - 3
+    next
+NEXT 
+
+FOR j = 0 TO height - 1
+    FOR i = 0 TO width - 1
+        if a2(j)(i) < 1 then a2(j)(i) = 1 endif
+        a1(j)(i) = a2(j)(i)
+    NEXT 
+NEXT 
+
+' Load array into current OpenGL texture
+' We will use GL_LUMINANCE, to create a luminance texture.
+' This is a texture of a single colour, but varying brightness (luminance).
+' We use GL_UNSIGNED_BYTE, to instruct OpenGL to treat each element as a byte.
+' So 0 is the minimum brightness, and 255 is the maximum,
+glTexImage2D (GL_TEXTURE_2D, 0, 1, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, a1)
+
+' Draw texture.
+glClearColor (0.4, 0, 0, 1)
+glDisable (GL_DEPTH_TEST)
+glEnable (GL_TEXTURE_2D)
+glEnable (GL_BLEND)
+glBlendFunc (GL_SRC_ALPHA, GL_ONE)
+glClear (GL_COLOR_BUFFER_BIT)
+glColor3f (1, 1, .4)
+glBegin (GL_QUADS)
+    glTexCoord2f (0, 1): glVertex2f (0, 0)
+    glTexCoord2f (1, 1): glVertex2f (1, 0)
+    glTexCoord2f (1, 0): glVertex2f (1, .5)
+    glTexCoord2f (0, 0): glVertex2f (0, .5)
+glEnd ()
+
+' Show texture
+SwapBuffers ()
+wend

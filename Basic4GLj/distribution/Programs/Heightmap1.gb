@@ -1,0 +1,129 @@
+' Heightmap demo 1
+'
+' Note: The heightmap demos are designed to follow on from the starfield demos.
+'       Certain things are not explained as thoroughly, if they have already been 
+'       covered in the starfield demos.
+'       Therefore I recommend reading through the starfield demos first.
+'
+' Loading a heightmap
+'
+' File format:
+'
+' XSize
+' YSize
+' Row 1
+' Row 2
+' ...                     
+'
+' Where:    XSize and YSize are integers (in text format)
+'           Row is a list of space separated floating point height values (in text format)
+'
+' XSize and YSize MUST be a power of 2
+'
+' E.g:
+' 4
+' 4
+' 0.7 1.4 1.7 1.0
+' 0.2 0.8 1.1 0.4
+'-0.4 0.3 0.8 0.0
+' 0.1 0.6 1.7 0.7
+
+const heightScale# = 10 ' Height map scale factor
+dim xSize, ySize
+dim xMask, yMask        ' bitmasks to apply to X and Y coordinates
+dim file                ' File handle
+dim x, y                ' Working variables
+
+goto Start
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Routines
+CheckError:
+    ' Check for file error
+    if FileError () <> "" then
+        print FileError ()
+        CloseFile (file)
+        end
+    endif
+    return
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Main program stars here    
+Start:
+
+' Open file
+file = OpenFileRead ("Files\Hills01.dat")
+    ' Note: Basic4GL will only open files in the "files" subfolder of the folder
+    '       where the program is saved.
+gosub CheckError
+
+' Read X and Y size
+xSize = Val (ReadLine (file))
+ySize = Val (ReadLine (file))
+gosub CheckError
+    ' Note: ReadLine reads a line of text from the file
+    '       Val converts it into a numeric value
+
+' Now that size is known, we can dim our 2D array
+dim h#(xSize - 1)(ySize - 1)        
+    ' This is how Basic4GL declares 2D arrays. We want it to range from 0 to xSize - 1,
+    ' hence we put in xSize - 1 as the X size. (Likewise with the Y size.)
+xMask = xSize - 1
+yMask = ySize - 1
+
+for y = 0 to ySize - 1
+    for x = 0 to xSize - 1
+        h#(x)(y) = val (ReadText (file, true)) * heightScale#
+        gosub CheckError
+            ' Note: ReadText skips past whitespace, and reads a string of characters
+            '       up to the next whitespace.
+            '       (The second parameter is whether to treat newlines as whitespace.)
+    next
+next          
+CloseFile (file)
+
+' Render heightmap to screen
+' For now we will simply plot points at the heightmap positions
+
+' Not using the Z buffer at this point
+glDisable (GL_DEPTH_TEST)
+
+while true
+    
+    ' Clear the screen
+    glClear (GL_COLOR_BUFFER_BIT)
+    
+    ' Draw the heightmap points
+    ' We will use:
+    '   X for the X position
+    '   Y for the Z position
+    ' and read the Y position from the heightmap
+    '
+    ' This means that the grid cells will be spaced 1 unit apart
+    
+    ' To make sure the points are drawn in a visible position, we will push them
+    ' 100 units into the screen (add -100 to Z).
+    ' We will also move them -xSize/2 units in the X direction to centre them.
+    ' We will do this using the "translate" TRANSFORMATION. (Translate means move.)    
+    ' Setup the translation 
+    glLoadIdentity ()               ' Clear any existing transformations
+    glTranslatef (-xSize/2, 0, -100)
+    ' Now any points drawn will be translated (moved) by this value first
+    
+    ' If we rotate the points around the X axis slightly it gives the effect
+    ' of us looking down onto the grid, (instead of looking from side on).
+    ' So setup a Rotate TRANSFORMATION.
+    glRotatef (20, 1, 0, 0)     ' Rotate 20 degrees around the (1, 0, 0) vector
+    ' Note: This transformation will be combined with the translate, and BOTH
+    '       will be applied to everything drawn below
+
+    glBegin (GL_POINTS)
+    for x = 0 to xSize - 1
+        for y = 0 to ySize - 1        
+            glVertex3f (x, h#(x)(y), y)
+        next
+    next
+    
+    ' Show the result
+    SwapBuffers ()
+wend

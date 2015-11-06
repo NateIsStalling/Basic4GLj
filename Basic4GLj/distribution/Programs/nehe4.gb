@@ -1,0 +1,29 @@
+	dim rtri#										' Angle For The Triangle ( NEW )
+	dim rquad#										' Angle For The Quad     ( NEW )
+	while true
+		glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)	' Clear The Screen And The Depth Buffer
+		glLoadIdentity()							' Reset The View
+		glTranslatef(-1.5,0.0,-6.0)					' Move Left 1.5 Units And Into The Screen 6.0
+		glRotatef(rtri#,0.0,1.0,0.0)					' Rotate The Triangle On The Y axis ( NEW )
+		glBegin(GL_TRIANGLES)							' Drawing Using Triangles
+			glColor3f(1.0,0.0,0.0)					' Set The Color To Red
+			glVertex3f( 0.0, 1.0, 0.0)					' Top
+			glColor3f(0.0,1.0,0.0)					' Set The Color To Green
+			glVertex3f(-1.0,-1.0, 0.0)					' Bottom Left
+			glColor3f(0.0,0.0,1.0)					' Set The Color To Blue
+			glVertex3f( 1.0,-1.0, 0.0)					' Bottom Right
+		glEnd()									' Finished Drawing The Triangle
+		glLoadIdentity()							' Reset the current modelview matrix
+		glTranslatef(1.5,0.0,-6.0)						' Move right 1.5 units and into the screen 6.0
+		glRotatef(rquad#,1.0,0.0,0.0)					' Rotate the quad on the X axis
+		glColor3f(0.5,0.5,1.0)						' Set the color to blue one time only
+		glBegin(GL_QUADS)							' Draw A Quad
+			glVertex3f(-1.0, 1.0, 0.0)					' Top Left
+			glVertex3f( 1.0, 1.0, 0.0)					' Top Right
+			glVertex3f( 1.0,-1.0, 0.0)					' Bottom Right
+			glVertex3f(-1.0,-1.0, 0.0)					' Bottom Left
+		glEnd()									' Done Drawing The Quad
+		rtri# = rtri# + 0.2							' Increase The Rotation Variable For The Triangle ( NEW )
+		rquad# = rquad# + 0.15						' Decrease The Rotation Variable For The Quad     ( NEW )
+		SwapBuffers ()
+	wend

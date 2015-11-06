@@ -1,0 +1,137 @@
+TextMode(TEXT_OVERLAID)
+
+dim x#, y#, bool_X, bool_y, player1_y#, player2_y#, p1_score, p2_score
+
+x#=rnd()%3 'randomize the starting point of the ball x position
+y#=rnd()%3 'randomize the starting point of the ball y position
+bool_x = true 'Test to See if the Ball Needs to go Left or Right
+bool_y = true 'Test to See if the Ball Needs to go Up or Down
+player1_y# = 0 'Player 1 y position
+player2_y# = 0 'Player 2 x position
+p1_score = 0 'Player 1 score
+p2_score = 0 'Player 2 Score
+
+dim bIntro:bIntro=false 'A booleen value to change from the intro to the main game loop
+
+goto main 'Go to the Main Game Loop
+
+intro:
+ResizeText(10,10) ' Make Text Larger(normal is 40,20)
+Locate 3,3 ' Center the Text
+print"PONG" ' Print Pong
+while inkey$() ="2" :bIntro=true:wend ' Pause until user presses 2
+DrawText() ' Draw Text in Buffer
+cls ' Clear the Screen
+return ' return to main
+
+scoreboard: 
+ResizeText(50,30) ' Make Text Longer
+glPushMatrix() ' Push Current OpenGL Matrix
+glColor3f(0,0,0.4) ' Color is Medium Blue(RGB)
+glTranslatef(-6,3,-6.0) ' Translate to The Top of Screen 
+glBegin(GL_QUADS) 
+glVertex2f(0, 0.6) ' Top Left
+glVertex2f(12, 0.6) ' Top Right
+glVertex2f(12, 0) ' Bottom Right
+glVertex2f(0, 0) ' Bottom Left
+glEnd() ' Done Drawing The ScoreBoard
+glPopMatrix() ' Pop Current OpenGL Matrix
+printr "Player 1: " ' Print "Player 1"
+print p1_score ' Print Player 1 Score
+Locate 39,0 ' Move to Far Left of Screen
+print "Player 2: " ' Print "Player 2"
+Locate 39,1 ' Move to Far Left and Down 1
+print p2_score ' Print Player 2 Score
+DrawText() ' Draw Text in the Buffer
+return ' Return to Main Function
+
+main:
+while true ' Main Game Loop
+glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) ' Clear The Screen And The Depth Buffer
+glLoadIdentity() ' Reset The View
+
+if bIntro=false then ' if bIntro is False then do Intro
+gosub intro ' Go to Intro
+ResizeText(60,20) ' Change Text Size
+Locate 18,10 ' Center under "Pong"
+print"press 2 to start 2 player" ' Print text
+DrawText() ' Print Text in Buffer
+SwapBuffers() ' Swap Buffers
+
+else ' Else end Intro and Begin the Main Game Loop
+
+gosub scoreboard ' Go to The ScoreBoard Drawing Function
+
+'BALL-------------------------------------------------------------------------------------------------
+glPushMatrix() 
+glColor3ub(rnd()%255+10,rnd()%155+10,rnd()%200+20)' Make the Ball Flash using the absolute values(x#,y#)
+glTranslatef(0,0.0,-6.0) 
+glTranslatef(x#,y#,0) ' Move the Ball with the x# and y# coordinates
+glBegin(GL_QUADS) ' Draw Ball as a Cube(Quad)
+glVertex2f(-0.05, 0.05) ' Top Left
+glVertex2f( 0.05, 0.05) ' Top Right
+glVertex2f( 0.05,-0.05) ' Bottom Right
+glVertex2f(-0.05,-0.05) ' Bottom Left
+glEnd() ' Done Drawing The Ball
+glPopMatrix()
+glColor3f(1,1,1) ' Reset Color to White
+
+'Player 1(Left Player)-------------------------------------------------------------------------------
+glPushMatrix()
+glColor3f(1,0.3,0.3) 
+glTranslatef(-4,0.0,-6.0) ' Move Left 4 Units
+glTranslatef(0,player1_y#,0)
+glBegin(GL_QUADS) ' Draw A Quad
+glVertex2f(-0.15, 0.5) ' Top Left
+glVertex2f( 0.15, 0.5) ' Top Right
+glVertex2f( 0.15,-0.5) ' Bottom Right
+glVertex2f(-0.15,-0.5) ' Bottom Left
+glEnd() ' Done Drawing The Paddle for Player One(right player)
+glPopMatrix() 
+glColor3f(1,1,1)
+
+'Player 2(Right Player)-------------------------------------------------------------------------------
+glPushMatrix()
+glColor3f(0.3,0.3,1) 
+glTranslatef(4,0.0,-6.0) ' Move Right 4 Units
+glTranslatef(0,player2_y#,0)
+glBegin(GL_QUADS) ' Draw A Quad
+glVertex2f(-0.15, 0.5) ' Top Left
+glVertex2f( 0.15, 0.5) ' Top Right
+glVertex2f( 0.15,-0.5) ' Bottom Right
+glVertex2f(-0.15,-0.5) ' Bottom Left
+glEnd() ' Done Drawing The Paddle for Player Two(left player)
+glPopMatrix()
+glColor3f(1,1,1)
+
+'Player One keyboard control (keeps in bounds)--------------------------------------------------------
+if KeyDown("Q")and player1_y#<2.4 then player1_y#=player1_y#+0.05 endif
+if KeyDown("A")and player1_y#>-3 then player1_y#=player1_y#-0.05 endif
+
+'Player Two keyboard control (keeps in bounds)--------------------------------------------------------
+if ScanKeyDown(VK_UP)and player2_y#<2.4 then player2_y#=player2_y#+0.05 endif
+if ScanKeyDown(VK_DOWN)and player2_y#>-3 then player2_y#=player2_y#-0.05 endif
+
+'bounce if player 1 hits(Left Player)-----------------------------------------------------------------
+if x#<=-3.75 and x#>=-3.8 and y#<=player1_y#+0.5 and y#>=player1_y#-0.5 then bool_x = true endif
+
+'bounce if player 2 hits(Right Player)----------------------------------------------------------------
+if x#>=3.75 and x#<=3.8 and y#<=player2_y#+0.5 and y#>=player2_y#-0.5 then bool_x = false endif 
+
+if x#<=-6 then bool_x=true endif ' To Bounce Ball Back if Player Misses(X axis)
+if x#>=6 then bool_x=false endif ' Same
+if bool_x then x#=x#+0.05 else x#=x#-0.05 endif ' Bool(C++) Value Test Value
+
+if y#<=-3 then bool_y=true endif ' Bounce Ball if Player Misses(Y axis)
+if y#>=2.9 then bool_y=false endif
+if bool_y then y#=y#+0.05 else y#=y#-0.05 endif
+
+if x#<=-6 then p1_score=p1_score+1 endif ' If Ball Goes Past the Player then Score Goes
+if x#>= 6 then p2_score=p2_score+1 endif ' Up By One Point
+
+WaitTimer(10) ' Timer To regulate game speed 
+SwapBuffers () 'Swap the OpenGL buffers ' Swap the OpenGL Front and Back Buffers
+cls 'Clear Print Screen ' Clear Screen(Needed?)
+endif
+wend ' End main loop
+

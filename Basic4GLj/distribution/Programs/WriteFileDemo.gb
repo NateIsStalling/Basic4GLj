@@ -1,0 +1,6 @@
+dim file
+file = OpenFileWrite ("Files/Test.txt")
+if FileError () <> "" then print FileError (): end endif
+WriteLine (file, "Here is some text")
+WriteLine (file, "Have a nice day")
+CloseFile (file)

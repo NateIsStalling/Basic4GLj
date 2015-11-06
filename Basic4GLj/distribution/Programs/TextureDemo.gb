@@ -1,0 +1,75 @@
+' TextureDemo
+'
+' Demonstrates basic OpenGL texture loading and rendering.
+
+    dim texture (4), handles (1)    ' Textures
+    dim index, x, y, image          ' Working variables
+
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Load texture 1
+    ' Simple non-mipmapped method
+    texture(1) = LoadTexture ("Textures\00001.jpg")
+
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Load texture 2
+    ' Simple mipmapped method
+    texture(2) = LoadMipmapTexture ("Textures\00002.jpg")
+
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Load texture 3
+    ' glTexImage2D method
+    
+    ' Generate 2 texture handles
+    glGenTextures (2, handles)
+    image = LoadImage ("Textures\00003.jpg")                        ' Load image
+    texture(3) = handles (0)                                        
+    glBindTexture (GL_TEXTURE_2D, texture (3))                      ' Bind texture
+
+    ' Upload the texture into OpenGL
+    glTexImage2D (GL_TEXTURE_2D, 0, 3, ImageWidth(image), ImageHeight(image), 0, ImageFormat(image), ImageDataType(image), image)
+
+    ' Because we haven't built any mipmap levels, it is necessary to turn 
+    ' off mipmapping for this texture
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+
+    DeleteImage (image)                                             ' Done with image. Free up resources
+    
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Load texture 4
+    ' gluBuild2DMipmaps method
+    image = LoadImage ("Textures\00004.jpg")                        ' Load image
+    texture(4) = handles (1)                                       
+    glBindTexture (GL_TEXTURE_2D, texture (4))                      ' Bind texture
+
+    ' Upload the texture into OpenGL
+    gluBuild2DMipmaps (GL_TEXTURE_2D, 3, ImageWidth(image), ImageHeight(image), ImageFormat(image), ImageDataType(image), image)
+    DeleteImage (image)                                             ' Done with image. Free up resources
+
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Render textures to quads
+    glEnable (GL_TEXTURE_2D)                                        ' Enable texturing
+    glClear (GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)            ' Clear screen
+    glMatrixMode (GL_MODELVIEW)                                     ' Position quads
+    glLoadIdentity ()                                        
+    glTranslatef (-1.05, 1.05, -2)
+
+    index = 1
+    for y = 0 to 1
+        for x = 0 to 1
+            glPushMatrix ()                                         ' Position quad
+            glTranslatef (x * 1.1, -y * 1.1, 0)
+            glBindTexture (GL_TEXTURE_2D, texture (index))          ' Bind to texture
+
+            glBegin (GL_QUADS)                                      ' Draw quad
+                glTexCoord2f (0, 0):    glVertex2f (0,-1)
+                glTexCoord2f (1, 0):    glVertex2f (1,-1)
+                glTexCoord2f (1, 1):    glVertex2f (1, 0)
+                glTexCoord2f (0, 1):    glVertex2f (0, 0)
+            glEnd ()
+
+            glPopMatrix ()                                          ' Move on to next
+            index = index + 1
+        next
+    next
+
+    SwapBuffers ()                                                  ' Swap image to front buffer

@@ -1,0 +1,151 @@
+' Explode
+' Written by Scott Brosious
+
+const width = 200, height = 200
+const nops = 2000         ' Number of pixels
+const Speed = 1           ' Speed   
+
+dim xcntr,ycntr
+
+xcntr = width / 2    
+ycntr = height / 2   
+
+const scale = 8
+
+dim buffer(width)(height)
+
+dim col1#
+dim col2#
+dim texture
+dim a   
+dim i,j 
+dim time  ' Current time
+dim t1,t2 ' Starting and ending time variables
+
+dim xpos(nops) ' Xposition
+dim ypos(nops) ' Yposition
+dim ang(nops)  ' Angles
+dim st(nops)   ' Start time
+dim et(nops)   ' End time
+dim mt(nops)   ' Time to move
+
+for i = 1 to nops
+
+gosub Inittime
+
+st(i) = t1
+et(i) = t2
+
+gosub Angles
+
+ang(i) = a
+
+next
+
+' Set 2D mode
+glMatrixMode (GL_PROJECTION)
+glLoadIdentity ()
+glOrtho (0, width, 0, height, -1, 1)
+glMatrixMode (GL_MODELVIEW)
+glDisable (GL_DEPTH_TEST)
+
+texture = LoadTexture ("data\fb01.png")
+
+glEnable (GL_TEXTURE_2D)    
+
+' Translucency, Blending
+glBlendFunc(GL_SRC_ALPHA,GL_ONE)
+glEnable(GL_BLEND)
+
+while true    
+
+' Clear screen   
+glClear (GL_COLOR_BUFFER_BIT)   
+
+glBindTexture (GL_TEXTURE_2D, texture)
+
+for i = 1 to nops
+
+if time > st(i) then mt(i) = mt(i) + 1 :endif ' If current time greater then start time then move it.
+
+if mt(i) > et(i) then gosub Refresh :endif ' If movetime greater then endtime start again
+
+xpos(i)= xcntr + cosd(ang(i)) * (mt(i) * Speed)
+ypos(i)= ycntr + sind(ang(i)) * (mt(i) * Speed)
+
+if xpos(i) < 0 or xpos(i) > width then goto skip1 endif
+if ypos(i) < 0 or ypos(i) > height then goto skip1 endif
+
+buffer(xpos(i))(ypos(i)) = buffer(xpos(i))(ypos(i)) + 1
+
+skip1:       
+
+next 
+
+glBegin (GL_QUADS)
+
+for j = 0 to height
+for i = 0 to width
+
+col1# = buffer(i)(j)
+
+if col1# = 0 then goto skip2 endif
+if col1# > 255 then col1# = 255 endif
+
+col2# =  col1# / 255
+
+      glColor4f (1, 1, 1, col2#)
+
+      glTexCoord2f (0, 1)                         
+      glVertex2f (i - scale,j + scale)     ' Top left
+
+      glTexCoord2f (0, 0)                         
+      glVertex2f (i - scale,j - scale)     ' Bottom left
+            
+      glTexCoord2f (1, 0)                         
+      glVertex2f (i + scale,j - scale)     ' Bottom right    
+
+      glTexCoord2f (1, 1)                         
+      glVertex2f (i + scale,j + scale)     ' Top right
+
+skip2:
+
+next
+next
+
+glEnd ()
+
+' Display output
+SwapBuffers ()
+
+time = time + 1
+
+wend
+
+ReFresh:
+
+gosub InitTime  
+st(i) = t1
+et(i) = t2
+mt(i) = 0
+gosub Angles
+ang(i) = a
+
+return
+
+InitTime:
+
+t1 = rnd() % 100 
+t2 = rnd() % width
+
+return              
+
+Angles:
+
+a = rnd() % 360
+
+return
+
+
+
+

@@ -1,0 +1,116 @@
+' Heightmap demo 2
+'
+' Wire frame rendering, and animation
+'
+const heightScale# = 10 ' Height map scale factor
+dim xSize, ySize
+dim xMask, yMask        ' bitmasks to apply to X and Y coordinates
+dim file                ' File handle
+dim x, y                ' Working variables
+dim angle#              ' Viewing angle (used for animation)
+
+goto Start
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Routines
+CheckError:
+    ' Check for file error
+    if FileError () <> "" then
+        print FileError ()
+        CloseFile (file)
+        end
+    endif
+    return
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Main program stars here    
+Start:
+
+' Open file
+file = OpenFileRead ("Files\Hills01.dat")
+    ' Note: Basic4GL will only open files in the "files" subfolder of the folder
+    '       where the program is saved.
+gosub CheckError
+
+' Read X and Y size
+xSize = Val (ReadLine (file))
+ySize = Val (ReadLine (file))
+gosub CheckError
+
+' Now that size is known, we can dim our 2D array
+dim h#(xSize - 1)(ySize - 1)        
+xMask = xSize - 1
+yMask = ySize - 1
+
+for y = 0 to ySize - 1
+    for x = 0 to xSize - 1
+        h#(x)(y) = val (ReadText (file, true)) * heightScale#
+        gosub CheckError
+    next
+next          
+CloseFile (file)
+
+' Render heightmap to screen
+
+' Not using the Z buffer at this point
+glDisable (GL_DEPTH_TEST)
+
+while true
+    
+    ' Clear the screen
+    glClear (GL_COLOR_BUFFER_BIT)
+    
+    ' Setup the transformations
+    '
+    ' We will set them up as follows.
+    ' Translate (move) the grid by -xSize/2, 0, -ySize/2
+    ' This will centre the map.
+    ' Rotate the grid by angle# around the Y axis (0, 1, 0). This is our animation part
+    ' Rotate the grid by 20 degrees around the X axis (1, 0 0) to give our elevated effect
+    ' Translate the grid by (0, 0, -50). This moves the grid into the screen, 
+    ' into a position where we can actually see it all!
+    
+    ' Note: Because of the nature of OpenGL, the transformations actually happen in reverse!
+    '       So we need to specify them in reverse
+    glLoadIdentity ()                       ' Clear out any existing transformations
+    glTranslatef (0, 0, -50)                ' "push" map away
+    glRotatef (20, 1, 0, 0)                 ' Elevation rotation
+    glRotatef (angle#, 0, 1, 0)             ' Animation rotation
+    glTranslatef (-xSize/2, 0, -ySize/2)    ' Centre the map    
+
+    ' Draw the heightmap points
+    for x = 0 to xSize - 2
+        for y = 0 to ySize - 2
+        
+            ' Draw a grid square.
+            ' To do this we will use an OpenGL "line loop".
+            ' This takes all the vertices we pass it (between the glBegin() and glEnd())
+            ' and joins them together with lines. 
+            ' It also joins the last one back to the first one, creating the loop.
+            glBegin (GL_LINE_LOOP)
+                glVertex3f (x  , h#(x  )(y  ), y  )
+                glVertex3f (x+1, h#(x+1)(y  ), y  )
+                glVertex3f (x+1, h#(x+1)(y+1), y+1)
+                glVertex3f (x  , h#(x  )(y+1), y+1)
+            glEnd ()
+        next
+    next
+    
+    ' Show the result
+    SwapBuffers ()
+    
+    ' Animation
+    '
+    ' We animate the scene by increasing the rotation angle each frame.
+    ' The SyncTimer call is for speed synchronisation, so that the 
+    ' animation runs at the same speed on different computers.
+    '
+    ' The contents of the SyncTimer loop will be executed 1000/20 = 50 times per
+    ' second, regardless of how long it takes to draw each frame.
+    ' (What actually happens, is if the computer takes a while to draw the frame, 
+    ' the SyncTimer loop will be executed multiple times, so that the animation
+    ' "catches up" with the clock.)    
+    while SyncTimer (20)
+        angle# = angle# + 0.8
+    wend
+wend

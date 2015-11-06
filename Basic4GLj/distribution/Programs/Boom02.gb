@@ -1,0 +1,192 @@
+' Boom02
+' Written by Scott Brosious
+
+const width = 200, height = 200
+const nops = 1000         ' Number of pixels
+const nos = 250
+const Speed = 1           ' Speed   
+
+const scale1 = 8 
+const scale2 = 4
+
+dim count
+
+count = nops + nos
+
+dim xcntr,ycntr
+
+xcntr = width / 2    
+ycntr = height / 2   
+
+dim buffer1(width)(height)
+dim buffer2(width)(height)
+
+dim col1#,col2#,col3#,col4#
+
+dim texture
+dim a   
+dim i,j 
+dim time  ' Current time
+dim t1,t2 ' Starting and ending time variables
+
+dim xpos(count) ' Xposition
+dim ypos(count) ' Yposition
+dim ang(count)  ' Angles
+dim st(count)   ' Start time
+dim et(count)   ' End time
+dim mt(count)   ' Time to move
+
+for i = 1 to count
+
+gosub Inittime
+
+st(i) = t1
+et(i) = t2
+
+gosub Angles
+
+ang(i) = a
+
+next
+
+' Set 2D mode
+glMatrixMode (GL_PROJECTION)
+glLoadIdentity ()
+glOrtho (0, width, 0, height, -1, 1)
+glMatrixMode (GL_MODELVIEW)
+glDisable (GL_DEPTH_TEST)
+
+texture = LoadTexture ("data\fb01.png")
+
+glEnable (GL_TEXTURE_2D)    
+
+' Translucency, Blending
+glBlendFunc(GL_SRC_ALPHA,GL_ONE)
+glEnable(GL_BLEND)
+
+while true    
+
+' Clear screen   
+glClear (GL_COLOR_BUFFER_BIT)   
+
+glBindTexture (GL_TEXTURE_2D, texture)
+
+for i = 1 to count       
+
+if i > nops then et(i) = width endif
+
+if time > st(i) then mt(i) = mt(i) + 1 :endif ' If current time greater then start time then move it.
+
+if mt(i) > et(i) then gosub Refresh :endif ' If movetime greater then endtime start again
+
+xpos(i)= xcntr + cosd(ang(i)) * (mt(i) * Speed)
+ypos(i)= ycntr + sind(ang(i)) * (mt(i) * Speed)
+
+if xpos(i) < 0 or xpos(i) > width then goto skip1 endif
+if ypos(i) < 0 or ypos(i) > height then goto skip1 endif
+
+if i < nops - 1 then buffer1(xpos(i))(ypos(i)) = buffer1(xpos(i))(ypos(i)) + 1 endif
+
+if i > nops then buffer2(xpos(i))(ypos(i)) = 10 endif
+
+skip1:       
+
+next 
+
+for j = 0 to height
+for i = 0 to width
+
+buffer2(i)(j) = buffer2(i)(j) - 1
+
+next
+next
+
+glBegin (GL_QUADS)
+
+for j = 0 to height
+for i = 0 to width
+
+col1# = buffer1(i)(j)
+
+if col1# = 0 then goto skip2 endif
+if col1# > 100 then col1# = 100 endif
+
+col2# =  col1# / 100
+
+      glColor4f (1, 1, 1, col2#)
+
+      glTexCoord2f (0, 1)                         
+      glVertex2f (i - scale1,j + scale1)     ' Top left
+
+      glTexCoord2f (0, 0)                         
+      glVertex2f (i - scale1,j - scale1)     ' Bottom left
+            
+      glTexCoord2f (1, 0)                         
+      glVertex2f (i + scale1,j - scale1)     ' Bottom right    
+
+      glTexCoord2f (1, 1)                         
+      glVertex2f (i + scale1,j + scale1)     ' Top right
+
+skip2:
+
+col3# = buffer2(i)(j)
+
+if col3# < 0 then goto skip3 endif
+
+      col4# = col3# / 10
+      
+      glColor4f (1, 1, 1, col4#)
+
+      glTexCoord2f (0, 1)                         
+      glVertex2f (i - scale2,j + scale2)     ' Top left
+
+      glTexCoord2f (0, 0)                         
+      glVertex2f (i - scale2,j - scale2)     ' Bottom left
+            
+      glTexCoord2f (1, 0)                         
+      glVertex2f (i + scale2,j - scale2)     ' Bottom right    
+
+      glTexCoord2f (1, 1)                         
+      glVertex2f (i + scale2,j + scale2)     ' Top right
+
+skip3:       
+
+next
+next
+
+glEnd ()
+
+' Display output
+SwapBuffers ()
+
+time = time + 1
+
+wend
+
+ReFresh:
+
+gosub InitTime  
+st(i) = t1
+et(i) = t2
+mt(i) = 0
+gosub Angles
+ang(i) = a
+
+return
+
+InitTime:
+
+t1 = rnd() % 75 
+t2 = rnd() % width
+
+return              
+
+Angles:
+
+a = rnd() % 360
+
+return
+
+
+
+

@@ -1,0 +1,329 @@
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Asteroid demo
+
+    ' Constants
+    dim rangex#, rangey#
+    rangex# = 120
+    rangey# = 100
+    
+    ' Setup screen
+    glMatrixMode (GL_PROJECTION)
+    glLoadIdentity ()
+    glOrtho (0, rangex#, 0, rangey#, 0, 1)
+    glMatrixMode (GL_MODELVIEW)
+    TextMode (TEXT_OVERLAID)
+    
+    ' Player state
+    struc SPlayer
+        dim index
+        dim pos#(1), vel#(1)
+        dim dir#, lives, score, deadCounter, inGame
+        dim leftKey, rightKey, thrustKey, shootKey
+        dim wasShooting
+    endstruc
+    struc SAsteroid
+        dim pos#(1), size, vel#(1)
+        dim dir#, rot#
+    endstruc 
+    struc SBullet
+        dim pos#(1), vel#(1)
+        dim life
+    endstruc
+    
+    ' Initialise gamestate
+    const maxPlayers = 2
+    const maxAsteroids = 200
+    const maxBullets = 200
+    dim SPlayer player(maxPlayers), SPlayer &currentPlayer, level
+    dim SAsteroid asteroids (maxAsteroids), asteroidCount, SAsteroid &currentAsteroid
+    dim SBullet bullets (maxBullets), bulletCount, SBullet &currentBullet
+    dim x, y, a$, i, j, speed, &pos#(), &dif#(), dev#
+    dim counter, alive
+    
+    ' Setup keys
+    player(1).index     = 1
+    player(1).leftKey   = VK_LEFT
+    player(1).rightKey  = VK_RIGHT
+    player(1).thrustKey = VK_UP
+    player(1).shootKey  = VK_SPACE
+    player(2).index     = 2
+    player(2).leftKey   = Asc("A")
+    player(2).rightKey  = Asc("D")
+    player(2).thrustKey = Asc("W")
+    player(2).shootKey  = VK_CONTROL
+    
+    ' Sound effects
+    dim shootSound, explodeSound
+    shootSound   = LoadSound ("sounds\laser.wav")
+    explodeSound = LoadSound ("sounds\gunshot5.wav")
+    
+    ' Put player 1 in game. 
+    goto start
+    
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Routines
+
+Spawn:
+    currentplayer.deadCounter = 0
+    gosub CentrePlayer
+    return
+    
+CentrePlayer:
+    currentplayer.pos# = vec2 (rangex# / 2, rangey# / 2)
+    currentplayer.vel# = vec2 (0, 0)        
+    return
+    
+NewPlayer:
+    currentPlayer.inGame = true
+    currentPlayer.lives = 3
+    gosub Spawn
+    return    
+    
+NextLevel:    
+    ' Show next level bit
+    level = level + 1
+    
+    ' Create asteroids
+    asteroidCount = 3 + level * 2
+    for i = 1 to asteroidCount
+        asteroids (i).pos# = vec2 (rnd () % int (rangex#), rnd () % int (rangey#))
+        asteroids (i).dir# = rnd () % 360
+        asteroids (i).size = 3
+    next
+    
+    ' Centre players
+    for i = 1 to maxPlayers
+        &currentPlayer = &player(i)
+        gosub CentrePlayer
+    next
+    
+    ' Remove bullets
+    bulletCount = 0
+    
+    counter = 100
+
+    return
+    
+PrintText:
+    locate (TextCols () - Len(a$)) / 2, y: print a$
+    y = y + 1
+    return      
+    
+DrawPlayer:
+    if currentPlayer.inGame and currentPlayer.deadCounter = 0 then 
+        glPushMatrix ()
+        glTranslatef (currentPlayer.pos# (0), currentPlayer.pos# (1), 0)
+        glRotatef (currentPlayer.dir#, 0, 0, 1)
+        glScalef (1.5, 1.5, 1)
+        glColor3f (1, 1, 1)
+        glBegin (GL_LINE_LOOP)
+            glVertex2f (  0,  1)
+            glVertex2f (-.5, -1)
+            glVertex2f ( .5, -1)
+        glEnd ()
+        glPopMatrix ()
+    endif
+    return
+
+MovePlayer:
+    if currentPlayer.inGame then
+        if currentPlayer.deadCounter > 0 then 
+            currentPlayer.deadCounter = currentPlayer.deadCounter - 1
+        else
+            if ScanKeyDown (currentPlayer.leftKey) then
+                currentPlayer.dir# = currentPlayer.dir# + 5
+            endif
+            if ScanKeyDown (currentPlayer.rightKey) then
+                currentPlayer.dir# = currentPlayer.dir# - 5
+            endif
+            if ScanKeyDown (currentPlayer.thrustKey) then
+                currentPlayer.vel# = currentPlayer.vel# + MatrixRotateZ (currentPlayer.dir#) * vec2 (0, 0.0175)
+            endif
+            currentPlayer.pos# = currentPlayer.pos# + currentPlayer.vel#
+            &pos# = &currentPlayer.pos#
+            gosub ClampPos
+            
+            if ScanKeyDown (currentPlayer.shootKey) and not currentPlayer.wasShooting and bulletCount < maxBullets then
+                bulletCount = bulletCount + 1
+                &currentBullet = &bullets (bulletCount)
+                currentBullet.pos# = currentPlayer.pos#
+                currentBullet.vel# = currentPlayer.vel# + MatrixRotateZ (currentPlayer.dir#) * vec2 (0, 1)
+                currentBullet.life = 50
+                PlaySound (shootSound)
+            endif
+            currentPlayer.wasShooting = ScanKeyDown (currentPlayer.shootKey)
+        endif        
+    else
+        ' Player can join game by pressing shoot button
+        if ScanKeyDown (currentPlayer.shootKey) then
+            gosub NewPlayer
+        endif
+    endif
+    return
+    
+DrawAsteroid:
+    glPushMatrix ()
+    glTranslatef (currentAsteroid.pos# (0), currentAsteroid.pos# (1), 0)
+    glRotatef (currentAsteroid.rot#, 0, 0, 1)
+    glScalef (1.5 * currentAsteroid.size, 1.5 * currentAsteroid.size, 1)
+    glColor3f (1, 1, 1)
+    glBegin (GL_LINE_LOOP)
+        glVertex2f (-.51, -.88)
+        glVertex2f (-.07, -.95)
+        glVertex2f ( .07, -.72)
+        glVertex2f ( .53, -.72)
+        glVertex2f ( .88, -.06)
+        glVertex2f ( .94,  .53)
+        glVertex2f ( .49,  .52)
+        glVertex2f (-.03,  .90)
+        glVertex2f (-.45,  .69)
+        glVertex2f (-.92,  .20)
+        glVertex2f (-.51, -.49)
+    glEnd ()
+    glPopMatrix ()
+    return
+    
+MoveAsteroid:
+    speed = (4 - currentAsteroid.size)
+    currentAsteroid.rot# = currentAsteroid.rot# + speed * 1
+    currentAsteroid.pos# = currentAsteroid.pos# + MatrixRotateZ (currentAsteroid.dir#) * vec2 (0, 0.2) * speed
+    &pos# = &currentAsteroid.pos#
+    gosub ClampPos
+    return
+
+ClampPos:
+    if pos# (0) < 0 then 
+        pos# (0) = pos# (0) + rangex#
+    endif
+    if pos# (0) > rangex# then 
+        pos# (0) = pos# (0) - rangex#
+    endif
+    if pos# (1) < 0 then 
+        pos# (1) = pos# (1) + rangey#
+    endif
+    if pos# (1) > rangey# then 
+        pos# (1) = pos# (1) - rangey#
+    endif
+    return
+    
+DrawBullet:
+    glBegin (GL_POINTS)
+        glVertex2f (currentBullet.pos# (0), currentBullet.pos# (1))
+    glEnd ()
+    return    
+
+end         ' Should never get here!
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Mainloop
+start:
+
+    while true
+        gosub NextLevel
+        while asteroidCount > 0 or counter > 0
+            if asteroidCount = 0 then
+                counter = counter - 1
+            endif
+        
+            ' Draw screen
+            glClear (GL_COLOR_BUFFER_BIT)
+            glDisable (GL_DEPTH_TEST)
+            glDisable (GL_CULL_FACE)
+            glMatrixMode (GL_MODELVIEW)
+            glLoadIdentity ()
+        
+            ' Players
+            for i = 1 to maxPlayers
+                &currentPlayer = &player(i)
+                gosub DrawPlayer
+            next
+            
+            ' Asteroids 
+            for i = 1 to asteroidCount 
+                &currentAsteroid = &asteroids (i)
+                gosub DrawAsteroid
+            next
+            
+            for i = 1 to bulletCount
+                &currentBullet = &bullets (i)
+                gosub DrawBullet
+            next
+
+            SwapBuffers ()
+            
+            ' Update gameplay (50 times per second)
+            while SyncTimer (20)
+
+                ' Move players
+                Joy_Keys ()
+                for i = 1 to maxPlayers
+                    &currentPlayer = &player(i)
+                    gosub MovePlayer
+                next            
+                
+                ' Move asteroids
+                for i = 1 to asteroidCount
+                    &currentAsteroid = &asteroids(i)
+                    gosub MoveAsteroid
+                next
+
+                ' Move bullets
+                i = 1
+                while i <= bulletCount
+                    &currentBullet = &bullets (i)
+                    currentBullet.pos# = currentBullet.pos# + currentBullet.vel#
+                    &pos# = &currentBullet.pos#
+                    gosub ClampPos
+                    currentBullet.life = currentBullet.life - 1
+                    if currentBullet.life <= 0 then
+                        currentBullet = bullets (bulletCount)
+                        bulletCount = bulletCount - 1
+                    else
+                        i = i + 1
+                    endif
+                wend
+                
+                ' Asteroid vs bullet collisions
+                i = 1
+                while i <= asteroidCount
+                    &currentAsteroid = &asteroids (i)
+                    j = 1
+                    while j <= bulletCount
+                        &currentBullet = &bullets (j)
+                    
+                        ' Calculate distance between bullet and asteroid
+                        if Length (currentBullet.pos# - currentAsteroid.pos#) < currentAsteroid.size * 1.5 then
+                            if currentAsteroid.size <= 1 then                                
+                            
+                                ' Delete current asteroid
+                                currentAsteroid         = asteroids (asteroidCount)
+                                asteroidCount = asteroidCount - 1
+                            else
+                                
+                                ' Split current asteroid, by creating a duplicate
+                                ' then shrinking both of them
+                                currentAsteroid.size = currentAsteroid.size - 1
+                                asteroidCount = asteroidCount + 1
+                                asteroids (asteroidCount) = currentAsteroid
+                                dev# = rnd () % 45 + 1
+                                currentAsteroid.dir# = currentAsteroid.dir# + dev#
+                                asteroids (asteroidCount).dir# = asteroids (asteroidCount).dir# - dev#
+                            endif
+
+                            ' Delete bullet
+                            currentBullet = bullets (bulletCount)
+                            bulletCount = bulletCount - 1
+                            
+                            PlaySound (explodeSound)
+                            
+                            ' Exit loop
+                            j = bulletCount + 1
+                            i = i - 1           
+                        else 
+                            j = j + 1
+                        endif
+                    wend
+                    i = i + 1    
+                wend
+            wend
+        wend
+    wend

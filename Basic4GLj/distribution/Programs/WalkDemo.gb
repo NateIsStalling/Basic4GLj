@@ -1,0 +1,169 @@
+' WalkDemo
+'
+' Written by Tom Mulgrew and Scott Brosious
+'
+' A simple wolfenstein like engine
+
+const squareSize# = 10      ' Size of each individual square (cube)
+
+data 10, 10                 ' Width and height
+data 1,1,1,1,1,1,1,1,1,1
+data 1,0,0,0,0,1,0,1,0,3
+data 1,0,1,0,0,1,0,1,0,3
+data 1,0,0,0,0,0,0,0,0,3
+data 1,0,0,0,0,0,0,0,0,3
+data 1,0,1,0,1,0,0,0,0,3
+data 1,0,0,0,0,0,0,1,0,3
+data 1,0,1,0,1,0,0,1,0,3
+data 1,0,0,0,0,0,0,1,0,3
+data 1,1,1,1,1,1,1,1,1,1
+
+' Working variables
+dim x, y, i, drawWall, wallType
+
+' Read map size
+dim xSize, ySize
+read xSize, ySize
+
+' Allocate map
+const BASE = 0, NORTH = 1, SOUTH = 2, EAST = 3, WEST = 4
+dim map(xSize)(ySize)(4)
+
+' Read it in
+for y = 1 to ySize
+    for x = 1 to xSize
+    
+        ' Read in the type, then copy it to ALL the walls.
+        read wallType
+        for i = 0 to 4
+            map(x)(y)(i) = wallType
+        next
+    next
+next
+
+' Add in specific texture overrides here
+
+map(3)(3)(NORTH) = 1
+map(3)(3)(SOUTH) = 4
+map(3)(3)(WEST) = 1
+map(3)(3)(EAST) = 1
+       
+' Load textures first
+dim textures(4) 
+
+textures(1) = LoadTexture ("textures\wall01.jpg")   
+textures(2) = LoadTexture ("textures\ceil01.jpg")
+textures(3) = LoadTexture ("textures\floor01.jpg")
+textures(4) = LoadTexture ("data\star.bmp") 
+
+
+' Enable texturing.
+' (Note: We use GL_TEXTURE_2D, because the textures are 2D images.)
+glEnable (GL_TEXTURE_2D)
+
+dim camX#, camY#, camZ#, camAng#    ' Camera position and direction
+camX# = xSize * squareSize# * .5 + 5
+camY# = 5
+camZ# = ySize * squareSize# * .5
+
+while true
+    
+    ' Draw scene
+    glClear (GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT) 
+    glLoadIdentity ()
+    glRotatef (-camAng#, 0, 1, 0)
+    glTranslatef (-camX#, -camY#, -camZ#)
+    glScalef (squareSize#, squareSize#, squareSize#)
+                                    
+    ' Ceiling texture
+                glBindTexture (GL_TEXTURE_2D, textures(2))
+               
+                glBegin (GL_QUADS)
+                    glTexCoord2f ( 0,         0): glVertex3f (0,      1, 0)
+                    glTexCoord2f ( xSize,     0): glVertex3f (xSize,  1, 0)
+                    glTexCoord2f ( XSize, ySize): glVertex3f (xSize,  1, ySize)
+                    glTexCoord2f ( 0,     ySize): glVertex3f (0,      1, ySize)
+                glEnd ()      
+     
+     ' Floor texture
+                glBindTexture (GL_TEXTURE_2D, textures(3))
+               
+                glBegin (GL_QUADS)
+                    glTexCoord2f ( 0,         0): glVertex3f (0,      0, 0)
+                    glTexCoord2f ( xSize,     0): glVertex3f (xSize,  0, 0)
+                    glTexCoord2f ( XSize, ySize): glVertex3f (xSize,  0, ySize)
+                    glTexCoord2f ( 0,     ySize): glVertex3f (0,      0, ySize)
+                glEnd ()                                          
+          
+    for y = 2 to ySize
+        for x = 2 to xSize                  
+                         
+            ' Look at the cell, and it's left hand neighbour
+            ' If one is 0 and the other isn't, we need to draw a wall
+            if map(x)(y)(BASE) = 0 and map(x-1)(y)(BASE) <> 0 then
+                drawWall = true
+                wallType = map(x-1)(y)(EAST)
+            else
+                if map(x)(y)(BASE) <> 0 and map(x-1)(y)(BASE) = 0 then
+                    drawWall = true
+                    wallType = map(x)(y)(WEST)
+                else
+                    drawWall = false
+                endif
+            endif              
+            if drawWall then
+               
+                glBindTexture (GL_TEXTURE_2D, textures(wallType))
+               
+                glBegin (GL_QUADS)
+                    glTexCoord2f ( 0, 0): glVertex3f ( x,  0, y)
+                    glTexCoord2f ( 1, 0): glVertex3f ( x,  0, y+1)
+                    glTexCoord2f ( 1, 1): glVertex3f ( x,  1, y+1)
+                    glTexCoord2f ( 0, 1): glVertex3f ( x,  1, y)
+                glEnd ()
+             
+            endif
+            
+            ' Compare the cell and it's above neighbour
+            ' Same again
+            if map(x)(y)(BASE) = 0 and map(x)(y-1)(BASE) <> 0 then
+                drawWall = true
+                wallType = map(x)(y-1)(SOUTH)
+            else
+                if map(x)(y)(BASE) <> 0 and map(x)(y-1)(BASE) = 0 then
+                    drawWall = true
+                    wallType = map(x)(y)(NORTH)
+                else
+                    drawWall = false
+                endif
+            endif              
+            if drawWall then
+                
+                glBindTexture (GL_TEXTURE_2D, textures(wallType))
+                            
+                glBegin (GL_QUADS)
+                    glTexCoord2f ( 0, 0): glVertex3f ( x,   0, y)
+                    glTexCoord2f ( 1, 0): glVertex3f ( x+1, 0, y)
+                    glTexCoord2f ( 1, 1): glVertex3f ( x+1, 1, y)
+                    glTexCoord2f ( 0, 1): glVertex3f ( x,   1, y)
+                glEnd ()
+           
+           endif
+        next
+    next  
+    SwapBuffers ()
+
+    ' Move camera
+    while SyncTimer (10)
+        if ScanKeyDown (VK_LEFT)  then camAng# = camAng# + 1: endif
+        if ScanKeyDown (VK_RIGHT) then camAng# = camAng# - 1: endif
+        if ScanKeyDown (VK_UP)    then
+            camX# = camX# - sind (camAng#) * .2
+            camZ# = camZ# - cosd (camAng#) * .2
+        endif
+        if ScanKeyDown (VK_DOWN)  then
+            camX# = camX# + sind (camAng#) * .2
+            camZ# = camZ# + cosd (camAng#) * .2
+        endif
+    wend
+wend

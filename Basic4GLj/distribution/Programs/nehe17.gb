@@ -1,0 +1,132 @@
+    dim base                 ' Base Display List For The Font
+    dim texture(1)           ' Storage For Our Font Texture
+    dim loopVar              ' Generic Loop Variable
+
+    dim cnt1#                ' 1st Counter Used To Move Text & For Coloring
+    dim cnt2#                ' 2nd Counter Used To Move Text & For Coloring
+    dim cx#                  ' Holds Our X Character Coord
+    dim cy#                  ' Holds Our Y Character Coord
+    
+    ' Print routine parameters
+    dim x, y, string$, set, i  
+    dim charArray(1024)
+               
+    ' Load textures
+    glGenTextures(2, texture)                           ' Create Two Textures
+    texture(0) = LoadMipmapTexture ("Data\Font.bmp")
+    texture(1) = LoadMipmapTexture ("Data\Bumps.bmp")
+
+    ' Build font
+    base=glGenLists(256)                                ' Creating 256 Display Lists
+    glBindTexture(GL_TEXTURE_2D, texture(0))            ' Select Our Font Texture
+    for loopVar = 0 to 255                              ' Loop Through All 256 Lists
+        cx#=(loopVar %16)/16.0                          ' X Position Of Current Character
+        cy#=(loopVar /16)/16.0                          ' Y Position Of Current Character
+
+        glNewList(base+loopVar,GL_COMPILE)              ' Start Building A List
+            glBegin(GL_QUADS)                           ' Use A Quad For Each Character
+                glTexCoord2f(cx#,1-cy#-0.0625)          ' Texture Coord (Bottom Left)
+                glVertex2i(0,0)                         ' Vertex Coord (Bottom Left)
+                glTexCoord2f(cx#+0.0625,1-cy#-0.0625)   ' Texture Coord (Bottom Right)
+                glVertex2i(16,0)                        ' Vertex Coord (Bottom Right)
+                glTexCoord2f(cx#+0.0625,1-cy#)          ' Texture Coord (Top Right)
+                glVertex2i(16,16)                       ' Vertex Coord (Top Right)
+                glTexCoord2f(cx#,1-cy#)                 ' Texture Coord (Top Left)
+                glVertex2i(0,16)                        ' Vertex Coord (Top Left)
+            glEnd()                                     ' Done Building Our Quad (Character)
+            glTranslated(10,0,0)                        ' Move To The Right Of The Character
+        glEndList()                                     ' Done Building The Display List
+    next                                                ' Loop Until All 256 Are Built
+
+    ' Init OpenGL
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE)                    ' Select The Type Of Blending
+    glShadeModel(GL_SMOOTH)                             ' Enables Smooth Color Shading
+    glEnable(GL_TEXTURE_2D)                             ' Enable 2D Texture Mapping
+    goto Start
+    
+' Print routine
+glPrint:        
+    if set > 1 then
+        set = 1
+    endif
+    glBindTexture(GL_TEXTURE_2D, texture(0))            ' Select Our Font Texture
+    glDisable(GL_DEPTH_TEST)                            ' Disables Depth Testing
+    glMatrixMode(GL_PROJECTION)                         ' Select The Projection Matrix
+    glPushMatrix()                                      ' Store The Projection Matrix
+    glLoadIdentity()                                    ' Reset The Projection Matrix
+    glOrtho(0,640,0,480,-1,1)                           ' Set Up An Ortho Screen
+    glMatrixMode(GL_MODELVIEW)                          ' Select The Modelview Matrix
+    glPushMatrix()                                      ' Store The Modelview Matrix
+    glLoadIdentity()                                    ' Reset The Modelview Matrix
+    glTranslated(x,y,0)                                 ' Position The Text (0,0 - Bottom Left)
+    glListBase(base-32+(128*set))                       ' Choose The Font Set (0 or 1)    
+
+    ' Convert string to an array of integers. (Basic4GL doesn't do the "string = array of characters" thing.)
+    for i = 1 to len(string$)
+        charArray (i - 1) = asc (mid$ (string$, i, 1))
+    next
+    glCallLists (len (string$), GL_INT, charArray)      ' Call lists
+    glMatrixMode(GL_PROJECTION)                         ' Select The Projection Matrix
+    glPopMatrix()                                       ' Restore The Old Projection Matrix
+    glMatrixMode(GL_MODELVIEW)                          ' Select The Modelview Matrix
+    glPopMatrix()                                       ' Restore The Old Projection Matrix
+    glEnable(GL_DEPTH_TEST)                             ' Enables Depth Testing
+    return
+    
+Start:
+    
+    ' Main loop
+    while true
+        
+        ' Render scene
+    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) ' Clear The Screen And The Depth Buffer
+    glLoadIdentity()                                    ' Reset The Modelview Matrix
+    glBindTexture(GL_TEXTURE_2D, texture(1))            ' Select Our Second Texture
+    glTranslatef(0.0,0.0,-5.0)                          ' Move Into The Screen 5 Units
+    glRotatef(45.0,0.0,0.0,1.0)                         ' Rotate On The Z Axis 45 Degrees (Clockwise)
+    glRotatef(cnt1#*30.0,1.0,1.0,0.0)                   ' Rotate On The X & Y Axis By cnt1 (Left To Right)
+    glDisable(GL_BLEND)                                 ' Disable Blending Before We Draw In 3D
+    glColor3f(1.0,1.0,1.0)                              ' Bright White
+    glBegin(GL_QUADS)                                   ' Draw Our First Texture Mapped Quad
+        glTexCoord2d(0.0,0.0)                           ' First Texture Coord
+        glVertex2f(-1.0, 1.0)                           ' First Vertex
+        glTexCoord2d(1.0,0.0)                           ' Second Texture Coord
+        glVertex2f( 1.0, 1.0)                           ' Second Vertex
+        glTexCoord2d(1.0,1.0)                           ' Third Texture Coord
+        glVertex2f( 1.0,-1.0)                           ' Third Vertex
+        glTexCoord2d(0.0,1.0)                           ' Fourth Texture Coord
+        glVertex2f(-1.0,-1.0)                           ' Fourth Vertex
+    glEnd()                                             ' Done Drawing The First Quad
+    glRotatef(90.0,1.0,1.0,0.0)                         ' Rotate On The X & Y Axis By 90 Degrees (Left To Right)
+    glBegin(GL_QUADS)                                   ' Draw Our Second Texture Mapped Quad
+        glTexCoord2d(0.0,0.0)                           ' First Texture Coord
+        glVertex2f(-1.0, 1.0)                           ' First Vertex
+        glTexCoord2d(1.0,0.0)                           ' Second Texture Coord
+        glVertex2f( 1.0, 1.0)                           ' Second Vertex
+        glTexCoord2d(1.0,1.0)                           ' Third Texture Coord
+        glVertex2f( 1.0,-1.0)                           ' Third Vertex
+        glTexCoord2d(0.0,1.0)                           ' Fourth Texture Coord
+        glVertex2f(-1.0,-1.0)                           ' Fourth Vertex
+    glEnd()                                             ' Done Drawing Our Second Quad
+    glEnable(GL_BLEND)                                  ' Enable Blending
+
+    glLoadIdentity()                                    ' Reset The View
+
+    ' Pulsing Colors Based On Text Position
+    glColor3f(1.0*cos(cnt1#),1.0*sin(cnt2#),1.0-0.5*cos(cnt1#+cnt2#))
+    x = int((280+250*cos(cnt1#))): y = int(235+200*sin(cnt2#)): string$ = "NeHe": set = 0: gosub glPrint
+
+    glColor3f(1.0*sin(cnt2#),1.0-0.5*cos(cnt1#+cnt2#),1.0*cos(cnt1#))
+    x = int((280+230*cos(cnt2#))): y = int(235+200*sin(cnt1#)): string$ = "OpenGL": set = 1: gosub glPrint
+
+    glColor3f(0.0,0.0,1.0)                              ' Set Color To Blue
+    x = int(240+200*cos((cnt2#+cnt1#)/5)): y = 2: string$ = "Giuseppe D`Agata": set = 0: gosub glPrint
+
+    glColor3f(1.0,1.0,1.0)                              ' Set Color To White
+    x = int(242+200*cos((cnt2#+cnt1#)/5)): y = 2: string$ = "Giuseppe D`Agata": set = 0: gosub glPrint
+    
+    SwapBuffers ()
+
+    cnt1# = cnt1# + 0.01                                ' Increase The First Counter
+    cnt2# = cnt2# + 0.0081                              ' Increase The Second Counter
+wend

@@ -1,0 +1,51 @@
+' Star field demo 3
+'
+' Varying star's brightness using OpenGL fog
+
+const maxStars = 1000
+
+dim stars#(maxStars)(2)
+dim i
+
+' Populate star field
+for i = 1 to maxStars
+    stars#(i) = vec3 (rnd () % 401 - 200, rnd () % 401 - 200, -i)
+next
+
+glDisable (GL_DEPTH_TEST)
+
+' Setup OpenGL fog.
+' This instructs OpenGL to fog out objects that are in the distance, by
+' gradually changing their colour to the fog colour. We will use black.
+' Once fog is setup it is all automatic. We don't need to worry about setting
+' the star's colours.
+glEnable (GL_FOG)
+glFogi (GL_FOG_MODE, GL_LINEAR)             ' Objects fade out linearly
+glFogf (GL_FOG_END, maxStars)               ' Objects past this distance are totally faded
+glFogf (GL_FOG_START, 0)                    ' Objects before this distance are totally un-faded
+glFogfv (GL_FOG_COLOR, vec3 (0, 0, 0))      ' Fog colour = black
+' Note:
+'   These are all versions of the glFog command.
+'   glFogi takes an integer parameter (i = integer)
+'   glFogf takes a floating point parameter (f = float)
+'   glFogfv takes a floating point array parameter (f = float, v = array)
+
+' Main loop
+while true    
+    glClear (GL_COLOR_BUFFER_BIT)       
+
+    for i = 1 to maxStars
+    
+        ' Move the star forward, by adding 1 to Z
+        stars#(i) = stars#(i) + vec3 (0, 0, 2)
+
+        ' If the Z goes positive (behind the screen), move it to the back again.
+        if stars#(i)(2) >= 0 then stars#(i)(2) = -maxStars endif
+        
+        glBegin (GL_POINTS)
+            glVertex3fv (stars#(i))
+        glEnd ()
+    next
+    SwapBuffers ()
+    WaitTimer (20)
+wend

@@ -1,0 +1,88 @@
+include Include/Misc.inc
+include Include/TextToHex.inc
+include Include/MD2/MD2.inc
+include Include/BGM/BGM.inc
+                
+sub TestText()
+    ' Text functions
+    printr "[" + LTRIM$( "   left center right   ") + "]"
+    printr "[" + RTRIM$( "   left center right   ") + "]"
+    printr "[" +  TRIM$( "   left center right   ") + "]"
+end sub
+
+sub TestTextToHex()
+    ' Text/Hex conversion
+    printr Bin$(Value("&B101100111000"))
+    printr Oct$(Value("&O140000"))
+    printr Hex$(Value("&O140000"))
+    printr Hex$(Value("&HC000"))
+    printr Hex$(Value("0xC000"))
+    printr Hex$(Value("hC000"))
+    printr Hex$(Value("$C000"))
+    printr Hex$(Value("C000h"))
+    printr Dec$(Value("&B11111111"))
+    printr Dec$(Value("&HFF"))
+    printr Dec$(Value("&O377"))
+    printr Dec$(Value("255"))
+end sub
+
+sub TestMD2()
+
+    ' Load model
+    dim MD2_Model &model
+    &model = LoadMD2("Files\", "Mastermind.MD2")
+                     
+    dim delta#    
+    for delta# = 0 to 1 step 0.01
+
+        ' Clear screen
+        glClear(GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
+    
+        ' Draw model
+        glLoadIdentity()
+        glTranslatef(0, -20, -100)
+        glRotatef(20, 0, 1, 0)
+        DrawMD2(model, 0, 1, delta#, 0)
+        SwapBuffers()        
+    next
+end sub       
+
+sub TestBGM()
+                 
+    ' Save lighting state
+    glPushAttrib(GL_LIGHTING_BIT or GL_COLOR_BUFFER_BIT)
+    
+    ' Switch on lighting
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+    glEnable(GL_COLOR_MATERIAL)
+    glColor3f(1, 1, 0)
+
+    ' Load model
+    dim BGM_Model& model
+    &model = LoadBGM("Files\", "Spaceship.bgm")
+    
+    dim ang#
+    for ang# = 0 to 360
+        
+        ' Clear screen
+        glClear(GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
+
+        ' Draw model
+        glLoadIdentity()
+        glTranslatef(0, -1, -5)
+        glRotatef(ang#, 0, 1, 0)
+        DrawBGM(model)
+        SwapBuffers()
+    next
+                        
+    ' Restore previous lighting state
+    glPopAttrib()
+end sub
+
+TestText(): Sleep(1000)
+TestTextToHex(): Sleep(1000)
+TestMD2(): Sleep(1000)
+TestBGM(): Sleep(1000)
+             
+cls: print "Done!"

@@ -1,0 +1,115 @@
+' PB03
+' Written by Scott Brosious
+
+const Width = 320, Height = 200 
+const pixels = 1000 ' Number of pixels
+const maxlenght = 20
+
+dim X3D(pixels)(2)
+dim Y3D(pixels)(2)
+dim Z3D#(pixels)(2)
+
+dim X2D#(pixels)(2)
+dim Y2D#(pixels)(2)
+
+dim X,Y,Z
+
+dim i,j 
+
+dim lenght 
+
+dim intensity#
+
+' Initialize
+for i = 0 to pixels
+
+X = int(rnd() % (width + 1) - (width /2))
+Y = int(rnd() % (height + 1) - (height /2)) 
+Z = int(rnd() % 200)
+
+lenght = int(rnd() % maxlenght) + 1
+
+X3D(i)(0) = X
+Y3D(i)(0) = Y
+Z3D#(i)(0) = Z  + lenght
+
+X3D(i)(1) = X
+Y3D(i)(1) = Y
+Z3D#(i)(1) = Z 
+
+next
+
+' Set 2D mode
+glMatrixMode (GL_PROJECTION)
+glLoadIdentity ()
+glOrtho (0, Width, 0, Height, -1, 1)
+glMatrixMode (GL_MODELVIEW)
+glDisable (GL_DEPTH_TEST)
+
+glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA)
+glEnable (GL_BLEND)
+
+glEnable (GL_LINE_SMOOTH)
+
+glLineWidth(2)
+
+while true
+
+' Clear screen
+glClear (GL_COLOR_BUFFER_BIT)
+
+' Plot some pixels
+glBegin (GL_LINES)
+  
+  for i = 0 to pixels
+    
+    X2D#(i)(0) = ((X3D(i)(0) * 256) / (256 - Z3D#(i)(0))) + (Width / 2)
+    Y2D#(i)(0) = (((Height / 2)- Y3D(i)(0) * 256) / (256 - Z3D#(i)(0))) + (Height / 2)
+    
+    X2D#(i)(1) = ((X3D(i)(1) * 256) / (256 - Z3D#(i)(1))) + (Width / 2)
+    Y2D#(i)(1) = (((Height / 2)- Y3D(i)(1) * 256) / (256 - Z3D#(i)(1))) + (Height / 2)
+    
+    intensity# =   Z3D#(i)(0) / 240      
+
+    glColor4f (1, 1, 1 , intensity# )
+
+    glVertex2f (X2D#(i)(0), Y2D#(i)(0))
+    
+    glColor4f (1, 1, 1 , .1)
+    
+    glVertex2f (X2D#(i)(1), Y2D#(i)(1))
+        
+  next  
+  
+glEnd ()
+                                              
+' Display output
+SwapBuffers ()
+
+for i = 0 to pixels
+
+  Z3D#(i)(0) = Z3D#(i)(0) + 1 
+  Z3D#(i)(1) = Z3D#(i)(1) + 1
+
+  if Z3D#(i)(1) > 254 - maxlenght then gosub Refresh endif 
+  if Z3D#(i)(1) > 254 - maxlenght then X3D(i)(1) = X3D(i)(0): Y3D(i)(1) = Y3D(i)(0) endif
+  if Z3D#(i)(1) > 254 - maxlenght then Z3D#(i)(1) = 0: endif 
+      
+next
+
+wend
+
+Refresh:
+
+X = int(rnd() % (width + 1) - (width /2))
+Y = int(rnd() % (height + 1) - (height /2)) 
+
+X3D(i)(0) = X
+Y3D(i)(0) = Y
+
+lenght = int(rnd() % maxlenght) + 1
+
+Z3D#(i)(0) = lenght
+
+return
+

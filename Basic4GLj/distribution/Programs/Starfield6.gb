@@ -1,0 +1,79 @@
+' Star field demo 6
+'
+' Spinning effect, using OpenGL transformations.
+
+const maxStars = 500
+
+dim stars#(maxStars)(2), starCols(maxStars)(2)
+dim i, texture, angle#
+
+' Populate star field
+for i = 1 to maxStars
+    stars#(i) = vec3 (rnd () % 301 - 150, rnd () % 301 - 150, -i)
+    
+    ' Choose star colour.
+    starCols(i)(0) = rnd () % 256
+    starCols(i)(1) = rnd () % 256
+    starCols(i)(2) = rnd () % 256
+next
+
+' Setup OpenGL fog.
+glEnable (GL_FOG)
+glFogi (GL_FOG_MODE, GL_LINEAR)             ' Objects fade out linearly
+glFogf (GL_FOG_END, maxStars)               ' Objects past this distance are totally faded
+glFogf (GL_FOG_START, 0)                    ' Objects before this distance are totally un-faded
+glFogfv (GL_FOG_COLOR, vec3 (0, 0, 0))      ' Fog colour = black
+
+' Load star texture.
+texture = LoadTexture ("data\star.bmp")
+
+' Enable texture mapping
+glEnable (GL_TEXTURE_2D)
+
+' Main loop
+while true    
+    glClear (GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)    
+    glBindTexture (GL_TEXTURE_2D, texture)
+    
+    ' Spin the view by rotating ALL stars by angle#.
+    ' To do this we set up a rotation TRANSFORMATION.
+    ' Once the transformation is setup, OpenGL will automatically apply it to anything
+    ' we draw from that point onwards. 
+    angle# = angle# + .1
+    glLoadIdentity ()                   ' Clear out transformations
+        ' We have to clear out any existing transformations first, Otherwise OpenGL will COMBINE
+        ' the new transformation with any old one(s).
+    glRotatef (angle#, 0, 0, 1)         ' Add a rotation transformation, by angle# about the Z axis
+        ' The first parameter is the angle (angle#). The last 3 make up the vector to rotate around.
+        ' In this case (0, 0, 1), which points along the Z axis (out of the screen).
+
+    for i = 1 to maxStars
+    
+        ' Move the star forward, by adding 1 to Z
+        stars#(i) = stars#(i) + vec3 (0, 0, 1)
+
+        ' If the Z goes positive (behind the screen), move it to the back again.
+        if stars#(i)(2) >= 0 then stars#(i)(2) = -maxStars endif
+        
+        ' Draw star
+        glBegin (GL_QUADS)
+        
+            ' Set the star's colour.
+            glColor3bv (starCols (i))
+            
+            glTexCoord2f (0, 1)                         ' Top left
+            glVertex3fv (stars#(i) + vec3(-1, 1, 0))
+
+            glTexCoord2f (0, 0)                         ' Bottom left
+            glVertex3fv (stars#(i) + vec3(-1,-1, 0))
+            
+            glTexCoord2f (1, 0)                         ' Bottom right
+            glVertex3fv (stars#(i) + vec3( 1,-1, 0))
+
+            glTexCoord2f (1, 1)                         ' Top right
+            glVertex3fv (stars#(i) + vec3( 1, 1, 0))
+        glEnd ()
+    next
+    SwapBuffers ()
+    WaitTimer (20)
+wend

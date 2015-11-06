@@ -1,0 +1,90 @@
+' Constant settings
+const gridxsize = 20, gridysize = 20
+const spacing# = 20
+const turnSpeed# = 1, accell# = 0.01
+
+' Data types
+struc SPlayer
+    dim pos#(3)(3)          ' Current position and direction
+    dim speed#              ' Speee
+endstruc
+
+' Terrain heightmap
+dim h#(gridxsize)(gridysize)
+
+' Player position
+dim SPlayer player
+
+' Other info
+dim light#(3): light# = Normalize (vec4 (0, 20, 0, 1))
+
+' Working variables
+dim x, y, turnx#, turny#, temp#(4)(3), normal#(3), i#, t#(3)
+
+' Make a terrain
+for y = 0 to gridysize
+    for x = 0 to gridxsize
+        h#(x)(y) = rnd() % 10 - 5
+    next
+next
+                   
+' Setup player
+player.pos# = MatrixRotateX (-45)
+player.pos# (3) = vec4 (gridXSize * spacing# / 2, 200, gridYSize * spacing# / 2, 1)
+
+' Setup OpenGL
+    glEnable(GL_LIGHT1)                                 ' Enable Light One
+
+' Main loop
+while true
+    gosub Render
+    updatejoystick()
+    while SyncTimer (10): gosub Update: wend
+wend
+    
+end
+
+Render:
+    ' Clear screen
+    glClear (GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
+    
+    ' Setup camera position
+    glLoadMatrixf (RTInvert (player.pos#))
+    
+    ' Draw terrain map
+    for y = 0 to gridYSize - 1
+        for x = 0 to gridXSize - 1
+            temp#(1) = vec4 (x * spacing#,               h#(x)(y),           y * spacing#,              1)
+            temp#(2) = vec4 (x * spacing# + spacing#,    h#(x + 1)(y),       y * spacing#,              1)
+            temp#(3) = vec4 (x * spacing# + spacing#,    h#(x + 1)(y + 1),   y * spacing# + spacing#,   1)
+            temp#(4) = vec4 (x * spacing#,               h#(x)(y + 1),       y * spacing# + spacing#,   1)
+            normal# = -Normalize (CrossProduct (temp#(2) - temp#(1), temp#(4) - temp#(1)))
+            i# = light# * normal#
+            i# = i# * i# * i# * i#
+            if i# < .2 then i# = .2 endif
+            glColor3f (i#, i#, i#)            
+            glBegin (GL_TRIANGLE_FAN)
+                glVertex3fv (temp#(1)): glVertex3fv (temp#(2)): glVertex3fv (temp#(3)): glVertex3fv (temp#(4))
+            glEnd ()
+        next
+    next
+
+    SwapBuffers ()
+                
+
+    return
+
+Update:
+    turnx# = joy_x()*0.00003: turny# = joy_y()*0.00003
+    if ScanKeyDown (VK_LEFT)    then turnx# = turnx# - turnSpeed# endif
+    if ScanKeyDown (VK_RIGHT)   then turnx# = turnx# + turnSpeed# endif
+    if ScanKeyDown (VK_UP)      then turny# = turny# - turnSpeed# endif
+    if ScanKeyDown (VK_DOWN)    then turny# = turny# + turnSpeed# endif
+    if ScanKeyDown (Asc ("A"))  then player.speed# = player.speed# + accell# endif   
+    if ScanKeyDown (Asc ("Z"))  then player.speed# = player.speed# - accell# endif
+    player.pos# = player.pos# * MatrixRotateX (turny#) * MatrixRotateZ (-turnx#)
+    t# = player.pos# (3)
+    player.pos# = MatrixRotateY (player.pos# (0)(1) * .5) * player.pos#
+    player.pos# (3) = t#
+    player.pos# (3) = player.pos# (3) - player.pos#(2) * player.speed#
+    return

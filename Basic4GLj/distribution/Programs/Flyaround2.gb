@@ -1,0 +1,163 @@
+const gridSize = 100, viewRange = 14, space# = 20
+const turnSpeed# = 3, bankSpeed# = 1, accell# = 0.1
+dim h#(gridSize)(gridSize), th#(gridSize)(gridSize)
+dim light#(gridSize)(gridSize)
+
+struc SPlayer
+    dim pos#(3)(3), speed#
+endstruc
+
+dim SPlayer player
+
+dim x, y, cx, cy, t1#(3), t2#(3), t3#(3), t4#(3), &temp#(), tx, ty, i, i2
+dim turnx#, turny#, sum#, norm#(3), lightSource#(3), col#(2), tl#(3)
+dim tex, tex2, water, min#, max#, height#, wave#, a$
+
+lightSource# = Normalize (vec4 (0, 2, 1, 1))
+
+for i2 = 1 to 10
+    printr i2
+    for i = 1 to gridSize * gridSize * i2 / 2
+        sum# = (rnd()%1000)/40 - 5
+        sum# = sum# * (11 - i2)
+        x = rnd()%gridSize: y = rnd()%gridSize
+        h# (x)(y) = h#(x)(y) + sum#
+    next
+    
+    th# = h#
+    for x = 0 to gridSize
+        for y = 0 to gridSize
+            sum# = 0
+            for cx = x - 1 to x + 1
+                for cy = y - 1 to y + 1
+                    sum# = sum# + th#(cx %gridSize)(cy %gridSize)
+                next
+            next
+            h#(x)(y) = sum# / 9
+        next
+    next
+next
+
+for y = 0 to gridSize
+    for x = 0 to gridSize
+        &temp# = &t1#: ty = y - 1: tx = x - 1: gosub MakeVec
+        &temp# = &t2#: ty = y + 1: tx = x + 1: gosub MakeVec
+        &temp# = &t3#: ty = y - 1: tx = x + 1: gosub MakeVec
+        &temp# = &t4#: ty = y + 1: tx = x - 1: gosub MakeVec
+        norm# = Normalize (CrossProduct (t2# - t1#, t4# - t3#))
+        light# (x)(y) = -(norm# * lightSource#)
+        light# (x)(y) = light# (x)(y) * light# (x)(y) * light# (x)(y) + .2
+        if light#(x)(y) < .2 then light#(x)(y) = .2 endif
+    next
+next
+
+glEnable (GL_FOG)
+glFogf (GL_FOG_END, viewRange * space# * 2)
+
+glFogf (GL_FOG_MODE, GL_LINEAR)
+tex = LoadMipMapTexture ("textures\00009.jpg")
+tex2 = LoadMipMapTexture ("textures\water.bmp")
+glEnable (GL_TEXTURE_2D)
+glEnable (GL_CULL_FACE)
+
+water = h#(0)(0) + 10
+player.pos# = MatrixTranslate (0, water+5, 0) * MatrixRotateX (0)
+player.speed# = 1
+
+
+
+while true
+    gosub Render
+    while SyncTimer (30)
+        gosub Update
+    wend
+wend
+
+end
+
+Render:
+    glClear (GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
+    
+    ' Camera
+    glLoadMatrixf (RTInvert (player.pos#))
+    t1# = player.pos#(3) - player.pos#(2) * viewRange * space#
+    cx = t1#(0) / space#
+    cy = t1#(2) / space#
+    for y = cy - viewRange to cy + viewRange
+        for x = cx - viewRange to cx + viewRange
+            max# = -10000
+            min# = 10000
+            &temp# = &t1#: tx = x:   ty = y:   gosub MakeVec: tl#(0) = light#(tx %gridSize)(ty %gridSize)
+            &temp# = &t2#: tx = x+1: ty = y:   gosub MakeVec: tl#(1) = light#(tx %gridSize)(ty %gridSize)
+            &temp# = &t3#: tx = x+1: ty = y+1: gosub MakeVec: tl#(2) = light#(tx %gridSize)(ty %gridSize)
+            &temp# = &t4#: tx = x:   ty = y+1: gosub MakeVec: tl#(3) = light#(tx %gridSize)(ty %gridSize)
+            if (player.pos#(3)(1) + 2 >= water and max# > water) or (player.pos#(3)(1) - 2 < water and min# < water) then
+                if player.pos#(3)(1) < water then   col# = vec3 (.3, .3, 1)
+                else                                col# = vec3 (1, 1, 1)
+                endif
+                glBindTexture (GL_TEXTURE_2D, tex)
+                glBegin (GL_TRIANGLE_FAN)
+                    glTexCoord2f (0, 1): glColor3fv (col# * tl#(3)): glVertex3fv (t4#)
+                    glTexCoord2f (1, 1): glColor3fv (col# * tl#(2)): glVertex3fv (t3#)
+                    glTexCoord2f (1, 0): glColor3fv (col# * tl#(1)): glVertex3fv (t2#)
+                    glTexCoord2f (0, 0): glColor3fv (col# * tl#(0)): glVertex3fv (t1#)
+                glEnd ()
+            endif
+            
+            if min# < water then
+                t1#(1) = water + sind((x)  *40+(y)  *13+wave#*2)*1 + sind((x)  *13-(y)  *40+wave#*1.7)*1
+                t2#(1) = water + sind((x+1)*40+(y)  *13+wave#*2)*1 + sind((x+1)*13-(y)  *40+wave#*1.7)*1
+                t3#(1) = water + sind((x+1)*40+(y+1)*13+wave#*2)*1 + sind((x+1)*13-(y+1)*40+wave#*1.7)*1
+                t4#(1) = water + sind((x)  *40+(y+1)*13+wave#*2)*1 + sind((x)  *13-(y+1)*40+wave#*1.7)*1
+'                glEnable (GL_BLEND)
+'                glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                glDisable (GL_CULL_FACE)
+                glColor3f (1, 1, 1)
+                glBindTexture (GL_TEXTURE_2D, tex2)
+                glBegin (GL_TRIANGLE_FAN)
+                    glTexCoord2f (0, 1): glVertex3fv (t4#)
+                    glTexCoord2f (1, 1): glVertex3fv (t3#)
+                    glTexCoord2f (1, 0): glVertex3fv (t2#)
+                    glTexCoord2f (0, 0): glVertex3fv (t1#)
+                glEnd ()
+'                glDisable (GL_BLEND)
+                glEnable (GL_CULL_FACE)
+            endif
+        next
+    next
+    
+    SwapBuffers ()
+    
+
+    return
+    
+makevec:
+    height# = h#(tx %gridSize)(ty %gridSize)
+    if height# < min# then min# = height# endif
+    if height# > max# then max# = height# endif    
+    temp# = vec4 (tx * space#, height#, ty * space#, 1)
+    return
+
+update:
+    wave# = wave# + 1
+    turnx# = -Mouse_XD() * turnSpeed# * 5: turny# = -Mouse_YD() * turnSpeed# * 5
+    player.speed# = player.speed# + Mouse_Wheel () * accell#
+    if ScanKeyDown (VK_LEFT) then turnx# = turnx# + turnSpeed# endif
+    if ScanKeyDown (VK_RIGHT)then turnx# = turnx# - turnSpeed# endif
+    if ScanKeyDown (VK_UP)   then turny# = turny# + turnSpeed# endif
+    if ScanKeyDown (VK_DOWN) then turny# = turny# - turnSpeed# endif
+    if ScanKeyDown (Asc ("A")) then player.speed# = player.speed# + accell# endif
+    if ScanKeyDown (Asc ("Z")) then player.speed# = player.speed# - accell# endif
+    if KeyDown ("Q") or KeyDown ("q") then player.pos#(3) = player.pos#(3) + vec4 (0,1,0,1) endif
+    if ScanKeyDown (VK_SPACE) then  player.speed# = 0 endif
+    a$ = Inkey$ ()
+    if a$ = "N" or a$ = "n" then water = water + 1 endif
+    if a$ = "M" or a$ = "m" then water = water - 1 endif
+    
+    player.pos# = player.pos# * MatrixRotateZ(turnx#) * MatrixRotateX(-turny#)
+    t1# = player.pos#(3)
+    player.pos# = MatrixRotateY (player.pos#(0)(1)*bankSpeed#) * player.pos# 
+    player.pos#(3) = t1#
+    player.pos# = Orthonormalize (player.pos#)
+    player.pos#(3) = player.pos#(3) - player.pos#(2) * player.speed#
+    return

@@ -1,0 +1,93 @@
+' Height map loader     
+dim file                            ' File handle
+dim xsize, ysize                    ' Map dimensions
+dim x, y, value$, value#            ' Working variables
+
+' Open file
+file = OpenFileRead ("files\hills01.dat")
+gosub CheckError
+
+' First 2 lines contain dimensions
+xsize = val (ReadLine (file))       ' Read line reads a line. Val converts text to number.
+ysize = val (ReadLine (file))
+
+' Allocate heightmap array
+dim h#(xsize)(ysize)
+
+' Read in lines
+for y = 1 to ysize
+    for x = 1 to xsize
+        h#(x)(y) = val (ReadText (file, x = 1)) * 10
+        gosub CheckError 
+    next
+next
+CloseFile (file)
+
+dim texture: texture = LoadMipmapTexture ("textures\00005.jpg")
+glEnable (GL_TEXTURE_2D)
+glBindTexture (GL_TEXTURE_2D, texture)   
+
+' Light map
+dim l#(x)(y), v#(4)(2), light#(2), temp#
+light# = Normalize (vec3 (-1, -1, 1))
+for y = 1 to ysize
+    for x = 1 to xsize
+        v#(1) = vec3 (-1, h#((x - 2) % xSize + 1)((y - 2) % ySize + 1), -1)
+        v#(2) = vec3 ( 1, h#((x    ) % xSize + 1)((y - 2) % ySize + 1), -1)
+        v#(3) = vec3 ( 1, h#((x    ) % xSize + 1)((y    ) % ySize + 1),  1)
+        v#(4) = vec3 (-1, h#((x - 2) % xSize + 1)((y    ) % ySize + 1),  1)
+        temp# = Normalize (CrossProduct (v#(3)-v#(1), v#(2)-v#(4))) * -light#
+        if temp# < 0 then
+            temp# = 0
+        endif
+        l#(x)(y) = temp# * temp# * temp# + .2
+    next
+next
+
+
+' Render map to screen
+const texScale# = .1
+dim yangle#, xangle#, texXOffs#, texYOffs#, hills
+
+hills = glGenLists (1)
+glNewList (hills, GL_COMPILE)
+    for y = 1 to ysize - 1
+        texYOffs# = y * texScale#
+        glBegin (GL_TRIANGLE_STRIP)
+        for x = 1 to xsize - 1            
+            texXOffs# = x * texScale#  
+                temp# = l#(x)(y)
+                glColor3f (temp#, temp#, temp#): glTexCoord2f (texXOffs#,            texYOffs#):             glVertex3f (x  , h#(x)  (y)  , y)
+'                glColor3fv (vec3 (1,1,1) * l#(x % xSize + 1)(y)): glTexCoord2f (texXOffs#+texScale#,  texYOffs#):             glVertex3f (x+1, h#(x+1)(y)  , y)
+'                glColor3fv (vec3 (1,1,1) * l#(x % xSize + 1)(y % ySize + 1)): glTexCoord2f (texXOffs#+texScale#,  texYOffs#+texScale#):   glVertex3f (x+1, h#(x+1)(y+1), y+1)
+                temp# = l#(x)(y % ySize + 1)
+                glColor3f (temp#, temp#, temp#): : glTexCoord2f (texXOffs#,            texYOffs#+texScale#):   glVertex3f (x  , h#(x)  (y+1), y+1)
+        next
+        glEnd ()
+    next
+glEndList ()
+    
+while true
+    glClear (GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)    ' Clear screen
+    glLoadIdentity ()
+    glTranslatef (0, 0, -50)
+    glRotatef (xangle#, 1, 0, 0)
+    glRotatef (yangle#, 0, 1, 0)
+    glTranslatef (-xsize / 2, 0, -ysize / 2)
+
+    glCallList (hills)
+    ' Display finished result
+    SwapBuffers ()              
+
+    ' Mouse input
+    yangle# = yangle# + mouse_xd () * 100
+    xangle# = xangle# + mouse_yd () * 100
+wend
+
+end
+CheckError:
+    if FileError () <> "" then
+        print FileError ()
+        end
+    endif
+    return

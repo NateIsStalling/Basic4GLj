@@ -1,0 +1,112 @@
+' Quick textured corridor demo
+'
+' Notes:
+'   * We are using rectangles, so we will be drawing them with glBegin(GL_QUADS)...glEnd()
+'   * We will be using multiple textures, so will be storing the texture handles in an array
+'   * We will need the Z buffer (also known as "Depth buffer") to ensure the polygons
+'     are drawn in the correct order.
+'   * We will make the corridor 50 units long, 10 units high and wide
+
+' Data
+dim camX#, camY#, camZ#, camAng#    ' Camera position and direction
+camX# = 0
+camY# = 2
+camZ# = 0
+
+' Load textures first
+dim tex(4)
+tex(1) = LoadTexture ("textures\00001.jpg") ' Left texture
+tex(2) = LoadTexture ("textures\00002.jpg") ' Right texture
+tex(3) = LoadTexture ("textures\00003.jpg") ' Top texture
+tex(4) = LoadTexture ("textures\00004.jpg") ' Bottom texture
+
+' Enable texturing.
+' (Note: We use GL_TEXTURE_2D, because the textures are 2D images.)
+glEnable (GL_TEXTURE_2D)
+
+' Setup projection matrix 
+' (What this does takes some explaining, I'll probably put it into a
+' tutorial at some stage..)
+glMatrixMode (GL_PROJECTION)
+glLoadIdentity ()
+gluPerspective (60, (1.0*WindowWidth()) / WindowHeight(), 0.1, 100)
+glMatrixMode (GL_MODELVIEW)
+
+' Main loop starts here
+while true
+    
+    ' Draw scene
+    
+    ' Clear the screen
+    glClear (GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
+        ' Clear the depth buffer (Z buffer)
+        ' and the colour buffer (pixels)
+
+    ' Position camera
+    glLoadIdentity ()
+    glRotatef (-camAng#, 0, 1, 0)
+    glTranslatef (-camX#, -camY#, -camZ#)
+
+    ' Draw the left wall
+    glBindTexture (GL_TEXTURE_2D, tex (1))      ' Use texture 1
+    glBegin (GL_QUADS)
+    
+        ' Need texture coordinates and vertex coordinates.
+        ' Because the wall 5 times longer than it is high, we want the 
+        ' texture to repeat 5 times (otherwise it will appear stretched
+        ' out). Therefore we put a 5 into the first texture coordinate.
+        glTexCoord2f ( 0, 0): glVertex3f ( -5,  0,  0)
+        glTexCoord2f ( 0, 1): glVertex3f ( -5, 10,  0)
+        glTexCoord2f ( 5, 1): glVertex3f ( -5, 10,-50)
+        glTexCoord2f ( 5, 0): glVertex3f ( -5,  0,-50)
+    glEnd ()
+    
+    ' Draw the top wall
+    glBindTexture (GL_TEXTURE_2D, tex (2))      ' Use texture 2
+    glBegin (GL_QUADS)
+        glTexCoord2f ( 0, 0): glVertex3f (  5,  0,  0)
+        glTexCoord2f ( 0, 1): glVertex3f (  5, 10,  0)
+        glTexCoord2f ( 5, 1): glVertex3f (  5, 10,-50)
+        glTexCoord2f ( 5, 0): glVertex3f (  5,  0,-50)
+    glEnd ()
+    
+    ' Draw the floor
+    glBindTexture (GL_TEXTURE_2D, tex (3))      ' Use texture 3
+    glBegin (GL_QUADS)
+        glTexCoord2f ( 0, 0): glVertex3f (  5,  0,  0)
+        glTexCoord2f ( 0, 1): glVertex3f ( -5,  0,  0)
+        glTexCoord2f ( 5, 1): glVertex3f ( -5,  0,-50)
+        glTexCoord2f ( 5, 0): glVertex3f (  5,  0,-50)
+    glEnd ()
+
+    ' Draw the ceiling
+    glBindTexture (GL_TEXTURE_2D, tex (4))      ' Use texture 4
+    glBegin (GL_QUADS)
+        glTexCoord2f ( 0, 0): glVertex3f (  5, 10,  0)
+        glTexCoord2f ( 0, 1): glVertex3f ( -5, 10,  0)
+        glTexCoord2f ( 5, 1): glVertex3f ( -5, 10,-50)
+        glTexCoord2f ( 5, 0): glVertex3f (  5, 10,-50)
+    glEnd ()
+    SwapBuffers ()
+
+    ' Move camera
+    while SyncTimer (10)
+        if ScanKeyDown (VK_LEFT)  then camAng# = camAng# + 1: endif
+        if ScanKeyDown (VK_RIGHT) then camAng# = camAng# - 1: endif
+        if ScanKeyDown (VK_UP)    then
+            camX# = camX# - sind (camAng#) * .2
+            camZ# = camZ# - cosd (camAng#) * .2
+        endif
+        if ScanKeyDown (VK_DOWN)  then
+            camX# = camX# + sind (camAng#) * .2
+            camZ# = camZ# + cosd (camAng#) * .2
+        endif
+        
+        ' The corridor is rectangle shaped, so we can easily "clamp"
+        ' the camera's position inside it
+        if camX# < -4 then camX# = -4 endif
+        if camX# >  4 then camX# =  4 endif
+        if camZ# > -1 then camZ# = -1 endif
+        if camZ# <-49 then camZ# =-49 endif
+    wend
+wend

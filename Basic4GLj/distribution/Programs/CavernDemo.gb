@@ -1,0 +1,106 @@
+' Tile maps
+
+CavernData:
+data 64, 16
+data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,2,2,2,2,2,2,2,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,2,2,2,2,2,2,2,2,2,2,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,2,2,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,2,2,2,3,1,1,1,1,1,1,1,1,1,1
+data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,2,2,2,2,2,2,3,1,1,1
+data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,6,11,0,0,0,0,0,0,0,0,12,6,6,6,6,6,6,6,6,11,12,6,6,6,6,6,6,11,12,6,11,0,0,0,0,0,0,0,13,3,1,1
+data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,5,1,7,11,0,0,0,0,0,12,6,5,1,1,1,1,1,1,1,1,7,5,1,1,1,1,1,1,7,5,1,8,0,0,0,0,0,0,0,0,4,1,1
+data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,5,1,1,1,7,11,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,8,0,0,0,0,0,0,0,12,5,1,1
+data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,5,1,1,1,1,1,8,0,0,0,12,5,1,1,9,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,10,12,6,6,6,6,6,6,5,1,1,1
+data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,1,1,1,1,1,7,11,0,0,4,1,1,9,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,1,1,1,1,1,1,1,1,1
+data 0,0,0,0,0,0,12,6,6,6,11,0,0,0,0,0,0,12,5,1,1,1,1,1,1,1,8,12,6,5,1,1,7,11,0,0,0,12,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,5,1,1,9,2,2,2,2,3,1,1
+data 0,0,0,12,6,6,5,1,1,1,7,11,0,0,0,12,6,5,1,1,1,1,1,1,1,1,7,5,1,1,1,1,1,7,6,11,0,13,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,10,0,0,0,0,4,1,1
+data 6,6,6,5,1,1,1,1,1,1,1,7,6,6,6,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,7,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,5,1,1
+data 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,9,3,1,1,7,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,11,0,0,0,0,0,4,1,1,1
+data 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,9,10,13,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1,1,1,1,1,1,8,0,0,0,0,0,4,1,1,1
+            
+SpaceData: 
+    data 10, 10
+    data 2,2,3,1,2,1,1,3,2,3
+    data 3,3,2,3,2,3,2,3,2,2
+    data 3,1,2,3,3,4,3,2,3,3
+    data 2,1,4,2,5,3,3,1,2,1
+    data 2,3,2,3,3,1,2,3,3,3
+    data 2,2,2,1,2,2,3,1,3,2
+    data 3,1,3,1,2,2,2,2,1,3
+    data 2,1,2,4,1,3,2,3,2,3
+    data 2,2,3,2,3,3,2,3,3,1
+    data 3,2,1,2,3,2,1,2,2,1
+
+' Data
+    
+    dim &cavernTiles ()(), &spaceTiles ()(), &tiles ()()                        ' Tile maps
+    dim cavernTextures (ImageStripFrames ("data\CavernTiles.png", 32) - 1)      ' Sprite sets
+    dim spaceTextures (ImageStripFrames ("data\SpaceTiles.png") - 1)
+    dim cavernTileMap, spaceTileMap                                             ' Sprite objects
+    dim x, y, xSize, ySize, i
+
+' Subroutines
+
+goto Start
+
+LoadTiles:
+    
+    ' Read grid size
+    read xSize, ySize
+    
+    ' Allocate 2D array. 0 - (xSize-1), 0 - (ySize-1)
+    alloc tiles, xSize - 1, ySize - 1
+
+    ' Read in data
+    for y = 0 to ySize - 1
+        for x = 0 to xSize - 1
+            read i
+            tiles (x)(y) = i
+        next
+    next
+    return
+
+Start:
+    ' Load textures
+    cavernTextures = LoadImageStrip ("data\CavernTiles.png", 32)
+    spaceTextures = LoadImageStrip ("data\SpaceTiles.png")    
+          
+    ' Switch off linear texture filtering
+    for i = 0 to ArrayMax(cavernTextures)
+        glBindTexture(GL_TEXTURE_2D, cavernTextures(i))
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    next
+    for i = 0 to ArrayMax(spaceTextures)
+        glBindTexture(GL_TEXTURE_2D, spaceTextures(i))
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    next
+
+    ' Load tile maps
+    reset CavernData: gosub LoadTiles: &cavernTiles = &tiles
+    reset SpaceData: gosub LoadTiles: &spaceTiles = &tiles      
+    
+    ' Create tile map objects
+    TextMode (TEXT_BUFFERED)
+
+    cavernTileMap = NewTileMap (cavernTextures)
+    SprSetTiles (cavernTiles)
+    SprSetParallax (true)
+    SprSetSolid (false)
+    SprSetXRepeat (true)
+    SprSetYRepeat (false)
+    
+    spaceTileMap = NewTileMap (spaceTextures)
+    SprSetTiles (spaceTiles)
+    SprSetParallax (true)
+    SprSetZOrder (400)
+    SprSetXRepeat (true)
+    SprSetYRepeat (true)
+    SprSetScale (4)
+                     
+    while true
+        while SyncTimer (20)
+            SprCameraSetPos (SprCameraPos () + vec2 (2, 0))
+        wend
+        DrawText ()
+    wend

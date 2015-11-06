@@ -1,0 +1,41 @@
+if not ExtensionSupported ("GL_ARB_multitexture") then
+	print "Multitexturing not supported"
+	end
+endif
+
+' Load some textures
+dim tex1, tex2
+tex1 = LoadMipmapTexture ("textures\00003.jpg")
+tex2 = LoadMipmapTexture ("data\nehe.bmp")
+
+glActiveTexture (GL_TEXTURE0)
+glEnable (GL_TEXTURE_2D)
+glBindTexture (GL_TEXTURE_2D, tex2)
+glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
+glActiveTexture (GL_TEXTURE1)
+glEnable (GL_TEXTURE_2D)
+glBindTexture (GL_TEXTURE_2D, tex1)
+glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD)
+
+dim a#, ang#
+
+while true
+	glClear (GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT)
+	glMatrixMode (GL_MODELVIEW)
+	glLoadIdentity ()
+	glTranslatef (0, 0, -3)
+	glRotatef (ang#, 0, 0, 1)
+	
+	glBegin (GL_QUADS)
+		glMultiTexCoord2f (GL_TEXTURE0, 0, 1): glMultiTexCoord2f (GL_TEXTURE1, a# + 0, 1): glVertex2f (-1, 1)
+		glMultiTexCoord2f (GL_TEXTURE0, 1, 1): glMultiTexCoord2f (GL_TEXTURE1, a# + 1, 1): glVertex2f ( 1, 1)
+		glMultiTexCoord2f (GL_TEXTURE0, 1, 0): glMultiTexCoord2f (GL_TEXTURE1, a# + 1, 0): glVertex2f ( 1,-1)
+		glMultiTexCoord2f (GL_TEXTURE0, 0, 0): glMultiTexCoord2f (GL_TEXTURE1, a# + 0, 0): glVertex2f (-1,-1)
+	glEnd ()
+	SwapBuffers ()
+
+	while SyncTimer (10)
+		a# = a# + 0.008
+		ang# = ang# + 0.1
+	wend
+wend

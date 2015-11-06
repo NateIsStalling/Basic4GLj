@@ -1,0 +1,154 @@
+' Particle Demo
+' Written by Scott Brosious
+
+const width = 200, height = 200
+
+const nop = 100    ' Number of particles
+const xcntr = 100  ' XCenter
+const ycntr = 100  ' YCenter
+const speed = 1    ' Speed 
+
+dim texture    ' Texture handle
+dim a   
+dim i 
+dim time       ' Current time
+dim t1,t2      ' Starting and ending time variables   
+dim choice
+
+dim xpos(nop)  ' Xposition
+dim ypos(nop)  ' Yposition
+dim ang(nop)   ' Angles
+dim st(nop)    ' Start time
+dim et(nop)    ' End time
+dim mt(nop)    ' Time to move
+dim scale(nop) ' Size of particles
+dim size       ' Random sizes
+dim alpha#     ' Star transparency. 0 = fully transparent (invisible). 1 = fully solid. 0.5 = half transparent e.t.c.
+
+dim red(nop)   ' Red Component
+dim green(nop) ' Green Component
+dim blue(nop)  ' Blue Component
+
+for i = 1 to nop
+
+size = int(rnd() % 5) + 5  ' Random Size 5 - 10
+
+scale(i) = size ' Put size into array
+
+next
+
+for i = 1 to nop
+
+gosub Inittime
+
+st(i) = t1 ' Start time
+et(i) = t2 ' End time
+
+gosub Angles
+
+ang(i) = a  ' Put angle into array
+
+next
+
+' Set 2D mode
+glMatrixMode (GL_PROJECTION)
+glLoadIdentity ()
+glOrtho (0, width, 0, height, -1, 1)
+glMatrixMode (GL_MODELVIEW)
+glDisable (GL_DEPTH_TEST)
+
+' Load in texture assign handle
+texture = LoadTexture ("data\star.bmp")
+
+' Enable 2D Texturemapping
+glEnable (GL_TEXTURE_2D)
+
+' Translucency, Blending
+glBlendFunc(GL_SRC_ALPHA,GL_ONE)
+glEnable(GL_BLEND)
+
+'  Random Colors
+for i = 1 to nop
+
+choice = int(rnd() % 7) + 1
+
+if choice =  1 then red(i) = 1: green(i) = 0: blue(i) = 0: endif 
+if choice =  2 then red(i) = 0: green(i) = 1: blue(i) = 0: endif
+if choice =  3 then red(i) = 0: green(i) = 0: blue(i) = 1: endif 
+if choice =  4 then red(i) = 1: green(i) = 1: blue(i) = 0: endif
+if choice =  5 then red(i) = 0: green(i) = 1: blue(i) = 1: endif 
+if choice =  6 then red(i) = 1: green(i) = 0: blue(i) = 1: endif
+if choice =  7 then red(i) = 1: green(i) = 1: blue(i) = 1: endif 
+
+next               
+
+while true
+
+' Clear screen   
+glClear (GL_COLOR_BUFFER_BIT)
+
+glBindTexture (GL_TEXTURE_2D, texture)
+
+glBegin (GL_QUADS)
+
+for i = 1 to nop
+
+if time > st(i) then mt(i) = mt(i) + 1 :endif ' If current time greater then start time then move it.
+
+if mt(i) > et(i) then gosub Refresh :endif ' If movetime greater then endtime start again
+
+xpos(i)= xcntr + cosd(ang(i)) * (mt(i) * speed)
+ypos(i)= ycntr + sind(ang(i)) * (mt(i) * speed)
+            
+    if et(i) > 0 then 
+        alpha# = 1 - mt(i) * 1.0 / et(i)
+    else
+        alpha# = 1
+    endif
+            glColor4f (red(i),green(i),blue(i), alpha#)                ' Color of particle 
+            glTexCoord2f (0, 1)                         
+            glVertex2f (xpos(i)-scale(i),ypos(i)-scale(i))     ' Top left
+
+            glTexCoord2f (0, 0)                         
+            glVertex2f (xpos(i)-scale(i),ypos(i)+scale(i))     ' Bottom left
+            
+            glTexCoord2f (1, 0)                         
+            glVertex2f (xpos(i)+scale(i),ypos(i)+scale(i))     ' Bottom right    
+
+            glTexCoord2f (1, 1)                         
+            glVertex2f (xpos(i)+scale(i),ypos(i)-scale(i))     ' Top right
+
+next 
+
+glEnd ()
+
+' Display output
+SwapBuffers ()
+
+time = time + 1 ' Time is always incrementing
+
+wend
+
+ReFresh:
+
+gosub InitTime  
+st(i) = t1
+et(i) = t2
+mt(i) = 0
+gosub Angles
+ang(i) = a
+
+return
+
+InitTime:
+
+t1 = rnd() % 30  ' When to start
+t2 = rnd() % 60  ' When to end
+
+return              
+
+Angles:
+
+a = rnd() % 360  ' Random angle 0 - 360
+
+return

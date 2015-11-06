@@ -1,0 +1,493 @@
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Data types
+
+struc SMD2_header
+    
+    ' File information
+    dim ident
+    dim version
+    dim skinwidth                   ' Width of skin texture (pixels)
+    dim skinheight                  ' Height of skin texture (pixels)
+    dim framesize                   
+    
+    ' Number of different components
+    dim num_skins                   ' Skins
+    dim num_xyz                     ' Vertices (x, y, z)
+    dim num_st                      ' Texture coordinates (s, t)
+    dim num_tris                    ' Triangles
+    dim num_glcmds                  ' GL Commands (which we aren't going to use)
+    dim num_frames                  ' Frames
+    
+    ' File offset of different components
+    dim ofs_skins                   ' Skins 
+    dim ofs_st                      ' Texture coordinates (s,t)
+    dim ofs_tris                    ' Triangles
+    dim ofs_frames                  ' Frames
+    dim ofs_glcmds                  ' GL Commands (which we aren't going to use)
+    dim ofs_end                     ' End of file
+endstruc
+
+struc SMD2_vertex
+    dim v#(2)                                   ' Vertex
+    dim normal#(2)
+endstruc
+
+struc SMD2_triangle
+    dim index_xyz(2)                            ' Index of triangle vertices
+    dim index_st(2)                             ' Index of texture coordinates
+endstruc
+
+struc SMD2_frame
+    dim scale#(2), translate#(2)                ' Scaling and translation
+    dim name$                                   ' Display name
+    dim SMD2_vertex &verts()                    ' Vertices
+endstruc
+
+struc SMD2_model
+    dim SMD2_header header                      ' Header data
+    dim &skins ()                               ' Skin textures
+    dim &st# ()()                               ' Texture coordinates (compressed)
+    dim SMD2_triangle &tris ()                  ' Triangles
+    dim SMD2_frame &frames()                    ' Frames
+endstruc
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Variables
+
+' Pointers for passing parameters into routines
+dim SMD2_model &theModel, SMD2_frame &theFrame, SMD2_frame &theFrame2, SMD2_vertex &theVertex
+dim SMD2_header &theHeader, theFrameNum, theFrameNum2, theSkin, SMD2_triangle &theTriangle
+dim theFileName$, theFileDir$, theFrameFactor#, temp$
+
+
+' Working variables
+dim tempStr$, i, i2, i3, tempVec# (2), tempNormal# (2), tempTriangle#(2)(2)
+dim theFile
+
+goto Start
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+' Functions
+
+''''''''''''''''''''''
+' Internal functions
+LoadMD2Header:
+    
+    ' Expects:
+    '   &theHeader = points to the destination header data
+    '   file       = file handle to read from
+    theHeader.ident       = ReadInt (theFile)
+    theHeader.version     = ReadInt (theFile)
+    theHeader.skinwidth   = ReadInt (theFile)
+    theHeader.skinheight  = ReadInt (theFile)
+    theHeader.framesize   = ReadInt (theFile)
+    theHeader.num_skins   = ReadInt (theFile)
+    theHeader.num_xyz     = ReadInt (theFile)
+    theHeader.num_st      = ReadInt (theFile)
+    theHeader.num_tris    = ReadInt (theFile)
+    theHeader.num_glcmds  = ReadInt (theFile)
+    theHeader.num_frames  = ReadInt (theFile)
+    theHeader.ofs_skins   = ReadInt (theFile)
+    theHeader.ofs_st      = ReadInt (theFile)
+    theHeader.ofs_tris    = ReadInt (theFile)
+    theHeader.ofs_frames  = ReadInt (theFile)
+    theHeader.ofs_glcmds  = ReadInt (theFile)
+    theHeader.ofs_end     = ReadInt (theFile)
+    return
+    
+LoadMD2Skins:
+
+    ' Expects:
+    '   &theModel  = points to the destination model
+    '   file       = file handle to read from
+    
+    ' Seek to skin texture names
+    Seek (theFile, theModel.header.ofs_skins)
+
+    ' Allocate skin texture handles
+    alloc theModel.skins, theModel.header.num_skins - 1
+    
+    ' Load textures
+    for i = 0 to theModel.header.num_skins - 1
+    
+        ' Read texture name
+        tempStr$ = ""
+        for i2 = 1 to 64                                ' Read name 
+        
+            temp$ = ReadChar (theFile)
+            if temp$ = "/" then temp$ = "\" endif
+            tempStr$ = tempStr$ + temp$
+        next    
+        while Len (tempStr$) > 0 and Right$ (tempStr$, 1) <= " "            ' Trim whitespace from right
+            tempStr$ = Left$ (tempStr$, Len (tempStr$) - 1)
+        wend
+
+        ' Load texture
+        theModel.skins (i) = LoadMipmapTexture (theFileDir$ + tempStr$)
+        if theModel.skins (i) <= 0 then 
+            print "Failed to load texture: " + theFileDir$ + tempStr$
+            end
+        endif  
+    next               
+    return
+    
+LoadMD2ST:
+    
+    ' Expects:
+    '   &theModel  = points to the destination model
+    '   file       = file handle to read from
+    
+    ' Allocate texture coordinates    
+    alloc theModel.st#, theModel.header.num_st - 1, 1
+    
+    ' Seek to texture coordinates
+    Seek (theFile, theModel.header.ofs_st)
+
+    ' Load texture coordinates
+    for i = 0 to theModel.header.num_st - 1
+        theModel.st# (i)(0) = ReadWord (theFile)
+        theModel.st# (i)(1) = ReadWord (theFile)
+    next
+    return
+    
+LoadMD2Tris:
+
+    ' Expects:
+    '   &theModel  = points to the destination model
+    '   file       = file handle to read from
+    
+    ' Allocate triangles
+    alloc theModel.tris, theModel.header.num_tris - 1
+    
+    ' Seek to triangles
+    Seek (theFile, theModel.header.ofs_tris)
+    
+    ' Load triangles
+    for i = 0 to theModel.header.num_tris - 1
+        for i2 = 0 to 2
+            theModel.tris (i).index_xyz (i2) = ReadWord (theFile)
+        next
+        for i2 = 0 to 2
+            theModel.tris (i).index_st (i2) = ReadWord (theFile)
+        next
+    next
+    return
+    
+LoadMD2Frames:
+
+    ' Expects:
+    '   &theModel  = points to the destination model
+    '   file       = file handle to read from
+
+    ' Allocate frames
+    alloc theModel.frames, theModel.header.num_frames - 1
+    
+    ' Seek to frames
+    Seek (theFile, theModel.header.ofs_frames)
+    
+    ' Load frames
+    for i = 0 to theModel.header.num_frames - 1 
+        &theFrame = &theModel.frames (i)
+        
+        for i2 = 0 to 2
+            theFrame.scale# (i2) = ReadFloat (theFile)
+        next
+        for i2 = 0 to 2
+            theFrame.translate# (i2) = ReadFloat (theFile)
+        next
+        tempStr$ = ""
+        for i2 = 1 to 16: tempStr$ = tempStr$ + ReadChar (theFile): next   ' Read name             
+        while Len (tempStr$) > 0 and Right$ (tempStr$, 1) <= " "        ' Trim whitespace from right
+            tempStr$ = Left$ (tempStr$, Len (tempStr$) - 1)
+        wend
+        theFrame.name$ = tempStr$
+        
+        ' Allocate vertices
+        alloc theFrame.verts, theModel.header.num_xyz
+        
+        ' Read vertices
+        for i2 = 0 to theModel.header.num_xyz - 1
+            for i3 = 0 to 2
+                theFrame.verts (i2).v# (i3) = ReadByte (theFile)
+            next
+            ReadByte (theFile)          ' Throw away normal info from file
+        next    
+    next
+    return
+    
+
+CalcMD2Normals:
+    ' Note: The MD2 file format stores normals as indexed lookups into some normal table.
+    ' I cannot find this table, so I will simply recalculate them.
+    
+    ' Expects:
+    '   &theModel  = points to the destination model
+    &theHeader = &theModel.header
+    
+    ' Calculate for all frames
+    for i3 = 0 to theHeader.num_frames - 1
+        &theFrame  = &theModel.frames (i3)          
+        for i = 0 to theHeader.num_tris - 1  
+    
+            ' Fetch the triangle vertices
+            &theTriangle = &theModel.tris (i)
+            for i2 = 0 to 2
+                tempTriangle# (i2) = theFrame.verts (theTriangle.index_xyz (i2)).v#
+            next
+        
+            ' Calculate normal as cross product between edges 0-1 and 0-2
+            tempNormal# = Normalize (-CrossProduct (tempTriangle# (1) - tempTriangle# (0), tempTriangle# (2) - tempTriangle# (0)))
+            
+            ' Add new normal to normals at ALL vertices of the triangle.
+            ' This will have an averaging effect over vertices that are shared between multiple triangles
+            for i2 = 0 to 2
+                theFrame.verts (theTriangle.index_xyz (i2)).normal# = theFrame.verts (theTriangle.index_xyz (i2)).normal# + tempNormal#
+            next
+        next
+            
+        ' Normalise all normals
+        for i = 0 to theHeader.num_xyz - 1
+            theFrame.verts (i).normal# = Normalize (theFrame.verts (i).normal#)
+        next
+    next
+    return
+    
+''''''''''''''''''
+' Main functions
+
+' LoadMD2
+' Input:  theFileName$ = file to load
+' Output: theModel     = MD2 model
+
+LoadMD2:
+
+    ' Open file
+    theFile = OpenFileRead (theFileDir$ + theFileName$)
+    if FileError() <> "" then 
+        printr "Failed to open " + theFileName$
+        printr "Reason: " + FileError ()
+        end
+    endif
+    
+    ' Allocate model
+    alloc theModel
+
+    ' Read header
+    &theHeader = &theModel.header
+    gosub LoadMD2Header
+    
+    ' Read data
+    gosub LoadMD2Skins                      ' Skins
+    gosub LoadMD2ST                         ' Texture coordinates (s, t)    
+    gosub LoadMD2Tris                       ' Triangles
+    gosub LoadMD2Frames                     ' Frames
+
+    ' Close file
+    CloseFile (theFile)
+    
+    ' Calculate normals
+    gosub CalcMD2Normals
+    return
+
+DrawMD2:
+    
+    ' Draw an interpolated MD2 frame
+    
+    ' Expects:
+    '   theModel        = pointer to model
+    '   theFrameNum     = index of first frame
+    '   theFrameNum2    = index of the second frame
+    '   theFrameFactor# = 0 to draw the first frame, 1 to draw the second frame, or a value between 0 and 1
+    '   theSkin         = skin to use
+  
+    &theHeader = &theModel.header
+    &theFrame  = &theModel.frames (theFrameNum)
+    &theFrame2 = &theModel.frames (theFrameNum2)
+
+    ' Bind texture    
+    glEnable (GL_TEXTURE_2D)
+    glBindTexture (GL_TEXTURE_2D, theModel.skins (theSkin))
+    glEnable (GL_CULL_FACE)
+    glCullFace (GL_FRONT)
+    
+    ' Setup texture scaling
+    glMatrixMode (GL_TEXTURE)
+    glPushMatrix ()
+    glScalef (1.0 / theHeader.skinWidth, -1.0 / theHeader.skinHeight, 1)
+    glMatrixMode (GL_MODELVIEW)
+    
+    ' Apply model scaling
+    glPushMatrix ()
+    glRotatef( -90, 1, 0, 0 )
+    glRotatef( -90, 0, 0, 1 )
+    tempVec# = theFrame.translate# * (1 - theFrameFactor#) + theFrame2.translate# * theFrameFactor#
+    glTranslatef (tempVec# (0), tempVec# (1), tempVec# (2))
+    tempVec# = theFrame.scale# * (1 - theFrameFactor#) + theFrame2.scale# * theFrameFactor#
+    glScalef     (tempVec# (0), tempVec# (1), tempVec# (2))
+    
+    ' Render each triangle
+    glBegin (GL_TRIANGLES)    
+        for i = 0 to theHeader.num_tris - 1
+            &theTriangle = &theModel.tris (i)
+            for i2 = 0 to 2
+                glNormal3fv (theFrame.verts (theTriangle.index_xyz (i2)).normal# * (1 - theFrameFactor#) + theFrame2.verts (theTriangle.index_xyz (i2)).normal# * theFrameFactor#)
+                glTexCoord2fv (theModel.st# (theTriangle.index_st (i2)))
+                glVertex3fv (theFrame.verts (theTriangle.index_xyz (i2)).v# * (1 - theFrameFactor#) + theFrame2.verts (theTriangle.index_xyz (i2)).v# * theFrameFactor#)
+            next
+        next
+    glEnd ()
+    
+    ' Restore modelview matrix
+    glPopMatrix ()
+    
+    ' Restore texture matrix
+    glMatrixMode (GL_TEXTURE)
+    glPopMatrix ()
+    glMatrixMode (GL_MODELVIEW)
+
+    return
+
+
+Start:
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'  Test by loading a sample model
+
+    dim SMD2_model &model, xang#, yang#, a$, animSpeed#, zoom#, anim$, still, lit
+
+    ResizeText (60, 30)    
+    
+    theFileDir$ = "files\"
+    theFileName$ = "cyberdemon.md2"
+    gosub LoadMD2
+    &model = &theModel
+    
+    theFrameNum     = 0
+    theFrameNum2    = 0
+    theFrameFactor# = 0
+    theSkin         = 0
+    animSpeed#      = 0.05
+    zoom#           = 300
+    yang#           = 30
+    anim$           = "defg"      
+    still           = false
+    lit             = true
+
+    ' Lighting
+    glEnable (GL_LIGHTING)
+    glEnable (GL_LIGHT0)
+    glEnable (GL_COLOR_MATERIAL)
+    glEnable (GL_NORMALIZE)
+    glClearColor (.2, .2, .2, 1)
+    
+    gosub Instructions     
+
+    ' Draw model
+    while true
+        glClear (GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+        glLoadIdentity ()
+        glTranslatef (0, 0, -zoom#)
+        glRotatef (yang#, 0, 1, 0)
+        glRotatef (xang#, 1, 0, 0)
+        glTranslatef (0, -100, 0)
+        &theModel   = &model
+        gosub DrawMD2        
+        DrawText ()
+        SwapBuffers ()           
+            
+        ' User interface
+        ' Letter keys choose a frame
+        if still then
+            a$ = inkey$ ()
+            if a$ = chr$(13) then
+                gosub AnimString
+                a$ = ""
+            endif
+            if a$ <> "" then 
+                if anim$ <> "" then
+                    anim$ = ""
+                    gosub Instructions
+                endif
+            else 
+                if anim$ <> "" then 
+                    a$ = left$ (anim$, 1)
+                    anim$ = right$ (anim$, len(anim$) - 1) + a$
+                endif
+            endif
+            if a$ = "?" then 
+                theFrameNum2 = rnd () % model.header.num_frames
+                still = false
+            endif
+            if a$ >= "a" and a$ <= "z" then
+                theFrameNum2 = asc (a$) - asc ("a")
+                still = false
+            endif
+            if a$ >= "A" and a$ <= "Z" then
+                theFrameNum2 = asc (a$) - asc ("A") + 26
+                still = false
+            endif
+            if theFrameNum2 >= model.header.num_frames then
+                theFrameNum2 = model.header.num_frames - 1
+                still = false
+            endif            
+        endif
+        if InScanKey () = VK_F1 then
+            lit = not lit
+            if lit then glEnable (GL_LIGHTING)
+            else        glDisable (GL_LIGHTING)
+            endif
+            gosub Instructions
+        endif
+
+        yang# = yang# + mouse_xd () * 100
+        xang# = xang# + mouse_yd () * 100
+        zoom# = zoom# - mouse_wheel () * 25
+
+        while SyncTimer (10)
+            
+            ' Arrow keys rotate model
+            if ScanKeyDown (VK_LEFT)    then yang# = yang# - 1 endif
+            if ScanKeyDown (VK_RIGHT)   then yang# = yang# + 1 endif
+            if ScanKeyDown (VK_UP)      then xang# = xang# - 1 endif
+            if ScanKeyDown (VK_DOWN)    then xang# = xang# + 1 endif
+            
+            ' Pgup/Pgdn zoom in/out
+            if ScanKeyDOWN (VK_PRIOR)   then zoom# = zoom# - 1 endif
+            if ScanKeyDOWN (VK_NEXT)    then zoom# = zoom# + 1 endif
+            
+            ' Animate
+            if not still then
+                theFrameFactor# = theFrameFactor# + animSpeed#
+                if theFrameFactor# >= 1 then
+                    theFrameFactor# = theFrameFactor# - 1
+                    theFrameNum = theFrameNum2
+                    still = true
+                endif
+            endif
+        wend
+    wend
+    
+    end
+
+Instructions:
+    TextMode (TEXT_OVERLAID)
+    cls
+    printr "Arrow keys rotate"
+    printr "PgUp/PgDn zooms"
+    printr "'A' - 'Z' select frame"
+    printr "F1 toggles lighting"
+    printr "ENTER for new animation string"
+    printr
+    if lit then printr "Lighting ON" : else printr "Lighting off": endif
+    if anim$ <> "" then 
+        printr "Animation string = " + anim$
+    endif
+    return
+    
+AnimString:
+    TextMode (TEXT_SIMPLE)
+    cls
+    print "Animation string (letters): "
+    anim$ = Input$ ()
+    gosub Instructions
+    return
