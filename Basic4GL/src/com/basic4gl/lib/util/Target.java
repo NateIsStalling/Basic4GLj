@@ -13,10 +13,9 @@ import java.util.Map;
  *
  */
 public interface Target extends Library {
-	public abstract String getFileDescription();
-	public abstract String getFileExtension();
 
 	public abstract boolean isRunnable();
+
 	public abstract void reset();
 	public abstract void activate();
 	
@@ -27,17 +26,6 @@ public interface Target extends Library {
 	public abstract boolean isFullscreen();
 	public abstract boolean isVisible();
 	public abstract boolean isClosing();
-
-	/**
-	 * 
-	 * @return Window for callbacks
-	 */
-	public abstract Object getContext();
-	/**
-	 * 
-	 * @return GL Context for callbacks
-	 */
-	public abstract Object getContextGL();
 
 	/**
 	 * Get list of properties the compiler can configure for
@@ -82,13 +70,6 @@ public interface Target extends Library {
 	 * @param stream Stored VM state
 	 */
 	public abstract void loadState(InputStream stream) throws Exception;
-
-	/**
-	 * Bundle the target in a stream to store a standalone copy on the filesystem.
-	 * Used by the compiler.
-	 * @return
-	 */
-	public abstract boolean export(OutputStream stream, TaskCallback callback) throws Exception;
 
 
 }
