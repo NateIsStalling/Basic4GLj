@@ -19,12 +19,12 @@ import com.basic4gl.vm.util.Function;
 public class Standard implements Library{
 
 	// Constants
-	static final int DEF_MAX_CATCHUP_TIME = 150; // .15 seconds
-	static final int RAND_MAX = 32767;
-	static final float M_PI = 3.1415926535897932384626433832795f;
-	static final float M_E = 2.7182818284590452353602874713526f;
-	static final float M_RAD2DEG = (180 / M_PI);
-	static final float M_DEG2RAD = (M_PI / 180);
+	public static final int DEF_MAX_CATCHUP_TIME = 150; // .15 seconds
+	public static final int RAND_MAX = 32767;
+	public static final float M_PI = 3.1415926535897932384626433832795f;
+	public static final float M_E = 2.7182818284590452353602874713526f;
+	public static final float M_RAD2DEG = (180 / M_PI);
+	public static final float M_DEG2RAD = (M_PI / 180);
 
 	// extern int PerformanceCounter();
 
@@ -36,9 +36,6 @@ public class Standard implements Library{
 	static Vector<String> mArguments;
 	static long performanceFreq;
 
-
-	@Override
-	public boolean isTarget() { return false;}	//Library is not a build target
 	@Override
 	public String name(){return "Standard";}
 	@Override
@@ -48,7 +45,7 @@ public class Standard implements Library{
 	@Override
 	public String author() {return "";}
 	@Override
-	public String contact() {return "N/A";}
+	public String contact() {return "";}
 	@Override
 	public String id() {return "standard";}
 	@Override
@@ -87,37 +84,37 @@ public class Standard implements Library{
 	// //////////////////////////////////////////////////////////////////////////////
 	// Function wrappers
 
-	final protected class WrapAbs implements Function {
+	public final class WrapAbs implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal(Math.abs(vm.GetRealParam(1)));
 		}
 	}
 
-	final class WrapAsc implements Function {
+	public final class WrapAsc implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setIntVal((int) vm.GetStringParam(1).charAt(0));
 		}
 	}
 
-	final class WrapAtn implements Function {
+	public final class WrapAtn implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal((float) Math.atan(vm.GetRealParam(1)));
 		}
 	}
 
-	final class WrapChr implements Function {
+	public final class WrapChr implements Function {
 		public void run(TomVM vm) {
 			vm.setRegString(String.valueOf((char) vm.GetIntParam(1).intValue()));
 		}
 	}
 
-	final class WrapCos implements Function {
+	public final class WrapCos implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal((float) Math.cos(vm.GetRealParam(1)));
 		}
 	}
 
-	final class WrapExp implements Function {
+	public final class WrapExp implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal(
 					(float) Math.pow(2.7182818284590452353602874713526f,
@@ -125,7 +122,7 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapInt implements Function {
+	public final class WrapInt implements Function {
 		public void run(TomVM vm) {
 
 			float realVal = vm.GetRealParam(1);
@@ -137,7 +134,7 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapLeft implements Function {
+	public final class WrapLeft implements Function {
 		public void run(TomVM vm) {
 			String s = vm.GetStringParam(2);
 			int c = vm.GetIntParam(1);
@@ -150,19 +147,19 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapLen implements Function {
+	public final class WrapLen implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setIntVal(vm.GetStringParam(1).length());
 		}
 	}
 
-	final class WrapLog implements Function {
+	public final class WrapLog implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal((float) Math.log(vm.GetRealParam(1)));
 		}
 	}
 
-	final class WrapMid implements Function {
+	public final class WrapMid implements Function {
 		public void run(TomVM vm) {
 			String s = vm.GetStringParam(3);
 			int i = vm.GetIntParam(2) - 1, c = vm.GetIntParam(1);
@@ -179,26 +176,26 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapLCase implements Function {
+	public final class WrapLCase implements Function {
 		public void run(TomVM vm) {
 			vm.setRegString(vm.GetStringParam(1).toLowerCase());
 		}
 	}
 
-	final class WrapUCase implements Function {
+	public final class WrapUCase implements Function {
 		public void run(TomVM vm) {
 			vm.setRegString(vm.GetStringParam(1).toUpperCase());
 		}
 	}
 
-	final class WrapPow implements Function {
+	public final class WrapPow implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal(
 					(float) Math.pow(vm.GetRealParam(2), vm.GetRealParam(1)));
 		}
 	}
 
-	final class WrapRight implements Function {
+	public final class WrapRight implements Function {
 
 		public void run(TomVM vm) {
 			String s = vm.GetStringParam(2);
@@ -212,25 +209,25 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapRnd implements Function {
+	public final class WrapRnd implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setIntVal(rnd.nextInt(RAND_MAX));
 		}
 	}
 
-	final class WrapRandomize implements Function {
+	public final class WrapRandomize implements Function {
 		public void run(TomVM vm) {
 			rnd.setSeed(vm.GetIntParam(1));
 		}
 	}
 
-	final class WrapRandomize_2 implements Function {
+	public final class WrapRandomize_2 implements Function {
 		public void run(TomVM vm) {
 			rnd.setSeed(0);
 		}
 	}
 
-	final class WrapSgn implements Function {
+	public final class WrapSgn implements Function {
 		public void run(TomVM vm) {
 			float i = vm.GetRealParam(1);
 			if (i < 0)
@@ -242,13 +239,13 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapSin implements Function {
+	public final class WrapSin implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal((float) Math.sin(vm.GetRealParam(1)));
 		}
 	}
 
-	final class WrapSqrt implements Function {
+	public final class WrapSqrt implements Function {
 		public void run(TomVM vm) {
 			float param = vm.GetRealParam(1);
 			if (param < 0)
@@ -258,7 +255,7 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapSqr implements Function {
+	public final class WrapSqr implements Function {
 		public void run(TomVM vm) {
 			float param = vm.GetRealParam(1);
 			if (param < 0)
@@ -268,38 +265,38 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapStr implements Function {
+	public final class WrapStr implements Function {
 		public void run(TomVM vm) {
 			vm.setRegString(String.valueOf(vm.GetRealParam(1)));
 		}
 	}
 
-	final class WrapTan implements Function {
+	public final class WrapTan implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal((float) Math.tan(vm.GetRealParam(1)));
 		}
 	}
 
-	final class WrapTanh implements Function {
+	public final class WrapTanh implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal((float) Math.tanh(vm.GetRealParam(1)));
 		}
 	}
 
-	final class WrapVal implements Function {
+	public final class WrapVal implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal(Float.valueOf(vm.GetStringParam(1)));
 		}
 	}
 
-	final class WrapInitTimer implements Function {
+	public final class WrapInitTimer implements Function {
 		public void run(TomVM vm) {
 			// lastTickCount = GetTickCount ();
 			lastTickCount = PerformanceCounter();
 		}
 	}
 
-	final class WrapWaitTimer implements Function {
+	public final class WrapWaitTimer implements Function {
 		public void run(TomVM vm) {
 			// Fetch and validate delay
 			int delay = vm.GetIntParam(1);
@@ -334,7 +331,7 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapSyncTimerCatchup implements Function {
+	public final class WrapSyncTimerCatchup implements Function {
 		public void run(TomVM vm) {
 			maxCatchupTime = vm.GetIntParam(1);
 			if (maxCatchupTime < 1)
@@ -342,7 +339,7 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapSyncTimer implements Function {
+	public final class WrapSyncTimer implements Function {
 		public void run(TomVM vm) {
 			// Fetch and validate delay
 			int delay = vm.GetIntParam(1);
@@ -370,48 +367,48 @@ public class Standard implements Library{
 	}
 
 	// Sin, cos and tan using degrees
-	final class WrapSinD implements Function {
+	public final class WrapSinD implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal(
 					(float) Math.sin(vm.GetRealParam(1) * M_DEG2RAD));
 		}
 	}
 
-	final class WrapCosD implements Function {
+	public final class WrapCosD implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal(
 					(float) Math.cos(vm.GetRealParam(1) * M_DEG2RAD));
 		}
 	}
 
-	final class WrapTanD implements Function {
+	public final class WrapTanD implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal(
 					(float) Math.tan(vm.GetRealParam(1) * M_DEG2RAD));
 		}
 	}
 
-	final class WrapATanD implements Function {
+	public final class WrapATanD implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal(
 					(float) Math.atan(vm.GetRealParam(1)) * M_RAD2DEG);
 		}
 	}
 
-	final class WrapDivByZero implements Function { // TESTING!!! REMOVE
+	public final class WrapDivByZero implements Function { // TESTING!!! REMOVE
 		// LATER!!!
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal(vm.GetRealParam(1) / 0.0f);
 		}
 	}
 
-	final class WrapArgCount implements Function {
+	public final class WrapArgCount implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setIntVal(mArguments.size());
 		}
 	}
 
-	final class WrapArg implements Function {
+	public final class WrapArg implements Function {
 		public void run(TomVM vm) {
 			int index = vm.GetIntParam(1);
 			if (index >= 0 && index < mArguments.size())
@@ -421,14 +418,14 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapATan2 implements Function {
+	public final class WrapATan2 implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal(
 					(float) Math.atan2(vm.GetRealParam(2), vm.GetRealParam(1)));
 		}
 	}
 
-	final class WrapATan2D implements Function {
+	public final class WrapATan2D implements Function {
 		public void run(TomVM vm) {
 			vm.Reg().setRealVal(
 					(float) Math.atan2(vm.GetRealParam(2), vm.GetRealParam(1))
@@ -436,7 +433,7 @@ public class Standard implements Library{
 		}
 	}
 
-	final class WrapArrayMax implements Function {
+	public final class WrapArrayMax implements Function {
 		public void run(TomVM vm) {
 			// Param 1 is data type, which we can ignore.
 			// Param 2 is the array (which will be by reference)
@@ -448,7 +445,7 @@ public class Standard implements Library{
 		}
 	}
 
-	final class ValidateArrayMaxParam implements ParamValidationCallback {
+	public final class ValidateArrayMaxParam implements ParamValidationCallback {
 		public boolean run (int index, ValType type){
 			// Type must be an array type. Must not be a pointer (but can be a
 			// by-reference)
@@ -490,55 +487,54 @@ public class Standard implements Library{
 		//		ParamValidationCallback paramValidationCallback)
 		///////////////////////
 		// Register functions
-/*
-		s.get("abs").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
-		s.get("asc").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_STRING }), true, true, ValType.VTP_INT, false, false, null));
-		s.get("atn").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
-		s.get("chr$").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_INT }), true, true, ValType.VTP_STRING, false, false, null));
-		s.get("cos").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
-		s.get("exp").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
-		s.get("int").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_INT, false, false, null));
-		s.get("left$").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_STRING, ValType.VTP_INT }), true, true, ValType.VTP_STRING, false, false, null));
-		s.get("len").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_STRING }), true, true, ValType.VTP_INT, false, false, null));
-		s.get("log").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
-		s.get("mid$").add( new FuncSpec(new ParamTypeList(new Integer[] {	ValType.VTP_STRING, ValType.VTP_INT,	ValType.VTP_INT }), true, true, ValType.VTP_STRING, false, false, null));
-		s.get("pow").add( new FuncSpec(new ParamTypeList(new Integer[] {	ValType.VTP_REAL, ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
-		s.get("right$").add( new FuncSpec(new ParamTypeList(new Integer[] {ValType.VTP_STRING, ValType.VTP_INT }), true, true, ValType.VTP_STRING, false, false, null));
-		s.get("rnd").add( new FuncSpec(new ParamTypeList(), true, true, ValType.VTP_INT, false, false, null));
-		s.get("sgn").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_INT, false, false, null));
-		s.get("sin").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
-		s.get("sqrt").add( new FuncSpec(new ParamTypeList( new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
-		s.get("sqr").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null)); // sqr = Synonym for sqrt
-		s.get("str$").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true,	ValType.VTP_STRING, false, false, null));
-		s.get("tan").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true,	ValType.VTP_REAL, false, false, null));
-		s.get("tanh").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
-		s.get("val").add( new FuncSpec(new ParamTypeList( new Integer[] { ValType.VTP_STRING }), true, true, ValType.VTP_REAL, false, false, null));
-		s.get("sind").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true,	ValType.VTP_REAL, false, false, null));
-		s.get("cosd").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true,	ValType.VTP_REAL, false, false, null));
-		s.get("tand").add( new FuncSpec(new ParamTypeList(	new Integer[] { ValType.VTP_REAL }), true, true,ValType.VTP_REAL, false, false, null));
-		s.get("atand").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_REAL }), true, true,ValType.VTP_REAL, false, false, null));
-		s.get("atnd").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_REAL }), true, true,ValType.VTP_REAL, false, false, null));
-		s.get("atn2").add( new FuncSpec(new ParamTypeList(new Integer[] {	ValType.VTP_REAL, ValType.VTP_REAL }), true, true,ValType.VTP_REAL, false, false, null));
-		s.get("atn2d").add( new FuncSpec(new ParamTypeList(new Integer[] {ValType.VTP_REAL, ValType.VTP_REAL }), true, true,ValType.VTP_REAL, false, false, null));
-		s.get("lcase$").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_STRING }), true, true, ValType.VTP_STRING, false, false, null));
-		s.get("ucase$").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_STRING }), true, true, ValType.VTP_STRING, false, false, null));
-		s.get("randomize").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_INT }), false, true, ValType.VTP_INT, false, false, null));
-		s.get("randomize").add( new FuncSpec(new ParamTypeList(), false, true,	ValType.VTP_INT, false, false, null));
-		s.get("divbyzero").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_REAL }), true, true, ValType.VTP_REAL, false, false, null));
+		s.put ("abs", new FuncSpec[]{ new FuncSpec(  WrapAbs.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("asc", new FuncSpec[]{ new FuncSpec(  WrapAsc.class, new ParamTypeList ( ValType.VTP_STRING), true, true, ValType.VTP_INT, false, false, null)});
+		s.put ("atn", new FuncSpec[]{ new FuncSpec(  WrapAtn.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("chr$", new FuncSpec[]{ new FuncSpec(  WrapChr.class, new ParamTypeList ( ValType.VTP_INT), true, true, ValType.VTP_STRING, false, false, null)});
+		s.put ("cos", new FuncSpec[]{ new FuncSpec(  WrapCos.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("exp", new FuncSpec[]{ new FuncSpec(  WrapExp.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("int", new FuncSpec[]{ new FuncSpec(  WrapInt.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_INT, false, false, null)});
+		s.put ("left$", new FuncSpec[]{ new FuncSpec(  WrapLeft.class, new ParamTypeList ( ValType.VTP_STRING,  ValType.VTP_INT), true, true, ValType.VTP_STRING, false, false, null)});
+		s.put ("len", new FuncSpec[]{ new FuncSpec(  WrapLen.class, new ParamTypeList ( ValType.VTP_STRING), true, true, ValType.VTP_INT, false, false, null)});
+		s.put ("log", new FuncSpec[]{ new FuncSpec(  WrapLog.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("mid$", new FuncSpec[]{ new FuncSpec(  WrapMid.class, new ParamTypeList ( ValType.VTP_STRING,  ValType.VTP_INT,  ValType.VTP_INT), true, true, ValType.VTP_STRING, false, false, null)});
+		s.put ("pow", new FuncSpec[]{ new FuncSpec(  WrapPow.class, new ParamTypeList ( ValType.VTP_REAL,  ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("right$", new FuncSpec[]{ new FuncSpec(  WrapRight.class, new ParamTypeList ( ValType.VTP_STRING,  ValType.VTP_INT), true, true, ValType.VTP_STRING, false, false, null)});
+		s.put ("rnd", new FuncSpec[]{ new FuncSpec(  WrapRnd.class, new ParamTypeList (), true, true, ValType.VTP_INT, false, false, null)});
+		s.put ("sgn", new FuncSpec[]{ new FuncSpec(  WrapSgn.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_INT, false, false, null)});
+		s.put ("sin", new FuncSpec[]{ new FuncSpec(  WrapSin.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("sqrt", new FuncSpec[]{ new FuncSpec(  WrapSqrt.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("sqr", new FuncSpec[]{ new FuncSpec(  WrapSqr.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)}); // sqr = Synonym for sqrt
+		s.put ("str$", new FuncSpec[]{ new FuncSpec(  WrapStr.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_STRING, false, false, null)});
+		s.put ("tan", new FuncSpec[]{ new FuncSpec(  WrapTan.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("tanh", new FuncSpec[]{ new FuncSpec(  WrapTanh.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("val", new FuncSpec[]{ new FuncSpec(  WrapVal.class, new ParamTypeList ( ValType.VTP_STRING), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("sind", new FuncSpec[]{ new FuncSpec(  WrapSinD.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("cosd", new FuncSpec[]{ new FuncSpec(  WrapCosD.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("tand", new FuncSpec[]{ new FuncSpec(  WrapTanD.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("atand", new FuncSpec[]{ new FuncSpec(  WrapATanD.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("atnd", new FuncSpec[]{ new FuncSpec(  WrapATanD.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("atn2", new FuncSpec[]{ new FuncSpec(  WrapATan2.class, new ParamTypeList ( ValType.VTP_REAL,  ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("atn2d", new FuncSpec[]{ new FuncSpec(  WrapATan2D.class, new ParamTypeList ( ValType.VTP_REAL,  ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
+		s.put ("lcase$", new FuncSpec[]{ new FuncSpec(  WrapLCase.class, new ParamTypeList ( ValType.VTP_STRING), true, true, ValType.VTP_STRING, false, false, null)});
+		s.put ("ucase$", new FuncSpec[]{ new FuncSpec(  WrapUCase.class, new ParamTypeList ( ValType.VTP_STRING), true, true, ValType.VTP_STRING, false, false, null)});
+		s.put ("randomize", new FuncSpec[]{
+				new FuncSpec(  WrapRandomize.class, new ParamTypeList ( ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null),
+				new FuncSpec(  WrapRandomize_2.class, new ParamTypeList (), true, false, ValType.VTP_INT, false, false, null)});
+		s.put ("divbyzero", new FuncSpec[]{ new FuncSpec(  WrapDivByZero.class, new ParamTypeList ( ValType.VTP_REAL), true, true, ValType.VTP_REAL, false, false, null)});
 
 		// Timer
-		s.get("inittimer").add( new FuncSpec(new ParamTypeList(), false, true,	ValType.VTP_INT, false, false, null));
-		s.get("waittimer").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_INT }), false, true, ValType.VTP_INT, true, false, null));
-		s.get("synctimer").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_INT }), true, true, ValType.VTP_INT, false, false, null));
-		s.get("synctimercatchup").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_INT }), false, true, ValType.VTP_INT, false, false, null));
+		s.put ("inittimer", new FuncSpec[]{ new FuncSpec(  WrapInitTimer.class, new ParamTypeList (), true, false, ValType.VTP_INT, false, false, null)});
+		s.put ("waittimer", new FuncSpec[]{ new FuncSpec(  WrapWaitTimer.class, new ParamTypeList ( ValType.VTP_INT), true, false, ValType.VTP_INT, true, false, null)});
+		s.put ("synctimer", new FuncSpec[]{ new FuncSpec(  WrapSyncTimer.class, new ParamTypeList ( ValType.VTP_INT), true, true, ValType.VTP_INT, false, false, null)});
+		s.put ("synctimercatchup", new FuncSpec[]{ new FuncSpec(  WrapSyncTimerCatchup.class, new ParamTypeList ( ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
 
 		// Program arguments
-		s.get("argcount").add( new FuncSpec(new ParamTypeList(), true, true, ValType.VTP_INT, false, false, null));
-		s.get("arg").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_INT }), true, true,	ValType.VTP_STRING, false, false, null));
+		s.put("argcount", new FuncSpec[]{ new FuncSpec(  WrapArgCount.class, new ParamTypeList(), true, true, ValType.VTP_INT, false, false, null)});
+		s.put("arg", new FuncSpec[]{ new FuncSpec(  WrapArg.class, new ParamTypeList( ValType.VTP_INT), true, true, ValType.VTP_STRING, false, false, null)});
 
 		// Array size
-		s.get("arraymax").add( new FuncSpec(new ParamTypeList(new Integer[] { ValType.VTP_UNDEFINED }), true, true, ValType.VTP_INT, false, false, new ValidateArrayMaxParam()));
-*/
+		s.put("arraymax", new FuncSpec[]{ new FuncSpec(  WrapArrayMax.class, new ParamTypeList( ValType.VTP_UNDEFINED), true, true, ValType.VTP_INT, false, false, new ValidateArrayMaxParam())});
 		return s;
 	}
 	@Override
@@ -547,8 +543,4 @@ public class Standard implements Library{
 		return null;
 	}
 
-	@Override
-	public void setContext(Object context) {
-
-	}
 }
