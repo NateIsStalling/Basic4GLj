@@ -3,9 +3,12 @@ package com.basic4gl.lib.util;
 import com.basic4gl.vm.Data;
 import com.basic4gl.vm.TomVM;
 import com.basic4gl.vm.types.ValType;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+
 
 /**
  * Created by Nate on 4/19/2015.
@@ -23,29 +26,29 @@ public class Routines {
         // Size is valid
         return true;
     }
-/*
+
     public static int ReadArrayDynamic (   TomVM vm,
                                     int paramIndex,
                                     ValType type,
                                     int cType,
-                                    void *array,
+                                    ByteBuffer array,
                                     int maxSize) {
 
         // Use the appropriate template function for the given type
         switch (cType) {
-            case GL2.GL_BYTE:           return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, (GLbyte *)array, maxSize);
-            case GL2.GL_UNSIGNED_BYTE:  return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, (GLubyte *)array, maxSize);
-            case GL2.GL_SHORT:          return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, (GLshort *)array, maxSize);
-            case GL2.GL_UNSIGNED_SHORT: return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, (GLushort *)array, maxSize);
-            case GL2.GL_INT:            return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, (GLint *)array, maxSize);
-            case GL2.GL_UNSIGNED_INT:   return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, (GLuint *)array, maxSize);
-            case GL2.GL_FLOAT:          return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, (GLfloat *)array, maxSize);
-            case GL2.GL_2_BYTES:        return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, (unsignedshort*) array, maxSize);
-            case GL2.GL_3_BYTES:
+            case GL11.GL_BYTE:           return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, array.array(), maxSize);
+            case GL11.GL_UNSIGNED_BYTE:  return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, array.array(), maxSize);
+            case GL11.GL_SHORT:          return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, array.asShortBuffer().array(), maxSize);
+            case GL11.GL_UNSIGNED_SHORT: return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, array.asShortBuffer().array(), maxSize);
+            case GL11.GL_INT:            return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, array.asIntBuffer().array(), maxSize);
+            case GL11.GL_UNSIGNED_INT:   return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, array.asIntBuffer().array(), maxSize);
+            case GL11.GL_FLOAT:          return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, array.asFloatBuffer().array(), maxSize);
+            case GL11.GL_2_BYTES:        return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, array.asShortBuffer().array(), maxSize);
+            case GL11.GL_3_BYTES:
                 vm.FunctionError ("Data type GL_3_BYTES not supported. (Basic4GL restriction).");
                 return 0;
-            case GL2.GL_4_BYTES:        return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, (unsignedint  *) array, maxSize);
-            case GL2.GL_DOUBLE:         return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, (GLdouble *)array, maxSize);
+            case GL11.GL_4_BYTES:        return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, array.asIntBuffer().array(), maxSize);
+            case GL11.GL_DOUBLE:         return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, array.asDoubleBuffer().array(), maxSize);
             default:
                 vm.FunctionError ("Data type must be a GL_xxx data type. (Basic4GL restriction).");
                 return 0;
@@ -56,28 +59,27 @@ public class Routines {
                                      int paramIndex,
                                      ValType type,
                                      int cType,
-                                     void *array,
+                                     ByteBuffer array,
                                      int maxSize) {
 
         // Use the appropriate template function for the given type
         switch (cType) {
-            case GL2.GL_BYTE:           return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, (GLbyte *)array, maxSize);
-            case GL2.GL_UNSIGNED_BYTE:  return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, (GLubyte *)array, maxSize);
-            case GL2.GL_SHORT:          return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, (GLshort *)array, maxSize);
-            case GL2.GL_UNSIGNED_SHORT: return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, (GLushort *)array, maxSize);
-            case GL2.GL_INT:            return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, (GLint *)array, maxSize);
-            case GL2.GL_UNSIGNED_INT:   return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, (GLuint *)array, maxSize);
-            case GL2.GL_FLOAT:          return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, (GLfloat *)array, maxSize);
-            case GL2.GL_2_BYTES:        return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, (unsigned short*) array, maxSize);
-            case GL2.GL_3_BYTES:
+            case GL11.GL_BYTE:           return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, array.array(), maxSize);
+            case GL11.GL_UNSIGNED_BYTE:  return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, array.array(), maxSize);
+            case GL11.GL_SHORT:          return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, array.asShortBuffer().array(), maxSize);
+            case GL11.GL_UNSIGNED_SHORT: return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, array.asShortBuffer().array(), maxSize);
+            case GL11.GL_INT:            return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, array.asIntBuffer().array(), maxSize);
+            case GL11.GL_UNSIGNED_INT:   return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, array.asIntBuffer().array(), maxSize);
+            case GL11.GL_FLOAT:          return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, array.asFloatBuffer().array(), maxSize);
+            case GL11.GL_2_BYTES:        return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, array.asShortBuffer().array(), maxSize);
+            case GL11.GL_3_BYTES:
                 vm.FunctionError ("Data type GL_3_BYTES not supported. (Basic4GL restriction).");
                 return 0;
-            case GL2.GL_4_BYTES:        return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, (unsignedint *)array, maxSize);
-            case GL2.GL_DOUBLE:         return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, (GLdouble *)array, maxSize);
+            case GL11.GL_4_BYTES:        return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, array.asIntBuffer().array(), maxSize);
+            case GL11.GL_DOUBLE:         return Data.WriteArray(vm.Data(), vm.GetIntParam(paramIndex), type, array.asDoubleBuffer().array(), maxSize);
             default:
                 vm.FunctionError ("Data type must be a GL_xxx data type. (Basic4GL restriction).");
                 return 0;
         }
     }
-    */
 }
