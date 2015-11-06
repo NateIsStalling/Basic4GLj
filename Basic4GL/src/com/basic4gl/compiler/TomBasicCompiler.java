@@ -1786,7 +1786,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Room for one more dimension?
 				if (type.get().m_arrayLevel >= TomVM.ARRAY_MAX_DIMENSIONS) {
-					setError((String) "Arrays cannot have more than "
+					setError("Arrays cannot have more than "
 							+ String.valueOf(TomVM.ARRAY_MAX_DIMENSIONS)
 							+ " dimensions.");
 					return false;
