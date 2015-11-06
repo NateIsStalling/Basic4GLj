@@ -1,4 +1,4 @@
-package com.basic4gl.compiler;
+package com.basic4gl.desktop.util;
 
 /*  Created 2-Jun-07: Thomas Mulgrew (tmulgrew@slingshot.co.nz)
 
