@@ -3425,7 +3425,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return;
 		//TODO Check if constant already exists before adding
 		for (String key: constants.keySet())
-			m_constants.put(key, constants.get(key));
+			m_constants.put(key.toLowerCase(), constants.get(key));
 	}
 	public void AddFunctions(Library library, Map<String, FuncSpec[]> specs) {
 		int specIndex;
