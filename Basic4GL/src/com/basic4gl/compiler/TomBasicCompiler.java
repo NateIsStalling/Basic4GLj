@@ -4570,7 +4570,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Allocate new string constant
 			String text = m_token.m_text.substring(1,
-					m_token.m_text.length() - 1); // Remove
+					m_token.m_text.length()); // Remove
 			// S
 			// prefix
 
