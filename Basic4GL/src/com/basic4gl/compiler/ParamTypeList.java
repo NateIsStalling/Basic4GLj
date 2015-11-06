@@ -24,16 +24,16 @@ public class ParamTypeList {
         for (ValType val: list.mParams)
             mParams.add (new ValType(val));
     }
-    public ParamTypeList(ValType[] list){
-        mParams = new Vector<ValType>(Arrays.asList(list));
-    }
-    public ParamTypeList(Integer[] list){
-        mParams = new Vector<ValType>();
-        List<Integer> l = Arrays.asList(list);
-        for (Integer type : l)
-            mParams.add (new ValType(type));
 
+    public ParamTypeList(ValType ... type){
+        mParams = new Vector<ValType>(Arrays.asList(type));
     }
+    public ParamTypeList(Integer ... type){
+        mParams = new Vector<ValType>();
+        for (int i = 0; i < type.length; i++)
+            mParams.add (new ValType(type[i]));
+    }
+
     public void addParam(ValType val) {
         mParams.add(val);
     }
