@@ -5,16 +5,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.basic4gl.compiler.Constant;
+import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.util.FuncSpec;
 import com.basic4gl.vm.TomVM;
 import com.basic4gl.vm.util.Function;
 
 public interface Library {
-	/**
-	 * @return True if library is a build target
-	 */
-	public abstract boolean isTarget();
-	
+
 	/**
 	 * @return Library name
 	 */
@@ -82,6 +79,4 @@ public interface Library {
 	 * @return List of files required by library to add to the class path
 	 */
 	public abstract List<String> getDependencies();
-
-	public abstract void setContext(Object context);
 }

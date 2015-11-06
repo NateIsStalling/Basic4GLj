@@ -1,17 +1,15 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.compiler.DiskFileServer;
+import com.basic4gl.desktop.util.DiskFileServer;
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.TomBasicCompiler.LanguageSyntax;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.desktop.util.EditorSourceFileServer;
 import com.basic4gl.desktop.util.MainEditor;
-import com.basic4gl.lib.targets.desktopgl.DesktopGL;
-import com.basic4gl.lib.util.CallbackMessage;
-import com.basic4gl.lib.util.Library;
-import com.basic4gl.lib.util.Target;
-import com.basic4gl.lib.util.TaskCallback;
+import com.basic4gl.lib.targets.desktopgl.BuilderDesktopGL;
+import com.basic4gl.lib.targets.desktopgl.GLTextGridWindow;
+import com.basic4gl.lib.util.*;
 import com.basic4gl.util.Mutable;
 import com.basic4gl.vm.Debugger;
 import com.basic4gl.vm.TomVM;
@@ -30,8 +28,6 @@ import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.List;
 
@@ -151,7 +147,7 @@ public class MainWindow implements MainEditor {
 
     // Virtual machine and compiler
     private TomVM               mVM;		// Virtual machine
-    private TomBasicCompiler    mComp;   // Compiler
+    private TomBasicCompiler    mComp;      // Compiler
     //private FileOpener          mFiles;
     private CallbackMessage mMessage;
 
@@ -186,9 +182,9 @@ public class MainWindow implements MainEditor {
 
     //Libraries
     private List<Library> mLibraries    = new ArrayList<Library>();
-    private List<Integer> mTargets      = new ArrayList<Integer>();   //Indexes of libraries that can be launch targets
-    private int mCurrentTarget          = -1;                 //Index of mTarget in mTargets
-    private Target mTarget;                     //Build target for user's code
+    private List<Integer> mBuilders     = new ArrayList<Integer>();   //Indexes of libraries that can be launch targets
+    private int mCurrentBuilder          = -1;                  //Index of mTarget in mTargets
+    private Builder mBuilder;                                   //Build target for user's code
 
     public static void main(String[] args) {
         new MainWindow();
@@ -278,9 +274,9 @@ public class MainWindow implements MainEditor {
                     return;
                 }
                 ExportDialog dialog = new ExportDialog(MainWindow.this, mComp, mPreprocessor, mFileEditors);
-                dialog.setLibraries(mLibraries, mTargets, mCurrentTarget);
+                dialog.setLibraries(mLibraries, mCurrentBuilder);
                 dialog.setVisible(true);
-                mCurrentTarget = dialog.getCurrentTarget();
+                mCurrentBuilder = dialog.getCurrentBuilder();
             }
         });
         mUndoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
@@ -441,9 +437,9 @@ public class MainWindow implements MainEditor {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ProjectSettingsDialog dialog = new ProjectSettingsDialog(mFrame);
-                dialog.setLibraries(mLibraries, mTargets, mCurrentTarget);
+                dialog.setLibraries(mLibraries, mCurrentBuilder);
                 dialog.setVisible(true);
-                mCurrentTarget = dialog.getCurrentTarget();
+                mCurrentBuilder = dialog.getCurrentBuilder();
             }
         });
         mFunctionListMenuItem.addActionListener(new ActionListener() {
@@ -947,6 +943,8 @@ public class MainWindow implements MainEditor {
         else  {
 
             // Stop program completely.
+            if (mBuilder != null && mBuilder.getTarget() != null)
+                mBuilder.getTarget().stop();
             SetMode(ApMode.AP_STOPPED);
         }
     }
@@ -1170,14 +1168,14 @@ public class MainWindow implements MainEditor {
         for (Library lib : mLibraries) {
             mComp.AddConstants(lib.constants());
             mComp.AddFunctions(lib, lib.specs());
-            if (lib.isTarget()) {
-                mTargets.add(i);
+            if (lib instanceof Builder) {
+                mBuilders.add(i);
             }
             i++;
         }
         //Set default target
-        if (mTargets.size() > 0)
-            mCurrentTarget = 0;
+        if (mBuilders.size() > 0)
+            mCurrentBuilder = 0;
 
         //Initialize highlighting
         //mKeywords = new HashMap<String,Color>();
@@ -1217,15 +1215,6 @@ public class MainWindow implements MainEditor {
         //VMView().SetVMIsRunning(false);
     }
 
-    private void StopProgram() {
-        if (mMode != ApMode.AP_STOPPED) {
-            SetMode(ApMode.AP_STOPPED);
-            mVM.ClearResources();
-
-            // Inform libraries
-            //StopTomSoundBasicLib();
-        }
-    }
 
     private void SetMode(ApMode mode) {
 
@@ -1249,7 +1238,7 @@ public class MainWindow implements MainEditor {
             }
             else if (mode == ApMode.AP_STOPPED && mMode != ApMode.AP_STOPPED
                     && mMode != ApMode.AP_CLOSED) {
-                if (mVM.Done ())
+                if (mVM.Done () && !mVM.hasError())
                     statusMsg = "Program completed";
                 else if (mVM.hasError())
                     statusMsg = mVM.getError();
@@ -1598,7 +1587,7 @@ public class MainWindow implements MainEditor {
                     &&  !mVM.hasError()
                     &&  !mVM.Done ()
                     &&  !mVM.Paused ()
-                    &&  !mTarget.isClosing());
+                    &&  !mBuilder.getTarget().isClosing());
 
             // Error occurred?
             if (mVM.hasError())
@@ -1873,12 +1862,12 @@ public class MainWindow implements MainEditor {
     }
     private void Continue (){
         //Get current build target
-        if ((mCurrentTarget > -1 && mCurrentTarget < mTargets.size()) &&
-                (mTargets.get(mCurrentTarget) > -1 && mTargets.get(mCurrentTarget) < mLibraries.size()) &&
-                mLibraries.get(mTargets.get(mCurrentTarget)) instanceof Target)
-            mTarget = (Target) mLibraries.get(mTargets.get(mCurrentTarget));
+        if ((mCurrentBuilder > -1 && mCurrentBuilder < mBuilders.size()) &&
+                (mBuilders.get(mCurrentBuilder) > -1 && mBuilders.get(mCurrentBuilder) < mLibraries.size()) &&
+                mLibraries.get(mBuilders.get(mCurrentBuilder)) instanceof Builder)
+            mBuilder = (Builder) mLibraries.get(mBuilders.get(mCurrentBuilder));
         else
-            mTarget = null;
+            mBuilder = null;
 
         // Resume running the current program
 
@@ -1888,14 +1877,21 @@ public class MainWindow implements MainEditor {
             return;
 
         // Show and activate OpenGL window
-        if (mTarget != null) {
-            mTarget.reset();
-            if (!mTarget.isVisible())
-                mTarget.activate();
+        if (mBuilder.getTarget() != null) {
+            if (!mBuilder.getTarget().isVisible()) {
+                mBuilder.getTarget().reset();
+                mBuilder.getTarget().activate();
+                int counter = 0;
+                //if (!mDelayScreenSwitch) {
+                mBuilder.getTarget().show(new DebugCallback());
+            } else {
+                synchronized (mMessage) {
+                    mMessage.status = CallbackMessage.WORKING;
+                    mMessage.notify();
+                }
+            }
         }
-        int counter = 0;
-        //if (!mDelayScreenSwitch) {
-            mTarget.show(new DebugCallback());
+
         //}
         //else {
             //counter = 2;            // Activate screen second time around main loop.
@@ -2069,10 +2065,10 @@ public class MainWindow implements MainEditor {
             //TODO determine if if-block is needed
             // Determine whether we are paused or stopped. (If we are paused, we can
             // resume from the current position. If we are stopped, we cannot.)
-            if (mVM.Paused () && !mVM.hasError() && !mVM.Done () && !mTarget.isClosing())
+            if (mVM.Paused () && !mVM.hasError() && !mVM.Done () && !mBuilder.getTarget().isClosing())
                 Pause();
             else {
-                StopProgram();
+                SetMode(ApMode.AP_STOPPED);
                 //Program completed
             }
             RefreshActions ();
@@ -2080,30 +2076,16 @@ public class MainWindow implements MainEditor {
             mVM.ClearTempBreakPts ();
 
             // Handle GL window
-            if (mTarget.isClosing())                // Explicitly closed
-                mTarget.hide();                   // Hide it
+            if (mBuilder.getTarget().isClosing())                // Explicitly closed
+                mBuilder.getTarget().hide();                   // Hide it
 
-            else {
-                if (mTarget.isFullscreen() && mTarget.isVisible()) {
-                    if (mVM.Done ()) {             // Program ended normally
 
-                        // Wait for keypress.
-                        //TODO Close window after keypress
-                        //mGLWin.ProcessWindowsMessages();
-                        //while (mTarget.GetKey () != 0) mTarget.ProcessWindowsMessages();
-                        //while (mTarget.GetKey () == 0) mTarget.ProcessWindowsMessages();
-                        //mTarget.hide(); //temp
-
-                    }
-
-                    mTarget.hide();
-                }
-            }
             //mTarget.setClosing(false);
-            mTarget.reset();
+            //if (!mBuilder.getTarget().isVisible())
+            //    mBuilder.getTarget().reset();
 
             // Get focus back
-            if (!(mTarget.isVisible() && !mTarget.isFullscreen () && mVM.Done ())) {  // If program ended cleanly in windowed mode, leave focus on OpenGL window
+            if (!(mBuilder.getTarget().isVisible() && !mBuilder.getTarget().isFullscreen () && mVM.Done ())) {  // If program ended cleanly in windowed mode, leave focus on OpenGL window
                 mFrame.requestFocus();
                 if (!mFileEditors.isEmpty() && mTabControl.getTabCount() != 0) {
                     //TODO set tab to file that error occurred in

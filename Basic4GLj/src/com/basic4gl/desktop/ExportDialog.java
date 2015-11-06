@@ -2,7 +2,6 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.desktop.MainWindow;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.vm.TomVM;
@@ -32,19 +31,19 @@ public class ExportDialog {
 
     private JDialog mDialog;
     private JTabbedPane mTabs;
-    private JComboBox mTargetComboBox;
-    private JLabel mTargetRunnableLabel;
+    private JComboBox mBuilderComboBox;
+    private JLabel mBuilderRunnableLabel;
 
     private JTextField mFilePathTextField;
 
-    private JTextPane mTargetInfoTextPane;
-    private JPanel mTargetConfigPane;
+    private JTextPane mInfoTextPane;
+    private JPanel mConfigPane;
 
     private JButton mExportButton;
     //Libraries
     private java.util.List<Library> mLibraries;
-    private java.util.List<Integer> mTargets;        //Indexes of libraries that can be launch targets
-    private int mCurrentTarget;            //Index value of target in mTargets
+    private java.util.List<Integer> mBuilders;  //Indexes of libraries that can be launch targets
+    private int mCurrentBuilder;                 //Index value of target in mTargets
 
     private java.util.List<JComponent> mSettingComponents = new ArrayList<JComponent>();
     private Configuration mCurrentConfig;
@@ -121,11 +120,11 @@ public class ExportDialog {
                 FileNameExtensionFilter currentFilter = null;
                 JFileChooser dialog = new JFileChooser();
                 dialog.setAcceptAllFileFilterUsed(false);
-                for (int i = 0; i < mTargets.size(); i++) {
-                    Target target = (Target)mLibraries.get(mTargets.get(i));
-                    FileNameExtensionFilter filter = new FileNameExtensionFilter(target.getFileDescription(),
-                            target.getFileExtension());
-                    if (i == mCurrentTarget)
+                for (int i = 0; i < mBuilders.size(); i++) {
+                    Builder builder = (Builder)mLibraries.get(mBuilders.get(i));
+                    FileNameExtensionFilter filter = new FileNameExtensionFilter(builder.getFileDescription(),
+                            builder.getFileExtension());
+                    if (i == mCurrentBuilder)
                         currentFilter = filter;
                     dialog.addChoosableFileFilter(filter);
                 }
@@ -148,8 +147,8 @@ public class ExportDialog {
 
                     //Change current target to match file extension if applicable
                     int index = Arrays.asList(dialog.getChoosableFileFilters()).indexOf(dialog.getFileFilter());
-                    if (index != mCurrentTarget)
-                        mTargetComboBox.setSelectedIndex(index);
+                    if (index != mCurrentBuilder)
+                        mBuilderComboBox.setSelectedIndex(index);
                 }
             }
         });
@@ -167,14 +166,14 @@ public class ExportDialog {
         targetSelectionPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         targetSelectionPane.add(new JLabel("Target"));
-        mTargetComboBox = new JComboBox();
-        mTargetComboBox.setBorder(new EmptyBorder(0, 10, 0, 10));
-        targetSelectionPane.add(mTargetComboBox);
+        mBuilderComboBox = new JComboBox();
+        mBuilderComboBox.setBorder(new EmptyBorder(0, 10, 0, 10));
+        targetSelectionPane.add(mBuilderComboBox);
 
-        mTargetRunnableLabel = new JLabel(MainWindow.APPLICATION_DESCRIPTION);
-        mTargetRunnableLabel.setFont(new Font(Font.MONOSPACED, Font.ITALIC, 12));
-        mTargetRunnableLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
-        targetSelectionPane.add(mTargetRunnableLabel);
+        mBuilderRunnableLabel = new JLabel(MainWindow.APPLICATION_DESCRIPTION);
+        mBuilderRunnableLabel.setFont(new Font(Font.MONOSPACED, Font.ITALIC, 12));
+        mBuilderRunnableLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        targetSelectionPane.add(mBuilderRunnableLabel);
 
         JPanel buildInfoPane = new JPanel();
         targetPane.add(buildInfoPane, BorderLayout.CENTER);
@@ -189,10 +188,10 @@ public class ExportDialog {
         JLabel infoLabel = new JLabel("Library Info:");
         infoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         infoPanel.add(infoLabel, BorderLayout.PAGE_START);
-        mTargetInfoTextPane = new JTextPane();
-        //mTargetInfoTextPane.setBackground(Color.LIGHT_GRAY);
-        mTargetInfoTextPane.setEditable(false);
-        JScrollPane targetInfoScrollPane = new JScrollPane(mTargetInfoTextPane);
+        mInfoTextPane = new JTextPane();
+        //mInfoTextPane.setBackground(Color.LIGHT_GRAY);
+        mInfoTextPane.setEditable(false);
+        JScrollPane targetInfoScrollPane = new JScrollPane(mInfoTextPane);
         targetInfoScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         infoPanel.add(targetInfoScrollPane, BorderLayout.CENTER);
 
@@ -204,40 +203,40 @@ public class ExportDialog {
         JLabel propertiesLabel = new JLabel("Properties:");
         propertiesLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         propertiesPanel.add(propertiesLabel, BorderLayout.PAGE_START);
-        mTargetConfigPane = new JPanel();
-        //mTargetConfigPane.setBackground(Color.LIGHT_GRAY);
+        mConfigPane = new JPanel();
+        //mConfigPane.setBackground(Color.LIGHT_GRAY);
 
-        mTargetConfigPane.setBorder(new EmptyBorder(4, 4, 4, 4));
-        JScrollPane targetPropertiesScrollPane = new JScrollPane(mTargetConfigPane);
+        mConfigPane.setBorder(new EmptyBorder(4, 4, 4, 4));
+        JScrollPane targetPropertiesScrollPane = new JScrollPane(mConfigPane);
         targetPropertiesScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         propertiesPanel.add(targetPropertiesScrollPane, BorderLayout.CENTER);
-        mTargetConfigPane.setLayout(new BoxLayout(mTargetConfigPane, BoxLayout.Y_AXIS));
-        mTargetConfigPane.setAlignmentX(0f);
+        mConfigPane.setLayout(new BoxLayout(mConfigPane, BoxLayout.Y_AXIS));
+        mConfigPane.setAlignmentX(0f);
 
 
-        mTargetComboBox.addActionListener(new ActionListener() {
+        mBuilderComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JComboBox cb = (JComboBox)e.getSource();
+                JComboBox cb = (JComboBox) e.getSource();
                 if (cb == null)
                     return;
-                mCurrentTarget = cb.getSelectedIndex();
-                Library target = mLibraries.get(mTargets.get(mCurrentTarget));
+                mCurrentBuilder = cb.getSelectedIndex();
+                Library target = mLibraries.get(mBuilders.get(mCurrentBuilder));
 
-                mTargetRunnableLabel.setText(((Target)target).isRunnable() ?
-                        "Build target is runnable":
+                mBuilderRunnableLabel.setText(((Target) target).isRunnable() ?
+                        "Build target is runnable" :
                         "Build target is NOT runnable");
 
                 //TODO Display target info
-                mTargetInfoTextPane.setText(target.description());
+                mInfoTextPane.setText(target.description());
                 //Load settings
                 mSettingComponents.clear();
-                mTargetConfigPane.removeAll();
+                mConfigPane.removeAll();
                 mCurrentConfig = new Configuration(((Target) target).getConfiguration());
                 String[] field;
                 int param;
                 String val;
-                for (int i = 0; i < mCurrentConfig.getSettingCount(); i++){
+                for (int i = 0; i < mCurrentConfig.getSettingCount(); i++) {
                     JLabel label;
                     field = mCurrentConfig.getField(i);
                     param = mCurrentConfig.getParamType(i);
@@ -247,30 +246,30 @@ public class ExportDialog {
                     if (field.length > 1)
                         param = Configuration.PARAM_CHOICE;
 
-                    switch (param){
+                    switch (param) {
                         case Configuration.PARAM_HEADING:
                             label = new JLabel(field[0]);
                             Font font = label.getFont();
                             label.setFont(new Font(font.getName(), Font.BOLD, font.getSize() + 2));
                             label.setBorder(new EmptyBorder(6, 6, 6, 6));
-                            mTargetConfigPane.add(label);
+                            mConfigPane.add(label);
                             mSettingComponents.add(null);
                             break;
                         case Configuration.PARAM_DIVIDER:
-                            mTargetConfigPane.add(Box.createVerticalStrut(16));
-                            mTargetConfigPane.add(new JSeparator(JSeparator.HORIZONTAL));
-                            mTargetConfigPane.add(Box.createVerticalStrut(2));
+                            mConfigPane.add(Box.createVerticalStrut(16));
+                            mConfigPane.add(new JSeparator(JSeparator.HORIZONTAL));
+                            mConfigPane.add(Box.createVerticalStrut(2));
                             mSettingComponents.add(null);
                             break;
                         case Configuration.PARAM_STRING:
                             label = new JLabel(field[0]);
                             label.setAlignmentX(0f);
                             label.setBorder(new EmptyBorder(4, 4, 4, 4));
-                            mTargetConfigPane.add(label);
+                            mConfigPane.add(label);
                             JTextField textField = new JTextField(val);
-                            textField.setBorder(new EmptyBorder(4, 4,4,4));
+                            textField.setBorder(new EmptyBorder(4, 4, 4, 4));
                             mSettingComponents.add(textField);
-                            mTargetConfigPane.add(textField);
+                            mConfigPane.add(textField);
                             break;
                         case Configuration.PARAM_BOOL:
                             JCheckBox checkBox = new JCheckBox(field[0]);
@@ -278,28 +277,28 @@ public class ExportDialog {
                             checkBox.setSelected(Boolean.valueOf(val));
                             checkBox.setBorder(new EmptyBorder(4, 4, 4, 4));
                             mSettingComponents.add(checkBox);
-                            mTargetConfigPane.add(checkBox);
+                            mConfigPane.add(checkBox);
                             break;
                         case Configuration.PARAM_INT:
                             label = new JLabel(field[0]);
                             label.setAlignmentX(0f);
-                            mTargetConfigPane.add(label);
-                            JSpinner spinner = new JSpinner(new SpinnerNumberModel(Integer.valueOf(val).intValue(), 0, Short.MAX_VALUE, 1 ));
+                            mConfigPane.add(label);
+                            JSpinner spinner = new JSpinner(new SpinnerNumberModel(Integer.valueOf(val).intValue(), 0, Short.MAX_VALUE, 1));
                             mSettingComponents.add(spinner);
-                            mTargetConfigPane.add(spinner);
+                            mConfigPane.add(spinner);
                             break;
                         case Configuration.PARAM_CHOICE:
                             label = new JLabel(field[0]);
                             label.setAlignmentX(0f);
-                            label.setBorder(new EmptyBorder(4,4,4,4));
-                            mTargetConfigPane.add(label);
+                            label.setBorder(new EmptyBorder(4, 4, 4, 4));
+                            mConfigPane.add(label);
                             label.setHorizontalAlignment(SwingConstants.LEFT);
                             JComboBox comboBox = new JComboBox();
-                            for (int j = 1; j<field.length; j++)
+                            for (int j = 1; j < field.length; j++)
                                 comboBox.addItem(field[j]);
                             comboBox.setSelectedIndex(Integer.valueOf(val));
                             mSettingComponents.add(comboBox);
-                            mTargetConfigPane.add(comboBox);
+                            mConfigPane.add(comboBox);
                             break;
                     }
                 }
@@ -315,7 +314,7 @@ public class ExportDialog {
         String val;
         if (mCurrentConfig == null)
             return;
-        Target target = (Target)mLibraries.get(mTargets.get(mCurrentTarget));
+        Builder builder = (Builder)mLibraries.get(mBuilders.get(mCurrentBuilder));
         int param;
         for (int i = 0; i < mCurrentConfig.getSettingCount(); i++) {
             param = mCurrentConfig.getParamType(i);
@@ -338,26 +337,33 @@ public class ExportDialog {
             }
             mCurrentConfig.setValue(i, val);
         }
-        target.setConfiguration(mCurrentConfig);
+        builder.setConfiguration(mCurrentConfig);
     }
     public void setVisible(boolean visible){
         mDialog.setVisible(visible);
     }
 
-    public void setLibraries(java.util.List<Library> libraries, java.util.List<Integer> targets, int currentTarget){
+    public void setLibraries(java.util.List<Library> libraries, int currentBuilder){
+        mBuilderComboBox.removeAllItems();
+        mCurrentBuilder = currentBuilder;
         mLibraries = libraries;
-        mTargets = targets;
-        mCurrentTarget = currentTarget;
-
-        mTargetComboBox.removeAllItems();
-        for (Integer i: mTargets)
-            mTargetComboBox.addItem(mLibraries.get(i).name());
-        mTargetComboBox.setSelectedIndex(currentTarget);
+        mBuilders = new ArrayList<>();
+        int i = 0;
+        for (Library lib : mLibraries) {
+            mComp.AddConstants(lib.constants());
+            mComp.AddFunctions(lib, lib.specs());
+            if (lib instanceof Builder) {
+                mBuilders.add(i);
+                mBuilderComboBox.addItem(mLibraries.get(i).name());
+            }
+            i++;
+        }
+        mBuilderComboBox.setSelectedIndex(currentBuilder);
     }
 
 
-    public int getCurrentTarget(){
-        return mCurrentTarget;
+    public int getCurrentBuilder(){
+        return mCurrentBuilder;
     }
 
     private void export(){
@@ -365,12 +371,12 @@ public class ExportDialog {
             File dest;
             int decision;
 
-            Target target;
-            Library lib = mLibraries.get(mTargets.get(mCurrentTarget));
-            if (lib instanceof Target) {
-                target = (Target) lib;
+            Builder builder;
+            Library lib = mLibraries.get(mBuilders.get(mCurrentBuilder));
+            if (lib instanceof Builder) {
+                builder = (Builder) lib;
             } else {
-                JOptionPane.showMessageDialog(mDialog,"Cannot build application. \n" + lib.name() + " is not a valid build target.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(mDialog,"Cannot build application. \n" + lib.name() + " is not a valid builder.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             applyConfig();
@@ -380,8 +386,8 @@ public class ExportDialog {
                     JOptionPane.showMessageDialog(mDialog,"Please enter a filename.");
                     return;
                 }
-                if (!mFilePathTextField.getText().endsWith("." + target.getFileExtension()))
-                    dest = new File(mFilePathTextField.getText() + "." + target.getFileExtension());
+                if (!mFilePathTextField.getText().endsWith("." + builder.getFileExtension()))
+                    dest = new File(mFilePathTextField.getText() + "." + builder.getFileExtension());
 
                 if (dest.exists()){
                     Object[] options = {"Yes",
@@ -394,7 +400,7 @@ public class ExportDialog {
                 }
                 enableComponents(mTabs, false);
                 mExportButton.setEnabled(false);
-                ExportWorker export = new ExportWorker(target, dest, new ExportCallback());
+                ExportWorker export = new ExportWorker(builder, dest, new ExportCallback());
                 export.execute();
             } else {
                 JOptionPane.showMessageDialog(mDialog,"Please enter a filename.");
@@ -407,12 +413,12 @@ public class ExportDialog {
         }
     }
     private class ExportWorker extends SwingWorker<Object, CallbackMessage>{
-        private Target mTarget;
+        private Builder mBuilder;
         private File mDest;
         private ExportCallback mCallback;
         private CallbackMessage mMessage;
-        public ExportWorker(Target target, File dest, ExportCallback callback){
-            mTarget = target;
+        public ExportWorker(Builder builder, File dest, ExportCallback callback){
+            mBuilder = builder;
             mDest = dest;
             mCallback = callback;
         }
@@ -438,7 +444,7 @@ public class ExportDialog {
                 return null; //TODO Throw error
             //Export to file
             FileOutputStream stream = new FileOutputStream(mDest);
-            mTarget.export(stream, mCallback);
+            mBuilder.export(stream, mCallback);
             mMessage.status = CallbackMessage.SUCCESS;
             mMessage.text = "Exported successful";
             return null;

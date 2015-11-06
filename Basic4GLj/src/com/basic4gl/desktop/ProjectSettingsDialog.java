@@ -1,5 +1,6 @@
 package com.basic4gl.desktop;
 
+import com.basic4gl.lib.util.Builder;
 import com.basic4gl.lib.util.Configuration;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.lib.util.Target;
@@ -19,16 +20,15 @@ public class ProjectSettingsDialog {
 
     JDialog mDialog;
 
-    JComboBox mTargetComboBox;
-    JLabel mTargetDescriptionLabel;
-    JLabel mTargetRunnableLabel;
+    JComboBox mBuilderComboBox;
+    JLabel mBuilderDescriptionLabel;
 
-    JTextPane mTargetInfoTextPane;
-    JPanel mTargetConfigPane;
+    JTextPane mInfoTextPane;
+    JPanel mConfigPane;
     //Libraries
     private java.util.List<Library> mLibraries;
-    private java.util.List<Integer> mTargets;        //Indexes of libraries that can be launch targets
-    private int mCurrentTarget;            //Index value of target in mTargets
+    private java.util.List<Integer> mBuilders;        //Indexes of libraries that can be launch targets
+    private int mCurrentBuilder;            //Index value of target in mTargets
 
     private java.util.List<JComponent> mSettingComponents = new ArrayList<JComponent>();
     private Configuration mCurrentConfig;
@@ -50,14 +50,14 @@ public class ProjectSettingsDialog {
         applyButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (mCurrentTarget != -1)
+                if (mCurrentBuilder != -1)
                     applyConfig();
             }
         });
         acceptButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (mCurrentTarget != -1)
+                if (mCurrentBuilder != -1)
                     applyConfig();
                 ProjectSettingsDialog.this.setVisible(false);
             }
@@ -100,14 +100,9 @@ public class ProjectSettingsDialog {
         targetSelectionPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         targetSelectionPane.add(new JLabel("Target"));
-        mTargetComboBox = new JComboBox();
-        mTargetComboBox.setBorder(new EmptyBorder(0, 10, 0, 10));
-        targetSelectionPane.add(mTargetComboBox);
-
-        mTargetRunnableLabel = new JLabel(MainWindow.APPLICATION_DESCRIPTION);
-        mTargetRunnableLabel.setFont(new Font(Font.MONOSPACED, Font.ITALIC, 12));
-        mTargetRunnableLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
-        targetSelectionPane.add(mTargetRunnableLabel);
+        mBuilderComboBox = new JComboBox();
+        mBuilderComboBox.setBorder(new EmptyBorder(0, 10, 0, 10));
+        targetSelectionPane.add(mBuilderComboBox);
 
         JPanel buildInfoPane = new JPanel();
         buildPane.add(buildInfoPane, BorderLayout.CENTER);
@@ -122,10 +117,10 @@ public class ProjectSettingsDialog {
         JLabel infoLabel = new JLabel("Library Info:");
         infoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         infoPanel.add(infoLabel, BorderLayout.PAGE_START);
-        mTargetInfoTextPane = new JTextPane();
-        //mTargetInfoTextPane.setBackground(Color.LIGHT_GRAY);
-        mTargetInfoTextPane.setEditable(false);
-        JScrollPane targetInfoScrollPane = new JScrollPane(mTargetInfoTextPane);
+        mInfoTextPane = new JTextPane();
+        //mInfoTextPane.setBackground(Color.LIGHT_GRAY);
+        mInfoTextPane.setEditable(false);
+        JScrollPane targetInfoScrollPane = new JScrollPane(mInfoTextPane);
         targetInfoScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         infoPanel.add(targetInfoScrollPane, BorderLayout.CENTER);
 
@@ -137,15 +132,15 @@ public class ProjectSettingsDialog {
         JLabel propertiesLabel = new JLabel("Configuration:");
         propertiesLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         propertiesPanel.add(propertiesLabel, BorderLayout.PAGE_START);
-        mTargetConfigPane = new JPanel();
-        //mTargetConfigPane.setBackground(Color.LIGHT_GRAY);
+        mConfigPane = new JPanel();
+        //mConfigPane.setBackground(Color.LIGHT_GRAY);
 
-        mTargetConfigPane.setBorder(new EmptyBorder(4, 4, 4, 4));
-        JScrollPane targetPropertiesScrollPane = new JScrollPane(mTargetConfigPane);
+        mConfigPane.setBorder(new EmptyBorder(4, 4, 4, 4));
+        JScrollPane targetPropertiesScrollPane = new JScrollPane(mConfigPane);
         targetPropertiesScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         propertiesPanel.add(targetPropertiesScrollPane, BorderLayout.CENTER);
-        mTargetConfigPane.setLayout(new BoxLayout(mTargetConfigPane, BoxLayout.Y_AXIS));
-        mTargetConfigPane.setAlignmentX(0f);
+        mConfigPane.setLayout(new BoxLayout(mConfigPane, BoxLayout.Y_AXIS));
+        mConfigPane.setAlignmentX(0f);
 
 /*
         JPanel descriptionPanel = new JPanel();
@@ -155,39 +150,35 @@ public class ProjectSettingsDialog {
         descriptionPanel.setLayout(descriptionLayout);
         descriptionPanel.setBorder(new EmptyBorder(10, 5, 10, 5));
 
-        mTargetDescriptionLabel = new JLabel(MainWindow.APPLICATION_DESCRIPTION);
-        mTargetDescriptionLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        mTargetDescriptionLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
-        descriptionPanel.add(mTargetDescriptionLabel);
+        mBuilderDescriptionLabel = new JLabel(MainWindow.APPLICATION_DESCRIPTION);
+        mBuilderDescriptionLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        mBuilderDescriptionLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        descriptionPanel.add(mBuilderDescriptionLabel);
 
         descriptionPanel.add(Box.createVerticalGlue());
 */
 
 
 
-        mTargetComboBox.addActionListener(new ActionListener() {
+        mBuilderComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JComboBox cb = (JComboBox)e.getSource();
+                JComboBox cb = (JComboBox) e.getSource();
                 if (cb == null)
                     return;
-                mCurrentTarget = cb.getSelectedIndex();
-                Library target = mLibraries.get(mTargets.get(mCurrentTarget));
-
-                mTargetRunnableLabel.setText(((Target)target).isRunnable() ?
-                    "Build target is runnable":
-                    "Build target is NOT runnable");
+                mCurrentBuilder = cb.getSelectedIndex();
+                Library builder = mLibraries.get(mBuilders.get(mCurrentBuilder));
 
                 //TODO Display target info
-                mTargetInfoTextPane.setText(target.description());
+                mInfoTextPane.setText(builder.description());
                 //Load settings
                 mSettingComponents.clear();
-                mTargetConfigPane.removeAll();
-                mCurrentConfig = new Configuration(((Target) target).getConfiguration());
+                mConfigPane.removeAll();
+                mCurrentConfig = new Configuration(((Builder) builder).getConfiguration());
                 String[] field;
                 int param;
                 String val;
-                for (int i = 0; i < mCurrentConfig.getSettingCount(); i++){
+                for (int i = 0; i < mCurrentConfig.getSettingCount(); i++) {
                     JLabel label;
                     field = mCurrentConfig.getField(i);
                     param = mCurrentConfig.getParamType(i);
@@ -197,30 +188,30 @@ public class ProjectSettingsDialog {
                     if (field.length > 1)
                         param = Configuration.PARAM_CHOICE;
 
-                    switch (param){
+                    switch (param) {
                         case Configuration.PARAM_HEADING:
                             label = new JLabel(field[0]);
                             Font font = label.getFont();
                             label.setFont(new Font(font.getName(), Font.BOLD, font.getSize() + 2));
                             label.setBorder(new EmptyBorder(6, 6, 6, 6));
-                            mTargetConfigPane.add(label);
+                            mConfigPane.add(label);
                             mSettingComponents.add(null);
                             break;
                         case Configuration.PARAM_DIVIDER:
-                            mTargetConfigPane.add(Box.createVerticalStrut(16));
-                            mTargetConfigPane.add(new JSeparator(JSeparator.HORIZONTAL));
-                            mTargetConfigPane.add(Box.createVerticalStrut(2));
+                            mConfigPane.add(Box.createVerticalStrut(16));
+                            mConfigPane.add(new JSeparator(JSeparator.HORIZONTAL));
+                            mConfigPane.add(Box.createVerticalStrut(2));
                             mSettingComponents.add(null);
                             break;
                         case Configuration.PARAM_STRING:
                             label = new JLabel(field[0]);
                             label.setAlignmentX(0f);
                             label.setBorder(new EmptyBorder(4, 4, 4, 4));
-                            mTargetConfigPane.add(label);
+                            mConfigPane.add(label);
                             JTextField textField = new JTextField(val);
-                            textField.setBorder(new EmptyBorder(4, 4,4,4));
+                            textField.setBorder(new EmptyBorder(4, 4, 4, 4));
                             mSettingComponents.add(textField);
-                            mTargetConfigPane.add(textField);
+                            mConfigPane.add(textField);
                             break;
                         case Configuration.PARAM_BOOL:
                             JCheckBox checkBox = new JCheckBox(field[0]);
@@ -228,28 +219,28 @@ public class ProjectSettingsDialog {
                             checkBox.setSelected(Boolean.valueOf(val));
                             checkBox.setBorder(new EmptyBorder(4, 4, 4, 4));
                             mSettingComponents.add(checkBox);
-                            mTargetConfigPane.add(checkBox);
+                            mConfigPane.add(checkBox);
                             break;
                         case Configuration.PARAM_INT:
                             label = new JLabel(field[0]);
                             label.setAlignmentX(0f);
-                            mTargetConfigPane.add(label);
-                            JSpinner spinner = new JSpinner(new SpinnerNumberModel(Integer.valueOf(val).intValue(), 0, Short.MAX_VALUE, 1 ));
+                            mConfigPane.add(label);
+                            JSpinner spinner = new JSpinner(new SpinnerNumberModel(Integer.valueOf(val).intValue(), 0, Short.MAX_VALUE, 1));
                             mSettingComponents.add(spinner);
-                            mTargetConfigPane.add(spinner);
+                            mConfigPane.add(spinner);
                             break;
                         case Configuration.PARAM_CHOICE:
                             label = new JLabel(field[0]);
                             label.setAlignmentX(0f);
-                            label.setBorder(new EmptyBorder(4,4,4,4));
-                            mTargetConfigPane.add(label);
+                            label.setBorder(new EmptyBorder(4, 4, 4, 4));
+                            mConfigPane.add(label);
                             label.setHorizontalAlignment(SwingConstants.LEFT);
                             JComboBox comboBox = new JComboBox();
-                            for (int j = 1; j<field.length; j++)
+                            for (int j = 1; j < field.length; j++)
                                 comboBox.addItem(field[j]);
                             comboBox.setSelectedIndex(Integer.valueOf(val));
                             mSettingComponents.add(comboBox);
-                            mTargetConfigPane.add(comboBox);
+                            mConfigPane.add(comboBox);
                             break;
                     }
                 }
@@ -265,7 +256,7 @@ public class ProjectSettingsDialog {
         String val;
         if (mCurrentConfig == null)
             return;
-        Target target = (Target)mLibraries.get(mTargets.get(mCurrentTarget));
+        Builder builder = (Builder)mLibraries.get(mBuilders.get(mCurrentBuilder));
         int param;
         for (int i = 0; i < mCurrentConfig.getSettingCount(); i++) {
             param = mCurrentConfig.getParamType(i);
@@ -288,26 +279,31 @@ public class ProjectSettingsDialog {
             }
             mCurrentConfig.setValue(i, val);
         }
-        target.setConfiguration(mCurrentConfig);
+        builder.setConfiguration(mCurrentConfig);
     }
     public void setVisible(boolean visible){
         mDialog.setVisible(visible);
     }
 
-    public void setLibraries(java.util.List<Library> libraries, java.util.List<Integer> targets, int currentTarget){
+    public void setLibraries(java.util.List<Library> libraries, int currentBuilder){
+        mBuilderComboBox.removeAllItems();
+        mCurrentBuilder = currentBuilder;
         mLibraries = libraries;
-        mTargets = targets;
-        mCurrentTarget = currentTarget;
-
-        mTargetComboBox.removeAllItems();
-        for (Integer i: mTargets)
-            mTargetComboBox.addItem(mLibraries.get(i).name());
-        mTargetComboBox.setSelectedIndex(currentTarget);
+        mBuilders = new ArrayList<>();
+        int i = 0;
+        for (Library lib : mLibraries) {
+            if (lib instanceof Builder) {
+                mBuilders.add(i);
+                mBuilderComboBox.addItem(mLibraries.get(i).name());
+            }
+            i++;
+        }
+        mBuilderComboBox.setSelectedIndex(currentBuilder);
     }
 
 
-    public int getCurrentTarget(){
-        return mCurrentTarget;
+    public int getCurrentBuilder(){
+        return mCurrentBuilder;
     }
 
 
