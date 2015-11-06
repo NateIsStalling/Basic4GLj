@@ -14,6 +14,7 @@
       <element id="directory" name="native">
         <element id="dir-copy" path="$PROJECT_DIR$/native" />
       </element>
+      <element id="dir-copy" path="$PROJECT_DIR$/Basic4GLj/distribution" />
     </root>
   </artifact>
 </component>
