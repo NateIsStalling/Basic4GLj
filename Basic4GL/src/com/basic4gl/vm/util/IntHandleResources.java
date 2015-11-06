@@ -1,5 +1,6 @@
 package com.basic4gl.vm.util;
 
+import java.util.HashSet;
 import java.util.Set;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -12,7 +13,7 @@ import java.util.Set;
 
 public abstract class IntHandleResources extends Resources {
 
-	protected Set<Integer> m_handles;
+	protected Set<Integer> m_handles = new HashSet<Integer>();
 
 	protected abstract void DeleteHandle(int handle);
 
