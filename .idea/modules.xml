@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Basic4GL/Basic4GL.iml" filepath="$PROJECT_DIR$/Basic4GL/Basic4GL.iml" />
       <module fileurl="file://$PROJECT_DIR$/Basic4GLj/Basic4GLj.iml" filepath="$PROJECT_DIR$/Basic4GLj/Basic4GLj.iml" />
-      <module fileurl="file://$PROJECT_DIR$/JarInJar/JarInJar.iml" filepath="$PROJECT_DIR$/JarInJar/JarInJar.iml" />
     </modules>
   </component>
 </project>

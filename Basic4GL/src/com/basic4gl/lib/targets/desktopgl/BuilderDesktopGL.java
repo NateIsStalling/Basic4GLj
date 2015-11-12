@@ -62,7 +62,6 @@ public class BuilderDesktopGL extends Builder {
         JarEntry entry;
 
         //TODO Add build option for single Jar
-        boolean singleJar = true;	//Should be exported using JarInJar
 
         ClassLoader loader = getClass().getClassLoader();
         List<String> dependencies;
@@ -70,38 +69,30 @@ public class BuilderDesktopGL extends Builder {
         //Create application's manifest
         Manifest manifest = new Manifest();
 
-        path = singleJar ? "./" : "";
+        path = "";
         //Generate class path
         dependencies = mTarget.getDependencies();
         i = 0;
         if (dependencies != null)
             for (String dependency: dependencies) {
-                path += ((i != 0 || singleJar) ? " " : "") + (singleJar ? "" : libRoot) + dependency;
+                path += ((i != 0 ) ? " " : "") + libRoot + dependency;
                 i++;
             }
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        if (singleJar) {
-            manifest.getMainAttributes().put(new Attributes.Name("Rsrc-Class-Path"), path);
-            manifest.getMainAttributes().put(new Attributes.Name("Rsrc-Main-Class"), mTarget.getClass().getName());
-            manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, ".");
-            manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS,
-                    org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader.class.getName());
-        } else {
-            manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, path);
-            manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS,
-                    mTarget.getClass().getName());
-        }
+
+        manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, path);
+        manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS,
+            mTarget.getClass().getName());
         JarOutputStream target = new JarOutputStream(stream, manifest);
 
         //Add Basic4GLj classes to new Jar
         System.out.println("Adding source files");
         List<String> files = new ArrayList<String>();
+        //TODO Only add required classes
         files.add("com/basic4gl/compiler");
         files.add("com/basic4gl/lib");
         files.add("com/basic4gl/util");
         files.add("com/basic4gl/vm");
-        if (singleJar)
-            files.add("org/eclipse/jdt/internal/jarinjarloader");
         Exporter.addSource(files, target);
 
         //Save VM's initial state to Jar
@@ -118,7 +109,8 @@ public class BuilderDesktopGL extends Builder {
         target.closeEntry();
 
         //Add external libraries
-        if (singleJar){
+        //TODO embed resource files
+        /*if (singleJar){
             System.out.println("Adding dependencies");
             if (dependencies != null)
                 for (String file: dependencies) {
@@ -136,7 +128,7 @@ public class BuilderDesktopGL extends Builder {
                     }
                     target.closeEntry();
                 }
-        }
+        }*/
 
         target.close();
         return true;
