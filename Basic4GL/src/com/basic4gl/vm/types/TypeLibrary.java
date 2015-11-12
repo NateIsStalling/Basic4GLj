@@ -101,7 +101,7 @@ public class TypeLibrary implements Streamable {
 		// except it correctly handles integer overflow for really big types.
 		assert (TypeValid (type));
 		if (type.PhysicalPointerLevel () == 0 && type.m_arrayLevel > 0) {
-			ValType element = type;
+			ValType element = new ValType(type);
 			element.m_arrayLevel = 0;
 			return type.ArraySizeBiggerThan (size, DataSize (element));
 		}
