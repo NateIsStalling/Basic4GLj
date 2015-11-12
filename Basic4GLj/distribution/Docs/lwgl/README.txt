@@ -1,0 +1,1 @@
+These licenses are included from the 'doc/3rdparty' folder of the lwjgl library

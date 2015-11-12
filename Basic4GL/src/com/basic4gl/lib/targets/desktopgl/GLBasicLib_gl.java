@@ -11,8 +11,6 @@ import com.basic4gl.vm.TomVM;
 import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.util.Function;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GLContext;
-
 
 import java.nio.*;
 import java.util.HashMap;

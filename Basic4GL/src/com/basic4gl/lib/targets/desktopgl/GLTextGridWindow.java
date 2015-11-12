@@ -22,9 +22,8 @@ import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWvidmode;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GLContext;
-
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -471,7 +470,7 @@ public class GLTextGridWindow extends GLWindow {
 				// LWJGL detects the context that is current in the current thread,
 				// creates the ContextCapabilities instance and makes the OpenGL
 				// bindings available for use.
-				GLContext.createFromCurrent();
+				GL.createCapabilities();
 
 				ResetGL();
 
