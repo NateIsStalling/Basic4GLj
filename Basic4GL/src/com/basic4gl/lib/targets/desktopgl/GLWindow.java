@@ -176,7 +176,9 @@ public abstract class GLWindow extends HasErrorState implements Target {
             m_nearClip, m_farClip;
     //DEVMODE m_screenSettings;    // Screen settings for fullscreen mode
     boolean m_closing;
-    byte[] m_keyDown = new byte[512];                        // Tracks key states
+    //TODO Possibly use Map structure instead of array for m_keyDown if it'd use less memory
+    //Character.MAX_VALUE is used for array size to support GLFW keycodes that are in the 256+ range
+    byte[] m_keyDown = new byte[Character.MAX_VALUE];        // Tracks key states
     char[] m_keyBuffer = new char[GLWINDOWKEYBUFFER];        // Queues key presses
     char[] m_scanKeyBuffer = new char[GLWINDOWKEYBUFFER];    // Queuse scan keys
     int m_bufStart, m_bufEnd, m_scanBufStart, m_scanBufEnd;

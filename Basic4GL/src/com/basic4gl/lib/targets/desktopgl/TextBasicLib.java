@@ -19,6 +19,7 @@ import java.nio.IntBuffer;
 import java.util.*;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * Created by Nate on 11/1/2015.
@@ -121,7 +122,7 @@ public class TextBasicLib implements Library, TextAdapter, IGLRenderer{
     @Override
     public Map<String, Constant> constants() {
         Map<String, Constant> c = new HashMap<String, Constant>();
-// Register constants
+        // Register constants
         c.put("TEXT_SIMPLE", new Constant(TextMode.TEXT_SIMPLE.getMode()));
         c.put("TEXT_BUFFERED", new Constant(TextMode.TEXT_BUFFERED.getMode()));
         c.put("TEXT_OVERLAID", new Constant(TextMode.TEXT_OVERLAID.getMode()));
@@ -129,106 +130,150 @@ public class TextBasicLib implements Library, TextAdapter, IGLRenderer{
         c.put("DRAW_SPRITES_BEHIND", new Constant(GLSpriteEngine.DRAW_SPRITES_BEHIND));
         c.put("DRAW_SPRITES_INFRONT", new Constant(GLSpriteEngine.DRAW_SPRITES_INFRONT));
         c.put("DRAW_SPRITES", new Constant(GLSpriteEngine.DRAW_SPRITES));
-        //c.put("VK_LBUTTON", new Constant(KeyEvent.VK_LBUTTON));             // Virtual key codes
-        //c.put("VK_RBUTTON", new Constant(KeyEvent.VK_RBUTTON));
-        c.put("VK_CANCEL", new Constant(KeyEvent.VK_CANCEL));
-        //c.put("VK_MBUTTON", new Constant(KeyEvent.VK_MBUTTON));
-        //c.put("VK_BACK", new Constant(KeyEvent.VK_BACK));
-        c.put("VK_TAB", new Constant(KeyEvent.VK_TAB));
-        c.put("VK_CLEAR", new Constant(KeyEvent.VK_CLEAR));
-        c.put("VK_RETURN", new Constant(KeyEvent.VK_ENTER));
-        c.put("VK_SHIFT", new Constant(KeyEvent.VK_SHIFT));
-        c.put("VK_CONTROL", new Constant(KeyEvent.VK_CONTROL));
-        //c.put("VK_MENU", new Constant(KeyEvent.VK_MENU));
-        c.put("VK_PAUSE", new Constant(KeyEvent.VK_PAUSE));
-        //c.put("VK_CAPITAL", new Constant(KeyEvent.VK_CAPITAL));
-        c.put("VK_KANA", new Constant(KeyEvent.VK_KANA));
-        //c.put("VK_HANGEUL", new Constant(KeyEvent.VK_HANGEUL));
-        //c.put("VK_HANGUL", new Constant(KeyEvent.VK_HANGUL));
-        //c.put("VK_JUNJA", new Constant(KeyEvent.VK_JUNJA));
-        c.put("VK_FINAL", new Constant(KeyEvent.VK_FINAL));
-        //c.put("VK_HANJA", new Constant(KeyEvent.VK_HANJA));
-        c.put("VK_KANJI", new Constant(KeyEvent.VK_KANJI));
-        c.put("VK_ESCAPE", new Constant(KeyEvent.VK_ESCAPE));
-        c.put("VK_CONVERT", new Constant(KeyEvent.VK_CONVERT));
-        c.put("VK_NONCONVERT", new Constant(KeyEvent.VK_NONCONVERT));
-        c.put("VK_ACCEPT", new Constant(KeyEvent.VK_ACCEPT));
-        c.put("VK_MODECHANGE", new Constant(KeyEvent.VK_MODECHANGE));
-        c.put("VK_SPACE", new Constant(KeyEvent.VK_SPACE));
-        //c.put("VK_PRIOR", new Constant(KeyEvent.VK_PRIOR));
-        //c.put("VK_NEXT", new Constant(KeyEvent.VK_NEXT));
-        c.put("VK_END", new Constant(KeyEvent.VK_END));
-        c.put("VK_HOME", new Constant(KeyEvent.VK_HOME));
-        c.put("VK_LEFT", new Constant(KeyEvent.VK_LEFT));
-        c.put("VK_UP", new Constant(KeyEvent.VK_UP));
-        c.put("VK_RIGHT", new Constant(KeyEvent.VK_RIGHT));
-        c.put("VK_DOWN", new Constant(KeyEvent.VK_DOWN));
-        //c.put("VK_SELECT", new Constant(KeyEvent.VK_SELECT));
-        //c.put("VK_PRINT", new Constant(KeyEvent.VK_PRINT));
-        //c.put("VK_EXECUTE", new Constant(KeyEvent.VK_EXECUTE));
-        //c.put("VK_SNAPSHOT", new Constant(KeyEvent.VK_SNAPSHOT));
-        c.put("VK_INSERT", new Constant(KeyEvent.VK_INSERT));
-        c.put("VK_DELETE", new Constant(KeyEvent.VK_DELETE));
-        c.put("VK_HELP", new Constant(KeyEvent.VK_HELP));
-        //c.put("VK_LWIN", new Constant(KeyEvent.VK_LWIN));
-        //c.put("VK_RWIN", new Constant(KeyEvent.VK_RWIN));
-        //c.put("VK_APPS", new Constant(KeyEvent.VK_APPS));
-        c.put("VK_NUMPAD0", new Constant(KeyEvent.VK_NUMPAD0));
-        c.put("VK_NUMPAD1", new Constant(KeyEvent.VK_NUMPAD1));
-        c.put("VK_NUMPAD2", new Constant(KeyEvent.VK_NUMPAD2));
-        c.put("VK_NUMPAD3", new Constant(KeyEvent.VK_NUMPAD3));
-        c.put("VK_NUMPAD4", new Constant(KeyEvent.VK_NUMPAD4));
-        c.put("VK_NUMPAD5", new Constant(KeyEvent.VK_NUMPAD5));
-        c.put("VK_NUMPAD6", new Constant(KeyEvent.VK_NUMPAD6));
-        c.put("VK_NUMPAD7", new Constant(KeyEvent.VK_NUMPAD7));
-        c.put("VK_NUMPAD8", new Constant(KeyEvent.VK_NUMPAD8));
-        c.put("VK_NUMPAD9", new Constant(KeyEvent.VK_NUMPAD9));
-        c.put("VK_MULTIPLY", new Constant(KeyEvent.VK_MULTIPLY));
-        c.put("VK_ADD", new Constant(KeyEvent.VK_ADD));
-        c.put("VK_SEPARATOR", new Constant(KeyEvent.VK_SEPARATOR));
-        c.put("VK_SUBTRACT", new Constant(KeyEvent.VK_SUBTRACT));
-        c.put("VK_DECIMAL", new Constant(KeyEvent.VK_DECIMAL));
-        c.put("VK_DIVIDE", new Constant(KeyEvent.VK_DIVIDE));
-        c.put("VK_F1", new Constant(KeyEvent.VK_F1));
-        c.put("VK_F2", new Constant(KeyEvent.VK_F2));
-        c.put("VK_F3", new Constant(KeyEvent.VK_F3));
-        c.put("VK_F4", new Constant(KeyEvent.VK_F4));
-        c.put("VK_F5", new Constant(KeyEvent.VK_F5));
-        c.put("VK_F6", new Constant(KeyEvent.VK_F6));
-        c.put("VK_F7", new Constant(KeyEvent.VK_F7));
-        c.put("VK_F8", new Constant(KeyEvent.VK_F8));
-        c.put("VK_F9", new Constant(KeyEvent.VK_F9));
-        c.put("VK_F10", new Constant(KeyEvent.VK_F10));
-        c.put("VK_F11", new Constant(KeyEvent.VK_F11));
-        c.put("VK_F12", new Constant(KeyEvent.VK_F12));
-        c.put("VK_F13", new Constant(KeyEvent.VK_F13));
-        c.put("VK_F14", new Constant(KeyEvent.VK_F14));
-        c.put("VK_F15", new Constant(KeyEvent.VK_F15));
-        c.put("VK_F16", new Constant(KeyEvent.VK_F16));
-        c.put("VK_F17", new Constant(KeyEvent.VK_F17));
-        c.put("VK_F18", new Constant(KeyEvent.VK_F18));
-        c.put("VK_F19", new Constant(KeyEvent.VK_F19));
-        c.put("VK_F20", new Constant(KeyEvent.VK_F20));
-        c.put("VK_F21", new Constant(KeyEvent.VK_F21));
-        c.put("VK_F22", new Constant(KeyEvent.VK_F22));
-        c.put("VK_F23", new Constant(KeyEvent.VK_F23));
-        c.put("VK_F24", new Constant(KeyEvent.VK_F24));
-        //c.put("VK_NUMLOCK", new Constant(KeyEvent.VK_NUMLOCK));
-        //c.put("VK_SCROLL", new Constant(KeyEvent.VK_SCROLL));
-        //c.put("VK_LSHIFT", new Constant(KeyEvent.VK_LSHIFT));
-        //c.put("VK_RSHIFT", new Constant(KeyEvent.VK_RSHIFT));
-        //c.put("VK_LCONTROL", new Constant(KeyEvent.VK_LCONTROL));
-        //c.put("VK_RCONTROL", new Constant(KeyEvent.VK_RCONTROL));
-        //c.put("VK_LMENU", new Constant(KeyEvent.VK_LMENU));
-        //c.put("VK_RMENU", new Constant(KeyEvent.VK_RMENU));
-        //c.put("VK_PROCESSKEY", new Constant(KeyEvent.VK_PROCESSKEY));
 
-        //c.put("VK_ATTN", new Constant(KeyEvent.VK_ATTN));
-        //c.put("VK_CRSEL", new Constant(KeyEvent.VK_CRSEL));
-        //c.put("VK_EXSEL", new Constant(KeyEvent.VK_EXSEL));
-        //c.put("VK_EREOF", new Constant(KeyEvent.VK_EREOF));
-        //c.put("VK_PLAY", new Constant(KeyEvent.VK_PLAY));
-        //c.put("VK_ZOOM", new Constant(KeyEvent.VK_ZOOM));
+        // COMPATIBILITY NOTE:
+        // Virtual key codes are not supported by GLFW; virtual key constants from the Windows version of Basic4GL
+        // that would normally be registered in this library have since been excluded and replaced with their
+        // corresponding GLFW key codes where possible - vk constants with no corresponding GLFW constants
+        // have simply been excluded at this time.
+
+        /* From GLFW Keyboard Keys documentation:
+        *   These key codes are inspired by the USB HID Usage Tables v1.12 (p. 53-60),
+        *   but re-arranged to map to 7-bit ASCII for printable keys (function keys are put in the 256+ range).
+        *
+        *   The naming of the key codes follow these rules:
+        *       The US keyboard layout is used
+        *       Names of printable alpha-numeric characters are used (e.g. "A", "R", "3", etc.)
+        *       For non-alphanumeric characters,
+        *           Unicode:ish names are used (e.g. "COMMA", "LEFT_SQUARE_BRACKET", etc.).
+        *           Note that some names do not correspond to the Unicode standard (usually for brevity)
+        *       Keys that lack a clear US mapping are named "WORLD_x"
+        *       For non-printable keys, custom names are used (e.g. "F4", "BACKSPACE", etc.)
+        */
+
+        c.put("GLFW_KEY_UNKNOWN",	new Constant(GLFW_KEY_UNKNOWN));
+        c.put("GLFW_KEY_SPACE",	new Constant(GLFW_KEY_SPACE));
+        c.put("GLFW_KEY_APOSTROPHE",	new Constant(GLFW_KEY_APOSTROPHE));
+        c.put("GLFW_KEY_COMMA",	new Constant(GLFW_KEY_COMMA));
+        c.put("GLFW_KEY_MINUS",	new Constant(GLFW_KEY_MINUS));
+        c.put("GLFW_KEY_PERIOD",	new Constant(GLFW_KEY_PERIOD));
+        c.put("GLFW_KEY_SLASH",	new Constant(GLFW_KEY_SLASH));
+        c.put("GLFW_KEY_0",	new Constant(GLFW_KEY_0));
+        c.put("GLFW_KEY_1",	new Constant(GLFW_KEY_1));
+        c.put("GLFW_KEY_2",	new Constant(GLFW_KEY_2));
+        c.put("GLFW_KEY_3",	new Constant(GLFW_KEY_3));
+        c.put("GLFW_KEY_4",	new Constant(GLFW_KEY_4));
+        c.put("GLFW_KEY_5",	new Constant(GLFW_KEY_5));
+        c.put("GLFW_KEY_6",	new Constant(GLFW_KEY_6));
+        c.put("GLFW_KEY_7",	new Constant(GLFW_KEY_7));
+        c.put("GLFW_KEY_8",	new Constant(GLFW_KEY_8));
+        c.put("GLFW_KEY_9",	new Constant(GLFW_KEY_9));
+        c.put("GLFW_KEY_SEMICOLON",	new Constant(GLFW_KEY_SEMICOLON));
+        c.put("GLFW_KEY_EQUAL",	new Constant(GLFW_KEY_EQUAL));
+        c.put("GLFW_KEY_A",	new Constant(GLFW_KEY_A));
+        c.put("GLFW_KEY_B",	new Constant(GLFW_KEY_B));
+        c.put("GLFW_KEY_C",	new Constant(GLFW_KEY_C));
+        c.put("GLFW_KEY_D",	new Constant(GLFW_KEY_D));
+        c.put("GLFW_KEY_E",	new Constant(GLFW_KEY_E));
+        c.put("GLFW_KEY_F",	new Constant(GLFW_KEY_F));
+        c.put("GLFW_KEY_G",	new Constant(GLFW_KEY_G));
+        c.put("GLFW_KEY_H",	new Constant(GLFW_KEY_H));
+        c.put("GLFW_KEY_I",	new Constant(GLFW_KEY_I));
+        c.put("GLFW_KEY_J",	new Constant(GLFW_KEY_J));
+        c.put("GLFW_KEY_K",	new Constant(GLFW_KEY_K));
+        c.put("GLFW_KEY_L",	new Constant(GLFW_KEY_L));
+        c.put("GLFW_KEY_M",	new Constant(GLFW_KEY_M));
+        c.put("GLFW_KEY_N",	new Constant(GLFW_KEY_N));
+        c.put("GLFW_KEY_O",	new Constant(GLFW_KEY_O));
+        c.put("GLFW_KEY_P",	new Constant(GLFW_KEY_P));
+        c.put("GLFW_KEY_Q",	new Constant(GLFW_KEY_Q));
+        c.put("GLFW_KEY_R",	new Constant(GLFW_KEY_R));
+        c.put("GLFW_KEY_S",	new Constant(GLFW_KEY_S));
+        c.put("GLFW_KEY_T",	new Constant(GLFW_KEY_T));
+        c.put("GLFW_KEY_U",	new Constant(GLFW_KEY_U));
+        c.put("GLFW_KEY_V",	new Constant(GLFW_KEY_V));
+        c.put("GLFW_KEY_W",	new Constant(GLFW_KEY_W));
+        c.put("GLFW_KEY_X",	new Constant(GLFW_KEY_X));
+        c.put("GLFW_KEY_Y",	new Constant(GLFW_KEY_Y));
+        c.put("GLFW_KEY_Z",	new Constant(GLFW_KEY_Z));
+        c.put("GLFW_KEY_LEFT_BRACKET",	new Constant(GLFW_KEY_LEFT_BRACKET));
+        c.put("GLFW_KEY_BACKSLASH",	new Constant(GLFW_KEY_BACKSLASH));
+        c.put("GLFW_KEY_RIGHT_BRACKET",	new Constant(GLFW_KEY_RIGHT_BRACKET));
+        c.put("GLFW_KEY_GRAVE_ACCENT",	new Constant(GLFW_KEY_GRAVE_ACCENT));
+        c.put("GLFW_KEY_WORLD_1",	new Constant(GLFW_KEY_WORLD_1));
+        c.put("GLFW_KEY_WORLD_2",	new Constant(GLFW_KEY_WORLD_2));
+        c.put("GLFW_KEY_ESCAPE",	new Constant(GLFW_KEY_ESCAPE));
+        c.put("GLFW_KEY_ENTER",	new Constant(GLFW_KEY_ENTER));
+        c.put("GLFW_KEY_TAB",	new Constant(GLFW_KEY_TAB));
+        c.put("GLFW_KEY_BACKSPACE",	new Constant(GLFW_KEY_BACKSPACE));
+        c.put("GLFW_KEY_INSERT",	new Constant(GLFW_KEY_INSERT));
+        c.put("GLFW_KEY_DELETE",	new Constant(GLFW_KEY_DELETE));
+        c.put("GLFW_KEY_RIGHT",	new Constant(GLFW_KEY_RIGHT));
+        c.put("GLFW_KEY_LEFT",	new Constant(GLFW_KEY_LEFT));
+        c.put("GLFW_KEY_DOWN",	new Constant(GLFW_KEY_DOWN));
+        c.put("GLFW_KEY_UP",	new Constant(GLFW_KEY_UP));
+        c.put("GLFW_KEY_PAGE_UP",	new Constant(GLFW_KEY_PAGE_UP));
+        c.put("GLFW_KEY_PAGE_DOWN",	new Constant(GLFW_KEY_PAGE_DOWN));
+        c.put("GLFW_KEY_HOME",	new Constant(GLFW_KEY_HOME));
+        c.put("GLFW_KEY_END",	new Constant(GLFW_KEY_END));
+        c.put("GLFW_KEY_CAPS_LOCK",	new Constant(GLFW_KEY_CAPS_LOCK));
+        c.put("GLFW_KEY_SCROLL_LOCK",	new Constant(GLFW_KEY_SCROLL_LOCK));
+        c.put("GLFW_KEY_NUM_LOCK",	new Constant(GLFW_KEY_NUM_LOCK));
+        c.put("GLFW_KEY_PRINT_SCREEN",	new Constant(GLFW_KEY_PRINT_SCREEN));
+        c.put("GLFW_KEY_PAUSE",	new Constant(GLFW_KEY_PAUSE));
+        c.put("GLFW_KEY_F1",	new Constant(GLFW_KEY_F1));
+        c.put("GLFW_KEY_F2",	new Constant(GLFW_KEY_F2));
+        c.put("GLFW_KEY_F3",	new Constant(GLFW_KEY_F3));
+        c.put("GLFW_KEY_F4",	new Constant(GLFW_KEY_F4));
+        c.put("GLFW_KEY_F5",	new Constant(GLFW_KEY_F5));
+        c.put("GLFW_KEY_F6",	new Constant(GLFW_KEY_F6));
+        c.put("GLFW_KEY_F7",	new Constant(GLFW_KEY_F7));
+        c.put("GLFW_KEY_F8",	new Constant(GLFW_KEY_F8));
+        c.put("GLFW_KEY_F9",	new Constant(GLFW_KEY_F9));
+        c.put("GLFW_KEY_F10",	new Constant(GLFW_KEY_F10));
+        c.put("GLFW_KEY_F11",	new Constant(GLFW_KEY_F11));
+        c.put("GLFW_KEY_F12",	new Constant(GLFW_KEY_F12));
+        c.put("GLFW_KEY_F13",	new Constant(GLFW_KEY_F13));
+        c.put("GLFW_KEY_F14",	new Constant(GLFW_KEY_F14));
+        c.put("GLFW_KEY_F15",	new Constant(GLFW_KEY_F15));
+        c.put("GLFW_KEY_F16",	new Constant(GLFW_KEY_F16));
+        c.put("GLFW_KEY_F17",	new Constant(GLFW_KEY_F17));
+        c.put("GLFW_KEY_F18",	new Constant(GLFW_KEY_F18));
+        c.put("GLFW_KEY_F19",	new Constant(GLFW_KEY_F19));
+        c.put("GLFW_KEY_F20",	new Constant(GLFW_KEY_F20));
+        c.put("GLFW_KEY_F21",	new Constant(GLFW_KEY_F21));
+        c.put("GLFW_KEY_F22",	new Constant(GLFW_KEY_F22));
+        c.put("GLFW_KEY_F23",	new Constant(GLFW_KEY_F23));
+        c.put("GLFW_KEY_F24",	new Constant(GLFW_KEY_F24));
+        c.put("GLFW_KEY_F25",	new Constant(GLFW_KEY_F25));
+        c.put("GLFW_KEY_KP_0",	new Constant(GLFW_KEY_KP_0));
+        c.put("GLFW_KEY_KP_1",	new Constant(GLFW_KEY_KP_1));
+        c.put("GLFW_KEY_KP_2",	new Constant(GLFW_KEY_KP_2));
+        c.put("GLFW_KEY_KP_3",	new Constant(GLFW_KEY_KP_3));
+        c.put("GLFW_KEY_KP_4",	new Constant(GLFW_KEY_KP_4));
+        c.put("GLFW_KEY_KP_5",	new Constant(GLFW_KEY_KP_5));
+        c.put("GLFW_KEY_KP_6",	new Constant(GLFW_KEY_KP_6));
+        c.put("GLFW_KEY_KP_7",	new Constant(GLFW_KEY_KP_7));
+        c.put("GLFW_KEY_KP_8",	new Constant(GLFW_KEY_KP_8));
+        c.put("GLFW_KEY_KP_9",	new Constant(GLFW_KEY_KP_9));
+        c.put("GLFW_KEY_KP_DECIMAL",	new Constant(GLFW_KEY_KP_DECIMAL));
+        c.put("GLFW_KEY_KP_DIVIDE",	new Constant(GLFW_KEY_KP_DIVIDE));
+        c.put("GLFW_KEY_KP_MULTIPLY",	new Constant(GLFW_KEY_KP_MULTIPLY));
+        c.put("GLFW_KEY_KP_SUBTRACT",	new Constant(GLFW_KEY_KP_SUBTRACT));
+        c.put("GLFW_KEY_KP_ADD",	new Constant(GLFW_KEY_KP_ADD));
+        c.put("GLFW_KEY_KP_ENTER",	new Constant(GLFW_KEY_KP_ENTER));
+        c.put("GLFW_KEY_KP_EQUAL",	new Constant(GLFW_KEY_KP_EQUAL));
+        c.put("GLFW_KEY_LEFT_SHIFT",	new Constant(GLFW_KEY_LEFT_SHIFT));
+        c.put("GLFW_KEY_LEFT_CONTROL",	new Constant(GLFW_KEY_LEFT_CONTROL));
+        c.put("GLFW_KEY_LEFT_ALT",	new Constant(GLFW_KEY_LEFT_ALT));
+        c.put("GLFW_KEY_LEFT_SUPER",	new Constant(GLFW_KEY_LEFT_SUPER));
+        c.put("GLFW_KEY_RIGHT_SHIFT",	new Constant(GLFW_KEY_RIGHT_SHIFT));
+        c.put("GLFW_KEY_RIGHT_CONTROL",	new Constant(GLFW_KEY_RIGHT_CONTROL));
+        c.put("GLFW_KEY_RIGHT_ALT",	new Constant(GLFW_KEY_RIGHT_ALT));
+        c.put("GLFW_KEY_RIGHT_SUPER",	new Constant(GLFW_KEY_RIGHT_SUPER));
+        c.put("GLFW_KEY_MENU",	new Constant(GLFW_KEY_MENU));
+        c.put("GLFW_KEY_LAST",	new Constant(GLFW_KEY_LAST));
+
         c.put("MOUSE_LBUTTON", new Constant(0));
         c.put("MOUSE_RBUTTON", new Constant(1));
         c.put("MOUSE_MBUTTON", new Constant(2));
@@ -716,7 +761,9 @@ public class TextBasicLib implements Library, TextAdapter, IGLRenderer{
     }}
     public final class WrapScanKeyDown implements Function { public void run(TomVM vm) {
         int index = vm.GetIntParam (1);
-        if (index < 0 || index > 255)   vm.Reg ().setIntVal( 0);
+        // Windows version of Basic4GL only supports index range 0 - 255,
+        // though this version uses a different input library that has a wider value range
+        if (index < 0 || index > Character.MAX_VALUE)   vm.Reg ().setIntVal( 0);
         else                            vm.Reg ().setIntVal( appWindow.isKeyDown ((char)index) ? -1 : 0);
     }}
     public final class WrapCharAt implements Function { public void run(TomVM vm) {
