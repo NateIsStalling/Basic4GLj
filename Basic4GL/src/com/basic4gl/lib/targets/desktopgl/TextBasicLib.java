@@ -112,6 +112,7 @@ public class TextBasicLib implements Library, TextAdapter, IGLRenderer{
         appWindow.SetDontPaint (false);
 
         // Sprite engine defaults
+        sprites = new GLSpriteStore();
         GLSpriteEngine spriteEngine = (GLSpriteEngine) appText;
         spriteEngine.SetDefaults ();
         boundSprite = 0;

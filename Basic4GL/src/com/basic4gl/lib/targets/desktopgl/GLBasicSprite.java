@@ -116,7 +116,7 @@ public abstract class GLBasicSprite {
         m_dstBlend = GL11.GL_ONE_MINUS_SRC_ALPHA;
     }
 
-    protected Vector<Integer> m_textures;
+    protected Vector<Integer> m_textures = new Vector<Integer>();
 
     protected void InternalCopy(GLBasicSprite s) {
         SetTextures(s.m_textures);

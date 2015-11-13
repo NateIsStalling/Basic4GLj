@@ -15,7 +15,7 @@ public abstract class ResourceStore<T> extends Resources {
 
 	@SuppressWarnings("unchecked")
 	public ResourceStore(T blankElement) {
-		m_store = (Store<T>) blankElement;
+		m_store = new Store<T>(blankElement);
 	}
 
 	public void Clear() {
