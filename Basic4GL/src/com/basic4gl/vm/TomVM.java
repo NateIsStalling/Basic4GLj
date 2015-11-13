@@ -101,16 +101,16 @@ public class TomVM extends HasErrorState implements Streamable {
     // function stack frame is the top of the stack, but is not yet active).
 
     // Runtime stacks
-    ValueStack mStack; // Used for expression evaluation
-    Vector<UserFuncStackFrame> mUserCallStack; // Call stack for user functions
+    private ValueStack mStack; // Used for expression evaluation
+    private Vector<UserFuncStackFrame> mUserCallStack; // Call stack for user functions
 
     // Individual code blocks
-    Vector<CodeBlock> mCodeBlocks;
-    int mBoundCodeBlock;
+    private Vector<CodeBlock> mCodeBlocks;
+    private int mBoundCodeBlock;
 
     // Data destruction
-    Vector<StackDestructor> mStackDestructors;
-    Vector<StackDestructor> mTempDestructors;
+    private Vector<StackDestructor> mStackDestructors;
+    private Vector<StackDestructor> mTempDestructors;
 
     // Plugin DLLs
     //TODO Reimplement libraries
@@ -2825,7 +2825,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
 
     public void FunctionError(String name) {
-        setError((String) "Function error: " + name);
+        setError("Function error: " + name);
     }
 
     public void MiscError(String name) {
