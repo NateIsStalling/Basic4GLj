@@ -3028,7 +3028,7 @@ public class TomBasicCompiler extends HasErrorState {
 				found = true;
 
 				// Check type is INT or REAL
-				ValType type = UserPrototype().localVarTypes.get(varIndex);
+				ValType type = new ValType(UserPrototype().localVarTypes.get(varIndex));
 				if (!(type.Equals(ValType.VTP_INT) || type
 						.Equals(ValType.VTP_REAL))) {
 					setError("Loop variable must be an Integer or Real");
@@ -3045,7 +3045,7 @@ public class TomBasicCompiler extends HasErrorState {
 				found = true;
 
 				// Check type is INT or REAL
-				ValType type = mVM.Variables().getVariables().get(varIndex).m_type;
+				ValType type = new ValType(mVM.Variables().getVariables().get(varIndex).m_type);
 				if (!(type.Equals(ValType.VTP_INT) || type
 						.Equals(ValType.VTP_REAL))) {
 					setError("Loop variable must be an Integer or Real");
@@ -3623,8 +3623,8 @@ public class TomBasicCompiler extends HasErrorState {
 			boolean isAnyType = false;
 			int i;
 			for (i = 0; i < functionCount && matchIndex < 0; i++) {
-				ValType type = functions[i].m_spec.getParamTypes().getParams()
-						.get(count);
+				ValType type = new ValType(functions[i].m_spec.getParamTypes().getParams()
+						.get(count));
 
 				// Check for undefined type parameter
 				if (type.Equals(ValType.VTP_UNDEFINED)) {
@@ -3658,8 +3658,8 @@ public class TomBasicCompiler extends HasErrorState {
 				// Clear any errors that non-matching instances might have set.
 				clearError();
 
-				ValType type = functions[matchIndex].m_spec.getParamTypes()
-						.getParams().get(count);
+				ValType type = new ValType(functions[matchIndex].m_spec.getParamTypes()
+						.getParams().get(count));
 
 				// Filter out all functions whose "count" parameter doesn't
 				// match "type".
@@ -5205,7 +5205,7 @@ public class TomBasicCompiler extends HasErrorState {
 	boolean CompileUserFuncParam(Mutable<UserFuncPrototype> prototype, int i) {
 
 		// Generate code to store result as a function parameter
-		ValType type = prototype.get().localVarTypes.get(i);
+		ValType type = new ValType(prototype.get().localVarTypes.get(i));
 
 		// Basic type case
 		if (type.IsBasic()) {

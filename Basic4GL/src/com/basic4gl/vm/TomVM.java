@@ -558,7 +558,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     int index = instruction.mValue.getIntVal();
                     assert (index >= 0);
                     assert (index < prototype.localVarTypes.size());
-                    ValType type = prototype.localVarTypes.get(index);
+                    ValType type = new ValType(prototype.localVarTypes.get(index));
 
                     // Must not already be allocated
                     if (currentFrame.localVarDataOffsets.get(index) != 0) {
@@ -906,8 +906,8 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_ALLOC: {
 
                     // Extract type, and array dimensions
-                    ValType type = mTypeSet.getValType(instruction.mValue
-                            .getIntVal());
+                    ValType type = new ValType(mTypeSet.getValType(instruction.mValue
+                            .getIntVal()));
                     if (!PopArrayDimensions(type))
                         break;
 
@@ -1355,7 +1355,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 .get(destIndex + 1).getIntVal()); // Element sizes match
 
         // Find element type and size
-        ValType elementType = type;
+        ValType elementType = new ValType(type);
         elementType.m_arrayLevel--;
         int elementSize = mData.Data().get(sourceIndex + 1).getIntVal();
 
@@ -1490,7 +1490,7 @@ public class TomVM extends HasErrorState implements Streamable {
             int arrayStart = index + 2;
 
             // Calculate element type
-            ValType elementType = type;
+            ValType elementType = new ValType(type);
             elementType.m_arrayLevel--;
 
             // Check each element
@@ -1944,7 +1944,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 Value element = new Value(arrayStart + i * elementSize); // Address
                 // of
                 // element
-                ValType elementType = type; // Element type.
+                ValType elementType = new ValType(type); // Element type.
                 elementType.m_arrayLevel--; // Less one array level.
                 elementType.m_pointerLevel = 1; // Currently have a pointer
                 elementType.m_byRef = false;
@@ -1969,7 +1969,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 StructureField field = mDataTypes.Fields().get(
                         structure.m_firstField + i);
                 Value fieldVal = new Value(dataIndex + field.m_dataOffset);
-                ValType fieldType = field.m_type;
+                ValType fieldType = new ValType(field.m_type);
                 fieldType.m_pointerLevel++;
                 Deref(fieldVal, fieldType);
                 result += TrimToLength(field.m_name + "=", maxChars)
@@ -2156,7 +2156,7 @@ public class TomVM extends HasErrorState implements Streamable {
             int arrayStart = dataIndex + 2;
 
             // Calculate element type
-            ValType elementType = type;
+            ValType elementType = new ValType(type);
             elementType.m_arrayLevel--;
 
             // Duplicate strings in each array element
@@ -2301,7 +2301,7 @@ public class TomVM extends HasErrorState implements Streamable {
         } else if (type.m_arrayLevel > 0) {
 
             // Array case
-            ValType elementType = type;
+            ValType elementType = new ValType(type);
             elementType.m_arrayLevel--;
             int count = mData.Data().get(index).getIntVal();
             int elementSize = mData.Data().get(index + 1).getIntVal();

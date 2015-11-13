@@ -270,7 +270,7 @@ public class ValType implements Streamable{
 		// implicit reference to the data instead.
 
 		// Copy this value type
-		ValType result = this;
+		ValType result = new ValType(this);
 
 		// Check if type is an array or structure
 		if (!result.CanStoreInRegister()) {
