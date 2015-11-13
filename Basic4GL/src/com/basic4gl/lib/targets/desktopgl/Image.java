@@ -3,6 +3,10 @@ package com.basic4gl.lib.targets.desktopgl;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
+import javax.imageio.ImageIO;
+import java.awt.image.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
@@ -23,15 +27,19 @@ public class Image {
         IntBuffer w = BufferUtils.createIntBuffer(1);
         IntBuffer h = BufferUtils.createIntBuffer(1);
         IntBuffer comp = BufferUtils.createIntBuffer(1);
-        mData = stbi_load(filename, w, h, comp, 0);
+        File file = new File(filename);
+        if (file.exists()) {
+            mData = stbi_load(filename, w, h, comp, 0);
 
-        if (mData == null) {
-            System.out.println("Failed to load image: " + stbi_failure_reason());
+            if (mData == null) {
+                System.out.println("Failed to load image: " + stbi_failure_reason());
+            }
+            mWidth = w.get(0);
+            mHeight = h.get(0);
+            mBPP = comp.get(0);
+            mFormat = mBPP == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
+
         }
-        mWidth = w.get(0);
-        mHeight = h.get(0);
-        mBPP = comp.get(0);
-        mFormat = mBPP == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
     }
 
     public Image(int width, int height, int bpp){
