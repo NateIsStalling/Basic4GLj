@@ -1,6 +1,7 @@
 package com.basic4gl.lib.targets.desktopgl;
 
 import com.basic4gl.lib.standard.TrigBasicLib;
+import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -105,13 +106,13 @@ public class GLTileMap extends GLBasicSprite {
         if (!m_visible || m_xTiles == 0 || m_yTiles == 0)
             return;
 
-        ByteBuffer byteBuf = ByteBuffer.allocateDirect(m_colour.length * 4); //4 bytes per float
-        byteBuf.order(ByteOrder.nativeOrder());
+        ByteBuffer byteBuf = BufferUtils.createByteBuffer(m_colour.length * 4); //4 bytes per float
         FloatBuffer buffer = byteBuf.asFloatBuffer();
         buffer.put(m_colour);
         buffer.position(0);
         glColor4fv(buffer);
-        m_colour = buffer.array();
+        buffer.rewind();
+        buffer.get(m_colour);
 
         // Setup translation, rotation and scaling.
         // Note:    We will setup 2 matrices.

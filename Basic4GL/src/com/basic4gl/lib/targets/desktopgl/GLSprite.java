@@ -1,5 +1,7 @@
 package com.basic4gl.lib.targets.desktopgl;
 
+import org.lwjgl.BufferUtils;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -128,13 +130,13 @@ public class GLSprite extends GLBasicSprite {
         assert (frame < FrameCount());
         glBindTexture(GL_TEXTURE_2D, m_textures.get(frame));
 
-        ByteBuffer byteBuf = ByteBuffer.allocateDirect(m_colour.length * 4); //4 bytes per float
-        byteBuf.order(ByteOrder.nativeOrder());
+        ByteBuffer byteBuf = BufferUtils.createByteBuffer(m_colour.length * 4); //4 bytes per float
         FloatBuffer buffer = byteBuf.asFloatBuffer();
         buffer.put(m_colour);
         buffer.position(0);
         glColor4fv(buffer);
-        m_colour = buffer.array();
+        buffer.rewind();
+        buffer.get(m_colour);
 
         // Translation, rotation & scaling
         glTranslatef(m_x, m_y, 0);
