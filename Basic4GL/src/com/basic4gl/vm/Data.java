@@ -302,7 +302,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -348,7 +348,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -395,7 +395,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -441,7 +441,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -488,7 +488,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -535,7 +535,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -582,7 +582,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -628,7 +628,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -675,7 +675,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -721,7 +721,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -768,7 +768,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -815,7 +815,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -861,7 +861,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -908,7 +908,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -955,7 +955,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -1001,7 +1001,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -1047,7 +1047,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();
@@ -1093,7 +1093,7 @@ public class Data {
 		type.m_byRef = false;
 
 		// Convert Basic4GL format array to C format array
-		ValType elementType = type;
+		ValType elementType = new ValType(type);
 		elementType.m_arrayLevel--;
 
 		int elementCount = data.Data().get(index).getIntVal();

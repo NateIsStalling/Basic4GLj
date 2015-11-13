@@ -41,7 +41,7 @@ public class ValTypeSet implements Streamable{
 
 		// Otherwise create new one
 		i = mTypes.size();
-		mTypes.add(type);
+		mTypes.add(new ValType(type));
 		return i;
 	}
 
