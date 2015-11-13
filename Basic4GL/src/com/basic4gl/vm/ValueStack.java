@@ -8,8 +8,8 @@ import java.util.Vector;
 //Used to stack values for reverse-Polish expression evaluation, or as
 //function parameters.
 public class ValueStack {
-	Vector<Value> m_data;
-	Store<String> m_strings;
+	private Vector<Value> m_data;
+	private Store<String> m_strings;
 
 	public ValueStack(Store<String> strings) {
 		m_strings = strings;
