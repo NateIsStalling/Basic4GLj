@@ -1516,8 +1516,8 @@ public class TomBasicCompiler extends HasErrorState {
 					// (This is allowed, but only if DIMmed to the same type.)
 					int varIndex = UserPrototype().GetLocalVar(name);
 					if (varIndex >= 0) {
-						if (!(UserPrototype().localVarTypes.get(varIndex) == type)) {
-							setError((String) "Local variable '"
+						if (!(UserPrototype().localVarTypes.get(varIndex).Equals(type))) {
+							setError("Local variable '"
 									+ name
 									+ "' has already been allocated as a different type.");
 							return false;
@@ -1576,8 +1576,8 @@ public class TomBasicCompiler extends HasErrorState {
 					// only if DIMed to the same type.)
 					int varIndex = mVM.Variables().getVariableIndex(name);
 					if (varIndex >= 0) {
-						if (!(mVM.Variables().getVariables().get(varIndex).m_type == type)) {
-							setError((String) "Var '"
+						if (!(mVM.Variables().getVariables().get(varIndex).m_type.Equals(type))) {
+							setError("Var '"
 									+ name
 									+ "' has already been allocated as a different type.");
 							return false;
@@ -3681,7 +3681,7 @@ public class TomBasicCompiler extends HasErrorState {
 						// that
 						// same type.
 						if (functions[src].m_spec.getParamTypes().getParams()
-								.get(count) == type)
+								.get(count).Equals(type))
 							functions[dst++] = functions[src];
 					}
 				}
