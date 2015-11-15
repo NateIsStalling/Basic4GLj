@@ -736,12 +736,14 @@ public class GLTextGridWindow extends GLWindow {
 			list.add("native/lwjgl.dll");
 			list.add("native/OpenAL.dll");
 			list.add("native/jemalloc.dll");
+			list.add("native/glfw.dll");
 		}
 		if (windows == GLTextGridWindow.SUPPORT_WINDOWS_32_64 || windows == GLTextGridWindow.SUPPORT_WINDOWS_32) {
 			//32-bit JOGL Windows libraries
 			list.add("native/lwjgl32.dll");
 			list.add("native/OpenAL32.dll");
 			list.add("native/jemalloc32.dll");
+			list.add("native/glfw32.dll");
 		}
 		//Mac
 		if (mac == GLTextGridWindow.SUPPORT_MAC_32_64) {
@@ -749,6 +751,7 @@ public class GLTextGridWindow extends GLWindow {
 			list.add("native/liblwjgl.dylib");
 			list.add("native/libopenal.dylib");
 			list.add("native/libjemalloc.dylib");
+			list.add("native/libglfw.dylib");
 		}
 		//Linux
 		if (linux == GLTextGridWindow.SUPPORT_LINUX_32_64 || linux == GLTextGridWindow.SUPPORT_LINUX_64) {
@@ -756,12 +759,14 @@ public class GLTextGridWindow extends GLWindow {
 			list.add("native/liblwjgl.so");
 			list.add("native/libopenal.so");
 			list.add("native/libjemalloc.so");
+			list.add("native/libglfw.so");
 		}
 		if (linux == GLTextGridWindow.SUPPORT_LINUX_32_64 || linux == GLTextGridWindow.SUPPORT_LINUX_32) {
 			//32-bit JOGL Linux libraries
 			list.add("native/liblwjgl32.so");
 			list.add("native/libopenal32.so");
 			list.add("native/libjemalloc32.so");
+			list.add("native/libglfw32.so");
 		}
 
 		return list;
