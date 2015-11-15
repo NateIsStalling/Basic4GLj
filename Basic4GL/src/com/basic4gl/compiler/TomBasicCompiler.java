@@ -4727,9 +4727,9 @@ public class TomBasicCompiler extends HasErrorState {
 	boolean CompileUserFunction(UserFunctionType funcType) {
 		// Function or sub?
 		boolean hasReturnVal;
-		if (m_token.m_text == "function")
+		if (m_token.m_text.equals("function"))
 			hasReturnVal = true;
-		else if (m_token.m_text == "sub")
+		else if (m_token.m_text.equals("sub"))
 			hasReturnVal = false;
 		else {
 			setError("Expected 'sub' or 'function'");
