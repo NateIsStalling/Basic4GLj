@@ -32,7 +32,6 @@ public class ExportDialog {
     private JDialog mDialog;
     private JTabbedPane mTabs;
     private JComboBox mBuilderComboBox;
-    private JLabel mBuilderRunnableLabel;
 
     private JTextField mFilePathTextField;
 
@@ -170,11 +169,6 @@ public class ExportDialog {
         mBuilderComboBox.setBorder(new EmptyBorder(0, 10, 0, 10));
         targetSelectionPane.add(mBuilderComboBox);
 
-        mBuilderRunnableLabel = new JLabel(MainWindow.APPLICATION_DESCRIPTION);
-        mBuilderRunnableLabel.setFont(new Font(Font.MONOSPACED, Font.ITALIC, 12));
-        mBuilderRunnableLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
-        targetSelectionPane.add(mBuilderRunnableLabel);
-
         JPanel buildInfoPane = new JPanel();
         targetPane.add(buildInfoPane, BorderLayout.CENTER);
         GridLayout buildInfoPaneLayout = new GridLayout(1, 2);
@@ -223,16 +217,12 @@ public class ExportDialog {
                 mCurrentBuilder = cb.getSelectedIndex();
                 Library target = mLibraries.get(mBuilders.get(mCurrentBuilder));
 
-                mBuilderRunnableLabel.setText(((Target) target).isRunnable() ?
-                        "Build target is runnable" :
-                        "Build target is NOT runnable");
-
                 //TODO Display target info
                 mInfoTextPane.setText(target.description());
                 //Load settings
                 mSettingComponents.clear();
                 mConfigPane.removeAll();
-                mCurrentConfig = new Configuration(((Target) target).getConfiguration());
+                mCurrentConfig = new Configuration(((Builder) target).getConfiguration());
                 String[] field;
                 int param;
                 String val;
@@ -444,7 +434,7 @@ public class ExportDialog {
                 return null; //TODO Throw error
             //Export to file
             FileOutputStream stream = new FileOutputStream(mDest);
-            mBuilder.export(stream, mCallback);
+            mBuilder.export(mDest.getName(), stream, mCallback);
             mMessage.status = CallbackMessage.SUCCESS;
             mMessage.text = "Exported successful";
             return null;
