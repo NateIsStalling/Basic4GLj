@@ -1923,6 +1923,11 @@ public class GLBasicLib_gl implements Library {
         return null;
     }
 
+    @Override
+    public List<String> getClassPathObjects() {
+        return null;
+    }
+
     public final class WrapglAccum implements Function {
         public void run(TomVM vm) {
             glAccum(vm.GetIntParam(2), vm.GetRealParam(1));

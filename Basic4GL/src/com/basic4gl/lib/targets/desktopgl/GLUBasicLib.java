@@ -200,6 +200,11 @@ public class GLUBasicLib implements Library {
         return null;
     }
 
+    @Override
+    public List<String> getClassPathObjects() {
+        return null;
+    }
+
 
     public final class WrapgluOrtho2D implements Function
 

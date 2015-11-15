@@ -710,6 +710,10 @@ public class GLTextGridWindow extends GLWindow {
 	}
 
 	@Override
+	public List<String> getClassPathObjects(){
+		return Arrays.asList("jar/lwjgl.jar");
+	}
+	@Override
 	public List<String> getDependencies() {
 
 		//Get settings
@@ -723,35 +727,41 @@ public class GLTextGridWindow extends GLWindow {
 		int linux 	= Integer.valueOf(config.getValue(GLTextGridWindow.SETTING_SUPPORT_LINUX));
 
 		//Common
-		list.add("lwjgl.jar");
+		list.add("charset.png");
+		list.add("jar/lwjgl.jar");
 
 		//Windows
 		if (windows == GLTextGridWindow.SUPPORT_WINDOWS_32_64 || windows == GLTextGridWindow.SUPPORT_WINDOWS_64) {
 			//64-bit JOGL Windows libraries
-			list.add("lwjgl.dll");
-			list.add("OpenAL.dll");
+			list.add("native/lwjgl.dll");
+			list.add("native/OpenAL.dll");
+			list.add("native/jemalloc.dll");
 		}
 		if (windows == GLTextGridWindow.SUPPORT_WINDOWS_32_64 || windows == GLTextGridWindow.SUPPORT_WINDOWS_32) {
 			//32-bit JOGL Windows libraries
-			list.add("lwjgl32.dll");
-			list.add("OpenAL32.dll");
+			list.add("native/lwjgl32.dll");
+			list.add("native/OpenAL32.dll");
+			list.add("native/jemalloc32.dll");
 		}
 		//Mac
 		if (mac == GLTextGridWindow.SUPPORT_MAC_32_64) {
 			//Universal JOGL Mac libraries
-			list.add("liblwjgl.dylib");
-			list.add("libopenal.dylib");
+			list.add("native/liblwjgl.dylib");
+			list.add("native/libopenal.dylib");
+			list.add("native/libjemalloc.dylib");
 		}
 		//Linux
 		if (linux == GLTextGridWindow.SUPPORT_LINUX_32_64 || linux == GLTextGridWindow.SUPPORT_LINUX_64) {
 			//64-bit JOGL Linux libraries
-			list.add("liblwjgl.so");
-			list.add("libopenal.so");
+			list.add("native/liblwjgl.so");
+			list.add("native/libopenal.so");
+			list.add("native/libjemalloc.so");
 		}
 		if (linux == GLTextGridWindow.SUPPORT_LINUX_32_64 || linux == GLTextGridWindow.SUPPORT_LINUX_32) {
 			//32-bit JOGL Linux libraries
-			list.add("liblwjgl32.so");
-			list.add("libopenal32.so");
+			list.add("native/liblwjgl32.so");
+			list.add("native/libopenal32.so");
+			list.add("native/libjemalloc32.so");
 		}
 
 		return list;

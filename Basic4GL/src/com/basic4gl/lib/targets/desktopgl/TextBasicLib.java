@@ -527,6 +527,11 @@ public class TextBasicLib implements Library, TextAdapter, IGLRenderer{
         return null;
     }
 
+    @Override
+    public List<String> getClassPathObjects() {
+        return null;
+    }
+
 
     public void Print(String text, boolean newline) {
         TextBasicLib.appText.Write(text);

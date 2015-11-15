@@ -7,9 +7,7 @@ import com.basic4gl.util.Exporter;
 import com.basic4gl.util.FuncSpec;
 import com.basic4gl.vm.TomVM;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +16,8 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Created by Nate on 8/15/2015.
@@ -32,10 +32,10 @@ public class BuilderDesktopGL extends Builder {
         return instance;
     }
     @Override
-    public String getFileDescription() { return "Java Application (*.jar)";}
+    public String getFileDescription() { return "Java Application (*.zip)";}
 
     @Override
-    public String getFileExtension() { return "jar";}
+    public String getFileExtension() { return "zip";}
 
     @Override
     public Configuration getSettings() {
@@ -54,62 +54,98 @@ public class BuilderDesktopGL extends Builder {
 
 
     @Override
-    public boolean export(OutputStream stream, TaskCallback callback) throws Exception{
+    public boolean export(String filename, OutputStream stream, TaskCallback callback) throws Exception{
         int i;
-        String path;
+        File file = new File(filename);
+        File jar = new File(file.getName().replaceFirst("[.][^.]+$", "") + ".jar");
+        String classpath = ".";
         //TODO set this as a parameter or global constant
-        String libRoot = "jar/"; //External folder where dependencies should be located
-        JarEntry entry;
+        ZipOutputStream output = new ZipOutputStream(stream);
+        JarOutputStream target;
+        ZipEntry zipEntry;
+        JarEntry jarEntry;
 
         //TODO Add build option for single Jar
 
         ClassLoader loader = getClass().getClassLoader();
         List<String> dependencies;
 
-        //Create application's manifest
-        Manifest manifest = new Manifest();
-
-        path = "";
         //Generate class path
-        dependencies = mTarget.getDependencies();
+        dependencies = mTarget.getClassPathObjects();
         i = 0;
         if (dependencies != null)
             for (String dependency: dependencies) {
-                path += ((i != 0 ) ? " " : "") + libRoot + dependency;
+                classpath += " " + dependency;
                 i++;
             }
+
+        //Add external dependencies
+        dependencies = mTarget.getDependencies();
+        if (dependencies != null)
+            for (String dependency : dependencies) {
+                File source = new File(dependency);
+                if (!source.exists())
+                    continue;       //TODO throw build error
+                FileInputStream input = new FileInputStream(source);
+
+                zipEntry = new ZipEntry(dependency);
+                zipEntry.setTime(source.lastModified());
+
+                output.putNextEntry(zipEntry);
+                for (int c = input.read(); c != -1; c = input.read()) {
+                    output.write(c);
+                }
+                output.closeEntry();
+            }
+
+        try {
+        //Create application's manifest
+        Manifest manifest = new Manifest();
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
 
-        manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, path);
-        manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS,
-            mTarget.getClass().getName());
-        JarOutputStream target = new JarOutputStream(stream, manifest);
+        manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, classpath);
+        manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mTarget.getClass().getName());
+
+        zipEntry = new ZipEntry(jar.getName());
+                zipEntry.setTime(jar.lastModified());
+        output.putNextEntry(zipEntry);
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+
+        target = new JarOutputStream(bytes, manifest);
 
         //Add Basic4GLj classes to new Jar
         System.out.println("Adding source files");
         List<String> files = new ArrayList<String>();
         //TODO Only add required classes
         files.add("com/basic4gl/compiler");
-        files.add("com/basic4gl/lib");
-        files.add("com/basic4gl/util");
-        files.add("com/basic4gl/vm");
-        Exporter.addSource(files, target);
+            files.add("com/basic4gl/lib");
+            files.add("com/basic4gl/util");
+            files.add("com/basic4gl/vm");
+            Exporter.addSource(files, target);
 
         //Save VM's initial state to Jar
         mTarget.reset();
-        entry = new JarEntry(GLTextGridWindow.STATE_FILE);
-        target.putNextEntry(entry);
-        mTarget.saveState(target);
+        jarEntry = new JarEntry(GLTextGridWindow.STATE_FILE);
+            target.putNextEntry(jarEntry);
+            mTarget.saveState(target);
         target.closeEntry();
 
         //Serialize the build configuration and add to Jar
-        entry = new JarEntry(GLTextGridWindow.CONFIG_FILE);
-        target.putNextEntry(entry);
-        mTarget.saveConfiguration(target);
+        jarEntry = new JarEntry(GLTextGridWindow.CONFIG_FILE);
+            target.putNextEntry(jarEntry);
+            mTarget.saveConfiguration(target);
         target.closeEntry();
 
-        //Add external libraries
-        //TODO embed resource files
+        //TODO Implement embedding resources
+target.close();
+            bytes.writeTo(output);
+        //Writing Jar to archive complete
+        output.closeEntry();
+
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
         /*if (singleJar){
             System.out.println("Adding dependencies");
             if (dependencies != null)
@@ -130,7 +166,7 @@ public class BuilderDesktopGL extends Builder {
                 }
         }*/
 
-        target.close();
+        output.close();
         return true;
     }
 
@@ -184,6 +220,11 @@ public class BuilderDesktopGL extends Builder {
 
     @Override
     public List<String> getDependencies() {
+        return null;
+    }
+
+    @Override
+    public List<String> getClassPathObjects() {
         return null;
     }
 

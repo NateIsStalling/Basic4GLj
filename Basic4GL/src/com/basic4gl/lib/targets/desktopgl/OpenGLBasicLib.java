@@ -330,6 +330,11 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
         return null;
     }
 
+    @Override
+    public List<String> getClassPathObjects() {
+        return null;
+    }
+
     // TextureResourceStore
 //
 // Stores OpenGL texture handles

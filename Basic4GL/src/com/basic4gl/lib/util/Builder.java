@@ -17,7 +17,7 @@ public abstract class Builder implements Library{
      * Used by the compiler.
      * @return
      */
-    public abstract boolean export(OutputStream stream, TaskCallback callback) throws Exception;
+    public abstract boolean export(String filename, OutputStream stream, TaskCallback callback) throws Exception;
 
     public abstract Target getTarget();
 

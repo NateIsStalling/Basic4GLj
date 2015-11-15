@@ -75,6 +75,11 @@ public class TrigBasicLib implements Library {
         return null;
     }
 
+    @Override
+    public List<String> getClassPathObjects() {
+        return null;
+    }
+
     // Matrix constructors.
 // Note: These all drop their result into the global "matrix" variable (below)
     public static float matrix[] = new float[16];

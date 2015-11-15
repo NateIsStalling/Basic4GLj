@@ -76,7 +76,12 @@ public interface Library {
 
 	/**
 	 * 
-	 * @return List of files required by library to add to the class path
+	 * @return List of files required by library to include when exported
 	 */
 	public abstract List<String> getDependencies();
+	/**
+	 *
+	 * @return List of files or directories required by library to add to the class path
+	 */
+	public abstract List<String> getClassPathObjects();
 }

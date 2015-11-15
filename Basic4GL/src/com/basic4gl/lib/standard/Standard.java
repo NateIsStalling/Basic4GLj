@@ -543,4 +543,9 @@ public class Standard implements Library{
 		return null;
 	}
 
+	@Override
+	public List<String> getClassPathObjects() {
+		return null;
+	}
+
 }
