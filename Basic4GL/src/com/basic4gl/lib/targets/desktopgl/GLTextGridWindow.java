@@ -2,10 +2,7 @@ package com.basic4gl.lib.targets.desktopgl;
 
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 import javax.swing.*;
@@ -39,8 +36,8 @@ public class GLTextGridWindow extends GLWindow {
 
 	private TomBasicCompiler mComp;
 	private TomVM mVM;
-	private VmWorker mWorker;
-
+	private VmWorker mWorker;	//Debugging
+	private Thread mThread;	//Standalone
 
 
 	private CountDownLatch completionLatch;
@@ -147,9 +144,11 @@ public class GLTextGridWindow extends GLWindow {
 		}
 
 		//Initialize window and setup VM
+		instance.mVM.Pause();
+		instance.mVM.Reset();
+		instance.resetThread(); //todo cleanup threading code
 		instance.activate();
-		instance.reset();
-		instance.show(null);
+		instance.mThread.start();
 	}
 
 	@Override
@@ -203,7 +202,10 @@ public class GLTextGridWindow extends GLWindow {
 	public boolean isVisible() {
 		return mWorker != null && mWorker.isVisible();
 	}
-
+	//Temporary; needed to show standalone thread
+	private void resetThread(){
+		mThread = new Thread(new VMThread());
+	}
 	@Override
 	public void reset() {
 		mVM.Pause();
@@ -269,6 +271,332 @@ public class GLTextGridWindow extends GLWindow {
 	void swapBuffers(){
 		if (isVisible())
 			mWorker.swapBuffers();
+	}
+
+	private class VMThread implements Runnable {
+		// We need to strongly reference callback instances.
+		private GLFWErrorCallback errorCallback;
+		private GLFWKeyCallback keyCallback;
+		private GLFWCharCallback charCallback;
+		GLTextGrid  mTextGrid;
+		GLTextGrid getTextGrid ()                 { return mTextGrid; }
+		void setTextGrid (GLTextGrid grid)    { mTextGrid = grid; }
+
+		void    RecreateGLContext (){
+			GLTextGridWindow.super.RecreateGLContext();
+
+			if (mTextGrid != null)
+				mTextGrid.UploadCharsetTexture();
+		}
+		boolean isClosing(){
+			try {
+				synchronized (this) {
+					return m_window != 0 && glfwWindowShouldClose(m_window) == GL_TRUE;
+				}
+			} catch (Exception e){
+				e.printStackTrace();
+				return false;
+			}
+		}
+		boolean isVisible() {
+			try {
+				synchronized (this) {
+					return m_window != 0 && glfwWindowShouldClose(m_window) == GL_FALSE;
+				}
+			} catch (Exception e){
+				e.printStackTrace();
+				return false;
+			}
+		}
+		void swapBuffers(){
+			try {
+				synchronized (this) {
+					glfwSwapBuffers(m_window);
+				}
+			} catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+		private void init() {
+			synchronized (GLTextGridWindow.this) {
+				//C++ source code for reference
+				// m_glWin = null;
+				// m_glText = null;
+
+				// Default settings
+				// boolean fullScreen = false, border = true;
+				// int width = 640, height = 480, bpp = 0;
+				// ResetGLModeType resetGLMode = RGM_RESETSTATE;
+
+				// Create window
+				/*
+		 		m_glWin = new glTextGridWindow ( fullScreen, border, width, height,
+		 		bpp, "Basic4GL", resetGLMode);
+
+		 		// Check for errors if (m_glWin.Error ()) { MessageDlg ( (AnsiString)
+		 		m_glWin.GetError().c_str(), mtError, TMsgDlgButtons() << mbOK, 0);
+		 		Application.Terminate (); return; } m_glWin.Hide ();
+
+		 		// Create OpenGL text grid m_glText = new glSpriteEngine (
+		 		(ExtractFilePath (Application.ExeName) + "charset.png").c_str (),
+		 		&m_files, 25, 40, 16, 16);
+		 		// Check for errors if (m_glText.Error ()) { MessageDlg (
+		 		(AnsiString) + m_glText.GetError ().c_str (), mtError,
+		 		TMsgDlgButtons() << mbOK, 0); Application.Terminate (); return; }
+		 		m_glWin.SetTextGrid (m_glText);
+		 		*/
+				String title = mConfiguration.getValue(SETTING_TITLE);
+				m_width = Integer.valueOf(mConfiguration.getValue(SETTING_WIDTH));
+				m_height = Integer.valueOf(mConfiguration.getValue(SETTING_HEIGHT));
+
+				boolean resizable = Boolean.valueOf(mConfiguration.getValue(SETTING_RESIZABLE));
+				int mode = Integer.valueOf(mConfiguration.getValue(SETTING_SCREEN_MODE));
+
+
+				// Setup an error callback. The default implementation
+				// will print the error message in System.err.
+				glfwSetErrorCallback(errorCallback = errorCallbackPrint(System.err));
+
+				// Initialize GLFW. Most GLFW functions will not work before doing this.
+				if (glfwInit() != GL11.GL_TRUE) {
+					throw new IllegalStateException("Unable to initialize GLFW");
+				}
+
+				// Configure our window
+				glfwDefaultWindowHints(); // optional, the current window hints are already the default
+				glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
+				glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE); // the window will be resizable
+
+
+				// Create the window
+				m_window = glfwCreateWindow(m_width, m_height, title, NULL, NULL);
+				if (m_window == NULL) {
+					throw new RuntimeException("Failed to create the GLFW window");
+				}
+
+				//TODO implement window icons
+
+				/* //TODO Implement fullscreen and windowless mode
+				//Scrap code from previous swing implementation
+				if (mode == MODE_FULLSCREEN) {
+					mFrame.setUndecorated(true);
+					mFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+				} else {
+					mFrame.setUndecorated(false);
+					mFrame.setExtendedState(JFrame.NORMAL);
+				}
+				mFrame.add(mCanvas);*/
+
+				// Setup a key callback. It will be called every time a key is pressed, repeated or released.
+				glfwSetKeyCallback(m_window, keyCallback = new GLFWKeyCallback() {
+					@Override
+					public void invoke(long window, int key, int scancode, int action, int mods) {
+						if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+							glfwSetWindowShouldClose(window, GL_TRUE); // We will detect this in our rendering loop
+						}
+
+						if (action == GLFW_PRESS){
+							if (key == GLFW_KEY_PAUSE)
+								m_pausePressed = true;
+							else {
+								m_keyDown [key & 0xffff] |= 1;
+								BufferScanKey ((char) (key & 0xffff));
+							}
+						} else if (action == GLFW_RELEASE){
+							m_keyDown [key & 0xffff] &= ~1;
+						}
+					}
+				});
+				// Setup a character key callback
+				glfwSetCharCallback(m_window, charCallback = new GLFWCharCallback() {
+					@Override
+					public void invoke(long window, int codepoint) {
+
+						if (codepoint == 27)               // Esc closes window
+							m_closing = true;
+
+						int end = m_bufEnd;
+						IncEnd();                    // Check for room in buffer
+						if (m_bufEnd != m_bufStart)
+							m_keyBuffer[end] = (char)codepoint;
+						else
+							m_bufEnd = end;           // No room. Restore buffer pointers
+
+
+					}
+				});
+
+				// Get the resolution of the primary monitor
+				ByteBuffer vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+				// Center our window
+				glfwSetWindowPos(
+						m_window,
+						(GLFWvidmode.width(vidmode) - m_width) / 2,
+						(GLFWvidmode.height(vidmode) - m_height) / 2
+				);
+
+				// Make the OpenGL context current
+				glfwMakeContextCurrent(m_window);
+				// Enable v-sync
+				glfwSwapInterval(1);
+
+				// Make the window visible
+				glfwShowWindow(m_window);
+			}
+		}
+		@Override
+		public void run() {
+			System.out.println("Running...");
+			if (mVM == null) {
+				return;    //TODO Throw exception
+			}
+			try {
+				//Create window
+				init();
+				// This line is critical for LWJGL's interoperation with GLFW's
+				// OpenGL context, or any context that is managed externally.
+				// LWJGL detects the context that is current in the current thread,
+				// creates the ContextCapabilities instance and makes the OpenGL
+				// bindings available for use.
+				GL.createCapabilities();
+
+				ResetGL();
+				// Initialize Sprite Engine
+				mTextGrid = new GLSpriteEngine("charset.png", null, 25, 40, 16, 16);
+				if (mTextGrid.hasError())
+					mVM.setError(mTextGrid.getError());
+
+				//Initialize libraries
+				for (Library lib : mComp.getLibraries()) {
+					if (lib instanceof IGLRenderer) {
+						((IGLRenderer) lib).setTextGrid(mTextGrid);
+						((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
+					}
+					lib.initVM(mVM);
+				}
+				if (mVM.getDebugger() == null) {
+					//Debugger is not attached
+					while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.Done() && !isClosing()) {
+						//Continue to next OpCode
+						driveVm(TomVM.VM_STEPS);
+
+						// Poll for window events. The key callback above will only be
+						// invoked during this call.
+						glfwPollEvents();
+
+					}
+				}    //Program completed
+
+				//Perform debugger callbacks
+				//TODO implement callbacks
+				/*
+				if (mCallbacks != null) {
+					int success;
+					success = !mVM.hasError()
+							? CallbackMessage.SUCCESS
+							: CallbackMessage.FAILED;
+					publish(new CallbackMessage(success, success == CallbackMessage.SUCCESS
+							? "Program completed"
+							: mVM.getError()));
+				}*/
+
+				//glfwSwapBuffers(m_window); // swap the color buffers
+				//Keep window responsive until closed
+				while (!Thread.currentThread().isInterrupted() && m_window != 0 && !isClosing()) {
+					try {
+						//Go easy on the processor
+						Thread.sleep(10);
+					} catch (InterruptedException e){ break;}
+
+					// Poll for window events. The key callback above will only be
+					// invoked during this call.
+					glfwPollEvents();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				synchronized (GLTextGridWindow.this) {
+
+					//Free text grid image
+					mTextGrid.destroy();
+
+					// Release window and window callbacks
+					glfwDestroyWindow(m_window);
+					keyCallback.release();
+					charCallback.release();
+					ClearKeyBuffers();
+
+					// Terminate GLFW and release the GLFWerrorfun
+					glfwTerminate();
+					errorCallback.release();
+					//Clear pointer to window
+					//An access violation will occur next time this window is launched if this isn't cleared
+					m_window = 0;
+				}
+			}
+		}
+
+		private void driveVm(int steps) {
+
+			// Drive the virtual machine
+
+			// Execute a number of VM steps
+			try {
+				mVM.Continue(steps);
+
+			} catch (Exception e) {
+				//TODO get error type
+				// Need to screen out numeric errors, as these can be generated by some
+				// OpenGL implementations...
+				/*switch (GetExceptionCode()) {
+
+                // Skip mathematics errors (overflows, divide by 0 etc).
+                // This is quite important!, as some OpenGL drivers will trigger
+                // divide-by-zero and other conditions if geometry happens to
+                // be aligned in certain ways. The appropriate behaviour is to
+                // ignore these errors, and keep running, and NOT to stop the
+                // program!
+                case EXCEPTION_FLT_DENORMAL_OPERAND:
+                case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+                case EXCEPTION_FLT_INEXACT_RESULT:
+                case EXCEPTION_FLT_INVALID_OPERATION:
+                case EXCEPTION_FLT_OVERFLOW:
+                case EXCEPTION_FLT_STACK_CHECK:
+                case EXCEPTION_FLT_UNDERFLOW:
+                case EXCEPTION_INT_DIVIDE_BY_ZERO:
+                case EXCEPTION_INT_OVERFLOW:
+                    mVM.SkipInstruction();*/
+                    /*break;
+
+                // All other exceptions will stop the program.
+                default:*/
+				e.printStackTrace();
+				mVM.MiscError("An exception occured!");
+			}
+
+			// Check for error
+			if (mVM.hasError() || mVM.Done() || isClosing()) {
+				int success;
+				//TODO implement callbacks
+				/*if (mCallbacks != null) {
+					success = !mVM.hasError()
+							? CallbackMessage.SUCCESS
+							: CallbackMessage.FAILED;
+					publish(new CallbackMessage(success, success == CallbackMessage.SUCCESS
+							? "Program completed"
+							: mVM.getError()));
+				}*/
+
+				if (isClosing() || isFullscreen()) {
+					hide();    //Stop program and close window
+				}
+				else {
+					//TODO handle program completion options
+					//stop(); //Just stop the worker thread;
+				}
+
+			}
+		}
 	}
 	private class VmWorker extends SwingWorker<Object, CallbackMessage>{
 		// We need to strongly reference callback instances.
