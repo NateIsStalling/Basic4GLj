@@ -8,6 +8,7 @@ import com.basic4gl.util.FuncSpec;
 import com.basic4gl.vm.TomVM;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -98,6 +99,29 @@ public class BuilderDesktopGL extends Builder {
                 output.closeEntry();
             }
 
+        //Add launcher script
+        //TODO add additional scripts for each platform
+        zipEntry = new ZipEntry("launcher.bat");
+        zipEntry.setTime(System.currentTimeMillis());
+        output.putNextEntry(zipEntry);
+        output.write(String.format(
+                "::Run %1$s; requires Java be installed and in your system path\n" +
+                        "::-Djava.library.path=native/ is needed for window to display\n" +
+                        "::Log console output for debugging\n" +
+                        ">output.log (\n" +
+                        "\tjava -jar -Djava.library.path=native/ %1$s\n" +
+                        ")",
+                jar.getName()).getBytes(StandardCharsets.UTF_8));
+        output.closeEntry();
+
+        zipEntry = new ZipEntry("README.txt");
+        zipEntry.setTime(System.currentTimeMillis());
+        output.putNextEntry(zipEntry);
+        output.write(String.format(
+                "Execute launcher.bat to run %1$s, or open the jar from the terminal with the following argument: \n" +
+                        "-Djava.library.path=native/",
+                jar.getName()).getBytes(StandardCharsets.UTF_8));
+        output.closeEntry();
         try {
         //Create application's manifest
         Manifest manifest = new Manifest();
@@ -107,7 +131,7 @@ public class BuilderDesktopGL extends Builder {
         manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mTarget.getClass().getName());
 
         zipEntry = new ZipEntry(jar.getName());
-                zipEntry.setTime(jar.lastModified());
+                zipEntry.setTime(System.currentTimeMillis());
         output.putNextEntry(zipEntry);
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
