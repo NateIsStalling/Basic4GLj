@@ -499,20 +499,20 @@ public class TrigBasicLib implements Library {
 
     public final class WrapVec4 implements Function { public void run(TomVM vm){
 
-        Float vec4[] = new Float[]{ vm.GetRealParam (4), vm.GetRealParam (3), vm.GetRealParam (2), vm.GetRealParam (1) };
-        vm.Reg ().setIntVal ( Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 4, Arrays.asList(vec4)));
+        float vec4[] = new float[]{ vm.GetRealParam (4), vm.GetRealParam (3), vm.GetRealParam (2), vm.GetRealParam (1) };
+        vm.Reg ().setIntVal ( Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 4, vec4));
     }
     }
     public final class WrapVec3 implements Function { public void run(TomVM vm){
 
-        Float vec3 [] = new Float[]{ vm.GetRealParam (3), vm.GetRealParam (2), vm.GetRealParam (1) };
-        vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 3, Arrays.asList(vec3)));
+        float vec3 [] = new float[]{ vm.GetRealParam (3), vm.GetRealParam (2), vm.GetRealParam (1) };
+        vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 3, vec3));
     }
     }
     public final class WrapVec2 implements Function { public void run(TomVM vm){
 
-        Float vec2 [] = new Float[]{ vm.GetRealParam (2), vm.GetRealParam (1) };
-        vm.Reg ().setIntVal ( Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 2, Arrays.asList(vec2)));
+        float vec2 [] = new float[]{ vm.GetRealParam (2), vm.GetRealParam (1) };
+        vm.Reg ().setIntVal ( Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 2, vec2));
     }
     }
     public final class WrapMatrixZero implements Function { public void run(TomVM vm){
@@ -646,7 +646,7 @@ public class TrigBasicLib implements Library {
         Transpose (m1, m2);
 
 // Create new matrix and assign to register
-        vm.Reg ().setIntVal(Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, Arrays.asList(m2)));
+        vm.Reg ().setIntVal(Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, m2));
     }
     }
     public final class WrapRTInvert implements Function { public void run(TomVM vm){
@@ -660,7 +660,7 @@ public class TrigBasicLib implements Library {
         RTInvert(m1, m2);
 
 // Create new matrix and assign to register
-        vm.Reg ().setIntVal (Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, Arrays.asList(m2)));
+        vm.Reg ().setIntVal (Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, m2));
     }
     }
     public final class WrapOrthonormalize implements Function { public void run(TomVM vm){
@@ -674,7 +674,7 @@ public class TrigBasicLib implements Library {
         Orthonormalize(m1);
 
 // Create new matrix and assign to register
-        vm.Reg ().setIntVal (Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, Arrays.asList(m1)));
+        vm.Reg ().setIntVal (Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, m1));
     }
     }
 
@@ -716,7 +716,7 @@ public class TrigBasicLib implements Library {
         ScaleMatrix (m1, scale);
 
         // Create new matrix and assign to register
-        vm.Reg ().setIntVal ( Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, Arrays.asList(m1)));
+        vm.Reg ().setIntVal ( Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, m1));
     }
     public final class OpScaleMatrix implements Function { public void run(TomVM vm){
         DoScaleMatrix (vm, vm.Reg ().getRealVal(), vm.Reg2 ().getIntVal ());
@@ -760,7 +760,7 @@ public class TrigBasicLib implements Library {
         MatrixTimesMatrix(m1, m2, result);
 
         // Return as temporary matrix
-        vm.Reg ().setIntVal( Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, Arrays.asList(result)));
+        vm.Reg ().setIntVal( Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, result));
     }}
     public final class OpVecVec implements Function { public void run(TomVM vm){
 
