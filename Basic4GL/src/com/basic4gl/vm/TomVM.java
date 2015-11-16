@@ -201,6 +201,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         mCode = new Vector<Instruction>();
         mFunctions = new Vector<Function>();
+        mOperatorFunctions = new Vector<>();
         mUserFunctions = new Vector<UserFunc>();
         mUserFunctionPrototypes = new Vector<UserFuncPrototype>();
         mPatchedBreakPts = new ArrayList<PatchedBreakPt>();
