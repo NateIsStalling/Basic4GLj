@@ -1505,6 +1505,27 @@ public class Data {
 		// Return temporary index
 		return dataIndex;
 	}
+	public static int FillTempRealArray2D(Data data, TypeLibrary typeLib,
+											  int arraySize1, int arraySize2, float[] array) {
+		assert (array != null);
+
+		// Allocate temporary array
+		int dataIndex = TempArray2D(data, typeLib, ValType.VTP_REAL,
+				arraySize1, arraySize2);
+
+		// Translate C array into data
+		int i = 0;
+		for (int x = 0; x < arraySize1; x++) {
+			int offset = dataIndex + x
+					* data.Data().get(dataIndex + 1).getIntVal() + 2;
+			for (int y = 0; y < arraySize2; y++)
+				data.Data().get(offset + y + 2)
+						.setRealVal( array[i++]);
+		}
+
+		// Return temporary index
+		return dataIndex;
+	}
 
 	public static int ArrayDimensionSize(Data data, int arrayOffset,
 			int dimension) {
