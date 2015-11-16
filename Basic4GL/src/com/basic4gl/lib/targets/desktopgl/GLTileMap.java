@@ -51,6 +51,7 @@ public class GLTileMap extends GLBasicSprite {
     // Construction/destruction
     public GLTileMap() {
         super();
+        SetDefaults ();
     }
 
     public GLTileMap(int tex) {

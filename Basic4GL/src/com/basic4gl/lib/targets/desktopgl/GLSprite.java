@@ -74,6 +74,7 @@ public class GLSprite extends GLBasicSprite {
 
     public GLSprite() {
         super();
+        SetDefaults ();
     }
 
     public GLSprite(int tex) {
