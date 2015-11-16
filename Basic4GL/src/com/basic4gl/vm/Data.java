@@ -1410,12 +1410,42 @@ public class Data {
 
 		// Translate C array into data
 		for (int i = 0; i < arraySize; i++)
-			data.Data().get(dataIndex + 2 + i).setRealVal( array.get(i).floatValue());
+			data.Data().get(dataIndex + 2 + i).setRealVal(array.get(i).floatValue());
 
 		// Return temporary index
 		return dataIndex;
 	}
 
+	public static int FillTempRealArray(Data data, TypeLibrary typeLib,
+															int arraySize, int[] array) {
+		assert (array != null);
+
+		// Allocate temporary array
+		int dataIndex = TempArray(data, typeLib, ValType.VTP_REAL,
+				arraySize);
+
+		// Translate C array into data
+		for (int i = 0; i < arraySize; i++)
+			data.Data().get(dataIndex + 2 + i).setRealVal((float) array[i]);
+
+		// Return temporary index
+		return dataIndex;
+	}
+	public static int FillTempRealArray(Data data, TypeLibrary typeLib,
+										int arraySize, float[] array) {
+		assert (array != null);
+
+		// Allocate temporary array
+		int dataIndex = TempArray(data, typeLib, ValType.VTP_REAL,
+				arraySize);
+
+		// Translate C array into data
+		for (int i = 0; i < arraySize; i++)
+			data.Data().get(dataIndex + 2 + i).setRealVal(array[i]);
+
+		// Return temporary index
+		return dataIndex;
+	}
 	public static int TempArray2D(Data data, TypeLibrary typeLib,
 			int elementType, int arraySize1, int arraySize2) {
 		assert (arraySize1 > 0);
