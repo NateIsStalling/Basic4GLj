@@ -192,7 +192,7 @@ public class GLUBasicLib implements Library {
         s.put("gluOrtho2D", new FuncSpec[]{new FuncSpec(WrapgluOrtho2D.class, new ParamTypeList(ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL), true, false, ValType.VTP_INT, false, false, null)});
         s.put("gluPerspective", new FuncSpec[]{new FuncSpec(WrapgluPerspective.class, new ParamTypeList(ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL), true, false, ValType.VTP_INT, false, false, null)});
         s.put("gluLookAt", new FuncSpec[]{new FuncSpec(WrapgluLookAt.class, new ParamTypeList(ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL), true, false, ValType.VTP_INT, false, false, null)});
-        return null;
+        return s;
     }
 
     @Override

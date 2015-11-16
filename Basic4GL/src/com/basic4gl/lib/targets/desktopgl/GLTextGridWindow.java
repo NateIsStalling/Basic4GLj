@@ -114,6 +114,7 @@ public class GLTextGridWindow extends GLWindow {
 		instance.mLibraries.add(new com.basic4gl.lib.standard.TrigBasicLib());
 		instance.mLibraries.add(new com.basic4gl.lib.targets.desktopgl.TextBasicLib());
 		instance.mLibraries.add(new com.basic4gl.lib.targets.desktopgl.OpenGLBasicLib());
+		instance.mLibraries.add(new com.basic4gl.lib.targets.desktopgl.GLUBasicLib());
 		instance.mLibraries.add(new com.basic4gl.lib.targets.desktopgl.GLBasicLib_gl());
 
 		// Register library functions

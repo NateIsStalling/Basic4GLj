@@ -1163,6 +1163,7 @@ public class MainWindow implements MainEditor {
         mLibraries.add(new com.basic4gl.lib.standard.TrigBasicLib());
         mLibraries.add(new com.basic4gl.lib.targets.desktopgl.TextBasicLib());
         mLibraries.add(new com.basic4gl.lib.targets.desktopgl.OpenGLBasicLib());
+        mLibraries.add(new com.basic4gl.lib.targets.desktopgl.GLUBasicLib());
         mLibraries.add(new com.basic4gl.lib.targets.desktopgl.GLBasicLib_gl());
         mLibraries.add(GLTextGridWindow.getInstance(mComp));
         mLibraries.add(BuilderDesktopGL.getInstance(mComp));
@@ -1170,6 +1171,7 @@ public class MainWindow implements MainEditor {
         //TODO Add more libraries
         int i = 0;
         for (Library lib : mLibraries) {
+            lib.init(mComp); //Allow libraries to register function overloads
             mComp.AddConstants(lib.constants());
             mComp.AddFunctions(lib, lib.specs());
             if (lib instanceof Builder) {
