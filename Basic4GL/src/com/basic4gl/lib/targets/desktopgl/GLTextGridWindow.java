@@ -1002,8 +1002,8 @@ public class GLTextGridWindow extends GLWindow {
 		settings.addSetting(new String[]{"Window Height"}, Configuration.PARAM_INT, "480");
 		settings.addSetting(new String[]{"Resizable Window"}, Configuration.PARAM_BOOL, "false");
 		settings.addSetting(new String[]{"Screen Mode",
-						"Windowed",
-						"Fullscreen"},
+						"Windowed"},
+						//"Fullscreen"}, temporarily disabled
 				Configuration.PARAM_CHOICE, "0");
 		settings.addSetting(new String[]{}, Configuration.PARAM_DIVIDER, "");
 		settings.addSetting(new String[]{"Platforms"}, Configuration.PARAM_HEADING, "");
