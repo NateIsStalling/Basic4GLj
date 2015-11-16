@@ -109,7 +109,7 @@ public abstract class GLWindow extends HasErrorState implements Target {
     @Override
     public abstract String[] compat();
     @Override
-    public abstract void initVM(TomVM vm);
+    public abstract void init(TomVM vm);
 
     @Override
     public abstract Map<String, Constant> constants();

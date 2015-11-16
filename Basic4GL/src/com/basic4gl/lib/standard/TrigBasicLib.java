@@ -1,6 +1,7 @@
 package com.basic4gl.lib.standard;
 
 import com.basic4gl.compiler.Constant;
+import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.util.FuncSpec;
 import com.basic4gl.vm.TomVM;
@@ -51,10 +52,12 @@ public class TrigBasicLib implements Library {
     }
 
     @Override
-    public void initVM(TomVM vm) {
+    public void init(TomVM vm) {
+    }
+    @Override
+    public void init(TomBasicCompiler comp){
 
     }
-
     @Override
     public Map<String, Constant> constants() {
         return null;

@@ -101,7 +101,7 @@ public class TextBasicLib implements Library, TextAdapter, IGLRenderer{
     }
 
     @Override
-    public void initVM(TomVM vm) {
+    public void init(TomVM vm) {
         // Text rendering defaults
         textMode = TextMode.TEXT_SIMPLE;
         appText.Resize (25, 40);
@@ -121,6 +121,10 @@ public class TextBasicLib implements Library, TextAdapter, IGLRenderer{
         TextBasicLib.spriteCount = 0;
     }
 
+    @Override
+    public void init(TomBasicCompiler comp){
+
+    }
     @Override
     public Map<String, Constant> constants() {
         Map<String, Constant> c = new HashMap<String, Constant>();

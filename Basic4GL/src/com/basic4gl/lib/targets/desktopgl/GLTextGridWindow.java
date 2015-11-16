@@ -8,13 +8,10 @@ import java.util.concurrent.CountDownLatch;
 import javax.swing.*;
 
 import com.basic4gl.compiler.Constant;
-import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.util.FuncSpec;
 import com.basic4gl.vm.TomVM;
-import com.basic4gl.vm.types.ValType;
-import com.basic4gl.vm.util.Function;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -176,8 +173,12 @@ public class GLTextGridWindow extends GLWindow {
 	public String[] compat() { return null;}
 
 	@Override
-	public void initVM(TomVM vm) {
+	public void init(TomVM vm) {
 		// TODO Auto-generated method stub
+
+	}
+	@Override
+	public void init(TomBasicCompiler comp){
 
 	}
 
@@ -472,7 +473,7 @@ public class GLTextGridWindow extends GLWindow {
 						((IGLRenderer) lib).setTextGrid(mTextGrid);
 						((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
 					}
-					lib.initVM(mVM);
+					lib.init(mVM);
 				}
 				if (mVM.getDebugger() == null) {
 					//Debugger is not attached
@@ -813,7 +814,7 @@ public class GLTextGridWindow extends GLWindow {
 						((IGLRenderer) lib).setTextGrid(mTextGrid);
 						((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
 					}
-					lib.initVM(mVM);
+					lib.init(mVM);
 				}
 				if (mVM.getDebugger() == null) {
 					//Debugger is not attached

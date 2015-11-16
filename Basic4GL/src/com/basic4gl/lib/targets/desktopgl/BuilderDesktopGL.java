@@ -223,10 +223,13 @@ target.close();
     }
 
     @Override
-    public void initVM(TomVM vm) {
+    public void init(TomVM vm) {
 
     }
+    @Override
+    public void init(TomBasicCompiler comp){
 
+    }
     @Override
     public Map<String, Constant> constants() {
         return null;

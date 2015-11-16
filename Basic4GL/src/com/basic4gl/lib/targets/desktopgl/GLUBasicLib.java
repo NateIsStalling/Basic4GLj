@@ -2,6 +2,7 @@ package com.basic4gl.lib.targets.desktopgl;
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
+import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.util.FuncSpec;
 import com.basic4gl.vm.TomVM;
@@ -56,7 +57,11 @@ public class GLUBasicLib implements Library {
     }
 
     @Override
-    public void initVM(TomVM vm) {
+    public void init(TomVM vm) {
+
+    }
+    @Override
+    public void init(TomBasicCompiler comp){
 
     }
 

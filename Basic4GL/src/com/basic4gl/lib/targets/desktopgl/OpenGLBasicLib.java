@@ -2,6 +2,7 @@ package com.basic4gl.lib.targets.desktopgl;
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
+import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.lib.util.Routines;
 import com.basic4gl.util.FuncSpec;
@@ -97,7 +98,7 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
     }
 
     @Override
-    public void initVM(TomVM vm) {
+    public void init(TomVM vm) {
         appWindow.ClearKeyBuffers();
         if (textures != null)
             textures.Clear();
@@ -117,7 +118,10 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
         doMipmap = true;
         doLinearFilter = true;
     }
+    @Override
+    public void init(TomBasicCompiler comp){
 
+    }
     @Override
     public Map<String, Constant> constants() {
         Map<String, Constant> c = new HashMap<String, Constant>();

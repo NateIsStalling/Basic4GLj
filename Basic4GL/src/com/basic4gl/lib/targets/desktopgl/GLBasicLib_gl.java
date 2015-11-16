@@ -65,7 +65,11 @@ public class GLBasicLib_gl implements Library {
     }
 
     @Override
-    public void initVM(TomVM vm) {
+    public void init(TomVM vm) {
+
+    }
+    @Override
+    public void init(TomBasicCompiler comp){
 
     }
 

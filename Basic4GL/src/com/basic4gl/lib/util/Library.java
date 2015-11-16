@@ -56,7 +56,14 @@ public interface Library {
 	 * before the virtual machine is started.
 	 * @param vm
 	 */
-	public abstract void initVM(TomVM vm);
+	public abstract void init(TomVM vm);
+
+	/**
+	 * Initialize miscellaneous values used in the library
+	 * before the compiler is started.
+	 * @param comp
+	 */
+	public abstract void init(TomBasicCompiler comp);
 	
 	/**
 	 * Returns a list of constants for the compiler to use

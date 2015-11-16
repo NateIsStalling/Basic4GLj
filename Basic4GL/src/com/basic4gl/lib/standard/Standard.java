@@ -9,6 +9,7 @@ import java.util.Vector;
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
+import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.ParamValidationCallback;
 import com.basic4gl.util.FuncSpec;
 import com.basic4gl.lib.util.Library;
@@ -54,7 +55,7 @@ public class Standard implements Library{
 	// //////////////////////////////////////////////////////////////////////////////
 	// Pre-run initialisation
 	@Override
-	public void initVM(TomVM vm) {
+	public void init(TomVM vm) {
 		/////////////////////
 		// Initialise state
 		rnd = new Random();
@@ -63,7 +64,10 @@ public class Standard implements Library{
 		maxCatchupTime = DEF_MAX_CATCHUP_TIME;
 		catchupTime = maxCatchupTime - 1;
 	}
+	@Override
+	public void init(TomBasicCompiler comp){
 
+	}
 	///////////////////////////////////////////////////////////////////////////////////
 	//Documentation
 	@Override
