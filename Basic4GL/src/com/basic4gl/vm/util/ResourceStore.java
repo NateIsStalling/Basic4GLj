@@ -51,7 +51,7 @@ public abstract class ResourceStore<T> extends Resources {
 	}
 
 	public int Alloc(T element) {
-		if (element == m_store.BlankElement())
+		if (element.equals(m_store.BlankElement()))
 			return -1;
 		else {
 			int index = Alloc();
