@@ -38,12 +38,12 @@ public class MainWindow implements MainEditor {
 
     //Window Constants
     public static final String APPLICATION_NAME = "Basic4GLj";
-    public static final String APPLICATION_VERSION = "Alpha 0.2.2";
-    public static final String APPLICATION_BUILD_DATE = "4/13/2015";
+    public static final String APPLICATION_VERSION = "Alpha 0.3.0";
+    public static final String APPLICATION_BUILD_DATE = "11/15/2015";
     public static final String APPLICATION_COPYRIGHT = "(c) 2015, Nathaniel Nielsen";
-    public static final String APPLICATION_DESCRIPTION = "Basic4GL for java";
-    public static final String APPLICATION_WEBSITE = "blog.crazynatestudios.com";
-    public static final String APPLICATION_CONTACT = "support@crazynatestudios.com";
+    public static final String APPLICATION_DESCRIPTION = "Basic4GL for Java";
+    public static final String APPLICATION_WEBSITE = "www.stallingsoftware.com";
+    public static final String APPLICATION_CONTACT = "support@stallingsoftware.com";
 
     public static final String ICON_LOGO_SMALL = "images/logox32.png";
     public static final String ICON_LOGO_LARGE = "images/logox128.png";
