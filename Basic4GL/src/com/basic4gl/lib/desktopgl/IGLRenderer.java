@@ -1,4 +1,4 @@
-package com.basic4gl.lib.targets.desktopgl;
+package com.basic4gl.lib.desktopgl;
 
 /**
  * Created by Nate on 11/2/2015.

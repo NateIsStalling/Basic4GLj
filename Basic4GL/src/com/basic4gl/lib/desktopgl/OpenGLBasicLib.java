@@ -1,4 +1,4 @@
-package com.basic4gl.lib.targets.desktopgl;
+package com.basic4gl.lib.desktopgl;
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
@@ -15,11 +15,6 @@ import com.basic4gl.vm.util.PointerResourceStore;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.*;
 import java.util.*;
 

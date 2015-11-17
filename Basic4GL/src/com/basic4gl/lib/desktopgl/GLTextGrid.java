@@ -1,12 +1,9 @@
-package com.basic4gl.lib.targets.desktopgl;
+package com.basic4gl.lib.desktopgl;
 
 
 import com.basic4gl.lib.util.FileOpener;
 import com.basic4gl.vm.HasErrorState;
 
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -17,11 +14,8 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.stb.STBImage.*;
 
-import org.lwjgl.Sys;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.stb.STBImage.*;
-import static org.lwjgl.system.MemoryUtil.*;
 import org.lwjgl.BufferUtils;
 
 /**

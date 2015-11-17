@@ -1,4 +1,4 @@
-package com.basic4gl.lib.targets.desktopgl;
+package com.basic4gl.lib.desktopgl;
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
@@ -10,11 +10,9 @@ import com.basic4gl.vm.TomVM;
 import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.util.Function;
 import com.basic4gl.vm.util.ResourceStore;
-import com.basic4gl.lib.targets.desktopgl.GLSpriteEngine.*;
+import com.basic4gl.lib.desktopgl.GLSpriteEngine.*;
 import org.lwjgl.BufferUtils;
-import sun.plugin.javascript.navig.Array;
 
-import java.awt.event.KeyEvent;
 import java.nio.IntBuffer;
 import java.util.*;
 

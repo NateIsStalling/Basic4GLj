@@ -1,12 +1,9 @@
-package com.basic4gl.lib.targets.desktopgl;
+package com.basic4gl.lib.desktopgl;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
-import javax.imageio.ImageIO;
-import java.awt.image.*;
 import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 

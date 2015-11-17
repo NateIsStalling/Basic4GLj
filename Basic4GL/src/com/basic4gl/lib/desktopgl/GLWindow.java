@@ -1,4 +1,4 @@
-package com.basic4gl.lib.targets.desktopgl;
+package com.basic4gl.lib.desktopgl;
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.lib.util.Configuration;
@@ -8,14 +8,12 @@ import com.basic4gl.util.FuncSpec;
 import com.basic4gl.vm.HasErrorState;
 import com.basic4gl.vm.TomVM;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.LWJGLUtil;
 import org.lwjgl.opengl.GL11;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.glfwInit;
-import static org.lwjgl.system.MemoryUtil.NULL;
 
 import org.lwjgl.opengl.*;
-import org.lwjgl.opengl.GL11.*;
+
 import java.awt.*;
 import java.io.InputStream;
 import java.io.OutputStream;

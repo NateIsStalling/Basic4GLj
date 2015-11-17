@@ -1,4 +1,4 @@
-package com.basic4gl.lib.targets.desktopgl;
+package com.basic4gl.lib.desktopgl;
 
 ////////////////////////////////////////////////////////////////////////////////
 //  IB4GLOpenGLWindow

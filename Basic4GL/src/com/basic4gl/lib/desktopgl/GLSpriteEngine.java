@@ -1,13 +1,8 @@
-package com.basic4gl.lib.targets.desktopgl;
+package com.basic4gl.lib.desktopgl;
 
 import com.basic4gl.lib.standard.Standard;
 import com.basic4gl.lib.standard.TrigBasicLib;
 import com.basic4gl.lib.util.FileOpener;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.Vector;
 
 import static org.lwjgl.opengl.GL11.*;
 

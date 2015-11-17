@@ -7,8 +7,8 @@ import com.basic4gl.compiler.TomBasicCompiler.LanguageSyntax;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.desktop.util.EditorSourceFileServer;
 import com.basic4gl.desktop.util.MainEditor;
-import com.basic4gl.lib.targets.desktopgl.BuilderDesktopGL;
-import com.basic4gl.lib.targets.desktopgl.GLTextGridWindow;
+import com.basic4gl.lib.desktopgl.BuilderDesktopGL;
+import com.basic4gl.lib.desktopgl.GLTextGridWindow;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.util.Mutable;
 import com.basic4gl.vm.Debugger;
@@ -1161,10 +1161,10 @@ public class MainWindow implements MainEditor {
         //TODO Load libraries dynamically
         mLibraries.add(new com.basic4gl.lib.standard.Standard());
         mLibraries.add(new com.basic4gl.lib.standard.TrigBasicLib());
-        mLibraries.add(new com.basic4gl.lib.targets.desktopgl.TextBasicLib());
-        mLibraries.add(new com.basic4gl.lib.targets.desktopgl.OpenGLBasicLib());
-        mLibraries.add(new com.basic4gl.lib.targets.desktopgl.GLUBasicLib());
-        mLibraries.add(new com.basic4gl.lib.targets.desktopgl.GLBasicLib_gl());
+        mLibraries.add(new com.basic4gl.lib.desktopgl.TextBasicLib());
+        mLibraries.add(new com.basic4gl.lib.desktopgl.OpenGLBasicLib());
+        mLibraries.add(new com.basic4gl.lib.desktopgl.GLUBasicLib());
+        mLibraries.add(new com.basic4gl.lib.desktopgl.GLBasicLib_gl());
         mLibraries.add(GLTextGridWindow.getInstance(mComp));
         mLibraries.add(BuilderDesktopGL.getInstance(mComp));
 

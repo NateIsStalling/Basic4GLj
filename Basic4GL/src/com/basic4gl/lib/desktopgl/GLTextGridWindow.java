@@ -1,4 +1,4 @@
-package com.basic4gl.lib.targets.desktopgl;
+package com.basic4gl.lib.desktopgl;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -112,10 +112,10 @@ public class GLTextGridWindow extends GLWindow {
 		//TODO Save/Load list of libraries in order they should be added
 		instance.mLibraries.add(new com.basic4gl.lib.standard.Standard());
 		instance.mLibraries.add(new com.basic4gl.lib.standard.TrigBasicLib());
-		instance.mLibraries.add(new com.basic4gl.lib.targets.desktopgl.TextBasicLib());
-		instance.mLibraries.add(new com.basic4gl.lib.targets.desktopgl.OpenGLBasicLib());
-		instance.mLibraries.add(new com.basic4gl.lib.targets.desktopgl.GLUBasicLib());
-		instance.mLibraries.add(new com.basic4gl.lib.targets.desktopgl.GLBasicLib_gl());
+		instance.mLibraries.add(new com.basic4gl.lib.desktopgl.TextBasicLib());
+		instance.mLibraries.add(new com.basic4gl.lib.desktopgl.OpenGLBasicLib());
+		instance.mLibraries.add(new com.basic4gl.lib.desktopgl.GLUBasicLib());
+		instance.mLibraries.add(new com.basic4gl.lib.desktopgl.GLBasicLib_gl());
 
 		// Register library functions
 		for (Library lib : instance.mLibraries) {
