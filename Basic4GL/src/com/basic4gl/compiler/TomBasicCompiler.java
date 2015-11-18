@@ -2559,7 +2559,7 @@ public class TomBasicCompiler extends HasErrorState {
 				code = OpCode.OP_CONV_INT_REAL;
 			else if (basictype == ValType.VTP_STRING)
 				code = OpCode.OP_CONV_INT_STRING;
-		} else if (m_regType.equals(ValType.VTP_REAL)) {
+		} else if (m_regType.Equals(ValType.VTP_REAL)) {
 			if (basictype == ValType.VTP_INT)
 				code = OpCode.OP_CONV_REAL_INT;
 			else if (basictype == ValType.VTP_STRING)
