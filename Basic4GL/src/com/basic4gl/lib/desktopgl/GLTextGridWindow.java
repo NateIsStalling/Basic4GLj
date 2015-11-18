@@ -31,6 +31,8 @@ public class GLTextGridWindow extends GLWindow {
 	private java.util.List<Library> mLibraries;
 	private static GLTextGridWindow instance;
 
+	private FileOpener mFiles;
+
 	private TomBasicCompiler mComp;
 	private TomVM mVM;
 	private VmWorker mWorker;	//Debugging
@@ -103,8 +105,8 @@ public class GLTextGridWindow extends GLWindow {
 	public static void main(String[] args) {
 		//Debug only, makes it easier to attach a remote debugger
 		//JOptionPane.showMessageDialog(null, "Waiting...");
-
 		instance = new GLTextGridWindow();
+		instance.mFiles = new FileOpener(); //TODO load embedded files
 		instance.mComp = new TomBasicCompiler(new TomVM(null));
 		instance.mVM = instance.mComp.VM();
 		instance.mLibraries = new ArrayList<Library>();
@@ -453,6 +455,8 @@ public class GLTextGridWindow extends GLWindow {
 				return;    //TODO Throw exception
 			}
 			try {
+				//Initialize file opener
+				mFiles = new FileOpener();
 				//Create window
 				init();
 				// This line is critical for LWJGL's interoperation with GLFW's
@@ -464,12 +468,15 @@ public class GLTextGridWindow extends GLWindow {
 
 				ResetGL();
 				// Initialize Sprite Engine
-				mTextGrid = new GLSpriteEngine("charset.png", null, 25, 40, 16, 16);
+				mTextGrid = new GLSpriteEngine("charset.png", mFiles, 25, 40, 16, 16);
 				if (mTextGrid.hasError())
 					mVM.setError(mTextGrid.getError());
 
 				//Initialize libraries
 				for (Library lib : mComp.getLibraries()) {
+					if (lib instanceof IFileAccess){
+						((IFileAccess) lib).init(mFiles);
+					}
 					if (lib instanceof IGLRenderer) {
 						((IGLRenderer) lib).setTextGrid(mTextGrid);
 						((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
@@ -791,7 +798,8 @@ public class GLTextGridWindow extends GLWindow {
 			if (mVM == null)
 				return null;    //TODO Throw exception
 			try {
-
+				//Initialize file opener
+				mFiles = new FileOpener();
 				//Create window
 				init();
 
@@ -805,12 +813,15 @@ public class GLTextGridWindow extends GLWindow {
 				ResetGL();
 
 				// Initialize Sprite Engine
-				mTextGrid = new GLSpriteEngine("charset.png", null, 25, 40, 16, 16);
+				mTextGrid = new GLSpriteEngine("charset.png", mFiles, 25, 40, 16, 16);
 				if (mTextGrid.hasError())
 					mVM.setError(mTextGrid.getError());
 
 				//Initialize libraries
 				for (Library lib : mComp.getLibraries()) {
+					if (lib instanceof IFileAccess){
+						((IFileAccess) lib).init(mFiles);
+					}
 					if (lib instanceof IGLRenderer) {
 						((IGLRenderer) lib).setTextGrid(mTextGrid);
 						((IGLRenderer) lib).setWindow(GLTextGridWindow.this);

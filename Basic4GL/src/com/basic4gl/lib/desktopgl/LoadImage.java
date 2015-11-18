@@ -1,5 +1,6 @@
 package com.basic4gl.lib.desktopgl;
 
+import com.basic4gl.lib.util.FileOpener;
 import org.lwjgl.opengl.GL11;
 
 import java.nio.ByteBuffer;
@@ -11,13 +12,13 @@ import java.util.Vector;
  */
 public class LoadImage {
 // File opener
-    //static FileOpener *files = null;
+    static FileOpener mFiles = null;
 
-    /*
-    void InitLoadImage (FileOpener *_files) {
-        assert (_files != null);
-        files = _files;
-    }*/
+
+    static void init(FileOpener files) {
+        assert (files != null);
+        mFiles = files;
+    }
 
     // Return the image format as an OpenGL constant
     static int ImageFormat (Image image) {
@@ -42,7 +43,12 @@ public class LoadImage {
         // We convert all images to either RGB (24 bit) or RGBA (32 bit)
 
         // Load image
-        Image image = new Image(filename);//files.FilenameForRead (filename, false));
+        Image image = null;
+        filename = mFiles.FilenameForRead (filename, false);
+
+        if (filename != null && !filename.equals("") && mFiles.getError().equals(""))
+            image = new Image(filename);//files.FilenameForRead (filename, false));
+
         //TODO Check image format; Image constructor currently forces RGBA so this step may be unnecessary
             /*
             if (image != null) {

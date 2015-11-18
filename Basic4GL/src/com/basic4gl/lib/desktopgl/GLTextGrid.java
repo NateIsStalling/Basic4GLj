@@ -53,7 +53,6 @@ public class GLTextGrid extends HasErrorState {
                 |   (long) alpha   << 24;
     }
 
-    //TODO implement FileOpener and use for files parameter type
     GLTextGrid (String texFile, FileOpener files, int rows, int cols, int texRows, int texCols){
     m_rows = rows;
     m_cols = cols;
@@ -79,13 +78,12 @@ public class GLTextGrid extends HasErrorState {
         // Load charset texture
         glPushAttrib(GL_ALL_ATTRIB_BITS);
         glEnable (GL_TEXTURE_2D);
-        //InitLoadImage(files);
+        LoadImage.init(files);
         IntBuffer w = BufferUtils.createIntBuffer(1);
         IntBuffer h = BufferUtils.createIntBuffer(1);
         IntBuffer comp = BufferUtils.createIntBuffer(1);
         m_image = LoadImage.LoadImage(texFile);
-        if (m_image.getPixels() == null) {
-            System.out.println("Failed to load image: " + stbi_failure_reason());
+        if (m_image == null || m_image.getPixels() == null) {
             setError("Error loading bitmap: " + texFile);
             return;
         }
