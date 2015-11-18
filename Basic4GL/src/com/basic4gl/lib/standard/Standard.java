@@ -289,7 +289,11 @@ public class Standard implements Library{
 
 	public final class WrapVal implements Function {
 		public void run(TomVM vm) {
-			vm.Reg().setRealVal(Float.valueOf(vm.GetStringParam(1)));
+			try {
+				vm.Reg().setRealVal(Float.valueOf(vm.GetStringParam(1)));
+			} catch(NumberFormatException e) {
+				vm.Reg().setRealVal(0f);
+			}
 		}
 	}
 
