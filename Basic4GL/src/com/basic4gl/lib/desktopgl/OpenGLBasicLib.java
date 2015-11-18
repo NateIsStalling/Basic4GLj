@@ -95,17 +95,10 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
     @Override
     public void init(TomVM vm) {
         appWindow.ClearKeyBuffers();
-        if (textures != null)
-            textures.Clear();
-        else
-            textures = new TextureResourceStore();
-        if (images != null)
-            images.Clear();
 
-        if (displayLists != null)
+            textures.Clear();
+            images.Clear();
             displayLists.Clear();
-        else
-            displayLists = new DisplayListResourceStore();
 
         // Set state behaviour defaults
         truncateBlankFrames = true;
@@ -115,7 +108,12 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
     }
     @Override
     public void init(TomBasicCompiler comp){
-
+        if (textures == null)
+            textures = new TextureResourceStore();
+        if (images == null)
+            images = new PointerResourceStore<>();
+        if (displayLists == null)
+            displayLists = new DisplayListResourceStore();
     }
     @Override
     public Map<String, Constant> constants() {
