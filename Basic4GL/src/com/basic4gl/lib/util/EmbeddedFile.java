@@ -1,12 +1,17 @@
 package com.basic4gl.lib.util;
 
+import java.io.FileInputStream;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.charset.Charset;
+
 // EmbeddedFile
 //
 // A single file, embedded into the executable
 public class EmbeddedFile {
-    /*String m_filename;
+    String m_filename;
     int			m_length;
-    char		*m_data;
+    FileInputStream  m_data;
 
     public EmbeddedFile ()
     {
@@ -14,37 +19,38 @@ public class EmbeddedFile {
         m_length = 0;
         m_data = null;
     }
-    public EmbeddedFile (char *rawData){
-        int offset = 0;
-        this(rawData, offset);
+    public EmbeddedFile (ByteBuffer rawData){
+        this(rawData, IntBuffer.allocate(1).put(0, 0));
     }
-    public EmbeddedFile (char *rawData, int& offset){
+    public EmbeddedFile (ByteBuffer rawData, IntBuffer offset){
         assert (rawData != null);
 
         // Read filename length
-        int nameLength = *((int *) (rawData + offset));
-        offset += sizeof (nameLength);
+        rawData.position(rawData.position() + offset.get());
+        int nameLength = rawData.asIntBuffer().get(); //*((int *) (rawData + offset));
+        offset.put(0, offset.get(0) + Integer.SIZE/Byte.SIZE);
 
         // Read filename
-        m_filename = rawData + offset;
-        offset += nameLength;
+        byte[] name = new byte[nameLength];
+        rawData.position(rawData.position() + offset.get());
+        rawData.get(name);
+        m_filename = new String(name, Charset.forName("UTF-8"));
+        offset.put(0, offset.get(0) + nameLength);
 
         // Read length
-        m_length = *((int *) (rawData + offset));
-        offset += sizeof (m_length);
+        rawData.position(rawData.position() + offset.get());
+        m_length = rawData.asIntBuffer().get(); //*((int *) (rawData + offset));
+        offset.put(0, offset.get(0) + Integer.SIZE/Byte.SIZE);
 
         // Save pointer to data
-        m_data = rawData + offset;
-        offset += m_length;
+        rawData.position(rawData.position() + offset.get());
+        //m_data = rawData.position() + offset.get();
+        offset.put(0, offset.get(0) + m_length);
     }
     public String Filename () { return m_filename; }
-    public GenericIStream *AsStream ()		// Return file as a generic input stream
+    public FileInputStream AsStream ()		// Return file as a generic input stream
     {
-        std::stringstream *result = new std::stringstream;		// Use a string stream as temp buffer
-
-        result->write (m_data, m_length);						// Copy file data into it
-        result->seekg (0, std::ios::beg);						// Reset to start
-        return result;
+        return m_data;
     }
-    public int Length() { return m_length; }*/
+    public int Length() { return m_length; }
 }
