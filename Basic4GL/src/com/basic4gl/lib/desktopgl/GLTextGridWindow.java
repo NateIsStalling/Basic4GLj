@@ -114,6 +114,7 @@ public class GLTextGridWindow extends GLWindow {
 		//TODO Save/Load list of libraries in order they should be added
 		instance.mLibraries.add(new com.basic4gl.lib.standard.Standard());
 		instance.mLibraries.add(new com.basic4gl.lib.standard.TrigBasicLib());
+		instance.mLibraries.add(new com.basic4gl.lib.standard.FileIOBasicLib());
 		instance.mLibraries.add(new com.basic4gl.lib.desktopgl.TextBasicLib());
 		instance.mLibraries.add(new com.basic4gl.lib.desktopgl.OpenGLBasicLib());
 		instance.mLibraries.add(new com.basic4gl.lib.desktopgl.GLUBasicLib());

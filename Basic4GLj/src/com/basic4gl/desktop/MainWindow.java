@@ -1161,6 +1161,7 @@ public class MainWindow implements MainEditor {
         //TODO Load libraries dynamically
         mLibraries.add(new com.basic4gl.lib.standard.Standard());
         mLibraries.add(new com.basic4gl.lib.standard.TrigBasicLib());
+        mLibraries.add(new com.basic4gl.lib.standard.FileIOBasicLib());
         mLibraries.add(new com.basic4gl.lib.desktopgl.TextBasicLib());
         mLibraries.add(new com.basic4gl.lib.desktopgl.OpenGLBasicLib());
         mLibraries.add(new com.basic4gl.lib.desktopgl.GLUBasicLib());
