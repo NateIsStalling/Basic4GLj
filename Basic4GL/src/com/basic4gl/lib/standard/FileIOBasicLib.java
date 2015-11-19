@@ -444,10 +444,10 @@ public class FileIOBasicLib implements Library, IFileAccess{
             return;
 
         // Read byte
-        byte element = 0;
+        int element = 0;  //byte values are unsigned
         Exception exception = null;
         try {
-            element = (byte)stream.in.read();
+            element = stream.in.read();
         } catch (Exception e){
             e.printStackTrace();
             exception = e;
