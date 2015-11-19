@@ -174,7 +174,7 @@ public class Standard implements Library{
 			if (c > 0 && s.length() > 0 && i < s.length()) {
 				if (i + c > s.length())
 					c = s.length() - i;
-				vm.setRegString(s.substring(i, c));
+				vm.setRegString(s.substring(i, i + c));
 			} else
 				vm.setRegString("");
 		}
@@ -209,7 +209,7 @@ public class Standard implements Library{
 			else if (c >= s.length())
 				vm.setRegString(s);
 			else
-				vm.setRegString(s.substring(s.length() - c, c));
+				vm.setRegString(s.substring(s.length() - c, s.length()));
 		}
 	}
 
