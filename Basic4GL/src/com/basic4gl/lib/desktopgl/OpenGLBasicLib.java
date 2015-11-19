@@ -47,6 +47,11 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
     static boolean doMipmap;                      // Build mipmap textures when loading images
     static boolean doLinearFilter;                // Use linear filtering on textures (otherwise use nearest)
 
+    ByteBuffer byteBuffer16;
+    IntBuffer intBuffer16;
+    FloatBuffer floatBuffer16;
+    DoubleBuffer doubleBuffer16;
+
     @Override
     public String name() {
         return null;
@@ -94,11 +99,17 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
 
     @Override
     public void init(TomVM vm) {
+
         appWindow.ClearKeyBuffers();
 
             textures.Clear();
             images.Clear();
             displayLists.Clear();
+
+        byteBuffer16 = BufferUtils.createByteBuffer(16);
+        intBuffer16 = BufferUtils.createIntBuffer(16);
+        floatBuffer16 = BufferUtils.createFloatBuffer(16);
+        doubleBuffer16 = BufferUtils.createDoubleBuffer(16);
 
         // Set state behaviour defaults
         truncateBlankFrames = true;
@@ -1327,43 +1338,63 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
 
     public final class WrapglLoadMatrixd implements Function {
         public void run(TomVM vm) {
-            DoubleBuffer a1 = BufferUtils.createDoubleBuffer(16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a1.array(), 16);
-            glLoadMatrixd(a1);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a1.array(), 16);
+            double[] a = new double[16];
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
+            glLoadMatrixd(doubleBuffer16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
     public final class WrapglLoadMatrixf implements Function {
         public void run(TomVM vm) {
-            FloatBuffer a1 = BufferUtils.createFloatBuffer(16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a1.array(), 16);
-            glLoadMatrixf(a1);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a1.array(), 16);
+            float[] a = new float[16];
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
+            glLoadMatrixf(floatBuffer16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
     public final class WrapglMultMatrixd implements Function {
         public void run(TomVM vm) {
-            DoubleBuffer a1 = BufferUtils.createDoubleBuffer(16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a1.array(), 16);
-            glMultMatrixd(a1);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a1.array(), 16);
+            double[] a = new double[16];
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
+            glMultMatrixd(doubleBuffer16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
     public final class WrapglMultMatrixf implements Function {
         public void run(TomVM vm) {
-            FloatBuffer a1 = BufferUtils.createFloatBuffer(16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a1.array(), 16);
-            glMultMatrixf(a1);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a1.array(), 16);
+            float[] a = new float[16];
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
+            glMultMatrixf(floatBuffer16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
     public final class WrapglGetPolygonStipple implements Function {
         public void run(TomVM vm) {
-            ByteBuffer mask = BufferUtils.createByteBuffer(128);
+            ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
             glGetPolygonStipple(mask);
             Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
         }
@@ -1371,7 +1402,7 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
 
     public final class WrapglPolygonStipple implements Function {
         public void run(TomVM vm) {
-            ByteBuffer mask = BufferUtils.createByteBuffer(128);
+            ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
             glPolygonStipple(mask);
         }
@@ -1478,37 +1509,57 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
 
     public final class WrapglGetFloatv_2D implements Function {
         public void run(TomVM vm) {
-            FloatBuffer data = BufferUtils.createFloatBuffer(16);
-            Arrays.fill(data.array(), 0);
-            glGetFloatv(vm.GetIntParam(2), data);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), data.array(), 16);
+            float[] data = new float[16];
+            Arrays.fill(data, 0);
+            floatBuffer16.rewind();
+            floatBuffer16.put(data);
+            floatBuffer16.rewind();
+            glGetFloatv(vm.GetIntParam(2), floatBuffer16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(data);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
     public final class WrapglGetDoublev_2D implements Function {
         public void run(TomVM vm) {
-            DoubleBuffer data = BufferUtils.createDoubleBuffer(16);
-            Arrays.fill(data.array(), 0);
-            glGetDoublev(vm.GetIntParam(2), data);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), data.array(), 16);
+            double[] data = new double[16];
+            Arrays.fill(data, 0);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(data);
+            doubleBuffer16.rewind();
+            glGetDoublev(vm.GetIntParam(2), doubleBuffer16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(data);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
     public final class WrapglGetIntegerv_2D implements Function {
         public void run(TomVM vm) {
-            IntBuffer data = BufferUtils.createIntBuffer(16);
-            Arrays.fill(data.array(), 0);
-            glGetIntegerv(vm.GetIntParam(2), data);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 2, (byte) 1, true), data.array(), 16);
+            int[] data = new int[16];
+            Arrays.fill(data, 0);
+            intBuffer16.rewind();
+            intBuffer16.put(data);
+            intBuffer16.rewind();
+            glGetIntegerv(vm.GetIntParam(2), intBuffer16);
+            intBuffer16.rewind();
+            intBuffer16.get(data);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
     public final class WrapglGetBooleanv_2D implements Function {
         public void run(TomVM vm) {
-            ByteBuffer data = BufferUtils.createByteBuffer(16);
-            Arrays.fill(data.array(), (byte) 0);
-            glGetBooleanv(vm.GetIntParam(2), data);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 2, (byte) 1, true), data.array(), 16);
+            byte[] data = new byte[16];
+            Arrays.fill(data, (byte) 0);
+            byteBuffer16.rewind();
+            byteBuffer16.put(data);
+            byteBuffer16.rewind();
+            glGetBooleanv(vm.GetIntParam(2), byteBuffer16);
+            byteBuffer16.rewind();
+            byteBuffer16.get(data);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
