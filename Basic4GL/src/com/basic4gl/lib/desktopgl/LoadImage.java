@@ -3,6 +3,7 @@ package com.basic4gl.lib.desktopgl;
 import com.basic4gl.lib.util.FileOpener;
 import org.lwjgl.opengl.GL11;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.Vector;
@@ -45,8 +46,9 @@ public class LoadImage {
         // Load image
         Image image = null;
         filename = mFiles.FilenameForRead (filename, false);
-
-        if (filename != null && !filename.equals("") && mFiles.getError().equals(""))
+        File file;
+        if (filename != null && !filename.equals("") && mFiles.getError().equals("") &&
+                (file = new File(filename)).exists() && !file.isDirectory())
             image = new Image(filename);//files.FilenameForRead (filename, false));
 
         //TODO Check image format; Image constructor currently forces RGBA so this step may be unnecessary

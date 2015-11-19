@@ -29,7 +29,8 @@ public class Image {
             mData = stbi_load(filename, w, h, comp, 0);
 
             if (mData == null) {
-                System.out.println("Failed to load image: " + stbi_failure_reason());
+                System.out.println("Failed to load image: " + filename);
+                System.out.println(stbi_failure_reason());
             }
             mWidth = w.get(0);
             mHeight = h.get(0);
