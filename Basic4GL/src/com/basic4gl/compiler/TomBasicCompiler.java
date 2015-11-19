@@ -341,6 +341,9 @@ public class TomBasicCompiler extends HasErrorState {
 		m_unOperExts = new Vector<UnOperExt>();
 		m_binOperExts = new Vector<BinOperExt>();
 
+		m_functionStart = new InstructionPos();
+		m_userFuncPrototype = new UserFuncPrototype();
+
 		ClearState();
 
 		// Setup operators
@@ -4774,7 +4777,7 @@ public class TomBasicCompiler extends HasErrorState {
 			if (!CompileTokenName(nameRef, tokenTypeRef, false))
 				return false;
 			// Update local values from references
-			type = typeRef.get();
+			tokenType = tokenTypeRef.get();
 			name = nameRef.get();
 		}
 
@@ -4906,6 +4909,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Allocate new function
 			prototypes.add(m_userFuncPrototype);
+			m_userFuncPrototype = new UserFuncPrototype();
 			functions.add(new UserFunc(prototypes.size() - 1, false));
 			m_currentFunction = functions.size() - 1;
 
@@ -4937,6 +4941,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Store prototype
 			prototypes.add(m_userFuncPrototype);
+			m_userFuncPrototype = new UserFuncPrototype();
 
 			// Store runtime function
 			m_runtimeFunctions.add(new com.basic4gl.compiler.RuntimeFunction(
@@ -4977,6 +4982,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Allocate new function
 				prototypes.add(m_userFuncPrototype);
+				m_userFuncPrototype = new UserFuncPrototype();
 				functions.add(new UserFunc(prototypes.size() - 1, true, mVM
 						.InstructionCount()));
 				m_currentFunction = functions.size() - 1;
@@ -5015,6 +5021,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 					// Allocate a new prototype
 					prototypes.add(m_userFuncPrototype);
+					m_userFuncPrototype = new UserFuncPrototype();
 
 					// Allocate a new function
 					functions.add(new UserFunc(prototypes.size() - 1, true,
@@ -5118,7 +5125,7 @@ public class TomBasicCompiler extends HasErrorState {
 				prototypeIndex);
 
 		if (mustReturnValue && !prototype.hasReturnVal) {
-			setError((String) "'" + name + "' does not return a value");
+			setError("'" + name + "' does not return a value");
 			return false;
 		}
 
