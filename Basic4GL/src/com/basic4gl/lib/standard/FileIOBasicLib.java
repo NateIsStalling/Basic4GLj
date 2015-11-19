@@ -15,6 +15,7 @@ import com.basic4gl.vm.util.PointerResourceStore;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
@@ -462,12 +463,12 @@ public class FileIOBasicLib implements Library, IFileAccess{
             return;
 
         // Read byte
-        short element = 0;
+        int element = 0;    //use int since word values are unsigned
         Exception exception = null;
         try {
             byte [] buffer = new byte[Short.SIZE / Byte.SIZE];
             stream.in.read(buffer);
-            element = ByteBuffer.wrap(buffer).asShortBuffer().get(0);
+            element = (int) ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(0);
         } catch (Exception e){
             e.printStackTrace();
             exception = e;
@@ -487,7 +488,7 @@ public class FileIOBasicLib implements Library, IFileAccess{
         try {
             byte [] buffer = new byte[Integer.SIZE / Byte.SIZE];
             stream.in.read(buffer);
-            element = ByteBuffer.wrap(buffer).asIntBuffer().get(0);
+            element = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).asIntBuffer().get(0);
         } catch (Exception e){
             e.printStackTrace();
             exception = e;
@@ -507,7 +508,7 @@ public class FileIOBasicLib implements Library, IFileAccess{
         try {
             byte [] buffer = new byte[Float.SIZE / Byte.SIZE];
             stream.in.read(buffer);
-            element = ByteBuffer.wrap(buffer).asFloatBuffer().get(0);
+            element = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(0);
         } catch (Exception e){
             e.printStackTrace();
             exception = e;
@@ -527,7 +528,7 @@ public class FileIOBasicLib implements Library, IFileAccess{
         try {
             byte [] buffer = new byte[Double.SIZE / Byte.SIZE];
             stream.in.read(buffer);
-            element = ByteBuffer.wrap(buffer).asDoubleBuffer().get(0);
+            element = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).asDoubleBuffer().get(0);
         } catch (Exception e){
             e.printStackTrace();
             exception = e;
