@@ -28,14 +28,29 @@ public class Image {
         if (file.exists()) {
             mData = stbi_load(filename, w, h, comp, 0);
 
-            if (mData == null) {
-                System.out.println("Failed to load image: " + filename);
-                System.out.println(stbi_failure_reason());
-            }
             mWidth = w.get(0);
             mHeight = h.get(0);
             mBPP = comp.get(0);
             mFormat = mBPP == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
+
+            if (mData == null) {
+                System.out.println("Failed to load image: " + filename);
+                System.out.println(stbi_failure_reason());
+            } else {
+                //There's an issue with stbi_load loading images upside down
+                //So here we change the order of the bytes to flip the image that we just loaded
+                ByteBuffer temp = ByteBuffer.allocateDirect(mData.capacity());
+                mData.rewind();//copy from the beginning
+                temp.rewind();
+                for (int dy = 0; dy < mHeight; dy++) {
+                    temp.position(dy * mWidth * mBPP);
+                    mData.position((mHeight - dy - 1) * mWidth * mBPP);
+                    for (int dx = 0; dx < mWidth * mBPP; dx++)
+                        temp.put(mData.get());
+                }
+                temp.rewind();
+                mData = temp;
+            }
 
         }
     }
@@ -49,18 +64,14 @@ public class Image {
     }
 
     public Image(Image image){
-        IntBuffer w = BufferUtils.createIntBuffer(1);
-        IntBuffer h = BufferUtils.createIntBuffer(1);
-        IntBuffer comp = BufferUtils.createIntBuffer(1);
-        image.mData.rewind();
-        mData = stbi_load_from_memory(image.mData, w, h, comp, 0);
+        mData = clone(image.mData);
 
         if (mData == null) {
             System.out.println("Failed to load image: " + stbi_failure_reason());
         }
-        mWidth = w.get(0);
-        mHeight = h.get(0);
-        mBPP = comp.get(0);
+        mWidth = image.mWidth;
+        mHeight = image.mHeight;
+        mBPP = image.mBPP;
         mFormat = mBPP == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
     }
 
@@ -81,11 +92,22 @@ public class Image {
     }
 
     public ByteBuffer getPixels() {
-        mData.rewind();
+        if (mData != null)
+            mData.rewind();
         return mData;}
     public int getWidth() { return mWidth;}
     public int getHeight() { return mHeight;}
     public int getBPP() { return mBPP;}
     public int getFormat() { return mFormat;}
 
+    private static ByteBuffer clone(ByteBuffer original) {
+        if (original == null)
+            return null;
+        ByteBuffer clone = ByteBuffer.allocateDirect(original.capacity());
+        original.rewind();//copy from the beginning
+        clone.put(original);
+        original.rewind();
+        clone.flip();
+        return clone;
+    }
 }

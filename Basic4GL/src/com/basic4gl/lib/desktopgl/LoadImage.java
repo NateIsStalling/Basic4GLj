@@ -289,7 +289,7 @@ public class LoadImage {
                 for (int dy = 0; dy < frameHeight; dy++){
                     dstPixels.position(dy * frameWidth * bpp);
                     srcPixels.position(((y + dy) * image.getWidth() + x) * bpp);
-                    for (int dx = 0; dx < frameWidth * bpp; dx++);
+                    for (int dx = 0; dx < frameWidth * bpp; dx++)
                         dstPixels.put(srcPixels.get());
 
                 }
