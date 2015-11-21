@@ -817,14 +817,13 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
             } else {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexImage2D(GL_TEXTURE_2D,
-                        0,
+                glTexImage2D(GL_TEXTURE_2D, 0,
                         image.getFormat(),//corona.PF_R8G8B8 ? 3 : 4,
                         image.getWidth(),
                         image.getHeight(),
                         0,
                         LoadImage.ImageFormat(image),
-                        GL_BYTE,
+                        GL_UNSIGNED_BYTE,
                         image.getPixels());
             }
 
