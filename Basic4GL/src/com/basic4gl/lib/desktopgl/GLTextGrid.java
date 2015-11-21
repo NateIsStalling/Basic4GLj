@@ -175,11 +175,11 @@ public class GLTextGrid extends HasErrorState {
 
                     // Convert to texture coordinates
                     double  tx = charx * m_charXSize + OFFSET,
-                            ty =  chary * m_charYSize + OFFSET;
+                            ty = 1.0 - (chary + 1) * m_charYSize + OFFSET;
 
                     // Find screen coordinates
                     double  screenX = x * xStep - 1.0,
-                            screenY = 1.0 - ((double)y + 1.0) * yStep;
+                            screenY = 1.0 - (y + 1) * yStep;
 
                     // Bind appropriate texture
                     if (tex != lastTex) {
@@ -190,10 +190,10 @@ public class GLTextGrid extends HasErrorState {
                     // Write character
                     glColor4ubv (m_colours);
                     glBegin (GL_QUADS);
-                    glTexCoord2d (tx,                ty+ m_charYSize);               glVertex2d (screenX,           screenY);
-                    glTexCoord2d (tx + m_charXSize,  ty+ m_charYSize);               glVertex2d (screenX + xStep,   screenY);
-                    glTexCoord2d (tx + m_charXSize,  ty ); glVertex2d (screenX + xStep,   screenY + yStep);
-                    glTexCoord2d (tx,                ty); glVertex2d (screenX,           screenY + yStep);
+                    glTexCoord2d (tx,                ty);               glVertex2d (screenX,           screenY);
+                    glTexCoord2d (tx + m_charXSize,  ty);               glVertex2d (screenX + xStep,   screenY);
+                    glTexCoord2d (tx + m_charXSize,  ty + m_charYSize); glVertex2d (screenX + xStep,   screenY + yStep);
+                    glTexCoord2d (tx,                ty + m_charYSize); glVertex2d (screenX,           screenY + yStep);
                     glEnd ();
                 }
                 index++;
