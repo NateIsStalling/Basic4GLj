@@ -15,7 +15,7 @@ import com.basic4gl.vm.TomVM;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.glfw.GLFWvidmode;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 
@@ -361,7 +361,7 @@ public class GLTextGridWindow extends GLWindow {
 
 				// Setup an error callback. The default implementation
 				// will print the error message in System.err.
-				glfwSetErrorCallback(errorCallback = errorCallbackPrint(System.err));
+				glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
 
 				// Initialize GLFW. Most GLFW functions will not work before doing this.
 				if (glfwInit() != GL11.GL_TRUE) {
@@ -433,12 +433,12 @@ public class GLTextGridWindow extends GLWindow {
 				});
 
 				// Get the resolution of the primary monitor
-				ByteBuffer vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+				GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 				// Center our window
 				glfwSetWindowPos(
 						m_window,
-						(GLFWvidmode.width(vidmode) - m_width) / 2,
-						(GLFWvidmode.height(vidmode) - m_height) / 2
+						(vidmode.width() - m_width) / 2,
+						(vidmode.height() - m_height) / 2
 				);
 
 				// Make the OpenGL context current
@@ -698,7 +698,7 @@ public class GLTextGridWindow extends GLWindow {
 
 				// Setup an error callback. The default implementation
 				// will print the error message in System.err.
-				glfwSetErrorCallback(errorCallback = errorCallbackPrint(System.err));
+				glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
 
 				// Initialize GLFW. Most GLFW functions will not work before doing this.
 				if (glfwInit() != GL11.GL_TRUE)
@@ -768,12 +768,12 @@ public class GLTextGridWindow extends GLWindow {
 			});
 
 			// Get the resolution of the primary monitor
-				ByteBuffer vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+				GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 				// Center our window
 				glfwSetWindowPos(
 						m_window,
-						(GLFWvidmode.width(vidmode) - m_width) / 2,
-						(GLFWvidmode.height(vidmode) - m_height) / 2
+						(vidmode.width() - m_width) / 2,
+						(vidmode.height() - m_height) / 2
 				);
 
 

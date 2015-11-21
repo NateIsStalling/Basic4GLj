@@ -11,7 +11,6 @@ import com.basic4gl.vm.TomVM;
 import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.util.Function;
 import com.basic4gl.vm.util.ResourceStore;
-import org.lwjgl.system.windows.LARGE_INTEGER;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
