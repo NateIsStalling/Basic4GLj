@@ -813,8 +813,8 @@ public class TextBasicLib implements Library, TextAdapter, IGLRenderer{
     public final class WrapTextCols implements Function { public void run(TomVM vm)   { vm.Reg ().setIntVal( appText.Cols ()); }}
     public final class WrapInput implements Function { public void run(TomVM vm)      { vm.setRegString (appText.GetString (TextBasicLib.appWindow)); }}
     public final class WrapInkey implements Function { public void run(TomVM vm)      {
-        char key = TextBasicLib.appWindow.getKey ();
-        if (key != 0)   vm.setRegString ( String.valueOf(key));
+        int key = TextBasicLib.appWindow.getKey ();
+        if (key != 0 && key <= Character.MAX_VALUE && key >= Character.MIN_VALUE)   vm.setRegString ( String.valueOf((char)key));
         else            vm.setRegString ( "");
     }}
     public final class WrapInScanKey implements Function { public void run(TomVM vm)  {

@@ -177,8 +177,8 @@ public abstract class GLWindow extends HasErrorState implements Target {
     //TODO Possibly use Map structure instead of array for m_keyDown if it'd use less memory
     //Character.MAX_VALUE is used for array size to support GLFW keycodes that are in the 256+ range
     byte[] m_keyDown = new byte[Character.MAX_VALUE];        // Tracks key states
-    char[] m_keyBuffer = new char[GLWINDOWKEYBUFFER];        // Queues key presses
-    char[] m_scanKeyBuffer = new char[GLWINDOWKEYBUFFER];    // Queuse scan keys
+    int[] m_keyBuffer = new int[GLWINDOWKEYBUFFER];        // Queues key presses
+    int[] m_scanKeyBuffer = new int[GLWINDOWKEYBUFFER];    // Queuse scan keys
     int m_bufStart, m_bufEnd, m_scanBufStart, m_scanBufEnd;
     boolean m_dontPaint;        // If false (default), WM_PAINT messages will cause a SwapBuffers () call. Otherwise they wontException e
     boolean m_painting;
@@ -219,7 +219,7 @@ public abstract class GLWindow extends HasErrorState implements Target {
         }
     }
 
-    void BufferScanKey(char key){
+    void BufferScanKey(int key){
         int end = m_scanBufEnd;
         IncScanEnd ();
         if (m_scanBufEnd != m_scanBufStart)
@@ -1238,7 +1238,7 @@ public abstract class GLWindow extends HasErrorState implements Target {
 
 
     // Keyboard handling
-    public char getKey()          // Pulls a key from the keyboard buffer. Returns 0 if none waiting.
+    public int getKey()          // Pulls a key from the keyboard buffer. Returns 0 if none waiting.
     {
 
         // Flush any keypress messages
@@ -1249,11 +1249,11 @@ public abstract class GLWindow extends HasErrorState implements Target {
             return 0;
 
         // Extract and return it
-        char result = m_keyBuffer [m_bufStart];
+        int result = m_keyBuffer [m_bufStart];
         IncStart ();
         return result;
     }
-    public char getScanKey()
+    public int getScanKey()
     {
 
         // Flush any keypress messages
@@ -1264,7 +1264,7 @@ public abstract class GLWindow extends HasErrorState implements Target {
             return 0;
 
         // Extract and return it
-        char result = m_scanKeyBuffer [m_scanBufStart];
+        int result = m_scanKeyBuffer [m_scanBufStart];
         IncScanStart ();
         return result;
     }
@@ -1287,7 +1287,7 @@ public abstract class GLWindow extends HasErrorState implements Target {
         return m_keyDown[i] != 0;
     }
 
-    public void fakeScanKey(char scanCode, char bitmask, boolean down) {
+    public void fakeScanKey(int scanCode, int bitmask, boolean down) {
         assert (bitmask != 0);
 
         // Fake a key press/release

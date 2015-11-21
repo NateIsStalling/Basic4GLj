@@ -734,16 +734,17 @@ public class GLTextGridWindow extends GLWindow {
 						if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
 							glfwSetWindowShouldClose(window, GL_TRUE); // We will detect this in our rendering loop
 						}
-
+						if (key < 0)
+							return;
 						if (action == GLFW_PRESS){
 							if (key == GLFW_KEY_PAUSE)
 								m_pausePressed = true;
 							else {
-								m_keyDown [key & 0xffff] |= 1;
-								BufferScanKey ((char) (key & 0xffff));
+								m_keyDown [key] |= 1;
+								BufferScanKey ((char) key );
 							}
 						} else if (action == GLFW_RELEASE){
-							m_keyDown [key & 0xffff] &= ~1;
+							m_keyDown [key] &= ~1;
 						}
 					}
 				});

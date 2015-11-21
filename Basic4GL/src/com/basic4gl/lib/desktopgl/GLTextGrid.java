@@ -515,7 +515,7 @@ public class GLTextGrid extends HasErrorState {
 
 
             // Keyboard input
-            char c = 0, sc = 0;
+            int c = 0, sc = 0;
             while (c == 0 && sc == 0 && !window.isClosing ()) {
                 sc = window.getScanKey ();
                 if (sc == 0)
@@ -552,7 +552,7 @@ public class GLTextGrid extends HasErrorState {
                 done = true;
             if (c >= ' ') {
                 if (m_cx < m_cols - 1 && Insert ()) {
-                    m_chars     [m_cy * m_cols + m_cx] = c;
+                    m_chars     [m_cy * m_cols + m_cx] = (char)c;
                     col.put(m_cy * m_cols + m_cx, m_currentColour);
                     m_textures  [m_cy * m_cols + m_cx] = m_currentTexture;
                     m_cx++;
