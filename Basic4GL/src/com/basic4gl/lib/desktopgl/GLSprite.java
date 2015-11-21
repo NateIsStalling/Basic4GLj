@@ -161,13 +161,13 @@ public class GLSprite extends GLBasicSprite {
 
         // Draw sprite
         glBegin(GL_QUADS);
-        glTexCoord2f(x1, y2);
-        glVertex2f(0, 0);
-        glTexCoord2f(x2, y2);
-        glVertex2f(1, 0);
-        glTexCoord2f(x2, y1);
-        glVertex2f(1, 1);
         glTexCoord2f(x1, y1);
+        glVertex2f(0, 0);
+        glTexCoord2f(x2, y1);
+        glVertex2f(1, 0);
+        glTexCoord2f(x2, y2);
+        glVertex2f(1, 1);
+        glTexCoord2f(x1, y2);
         glVertex2f(0, 1);
         glEnd();
     }
