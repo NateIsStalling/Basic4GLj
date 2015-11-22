@@ -321,7 +321,7 @@ public class FileIOBasicLib implements Library, IFileAccess{
         short element = vm.GetIntParam (1).shortValue();
         Exception exception = null;
         try {
-            stream.out.write (ByteBuffer.allocate(2).putShort(element).array());
+            stream.out.write(ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN).putShort(element).array());
         } catch (IOException e) {
             e.printStackTrace();
             exception = e;
@@ -336,7 +336,7 @@ public class FileIOBasicLib implements Library, IFileAccess{
         int element = vm.GetIntParam (1);
         Exception exception = null;
         try {
-            stream.out.write (ByteBuffer.allocate(4).putInt(element).array());
+            stream.out.write (ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(element).array());
         } catch (IOException e) {
             e.printStackTrace();
             exception = e;
@@ -351,7 +351,7 @@ public class FileIOBasicLib implements Library, IFileAccess{
         float element = vm.GetRealParam (1);
         Exception exception = null;
         try {
-            stream.out.write (ByteBuffer.allocate(4).putFloat(element).array());
+            stream.out.write (ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putFloat(element).array());
         } catch (IOException e) {
             e.printStackTrace();
             exception = e;
@@ -366,7 +366,7 @@ public class FileIOBasicLib implements Library, IFileAccess{
         double element = vm.GetRealParam (1);
         Exception exception = null;
         try {
-            stream.out.write (ByteBuffer.allocate(4).putDouble(element).array());
+            stream.out.write (ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putDouble(element).array());
         } catch (IOException e) {
             e.printStackTrace();
             exception = e;
