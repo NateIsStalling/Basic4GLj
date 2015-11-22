@@ -203,7 +203,7 @@ target.close();
     public String name() { return "Desktop Application";}
 
     @Override
-    public String version() { return "0.1";}
+    public String version() { return "1";}
 
     @Override
     public String description() { return "Desktop application with OpenGL capabilities.";}
@@ -212,15 +212,11 @@ target.close();
     public String author() { return "Nathaniel Nielsen";}
 
     @Override
-    public String contact() { return "support@crazynatestudios.com";}
+    public String contact() { return "support@stallingsoftware.com";}
 
     @Override
     public String id() { return "desktopgl";}
 
-    @Override
-    public String[] compat() {
-        return new String[0];
-    }
 
     @Override
     public void init(TomVM vm) {

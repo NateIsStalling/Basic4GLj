@@ -28,35 +28,9 @@ public class TrigBasicLib implements Library {
     public String name() {
         return "TrigBasicLib";
     }
-
-    @Override
-    public String version() {
-        return "1";
-    }
-
     @Override
     public String description() {
         return "Matrix and vector routines.";
-    }
-
-    @Override
-    public String author() {
-        return "";
-    }
-
-    @Override
-    public String contact() {
-        return "";
-    }
-
-    @Override
-    public String id() {
-        return "trig";
-    }
-
-    @Override
-    public String[] compat() {
-        return new String[]{"desktopgl"};
     }
 
     @Override

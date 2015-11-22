@@ -43,25 +43,9 @@ public class FileIOBasicLib implements Library, IFileAccess{
     int findFileHandle = -1;
 
     @Override
-    public String name() { return null;}
-
+    public String name() { return "FileIOBasicLib";}
     @Override
-    public String version() { return null;}
-
-    @Override
-    public String description() { return null;}
-
-    @Override
-    public String author() { return null;}
-
-    @Override
-    public String contact() { return null;}
-
-    @Override
-    public String id() { return null;}
-
-    @Override
-    public String[] compat() {return new String[0];}
+    public String description() { return "File IO functions; reads and writes files with little-endian byte order.";}
 
     @Override
     public void init(TomVM vm) {

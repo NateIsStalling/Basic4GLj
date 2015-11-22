@@ -34,61 +34,14 @@ public class TextBasicLib implements Library, TextAdapter, IGLRenderer{
 
     @Override
     public String name() {
-        return null;
-    }
-
-    @Override
-    public String version() {
-        return null;
+        return "TextBasicLib";
     }
 
     @Override
     public String description() {
-        return null;
+        return "Text IO and sprite functions";
     }
 
-    @Override
-    public String author() {
-        return null;
-    }
-
-    @Override
-    public String contact() {
-        return null;
-    }
-
-    @Override
-    public String id() {
-        return null;
-    }
-
-    @Override
-    public String[] compat() {
-        return new String[0];
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // Intialisation
-/*
-    void InitTomTextBasicLib (TomBasicCompiler comp, GLTextGrid text) {
-
-        // Register interfaces for plugin DLLs
-        comp.Plugins().RegisterInterface((IB4GLText *) &textAdapter, "IB4GLText", 1, 0, null);
-        comp.Plugins().RegisterInterface((IB4GLOpenGLText *) &textAdapter, "IB4GLOpenGLText", 1, 0, null);
-
-        // Register resources
-        comp.VM().AddResources (TextBasicLib.sprites);
-
-        // Store pointers to window and text objects
-        TextBasicLib.appWindow   = win;
-        TextBasicLib.appText     = text;
-
-        // Register initialisation functions
-        comp.VM().AddInitFunc (Init);
-
-
-
-    }*/
     @Override
     public void setWindow(GLWindow window){
         TextBasicLib.appWindow = window;

@@ -11,7 +11,14 @@ import java.util.List;
  * Libraries should know nothing about the Builder interface,
  * but a class that implements Builder can know about any library
  */
-public abstract class Builder implements Library{
+public abstract class Builder implements Library, IFileAccess{
+
+
+    public abstract String version();
+    public abstract String author();
+    public abstract String contact();
+    public abstract String id();
+
     /**
      * Bundle the target in a stream to store a standalone copy on the filesystem.
      * Used by the compiler.

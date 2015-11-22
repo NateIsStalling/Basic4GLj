@@ -14,18 +14,16 @@ import java.util.Map;
  */
 public interface Target extends Library {
 
-	public abstract boolean isRunnable();
-
-	public abstract void reset();
-	public abstract void activate();
+	void reset();
+	void activate();
 	
-	public abstract void show(TaskCallback callbacks);
-	public abstract void hide();
-	public abstract void stop();
+	void show(TaskCallback callbacks);
+	void hide();
+	void stop();
 	
-	public abstract boolean isFullscreen();
-	public abstract boolean isVisible();
-	public abstract boolean isClosing();
+	boolean isFullscreen();
+	boolean isVisible();
+	boolean isClosing();
 
 	/**
 	 * Get list of properties the compiler can configure for
@@ -33,43 +31,43 @@ public interface Target extends Library {
 	 * @example Window size or target OS
 	 * @return Read-only list of properties for application
 	 */
-	public abstract Configuration getSettings();
+	Configuration getSettings();
 
 	/**
 	 *
 	 * @return Instance of target's property collection
 	 */
-	public abstract Configuration getConfiguration();
+	Configuration getConfiguration();
 
 	/**
 	 *
 	 * @param config
 	 */
-	public abstract void setConfiguration(Configuration config);
+	void setConfiguration(Configuration config);
 
 	/**
 	 * Load target's configuration from a file system
 	 * @throws Exception
 	 */
-	public abstract void loadConfiguration(InputStream stream) throws Exception;
+	void loadConfiguration(InputStream stream) throws Exception;
 
 	/**
 	 * Save target's configuration to a file system
 	 * @throws Exception
 	 */
-	public abstract void saveConfiguration(OutputStream stream) throws Exception;
+	void saveConfiguration(OutputStream stream) throws Exception;
 
 	/**
 	 * Call when pausing application to store the VM's state.
 	 * @return VM state as stream
 	 */
-	public abstract void saveState(OutputStream stream) throws Exception;
+	void saveState(OutputStream stream) throws Exception;
 
 	/**
 	 * Call when starting application to resume application from a stored VM state
 	 * @param stream Stored VM state
 	 */
-	public abstract void loadState(InputStream stream) throws Exception;
+	void loadState(InputStream stream) throws Exception;
 
 
 }

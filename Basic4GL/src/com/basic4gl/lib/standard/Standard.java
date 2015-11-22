@@ -40,17 +40,7 @@ public class Standard implements Library{
 	@Override
 	public String name(){return "Standard";}
 	@Override
-	public String version() {return "1";}
-	@Override
-	public String description() {return "Standard Basic4GL math library";}
-	@Override
-	public String author() {return "";}
-	@Override
-	public String contact() {return "";}
-	@Override
-	public String id() {return "standard";}
-	@Override
-	public String[] compat() {return new String[]{"desktopgl"};}
+	public String description() {return "Standard Basic4GL library; contains math functions";}
 
 	// //////////////////////////////////////////////////////////////////////////////
 	// Pre-run initialisation

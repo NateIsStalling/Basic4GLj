@@ -54,37 +54,11 @@ public class OpenGLBasicLib implements Library, IGLRenderer {
 
     @Override
     public String name() {
-        return null;
+        return "OpenGLBasicLib";
     }
-
-    @Override
-    public String version() {
-        return null;
-    }
-
     @Override
     public String description() {
-        return null;
-    }
-
-    @Override
-    public String author() {
-        return null;
-    }
-
-    @Override
-    public String contact() {
-        return null;
-    }
-
-    @Override
-    public String id() {
-        return null;
-    }
-
-    @Override
-    public String[] compat() {
-        return new String[0];
+        return "OpenGL 1.* constants and image loading functions";
     }
 
     @Override

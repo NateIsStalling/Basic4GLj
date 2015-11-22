@@ -22,37 +22,12 @@ import static org.lwjgl.opengl.GL11.glOrtho;
 public class GLUBasicLib implements Library {
     @Override
     public String name() {
-        return null;
-    }
-
-    @Override
-    public String version() {
-        return null;
+        return "GLUBasicLib";
     }
 
     @Override
     public String description() {
-        return null;
-    }
-
-    @Override
-    public String author() {
-        return null;
-    }
-
-    @Override
-    public String contact() {
-        return null;
-    }
-
-    @Override
-    public String id() {
-        return null;
-    }
-
-    @Override
-    public String[] compat() {
-        return new String[0];
+        return "GLU functions (deprecated)";
     }
 
     @Override

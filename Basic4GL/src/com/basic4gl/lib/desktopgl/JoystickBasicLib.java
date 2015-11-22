@@ -51,37 +51,12 @@ public class JoystickBasicLib implements Library, IGLRenderer{
     }
     @Override
     public String name() {
-        return null;
-    }
-
-    @Override
-    public String version() {
-        return null;
+        return "JoystickBasicLib";
     }
 
     @Override
     public String description() {
-        return null;
-    }
-
-    @Override
-    public String author() {
-        return null;
-    }
-
-    @Override
-    public String contact() {
-        return null;
-    }
-
-    @Override
-    public String id() {
-        return null;
-    }
-
-    @Override
-    public String[] compat() {
-        return new String[0];
+        return "Joystick input handling";
     }
 
     @Override

@@ -39,9 +39,6 @@ public abstract class GLWindow extends HasErrorState implements Target {
     static final int GLWINDOWKEYBUFFER = 16;    // X character key buffer
 
     @Override
-    public abstract boolean isRunnable();
-
-    @Override
     public abstract void reset();
 
     @Override
@@ -90,22 +87,8 @@ public abstract class GLWindow extends HasErrorState implements Target {
     public abstract String name();
 
     @Override
-    public abstract String version();
-
-    @Override
     public abstract String description();
 
-    @Override
-    public abstract String author();
-
-    @Override
-    public abstract String contact();
-
-    @Override
-    public abstract String id();
-
-    @Override
-    public abstract String[] compat();
     @Override
     public abstract void init(TomVM vm);
 

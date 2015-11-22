@@ -35,37 +35,12 @@ public class GLBasicLib_gl implements Library {
 
     @Override
     public String name() {
-        return "GLBasic Lib";
-    }
-
-    @Override
-    public String version() {
-        return "1";
+        return "GLBasicLib";
     }
 
     @Override
     public String description() {
-        return "OpenGL functions and constants";
-    }
-
-    @Override
-    public String author() {
-        return "";
-    }
-
-    @Override
-    public String contact() {
-        return "N/A";
-    }
-
-    @Override
-    public String id() {
-        return "glbasiclib_gl";
-    }
-
-    @Override
-    public String[] compat() {
-        return new String[]{"desktopgl"};
+        return "OpenGL 1 functions and constants";
     }
 
     @Override

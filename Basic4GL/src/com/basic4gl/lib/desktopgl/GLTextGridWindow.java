@@ -155,28 +155,10 @@ public class GLTextGridWindow extends GLWindow {
 	}
 
 	@Override
-	public  boolean isRunnable() { return true;} //Build target can be run as an application
-
-	@Override
-	public String name() { return "OpenGL Window";}
-
-	@Override
-	public String version() { return "0.1";}
+	public String name() { return "GLFW Window";}
 
 	@Override
 	public String description() { return "Desktop application with OpenGL capabilities.";}
-
-	@Override
-	public String author() { return "Nathaniel Nielsen";}
-
-	@Override
-	public String contact() { return "support@crazynatestudios.com";}
-
-	@Override
-	public String id() { return "desktopgl";}
-
-	@Override
-	public String[] compat() { return null;}
 
 	@Override
 	public void init(TomVM vm) {

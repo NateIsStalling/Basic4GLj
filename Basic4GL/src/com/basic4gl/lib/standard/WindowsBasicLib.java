@@ -23,37 +23,12 @@ import java.util.Map;
 public class WindowsBasicLib implements Library, IFileAccess{
     @Override
     public String name() {
-        return null;
-    }
-
-    @Override
-    public String version() {
-        return null;
+        return "WindowsBasicLib";
     }
 
     @Override
     public String description() {
-        return null;
-    }
-
-    @Override
-    public String author() {
-        return null;
-    }
-
-    @Override
-    public String contact() {
-        return null;
-    }
-
-    @Override
-    public String id() {
-        return null;
-    }
-
-    @Override
-    public String[] compat() {
-        return new String[0];
+        return "Miscellaneous system functions";
     }
 
     @Override
