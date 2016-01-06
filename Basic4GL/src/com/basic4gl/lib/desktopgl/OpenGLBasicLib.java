@@ -3,6 +3,7 @@ package com.basic4gl.lib.desktopgl;
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.lib.util.Routines;
 import com.basic4gl.util.FuncSpec;
@@ -26,7 +27,7 @@ import static org.lwjgl.stb.STBImage.stbi_info_from_memory;
 /**
  * Created by Nate on 11/3/2015.
  */
-public class OpenGLBasicLib implements Library, IGLRenderer {
+public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     // ImageResourceStore
 //
 // Stores pointers to Corona image objects

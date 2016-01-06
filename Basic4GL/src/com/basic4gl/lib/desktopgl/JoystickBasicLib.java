@@ -2,7 +2,7 @@ package com.basic4gl.lib.desktopgl;
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.Library;
+import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.util.FuncSpec;
 import com.basic4gl.vm.TomVM;
 import com.basic4gl.vm.types.ValType;
@@ -21,7 +21,7 @@ import static org.lwjgl.glfw.GLFW.*;
 /**
  * Created by Nate on 11/19/2015.
  */
-public class JoystickBasicLib implements Library, IGLRenderer{
+public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
     static final int DEFAULT_JOY_THRESHHOLD = 0x4000;
     static final int JOY_BUTTONS = 4;
     // Global variables

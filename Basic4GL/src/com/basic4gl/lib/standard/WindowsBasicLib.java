@@ -4,6 +4,7 @@ import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.FileOpener;
+import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IFileAccess;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.util.FuncSpec;
@@ -20,7 +21,7 @@ import java.util.Map;
 /**
  * Created by Nate on 11/19/2015.
  */
-public class WindowsBasicLib implements Library, IFileAccess{
+public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
     @Override
     public String name() {
         return "WindowsBasicLib";

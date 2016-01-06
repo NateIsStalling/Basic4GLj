@@ -5,6 +5,7 @@ import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.BinOperExt;
 import com.basic4gl.compiler.util.UnOperExt;
+import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.util.FuncSpec;
 import com.basic4gl.util.Mutable;
@@ -23,7 +24,7 @@ import java.util.Map;
 /**
  * Created by Nate on 11/1/2015.
  */
-public class TrigBasicLib implements Library {
+public class TrigBasicLib implements FunctionLibrary {
     @Override
     public String name() {
         return "TrigBasicLib";

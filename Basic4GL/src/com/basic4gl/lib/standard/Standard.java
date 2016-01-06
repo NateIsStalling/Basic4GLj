@@ -11,13 +11,14 @@ import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.ParamValidationCallback;
+import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.util.FuncSpec;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.vm.TomVM;
 import com.basic4gl.vm.types.ValType;
 import com.basic4gl.vm.util.Function;
 
-public class Standard implements Library{
+public class Standard implements FunctionLibrary {
 
 	// Constants
 	public static final int DEF_MAX_CATCHUP_TIME = 150; // .15 seconds
