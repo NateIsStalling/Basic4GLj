@@ -12,6 +12,7 @@ import java.util.Map;
 //
 // A set of embedded files, keyed by relative filename
 public class EmbeddedFiles {
+    private String mParent; //Parent directory
     private Map<String,EmbeddedFile> m_files = new HashMap<>();
 
     public EmbeddedFiles () { ; };
@@ -37,7 +38,7 @@ public class EmbeddedFiles {
     }
 
     public boolean IsStored (String filename){
-        String processedName = new File(filename).getAbsolutePath();
+        String processedName = new File(mParent, filename).getAbsolutePath();
         return m_files.containsKey (processedName);
     }
 
@@ -46,13 +47,13 @@ public class EmbeddedFiles {
     public FileInputStream Open        (String filename)		// Opens file. Returns NULL if not present.
     {
         return IsStored (filename)
-                ? m_files.get(new File(filename).getAbsolutePath()).AsStream()
+                ? m_files.get(new File(mParent, filename).getAbsolutePath()).AsStream()
                 : null;
     }
     public FileInputStream Open        (String filename, IntBuffer length)
     {
         if (IsStored(filename)) {
-            EmbeddedFile file = m_files.get( new File(filename).getAbsolutePath());
+            EmbeddedFile file = m_files.get( new File(mParent, filename).getAbsolutePath());
             length.put(0, file.Length());
             return file.AsStream();
         }
@@ -71,7 +72,7 @@ public class EmbeddedFiles {
             // Otherwise try to load from file
             FileInputStream diskFile = null;
             try {
-                diskFile = new FileInputStream(new File(filename));
+                diskFile = new FileInputStream(new File(mParent, filename));
                 result = diskFile;
             } catch (FileNotFoundException e) {
                 result = null;
@@ -112,21 +113,21 @@ public class EmbeddedFiles {
     }
 
     // Create embedded representation of stream
-    static boolean EmbedFile (String filename, OutputStream stream)
+    static boolean EmbedFile (String parent, String filename, OutputStream stream)
     {
 
         // Open file
         File file;
         FileInputStream fileStream = null;
         try {
-            file = new File(filename);
+            file = new File(parent, filename);
             fileStream = new FileInputStream(file);
         } catch (FileNotFoundException e) {
             return false;
         }
 
         // Convert filename to relative
-        String relName =  new File(filename).getAbsolutePath();
+        String relName =  new File(parent, filename).getAbsolutePath();
 
         // Calculate lengths
         int nameLen = relName.length () + 1;		// +1 for 0 terminator
@@ -144,4 +145,7 @@ public class EmbeddedFiles {
             return false;
         }
     }
+
+    public void setParentDirectory(String parent){mParent = parent;}
+    public String getParentDirectory(){return mParent;}
 }

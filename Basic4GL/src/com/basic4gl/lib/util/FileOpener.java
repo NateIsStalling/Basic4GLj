@@ -3,6 +3,7 @@ package com.basic4gl.lib.util;
 import com.basic4gl.vm.HasErrorState;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -13,7 +14,8 @@ import java.util.Set;
  * Created by Nate on 11/1/2015.
  */
 public class FileOpener extends HasErrorState {
-    EmbeddedFiles m_embeddedFiles;
+    private String mParent; //Parent directory
+    EmbeddedFiles mEmbeddedFiles;
     Set<String> tempFiles;
 
     String ExtractStoredFile(String filename){
@@ -22,7 +24,7 @@ public class FileOpener extends HasErrorState {
         try {
             URL resource = FileOpener.class.getResource(filename);
             file = Paths.get(resource.toURI()).toFile();
-        } catch (Exception e){
+        } catch (URISyntaxException e){
             e.printStackTrace();
             exception = e;
         }
@@ -43,24 +45,25 @@ public class FileOpener extends HasErrorState {
     }
 
 */
-    public FileOpener (){
-        m_embeddedFiles = new EmbeddedFiles();
+    public FileOpener (String parent){
+        mParent = parent;
+        mEmbeddedFiles = new EmbeddedFiles();
     }
     public FileOpener (ByteBuffer rawData){
-        m_embeddedFiles = new EmbeddedFiles(rawData);
+        mEmbeddedFiles = new EmbeddedFiles(rawData);
     }
     public void AddFiles (ByteBuffer rawData){
         IntBuffer offset = IntBuffer.allocate(1).put(0, 0);
-        m_embeddedFiles.AddFiles (rawData, offset);
+        mEmbeddedFiles.AddFiles(rawData, offset);
     }
     public void AddFiles (ByteBuffer rawData, IntBuffer offset){
-        m_embeddedFiles.AddFiles (rawData, offset);
+        mEmbeddedFiles.AddFiles(rawData, offset);
     }
 
     // Returns true if file is in the current directory
     public boolean CheckFilesFolder (String filename)
     {
-        File file = new File(filename);/*
+        File file = new File(mParent, filename);/*
         GetFullPathName(filename.c_str (), 1024, fullPath, &fileBit);
         GetCurrentDirectory(1024, currentDir);
         PrepPathForComp(fullPath);
@@ -90,7 +93,7 @@ public class FileOpener extends HasErrorState {
         if (filesFolder && !CheckFilesFolder (filename))
             return null;
         else {
-            FileInputStream result = m_embeddedFiles.OpenOrLoad (filename);
+            FileInputStream result = mEmbeddedFiles.OpenOrLoad (filename);
             if (result == null)
                 setError("Failed to open " + filename);
             return result;
@@ -102,7 +105,7 @@ public class FileOpener extends HasErrorState {
         if (filesFolder && !CheckFilesFolder (filename))
             return null;
         else {
-            File file = new File(filename);
+            File file = new File(mParent, filename);
             FileOutputStream stream = null;
             Exception exception = null;
 
@@ -131,7 +134,7 @@ public class FileOpener extends HasErrorState {
             return null;
         }
         else {
-            FileInputStream result = m_embeddedFiles.OpenOrLoad(filename);
+            FileInputStream result = mEmbeddedFiles.OpenOrLoad(filename);
             if (result == null)
                 setError("Failed to open " + filename);
             return result;
@@ -154,7 +157,7 @@ public class FileOpener extends HasErrorState {
         else {
 
             // Stored in embedded file?
-            if (m_embeddedFiles.IsStored(filename))
+            if (mEmbeddedFiles.IsStored(filename))
             {
                 return ExtractStoredFile(filename);
             }
@@ -176,11 +179,17 @@ public class FileOpener extends HasErrorState {
             return false;
         }
 
-        if (new File(filename).delete())
+        if (new File(mParent, filename).delete())
             return true;
         else {
             setError("Delete failed");
             return false;
         }
     }
+
+    public void setParentDirectory(String parent){
+        mParent = parent;
+        mEmbeddedFiles.setParentDirectory(parent);
+    }
+    public String getParentDirectory(){return mParent;}
 }
