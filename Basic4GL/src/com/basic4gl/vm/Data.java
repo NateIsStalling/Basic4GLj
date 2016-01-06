@@ -3,6 +3,7 @@ package com.basic4gl.vm;
 import java.nio.*;
 import java.util.*;
 
+import com.basic4gl.util.Mutable;
 import com.basic4gl.vm.types.Structure;
 import com.basic4gl.vm.types.StructureField;
 import com.basic4gl.vm.types.TypeLibrary;
@@ -262,9 +263,9 @@ public class Data {
 		m_tempData = m_tempDataLock;
 	}
 
-	public void SaveState(Integer stackTop, Integer tempDataLock) {
-		stackTop = m_stackTop;
-		tempDataLock = LockTempData();
+	public void SaveState(Mutable<Integer> stackTop, Mutable<Integer> tempDataLock) {
+		stackTop.set(m_stackTop);
+		tempDataLock.set(LockTempData());
 	}
 
 	public void RestoreState(int stackTop, int tempDataLock,

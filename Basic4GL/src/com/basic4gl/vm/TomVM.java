@@ -1001,8 +1001,10 @@ public class TomVM extends HasErrorState implements Streamable {
                             funcIndex);
 
                     // Save previous stack frame data
-                    mData.SaveState(stackFrame.prevStackTop,
-                            stackFrame.prevTempDataLock);
+                    Mutable<Integer> tempTop = new Mutable<>(0), tempLock = new Mutable<>(0);
+                    mData.SaveState(tempTop, tempLock);
+                    stackFrame.prevStackTop = tempTop.get();
+                    stackFrame.prevTempDataLock = tempLock.get();
 
                     mIp++; // Proceed to next instruction
                     continue step;
@@ -1046,7 +1048,10 @@ public class TomVM extends HasErrorState implements Streamable {
                             funcIndex);
 
                     // Save previous stack frame data
-                    mData.SaveState(stackFrame.prevStackTop, stackFrame.prevTempDataLock);
+                    Mutable<Integer> tempTop = new Mutable<>(0), tempLock = new Mutable<>(0);
+                    mData.SaveState(tempTop, tempLock);
+                    stackFrame.prevStackTop = tempTop.get();
+                    stackFrame.prevTempDataLock = tempLock.get();
 
                     mIp++; // Proceed to next instruction
                     continue step;
@@ -1791,7 +1796,10 @@ public class TomVM extends HasErrorState implements Streamable {
         s.codeBlockCount = mCodeBlocks.size();
 
         // Var data
-        mData.SaveState(s.stackDataTop, s.tempDataLock);
+        Mutable<Integer> tempTop = new Mutable<>(0), tempLock = new Mutable<>(0);
+        mData.SaveState(tempTop, tempLock);
+        s.stackDataTop = tempTop.get();
+        s.tempDataLock = tempLock.get();
 
         // Error state
         s.error = hasError();
