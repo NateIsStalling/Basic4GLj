@@ -10,6 +10,7 @@ import com.basic4gl.desktop.util.MainEditor;
 import com.basic4gl.lib.desktopgl.BuilderDesktopGL;
 import com.basic4gl.lib.desktopgl.GLTextGridWindow;
 import com.basic4gl.lib.util.*;
+import com.basic4gl.util.IVMDriver;
 import com.basic4gl.util.Mutable;
 import com.basic4gl.vm.Debugger;
 import com.basic4gl.vm.TomVM;
@@ -30,6 +31,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by Nate on 2/24/2015.
@@ -146,10 +148,11 @@ public class MainWindow implements MainEditor {
     JPanel mGosubFrame                  = new JPanel();
 
     // Virtual machine and compiler
+    private VmWorker mWorker;	            //Debugging
     private TomVM               mVM;		// Virtual machine
     private TomBasicCompiler    mComp;      // Compiler
-    private CallbackMessage mMessage;
     private FileOpener          mFiles;
+    private final CallbackMessage mMessage = new CallbackMessage();
 
     // Preprocessor
     private Preprocessor mPreprocessor;
@@ -944,7 +947,7 @@ public class MainWindow implements MainEditor {
 
             // Stop program completely.
             if (mBuilder != null && mBuilder.getTarget() != null)
-                mBuilder.getTarget().stop();
+                stop();
             SetMode(ApMode.AP_STOPPED);
         }
     }
@@ -1603,7 +1606,7 @@ public class MainWindow implements MainEditor {
                     &&  !mVM.hasError()
                     &&  !mVM.Done ()
                     &&  !mVM.Paused ()
-                    &&  !mBuilder.getTarget().isClosing());
+                    &&  !mBuilder.getVMDriver().isClosing());
 
             // Error occurred?
             if (mVM.hasError())
@@ -1894,12 +1897,13 @@ public class MainWindow implements MainEditor {
 
         // Show and activate OpenGL window
         if (mBuilder.getTarget() != null) {
-            if (!mBuilder.getTarget().isVisible()) {
-                mBuilder.getTarget().reset();
-                mBuilder.getTarget().activate();
+            if (!mBuilder.getVMDriver().isVisible()) {
+                reset();
+                mBuilder.getVMDriver().activate();
                 int counter = 0;
                 //if (!mDelayScreenSwitch) {
-                mBuilder.getTarget().show(new DebugCallback());
+                mFiles.setParentDirectory(mCurrentDirectory);
+                show(new DebugCallback());
             } else {
                 synchronized (mMessage) {
                     mMessage.status = CallbackMessage.WORKING;
@@ -2070,7 +2074,9 @@ public class MainWindow implements MainEditor {
 
         @Override
         public void message(CallbackMessage message) {
-            mMessage = message;
+            if (message == null)
+                return;
+            mMessage.setMessage(message);
             if (message.status == CallbackMessage.WORKING)
                 return;
             //TODO Pause
@@ -2081,7 +2087,7 @@ public class MainWindow implements MainEditor {
             //TODO determine if if-block is needed
             // Determine whether we are paused or stopped. (If we are paused, we can
             // resume from the current position. If we are stopped, we cannot.)
-            if (mVM.Paused () && !mVM.hasError() && !mVM.Done () && !mBuilder.getTarget().isClosing())
+            if (mVM.Paused () && !mVM.hasError() && !mVM.Done () && !mBuilder.getVMDriver().isClosing())
                 Pause();
             else {
                 SetMode(ApMode.AP_STOPPED);
@@ -2092,8 +2098,8 @@ public class MainWindow implements MainEditor {
             mVM.ClearTempBreakPts ();
 
             // Handle GL window
-            if (mBuilder.getTarget().isClosing())                // Explicitly closed
-                mBuilder.getTarget().hide();                   // Hide it
+            if (mBuilder.getVMDriver().isClosing())                // Explicitly closed
+                hide();                   // Hide it
 
 
             //mTarget.setClosing(false);
@@ -2101,7 +2107,7 @@ public class MainWindow implements MainEditor {
             //    mBuilder.getTarget().reset();
 
             // Get focus back
-            if (!(mBuilder.getTarget().isVisible() && !mBuilder.getTarget().isFullscreen () && mVM.Done ())) {  // If program ended cleanly in windowed mode, leave focus on OpenGL window
+            if (!(mBuilder.getVMDriver().isVisible() && !mBuilder.getVMDriver().isFullscreen() && mVM.Done ())) {  // If program ended cleanly in windowed mode, leave focus on OpenGL window
                 mFrame.requestFocus();
                 if (!mFileEditors.isEmpty() && mTabControl.getTabCount() != 0) {
                     //TODO set tab to file that error occurred in
@@ -2120,4 +2126,139 @@ public class MainWindow implements MainEditor {
         }
 
     }
+
+    private class VmWorker extends SwingWorker<Object, CallbackMessage>{
+        TaskCallback mCallbacks;
+        CountDownLatch mCompletionLatch;
+        void setCompletionLatch(CountDownLatch latch){ mCompletionLatch = latch;}
+        CountDownLatch getCompletionLatch(){ return mCompletionLatch;}
+
+		@Override
+		protected void process(List<CallbackMessage> chunks) {
+			super.process(chunks);
+			for (CallbackMessage message : chunks) {
+				mCallbacks.message(message);
+			}
+		}
+		@Override
+		protected Object doInBackground() throws Exception {
+            IVMDriver driver = mBuilder.getVMDriver();
+			boolean noError;
+
+			System.out.println("Running...");
+			if (mVM == null)
+				return null;    //TODO Throw exception
+			try {
+                mFiles.setParentDirectory(mAppDirectory);
+                driver.onPreExecute();
+                mFiles.setParentDirectory(mCurrentDirectory);
+				//Initialize libraries
+				for (Library lib : mComp.getLibraries()) {
+                    driver.initLibrary(lib);
+                    lib.init(mVM);
+				}
+
+                //Debugger is attached
+                while (!this.isCancelled() && !mVM.hasError() && !mVM.Done() && !driver.isClosing()) {
+                    // Run the virtual machine for a certain number of steps
+                    mVM.PatchIn();
+
+                    if (mVM.Paused()) {
+                        //Breakpoint reached or paused by debugger
+                        System.out.println("VM paused");
+                        mMessage.setMessage(CallbackMessage.PAUSED, "Reached breakpoint");
+                        publish(mMessage);
+
+
+                        //Resume running
+                        if (mMessage.status == CallbackMessage.WORKING) {
+                            // Kick the virtual machine over the next op-code before patching in the breakpoints.
+                            // otherwise we would never get past a breakpoint once we hit it, because we would
+                            // keep on hitting it immediately and returning.
+                            publish(driver.driveVM(1));
+
+                            // Run the virtual machine for a certain number of steps
+                            mVM.PatchIn();
+                        }
+                        //Check if program was stopped while paused
+                        if (this.isCancelled() || mVM.hasError() || mVM.Done() || driver.isClosing())
+                            break;
+                    }
+
+                    //Continue to next OpCode
+                    publish(driver.driveVM(TomVM.VM_STEPS));
+
+                    // Poll for window events. The key callback above will only be
+                    // invoked during this call.
+                    driver.handleEvents();
+
+                }    //Program completed
+
+				//Perform debugger callbacks
+				int success;
+				success = !mVM.hasError()
+						? CallbackMessage.SUCCESS
+						: CallbackMessage.FAILED;
+				publish(new CallbackMessage(success, success == CallbackMessage.SUCCESS
+                        ? "Program completed"
+                        : mVM.getError()));
+
+                driver.onPostExecute();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+                driver.onFinally();
+                //Confirm this thread has completed before a new one can be executed
+                if (mCompletionLatch != null)
+                    mCompletionLatch.countDown();
+			}
+			return null;
+		}
+	}
+
+    class DesktopDebuggerCallbacks extends DebuggerCallbacks {
+        DesktopDebuggerCallbacks(TaskCallback callback, CallbackMessage message){
+            super(callback, message);
+        }
+
+        @Override
+        public void onPreLoad() {
+            mFiles.setParentDirectory(mRunDirectory);
+        }
+
+        @Override
+        public void onPostLoad() {
+            mFiles.setParentDirectory(mRunDirectory);
+        }
+    }
+	public void reset() {
+		mVM.Pause();
+		if (mWorker != null){
+			mWorker.cancel(true);
+			//TODO confirm there is no overlap with this thread stopping and starting a new one to avoid GL errors
+			try {
+				mWorker.getCompletionLatch().await();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		mWorker = new VmWorker();
+		mWorker.setCompletionLatch(new CountDownLatch(1));
+		mVM.Reset();
+	}
+
+	public void show(TaskCallback callbacks) {
+		mWorker.mCallbacks = callbacks;
+		mWorker.execute();
+	}
+
+	public void hide() {
+        mBuilder.getVMDriver().hide();
+		mWorker.cancel(true);
+	}
+
+	public void stop() {
+        mBuilder.getVMDriver().stop();
+		mWorker.cancel(true);
+	}
 }

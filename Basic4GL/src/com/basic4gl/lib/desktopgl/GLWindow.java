@@ -5,6 +5,7 @@ import com.basic4gl.lib.util.Configuration;
 import com.basic4gl.lib.util.Target;
 import com.basic4gl.lib.util.TaskCallback;
 import com.basic4gl.util.FuncSpec;
+import com.basic4gl.util.IVMDriver;
 import com.basic4gl.vm.HasErrorState;
 import com.basic4gl.vm.TomVM;
 import org.lwjgl.BufferUtils;
@@ -32,35 +33,11 @@ import java.util.List;
         #include <string>
         #include "HasErrorState.h"
         #include "Misc.h"*/
-public abstract class GLWindow extends HasErrorState implements Target {
+public abstract class GLWindow extends HasErrorState implements Target, IVMDriver {
     static final double M_PI = 3.1415926535897932384626433832795;
     static final int WM_MOUSEWHEEL = 0x020A;
     static final int WHEEL_DELTA = 120;
     static final int GLWINDOWKEYBUFFER = 16;    // X character key buffer
-
-    @Override
-    public abstract void reset();
-
-    @Override
-    public abstract void activate();
-
-    @Override
-    public abstract void show(TaskCallback callbacks);
-
-    @Override
-    public abstract void hide();
-
-    @Override
-    public abstract void stop();
-
-    @Override
-    public abstract boolean isFullscreen();
-
-    @Override
-    public abstract boolean isVisible();
-
-    @Override
-    public abstract boolean isClosing();
 
     @Override
     public abstract Configuration getSettings();
@@ -91,15 +68,6 @@ public abstract class GLWindow extends HasErrorState implements Target {
 
     @Override
     public abstract void init(TomVM vm);
-
-    @Override
-    public abstract Map<String, Constant> constants();
-
-    @Override
-    public abstract Map<String, FuncSpec[]> specs();
-
-    @Override
-    public abstract HashMap<String, String> getTokenTips();
 
     @Override
     public abstract List<String> getDependencies();
