@@ -5,6 +5,7 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.util.Exporter;
 import com.basic4gl.util.FuncSpec;
+import com.basic4gl.util.IVMDriver;
 import com.basic4gl.vm.TomVM;
 
 import java.io.*;
@@ -26,6 +27,7 @@ import java.util.zip.ZipOutputStream;
 public class BuilderDesktopGL extends Builder {
 
     private GLTextGridWindow mTarget;
+    private FileOpener mFiles;
 
     public static Library getInstance(TomBasicCompiler compiler){
         BuilderDesktopGL instance = new BuilderDesktopGL();
@@ -198,6 +200,10 @@ target.close();
     public Target getTarget() {
         return mTarget;
     }
+    @Override
+    public IVMDriver getVMDriver() {
+        return mTarget;
+    }
 
     @Override
     public String name() { return "Desktop Application";}
@@ -224,21 +230,11 @@ target.close();
     }
     @Override
     public void init(TomBasicCompiler comp){
-
     }
     @Override
-    public Map<String, Constant> constants() {
-        return null;
-    }
-
-    @Override
-    public Map<String, FuncSpec[]> specs() {
-        return null;
-    }
-
-    @Override
-    public HashMap<String, String> getTokenTips() {
-        return null;
+    public void init(FileOpener files){
+        mFiles = files;
+        mTarget.init(files);
     }
 
     @Override

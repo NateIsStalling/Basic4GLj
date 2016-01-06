@@ -1,5 +1,7 @@
 package com.basic4gl.lib.util;
 
+import com.basic4gl.util.IVMDriver;
+
 import java.io.OutputStream;
 import java.util.List;
 
@@ -27,7 +29,7 @@ public abstract class Builder implements Library, IFileAccess{
     public abstract boolean export(String filename, OutputStream stream, TaskCallback callback) throws Exception;
 
     public abstract Target getTarget();
-
+    public abstract IVMDriver getVMDriver();
     public abstract String getFileDescription();
     public abstract String getFileExtension();
 
