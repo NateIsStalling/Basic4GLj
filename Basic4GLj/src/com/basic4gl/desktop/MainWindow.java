@@ -148,8 +148,8 @@ public class MainWindow implements MainEditor {
     // Virtual machine and compiler
     private TomVM               mVM;		// Virtual machine
     private TomBasicCompiler    mComp;      // Compiler
-    //private FileOpener          mFiles;
     private CallbackMessage mMessage;
+    private FileOpener          mFiles;
 
     // Preprocessor
     private Preprocessor mPreprocessor;
@@ -1171,10 +1171,15 @@ public class MainWindow implements MainEditor {
         mLibraries.add(GLTextGridWindow.getInstance(mComp));
         mLibraries.add(BuilderDesktopGL.getInstance(mComp));
 
+        mFiles = new FileOpener(mCurrentDirectory);
         //TODO Add more libraries
         int i = 0;
         for (Library lib : mLibraries) {
             lib.init(mComp); //Allow libraries to register function overloads
+            if (lib instanceof IFileAccess){
+                //Allows libraries to read from directories
+                ((IFileAccess) lib).init(mFiles);
+            }
             if (lib instanceof FunctionLibrary) {
                 mComp.AddConstants(((FunctionLibrary) lib).constants());
                 mComp.AddFunctions(lib, ((FunctionLibrary)lib).specs());
