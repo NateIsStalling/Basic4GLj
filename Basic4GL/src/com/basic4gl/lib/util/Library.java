@@ -35,22 +35,6 @@ public interface Library {
 	 * @param comp
 	 */
 	void init(TomBasicCompiler comp);
-	
-	/**
-	 * Returns a list of constants for the compiler to use
-	 */
-	Map<String, Constant> constants();
-
-	/**
-	 * Initialize and register functions and constants with the compiler.
-	 */
-	Map<String, FuncSpec[]> specs();
-	
-	/**
-	 * Documentation for functions and constants included in library; 
-	 * @return HashMap<name, description>
-	 */
-	HashMap<String, String> getTokenTips();
 
 	/**
 	 * 
