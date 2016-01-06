@@ -12,8 +12,20 @@ public class CallbackMessage {
 
     public int status;
     public String text;
+    public CallbackMessage(){
+        this.status = STOPPED;
+        this.text = "";
+    }
     public CallbackMessage(int status, String message){
         this.status = status;
         this.text = message;
+    }
+    public void setMessage(int status, String message){
+        this.status = status;
+        this.text = message;
+    }
+    public void setMessage(CallbackMessage message){
+        this.status = message.status;
+        this.text = message.text;
     }
 }
