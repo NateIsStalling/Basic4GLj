@@ -1,10 +1,7 @@
 package com.basic4gl.lib.util;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Launch target for a Basic4GL application; should include the main function 
@@ -13,17 +10,6 @@ import java.util.Map;
  *
  */
 public interface Target extends Library {
-
-	void reset();
-	void activate();
-	
-	void show(TaskCallback callbacks);
-	void hide();
-	void stop();
-	
-	boolean isFullscreen();
-	boolean isVisible();
-	boolean isClosing();
 
 	/**
 	 * Get list of properties the compiler can configure for
