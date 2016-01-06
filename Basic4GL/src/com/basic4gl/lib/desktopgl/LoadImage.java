@@ -48,9 +48,11 @@ public class LoadImage {
         filename = mFiles.FilenameForRead (filename, false);
         File file;
         if (filename != null && !filename.equals("") && mFiles.getError().equals("") &&
-                (file = new File(filename)).exists() && !file.isDirectory())
-            image = new Image(filename);//files.FilenameForRead (filename, false));
+                (file = new File(mFiles.getParentDirectory(), filename)).exists() && !file.isDirectory())
+            image = new Image(file.getAbsolutePath());//files.FilenameForRead (filename, false));
 
+        if (image != null && image.getPixels() == null)
+            return null;
         //TODO Check image format; Image constructor currently forces RGBA so this step may be unnecessary
             /*
             if (image != null) {
