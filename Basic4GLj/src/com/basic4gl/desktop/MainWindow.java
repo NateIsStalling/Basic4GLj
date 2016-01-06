@@ -1175,8 +1175,10 @@ public class MainWindow implements MainEditor {
         int i = 0;
         for (Library lib : mLibraries) {
             lib.init(mComp); //Allow libraries to register function overloads
-            mComp.AddConstants(lib.constants());
-            mComp.AddFunctions(lib, lib.specs());
+            if (lib instanceof FunctionLibrary) {
+                mComp.AddConstants(((FunctionLibrary) lib).constants());
+                mComp.AddFunctions(lib, ((FunctionLibrary)lib).specs());
+            }
             if (lib instanceof Builder) {
                 mBuilders.add(i);
             }

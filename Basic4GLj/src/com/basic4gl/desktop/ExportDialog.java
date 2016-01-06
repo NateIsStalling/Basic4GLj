@@ -340,8 +340,10 @@ public class ExportDialog {
         mBuilders = new ArrayList<>();
         int i = 0;
         for (Library lib : mLibraries) {
-            mComp.AddConstants(lib.constants());
-            mComp.AddFunctions(lib, lib.specs());
+            if (lib instanceof FunctionLibrary) {
+                mComp.AddConstants(((FunctionLibrary) lib).constants());
+                mComp.AddFunctions(lib, ((FunctionLibrary)lib).specs());
+            }
             if (lib instanceof Builder) {
                 mBuilders.add(i);
                 mBuilderComboBox.addItem(mLibraries.get(i).name());
