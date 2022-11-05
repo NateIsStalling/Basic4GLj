@@ -1,1 +1,0 @@
-LWJGL 3.0.0b SNAPSHOT build 64

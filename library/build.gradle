@@ -1,0 +1,63 @@
+plugins {
+    id 'java'
+}
+
+group 'com.basic4gl.library'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+
+
+
+dependencies {
+    implementation fileTree(dir: "libs", include: "*.jar")
+
+    implementation project(":runtime")
+    implementation project(":compiler")
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+task copyToLib( type: Copy ) {
+    into "$buildDir/libs/lib"
+    from configurations.default
+}
+
+jar {
+    dependsOn copyToLib
+
+    def classPath = configurations.default.files.collect { it.name }.join(' ')
+
+//    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+//    from sourceSets.collect()
+//    archivesBaseName = 'anchor_echo_http_server'
+//    version = '1.0-SNAPSHOT'
+    from {
+        (configurations.default).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+    manifest {
+        attributes (
+            'Main-Class': 'com.basic4gl.library.desktopgl.GLTextGridWindow',
+            'Class-Path': classPath
+        )
+    }
+
+    exclude 'META-INF/.RSA', 'META-INF/.SF','META-INF/*.DSA'
+
+    rootProject.ext.set("libraryJarPath", jar.archiveFile.get())
+
+    doLast {
+        new File(projectDir, "class-path.txt").text = classPath
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

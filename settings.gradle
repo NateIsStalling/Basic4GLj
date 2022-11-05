@@ -1,0 +1,8 @@
+rootProject.name = 'Basic4GL'
+include 'compiler'
+include 'javaDesktop'
+include 'runtime'
+include 'library'
+include 'debugServer'
+include 'glfwPlayground'
+

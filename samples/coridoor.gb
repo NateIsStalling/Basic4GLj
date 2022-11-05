@@ -1,0 +1,190 @@
+Const _max = 100000 
+Const _maxmat = 100
+ 
+Struc _Vector3d
+    x#, y#, z#
+EndStruc
+
+Struc _TexCoord
+    U#, V#
+EndStruc
+
+Struc _Face
+    vert(2), texc(2), norm(2)
+EndStruc
+
+Struc _mtl
+    dim specular(2)
+    dim ambient(2)
+    dim diffuse(2)
+    dim specStrength
+        matCount
+        name$(_maxmat)
+        tex(_maxmat)
+end Struc
+
+Struc SMesh
+    _Vector3d V(_max)
+    _TexCoord VT(_max)
+    _Vector3d VN(_max)
+    _Face F(_max)
+    dim Normals
+    dim Vertices
+    dim Coords
+    dim Faces
+    dim type$
+        _MTL mtl
+EndStruc 
+
+dim Smesh Model 
+
+'// common Variables
+
+dim temp$  
+
+'// Function Prototypes
+Declare Function Slice$(String$) 
+
+Sub LoadObj(Smesh &mesh, File$)
+    Dim File = openfileread(file$)
+    Dim I
+    
+    Do
+        mesh.type$ = lcase$(ReadText(file, True)) 
+        'mesh.mtl.
+        'If 
+        'Else
+        If mesh.type$ = "v" then 
+        mesh.Vertices = mesh.Vertices + 1
+            mesh.V(mesh.Vertices).x# = Val(ReadText(File, true))
+            mesh.V(mesh.Vertices).y# = Val(ReadText(File, true))
+            mesh.V(mesh.Vertices).z# = Val(ReadText(File, true))
+
+            
+        ElseIf mesh.type$ = "vt" then 
+            mesh.Coords = Mesh.Coords + 1
+            mesh.VT(mesh.Coords).U# = Val(ReadText(File, true))
+            mesh.VT(mesh.Coords).V# = Val(ReadText(File, true))
+
+        ElseIf mesh.type$ = "vn" then
+            mesh.Normals = mesh.Normals + 1
+            mesh.VN(mesh.Normals).X# = Val(ReadText(File, true))
+            mesh.VN(mesh.Normals).Y# = Val(ReadText(File, true))
+            mesh.VN(mesh.Normals).Z# = Val(ReadText(File, true)) 
+
+        ElseIf mesh.type$ = "f" then 
+            mesh.Faces = mesh.Faces + 1
+            for i = 0 to 2
+                temp$ = readtext(file, true)
+                mesh.F(mesh.Faces).vert(i) = val(temp$) : temp$ = slice$(temp$) 
+                mesh.F(mesh.Faces).texc(i) = val(temp$) : temp$ = slice$(temp$) 
+                mesh.F(mesh.Faces).norm(i) = val(temp$)             
+            next
+        Endif
+    Loop Until EndOfFile(file)
+EndSub
+
+sub LoadMTL(Smesh &mesh, File$)
+    dim File = OpenFileRead(File$)
+    dim I
+    mesh.type$ = lcase$(ReadText(File,true))
+    IF mesh.type$ = "newmtl" then 
+        mesh.mtl.matcount = mesh.mtl.matcount + 1
+        mesh.mtl.name$(mesh.mtl.matcount) = readtext(File,true)
+    elseIF mesh.type$ = "map_kd" then
+        mesh.mtl.tex(mesh.mtl.matcount) = loadtex(readtext(File,true))
+    Endif
+
+    
+EndSub
+    
+Function Slice$(String$)
+dim i
+for i = 1 to len(string$)
+    if mid$(string$,i,1) = "/" then
+        return (right$(string$,len(string$)-i))
+    endif
+next 
+    return 0
+end function  
+                  
+
+Sub DrawObj(Smesh &mesh, Drawtype)
+Dim i, List = glGenlists(1)  
+Dim ii
+
+glPolygonMode(gl_front_and_back, Drawtype)
+
+glNewlist(list, gl_compile_and_execute)
+for i = 0 to mesh.faces
+glBegin(GL_TRIANGLE_strip) 
+    glVertex3f(mesh.V(mesh.F(i).Vert(0)).X#, mesh.V(mesh.F(i).Vert(0)).y#, mesh.V(mesh.F(i).Vert(0)).z#)
+    glVertex3f(mesh.V(mesh.F(i).Vert(1)).X#, mesh.V(mesh.F(i).Vert(1)).y#, mesh.V(mesh.F(i).Vert(1)).z#)
+    glVertex3f(mesh.V(mesh.F(i).Vert(2)).X#, mesh.V(mesh.F(i).Vert(2)).y#, mesh.V(mesh.F(i).Vert(2)).z#)
+glEnd() 
+next
+glEndlist()
+glCalllist(list)
+endsub
+    
+loadObj(model, "level.obj")
+'loadMTL(Mat1, "ball.mtl") 
+
+glMatrixMode(GL_PROJECTION)
+glLoadIdentity() 
+GluPerspective(60, 1.0*windowwidth()/windowheight(), 0.1, 1000)
+glMatrixMode(GL_MODELVIEW)
+
+
+dim camx#, camy#, camz#, camAng#
+dim camAngY#, camY2#
+dim camAngX#, camX2#
+
+dim mouseX, mouseY, mousexPrev, mouseYPrev
+dim Angle#(2)
+camx# = 0
+camy# = 2
+camZ# = 0
+
+sub keyboard()
+    angle#(0) = angle#(0) + mouse_xd()*60.0
+    angle#(1) = angle#(1) + mouse_yd()*60.0
+    
+    if KeyDown ("W") then
+    camX# = camX# + Cosd(Angle#(0)-90) * .2
+    camZ# = camZ# + Sind(Angle#(0)-90) * .2
+    endif
+    if KeyDown ("S") then
+    camX# = camX# - Cosd(Angle#(0)-90) * .2
+    camZ# = camZ# - Sind(Angle#(0)-90) * .2
+    endif
+    if KeyDown("A") Then
+    camX# = camX# - Cosd(Angle#(0)) * .2
+    camZ# = camZ# - Sind(Angle#(0)) * .2
+    Endif
+    if KeyDown("D") Then
+    camX# = camX# + Cosd(Angle#(0)) * .2
+    camZ# = camZ# + Sind(Angle#(0)) * .2
+    Endif
+    
+end sub
+        
+
+glTranslatef(0,0,-10) 
+
+do  
+    glClear(GL_COLOR_BUFFER_BIT OR GL_DEPTH_BUFFER_BIT)
+    keyboard()
+    'glpushmatrix()
+    glLoadIDentity()
+    glRotatef(Angle#(2), 0, 0, 1)
+    glRotatef(Angle#(1), 1, 0, 0)
+    glRotatef(Angle#(0), 0, 1, 0)
+    glTranslatef (-camX#, -camY#, -camZ#)
+    glcolor3f(1,0,0)
+    DrawObj(model, gl_line)
+    glColor3f(0,1,1)
+    DrawObj(model, gl_fill) 
+    'glpopmatrix()
+    Swapbuffers()
+loop until scankeydown(vk_escape)

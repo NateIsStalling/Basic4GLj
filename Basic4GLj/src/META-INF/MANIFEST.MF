@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: . jar/lwjgl.jar jar/RSyntaxTextArea.jar
-Main-Class: com.basic4gl.desktop.MainWindow
-

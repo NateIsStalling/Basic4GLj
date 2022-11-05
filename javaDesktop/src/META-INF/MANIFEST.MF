@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: . jar/lwjgl.jar jar/RSyntaxTextArea.jar jar/SoundSystem.jar jar/LibraryLWJGL3OpenAL.jar jar/CodecIBXM.jar jar/CodecJOrbis.jar jar/CodecWav.jar
+Main-Class: com.basic4gl.desktop.MainWindow
+

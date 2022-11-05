@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="RSyntaxTextArea">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/RSyntaxTextArea.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

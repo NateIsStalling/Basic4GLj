@@ -1,0 +1,64 @@
+plugins {
+    id "application"
+}
+apply plugin: "java"
+
+ext {
+    javaMainClass = "com.basic4gl.desktop.MainWindow"
+}
+
+application {
+    mainClassName = javaMainClass
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+
+    implementation project(":runtime")
+    implementation project(":compiler")
+    implementation project(":library")
+
+//    implementation RSyntaxTextArea
+
+    testCompile 'junit:junit:4.12'
+}
+
+jar {
+    from { configurations.default.collect { it.isDirectory() ? it : zipTree(it) } }
+    from sourceSets.test.output
+    manifest {
+        attributes (
+            'Main-Class': javaMainClass,
+            'Class-Path': configurations.default.files.collect { it.name }.join(' ')
+        )
+    }
+    exclude 'META-INF/.RSA', 'META-INF/.SF','META-INF/*.DSA'
+}
+//
+//task withRuntime(type: "jar"){
+//    from sourceSets.all
+//
+//}
+task copyTask(type: Copy) {
+    from '../samples'
+    into 'build/samples'
+}
+run {
+//    args project(":library").task("jar").archiveFile.get()
+    dependsOn (":library:jar") {
+//        println(project(":library").task("jar").archiveFile.get())
+        println(rootProject.ext.get("libraryJarPath"))
+//        args rootProject.ext.get("libraryJarPath")
+    }
+}
+task runWithLibrary {
+    dependsOn (":library:jar") {
+        run {
+            args rootProject.ext.get("libraryJarPath")
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}

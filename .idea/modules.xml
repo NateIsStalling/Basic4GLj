@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Basic4GL/Basic4GL.iml" filepath="$PROJECT_DIR$/Basic4GL/Basic4GL.iml" />
-      <module fileurl="file://$PROJECT_DIR$/Basic4GLj/Basic4GLj.iml" filepath="$PROJECT_DIR$/Basic4GLj/Basic4GLj.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/debugServer.iml" filepath="$PROJECT_DIR$/.idea/modules/debugServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/glfwPlayground.iml" filepath="$PROJECT_DIR$/.idea/modules/glfwPlayground.iml" />
     </modules>
   </component>
 </project>
