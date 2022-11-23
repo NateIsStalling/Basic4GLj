@@ -1,4 +1,4 @@
-package com.basic4gl.desktop;
+package com.basic4gl.desktop.editor;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -10,15 +10,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 
+import com.basic4gl.desktop.util.SwingIconUtil;
 import com.basic4gl.desktop.util.MainEditor;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.*;
@@ -184,8 +181,8 @@ public class FileEditor {
             }
         });
 
-        gutter.setBookmarkIcon(HEADER_BOOKMARK, MainWindow.createImageIcon(ICON_BOOKMARK));
-        gutter.setBookmarkIcon(HEADER_BREAK_PT, MainWindow.createImageIcon(ICON_BREAK_PT));
+        gutter.setBookmarkIcon(HEADER_BOOKMARK, SwingIconUtil.createImageIcon(ICON_BOOKMARK));
+        gutter.setBookmarkIcon(HEADER_BREAK_PT, SwingIconUtil.createImageIcon(ICON_BREAK_PT));
 
         gutter.setBookmarkingEnabled(HEADER_BOOKMARK, true);
         gutter.setBookmarkingEnabled(HEADER_BREAK_PT, true);

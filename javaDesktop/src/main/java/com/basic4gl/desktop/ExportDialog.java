@@ -2,6 +2,7 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.TomVM;
@@ -137,8 +138,9 @@ public class ExportDialog {
                     if(((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions().length > 0) {
                         //Append extension if needed
                         String extension = ((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions()[0];
-                        if (!path.endsWith("." + extension))
+                        if (!path.endsWith("." + extension)) {
                             path += "." + extension;
+                        }
                     }
 
                     //Update file path

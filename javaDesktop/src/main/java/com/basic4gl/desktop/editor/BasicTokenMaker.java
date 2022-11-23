@@ -1,4 +1,4 @@
-package com.basic4gl.desktop;
+package com.basic4gl.desktop.editor;
 
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMaker;
 import org.fife.ui.rsyntaxtextarea.RSyntaxUtilities;

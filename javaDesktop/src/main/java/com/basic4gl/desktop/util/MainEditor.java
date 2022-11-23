@@ -1,7 +1,5 @@
 package com.basic4gl.desktop.util;
 
-import com.basic4gl.desktop.FileEditor;
-
 import javax.swing.*;
 
 /**

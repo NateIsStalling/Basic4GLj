@@ -181,6 +181,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		instance.mVM.Pause();
 		instance.mVM.Reset();
 		instance.activate();
+
+
 		instance.start(null);
 	}
 
@@ -270,11 +272,13 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				return;    //TODO Throw exception
 			}
 			try {
-				if (mDebugger != null)
+				if (mDebugger != null) {
 					mDebugger.onPreLoad();
+				}
 				mCharset = mFiles.FilenameForRead("charset.png", false);
-				if (mDebugger != null)
+				if (mDebugger != null) {
 					mDebugger.onPostLoad();
+				}
 				onPreExecute();
 				//Initialize libraries
 				for (Library lib : mComp.getLibraries()) {
