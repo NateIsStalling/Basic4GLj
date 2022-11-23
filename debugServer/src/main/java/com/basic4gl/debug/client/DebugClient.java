@@ -1,4 +1,4 @@
-package com.basic4gl.debug.server;
+package com.basic4gl.debug.client;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -13,6 +13,18 @@ dependencies {
     implementation project(":compiler")
     implementation project(":runtime")
 
+    implementation ('javax.websocket:javax.websocket-api:1.0')
+
+    implementation ('org.eclipse.jetty:jetty-server:9.4.49.v20220914')
+    implementation ('org.eclipse.jetty:jetty-servlet:9.4.49.v20220914')
+    implementation ('org.eclipse.jetty:jetty-webapp:9.4.49.v20220914')
+    implementation ('org.eclipse.jetty.websocket:javax-websocket-server-impl:9.4.49.v20220914')
+//            <!-- To run javax.websocket client -->
+//            <dependency>
+//            <groupId>org.eclipse.jetty.websocket</groupId>
+//      <artifactId>javax-websocket-client-impl</artifactId>
+//    <version>${jetty.version}</version>
+//    </dependency>
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
