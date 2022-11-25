@@ -10,18 +10,18 @@ import java.io.File;
  * Created by Nate on 2/26/2015.
  */
 public class EditorSourceFileServer implements ISourceFileServer {
-    private MainEditor mEditor;
-    public EditorSourceFileServer(MainEditor editor){
-        mEditor = editor;
+    private IFileManager mFileManager;
+    public EditorSourceFileServer(IFileManager fileManager){
+        mFileManager = fileManager;
     }
     @Override
     public ISourceFile OpenSourceFile(String filename) {
 
         // Search for editor with matching filename.
         // Construct an EditorSourceFile object if found.
-        for (int i = 0; i < mEditor.editorCount(); i++)
-            if (new File(mEditor.getFilename(i)).getAbsolutePath().equals(filename))
-                return new EditorSourceFile(mEditor.getEditor(i), filename);
+        for (int i = 0; i < mFileManager.editorCount(); i++)
+            if (new File(mFileManager.getFilename(i)).getAbsolutePath().equals(filename))
+                return new EditorSourceFile(mFileManager.getEditor(i), filename);
         return null;
     }
 }

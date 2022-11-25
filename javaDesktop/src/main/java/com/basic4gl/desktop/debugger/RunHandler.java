@@ -49,10 +49,12 @@ public class RunHandler {
             final String jvmDebugSuspend = "n";//"y"; // y/n whether the JVM should suspend and wait for a debugger to attach or not
             final String jvmArgs = "-agentlib:jdwp=transport=dt_socket,address=8080,server=y,suspend=" + jvmDebugSuspend + " " +
                     "-XstartOnFirstThread"; // needed for GLFW
-            final Process process = Runtime.getRuntime().exec("java " + jvmArgs + " -jar " + libraryPath
+            final String execCommand = "java " + jvmArgs + " -jar " + libraryPath
                     + " " + vm.getAbsolutePath()
                     + " " + config.getAbsolutePath()
-                    + " " + currentDirectory);
+                    + " " + currentDirectory;
+
+            final Process process = Runtime.getRuntime().exec(execCommand);
             final BufferedReader errinput = new BufferedReader(new InputStreamReader(
                     process.getErrorStream()));
             final BufferedReader input = new BufferedReader(new InputStreamReader(

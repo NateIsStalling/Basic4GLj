@@ -6,12 +6,7 @@ import javax.swing.*;
  * Created by Nate on 3/23/2015.
  */
 public interface MainEditor {
-    
-    // Child editor access
-    public abstract int editorCount();
-    public abstract JTextArea getEditor(int index);
-    public abstract String getFilename(int index);
-    public abstract String getCurrentDirectory();
+
 
     // Debugger and abstract machine state
     public abstract boolean isVMRunning();

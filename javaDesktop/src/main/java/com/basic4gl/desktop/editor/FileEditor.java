@@ -15,8 +15,9 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 
+import com.basic4gl.desktop.FileManager;
+import com.basic4gl.desktop.util.IFileManager;
 import com.basic4gl.desktop.util.SwingIconUtil;
-import com.basic4gl.desktop.util.MainEditor;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.*;
 
@@ -31,7 +32,8 @@ public class FileEditor {
     private static final String ICON_BOOKMARK = THEME_DIRECTORY + "bookmark.png";
     private static final String ICON_BREAK_PT = THEME_DIRECTORY + "BreakPt.png";
 
-    private final MainEditor mMainEditor;
+    private final IFileManager mFileManager;
+    private final IToggleBreakpointListener mToggleBreakpointListener;
 
     public RSyntaxTextArea editorPane;
     public RMultiHeaderScrollPane pane;
@@ -43,8 +45,12 @@ public class FileEditor {
     private boolean mIsModified;
     private boolean mSaved;      //File exists on system
 
-    public FileEditor(MainEditor mainEditor, LinkGenerator linkGenerator) {
-        mMainEditor = mainEditor;
+    public FileEditor(
+            IFileManager fileManager,
+            IToggleBreakpointListener toggleBreakpointListener,
+            LinkGenerator linkGenerator) {
+        mFileManager = fileManager;
+        mToggleBreakpointListener = toggleBreakpointListener;
 
         int i, t;
         SyntaxScheme scheme;
@@ -150,7 +156,7 @@ public class FileEditor {
                             int offs = editorPane.viewToModel(e.getPoint());
                             int ble = offs > -1 ? editorPane.getLineOfOffset(offs):-1;
                             if(ble > -1) {
-                                mMainEditor.toggleBreakpt(getFilePath(), ble);
+                                mToggleBreakpointListener.onToggleBreakpoint(getFilePath(), ble);
                                 //highlight = mMainEditor.toggleBreakpt(getFilename(), ble);
                             }
                             //TODO toggle highlighting breakpoints
@@ -251,7 +257,7 @@ public class FileEditor {
             dialog.addChoosableFileFilter(new FileNameExtensionFilter("GLBasic Program (*.gb)", "gb"));
             dialog.addChoosableFileFilter(new FileNameExtensionFilter("Text File (*.txt)", "txt"));
             dialog.setAcceptAllFileFilterUsed(true);    //Move "All Files" to bottom of filter list
-            dialog.setCurrentDirectory(new File(mMainEditor.getCurrentDirectory()));
+            dialog.setCurrentDirectory(new File(mFileManager.getCurrentDirectory()));
             dialog.setSelectedFile(new File(mFilename));
             int result = dialog.showSaveDialog(pane);
 
@@ -288,18 +294,18 @@ public class FileEditor {
         return false;
     }
 
-    public static FileEditor open(Frame parent, MainEditor mainEditor, LinkGenerator linkGenerator) {
+    public static FileEditor open(Frame parent, IFileManager fileManager, IToggleBreakpointListener listener, LinkGenerator linkGenerator) {
         FileEditor editor = null;
         JFileChooser dialog = new JFileChooser();
         dialog.setAcceptAllFileFilterUsed(false);
         dialog.addChoosableFileFilter(new FileNameExtensionFilter("GLBasic Program (*.gb)", "gb"));
         dialog.addChoosableFileFilter(new FileNameExtensionFilter("Text File (*.txt)", "txt"));
         dialog.setAcceptAllFileFilterUsed(true);    //Move "All Files" to bottom of filter list
-        dialog.setCurrentDirectory(new File(mainEditor.getCurrentDirectory()));
+        dialog.setCurrentDirectory(new File(fileManager.getCurrentDirectory()));
         int result = dialog.showOpenDialog(parent);
 
         if (result == JFileChooser.APPROVE_OPTION) {
-            editor = new FileEditor(mainEditor, linkGenerator);
+            editor = new FileEditor(fileManager, listener, linkGenerator);
             try {
                 FileReader fr = new FileReader(dialog.getSelectedFile().getAbsolutePath());
                 editor.mFilePath = dialog.getSelectedFile().getAbsolutePath();
@@ -316,9 +322,9 @@ public class FileEditor {
 
         return editor;
     }
-    public static FileEditor open(File file, MainEditor mainEditor, LinkGenerator linkGenerator) {
+    public static FileEditor open(File file, IFileManager fileManager, IToggleBreakpointListener listener, LinkGenerator linkGenerator) {
         FileEditor editor = null;
-        editor = new FileEditor(mainEditor, linkGenerator);
+        editor = new FileEditor(fileManager, listener, linkGenerator);
         if (file.exists()) {
             try {
                 FileReader fr = new FileReader(file);
@@ -506,7 +512,7 @@ public class FileEditor {
                 mLineHighlights.remove(line);
             }
             */
-            mMainEditor.toggleBreakpt(getFilePath(), line);
+            mToggleBreakpointListener.onToggleBreakpoint(getFilePath(), line);
         } catch (BadLocationException ex) {
             line = -1;
             ex.printStackTrace();
