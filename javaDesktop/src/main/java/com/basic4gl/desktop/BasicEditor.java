@@ -3,6 +3,7 @@ package com.basic4gl.desktop;
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.desktop.debugger.*;
+import com.basic4gl.desktop.debugger.commands.*;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.desktop.util.EditorUtil;

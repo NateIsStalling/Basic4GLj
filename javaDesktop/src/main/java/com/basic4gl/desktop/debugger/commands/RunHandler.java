@@ -1,6 +1,7 @@
-package com.basic4gl.desktop.debugger;
+package com.basic4gl.desktop.debugger.commands;
 
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.desktop.debugger.IApplicationHost;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 

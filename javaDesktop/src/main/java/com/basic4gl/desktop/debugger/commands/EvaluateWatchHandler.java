@@ -1,7 +1,8 @@
-package com.basic4gl.desktop.debugger;
+package com.basic4gl.desktop.debugger.commands;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.desktop.MainWindow;
+import com.basic4gl.desktop.debugger.IApplicationHost;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.VMState;
 import com.basic4gl.runtime.types.OpCode;

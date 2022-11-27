@@ -1,6 +1,6 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.desktop.debugger.*;
+import com.basic4gl.desktop.debugger.commands.EvaluateWatchHandler;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.editor.ITabProvider;
 import com.basic4gl.desktop.editor.IToggleBreakpointListener;
@@ -26,6 +26,7 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 
+import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
 
 /**
@@ -35,22 +36,6 @@ public class MainWindow implements
         IEditorPresenter,
         ITabProvider,
         IToggleBreakpointListener {
-
-    private static final String IMAGE_DIRECTORY = "images/";
-    private static final String THEME_DIRECTORY = IMAGE_DIRECTORY + "programmer-art/";
-    private static final String ICON_RUN_APP = THEME_DIRECTORY + "icon_run.png";
-    private static final String ICON_STOP_APP = THEME_DIRECTORY + "icon_stop.png";
-    private static final String ICON_NEW = THEME_DIRECTORY + "icon_new.png";
-    private static final String ICON_OPEN = THEME_DIRECTORY + "icon_open.png";
-    private static final String ICON_SAVE = THEME_DIRECTORY + "icon_save.png";
-    private static final String ICON_DEBUG = THEME_DIRECTORY + "icon_debug.png";
-    private static final String ICON_PLAY = THEME_DIRECTORY + "icon_play.png";
-    private static final String ICON_PAUSE = THEME_DIRECTORY + "icon_pause.png";
-    private static final String ICON_STEP_OVER = THEME_DIRECTORY + "icon_step_over.png";
-    private static final String ICON_STEP_IN = THEME_DIRECTORY + "icon_step_in.png";
-    private static final String ICON_STEP_OUT = THEME_DIRECTORY + "icon_step_out.png";
-
-    static final String EOL = "\r\n";
 
     private CaretListener TrackCaretPosition = new CaretListener() {
         @Override
