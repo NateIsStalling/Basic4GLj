@@ -7,6 +7,10 @@ ext {
     javaMainClass = "com.basic4gl.desktop.MainWindow"
 }
 
+repositories {
+    mavenCentral()
+}
+
 application {
     mainClassName = javaMainClass
 }
@@ -19,6 +23,8 @@ dependencies {
     implementation project(":library")
 
 //    implementation RSyntaxTextArea
+
+    implementation ('org.eclipse.jetty.websocket:javax-websocket-client-impl:9.4.49.v20220914')
 
     testCompile 'junit:junit:4.12'
 }

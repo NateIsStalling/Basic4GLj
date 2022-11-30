@@ -161,7 +161,6 @@ public class BasicEditor implements MainEditor,
         //TODO fix run
 
         if (mMode == ApMode.AP_STOPPED) {
-
             // Compile and run program from start
             Library builder = mLibraries.get(mBuilders.get(mCurrentBuilder));
             RunHandler handler = new RunHandler(this, mComp);
@@ -493,6 +492,11 @@ public class BasicEditor implements MainEditor,
     public void stop() {
         mBuilder.getVMDriver().stop();
         mWorker.cancel(true);
+    }
+
+    public String evaluateWatch(String watch, boolean canCallFunc) {
+        EvaluateWatchHandler handler = new EvaluateWatchHandler(this, mComp, mVM);
+        return handler.EvaluateWatch(watch, canCallFunc);
     }
 
     //TODO Reimplement callbacks

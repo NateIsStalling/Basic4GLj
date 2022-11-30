@@ -1,5 +1,6 @@
 package com.basic4gl.desktop;
 
+import com.basic4gl.desktop.debugger.IDebugger;
 import com.basic4gl.desktop.debugger.commands.EvaluateWatchHandler;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.editor.ITabProvider;
@@ -137,7 +138,7 @@ public class MainWindow implements
     // Editors
     BasicEditor mEditor;
     FileManager mFileManager;
-
+    IDebugger mDebugger;
 
     IncludeLinkGenerator mLinkGenerator = new IncludeLinkGenerator(this);
 
@@ -1330,8 +1331,8 @@ public class MainWindow implements
         mGosubListModel.clear();
 
         for (String watch : mWatches) {
-            EvaluateWatchHandler handler = new EvaluateWatchHandler(mEditor, mEditor.mComp, mEditor.mVM);
-            mWatchListModel.addElement(watch + ": " + handler.EvaluateWatch(watch, true));
+
+            mWatchListModel.addElement(watch + ": " + mEditor.evaluateWatch(watch, true));
         }
         mWatchListModel.addElement(" ");              // Last line is blank, and can be clicked on to add new watch
 
