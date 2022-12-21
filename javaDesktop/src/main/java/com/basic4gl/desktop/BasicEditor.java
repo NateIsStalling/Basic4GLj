@@ -2,6 +2,7 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.desktop.debugger.*;
 import com.basic4gl.desktop.debugger.commands.*;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
@@ -61,7 +62,7 @@ public class BasicEditor implements MainEditor,
     IFileManager mFileManager;
 
     String mLibraryPath;
-    public RemoteDebugger remoteDebugger;
+
 
     public BasicEditor(
             String libraryPath,
@@ -169,8 +170,7 @@ public class BasicEditor implements MainEditor,
 
         } else {
             // Stop program completely.
-            StopHandler handler = new StopHandler();
-            handler.stop();
+            mWorker.stopApplication();
         }
     }
 
@@ -178,7 +178,7 @@ public class BasicEditor implements MainEditor,
         switch (mMode) {
             case AP_RUNNING:
                 // Pause program
-                remoteDebugger.pauseApplication();
+                mWorker.pauseApplication();
                 break;
 
             case AP_STOPPED:
@@ -191,22 +191,22 @@ public class BasicEditor implements MainEditor,
 
             case AP_PAUSED:
                 // When paused, play continues from where program was halted.
-                remoteDebugger.resumeApplication();
+                mWorker.resumeApplication();
 
                 break;
         }
     }
 
     public void actionStep() {
-        remoteDebugger.step(1);
+        mWorker.step(1);
     }
 
     public void actionStepInto() {
-        remoteDebugger.step(2);
+        mWorker.step(2);
     }
 
     public void actionStepOutOf() {
-        remoteDebugger.step(3);
+        mWorker.step(3);
     }
 
     @Override
@@ -249,8 +249,7 @@ public class BasicEditor implements MainEditor,
 
     @Override
     public void resumeApplication() {
-        ContinueHandler handler = new ContinueHandler();
-        handler.Continue();
+        mWorker.resumeApplication();
     }
 
     @Override
@@ -299,7 +298,7 @@ public class BasicEditor implements MainEditor,
 
     @Override
     public boolean toggleBreakpt(String filename, int line) {
-        return remoteDebugger.toggleBreakpoint(filename, line);
+        return mWorker.toggleBreakpoint(filename, line);
     }
 
     @Override
@@ -309,7 +308,7 @@ public class BasicEditor implements MainEditor,
 
     @Override
     public String evaluateVariable(String variable) {
-        return remoteDebugger.evaluateWatch(variable, false);
+        return mWorker.evaluateWatch(variable, false);
     }
 
     @Override
@@ -488,7 +487,7 @@ public class BasicEditor implements MainEditor,
     }
 
     public String evaluateWatch(String watch, boolean canCallFunc) {
-        return remoteDebugger.evaluateWatch(watch, canCallFunc);
+        return mWorker.evaluateWatch(watch, canCallFunc);
     }
 
     //TODO Reimplement callbacks

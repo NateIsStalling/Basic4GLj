@@ -29,7 +29,6 @@ import com.basic4gl.debug.websocket.DebugClientSocket;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
 import com.basic4gl.debug.websocket.IDebugCommandListener;
 import com.basic4gl.lib.util.CallbackMessage;
-import com.basic4gl.lib.util.DebuggerCallbacks;
 import com.basic4gl.lib.util.TaskCallback;
 import com.google.gson.Gson;
 import org.eclipse.jetty.util.component.LifeCycle;

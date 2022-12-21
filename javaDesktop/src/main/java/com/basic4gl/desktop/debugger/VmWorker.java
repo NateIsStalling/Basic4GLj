@@ -2,6 +2,7 @@ package com.basic4gl.desktop.debugger;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
+import com.basic4gl.debug.websocket.IDebugCallbackListener;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.TomVM;
 
@@ -9,13 +10,16 @@ import javax.swing.*;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-public class VmWorker extends SwingWorker<Object, CallbackMessage> {
+public class VmWorker extends SwingWorker<Object, CallbackMessage>
+implements IDebugCallbackListener, IDebugger {
 
     private final Builder mBuilder;
     private final TomBasicCompiler mComp;
     private final IFileProvider mFiles;
     private final TomVM mVM;
     private final CallbackMessage mMessage;
+
+    private RemoteDebugger remoteDebugger;
 
     TaskCallback mCallbacks;
     CountDownLatch mCompletionLatch;
@@ -55,6 +59,7 @@ public class VmWorker extends SwingWorker<Object, CallbackMessage> {
     protected Object doInBackground() throws Exception {
         IVMDriver driver = mBuilder.getVMDriver();
         boolean noError;
+        DebugClientAdapter adapter = null;
 
         System.out.println("Running...");
         if (mVM == null)
@@ -69,6 +74,9 @@ public class VmWorker extends SwingWorker<Object, CallbackMessage> {
                 driver.initLibrary(lib);
                 lib.init(mVM);
             }
+            adapter = new DebugClientAdapter(this);
+            adapter.connect();
+            remoteDebugger = new RemoteDebugger(adapter);
 
             //Debugger is attached
             while (!this.isCancelled() && !mVM.hasError() && !mVM.Done() && !driver.isClosing()) {
@@ -119,6 +127,9 @@ public class VmWorker extends SwingWorker<Object, CallbackMessage> {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            adapter.stop();
+            remoteDebugger = null;
+
             driver.onFinally();
             //Confirm this thread has completed before a new one can be executed
             if (mCompletionLatch != null) {
@@ -126,5 +137,57 @@ public class VmWorker extends SwingWorker<Object, CallbackMessage> {
             }
         }
         return null;
+    }
+
+    @Override
+    public void OnDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.CallbackMessage callback) {
+//        int success;
+//        success = !mVM.hasError()
+//                ? CallbackMessage.SUCCESS
+//                : CallbackMessage.FAILED;
+//        publish(new CallbackMessage(success, success == CallbackMessage.SUCCESS
+//                ? "Program completed"
+//                : mVM.getError()));
+        publish(new CallbackMessage(callback.status, callback.text));
+    }
+
+    @Override
+    public void continueApplication() {
+        remoteDebugger.continueApplication();
+    }
+
+    @Override
+    public void pauseApplication() {
+        remoteDebugger.pauseApplication();
+    }
+
+    @Override
+    public void resumeApplication() {
+        remoteDebugger.resumeApplication();
+    }
+
+    @Override
+    public void runApplication(Library builder, String currentDirectory, String libraryPath) {
+        remoteDebugger.runApplication(builder, currentDirectory, libraryPath);
+    }
+
+    @Override
+    public void stopApplication() {
+        remoteDebugger.stopApplication();
+    }
+
+    @Override
+    public void step(int type) {
+        remoteDebugger.step(type);
+    }
+
+    @Override
+    public boolean toggleBreakpoint(String filename, int line) {
+        return remoteDebugger.toggleBreakpoint(filename, line);
+    }
+
+    @Override
+    public String evaluateWatch(String watch, boolean canCallFunc) {
+        return remoteDebugger.evaluateWatch(watch, canCallFunc);
     }
 }

@@ -21,9 +21,13 @@ dependencies {
     implementation project(":runtime")
     implementation project(":compiler")
     implementation project(":library")
+    implementation project(":debugProtocol")
 
 //    implementation RSyntaxTextArea
 
+    // for debugger
+    implementation ('com.google.code.gson:gson:2.10')
+    implementation ('javax.websocket:javax.websocket-api:1.0')
     implementation ('org.eclipse.jetty.websocket:javax-websocket-client-impl:9.4.49.v20220914')
 
     testCompile 'junit:junit:4.12'

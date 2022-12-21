@@ -1,6 +1,8 @@
 package com.basic4gl.desktop;
 
+import com.basic4gl.desktop.debugger.DebugClientAdapter;
 import com.basic4gl.desktop.debugger.IDebugger;
+import com.basic4gl.desktop.debugger.RemoteDebugger;
 import com.basic4gl.desktop.debugger.commands.EvaluateWatchHandler;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.editor.ITabProvider;
@@ -671,7 +673,6 @@ public class MainWindow implements
         Debugger debugger = new Debugger(preprocessor.LineNumberMap());
         TomVM vm = new TomVM(debugger);
         TomBasicCompiler comp = new TomBasicCompiler(vm);
-
         mEditor = new BasicEditor(libraryPath, mFileManager, this, preprocessor, debugger, vm, comp);
 
 
