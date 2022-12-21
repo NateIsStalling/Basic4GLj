@@ -17,6 +17,8 @@ package com.basic4gl.debug.server;
 //  ========================================================================
 //
 
+import com.basic4gl.debug.websocket.DebugSocket;
+import com.basic4gl.debug.websocket.EventSocket;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -28,7 +30,7 @@ public class EventServer
     {
         Server server = new Server();
         ServerConnector connector = new ServerConnector(server);
-        connector.setPort(8080);
+        connector.setPort(6796);
         server.addConnector(connector);
 
         // Setup the basic application "context" for this application at "/"
@@ -52,6 +54,7 @@ public class EventServer
 
                         // Add WebSocket endpoint to javax.websocket layer
                         wsContainer.addEndpoint(EventSocket.class);
+                        wsContainer.addEndpoint(DebugSocket.class);
                     });
 
             server.start();

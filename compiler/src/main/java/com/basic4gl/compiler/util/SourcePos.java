@@ -1,6 +1,8 @@
 package com.basic4gl.compiler.util;
 
-public class SourcePos {
+import java.io.Serializable;
+
+public class SourcePos implements Serializable {
 	// Source file and line number before pre-processing
 	private int mFileIndex;
 	private int mFileLineNo;

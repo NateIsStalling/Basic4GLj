@@ -1,5 +1,6 @@
 package com.basic4gl.desktop.debugger.commands;
 
+import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.desktop.debugger.IApplicationHost;
 import com.basic4gl.lib.util.Library;
@@ -12,10 +13,12 @@ public class RunHandler {
 
     private final IApplicationHost mHost;
     private final TomBasicCompiler mComp;
+    private final Preprocessor mPreprocessor;
 
-    public RunHandler(IApplicationHost host, TomBasicCompiler comp) {
+    public RunHandler(IApplicationHost host, TomBasicCompiler comp, Preprocessor preprocessor) {
         mHost = host;
         mComp = comp;
+        mPreprocessor = preprocessor;
     }
 
     public void run() {
@@ -35,6 +38,7 @@ public class RunHandler {
         try {
             File vm = File.createTempFile("basicvm-", "", Paths.get(".").toFile());
             File config = File.createTempFile("basicconfig-", "", Paths.get(".").toFile());
+            File lineMapping = File.createTempFile("basiclinemapping-", "", Paths.get(".").toFile());
             try (DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(vm))) {
 //                mComp.VM().Stre
                 mComp.StreamOut(outputStream);
@@ -46,6 +50,16 @@ public class RunHandler {
                 e.printStackTrace();
             }
 
+
+            try (
+                FileOutputStream outputStream = new FileOutputStream(lineMapping);
+                ObjectOutputStream oos = new ObjectOutputStream(outputStream);
+            ) {
+                oos.writeObject(mPreprocessor.LineNumberMap());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             // TODO not sure how to cancel any suspended java apps that fail to connect to a debugger yet
             final String jvmDebugSuspend = "n";//"y"; // y/n whether the JVM should suspend and wait for a debugger to attach or not
             final String jvmArgs = "-agentlib:jdwp=transport=dt_socket,address=8080,server=y,suspend=" + jvmDebugSuspend + " " +
@@ -53,6 +67,7 @@ public class RunHandler {
             final String execCommand = "java " + jvmArgs + " -jar " + libraryPath
                     + " " + vm.getAbsolutePath()
                     + " " + config.getAbsolutePath()
+                    + " " + lineMapping.getAbsolutePath()
                     + " " + currentDirectory;
 
             final Process process = Runtime.getRuntime().exec(execCommand);

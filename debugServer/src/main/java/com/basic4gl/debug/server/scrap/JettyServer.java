@@ -1,5 +1,7 @@
-package com.basic4gl.debug.server;
+package com.basic4gl.debug.server.scrap;
 
+import com.basic4gl.debug.server.example.AsyncServlet;
+import com.basic4gl.debug.server.example.BlockingServlet;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;

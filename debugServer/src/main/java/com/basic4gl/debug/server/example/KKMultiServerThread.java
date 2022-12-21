@@ -1,4 +1,4 @@
-package com.basic4gl.debug.server;
+package com.basic4gl.debug.server.example;
 /*
  * Copyright (c) 1995, 2013, Oracle and/or its affiliates. All rights reserved.
  *
@@ -32,13 +32,7 @@ package com.basic4gl.debug.server;
 
 import java.net.*;
 import java.io.*;
-import java.security.MessageDigest;
-import java.util.Base64;
 import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class KKMultiServerThread extends Thread {
     private Socket socket = null;

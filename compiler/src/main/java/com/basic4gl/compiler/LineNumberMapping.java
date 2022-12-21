@@ -1,5 +1,6 @@
 package com.basic4gl.compiler;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -13,7 +14,7 @@ import com.basic4gl.runtime.util.Mutable;
 //
 /// Maps line numbers of the expanded file back to their corresponding source file.
 /// Used by debugging code so that lines correctly match up with program addresses.
-public class LineNumberMapping extends ILineNumberMapping {
+public class LineNumberMapping extends ILineNumberMapping implements Serializable {
 	Vector<String> filenames = new Vector<String>();
 	Map<String,Integer> filenameLookup = new HashMap<String, Integer>();
 	Vector<SourcePos> mapping = new Vector<SourcePos>();

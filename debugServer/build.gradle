@@ -11,7 +11,10 @@ repositories {
 
 dependencies {
     implementation project(":compiler")
+    implementation project(":debugProtocol")
     implementation project(":runtime")
+
+    implementation ('com.google.code.gson:gson:2.10')
 
     implementation ('javax.websocket:javax.websocket-api:1.0')
 

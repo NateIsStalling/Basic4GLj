@@ -11,6 +11,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/compiler" />
+            <option value="$PROJECT_DIR$/debugProtocol" />
             <option value="$PROJECT_DIR$/debugServer" />
             <option value="$PROJECT_DIR$/glfwPlayground" />
             <option value="$PROJECT_DIR$/javaDesktop" />

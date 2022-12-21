@@ -1,5 +1,6 @@
-package com.basic4gl.debug.server;
+package com.basic4gl.debug.server.scrap;
 
+import com.basic4gl.debug.server.example.LoggingRequestHandler;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;

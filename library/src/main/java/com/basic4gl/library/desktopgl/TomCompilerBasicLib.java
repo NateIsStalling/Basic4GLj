@@ -89,7 +89,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
     @Override
     public String name() {
-        return null;
+        return "TomCompilerBasic";
     }
 
     @Override

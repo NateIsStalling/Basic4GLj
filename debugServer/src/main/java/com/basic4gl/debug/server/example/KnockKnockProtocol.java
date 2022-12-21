@@ -1,4 +1,4 @@
-package com.basic4gl.debug.server;
+package com.basic4gl.debug.server.example;
 /*
  * Copyright (c) 1995, 2008, Oracle and/or its affiliates. All rights reserved.
  *

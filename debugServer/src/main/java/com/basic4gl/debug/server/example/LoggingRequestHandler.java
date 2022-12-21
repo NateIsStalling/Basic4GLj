@@ -1,4 +1,4 @@
-package com.basic4gl.debug.server;
+package com.basic4gl.debug.server.example;
 
 import java.io.IOException;
 

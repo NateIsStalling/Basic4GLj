@@ -1,4 +1,4 @@
-package com.basic4gl.debug.server;
+package com.basic4gl.debug.server.example;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;

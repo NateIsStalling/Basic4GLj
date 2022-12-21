@@ -35,8 +35,9 @@ public class Debugger extends IVMDebugger {
     }
     public void AddUserBreakPt(String filename, int lineNo)
     {
-        if (!IsUserBreakPt(filename, lineNo))
+        if (!IsUserBreakPt(filename, lineNo)) {
             mUserBreakPts.add(new SourceUserBreakPt(filename, lineNo));
+        }
     }
     public void RemoveUserBreakPt(String filename, int lineNo)
     {
@@ -76,26 +77,19 @@ public class Debugger extends IVMDebugger {
                     if (delta >= 0) {
                         // Insert
                         i.lineNo += delta;
-                        continue;
                     }
                     else {
                         // Delete
                         // Is breakpoint on a deleted line?
                         if (i.lineNo < fileLineNo - delta){
                             mUserBreakPts.remove(i);
-                            continue;
                         }
                         else {
                             i.lineNo += delta;
-                            continue;
                         }
                     }
                 }
-                else
-                	continue;
             }
-            else
-            	continue;
         }
     
     }

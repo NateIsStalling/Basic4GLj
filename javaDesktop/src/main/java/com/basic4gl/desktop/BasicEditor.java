@@ -61,6 +61,7 @@ public class BasicEditor implements MainEditor,
     IFileManager mFileManager;
 
     String mLibraryPath;
+    public RemoteDebugger remoteDebugger;
 
     public BasicEditor(
             String libraryPath,
@@ -163,7 +164,7 @@ public class BasicEditor implements MainEditor,
         if (mMode == ApMode.AP_STOPPED) {
             // Compile and run program from start
             Library builder = mLibraries.get(mBuilders.get(mCurrentBuilder));
-            RunHandler handler = new RunHandler(this, mComp);
+            RunHandler handler = new RunHandler(this, mComp, mPreprocessor);
             handler.launchRemote(builder, mFileManager.getCurrentDirectory(), mLibraryPath); //12/2020 testing new continue()
 
         } else {
@@ -177,40 +178,35 @@ public class BasicEditor implements MainEditor,
         switch (mMode) {
             case AP_RUNNING:
                 // Pause program
-                PauseHandler pauseHandler = new PauseHandler(mVM);
-                pauseHandler.pause();
+                remoteDebugger.pauseApplication();
                 break;
 
             case AP_STOPPED:
                 // When stopped, Play is exactly the same as Run
                 Library builder = mLibraries.get(mBuilders.get(mCurrentBuilder));
-                RunHandler handler = new RunHandler(this, mComp);
+                RunHandler handler = new RunHandler(this, mComp, mPreprocessor);
                 handler.launchRemote(builder, mFileManager.getCurrentDirectory(), mLibraryPath); //12/2020 testing new continue()
 
                 break;
 
             case AP_PAUSED:
                 // When paused, play continues from where program was halted.
-                ResumeHandler resumeHandler = new ResumeHandler();
-                resumeHandler.resume();
+                remoteDebugger.resumeApplication();
 
                 break;
         }
     }
 
     public void actionStep() {
-        StepHandler handler = new StepHandler(this, mVM);
-        handler.DoStep(1);
+        remoteDebugger.step(1);
     }
 
     public void actionStepInto() {
-        StepHandler handler = new StepHandler(this, mVM);
-        handler.DoStep(2);
+        remoteDebugger.step(2);
     }
 
     public void actionStepOutOf() {
-        StepHandler handler = new StepHandler(this, mVM);
-        handler.DoStep(3);
+        remoteDebugger.step(3);
     }
 
     @Override
@@ -303,9 +299,7 @@ public class BasicEditor implements MainEditor,
 
     @Override
     public boolean toggleBreakpt(String filename, int line) {
-        ToggleBreakPointHandler handler = new ToggleBreakPointHandler(this, mDebugger, mVM);
-        boolean isBreakpoint = handler.toggleBreakPoint(filename, line);
-        return isBreakpoint;
+        return remoteDebugger.toggleBreakpoint(filename, line);
     }
 
     @Override
@@ -315,8 +309,7 @@ public class BasicEditor implements MainEditor,
 
     @Override
     public String evaluateVariable(String variable) {
-        EvaluateWatchHandler handler = new EvaluateWatchHandler(this, mComp, mVM);
-        return handler.EvaluateWatch(variable, false);
+        return remoteDebugger.evaluateWatch(variable, false);
     }
 
     @Override
@@ -495,8 +488,7 @@ public class BasicEditor implements MainEditor,
     }
 
     public String evaluateWatch(String watch, boolean canCallFunc) {
-        EvaluateWatchHandler handler = new EvaluateWatchHandler(this, mComp, mVM);
-        return handler.EvaluateWatch(watch, canCallFunc);
+        return remoteDebugger.evaluateWatch(watch, canCallFunc);
     }
 
     //TODO Reimplement callbacks

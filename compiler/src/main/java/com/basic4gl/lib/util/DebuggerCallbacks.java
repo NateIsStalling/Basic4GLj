@@ -8,11 +8,17 @@ import com.basic4gl.compiler.util.IVMDriver;
 public abstract class DebuggerCallbacks {
     private final TaskCallback mCallback;
     private final CallbackMessage mMessage;
-    private IVMDriver mDriver;
+    private final IVMDriver mDriver;
 
-    protected DebuggerCallbacks(TaskCallback callback, CallbackMessage message){
+    protected DebuggerCallbacks(
+        TaskCallback callback,
+        CallbackMessage message,
+        // TODO circular dependency with start???
+        IVMDriver driver) {
+
         mCallback = callback;
         mMessage = message;
+        mDriver = driver;
     }
 
     /**
@@ -44,6 +50,7 @@ public abstract class DebuggerCallbacks {
                 // Keep driver responsive while paused
                 mDriver.handleEvents();
                 mMessage.wait(100);
+                System.out.println("paused");
             }
         }
         } catch (InterruptedException e){//Do nothing

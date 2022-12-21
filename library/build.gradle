@@ -16,6 +16,14 @@ dependencies {
     implementation project(":runtime")
     implementation project(":compiler")
 
+    implementation project(":debugProtocol")
+
+    // for debugger
+    implementation ('com.google.code.gson:gson:2.10')
+    implementation ('javax.websocket:javax.websocket-api:1.0')
+    implementation ('org.eclipse.jetty.websocket:javax-websocket-client-impl:9.4.49.v20220914')
+
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }

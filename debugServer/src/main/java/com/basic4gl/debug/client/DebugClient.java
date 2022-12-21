@@ -10,7 +10,7 @@ public class DebugClient {
 
     public static void main(String[] args) {
         String hostName = "localhost";// args[0];
-        int portNumber = 4444;//Integer.parseInt(args[1]);
+        int portNumber = 8090;//Integer.parseInt(args[1]);
 
         try (
                 Socket kkSocket = new Socket(hostName, portNumber);

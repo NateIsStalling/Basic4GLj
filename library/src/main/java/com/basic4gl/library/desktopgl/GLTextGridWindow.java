@@ -7,9 +7,12 @@ import java.nio.IntBuffer;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
+import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.compiler.util.IVMDriverAccess;
+import com.basic4gl.library.debug.DebuggerCallbacksAdapter;
+import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.lib.util.FunctionLibrary;
 import org.lwjgl.glfw.GLFWCharCallback;
@@ -41,9 +44,11 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	private TomVM mVM;
 	private Thread mThread;	//Standalone
 
+	private DebuggerCallbacks mDebugger;
+	private DebuggerCallbacksAdapter debuggerCallback;
 
 	private CountDownLatch completionLatch;
-	private TaskCallback mCallbacks;
+//	private TaskCallback mCallbacks;
 	private CallbackMessage mMessage;
 	private CallbackMessage mUpdates;
 
@@ -118,12 +123,32 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	public static void main(String[] args) {
 
+		//Load VM's state from file
+//		String stateFile = "/Users/nate/Downloads/git/Basic4GL/javaDesktop/basicvm-nehe2";//args[0];// "/" + STATE_FILE
+		String stateFile = args[0];// "/" + STATE_FILE
+		String configFile = args[1];//"/" + CONFIG_FILE;
+		String mappingFile = args[2];
+		String currentDirectory = args[3];
+
 		//JOptionPane.showMessageDialog(null, "Waiting...");
 		instance = new GLTextGridWindow();
+
+		LineNumberMapping lineNumberMapping = null;
+		try (
+				FileInputStream streamIn = new FileInputStream(mappingFile);
+				ObjectInputStream objectinputstream = new ObjectInputStream(streamIn);
+		) {
+			lineNumberMapping = (LineNumberMapping) objectinputstream.readObject();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		Debugger debugger = new Debugger(lineNumberMapping);
+
 //		instance.mFiles = new FileOpener(); //TODO load embedded files
 		instance.mFiles = new FileOpener(""); //TODO load embedded files
 		instance.mFiles.setParentDirectory("/Users/nate/Downloads/git/Basic4GL/javaDesktop/distribution");
-		instance.mComp = new TomBasicCompiler(new TomVM(null));
+		instance.mComp = new TomBasicCompiler(new TomVM(debugger));
 		instance.mVM = instance.mComp.VM();
 		instance.mLibraries = new ArrayList<>();
 		//TODO Load libraries dynamically
@@ -148,11 +173,6 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				instance.mComp.AddFunctions(lib, ((FunctionLibrary) lib).specs());
 		}
 
-		//Load VM's state from file
-//		String stateFile = "/Users/nate/Downloads/git/Basic4GL/javaDesktop/basicvm-nehe2";//args[0];// "/" + STATE_FILE
-		String stateFile = args[0];// "/" + STATE_FILE
-		String configFile = args[1];//"/" + CONFIG_FILE;
-		String currentDirectory = args[2];
 		System.out.println("par: " + currentDirectory);
 		instance.mFiles.setParentDirectory(currentDirectory);
 
@@ -174,6 +194,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 			System.err.println("Configuration file could not be loaded");
 		}
 
+
 		//Initialize file opener
 		instance.mFiles = new FileOpener("");
 		instance.mFiles = new FileOpener(currentDirectory);
@@ -183,6 +204,21 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		instance.activate();
 
 
+		instance.mMessage = new CallbackMessage();
+		instance.debuggerCallback = new DebuggerCallbacksAdapter(instance.mMessage);
+		instance.debuggerCallback.connect();
+
+		instance.mDebugger = new DebuggerCallbacks(instance.debuggerCallback, instance.mMessage, instance) {
+			@Override
+			public void onPreLoad() {
+
+			}
+
+			@Override
+			public void onPostLoad() {
+
+			}
+		};
 		instance.start(null);
 	}
 
@@ -204,7 +240,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	@Override
 	public void cleanup() {
-		//Do nothing
+		debuggerCallback.stop();
 	}
 
 	@Override
@@ -235,8 +271,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	}
 
 	@Override
-	public void start(DebuggerCallbacks debugger) {
-		mThread = new Thread(new VMThread(debugger));
+	public void start(DebuggerCallbacks _) {
+		mThread = new Thread(new VMThread(mDebugger));
 		// TODO thread.start() has issues with initializing GL stuff off the main thread
 		mThread.run();
 	}
@@ -355,6 +391,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 //				glDepthFunc(GL_LEQUAL);                         // The Type Of Depth Test To Do
 				//Keep window responsive until closed
 				while (!Thread.currentThread().isInterrupted() && m_window != 0 && !isClosing()) {
+					System.out.println("idle");
 					try {
 						//Go easy on the processor
 						Thread.sleep(10);
@@ -595,7 +632,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		// Check for error
 		if (mVM.hasError() || mVM.Done() || isClosing()) {
 			int success;
-			if (mCallbacks != null) {
+			if (mDebugger != null) {
 				success = !mVM.hasError()
 						? CallbackMessage.SUCCESS
 						: CallbackMessage.FAILED;
@@ -673,20 +710,28 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	public void onFinally(){
 		synchronized (GLTextGridWindow.this) {
 			//Do any library cleanup
-			for(Library lib: mLibraries)
-					lib.cleanup();
+			for(Library lib: mLibraries) {
+				System.out.println("cleanup " + lib.name());
+				lib.cleanup();
+			}
+			System.out.println("cleanup " + name());
+			cleanup();
 
 			//Free text grid image
+			System.out.println("destroy textgrid");
 			mTextGrid.destroy();
 
 			// Release window and window callbacks
+			System.out.println("destroy window");
 			glfwDestroyWindow(m_window);
 
+			System.out.println("destroy callbacks");
 			keyCallback.free();
 			charCallback.free();
 			ClearKeyBuffers();
 
 			// Terminate GLFW and release the GLFWerrorfun
+			System.out.println("glfwTerminate");
 			glfwTerminate();
 			GLFWErrorCallback callback = glfwSetErrorCallback(null);
 			if (callback != null) {
@@ -697,6 +742,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 			//An access violation will occur next time this window is launched if this isn't cleared
 			m_window = 0;
 		}
+		System.out.println("exit");
 	}
 
 
