@@ -10,10 +10,11 @@ public class StepCommand extends DebugCommand {
     public int type;
 
     public StepCommand() {
-
+        super(COMMAND);
     }
 
     public StepCommand(int type) {
+        super(COMMAND);
         this.type = type;
     }
 }

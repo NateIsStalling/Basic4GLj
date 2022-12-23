@@ -19,17 +19,22 @@ package com.basic4gl.library.debug;
 //
 
 import java.net.URI;
+import java.util.HashMap;
 import javax.websocket.ContainerProvider;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
+import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
-import com.basic4gl.debug.protocol.commands.DebugCommand;
+import com.basic4gl.debug.protocol.commands.*;
 import com.basic4gl.debug.websocket.DebugClientSocket;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
 import com.basic4gl.debug.websocket.IDebugCommandListener;
 import com.basic4gl.lib.util.CallbackMessage;
 import com.basic4gl.lib.util.TaskCallback;
+import com.basic4gl.library.debug.commands.*;
+import com.basic4gl.runtime.Debugger;
+import com.basic4gl.runtime.TomVM;
 import com.google.gson.Gson;
 import org.eclipse.jetty.util.component.LifeCycle;
 
@@ -38,18 +43,33 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
 {
 
     private final CallbackMessage mMessage;
-    public DebuggerCallbacksAdapter(CallbackMessage message) {
+    private final Debugger mDebugger;
+    private final IVMDriver mVMDriver;
+    private final TomBasicCompiler mComp;
+    private final TomVM mVM;
+
+    public DebuggerCallbacksAdapter(
+            CallbackMessage message,
+            Debugger debugger,
+            IVMDriver vmDriver,
+            TomBasicCompiler comp,
+            TomVM vm) {
         mMessage = message;
+        mDebugger = debugger;
+        mVMDriver = vmDriver;
+        mComp = comp;
+        mVM = vm;
     }
 
     public static void main(String[] args)
     {
-        DebuggerCallbacksAdapter adapter = new DebuggerCallbacksAdapter(null);
-//                null,
-//                new CallMeMaybe(null),
-//                null
-//        );
-        adapter.connect();
+//        DebuggerCallbacksAdapter adapter = new DebuggerCallbacksAdapter(
+//                dnull, null);
+////                null,
+////                new CallMeMaybe(null),
+////                null
+////        );
+//        adapter.connect();
     }
     WebSocketContainer container;
     Session session;
@@ -126,6 +146,9 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
 
     @Override
     public void message(CallbackMessage message) {
+        if (message == null) {
+            return;
+        }
         if (session != null && session.isOpen()) {
             try {
                 com.basic4gl.debug.protocol.callbacks.CallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.CallbackMessage(message.status, message.text);
@@ -190,7 +213,44 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
     @Override
     public void OnDebugCommandReceived(DebugCommand command) {
         System.out.println("Received command: " + command.getCommand());
+
+        switch (command.getCommand()) {
+            case ContinueCommand.COMMAND:
+                ContinueHandler continueHandler = new ContinueHandler();
+                continueHandler.Continue();
+                break;
+            case EvaluateWatchCommand.COMMAND:
+                EvaluateWatchCommand c = (EvaluateWatchCommand) command;
+                EvaluateWatchHandler evaluateWatchHandler = new EvaluateWatchHandler(mVMDriver, mComp, mVM);
+                evaluateWatchHandler.EvaluateWatch(c.watch, c.canCallFunc, session);
+                break;
+            case PauseCommand.COMMAND:
+                PauseHandler pauseHandler = new PauseHandler(mVM);
+                pauseHandler.pause();
+                break;
+            case ResumeCommand.COMMAND:
+                ResumeHandler resumeHandler = new ResumeHandler();
+                resumeHandler.resume();
+                break;
+            case StepCommand.COMMAND:
+                StepCommand stepCommand = (StepCommand) command;
+                StepHandler handler = new StepHandler(mVM);
+                handler.DoStep(stepCommand.type);
+                break;
+            case StopCommand.COMMAND:
+                StopHandler stopHandler = new StopHandler();
+                stopHandler.stop();
+                break;
+            case ToggleBreakpointCommand.COMMAND:
+                ToggleBreakpointCommand toggleBreakpointCommand = (ToggleBreakpointCommand) command;
+                ToggleBreakPointHandler toggleBreakPointHandler = new ToggleBreakPointHandler(mDebugger, mVM);
+                toggleBreakPointHandler.toggleBreakPoint(toggleBreakpointCommand.filename, toggleBreakpointCommand.line);
+                break;
+            default:
+                System.out.println("Ignored unsupported command: " + command.getCommand());
+        }
     }
+
 //
 //    @Override
 //    public void onPreLoad() {

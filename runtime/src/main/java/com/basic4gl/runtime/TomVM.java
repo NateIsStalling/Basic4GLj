@@ -1660,6 +1660,7 @@ public class TomVM extends HasErrorState implements Streamable {
         // restore
         // the program when we've finished.
 
+        System.out.println(mDebugger.UserBreakPtCount());
         // User breakpts
         for (int i = 0; i < mDebugger.UserBreakPtCount(); i++) {
 
@@ -2553,6 +2554,10 @@ public class TomVM extends HasErrorState implements Streamable {
         assertTrue(IPValid());
         return mCode.get(mIp).mOpCode == OpCode.OP_END; // Reached end of
         // program?
+    }
+
+    public boolean Running() {
+        return !Done() && !Paused();
     }
 
     public void GetIPInSourceCode(Mutable<Integer> line, Mutable<Integer> col) {

@@ -1,39 +1,44 @@
-package com.basic4gl.desktop.debugger.commands;
+package com.basic4gl.library.debug.commands;
 
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.desktop.MainWindow;
-import com.basic4gl.desktop.debugger.IApplicationHost;
+import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.VMState;
 import com.basic4gl.runtime.types.OpCode;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Mutable;
 
+import javax.websocket.Session;
+
 public class EvaluateWatchHandler {
+
+    static final int GB_STEPS_UNTIL_REFRESH = 1000;
 
     static final String DEFAULT_VALUE = "???";
 
-    private final IApplicationHost mHost;
     private final TomBasicCompiler mComp;
     private final TomVM mVM;
+    private final IVMDriver mVMDriver;
 
     public EvaluateWatchHandler(
-        IApplicationHost host,
+        IVMDriver vmDriver,
         TomBasicCompiler comp,
         TomVM vm) {
-        mHost = host;
+        mVMDriver = vmDriver;
         mComp = comp;
         mVM = vm;
     }
 
-    public String EvaluateWatch(String watch, boolean canCallFunc) {
-        if (mHost.isApplicationRunning()) {
-            return DEFAULT_VALUE;
-        }
+    public String EvaluateWatch(String watch, boolean canCallFunc, Session session) {
+        //TODO sync editor state; consider checking this in the editor
+        //        if (mHost.isApplicationRunning()) {
+//            return DEFAULT_VALUE;
+//        }
 
         // Save virtual machine state
         VMState state = mVM.getState();
-        mHost.pushApplicationState();
+        //TODO sync editor UI state
+//        mHost.pushApplicationState();
         try {
 
             // Setup compiler "in function" state to match the the current VM user
@@ -72,7 +77,8 @@ public class EvaluateWatchHandler {
 
             // Run compiled code
             mVM.GotoInstruction(codeStart);
-            mHost.continueApplication();
+
+            continueApplication();
 
             // Error occurred?
             if (mVM.hasError()) {
@@ -88,10 +94,33 @@ public class EvaluateWatchHandler {
             return DisplayVariable(valType);
         } finally {
             mVM.SetState(state);
-            mHost.restoreHostState();
+            //TODO sync editor UI state
+            //mHost.restoreHostState();
             // TODO Add VM viewer
             //VMView().RefreshVMView();
         }
+    }
+
+    private void continueApplication() {
+        //TODO sync editor UI state; report progress
+//        mMode = ApMode.AP_RUNNING;
+        do {
+
+            // Run the virtual machine for a certain number of steps
+            //TODO Continue
+            mVM.Continue(GB_STEPS_UNTIL_REFRESH);
+
+            // Process windows messages (to keep application responsive)
+            //Application.ProcessMessages ();
+            //mGLWin.ProcessWindowsMessages();
+            //TODO Implement pausing
+            //if (mTarget.PausePressed ())           // Check for pause key. (This allows us to pause when in full screen mode. Useful for debugging.)
+            //    mVM.Pause ();
+        } while (//mMode == ApMode.AP_RUNNING
+                !mVM.hasError()
+                && !mVM.Done()
+                && !mVM.Paused()
+                && !mVMDriver.isClosing());
     }
 
     private String DisplayVariable(ValType valType) {

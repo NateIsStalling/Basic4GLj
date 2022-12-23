@@ -1,8 +1,5 @@
-package com.basic4gl.desktop.debugger.commands;
+package com.basic4gl.library.debug.commands;
 
-import com.basic4gl.desktop.MainWindow;
-import com.basic4gl.lib.util.Builder;
-import com.basic4gl.lib.util.CallbackMessage;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class ContinueHandler {

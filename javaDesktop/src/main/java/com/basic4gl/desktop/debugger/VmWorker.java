@@ -57,7 +57,7 @@ implements IDebugCallbackListener, IDebugger {
 
     @Override
     protected Object doInBackground() throws Exception {
-        IVMDriver driver = mBuilder.getVMDriver();
+//        IVMDriver driver = mBuilder.getVMDriver();
         boolean noError;
         DebugClientAdapter adapter = null;
 
@@ -66,53 +66,58 @@ implements IDebugCallbackListener, IDebugger {
             return null;    //TODO Throw exception
         try {
             mFiles.useAppDirectory();
-            driver.onPreExecute();
+//            driver.onPreExecute();
             mFiles.useCurrentDirectory();
 
             //Initialize libraries
-            for (Library lib : mComp.getLibraries()) {
-                driver.initLibrary(lib);
-                lib.init(mVM);
-            }
+//            for (Library lib : mComp.getLibraries()) {
+//                driver.initLibrary(lib);
+//                lib.init(mVM);
+//            }
             adapter = new DebugClientAdapter(this);
             adapter.connect();
             remoteDebugger = new RemoteDebugger(adapter);
 
             //Debugger is attached
-            while (!this.isCancelled() && !mVM.hasError() && !mVM.Done() && !driver.isClosing()) {
-                // Run the virtual machine for a certain number of steps
-                mVM.PatchIn();
-
-                if (mVM.Paused()) {
-                    //Breakpoint reached or paused by debugger
-                    System.out.println("VM paused");
-                    mMessage.setMessage(CallbackMessage.PAUSED, "Reached breakpoint");
-                    publish(mMessage);
-
-
-                    //Resume running
-                    if (mMessage.status == CallbackMessage.WORKING) {
-                        // Kick the virtual machine over the next op-code before patching in the breakpoints.
-                        // otherwise we would never get past a breakpoint once we hit it, because we would
-                        // keep on hitting it immediately and returning.
-                        publish(driver.driveVM(1));
-
-                        // Run the virtual machine for a certain number of steps
-                        mVM.PatchIn();
-                    }
-                    //Check if program was stopped while paused
-                    if (this.isCancelled() || mVM.hasError() || mVM.Done() || driver.isClosing())
-                        break;
-                }
-
-                //Continue to next OpCode
-                publish(driver.driveVM(TomVM.VM_STEPS));
-
-                // Poll for window events. The key callback above will only be
-                // invoked during this call.
-                driver.handleEvents();
-
-            }    //Program completed
+            while (!this.isCancelled() && (mMessage.status == CallbackMessage.STOPPED || mMessage.status == CallbackMessage.WORKING || mMessage.status == CallbackMessage.PAUSED)) {
+                Thread.sleep(100);
+//                publish(mMessage);
+            }
+//            while (!this.isCancelled() && !mVM.hasError() && !mVM.Done() ) {
+////                    && !driver.isClosing()) {
+//                // Run the virtual machine for a certain number of steps
+//                mVM.PatchIn();
+//
+//                if (mVM.Paused()) {
+//                    //Breakpoint reached or paused by debugger
+//                    System.out.println("VM paused");
+//                    mMessage.setMessage(CallbackMessage.PAUSED, "Reached breakpoint");
+//                    publish(mMessage);
+//
+//
+//                    //Resume running
+////                    if (mMessage.status == CallbackMessage.WORKING) {
+////                        // Kick the virtual machine over the next op-code before patching in the breakpoints.
+////                        // otherwise we would never get past a breakpoint once we hit it, because we would
+////                        // keep on hitting it immediately and returning.
+////                        publish(driver.driveVM(1));
+////
+////                        // Run the virtual machine for a certain number of steps
+////                        mVM.PatchIn();
+////                    }
+////                    //Check if program was stopped while paused
+////                    if (this.isCancelled() || mVM.hasError() || mVM.Done() || driver.isClosing())
+////                        break;
+//                }
+//
+//                //Continue to next OpCode
+////                publish(driver.driveVM(TomVM.VM_STEPS));
+//
+//                // Poll for window events. The key callback above will only be
+//                // invoked during this call.
+////                driver.handleEvents();
+//
+//            }    //Program completed
 
             //Perform debugger callbacks
             int success;
@@ -123,14 +128,14 @@ implements IDebugCallbackListener, IDebugger {
                     ? "Program completed"
                     : mVM.getError()));
 
-            driver.onPostExecute();
+//            driver.onPostExecute();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             adapter.stop();
             remoteDebugger = null;
 
-            driver.onFinally();
+//            driver.onFinally();
             //Confirm this thread has completed before a new one can be executed
             if (mCompletionLatch != null) {
                 mCompletionLatch.countDown();
@@ -153,41 +158,59 @@ implements IDebugCallbackListener, IDebugger {
 
     @Override
     public void continueApplication() {
-        remoteDebugger.continueApplication();
+        if (remoteDebugger != null) {
+            remoteDebugger.continueApplication();
+        }
     }
 
     @Override
     public void pauseApplication() {
-        remoteDebugger.pauseApplication();
+        if (remoteDebugger != null) {
+            remoteDebugger.pauseApplication();
+        }
     }
 
     @Override
     public void resumeApplication() {
-        remoteDebugger.resumeApplication();
+        if (remoteDebugger != null) {
+            remoteDebugger.resumeApplication();
+        }
     }
 
     @Override
     public void runApplication(Library builder, String currentDirectory, String libraryPath) {
-        remoteDebugger.runApplication(builder, currentDirectory, libraryPath);
+        if (remoteDebugger != null) {
+            remoteDebugger.runApplication(builder, currentDirectory, libraryPath);
+        }
     }
 
     @Override
     public void stopApplication() {
-        remoteDebugger.stopApplication();
+        if (remoteDebugger != null) {
+            remoteDebugger.stopApplication();
+        }
     }
 
     @Override
     public void step(int type) {
-        remoteDebugger.step(type);
+        if (remoteDebugger != null) {
+            remoteDebugger.step(type);
+        }
     }
 
     @Override
     public boolean toggleBreakpoint(String filename, int line) {
-        return remoteDebugger.toggleBreakpoint(filename, line);
+        if (remoteDebugger != null) {
+            return remoteDebugger.toggleBreakpoint(filename, line);
+        }
+        return false;
     }
 
     @Override
     public String evaluateWatch(String watch, boolean canCallFunc) {
-        return remoteDebugger.evaluateWatch(watch, canCallFunc);
+        if (remoteDebugger != null) {
+            return remoteDebugger.evaluateWatch(watch, canCallFunc);
+        }
+        return "???";
     }
 }

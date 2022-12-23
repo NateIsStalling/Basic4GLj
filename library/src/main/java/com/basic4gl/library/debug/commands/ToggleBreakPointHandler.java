@@ -1,17 +1,15 @@
-package com.basic4gl.desktop.debugger.commands;
+package com.basic4gl.library.debug.commands;
 
-import com.basic4gl.desktop.debugger.IApplicationHost;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
 
+
 public class ToggleBreakPointHandler {
 
-    private final IApplicationHost mHost;
     private final Debugger mDebugger;
     private final TomVM mVM;
 
-    public ToggleBreakPointHandler(IApplicationHost host, Debugger debugger, TomVM vm) {
-        mHost = host;
+    public ToggleBreakPointHandler(Debugger debugger, TomVM vm) {
         mDebugger = debugger;
         mVM = vm;
     }
@@ -22,8 +20,11 @@ public class ToggleBreakPointHandler {
         // If it IS running, however we must explicitly force a re-patch to ensure
         // the change is registered.
         //TODO Address potential concurrency issue
-        if (mHost.isApplicationRunning()) {
+
+        if (mVM.Running()) {
             mVM.RepatchBreakpts();
+        } else {
+            System.out.println("mVM.");
         }
 
         return isBreakpoint;

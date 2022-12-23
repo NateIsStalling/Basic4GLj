@@ -7,6 +7,7 @@ public class ToggleBreakpointCommand extends DebugCommand {
     public int line;
 
     public ToggleBreakpointCommand(String filename, int line) {
+        super(COMMAND);
         this.filename = filename;
         this.line = line;
     }

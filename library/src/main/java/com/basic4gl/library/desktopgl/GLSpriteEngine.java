@@ -80,7 +80,7 @@ public class GLSpriteEngine extends GLTextGrid{
         // Apply camera transformations
         float m1[] = new float[16], m2[] = new float[16];
 
-        System.out.println("width "+ m_width + ", " + m_height);
+//        System.out.println("width "+ m_width + ", " + m_height);
         // Scale in window dimensions
         glScalef (1.0f / m_width, 1.0f / m_height, 1);
         TrigBasicLib.Scale(m_width, m_height, 1);

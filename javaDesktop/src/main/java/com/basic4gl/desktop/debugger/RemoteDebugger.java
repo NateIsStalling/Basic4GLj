@@ -1,7 +1,6 @@
 package com.basic4gl.desktop.debugger;
 
 import com.basic4gl.debug.protocol.commands.*;
-import com.basic4gl.desktop.debugger.commands.*;
 
 import com.basic4gl.lib.util.Library;
 import org.eclipse.jetty.client.HttpClient;
@@ -35,8 +34,10 @@ public class RemoteDebugger implements IDebugger {
 
     @Override
     public void resumeApplication() {
-        ResumeHandler resumeHandler = new ResumeHandler();
-        resumeHandler.resume();
+        DebugCommand command = new ResumeCommand();
+        adapter.message(command);
+//        ResumeHandler resumeHandler = new ResumeHandler();
+//        resumeHandler.resume();
     }
 
     @Override

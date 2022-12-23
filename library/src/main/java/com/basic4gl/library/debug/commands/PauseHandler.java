@@ -1,4 +1,4 @@
-package com.basic4gl.desktop.debugger.commands;
+package com.basic4gl.library.debug.commands;
 
 import com.basic4gl.runtime.TomVM;
 

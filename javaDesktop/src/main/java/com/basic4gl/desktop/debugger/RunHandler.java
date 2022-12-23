@@ -1,4 +1,4 @@
-package com.basic4gl.desktop.debugger.commands;
+package com.basic4gl.desktop.debugger;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;

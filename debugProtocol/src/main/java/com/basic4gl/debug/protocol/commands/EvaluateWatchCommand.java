@@ -8,12 +8,13 @@ public class EvaluateWatchCommand extends DebugCommand {
     public boolean canCallFunc;
 
     public EvaluateWatchCommand() {
-
+        super(COMMAND);
     }
 
     public EvaluateWatchCommand(
         String watch,
         boolean canCallFunc) {
+        super(COMMAND);
 
         this.watch = watch;
         this.canCallFunc = canCallFunc;

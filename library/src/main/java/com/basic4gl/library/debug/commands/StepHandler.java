@@ -1,27 +1,26 @@
-package com.basic4gl.desktop.debugger.commands;
+package com.basic4gl.library.debug.commands;
 
-import com.basic4gl.desktop.MainWindow;
-import com.basic4gl.desktop.debugger.IApplicationHost;
 import com.basic4gl.runtime.TomVM;
 
-public class StepHandler {
+public class StepHandler extends ResumeHandler {
 
-    private final IApplicationHost mHost;
     private final TomVM mVM;
 
-    public StepHandler(IApplicationHost host, TomVM vm) {
-        mHost = host;
+    public StepHandler(TomVM vm) {
+        super();
         mVM = vm;
     }
 
     // Debugging
     public void DoStep(int type) {
-        if (mHost.isApplicationRunning())
-            return;
-
-        // Recompile program if necessary
-        if (mHost.isApplicationStopped() && !mHost.Compile())
-            return;
+        //TODO handle this in the editor
+//        if (mHost.isApplicationRunning())
+//            return;
+//
+        //TODO handle this in the editor
+//        // Recompile program if necessary
+//        if (mHost.isApplicationStopped() && !mHost.Compile())
+//            return;
 
         // Patch in temp breakpoints
         switch (type) {
@@ -38,6 +37,7 @@ public class StepHandler {
         }
 
         // Resume running program
-        mHost.resumeApplication();
+        resume();
+//        mHost.resumeApplication();
     }
 }

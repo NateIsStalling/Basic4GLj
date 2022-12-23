@@ -2,9 +2,7 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.desktop.debugger.*;
-import com.basic4gl.desktop.debugger.commands.*;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.desktop.util.EditorUtil;
@@ -164,6 +162,8 @@ public class BasicEditor implements MainEditor,
 
         if (mMode == ApMode.AP_STOPPED) {
             // Compile and run program from start
+            reset();
+            show(new DebugCallback());
             Library builder = mLibraries.get(mBuilders.get(mCurrentBuilder));
             RunHandler handler = new RunHandler(this, mComp, mPreprocessor);
             handler.launchRemote(builder, mFileManager.getCurrentDirectory(), mLibraryPath); //12/2020 testing new continue()
@@ -183,6 +183,8 @@ public class BasicEditor implements MainEditor,
 
             case AP_STOPPED:
                 // When stopped, Play is exactly the same as Run
+                reset();
+                show(new DebugCallback());
                 Library builder = mLibraries.get(mBuilders.get(mCurrentBuilder));
                 RunHandler handler = new RunHandler(this, mComp, mPreprocessor);
                 handler.launchRemote(builder, mFileManager.getCurrentDirectory(), mLibraryPath); //12/2020 testing new continue()
@@ -518,7 +520,10 @@ public class BasicEditor implements MainEditor,
             mPresenter.RefreshDebugDisplays(mMode);
             mVM.ClearTempBreakPts();
 
-            // Handle GL window
+            //TODO Handle GL window
+            //handleGLWindow();
+        }
+        private void handleGLWindow() {
             if (mBuilder.getVMDriver().isClosing())                // Explicitly closed
                 hide();                   // Hide it
 

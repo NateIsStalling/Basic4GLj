@@ -1,9 +1,6 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.desktop.debugger.DebugClientAdapter;
 import com.basic4gl.desktop.debugger.IDebugger;
-import com.basic4gl.desktop.debugger.RemoteDebugger;
-import com.basic4gl.desktop.debugger.commands.EvaluateWatchHandler;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.editor.ITabProvider;
 import com.basic4gl.desktop.editor.IToggleBreakpointListener;

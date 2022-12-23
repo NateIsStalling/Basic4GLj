@@ -205,7 +205,12 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 
 		instance.mMessage = new CallbackMessage();
-		instance.debuggerCallback = new DebuggerCallbacksAdapter(instance.mMessage);
+		instance.debuggerCallback = new DebuggerCallbacksAdapter(
+				instance.mMessage,
+				new Debugger(lineNumberMapping), // TODO add User Breakpoints to params
+				instance,
+				instance.mComp,
+				instance.mVM);
 		instance.debuggerCallback.connect();
 
 		instance.mDebugger = new DebuggerCallbacks(instance.debuggerCallback, instance.mMessage, instance) {
@@ -240,7 +245,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	@Override
 	public void cleanup() {
-		debuggerCallback.stop();
+		if (debuggerCallback != null) {
+			debuggerCallback.stop();
+		}
 	}
 
 	@Override

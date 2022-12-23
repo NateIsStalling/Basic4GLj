@@ -26,6 +26,9 @@ public class CallbackMessage {
         this.text = message;
     }
     public void setMessage(CallbackMessage message){
+        if (message == null) {
+            return;
+        }
         this.status = message.status;
         this.text = message.text;
     }

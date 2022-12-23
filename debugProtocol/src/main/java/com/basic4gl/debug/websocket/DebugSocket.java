@@ -26,7 +26,7 @@ import com.google.gson.Gson;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 //TODO https://stackoverflow.com/questions/17080216/how-to-send-message-to-particular-websocket-connection-using-java-server
@@ -35,14 +35,25 @@ import java.util.concurrent.CountDownLatch;
 @ServerEndpoint(value = "/debug/")
 public class DebugSocket
 {
+    private static Map<UUID, Session> sessionRepository = new HashMap<UUID, Session>();
+
     private CountDownLatch closureLatch = new CountDownLatch(1);
+
     private Session session;
+
+    private UUID sessionId;
+
     private DebugCommandAdapter adapter;
 
     @OnOpen
     public void onWebSocketConnect(Session sess)
     {
+        UUID sessionId = UUID.randomUUID();
+        sessionRepository.put(sessionId, sess);
+
         this.session = sess;
+        this.sessionId = sessionId;
+
         this.adapter = new DebugCommandAdapter(new Gson());
 
         System.out.println("Socket Connected: " + sess);
@@ -53,18 +64,33 @@ public class DebugSocket
     {
         System.out.println("Server Received TEXT message: " + message);
 
-        CallbackMessage callback = CallbackMessage.FromJson(message);
-        if (callback != null) {
-            sendClient(callback.text);
-        } else {
-            DebugCommand command = adapter.FromJson(message);
-
-            if (command != null && command.isValid()) {
-                sendClient(command.getClass().getName());
-            } else {
-                sendClient(message);
+        Set<Map.Entry<UUID, Session>> sessions = sessionRepository.entrySet();
+        for (Map.Entry<UUID, Session> entry: sessions) {
+            if (!entry.getKey().equals(sessionId)) {
+                sendClient(entry.getValue(), message);
             }
         }
+//        CallbackMessage callback = CallbackMessage.FromJson(message);
+//        if (callback != null) {
+////            sendClient(callback.text);
+//            Set<Map.Entry<UUID, Session>> sessions = sessionRepository.entrySet();
+//            for (Map.Entry<UUID, Session> entry: sessions) {
+//                if (!entry.getKey().equals(sessionId)) {
+//                    sendClient(entry.getValue(), message);
+//                }
+//            }
+//
+//        } else {
+//
+//            DebugCommand command = adapter.FromJson(message);
+//
+//            if (command != null && command.isValid()) {
+////                sendClient(command.getClass().getName());
+//                sendClient(message);
+//            } else {
+//                sendClient(message);
+//            }
+//        }
 
 
         if (message.toLowerCase(Locale.US).contains("bye"))
@@ -76,6 +102,8 @@ public class DebugSocket
     @OnClose
     public void onWebSocketClose(CloseReason reason)
     {
+        sessionRepository.remove(sessionId);
+
         System.out.println("Socket Closed: " + reason);
         closureLatch.countDown();
     }
@@ -92,15 +120,15 @@ public class DebugSocket
         closureLatch.await();
     }
 
-    private void sendClient(String str) {
+    private void sendClient(Session session, String str) {
         try {
-            this.session.getBasicRemote().sendText(str);
+            session.getBasicRemote().sendText(str);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void sendError(String err) {
-        this.sendClient(String.format("{\"msg\": \"error\", \"error\": \"%s\"}", err));
+    private void sendError(Session session, String err) {
+        this.sendClient(session, String.format("{\"msg\": \"error\", \"error\": \"%s\"}", err));
     }
 }

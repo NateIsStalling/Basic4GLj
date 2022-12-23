@@ -40,20 +40,24 @@ public class DebugClientSocket {
     {
         System.out.println("Client Received TEXT message: " + message);
 
-        CallbackMessage callback = CallbackMessage.FromJson(message);
-        if (callback != null) {
-            //sendClient(callback.text);
-            callbackListener.OnDebugCallbackReceived(callback);
-        } else {
-            DebugCommand command = adapter.FromJson(message);
+        DebugCommand command = adapter.FromJson(message);
 
-            if (command != null && command.isValid()) {
-                //sendClient(command.getClass().getName());
-                commandListener.OnDebugCommandReceived(command);
+        if (command != null && command.isValid()) {
+            System.out.println("Client processing command");
+            //sendClient(command.getClass().getName());
+            commandListener.OnDebugCommandReceived(command);
+        } else {
+            CallbackMessage callback = CallbackMessage.FromJson(message);
+            if (callback != null) {
+                System.out.println("Client processing callback");
+                //sendClient(callback.text);
+                callbackListener.OnDebugCallbackReceived(callback);
             } else {
+                System.out.println("Client ignoring message");
                 //sendClient(message);
             }
         }
+
 
 
         if (message.toLowerCase(Locale.US).contains("bye"))
