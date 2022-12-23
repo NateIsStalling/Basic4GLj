@@ -207,7 +207,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		instance.mMessage = new CallbackMessage();
 		instance.debuggerCallback = new DebuggerCallbacksAdapter(
 				instance.mMessage,
-				new Debugger(lineNumberMapping), // TODO add User Breakpoints to params
+				debugger, // TODO add User Breakpoints to params
 				instance,
 				instance.mComp,
 				instance.mVM);
