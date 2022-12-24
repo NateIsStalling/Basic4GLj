@@ -1,5 +1,7 @@
 package com.basic4gl.lib.util;
 
+import java.util.Objects;
+
 /**
  * Created by Nate on 2/19/2015.
  */
@@ -11,8 +13,9 @@ public class CallbackMessage {
     public static final int PAUSED = 3;
 
 
-    public int status;
-    public String text;
+    protected int status;
+    protected String text;
+
     public CallbackMessage(){
         this.status = STOPPED;
         this.text = "";
@@ -21,15 +24,35 @@ public class CallbackMessage {
         this.status = status;
         this.text = message;
     }
-    public void setMessage(int status, String message){
+    public boolean setMessage(int status, String message){
+        if (this.status == status && Objects.equals(this.text, message)) {
+            // no change
+            return false;
+        }
         this.status = status;
         this.text = message;
+
+        return true;
     }
-    public void setMessage(CallbackMessage message){
+    public boolean setMessage(CallbackMessage message){
         if (message == null) {
-            return;
+            // no change
+            return false;
         }
-        this.status = message.status;
-        this.text = message.text;
+        return setMessage(message.status, message.text);
+    }
+
+    public boolean setStatus(int status) {
+        boolean didChange = this.status != status;
+        this.status = status;
+        return didChange;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public String getText() {
+        return text;
     }
 }

@@ -439,8 +439,9 @@ public class ExportDialog {
             //Export to file
             FileOutputStream stream = new FileOutputStream(mDest);
             mBuilder.export(mDest.getName(), stream, mCallback);
-            mMessage.status = CallbackMessage.SUCCESS;
-            mMessage.text = "Exported successful";
+            mMessage.setMessage(
+                CallbackMessage.SUCCESS,
+        "Exported successful");
             return null;
         }
 
@@ -448,8 +449,9 @@ public class ExportDialog {
         private boolean Compile() {
 
             if (mFileEditors.isEmpty()) {
-                mMessage.status = CallbackMessage.FAILED;
-                mMessage.text = "No files are open";
+                mMessage.setMessage(
+                    CallbackMessage.FAILED,
+            "No files are open");
                 return false;
             }
 
@@ -458,8 +460,9 @@ public class ExportDialog {
 
             // Load code into preprocessor; may be unnecessary
             if (!LoadProgramIntoCompiler()) {
-                mMessage.status = CallbackMessage.FAILED;
-                mMessage.text = mPreprocessor.getError();
+                mMessage.setMessage(
+                        CallbackMessage.FAILED,
+                        mPreprocessor.getError());
                 return false;
             }
 
@@ -469,16 +472,18 @@ public class ExportDialog {
 
             // Return result
             if (mComp.hasError()) {
-                mMessage.status = CallbackMessage.FAILED;
-                mMessage.text = mComp.getError();
+                mMessage.setMessage(
+                    CallbackMessage.FAILED,
+                    mComp.getError());
                 return false;
             }
 
             // Reset Virtual machine
             //mVM.Reset ();
 
-            mMessage.status = CallbackMessage.WORKING;
-            mMessage.text = "User's code compiled";
+            mMessage.setMessage(
+                CallbackMessage.WORKING,
+                "User's code compiled");
             return true;
         }
         // Compilation and execution routines
@@ -522,18 +527,18 @@ public class ExportDialog {
 
         @Override
         public void message(CallbackMessage message) {
-            if (message.status == CallbackMessage.WORKING){
+            if (message.getStatus() == CallbackMessage.WORKING){
                 //TODO display build progress
                 System.out.println("Exporting...");
                 return;
             }
-            if (message.status == CallbackMessage.SUCCESS) {
+            if (message.getStatus() == CallbackMessage.SUCCESS) {
                 System.out.println("Export successful.");
                 JOptionPane.showMessageDialog(mDialog, "Export successful!","Success", JOptionPane.INFORMATION_MESSAGE);
                 mDialog.setVisible(false);
-            } else if (message.status == CallbackMessage.FAILED){
+            } else if (message.getStatus() == CallbackMessage.FAILED){
                 System.out.println("Export failed.");
-                JOptionPane.showMessageDialog(mDialog, message.text,"Export failed.", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(mDialog, message.getText(),"Export failed.", JOptionPane.ERROR_MESSAGE);
             }
             enableComponents(mTabs, true);
             mExportButton.setEnabled(true);

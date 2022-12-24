@@ -97,6 +97,7 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
                 // Attempt Connect
                 session = container.connectToServer(clientEndpoint,uri);
 
+
 //                callMeMaybe.session = session;
 //
 //                // Send a message
@@ -151,7 +152,7 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
         }
         if (session != null && session.isOpen()) {
             try {
-                com.basic4gl.debug.protocol.callbacks.CallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.CallbackMessage(message.status, message.text);
+                com.basic4gl.debug.protocol.callbacks.CallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.CallbackMessage(message.getStatus(), message.getText());
                 String json = gson.toJson(callback);
                 session.getBasicRemote().sendText(json);
             } catch (Exception e) {
@@ -176,37 +177,9 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
 
         CallMeMaybe(CallbackMessage message) {
             if (message != null) {
-                this.status = message.status;
-                this.text = message.text;
+                this.status = message.getStatus();
+                this.text = message.getText();
             }
-        }
-
-        @Override
-        public void setMessage(int status, String message) {
-            super.setMessage(status, message);
-//            if (session != null && session.isOpen()) {
-//                try {
-//                    com.basic4gl.debug.protocol.callbacks.CallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.CallbackMessage(status, message);
-//                    String json = gson.toJson(callback);
-//                    session.getBasicRemote().sendText(json);
-//                } catch (Exception e) {
-//
-//                }
-//            }
-        }
-
-        @Override
-        public void setMessage(CallbackMessage message) {
-            super.setMessage(message);
-//            if (session != null && session.isOpen()) {
-//                try {
-//                    com.basic4gl.debug.protocol.callbacks.CallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.CallbackMessage(message.status, message.text);
-//                    String json = gson.toJson(callback);
-//                    session.getBasicRemote().sendText(json);
-//                } catch (Exception e) {
-//
-//                }
-//            }
         }
     }
 
@@ -216,7 +189,7 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
 
         switch (command.getCommand()) {
             case ContinueCommand.COMMAND:
-                ContinueHandler continueHandler = new ContinueHandler();
+                ContinueHandler continueHandler = new ContinueHandler(mMessage);
                 continueHandler.Continue();
                 break;
             case EvaluateWatchCommand.COMMAND:
@@ -229,8 +202,8 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
                 pauseHandler.pause();
                 break;
             case ResumeCommand.COMMAND:
-                ResumeHandler resumeHandler = new ResumeHandler();
-                resumeHandler.resume();
+                continueHandler = new ContinueHandler(mMessage);
+                continueHandler.Continue();
                 break;
             case StepCommand.COMMAND:
                 StepCommand stepCommand = (StepCommand) command;

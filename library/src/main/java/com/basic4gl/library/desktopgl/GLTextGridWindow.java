@@ -204,7 +204,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		instance.activate();
 
 
-		instance.mMessage = new CallbackMessage();
+		instance.mMessage = new CallbackMessage(CallbackMessage.WORKING,"");
 		instance.debuggerCallback = new DebuggerCallbacksAdapter(
 				instance.mMessage,
 				debugger, // TODO add User Breakpoints to params
@@ -216,7 +216,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		instance.mDebugger = new DebuggerCallbacks(instance.debuggerCallback, instance.mMessage, instance) {
 			@Override
 			public void onPreLoad() {
-
+				// say hi
+				instance.debuggerCallback.message(instance.mMessage);
 			}
 
 			@Override
@@ -351,7 +352,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 							mDebugger.pause("Reached breakpoint");
 
 							//Resume running
-							if (mDebugger.getMessage().status == CallbackMessage.WORKING) {
+							if (mDebugger.getMessage().getStatus() == CallbackMessage.WORKING) {
 								// Kick the virtual machine over the next op-code before patching in the breakpoints.
 								// otherwise we would never get past a breakpoint once we hit it, because we would
 								// keep on hitting it immediately and returning.

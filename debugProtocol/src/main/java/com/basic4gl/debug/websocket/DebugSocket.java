@@ -105,6 +105,19 @@ public class DebugSocket
         sessionRepository.remove(sessionId);
 
         System.out.println("Socket Closed: " + reason);
+
+        // Notify other processes debug session has disconnected
+        CallbackMessage callbackMessage = new CallbackMessage(CallbackMessage.STOPPED, "closed");
+        Gson gson = new Gson();
+        String message = gson.toJson(callbackMessage);
+
+        Set<Map.Entry<UUID, Session>> sessions = sessionRepository.entrySet();
+        for (Map.Entry<UUID, Session> entry: sessions) {
+            if (!entry.getKey().equals(sessionId)) {
+                sendClient(entry.getValue(), message);
+            }
+        }
+
         closureLatch.countDown();
     }
 

@@ -499,23 +499,35 @@ public class BasicEditor implements MainEditor,
         public void message(CallbackMessage message) {
             if (message == null)
                 return;
-            mMessage.setMessage(message);
-            if (message.status == CallbackMessage.WORKING)
-                return;
+            boolean updated = mMessage.setMessage(message);
+            if (message.getStatus() == CallbackMessage.WORKING) {
+                // ignore WORKING if no status change
+                if (!updated) {
+                    return;
+                } else {
+                    SetMode(ApMode.AP_RUNNING);
+                }
+            }
             //TODO Pause
-            if (message.status == CallbackMessage.PAUSED) {
+            if (message.getStatus() == CallbackMessage.PAUSED) {
                 mPresenter.onPause();
             }
 
-            //TODO determine if if-block is needed
-            // Determine whether we are paused or stopped. (If we are paused, we can
-            // resume from the current position. If we are stopped, we cannot.)
-            if (mVM.Paused() && !mVM.hasError() && !mVM.Done() && !mBuilder.getVMDriver().isClosing())
-                mPresenter.onPause();
-            else {
-                SetMode(ApMode.AP_STOPPED);
-                //Program completed
+            switch (message.getStatus()) {
+                case CallbackMessage.PAUSED:
+                    mPresenter.onPause();
+                    break;
+                case CallbackMessage.FAILED:
+                case CallbackMessage.STOPPED:
+                case CallbackMessage.SUCCESS:
+                    //Program completed
+                    SetMode(ApMode.AP_STOPPED);
+                    break;
+                case CallbackMessage.WORKING:
+                    // do nothing;
+                    break;
             }
+
             mPresenter.RefreshActions(mMode);
             mPresenter.RefreshDebugDisplays(mMode);
             mVM.ClearTempBreakPts();

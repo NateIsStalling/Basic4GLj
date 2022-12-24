@@ -1,8 +1,15 @@
 package com.basic4gl.library.debug.commands;
 
+import com.basic4gl.lib.util.CallbackMessage;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class ContinueHandler {
+    public final CallbackMessage mMessage;
+
+    public ContinueHandler(CallbackMessage message) {
+        mMessage = message;
+    }
+
     @Deprecated
     //"Doesn't work with remote launch"
     public void Continue() {
@@ -18,6 +25,32 @@ public class ContinueHandler {
         refreshEditorRunningState();
 //
         showGLWindow();
+        final CallbackMessage message = mMessage;
+        //TODO this is specifically gross;
+        // the pause/resume was previously managed from separate threads
+        // when the GLWindow was launched in a new thread instead of separate process
+        // the MainEditor class would have it's own reference to mMessage to notify
+        // allowing synchronized blocks for pause/resume
+        //  with notify when the status changes in the other thread
+        // BUT now the MainEditor and GLWindow are now separate processes
+        // so mMessage is only managed by one thread
+        // and the syncronized block does not work as expected
+        // so start a new thread to notify message here as a workaround
+//        Thread handler = new Thread() {
+//            @Override
+//            public void run() {
+//                synchronized (message) {
+//                    message.status = CallbackMessage.WORKING;
+//                    message.notify();
+//                }
+//            }
+//        };
+//        handler.start();
+        synchronized (message) {
+            message.setStatus(CallbackMessage.WORKING);
+            message.notify();
+        }
+
 //
 
 
@@ -103,4 +136,29 @@ public class ContinueHandler {
 //        }
     }
 
+    //TODO 12/2022 added for reference
+    //void Basic4GLEditor::ActivateForContinue()
+    //{
+    //	if (delayScreenSwitch) {
+    //		// Don't show OpenGL window initially.
+    //		// Wait to see if program stops before 1000 op codes are executed.
+    //		// This makes single stepping less flickery.
+    //
+    //		// Notify libraries
+    //		pluginManager.ProgramResume();
+    //	}
+    //	else
+    //	{
+    //		// Show OpenGL window
+    //		windowManager.ActivateWindow();
+    //		pluginManager.ProgramDelayedResume();
+    //	}
+    //
+    //	idleTimer.start();
+    //}
+
+//    void PluginManager::ProgramResume() {
+//        for (unsigned int i = 0; i < dlls.size(); i++)
+//        dlls[i]->Plugin()->Resume();
+//    }
 }

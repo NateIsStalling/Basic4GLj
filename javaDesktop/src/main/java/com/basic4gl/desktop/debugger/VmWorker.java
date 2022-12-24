@@ -79,55 +79,24 @@ implements IDebugCallbackListener, IDebugger {
             remoteDebugger = new RemoteDebugger(adapter);
 
             //Debugger is attached
-            while (!this.isCancelled() && (mMessage.status == CallbackMessage.STOPPED || mMessage.status == CallbackMessage.WORKING || mMessage.status == CallbackMessage.PAUSED)) {
+            while (!this.isCancelled()
+                && (mMessage.getStatus() == CallbackMessage.STOPPED
+                || mMessage.getStatus() == CallbackMessage.WORKING
+                || mMessage.getStatus() == CallbackMessage.PAUSED)) {
+                // idle thread;
                 Thread.sleep(100);
-//                publish(mMessage);
             }
-//            while (!this.isCancelled() && !mVM.hasError() && !mVM.Done() ) {
-////                    && !driver.isClosing()) {
-//                // Run the virtual machine for a certain number of steps
-//                mVM.PatchIn();
-//
-//                if (mVM.Paused()) {
-//                    //Breakpoint reached or paused by debugger
-//                    System.out.println("VM paused");
-//                    mMessage.setMessage(CallbackMessage.PAUSED, "Reached breakpoint");
-//                    publish(mMessage);
-//
-//
-//                    //Resume running
-////                    if (mMessage.status == CallbackMessage.WORKING) {
-////                        // Kick the virtual machine over the next op-code before patching in the breakpoints.
-////                        // otherwise we would never get past a breakpoint once we hit it, because we would
-////                        // keep on hitting it immediately and returning.
-////                        publish(driver.driveVM(1));
-////
-////                        // Run the virtual machine for a certain number of steps
-////                        mVM.PatchIn();
-////                    }
-////                    //Check if program was stopped while paused
-////                    if (this.isCancelled() || mVM.hasError() || mVM.Done() || driver.isClosing())
-////                        break;
-//                }
-//
-//                //Continue to next OpCode
-////                publish(driver.driveVM(TomVM.VM_STEPS));
-//
-//                // Poll for window events. The key callback above will only be
-//                // invoked during this call.
-////                driver.handleEvents();
-//
-//            }    //Program completed
 
-            //Perform debugger callbacks
-            int success;
-            success = !mVM.hasError()
-                    ? CallbackMessage.SUCCESS
-                    : CallbackMessage.FAILED;
-            publish(new CallbackMessage(success, success == CallbackMessage.SUCCESS
-                    ? "Program completed"
-                    : mVM.getError()));
-
+            //TODO 12/2022 remove this; handled by socket callbacks
+//            //Perform debugger callbacks
+//            int success;
+//            success = !mVM.hasError()
+//                    ? CallbackMessage.SUCCESS
+//                    : CallbackMessage.FAILED;
+//            publish(new CallbackMessage(success, success == CallbackMessage.SUCCESS
+//                    ? "Program completed"
+//                    : mVM.getError()));
+            //TODO 12/2022 is this still needed?
 //            driver.onPostExecute();
         } catch (Exception e) {
             e.printStackTrace();
