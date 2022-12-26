@@ -212,55 +212,6 @@ public class BasicEditor implements MainEditor,
     }
 
     @Override
-    public boolean isApplicationRunning() {
-        return mMode == ApMode.AP_RUNNING;
-    }
-
-    @Override
-    public void continueApplication() {
-        mMode = ApMode.AP_RUNNING;
-        do {
-
-            // Run the virtual machine for a certain number of steps
-            //TODO Continue
-            mVM.Continue(GB_STEPS_UNTIL_REFRESH);
-
-            // Process windows messages (to keep application responsive)
-            //Application.ProcessMessages ();
-            //mGLWin.ProcessWindowsMessages();
-            //TODO Implement pausing
-            //if (mTarget.PausePressed ())           // Check for pause key. (This allows us to pause when in full screen mode. Useful for debugging.)
-            //    mVM.Pause ();
-        } while (mMode == ApMode.AP_RUNNING
-                && !mVM.hasError()
-                && !mVM.Done()
-                && !mVM.Paused()
-                && !mBuilder.getVMDriver().isClosing());
-    }
-
-    @Override
-    public void pushApplicationState() {
-        mTempMode = mMode;
-    }
-
-    @Override
-    public void restoreHostState() {
-        mMode = mTempMode;
-        mPresenter.RefreshActions(mMode);
-    }
-
-    @Override
-    public void resumeApplication() {
-        mWorker.resumeApplication();
-    }
-
-    @Override
-    public boolean isApplicationStopped() {
-        return mMode == ApMode.AP_STOPPED;
-    }
-
-
-    @Override
     public void useAppDirectory() {
         mFiles.setParentDirectory(mFileManager.getAppDirectory());
     }
@@ -471,6 +422,8 @@ public class BasicEditor implements MainEditor,
 
         mWorker.setCompletionLatch(new CountDownLatch(1));
         mVM.Reset();
+
+        mMessage.setMessage(new CallbackMessage());
     }
 
     public void show(TaskCallback callbacks) {

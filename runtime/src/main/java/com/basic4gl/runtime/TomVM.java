@@ -167,6 +167,7 @@ public class TomVM extends HasErrorState implements Streamable {
     m_breakPtsPatched; // Set to true if breakpoints are patched and in
     // synchronisation with compiled code
 
+    boolean mStopped;
 
     //TODO Reimplement libraries
     //public TomVM(PluginDLLManager plugins, IVMDebugger debugger) {
@@ -313,7 +314,10 @@ public class TomVM extends HasErrorState implements Streamable {
         int tempI;
 
         step:
-        while (true) {    //breaks on last line; taking advantage of loops having labels for continue statements
+        while (true) {    //breaks on last line; taking advantage of loops having labels for continue statements to replicate GOTO
+
+            if (mStopped)
+                return;
 
             // Count steps
             if (++stepCount > steps)
@@ -2552,12 +2556,16 @@ public class TomVM extends HasErrorState implements Streamable {
     // General
     public boolean Done() {
         assertTrue(IPValid());
-        return mCode.get(mIp).mOpCode == OpCode.OP_END; // Reached end of
+        return mStopped || mCode.get(mIp).mOpCode == OpCode.OP_END; // Reached end of
         // program?
     }
 
     public boolean Running() {
         return !Done() && !Paused();
+    }
+
+    public void Stop() {
+        mStopped = true;
     }
 
     public void GetIPInSourceCode(Mutable<Integer> line, Mutable<Integer> col) {

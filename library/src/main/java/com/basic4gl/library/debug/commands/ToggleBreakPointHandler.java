@@ -21,11 +21,11 @@ public class ToggleBreakPointHandler {
         // the change is registered.
         //TODO Address potential concurrency issue
 
-        if (mVM.Running()) {
+//        if (mVM.Running()) {
             mVM.RepatchBreakpts();
-        } else {
-            System.out.println("mVM.");
-        }
+//        } else {
+//            System.out.println("mVM.");
+//        }
 
         return isBreakpoint;
     }

@@ -213,7 +213,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				instance.mVM);
 		instance.debuggerCallback.connect();
 
-		instance.mDebugger = new DebuggerCallbacks(instance.debuggerCallback, instance.mMessage, instance) {
+		instance.mDebugger = new DebuggerCallbacks(instance.debuggerCallback, instance.mMessage, instance.mVM, instance) {
 			@Override
 			public void onPreLoad() {
 				// say hi
@@ -292,7 +292,10 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	@Override
 	public void stop() {
+		// Clear stepping breakpoints
+		mVM.ClearTempBreakPts();
 
+		mVM.Stop();
 	}
 
 
@@ -676,6 +679,11 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		lib.init(mVM);
 	}
 	public boolean handleEvents(){
+
+		//Notify debugger process is still alive
+		if (debuggerCallback != null) {
+			debuggerCallback.message(mMessage);
+		}
 
 		//Keep window responsive during loops
 		glfwPollEvents();

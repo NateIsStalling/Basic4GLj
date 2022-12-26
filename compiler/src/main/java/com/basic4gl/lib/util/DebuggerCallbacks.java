@@ -1,6 +1,7 @@
 package com.basic4gl.lib.util;
 
 import com.basic4gl.compiler.util.IVMDriver;
+import com.basic4gl.runtime.TomVM;
 
 /**
  * Created by Nate on 11/23/2015.
@@ -8,16 +9,19 @@ import com.basic4gl.compiler.util.IVMDriver;
 public abstract class DebuggerCallbacks {
     private final TaskCallback mCallback;
     private final CallbackMessage mMessage;
+    private final TomVM mVM;
     private final IVMDriver mDriver;
 
     protected DebuggerCallbacks(
         TaskCallback callback,
         CallbackMessage message,
+        TomVM vm,
         // TODO circular dependency with start???
         IVMDriver driver) {
 
         mCallback = callback;
         mMessage = message;
+        mVM = vm;
         mDriver = driver;
     }
 
@@ -42,17 +46,21 @@ public abstract class DebuggerCallbacks {
         mCallback.message(mMessage);
         try{
         //Wait for IDE to unpause the application
-        synchronized (mMessage) {
+//        synchronized (mMessage) {
             while (mMessage.status == CallbackMessage.PAUSED) {
                 //Go easy on the processor
                 Thread.sleep(10);
 
                 // Keep driver responsive while paused
                 mDriver.handleEvents();
-                mMessage.wait(100);
+//                mMessage.wait(100);
 //                System.out.println("paused");
+
+                //Check if program was stopped while paused
+                if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.Done() || mDriver.isClosing())
+                    break;
             }
-        }
+//        }
         } catch (InterruptedException e){//Do nothing
         }
     }

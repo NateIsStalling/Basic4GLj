@@ -1,13 +1,14 @@
 package com.basic4gl.library.debug.commands;
 
+import com.basic4gl.lib.util.CallbackMessage;
 import com.basic4gl.runtime.TomVM;
 
-public class StepHandler extends ResumeHandler {
+public class StepHandler extends ContinueHandler {
 
     private final TomVM mVM;
 
-    public StepHandler(TomVM vm) {
-        super();
+    public StepHandler(CallbackMessage message, TomVM vm) {
+        super(message);
         mVM = vm;
     }
 
@@ -37,7 +38,7 @@ public class StepHandler extends ResumeHandler {
         }
 
         // Resume running program
-        resume();
+        Continue();
 //        mHost.resumeApplication();
     }
 }

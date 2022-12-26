@@ -207,11 +207,11 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
                 break;
             case StepCommand.COMMAND:
                 StepCommand stepCommand = (StepCommand) command;
-                StepHandler handler = new StepHandler(mVM);
+                StepHandler handler = new StepHandler(mMessage, mVM);
                 handler.DoStep(stepCommand.type);
                 break;
             case StopCommand.COMMAND:
-                StopHandler stopHandler = new StopHandler();
+                StopHandler stopHandler = new StopHandler(mVMDriver);
                 stopHandler.stop();
                 break;
             case ToggleBreakpointCommand.COMMAND:
