@@ -7,6 +7,8 @@ import com.basic4gl.lib.util.Library;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class RunHandler {
@@ -36,9 +38,10 @@ public class RunHandler {
         }
 
         try {
-            File vm = File.createTempFile("basicvm-", "", Paths.get(".").toFile());
-            File config = File.createTempFile("basicconfig-", "", Paths.get(".").toFile());
-            File lineMapping = File.createTempFile("basiclinemapping-", "", Paths.get(".").toFile());
+            Path tempFolder = Files.createDirectories(Paths.get("temp"));
+            File vm = File.createTempFile("basicvm-", "", tempFolder.toFile());
+            File config = File.createTempFile("basicconfig-", "", tempFolder.toFile());
+            File lineMapping = File.createTempFile("basiclinemapping-", "", tempFolder.toFile());
             try (DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(vm))) {
 //                mComp.VM().Stre
                 mComp.StreamOut(outputStream);
