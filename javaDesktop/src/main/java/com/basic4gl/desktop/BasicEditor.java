@@ -12,8 +12,8 @@ import com.basic4gl.lib.util.*;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 import com.basic4gl.library.desktopgl.GLTextGridWindow;
 import com.basic4gl.runtime.Debugger;
+import com.basic4gl.runtime.InstructionPos;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.util.Mutable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,16 +23,13 @@ public class BasicEditor implements MainEditor,
         IApplicationHost,
         IFileProvider {
 
-    static final int GB_STEPS_UNTIL_REFRESH = 1000;
-
     private IEditorPresenter mPresenter;
 
     // Virtual machine and compiler
     private VmWorker mWorker;       // Debugging
-    public TomVM mVM;              // Virtual machine
     public TomBasicCompiler mComp; // Compiler
     private FileOpener mFiles;
-    private final CallbackMessage mMessage = new CallbackMessage();
+    private final DebuggerCallbackMessage mMessage = new DebuggerCallbackMessage();
 
 
     // Preprocessor
@@ -55,7 +52,6 @@ public class BasicEditor implements MainEditor,
 
     // Editor state
     ApMode mMode = ApMode.AP_STOPPED;
-    ApMode mTempMode = ApMode.AP_STOPPED;
 
     IFileManager mFileManager;
 
@@ -75,7 +71,6 @@ public class BasicEditor implements MainEditor,
         mPresenter = presenter;
         mPreprocessor = preprocessor;
         mDebugger = debugger;
-        mVM = vm;
         mComp = comp;
     }
 
@@ -228,17 +223,13 @@ public class BasicEditor implements MainEditor,
     }
 
     @Override
-    public int getVMRow(String filename) {
-        if (mMode == ApMode.AP_RUNNING || !mVM.IPValid()) {
+    public int getVMRow(String filename, InstructionPos instructionPos) {
+        if (mMode == ApMode.AP_RUNNING || instructionPos == null) {
             return -1;
         }
 
-        // Find IP row
-        Mutable<Integer> row = new Mutable<Integer>(-1), col = new Mutable<Integer>(-1);
-        mVM.GetIPInSourceCode(row, col);
-
         // Convert to corresponding position in source file
-        return mPreprocessor.LineNumberMap().SourceFromMain(filename, row.get());
+        return mPreprocessor.LineNumberMap().SourceFromMain(filename, instructionPos.getSourceLine());
 
     }
 
@@ -299,7 +290,9 @@ public class BasicEditor implements MainEditor,
             return false;
         }
 
-        SetMode(ApMode.AP_STOPPED);
+        // VM is not running
+        VMStatus vmStatus = null;
+        SetMode(ApMode.AP_STOPPED, vmStatus);
 
         // Compile
         if (!LoadProgramIntoCompiler()) {
@@ -321,8 +314,8 @@ public class BasicEditor implements MainEditor,
             return false;
         }
 
-        // Reset Virtual machine
-        mVM.Reset();
+        // TODO Reset Virtual machine
+        //mVM.Reset();
 
         // TODO Reset OpenGL state
         //mGLWin.ResetGL ();
@@ -337,23 +330,23 @@ public class BasicEditor implements MainEditor,
     }
 
 
-    // IVMViewInterface
+    // TODO IVMViewInterface
     void ExecuteSingleOpCode() {
-        if (mVM.InstructionCount() > 0) {
-            //TODO Continue
-            //DoContinue(1);
-            /*
-            // Invalidate source gutter so that current IP pointer moves
-            TSourceFileFrm* frame = mSourceFrames[SourcePages.ActivePageIndex];
-            frame.SourceMemo.InvalidateGutter();
-            frame.SourceMemo.Invalidate();*/
-
-            // Debug displays need refreshing
-            mPresenter.RefreshDebugDisplays(mMode);
-        }
+//        if (mVM.InstructionCount() > 0) {
+//            //TODO Continue
+//            //DoContinue(1);
+//            /*
+//            // Invalidate source gutter so that current IP pointer moves
+//            TSourceFileFrm* frame = mSourceFrames[SourcePages.ActivePageIndex];
+//            frame.SourceMemo.InvalidateGutter();
+//            frame.SourceMemo.Invalidate();*/
+//
+//            // Debug displays need refreshing
+//            mPresenter.RefreshDebugDisplays(mMode);
+//        }
     }
 
-    public void SetMode(ApMode mode) {
+    public void SetMode(ApMode mode, VMStatus vmStatus) {
 
         // Set the mMode parameter.
         // Handles sending the appropriate notifications to the plugin DLLs,
@@ -375,18 +368,13 @@ public class BasicEditor implements MainEditor,
             } else if (mode == ApMode.AP_STOPPED
                     && mMode != ApMode.AP_STOPPED
                     && mMode != ApMode.AP_CLOSED) {
-                if (mVM.Done() && !mVM.hasError()) {
+                if (vmStatus != null && vmStatus.isDone() && !vmStatus.hasError()) {
                     statusMsg = "Program completed";
-                } else if (mVM.hasError()) {
-                    statusMsg = mVM.getError();
+                } else if (vmStatus != null && vmStatus.hasError()) {
+                    statusMsg = vmStatus.getError();
                 } else {
                     statusMsg = "Program stopped";
                 }
-                //mDLLs.ProgramEnd();
-                mVM.ClearResources();
-
-                // Inform libraries
-                //StopTomSoundBasicLib();
             } else if (mode == ApMode.AP_PAUSED && mMode == ApMode.AP_RUNNING) {
                 statusMsg = "Program paused. Click play button to resume.";
                 //mDLLs.ProgramPause();
@@ -402,7 +390,7 @@ public class BasicEditor implements MainEditor,
     }
 
     public void reset() {
-        mVM.Pause();
+        mComp.VM().Pause();
         if (mWorker != null) {
             mWorker.cancel(true);
             //TODO confirm there is no overlap with this thread stopping and starting a new one to avoid GL errors
@@ -414,19 +402,15 @@ public class BasicEditor implements MainEditor,
         }
 
         mWorker = new VmWorker(
-                mBuilder,
-                mComp,
                 this,
-                mVM,
                 mMessage);
 
         mWorker.setCompletionLatch(new CountDownLatch(1));
-        mVM.Reset();
 
-        mMessage.setMessage(new CallbackMessage());
+        mMessage.setMessage(new CallbackMessage(), null);
     }
 
-    public void show(TaskCallback callbacks) {
+    public void show(DebuggerTaskCallback callbacks) {
         mWorker.setCallbacks(callbacks);
         mWorker.execute();
     }
@@ -446,19 +430,26 @@ public class BasicEditor implements MainEditor,
     }
 
     //TODO Reimplement callbacks
-    public class DebugCallback implements TaskCallback {
+    public class DebugCallback implements DebuggerTaskCallback {
 
         @Override
-        public void message(CallbackMessage message) {
+        public void message(DebuggerCallbackMessage message) {
             if (message == null)
                 return;
             boolean updated = mMessage.setMessage(message);
+            VMStatus vmStatus = message.getVMStatus();
+
+            InstructionPos instructionPos = message.getInstructionPosition();
+            if (instructionPos != null) {
+                mPresenter.PlaceCursorAtProcessed(instructionPos.getSourceLine(), instructionPos.getSourceColumn());
+            }
+
             if (message.getStatus() == CallbackMessage.WORKING) {
                 // ignore WORKING if no status change
                 if (!updated) {
                     return;
                 } else {
-                    SetMode(ApMode.AP_RUNNING);
+                    SetMode(ApMode.AP_RUNNING, vmStatus);
                 }
             }
             //TODO Pause
@@ -474,7 +465,7 @@ public class BasicEditor implements MainEditor,
                 case CallbackMessage.STOPPED:
                 case CallbackMessage.SUCCESS:
                     //Program completed
-                    SetMode(ApMode.AP_STOPPED);
+                    SetMode(ApMode.AP_STOPPED, vmStatus);
                     break;
                 case CallbackMessage.WORKING:
                     // do nothing;
@@ -483,33 +474,80 @@ public class BasicEditor implements MainEditor,
 
             mPresenter.RefreshActions(mMode);
             mPresenter.RefreshDebugDisplays(mMode);
-            mVM.ClearTempBreakPts();
+
+            // TODO 12/2022 move ClearTempBreakPts
+            //mVM.ClearTempBreakPts();
 
             //TODO Handle GL window
             //handleGLWindow();
         }
-        private void handleGLWindow() {
-            if (mBuilder.getVMDriver().isClosing())                // Explicitly closed
-                hide();                   // Hide it
 
-
-            //mTarget.setClosing(false);
-            //if (!mBuilder.getTarget().isVisible())
-            //    mBuilder.getTarget().reset();
-
-            // Get focus back
-            if (!(mBuilder.getVMDriver().isVisible() && !mBuilder.getVMDriver().isFullscreen() && mVM.Done())) {  // If program ended cleanly in windowed mode, leave focus on OpenGL window
-                mPresenter.onApplicationClosing();
+        @Override
+        public void message(CallbackMessage message) {
+            if (message == null)
+                return;
+            boolean updated = mMessage.setMessage(message, mMessage.getVMStatus());
+            if (message.getStatus() == CallbackMessage.WORKING) {
+                // ignore WORKING if no status change
+                if (!updated) {
+                    return;
+                } else {
+                    SetMode(ApMode.AP_RUNNING, mMessage.getVMStatus());
+                }
+            }
+            //TODO Pause
+            if (message.getStatus() == CallbackMessage.PAUSED) {
+                mPresenter.onPause();
             }
 
-            // Place cursor on current instruction
-            //TODO Set as callbacks
-            if (mVM.hasError() || mMode == ApMode.AP_PAUSED && mVM.IPValid()) {
-                Mutable<Integer> line = new Mutable<Integer>(0), col = new Mutable<Integer>(0);
-
-                mVM.GetIPInSourceCode(line, col);
-                mPresenter.PlaceCursorAtProcessed(line.get(), col.get());
+            switch (message.getStatus()) {
+                case CallbackMessage.PAUSED:
+                    mPresenter.onPause();
+                    break;
+                case CallbackMessage.FAILED:
+                case CallbackMessage.STOPPED:
+                case CallbackMessage.SUCCESS:
+                    //Program completed
+                    SetMode(ApMode.AP_STOPPED, mMessage.getVMStatus());
+                    break;
+                case CallbackMessage.WORKING:
+                    // do nothing;
+                    break;
             }
+
+            mPresenter.RefreshActions(mMode);
+            mPresenter.RefreshDebugDisplays(mMode);
+
+            // TODO 12/2022 move ClearTempBreakPts
+            //mVM.ClearTempBreakPts();
+
+            //TODO Handle GL window
+            //handleGLWindow();
         }
+
+        // TODO 12/2022 migrate handleGLWindow to closing callback handling
+//        private void handleGLWindow() {
+//            if (mBuilder.getVMDriver().isClosing())                // Explicitly closed
+//                hide();                   // Hide it
+//
+//
+//            //mTarget.setClosing(false);
+//            //if (!mBuilder.getTarget().isVisible())
+//            //    mBuilder.getTarget().reset();
+//
+//            // Get focus back
+//            if (!(mBuilder.getVMDriver().isVisible() && !mBuilder.getVMDriver().isFullscreen() && mVM.Done())) {  // If program ended cleanly in windowed mode, leave focus on OpenGL window
+//                mPresenter.onApplicationClosing();
+//            }
+//
+//            // Place cursor on current instruction
+//            //TODO Set as callbacks
+//            if (mVM.hasError() || mMode == ApMode.AP_PAUSED && mVM.IPValid()) {
+//                Mutable<Integer> line = new Mutable<Integer>(0), col = new Mutable<Integer>(0);
+//
+//                mVM.GetIPInSourceCode(line, col);
+//                mPresenter.PlaceCursorAtProcessed(line.get(), col.get());
+//            }
+//        }
     }
 }

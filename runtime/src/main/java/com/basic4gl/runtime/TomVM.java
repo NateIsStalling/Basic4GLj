@@ -2574,6 +2574,11 @@ public class TomVM extends HasErrorState implements Streamable {
         col.set(mCode.get(mIp).mSourceChar);
     }
 
+    public InstructionPos GetIPInSourceCode() {
+        assertTrue(IPValid());
+        return new InstructionPos(mCode.get(mIp).mSourceLine, mCode.get(mIp).mSourceChar);
+    }
+
     public void BindCodeBlock(int index) {
         mBoundCodeBlock = index;
     }

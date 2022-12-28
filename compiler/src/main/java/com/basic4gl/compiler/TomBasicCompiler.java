@@ -1016,8 +1016,8 @@ public class TomBasicCompiler extends HasErrorState {
 			FlowControl top = FlowControlTOS();
 
 			// Point parser to it
-			m_parser.SetPos(top.m_sourcePos.m_sourceLine,
-					top.m_sourcePos.m_sourceCol);
+			m_parser.SetPos(top.m_sourcePos.getSourceLine(),
+					top.m_sourcePos.getSourceColumn());
 
 			// Set error text
 			switch (FlowControlTOS().m_type) {
@@ -1051,8 +1051,8 @@ public class TomBasicCompiler extends HasErrorState {
 		if (m_inFunction) {
 
 			// Point parser to function
-			m_parser.SetPos(m_functionStart.m_sourceLine,
-					m_functionStart.m_sourceCol);
+			m_parser.SetPos(m_functionStart.getSourceLine(),
+					m_functionStart.getSourceColumn());
 
 			// Return error
 			if (UserPrototype().hasReturnVal)
@@ -4751,8 +4751,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 
 		// Mark start of function in source code
-		m_functionStart.m_sourceLine = m_parser.Line();
-		m_functionStart.m_sourceCol = m_parser.Col();
+		m_functionStart.setSourcePosition(m_parser.Line(), m_parser.Col());
 
 		// Skip "func"
 		if (!GetToken())

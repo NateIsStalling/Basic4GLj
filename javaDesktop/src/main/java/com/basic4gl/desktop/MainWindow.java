@@ -248,7 +248,7 @@ public class MainWindow implements
         mExportMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mEditor.SetMode(ApMode.AP_STOPPED);
+                mEditor.SetMode(ApMode.AP_STOPPED, null);
                 if (mFileManager.editorCount() == 0) {
                     JOptionPane.showMessageDialog(mFrame, "Nothing to export", "Cannot export",
                             JOptionPane.WARNING_MESSAGE);
@@ -623,7 +623,7 @@ public class MainWindow implements
             public void windowClosing(WindowEvent e) {
                 // Stop program running
                 if (mEditor.mMode == ApMode.AP_RUNNING || mEditor.mMode == ApMode.AP_PAUSED) {
-                    mEditor.SetMode(ApMode.AP_STOPPED);
+                    mEditor.SetMode(ApMode.AP_STOPPED, null);
                     return;
                 }
 
@@ -1015,7 +1015,7 @@ public class MainWindow implements
 
                         //Refresh controls if no files open
                         if (mFileManager.editorCount() == 0) {
-                            mEditor.SetMode(ApMode.AP_CLOSED);
+                            mEditor.SetMode(ApMode.AP_CLOSED, null);
                         }
                     }
 
@@ -1036,7 +1036,7 @@ public class MainWindow implements
 
         //Refresh interface if there was previously no tabs open
         if (count == 0) {
-            mEditor.SetMode(ApMode.AP_STOPPED);
+            mEditor.SetMode(ApMode.AP_STOPPED, null);
         }
     }
 
@@ -1105,7 +1105,7 @@ public class MainWindow implements
     public void onPause() {
 
         // Place editor into paused mode
-        mEditor.SetMode(ApMode.AP_PAUSED);
+        mEditor.SetMode(ApMode.AP_PAUSED, null);
         RefreshActions(mEditor.mMode);
 
         // Place editor into debug mode
@@ -1318,7 +1318,11 @@ public class MainWindow implements
             mPlayButton.setEnabled(true);
             mStepOverButton.setEnabled(mode != ApMode.AP_RUNNING);
             mStepInButton.setEnabled(mode != ApMode.AP_RUNNING);
-            mStepOutButton.setEnabled(mode == ApMode.AP_PAUSED && (mEditor.mVM.UserCallStack().size() > 0));
+
+            //TODO 12/2022 determine appropriate state for mStepOutButton;
+            // does the editor even need to care about UserCallStack size with remote debugger protocol setup?
+            mStepOutButton.setEnabled(mode == ApMode.AP_PAUSED);
+            //TODO old mStepOutButton.setEnabled(mode == ApMode.AP_PAUSED && (mEditor.mVM.UserCallStack().size() > 0));
         }
         if (!mDebugMode) {
             return;
@@ -1334,27 +1338,34 @@ public class MainWindow implements
         }
         mWatchListModel.addElement(" ");              // Last line is blank, and can be clicked on to add new watch
 
-        if (mEditor.mMode != ApMode.AP_PAUSED) {
-            return;
-        }
 
-        // Update call stack
-        mGosubListModel.addElement("IP");
-        Vector<UserFuncStackFrame> callStack = mEditor.mVM.UserCallStack();
-        for (int i2 = 0; i2 < callStack.size(); i2++) {
-            UserFuncStackFrame frame = callStack.get(callStack.size() - i2 - 1);
-
-            // User functions have positive indices
-            if (frame.userFuncIndex >= 0) {
-                mGosubListModel.addElement(mEditor.mComp.GetUserFunctionName(frame.userFuncIndex) + "()");
-
-                // Otherwise must be a gosub
-            } else {
-                mGosubListModel.addElement("gosub " + mEditor.mComp.DescribeStackCall(frame.returnAddr));
-            }
-        }
+        // TODO 12/2022 Update call stack
+//        updateCallStack();
 
     }
+
+    // TODO 12/2022 Update call stack
+//    public void updateCallStack() {
+
+//        if (mEditor.mMode != ApMode.AP_PAUSED) {
+//        return;
+//    }
+//        // Update call stack
+//        mGosubListModel.addElement("IP");
+//        Vector<UserFuncStackFrame> callStack = mEditor.mVM.UserCallStack();
+//        for (int i2 = 0; i2 < callStack.size(); i2++) {
+//            UserFuncStackFrame frame = callStack.get(callStack.size() - i2 - 1);
+//
+//            // User functions have positive indices
+//            if (frame.userFuncIndex >= 0) {
+//                mGosubListModel.addElement(mEditor.mComp.GetUserFunctionName(frame.userFuncIndex) + "()");
+//
+//                // Otherwise must be a gosub
+//            } else {
+//                mGosubListModel.addElement("gosub " + mEditor.mComp.DescribeStackCall(frame.returnAddr));
+//            }
+//        }
+//    }
 
     private void EditWatch() {
         String newWatch, oldWatch;

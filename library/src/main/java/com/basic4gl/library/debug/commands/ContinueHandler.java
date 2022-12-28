@@ -1,12 +1,12 @@
 package com.basic4gl.library.debug.commands;
 
 import com.basic4gl.lib.util.CallbackMessage;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import com.basic4gl.lib.util.DebuggerCallbackMessage;
 
 public class ContinueHandler {
-    public final CallbackMessage mMessage;
+    public final DebuggerCallbackMessage mMessage;
 
-    public ContinueHandler(CallbackMessage message) {
+    public ContinueHandler(DebuggerCallbackMessage message) {
         mMessage = message;
     }
 
@@ -25,7 +25,7 @@ public class ContinueHandler {
         refreshEditorRunningState();
 //
         showGLWindow();
-        final CallbackMessage message = mMessage;
+        final DebuggerCallbackMessage message = mMessage;
         //TODO this is specifically gross;
         // the pause/resume was previously managed from separate threads
         // when the GLWindow was launched in a new thread instead of separate process

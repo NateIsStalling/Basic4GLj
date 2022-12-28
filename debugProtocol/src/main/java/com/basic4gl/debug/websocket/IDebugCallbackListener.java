@@ -1,8 +1,7 @@
 package com.basic4gl.debug.websocket;
 
-import com.basic4gl.debug.protocol.callbacks.CallbackMessage;
-import com.basic4gl.debug.protocol.callbacks.DebugCallback;
+import com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage;
 
 public interface IDebugCallbackListener {
-    public void OnDebugCallbackReceived(CallbackMessage callback);
+    public void OnDebugCallbackReceived(DebuggerCallbackMessage callback);
 }

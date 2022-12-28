@@ -1,6 +1,6 @@
 package com.basic4gl.desktop.debugger;
 
-import com.basic4gl.debug.protocol.callbacks.CallbackMessage;
+import com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage;
 import com.basic4gl.debug.protocol.commands.DebugCommand;
 import com.basic4gl.debug.websocket.DebugClientSocket;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;

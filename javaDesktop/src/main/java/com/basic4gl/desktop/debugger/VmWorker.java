@@ -1,37 +1,28 @@
 package com.basic4gl.desktop.debugger;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.IVMDriver;
+import com.basic4gl.debug.protocol.callbacks.InstructionPosition;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
 import com.basic4gl.lib.util.*;
-import com.basic4gl.runtime.TomVM;
 
 import javax.swing.*;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-public class VmWorker extends SwingWorker<Object, CallbackMessage>
+public class VmWorker extends SwingWorker<Object, DebuggerCallbackMessage>
 implements IDebugCallbackListener, IDebugger {
 
-    private final Builder mBuilder;
-    private final TomBasicCompiler mComp;
     private final IFileProvider mFiles;
-    private final TomVM mVM;
-    private final CallbackMessage mMessage;
+    private final DebuggerCallbackMessage mMessage;
 
     private RemoteDebugger remoteDebugger;
 
-    TaskCallback mCallbacks;
+    DebuggerTaskCallback mCallbacks;
     CountDownLatch mCompletionLatch;
 
     public VmWorker(
-            Builder builder, TomBasicCompiler comp,
-            IFileProvider fileOpener, TomVM vm,
-            CallbackMessage message) {
-        mBuilder = builder;
-        mComp = comp;
+            IFileProvider fileOpener,
+            DebuggerCallbackMessage message) {
         mFiles = fileOpener;
-        mVM = vm;
         mMessage = message;
     };
 
@@ -43,14 +34,14 @@ implements IDebugCallbackListener, IDebugger {
         return mCompletionLatch;
     }
 
-    public void setCallbacks(TaskCallback callbacks) {
+    public void setCallbacks(DebuggerTaskCallback callbacks) {
         mCallbacks = callbacks;
     }
 
     @Override
-    protected void process(List<CallbackMessage> chunks) {
+    protected void process(List<DebuggerCallbackMessage> chunks) {
         super.process(chunks);
-        for (CallbackMessage message : chunks) {
+        for (DebuggerCallbackMessage message : chunks) {
             mCallbacks.message(message);
         }
     }
@@ -62,8 +53,6 @@ implements IDebugCallbackListener, IDebugger {
         DebugClientAdapter adapter = null;
 
         System.out.println("Running...");
-        if (mVM == null)
-            return null;    //TODO Throw exception
         try {
             mFiles.useAppDirectory();
 //            driver.onPreExecute();
@@ -114,15 +103,24 @@ implements IDebugCallbackListener, IDebugger {
     }
 
     @Override
-    public void OnDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.CallbackMessage callback) {
-//        int success;
-//        success = !mVM.hasError()
-//                ? CallbackMessage.SUCCESS
-//                : CallbackMessage.FAILED;
-//        publish(new CallbackMessage(success, success == CallbackMessage.SUCCESS
-//                ? "Program completed"
-//                : mVM.getError()));
-        publish(new CallbackMessage(callback.status, callback.text));
+    public void OnDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
+
+        VMStatus vmStatus = null;
+        if (callback.getVMStatus() != null) {
+            vmStatus = new VMStatus(
+                callback.getVMStatus().isDone(),
+                callback.getVMStatus().hasError(),
+                callback.getVMStatus().getError()
+            );
+        }
+        DebuggerCallbackMessage message = new DebuggerCallbackMessage(callback.status, callback.text, vmStatus);
+
+        InstructionPosition instructionPosition = callback.getSourcePosition();
+        if (instructionPosition != null) {
+            message.setInstructionPosition(instructionPosition.line, instructionPosition.column);
+        }
+
+        publish(message);
     }
 
     @Override

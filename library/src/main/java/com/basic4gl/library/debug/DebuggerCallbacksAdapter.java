@@ -19,37 +19,39 @@ package com.basic4gl.library.debug;
 //
 
 import java.net.URI;
-import java.util.HashMap;
 import javax.websocket.ContainerProvider;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
+import com.basic4gl.debug.protocol.callbacks.VMStatus;
 import com.basic4gl.debug.protocol.commands.*;
 import com.basic4gl.debug.websocket.DebugClientSocket;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
 import com.basic4gl.debug.websocket.IDebugCommandListener;
 import com.basic4gl.lib.util.CallbackMessage;
-import com.basic4gl.lib.util.TaskCallback;
+import com.basic4gl.lib.util.DebuggerCallbackMessage;
+import com.basic4gl.lib.util.DebuggerTaskCallback;
 import com.basic4gl.library.debug.commands.*;
 import com.basic4gl.runtime.Debugger;
+import com.basic4gl.runtime.InstructionPos;
 import com.basic4gl.runtime.TomVM;
 import com.google.gson.Gson;
 import org.eclipse.jetty.util.component.LifeCycle;
 
 public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
-        implements TaskCallback, IDebugCommandListener, IDebugCallbackListener
+        implements DebuggerTaskCallback, IDebugCommandListener, IDebugCallbackListener
 {
 
-    private final CallbackMessage mMessage;
+    private final DebuggerCallbackMessage mMessage;
     private final Debugger mDebugger;
     private final IVMDriver mVMDriver;
     private final TomBasicCompiler mComp;
     private final TomVM mVM;
 
     public DebuggerCallbacksAdapter(
-            CallbackMessage message,
+            DebuggerCallbackMessage message,
             Debugger debugger,
             IVMDriver vmDriver,
             TomBasicCompiler comp,
@@ -146,14 +148,44 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
     }
 
     @Override
+    public void message(DebuggerCallbackMessage message) {
+        if (message == null) {
+            return;
+        }
+
+        com.basic4gl.debug.protocol.callbacks.VMStatus status = null;
+        if (message.getVMStatus() != null) {
+            status = new VMStatus(
+                message.getVMStatus().isDone(),
+                message.getVMStatus().hasError(),
+                message.getVMStatus().getError());
+        }
+        com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage(message.getStatus(), message.getText(), status);
+        InstructionPos instructionPos = message.getInstructionPosition();
+
+        if (instructionPos != null) {
+            callback.setSourcePosition(instructionPos.getSourceLine(), instructionPos.getSourceColumn());
+        }
+
+        String json = gson.toJson(callback);
+        message(json);
+    }
+
+    @Override
     public void message(CallbackMessage message) {
         if (message == null) {
             return;
         }
+
+        com.basic4gl.debug.protocol.callbacks.VMStatus status = null;
+        com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage(message.getStatus(), message.getText(), status);
+        String json = gson.toJson(callback);
+        message(json);
+    }
+
+    private void message(String json) {
         if (session != null && session.isOpen()) {
             try {
-                com.basic4gl.debug.protocol.callbacks.CallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.CallbackMessage(message.getStatus(), message.getText());
-                String json = gson.toJson(callback);
                 session.getBasicRemote().sendText(json);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -164,9 +196,22 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
     Gson gson = new Gson();
 
     @Override
-    public void OnDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.CallbackMessage callback) {
+    public void OnDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
         synchronized (mMessage) {
-            mMessage.setMessage(callback.status, callback.text);
+            com.basic4gl.lib.util.VMStatus vmStatus = null;
+            if (callback.getVMStatus() != null) {
+                vmStatus = new com.basic4gl.lib.util.VMStatus(
+                    callback.getVMStatus().isDone(),
+                    callback.getVMStatus().hasError(),
+                    callback.getVMStatus().getError()
+                );
+            }
+            mMessage.setMessage(callback.status, callback.text, vmStatus);
+            InstructionPos instructionPos = null;
+            if (callback.getSourcePosition() != null) {
+                instructionPos = new InstructionPos(callback.getSourcePosition().line, callback.getSourcePosition().column);
+            }
+            mMessage.setInstructionPosition(instructionPos);
             mMessage.notify();
         }
     }

@@ -1,20 +1,21 @@
 package com.basic4gl.lib.util;
 
 import com.basic4gl.compiler.util.IVMDriver;
+import com.basic4gl.runtime.InstructionPos;
 import com.basic4gl.runtime.TomVM;
 
 /**
  * Created by Nate on 11/23/2015.
  */
 public abstract class DebuggerCallbacks {
-    private final TaskCallback mCallback;
-    private final CallbackMessage mMessage;
+    private final DebuggerTaskCallback mCallback;
+    private final DebuggerCallbackMessage mMessage;
     private final TomVM mVM;
     private final IVMDriver mDriver;
 
     protected DebuggerCallbacks(
-        TaskCallback callback,
-        CallbackMessage message,
+        DebuggerTaskCallback callback,
+        DebuggerCallbackMessage message,
         TomVM vm,
         // TODO circular dependency with start???
         IVMDriver driver) {
@@ -34,15 +35,22 @@ public abstract class DebuggerCallbacks {
      */
     public abstract void onPostLoad();
 
-    public CallbackMessage getMessage(){
+    public DebuggerCallbackMessage getMessage(){
         return mMessage;
     }
-    public void setMessage(CallbackMessage mMessage) {
+    public void setMessage(DebuggerCallbackMessage mMessage) {
         this.mMessage.setMessage(mMessage);
     }
 
     public void pause(String message){
-        mMessage.setMessage(CallbackMessage.PAUSED, message);
+        InstructionPos instructionPos = null;
+        if (mVM.IPValid()) {
+            instructionPos = mVM.GetIPInSourceCode();
+        }
+        VMStatus vmStatus = new VMStatus(mVM.Done(), mVM.hasError(), mVM.getError());
+        mMessage.setMessage(CallbackMessage.PAUSED, message, vmStatus);
+        mMessage.setInstructionPosition(instructionPos);
+
         mCallback.message(mMessage);
         try{
         //Wait for IDE to unpause the application
@@ -66,7 +74,7 @@ public abstract class DebuggerCallbacks {
     }
 
     public void resume(){
-        final CallbackMessage message = mMessage;
+        final DebuggerCallbackMessage message = mMessage;
         //TODO this is specifically gross;
         // the pause/resume was previously managed from separate threads
         // when the GLWindow was launched in a new thread instead of separate process
@@ -92,9 +100,20 @@ public abstract class DebuggerCallbacks {
     public void message(){
         mCallback.message(mMessage);
     }
-    public void message(CallbackMessage message){
+
+    public void message(DebuggerCallbackMessage message){
         mMessage.setMessage(message);
         mCallback.message(message);
     }
 
+    public void message(CallbackMessage message){
+        DebuggerCallbackMessage debuggerCallbackMessage = null;
+
+        if (message != null) {
+            VMStatus vmStatus = new VMStatus(mVM.Done(), mVM.hasError(), mVM.getError());
+            debuggerCallbackMessage = new DebuggerCallbackMessage(message.getStatus(), message.getText(), vmStatus);
+        }
+        mMessage.setMessage(debuggerCallbackMessage);
+        mCallback.message(debuggerCallbackMessage);
+    }
 }

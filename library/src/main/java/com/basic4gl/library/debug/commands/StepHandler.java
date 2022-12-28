@@ -1,13 +1,13 @@
 package com.basic4gl.library.debug.commands;
 
-import com.basic4gl.lib.util.CallbackMessage;
+import com.basic4gl.lib.util.DebuggerCallbackMessage;
 import com.basic4gl.runtime.TomVM;
 
 public class StepHandler extends ContinueHandler {
 
     private final TomVM mVM;
 
-    public StepHandler(CallbackMessage message, TomVM vm) {
+    public StepHandler(DebuggerCallbackMessage message, TomVM vm) {
         super(message);
         mVM = vm;
     }

@@ -1,6 +1,7 @@
 package com.basic4gl.debug.websocket;
 
 import com.basic4gl.debug.protocol.callbacks.CallbackMessage;
+import com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage;
 import com.basic4gl.debug.protocol.commands.DebugCommand;
 import com.basic4gl.debug.protocol.commands.DebugCommandAdapter;
 import com.google.gson.Gson;
@@ -47,7 +48,7 @@ public class DebugClientSocket {
             //sendClient(command.getClass().getName());
             commandListener.OnDebugCommandReceived(command);
         } else {
-            CallbackMessage callback = CallbackMessage.FromJson(message);
+            DebuggerCallbackMessage callback = DebuggerCallbackMessage.FromJson(message);
             if (callback != null) {
                 System.out.println("Client processing callback");
                 //sendClient(callback.text);

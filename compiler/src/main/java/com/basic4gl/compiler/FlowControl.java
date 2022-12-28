@@ -1,5 +1,7 @@
 package com.basic4gl.compiler;
 
+import com.basic4gl.runtime.InstructionPos;
+
 import java.util.HashMap;
 import java.util.Map;
 

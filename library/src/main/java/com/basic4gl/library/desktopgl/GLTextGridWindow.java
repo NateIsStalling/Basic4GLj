@@ -9,12 +9,15 @@ import java.util.concurrent.CountDownLatch;
 
 import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.compiler.util.SourcePos;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.compiler.util.IVMDriverAccess;
 import com.basic4gl.library.debug.DebuggerCallbacksAdapter;
 import com.basic4gl.runtime.Debugger;
+import com.basic4gl.runtime.InstructionPos;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.lib.util.FunctionLibrary;
+import com.basic4gl.runtime.util.Mutable;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -49,7 +52,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	private CountDownLatch completionLatch;
 //	private TaskCallback mCallbacks;
-	private CallbackMessage mMessage;
+	private DebuggerCallbackMessage mMessage;
 	private CallbackMessage mUpdates;
 
 	// We need to strongly reference callback instances.
@@ -204,7 +207,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		instance.activate();
 
 
-		instance.mMessage = new CallbackMessage(CallbackMessage.WORKING,"");
+		instance.mMessage = new DebuggerCallbackMessage(CallbackMessage.WORKING,"", null);
 		instance.debuggerCallback = new DebuggerCallbacksAdapter(
 				instance.mMessage,
 				debugger, // TODO add User Breakpoints to params
@@ -385,9 +388,24 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 					success = !mVM.hasError()
 							? CallbackMessage.SUCCESS
 							: CallbackMessage.FAILED;
-					mDebugger.message(new CallbackMessage(success, success == CallbackMessage.SUCCESS
+
+					VMStatus vmStatus = new VMStatus(
+							mVM.Done(),
+							mVM.hasError(),
+							mVM.getError());
+
+					DebuggerCallbackMessage message = new DebuggerCallbackMessage(success, success == CallbackMessage.SUCCESS
 							? "Program completed"
-							: mVM.getError()));
+							: mVM.getError(),
+							vmStatus);
+
+					// Set instruction position for editor to place cursor at error
+					if (mVM.hasError()) {
+						InstructionPos ip = mVM.GetIPInSourceCode();
+						message.setInstructionPosition(ip);
+					}
+
+					mDebugger.message(message);
 				}
 //
 //				glMatrixMode(GL_MODELVIEW);
@@ -647,6 +665,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				success = !mVM.hasError()
 						? CallbackMessage.SUCCESS
 						: CallbackMessage.FAILED;
+
 				return new CallbackMessage(success, success == CallbackMessage.SUCCESS
 						? "Program completed"
 						: mVM.getError());
@@ -725,6 +744,15 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	public void onFinally(){
 		synchronized (GLTextGridWindow.this) {
+			// TODO 12/2022 consolidate below; moved from main editor worker thread
+			//mDLLs.ProgramEnd();
+			mVM.ClearResources();
+
+			// Inform libraries
+			//StopTomSoundBasicLib();
+
+			// TODO 12/2022 consolidate with above
+
 			//Do any library cleanup
 			for(Library lib: mLibraries) {
 				System.out.println("cleanup " + lib.name());
@@ -757,6 +785,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 			//Clear pointer to window
 			//An access violation will occur next time this window is launched if this isn't cleared
 			m_window = 0;
+
 		}
 		System.out.println("exit");
 	}
@@ -798,6 +827,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 			e.printStackTrace();
 		}
 	}
+
 	private void init() {
 		synchronized (GLTextGridWindow.this) {
 			//C++ source code for reference
