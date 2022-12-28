@@ -1,5 +1,8 @@
 package com.basic4gl.desktop;
 
+import com.basic4gl.debug.protocol.callbacks.StackFrame;
+import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
+import com.basic4gl.debug.protocol.commands.StackTraceCommand;
 import com.basic4gl.desktop.debugger.IDebugger;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.editor.ITabProvider;
@@ -1328,44 +1331,58 @@ public class MainWindow implements
             return;
         }
 
+        if (mode != ApMode.AP_PAUSED) {
+            // Clear debug controls
+            mGosubListModel.clear();
+        }
+
+        // TODO 12/2022 handle watchlist with separate callbacks
         // Clear debug controls
         mWatchListModel.clear();
-        mGosubListModel.clear();
 
         for (String watch : mWatches) {
 
             mWatchListModel.addElement(watch + ": " + mEditor.evaluateWatch(watch, true));
         }
         mWatchListModel.addElement(" ");              // Last line is blank, and can be clicked on to add new watch
-
-
-        // TODO 12/2022 Update call stack
-//        updateCallStack();
-
     }
 
-    // TODO 12/2022 Update call stack
-//    public void updateCallStack() {
+    @Override
+    public void updateCallStack(StackTraceCallback stackTraceCallback) {
 
-//        if (mEditor.mMode != ApMode.AP_PAUSED) {
-//        return;
-//    }
-//        // Update call stack
-//        mGosubListModel.addElement("IP");
-//        Vector<UserFuncStackFrame> callStack = mEditor.mVM.UserCallStack();
-//        for (int i2 = 0; i2 < callStack.size(); i2++) {
-//            UserFuncStackFrame frame = callStack.get(callStack.size() - i2 - 1);
-//
-//            // User functions have positive indices
-//            if (frame.userFuncIndex >= 0) {
-//                mGosubListModel.addElement(mEditor.mComp.GetUserFunctionName(frame.userFuncIndex) + "()");
-//
-//                // Otherwise must be a gosub
-//            } else {
-//                mGosubListModel.addElement("gosub " + mEditor.mComp.DescribeStackCall(frame.returnAddr));
-//            }
-//        }
-//    }
+        // Clear debug controls
+        mGosubListModel.clear();
+
+        // Update call stack
+        mGosubListModel.addElement("IP");
+
+        int totalFrames = stackTraceCallback.stackFrames.size(); // callback.totalFrames may be larger if paging is enforced
+        for (int i2 = 0; i2 < totalFrames; i2++) {
+            StackFrame frame = stackTraceCallback.stackFrames.get(totalFrames - i2 - 1);
+
+            // User functions have positive indices
+            Integer userFuncIndex = NumberUtil.parseIntOrNull(frame.name);
+            if (userFuncIndex != null) {
+                if (userFuncIndex >= 0) {
+                    // TODO 12/2022 migrate GetUserFunctionName to LineNumberMapping and handle in the DebugCommandAdapter;
+                    //  would like to rely on frame.name to align with Microsoft's DAP specification
+                    mGosubListModel.addElement(mEditor.mComp.GetUserFunctionName(userFuncIndex) + "()");
+
+                    // Otherwise must be a gosub
+                } else {
+                    // TODO 12/2022 migrate DescribeStackCall to LineNumberMapping and handle in the DebugCommandAdapter;
+                    //  would like to rely on frame.name to align with Microsoft's DAP specification
+                    Integer returnAddr = NumberUtil.parseIntOrNull(frame.instructionPointer);
+                    String gosubLabel = returnAddr != null
+                        ? mEditor.mComp.DescribeStackCall(returnAddr)
+                        : "???";
+                    mGosubListModel.addElement("gosub " + gosubLabel);
+                }
+            } else {
+                mGosubListModel.addElement(frame.name);
+            }
+        }
+    }
 
     private void EditWatch() {
         String newWatch, oldWatch;

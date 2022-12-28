@@ -7,6 +7,8 @@ import javax.websocket.WebSocketContainer;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
+import com.basic4gl.debug.protocol.callbacks.Callback;
+import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VMStatus;
 import com.basic4gl.debug.protocol.commands.*;
 import com.basic4gl.debug.websocket.DebugClientSocket;
@@ -124,6 +126,12 @@ public class DebuggerCommandAdapter
         message(json);
     }
 
+    @Override
+    public void messageObject(Object message) {
+        // not used in the command adapter;
+        // TODO consider removing IDebugCallbackListener from this class; not really used
+    }
+
     private void message(String json) {
         if (session != null && session.isOpen()) {
             try {
@@ -156,6 +164,11 @@ public class DebuggerCommandAdapter
     }
 
     @Override
+    public void OnCallbackReceived(Callback callback) {
+
+    }
+
+    @Override
     public void OnDebugCommandReceived(DebugCommand command) {
         System.out.println("Received command: " + command.getCommand());
 
@@ -177,6 +190,10 @@ public class DebuggerCommandAdapter
                 continueHandler = new ContinueHandler(mMessage);
                 continueHandler.Continue();
                 break;
+            case StackTraceCommand.COMMAND:
+                StackTraceCommandHandler stackTraceCommandHandler = new StackTraceCommandHandler(mVM, gson);
+                stackTraceCommandHandler.handle(session);
+                break;
             case StepCommand.COMMAND:
                 StepCommand stepCommand = (StepCommand) command;
                 StepHandler handler = new StepHandler(mMessage, mVM);
@@ -185,6 +202,9 @@ public class DebuggerCommandAdapter
             case StopCommand.COMMAND:
                 StopHandler stopHandler = new StopHandler(mVMDriver);
                 stopHandler.stop();
+                break;
+            case TerminateCommand.COMMAND:
+                stop();
                 break;
             case ToggleBreakpointCommand.COMMAND:
                 ToggleBreakpointCommand toggleBreakpointCommand = (ToggleBreakpointCommand) command;

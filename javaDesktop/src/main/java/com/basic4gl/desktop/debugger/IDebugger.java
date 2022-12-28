@@ -12,4 +12,6 @@ public interface IDebugger {
     void step(int type);
     boolean toggleBreakpoint(String filename, int line);
     String evaluateWatch(String watch, boolean canCallFunc);
+
+    void refreshCallStack();
 }

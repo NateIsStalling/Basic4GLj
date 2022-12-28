@@ -2,6 +2,7 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.desktop.debugger.*;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
 import com.basic4gl.desktop.util.EditorSourceFile;
@@ -429,6 +430,10 @@ public class BasicEditor implements MainEditor,
         return mWorker.evaluateWatch(watch, canCallFunc);
     }
 
+    public void refreshCallStack() {
+        mWorker.refreshCallStack();
+    }
+
     //TODO Reimplement callbacks
     public class DebugCallback implements DebuggerTaskCallback {
 
@@ -455,6 +460,9 @@ public class BasicEditor implements MainEditor,
             //TODO Pause
             if (message.getStatus() == CallbackMessage.PAUSED) {
                 mPresenter.onPause();
+                if (updated) {
+                    refreshCallStack();
+                }
             }
 
             switch (message.getStatus()) {
@@ -523,6 +531,14 @@ public class BasicEditor implements MainEditor,
 
             //TODO Handle GL window
             //handleGLWindow();
+        }
+
+        @Override
+        public void messageObject(Object message) {
+            // TODO 12/2022 improve type safety of interface/map callback DTO to domain model
+            if (message instanceof StackTraceCallback) {
+                mPresenter.updateCallStack((StackTraceCallback) message);
+            }
         }
 
         // TODO 12/2022 migrate handleGLWindow to closing callback handling

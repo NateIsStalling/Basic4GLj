@@ -1,15 +1,15 @@
 package com.basic4gl.debug.websocket;
 
-import com.basic4gl.debug.protocol.callbacks.CallbackMessage;
+import com.basic4gl.debug.protocol.callbacks.Callback;
+import com.basic4gl.debug.protocol.callbacks.CallbackFactory;
 import com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage;
 import com.basic4gl.debug.protocol.commands.DebugCommand;
-import com.basic4gl.debug.protocol.commands.DebugCommandAdapter;
+import com.basic4gl.debug.protocol.commands.DebugCommandFactory;
 import com.basic4gl.debug.protocol.commands.TerminateCommand;
 import com.google.gson.Gson;
 
 import javax.websocket.*;
 import java.io.IOException;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
@@ -17,7 +17,8 @@ import java.util.concurrent.CountDownLatch;
 public class DebugClientSocket {
     private CountDownLatch closureLatch = new CountDownLatch(1);
     private Session session;
-    private DebugCommandAdapter adapter;
+    private DebugCommandFactory commandFactory;
+    private CallbackFactory callbackFactory;
 
     private IDebugCommandListener commandListener;
     private IDebugCallbackListener callbackListener;
@@ -32,8 +33,11 @@ public class DebugClientSocket {
     @OnOpen
     public void onWebSocketConnect(Session sess)
     {
+        Gson gson = new Gson();
+
         this.session = sess;
-        this.adapter = new DebugCommandAdapter(new Gson());
+        this.commandFactory = new DebugCommandFactory(gson);
+        this.callbackFactory = new CallbackFactory(gson);
 
         System.out.println("Socket Connected: " + sess);
     }
@@ -43,7 +47,8 @@ public class DebugClientSocket {
     {
         System.out.println("Client Received TEXT message: " + message);
 
-        DebugCommand command = adapter.FromJson(message);
+        DebugCommand command = commandFactory.FromJson(message);
+        Callback callback = callbackFactory.FromJson(message);
 
         // handle terminated command
         if (command != null && Objects.equals(command.getCommand(), TerminateCommand.COMMAND)) {
@@ -52,17 +57,18 @@ public class DebugClientSocket {
 
         if (command != null && command.isValid()) {
             System.out.println("Client processing command");
-            //sendClient(command.getClass().getName());
             commandListener.OnDebugCommandReceived(command);
+        } else if (callback != null) {
+            System.out.println("Client processing callback");
+            callbackListener.OnCallbackReceived(callback);
         } else {
-            DebuggerCallbackMessage callback = DebuggerCallbackMessage.FromJson(message);
-            if (callback != null) {
+            // TODO 12/2022 migrate to separate Callback subtypes to align with DAP spec
+            DebuggerCallbackMessage debuggerCallbackMessage = DebuggerCallbackMessage.FromJson(message);
+            if (debuggerCallbackMessage != null) {
                 System.out.println("Client processing callback");
-                //sendClient(callback.text);
-                callbackListener.OnDebugCallbackReceived(callback);
+                callbackListener.OnDebugCallbackReceived(debuggerCallbackMessage);
             } else {
                 System.out.println("Client ignoring message");
-                //sendClient(message);
             }
         }
     }

@@ -1,9 +1,8 @@
 package com.basic4gl.debug.websocket;
 
 import com.basic4gl.debug.protocol.callbacks.CallbackMessage;
-import com.basic4gl.debug.protocol.callbacks.DebugCallback;
 import com.basic4gl.debug.protocol.commands.DebugCommand;
-import com.basic4gl.debug.protocol.commands.DebugCommandAdapter;
+import com.basic4gl.debug.protocol.commands.DebugCommandFactory;
 import com.basic4gl.debug.protocol.commands.TerminateCommand;
 import com.google.gson.Gson;
 
@@ -26,7 +25,7 @@ public class DebugSocket
 
     private UUID sessionId;
 
-    private DebugCommandAdapter adapter;
+    private DebugCommandFactory adapter;
 
     @OnOpen
     public void onWebSocketConnect(Session sess)
@@ -37,7 +36,7 @@ public class DebugSocket
         this.session = sess;
         this.sessionId = sessionId;
 
-        this.adapter = new DebugCommandAdapter(new Gson());
+        this.adapter = new DebugCommandFactory(new Gson());
 
         System.out.println("Socket Connected: " + sess);
     }

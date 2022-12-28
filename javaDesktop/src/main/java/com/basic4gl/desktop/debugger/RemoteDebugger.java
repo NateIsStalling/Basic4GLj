@@ -70,4 +70,10 @@ public class RemoteDebugger implements IDebugger {
         adapter.message(command);
         return "???";
     }
+
+    @Override
+    public void refreshCallStack() {
+        DebugCommand command = new StackTraceCommand();
+        adapter.message(command);
+    }
 }

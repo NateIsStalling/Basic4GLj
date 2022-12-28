@@ -3,6 +3,10 @@ package com.basic4gl.debug.protocol.commands;
 // TODO make this an interface
 public class DebugCommand {
 
+    public static final String TYPE = "command";
+
+    protected String type = TYPE;
+
     protected String command;
 
     public DebugCommand(String command) {

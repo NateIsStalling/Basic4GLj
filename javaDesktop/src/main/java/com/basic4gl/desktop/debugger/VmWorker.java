@@ -1,6 +1,8 @@
 package com.basic4gl.desktop.debugger;
 
+import com.basic4gl.debug.protocol.callbacks.Callback;
 import com.basic4gl.debug.protocol.callbacks.InstructionPosition;
+import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
 import com.basic4gl.lib.util.*;
 
@@ -8,7 +10,7 @@ import javax.swing.*;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-public class VmWorker extends SwingWorker<Object, DebuggerCallbackMessage>
+public class VmWorker extends SwingWorker<Object, Object>
 implements IDebugCallbackListener, IDebugger {
 
     private final IFileProvider mFiles;
@@ -39,10 +41,15 @@ implements IDebugCallbackListener, IDebugger {
     }
 
     @Override
-    protected void process(List<DebuggerCallbackMessage> chunks) {
+    protected void process(List<Object> chunks) {
         super.process(chunks);
-        for (DebuggerCallbackMessage message : chunks) {
-            mCallbacks.message(message);
+        for (Object message : chunks) {
+            if (message instanceof DebuggerCallbackMessage) {
+                mCallbacks.message((DebuggerCallbackMessage) message);
+            } else {
+                mCallbacks.messageObject(message);
+            }
+
         }
     }
 
@@ -124,6 +131,12 @@ implements IDebugCallbackListener, IDebugger {
     }
 
     @Override
+    public void OnCallbackReceived(Callback callback) {
+        // TODO 12/2022 improve type safety of interface/map callback DTO to domain model
+        publish(callback);
+    }
+
+    @Override
     public void continueApplication() {
         if (remoteDebugger != null) {
             remoteDebugger.continueApplication();
@@ -179,5 +192,12 @@ implements IDebugCallbackListener, IDebugger {
             return remoteDebugger.evaluateWatch(watch, canCallFunc);
         }
         return "???";
+    }
+
+    @Override
+    public void refreshCallStack() {
+        if (remoteDebugger != null) {
+            remoteDebugger.refreshCallStack();
+        }
     }
 }
