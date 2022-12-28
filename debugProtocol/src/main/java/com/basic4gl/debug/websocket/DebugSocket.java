@@ -1,26 +1,10 @@
 package com.basic4gl.debug.websocket;
-//
-//  ========================================================================
-//  Copyright (c) Mort Bay Consulting Pty Ltd and others.
-//  ------------------------------------------------------------------------
-//  All rights reserved. This program and the accompanying materials
-//  are made available under the terms of the Eclipse Public License v1.0
-//  and Apache License v2.0 which accompanies this distribution.
-//
-//      The Eclipse Public License is available at
-//      http://www.eclipse.org/legal/epl-v10.html
-//
-//      The Apache License v2.0 is available at
-//      http://www.opensource.org/licenses/apache2.0.php
-//
-//  You may elect to redistribute this code under either of these licenses.
-//  ========================================================================
-//
 
 import com.basic4gl.debug.protocol.callbacks.CallbackMessage;
 import com.basic4gl.debug.protocol.callbacks.DebugCallback;
 import com.basic4gl.debug.protocol.commands.DebugCommand;
 import com.basic4gl.debug.protocol.commands.DebugCommandAdapter;
+import com.basic4gl.debug.protocol.commands.TerminateCommand;
 import com.google.gson.Gson;
 
 import javax.websocket.*;
@@ -31,7 +15,6 @@ import java.util.concurrent.CountDownLatch;
 
 //TODO https://stackoverflow.com/questions/17080216/how-to-send-message-to-particular-websocket-connection-using-java-server
 
-//@ClientEndpoint
 @ServerEndpoint(value = "/debug/")
 public class DebugSocket
 {
@@ -70,32 +53,11 @@ public class DebugSocket
                 sendClient(entry.getValue(), message);
             }
         }
-//        CallbackMessage callback = CallbackMessage.FromJson(message);
-//        if (callback != null) {
-////            sendClient(callback.text);
-//            Set<Map.Entry<UUID, Session>> sessions = sessionRepository.entrySet();
-//            for (Map.Entry<UUID, Session> entry: sessions) {
-//                if (!entry.getKey().equals(sessionId)) {
-//                    sendClient(entry.getValue(), message);
-//                }
-//            }
-//
-//        } else {
-//
-//            DebugCommand command = adapter.FromJson(message);
-//
-//            if (command != null && command.isValid()) {
-////                sendClient(command.getClass().getName());
-//                sendClient(message);
-//            } else {
-//                sendClient(message);
-//            }
-//        }
 
-
-        if (message.toLowerCase(Locale.US).contains("bye"))
-        {
-            sess.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Thanks"));
+        // handle terminated command
+        DebugCommand command = adapter.FromJson(message);
+        if (command != null && Objects.equals(command.getCommand(), TerminateCommand.COMMAND)) {
+            sess.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Debug Session Terminated"));
         }
     }
 
@@ -139,9 +101,5 @@ public class DebugSocket
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void sendError(Session session, String err) {
-        this.sendClient(session, String.format("{\"msg\": \"error\", \"error\": \"%s\"}", err));
     }
 }

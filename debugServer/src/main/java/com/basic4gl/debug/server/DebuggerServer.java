@@ -18,13 +18,12 @@ package com.basic4gl.debug.server;
 //
 
 import com.basic4gl.debug.websocket.DebugSocket;
-import com.basic4gl.debug.websocket.EventSocket;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
-public class EventServer
+public class DebuggerServer
 {
     public static void main(String[] args)
     {
@@ -53,7 +52,6 @@ public class EventServer
                         wsContainer.setDefaultMaxTextMessageBufferSize(65535);
 
                         // Add WebSocket endpoint to javax.websocket layer
-                        wsContainer.addEndpoint(EventSocket.class);
                         wsContainer.addEndpoint(DebugSocket.class);
                     });
 

@@ -1,37 +1,28 @@
 package com.basic4gl.library.desktopgl;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.nio.IntBuffer;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.SourcePos;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.compiler.util.IVMDriverAccess;
-import com.basic4gl.library.debug.DebuggerCallbacksAdapter;
+import com.basic4gl.library.debug.DebuggerCommandAdapter;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.InstructionPos;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.runtime.util.Mutable;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.system.MemoryStack;
-
-import javax.management.RuntimeMBeanException;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 
 
@@ -48,7 +39,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	private Thread mThread;	//Standalone
 
 	private DebuggerCallbacks mDebugger;
-	private DebuggerCallbacksAdapter debuggerCallback;
+	private DebuggerCommandAdapter debuggerAdapter;
 
 	private CountDownLatch completionLatch;
 //	private TaskCallback mCallbacks;
@@ -208,19 +199,20 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 
 		instance.mMessage = new DebuggerCallbackMessage(CallbackMessage.WORKING,"", null);
-		instance.debuggerCallback = new DebuggerCallbacksAdapter(
+		instance.debuggerAdapter = new DebuggerCommandAdapter(
 				instance.mMessage,
 				debugger, // TODO add User Breakpoints to params
 				instance,
 				instance.mComp,
 				instance.mVM);
-		instance.debuggerCallback.connect();
+		URI uri = URI.create("ws://localhost:6796/debug/");
+		instance.debuggerAdapter.connect(uri);
 
-		instance.mDebugger = new DebuggerCallbacks(instance.debuggerCallback, instance.mMessage, instance.mVM, instance) {
+		instance.mDebugger = new DebuggerCallbacks(instance.debuggerAdapter, instance.mMessage, instance.mVM, instance) {
 			@Override
 			public void onPreLoad() {
 				// say hi
-				instance.debuggerCallback.message(instance.mMessage);
+				instance.debuggerAdapter.message(instance.mMessage);
 			}
 
 			@Override
@@ -249,8 +241,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	@Override
 	public void cleanup() {
-		if (debuggerCallback != null) {
-			debuggerCallback.stop();
+		if (debuggerAdapter != null) {
+			debuggerAdapter.stop();
 		}
 	}
 
@@ -700,8 +692,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	public boolean handleEvents(){
 
 		//Notify debugger process is still alive
-		if (debuggerCallback != null) {
-			debuggerCallback.message(mMessage);
+		if (debuggerAdapter != null) {
+			debuggerAdapter.message(mMessage);
 		}
 
 		//Keep window responsive during loops

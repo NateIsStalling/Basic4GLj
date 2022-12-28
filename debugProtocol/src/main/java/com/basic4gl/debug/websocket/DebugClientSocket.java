@@ -4,11 +4,13 @@ import com.basic4gl.debug.protocol.callbacks.CallbackMessage;
 import com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage;
 import com.basic4gl.debug.protocol.commands.DebugCommand;
 import com.basic4gl.debug.protocol.commands.DebugCommandAdapter;
+import com.basic4gl.debug.protocol.commands.TerminateCommand;
 import com.google.gson.Gson;
 
 import javax.websocket.*;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 @ClientEndpoint
@@ -43,6 +45,11 @@ public class DebugClientSocket {
 
         DebugCommand command = adapter.FromJson(message);
 
+        // handle terminated command
+        if (command != null && Objects.equals(command.getCommand(), TerminateCommand.COMMAND)) {
+            sess.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Debug Session Terminated"));
+        }
+
         if (command != null && command.isValid()) {
             System.out.println("Client processing command");
             //sendClient(command.getClass().getName());
@@ -57,13 +64,6 @@ public class DebugClientSocket {
                 System.out.println("Client ignoring message");
                 //sendClient(message);
             }
-        }
-
-
-
-        if (message.toLowerCase(Locale.US).contains("bye"))
-        {
-            sess.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Thanks"));
         }
     }
 
@@ -92,9 +92,5 @@ public class DebugClientSocket {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void sendError(String err) {
-        this.sendClient(String.format("{\"msg\": \"error\", \"error\": \"%s\"}", err));
     }
 }

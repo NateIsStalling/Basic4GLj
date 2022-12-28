@@ -1,23 +1,5 @@
 package com.basic4gl.library.debug;
 
-//
-//  ========================================================================
-//  Copyright (c) Mort Bay Consulting Pty Ltd and others.
-//  ------------------------------------------------------------------------
-//  All rights reserved. This program and the accompanying materials
-//  are made available under the terms of the Eclipse Public License v1.0
-//  and Apache License v2.0 which accompanies this distribution.
-//
-//      The Eclipse Public License is available at
-//      http://www.eclipse.org/legal/epl-v10.html
-//
-//      The Apache License v2.0 is available at
-//      http://www.opensource.org/licenses/apache2.0.php
-//
-//  You may elect to redistribute this code under either of these licenses.
-//  ========================================================================
-//
-
 import java.net.URI;
 import javax.websocket.ContainerProvider;
 import javax.websocket.Session;
@@ -37,11 +19,13 @@ import com.basic4gl.library.debug.commands.*;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.InstructionPos;
 import com.basic4gl.runtime.TomVM;
+
 import com.google.gson.Gson;
+
 import org.eclipse.jetty.util.component.LifeCycle;
 
-public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
-        implements DebuggerTaskCallback, IDebugCommandListener, IDebugCallbackListener
+public class DebuggerCommandAdapter
+    implements DebuggerTaskCallback, IDebugCommandListener, IDebugCallbackListener
 {
 
     private final DebuggerCallbackMessage mMessage;
@@ -50,7 +34,13 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
     private final TomBasicCompiler mComp;
     private final TomVM mVM;
 
-    public DebuggerCallbacksAdapter(
+    private final Gson gson = new Gson();
+
+    private WebSocketContainer container;
+    private Session session;
+
+
+    public DebuggerCommandAdapter(
             DebuggerCallbackMessage message,
             Debugger debugger,
             IVMDriver vmDriver,
@@ -63,65 +53,16 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
         mVM = vm;
     }
 
-    public static void main(String[] args)
-    {
-//        DebuggerCallbacksAdapter adapter = new DebuggerCallbacksAdapter(
-//                dnull, null);
-////                null,
-////                new CallMeMaybe(null),
-////                null
-////        );
-//        adapter.connect();
-    }
-    WebSocketContainer container;
-    Session session;
-    CallMeMaybe callMeMaybe;
-
-//    public DebuggerCallbacksAdapter(
-//        TaskCallback callback,
-//        CallbackMessage message,
-//        IVMDriver driver) {
-//        super(callback, new CallMeMaybe(message), driver);
-//    }
-
-    public void connect() {
-        URI uri = URI.create("ws://localhost:6796/debug/");
-
+    public void connect(URI debugSocketUri) {
         try
         {
             container = ContainerProvider.getWebSocketContainer();
 
-            try
-            {
-                // Create client side endpoint
-                DebugClientSocket clientEndpoint = new DebugClientSocket(this, this);
+            // Create client side endpoint
+            DebugClientSocket clientEndpoint = new DebugClientSocket(this, this);
 
-                // Attempt Connect
-                session = container.connectToServer(clientEndpoint,uri);
-
-
-//                callMeMaybe.session = session;
-//
-//                // Send a message
-//                session.getBasicRemote().sendText("Hello");
-//
-//                // Send another message
-//                session.getBasicRemote().sendText("Goodbye");
-//
-//                // Wait for remote to close
-//                clientEndpoint.awaitClosure();
-//
-//                // Close session
-//                session.close();
-            }
-            finally
-            {
-                // Force lifecycle stop when done with container.
-                // This is to free up threads and resources that the
-                // JSR-356 container allocates. But unfortunately
-                // the JSR-356 spec does not handle lifecycles (yet)
-//                LifeCycle.stop(container);
-            }
+            // Attempt Connect
+            session = container.connectToServer(clientEndpoint, debugSocketUri);
         }
         catch (Throwable t)
         {
@@ -193,8 +134,6 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
         }
     }
 
-    Gson gson = new Gson();
-
     @Override
     public void OnDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
         synchronized (mMessage) {
@@ -213,18 +152,6 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
             }
             mMessage.setInstructionPosition(instructionPos);
             mMessage.notify();
-        }
-    }
-
-    private static class CallMeMaybe extends CallbackMessage {
-        Gson gson = new Gson();
-        public Session session;
-
-        CallMeMaybe(CallbackMessage message) {
-            if (message != null) {
-                this.status = message.getStatus();
-                this.text = message.getText();
-            }
         }
     }
 
@@ -268,15 +195,4 @@ public class DebuggerCallbacksAdapter //extends DebuggerCallbacks
                 System.out.println("Ignored unsupported command: " + command.getCommand());
         }
     }
-
-//
-//    @Override
-//    public void onPreLoad() {
-//
-//    }
-//
-//    @Override
-//    public void onPostLoad() {
-//
-//    }
 }
