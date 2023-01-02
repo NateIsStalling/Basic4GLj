@@ -7,14 +7,14 @@ public class StepCommand extends DebugCommand {
     public static final int STEP_TYPE_INTO = 2;
     public static final int STEP_TYPE_OUT = 3;
 
-    public int type;
+    public int stepType;
 
     public StepCommand() {
         super(COMMAND);
     }
 
-    public StepCommand(int type) {
+    public StepCommand(int stepType) {
         super(COMMAND);
-        this.type = type;
+        this.stepType = stepType;
     }
 }

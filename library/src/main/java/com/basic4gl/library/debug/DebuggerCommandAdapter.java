@@ -197,7 +197,7 @@ public class DebuggerCommandAdapter
             case StepCommand.COMMAND:
                 StepCommand stepCommand = (StepCommand) command;
                 StepHandler handler = new StepHandler(mMessage, mVM);
-                handler.DoStep(stepCommand.type);
+                handler.DoStep(stepCommand.stepType);
                 break;
             case StopCommand.COMMAND:
                 StopHandler stopHandler = new StopHandler(mVMDriver);

@@ -58,6 +58,8 @@ public class BasicEditor implements MainEditor,
     // Editor state
     ApMode mMode = ApMode.AP_STOPPED;
 
+    List<String> mWatches = new ArrayList<String>();
+
     IFileManager mFileManager;
 
     String mLibraryPath;
@@ -446,6 +448,59 @@ public class BasicEditor implements MainEditor,
         mWorker.refreshCallStack();
     }
 
+    public void refreshWatchList() {
+        mPresenter.refreshWatchList();
+
+        if (mMode == ApMode.AP_PAUSED) {
+            for (String watch : mWatches) {
+                evaluateWatch(watch, true);
+            }
+        }
+    }
+
+    public List<String> getWatches() {
+        return mWatches;
+    }
+
+    public int getWatchListSize() {
+        return mWatches.size();
+    }
+
+    public String getWatchOrDefault(int index) {
+        if (index > -1 && index < mWatches.size()) {
+            return mWatches.get(index);
+        } else {
+            return "";
+        }
+    }
+
+    public void removeWatchAt(int index) {
+        if (index > -1 && index < mWatches.size()) {
+            mWatches.remove(index);
+        }
+        refreshWatchList();
+    }
+
+    public void updateWatch(String watch, int index) {
+        // Update/insert/delete watch
+        if (watch != null) {
+            watch = watch.trim();
+            if (watch.equals("")) {
+                //User entered an empty value
+                if (index > -1 && index < mWatches.size()) {
+                    mWatches.remove(index);
+                }
+            } else {
+                if (index > -1 && index < mWatches.size()) {
+                    mWatches.set(index, watch);
+                } else {
+                    mWatches.add(watch);
+                }
+            }
+        }
+        refreshWatchList();
+    }
+
     //TODO Reimplement callbacks
     public class DebugCallback implements DebuggerTaskCallback {
 
@@ -454,6 +509,10 @@ public class BasicEditor implements MainEditor,
             if (message == null)
                 return;
             boolean updated = mMessage.setMessage(message);
+            if (!updated) {
+                return;
+            }
+
             VMStatus vmStatus = message.getVMStatus();
 
             InstructionPos instructionPos = message.getInstructionPosition();
@@ -462,19 +521,13 @@ public class BasicEditor implements MainEditor,
             }
 
             if (message.getStatus() == CallbackMessage.WORKING) {
-                // ignore WORKING if no status change
-                if (!updated) {
-                    return;
-                } else {
-                    SetMode(ApMode.AP_RUNNING, vmStatus);
-                }
+                SetMode(ApMode.AP_RUNNING, vmStatus);
             }
             //TODO Pause
             if (message.getStatus() == CallbackMessage.PAUSED) {
                 mPresenter.onPause();
-                if (updated) {
-                    refreshCallStack();
-                }
+                refreshCallStack();
+                refreshWatchList();
             }
 
             switch (message.getStatus()) {

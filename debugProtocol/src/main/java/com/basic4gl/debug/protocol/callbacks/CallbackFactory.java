@@ -22,6 +22,8 @@ public class CallbackFactory {
             switch (callback.command) {
                 case StackTraceCallback.COMMAND:
                     return gson.fromJson(commandJson, StackTraceCallback.class);
+                case EvaluateWatchCallback.COMMAND:
+                    return gson.fromJson(commandJson, EvaluateWatchCallback.class);
             }
         } catch (Exception e) {
         }

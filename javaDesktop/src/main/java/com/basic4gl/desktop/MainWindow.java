@@ -148,7 +148,6 @@ public class MainWindow implements
 
     // Debugging
     private boolean mDebugMode = false;
-    private List<String> mWatches = new ArrayList<String>();
 
     private boolean mDelayScreenSwitch = false;            // Set when stepping. Delays switching to the output window for the first 1000 op-codes.
     // (To prevent excessive screen mode switches when debugging full-screen programs.)
@@ -476,7 +475,7 @@ public class MainWindow implements
                 if (e.getKeyCode() == KeyEvent.VK_DELETE)
                     DeleteWatch();
                 else if (e.getKeyCode() == KeyEvent.VK_INSERT) {
-                    mWatchListBox.setSelectedIndex(mWatches.size());
+                    mWatchListBox.setSelectedIndex(mEditor.getWatchListSize());
                     EditWatch();
                 }
             }
@@ -1334,10 +1333,7 @@ public class MainWindow implements
         if (mode != ApMode.AP_PAUSED) {
             // Clear debug controls
             mGosubListModel.clear();
-            mWatchListModel.clear();
         }
-
-        updateWatchList();
     }
 
     @Override
@@ -1380,7 +1376,7 @@ public class MainWindow implements
     @Override
     public void updateEvaluateWatch(String evaluatedWatch, String result) {
         int index = 0;
-        for (String watch : mWatches) {
+        for (String watch : mEditor.getWatches()) {
             if (Objects.equals(watch, evaluatedWatch)) {
                 mWatchListModel.setElementAt(watch +": " + result, index);
             }
@@ -1388,13 +1384,14 @@ public class MainWindow implements
         }
     }
 
-    public void updateWatchList() {
+    @Override
+    public void refreshWatchList() {
         // Clear debug controls
         mWatchListModel.clear();
 
-        for (String watch : mWatches) {
+        for (String watch : mEditor.getWatches()) {
 
-            mWatchListModel.addElement(watch + ": " + mEditor.evaluateWatch(watch, true));
+            mWatchListModel.addElement(watch + ": " + "???");
         }
         mWatchListModel.addElement(" ");              // Last line is blank, and can be clicked on to add new watch
     }
@@ -1407,33 +1404,14 @@ public class MainWindow implements
         int saveIndex = index;
 
         // Extract watch text
-        if (index > -1 && index < mWatches.size()) {
-            oldWatch = mWatches.get(index);
-        } else {
-            oldWatch = "";
-        }
+        oldWatch = mEditor.getWatchOrDefault(index);
 
         // Prompt for new text
         newWatch = (String) JOptionPane.showInputDialog(mFrame, "Enter variable/expression:", "Watch variable",
                 JOptionPane.PLAIN_MESSAGE, null, null, oldWatch);
 
-        // Update/insert/delete watch
-        if (newWatch != null) {
-            newWatch = newWatch.trim();
-            if (newWatch.equals("")) {
-                //User entered an empty value
-                if (index > -1 && index < mWatches.size()) {
-                    mWatches.remove(index);
-                }
-            } else {
-                if (index > -1 && index < mWatches.size()) {
-                    mWatches.set(index, newWatch);
-                } else {
-                    mWatches.add(newWatch);
-                }
-            }
-        }
-        RefreshDebugDisplays(mEditor.mMode);
+        mEditor.updateWatch(newWatch, index);
+
         mWatchListBox.setSelectedIndex(saveIndex);
         UpdateWatchHint();
     }
@@ -1445,18 +1423,15 @@ public class MainWindow implements
         int saveIndex = index;
 
         // Delete watch
-        if (index > -1 && index < mWatches.size()) {
-            mWatches.remove(index);
-        }
+        mEditor.removeWatchAt(index);
 
-        RefreshDebugDisplays(mEditor.mMode);
         mWatchListBox.setSelectedIndex(saveIndex);
         UpdateWatchHint();
     }
 
     private void UpdateWatchHint() {
         int index = mWatchListBox.getSelectedIndex();
-        if (index > -1 && index < mWatches.size()) {
+        if (index > -1 && index < mEditor.getWatchListSize()) {
             mWatchListBox.setToolTipText((String) mWatchListModel.get(index));
         } else {
             mWatchListBox.setToolTipText("");

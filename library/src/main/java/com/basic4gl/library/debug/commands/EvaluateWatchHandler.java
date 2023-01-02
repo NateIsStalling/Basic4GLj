@@ -40,6 +40,7 @@ public class EvaluateWatchHandler {
 
         EvaluateWatchCallback callback = new EvaluateWatchCallback();
         callback.setRequestId(requestId);
+        callback.setResult(result);
 
         String json = mGson.toJson(callback);
         message(session, json);

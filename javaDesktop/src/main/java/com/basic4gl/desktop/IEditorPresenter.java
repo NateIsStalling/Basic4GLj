@@ -19,4 +19,6 @@ public interface IEditorPresenter {
     void updateCallStack(StackTraceCallback message);
 
     void updateEvaluateWatch(String evaluatedWatch, String result);
+
+    void refreshWatchList();
 }
