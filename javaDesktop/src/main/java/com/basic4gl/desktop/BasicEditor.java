@@ -2,6 +2,7 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.desktop.debugger.*;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
@@ -17,7 +18,9 @@ import com.basic4gl.runtime.InstructionPos;
 import com.basic4gl.runtime.TomVM;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 public class BasicEditor implements MainEditor,
@@ -25,6 +28,7 @@ public class BasicEditor implements MainEditor,
         IFileProvider {
 
     private IEditorPresenter mPresenter;
+    private Map<Integer, String> mEvaluateRequests = new HashMap<>();
 
     // Virtual machine and compiler
     private VmWorker mWorker;       // Debugging
@@ -253,7 +257,11 @@ public class BasicEditor implements MainEditor,
 
     @Override
     public String evaluateVariable(String variable) {
-        return mWorker.evaluateWatch(variable, false);
+        int requestId = mWorker.evaluateWatch(variable, false);
+        mEvaluateRequests.put(requestId, variable);
+
+        // result will be handled by callback
+        return "???";
     }
 
     @Override
@@ -427,7 +435,11 @@ public class BasicEditor implements MainEditor,
     }
 
     public String evaluateWatch(String watch, boolean canCallFunc) {
-        return mWorker.evaluateWatch(watch, canCallFunc);
+        int requestId = mWorker.evaluateWatch(watch, canCallFunc);
+        mEvaluateRequests.put(requestId, watch);
+
+        // result will be handled by callback
+        return "???";
     }
 
     public void refreshCallStack() {
@@ -538,6 +550,13 @@ public class BasicEditor implements MainEditor,
             // TODO 12/2022 improve type safety of interface/map callback DTO to domain model
             if (message instanceof StackTraceCallback) {
                 mPresenter.updateCallStack((StackTraceCallback) message);
+            }
+
+            if (message instanceof EvaluateWatchCallback) {
+                EvaluateWatchCallback callback = (EvaluateWatchCallback) message;
+                int requestId = callback.getRequestId();
+                String watch = mEvaluateRequests.get(requestId);
+                mPresenter.updateEvaluateWatch(watch, callback.getResult());
             }
         }
 

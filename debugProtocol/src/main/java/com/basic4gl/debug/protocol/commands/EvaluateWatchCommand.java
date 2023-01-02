@@ -3,9 +3,15 @@ package com.basic4gl.debug.protocol.commands;
 public class EvaluateWatchCommand extends DebugCommand {
     public static final String COMMAND = "evaluate-watch";
 
+    public static final String EVALUATE_CONTEXT_WATCH = "watch";
+    public static final String EVALUATE_CONTEXT_REPL = "repl";
+    public static final String EVALUATE_CONTEXT_HOVER = "hover";
+    public static final String EVALUATE_CONTEXT_CLIPBOARD = "clipboard";
+    public static final String EVALUATE_CONTEXT_VARIABLES = "variables";
+
     public String watch;
 
-    public boolean canCallFunc;
+    public String context;
 
     public EvaluateWatchCommand() {
         super(COMMAND);
@@ -13,10 +19,10 @@ public class EvaluateWatchCommand extends DebugCommand {
 
     public EvaluateWatchCommand(
         String watch,
-        boolean canCallFunc) {
+        String context) {
         super(COMMAND);
 
         this.watch = watch;
-        this.canCallFunc = canCallFunc;
+        this.context = context;
     }
 }

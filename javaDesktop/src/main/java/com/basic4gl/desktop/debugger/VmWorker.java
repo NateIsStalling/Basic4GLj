@@ -2,7 +2,6 @@ package com.basic4gl.desktop.debugger;
 
 import com.basic4gl.debug.protocol.callbacks.Callback;
 import com.basic4gl.debug.protocol.callbacks.InstructionPosition;
-import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
 import com.basic4gl.lib.util.*;
 
@@ -187,11 +186,11 @@ implements IDebugCallbackListener, IDebugger {
     }
 
     @Override
-    public String evaluateWatch(String watch, boolean canCallFunc) {
+    public int evaluateWatch(String watch, boolean canCallFunc) {
         if (remoteDebugger != null) {
             return remoteDebugger.evaluateWatch(watch, canCallFunc);
         }
-        return "???";
+        return 0;
     }
 
     @Override

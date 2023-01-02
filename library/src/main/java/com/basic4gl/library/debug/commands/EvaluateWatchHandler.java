@@ -2,11 +2,14 @@ package com.basic4gl.library.debug.commands;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
+import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
+import com.basic4gl.debug.protocol.commands.EvaluateWatchCommand;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.VMState;
 import com.basic4gl.runtime.types.OpCode;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Mutable;
+import com.google.gson.Gson;
 
 import javax.websocket.Session;
 
@@ -19,17 +22,39 @@ public class EvaluateWatchHandler {
     private final TomBasicCompiler mComp;
     private final TomVM mVM;
     private final IVMDriver mVMDriver;
+    private final Gson mGson;
 
     public EvaluateWatchHandler(
         IVMDriver vmDriver,
         TomBasicCompiler comp,
-        TomVM vm) {
+        TomVM vm,
+        Gson gson) {
         mVMDriver = vmDriver;
         mComp = comp;
         mVM = vm;
+        mGson = gson;
     }
 
-    public String EvaluateWatch(String watch, boolean canCallFunc, Session session) {
+    public void handle(String watch, String context, int requestId, Session session) {
+        String result = EvaluateWatch(watch, context);
+
+        EvaluateWatchCallback callback = new EvaluateWatchCallback();
+        callback.setRequestId(requestId);
+
+        String json = mGson.toJson(callback);
+        message(session, json);
+    }
+
+    private void message(Session session, String json) {
+        if (session != null && session.isOpen()) {
+            try {
+                session.getBasicRemote().sendText(json);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public String EvaluateWatch(String watch, String context) {
         //TODO sync editor state; consider checking this in the editor
         //        if (mHost.isApplicationRunning()) {
 //            return DEFAULT_VALUE;
@@ -62,6 +87,7 @@ public class EvaluateWatchHandler {
                 return mComp.getError();
             }
 
+            boolean canCallFunc = canCallFunc(context);
             if (!canCallFunc) {
                 // Expressions aren't allowed to call functions for mouse-over hints.
                 // Scan compiled code for OP_CALL_FUNC or OP_CALL_OPERATOR_FUNC
@@ -150,6 +176,23 @@ public class EvaluateWatchHandler {
                 //}
             }
             return temp;
+        }
+    }
+
+    private boolean canCallFunc(String context) {
+        if (context == null) {
+            return false;
+        }
+
+        switch (context) {
+            case EvaluateWatchCommand.EVALUATE_CONTEXT_WATCH:
+            case EvaluateWatchCommand.EVALUATE_CONTEXT_REPL:
+            case EvaluateWatchCommand.EVALUATE_CONTEXT_CLIPBOARD:
+                return true;
+            case EvaluateWatchCommand.EVALUATE_CONTEXT_VARIABLES:
+            case EvaluateWatchCommand.EVALUATE_CONTEXT_HOVER:
+            default:
+                return false;
         }
     }
 }

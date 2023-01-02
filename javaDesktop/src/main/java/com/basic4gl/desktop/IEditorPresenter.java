@@ -17,4 +17,6 @@ public interface IEditorPresenter {
     void setCompilerStatus(String error);
 
     void updateCallStack(StackTraceCallback message);
+
+    void updateEvaluateWatch(String evaluatedWatch, String result);
 }

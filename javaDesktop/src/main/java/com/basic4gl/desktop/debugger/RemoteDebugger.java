@@ -8,6 +8,7 @@ import org.eclipse.jetty.client.HttpClient;
 public class RemoteDebugger implements IDebugger {
     private DebugClientAdapter adapter;
 
+
     public RemoteDebugger(DebugClientAdapter adapter) {
         this.adapter = adapter;
     }
@@ -65,10 +66,14 @@ public class RemoteDebugger implements IDebugger {
     }
 
     @Override
-    public String evaluateWatch(String watch, boolean canCallFunc) {
-        DebugCommand command = new EvaluateWatchCommand(watch, canCallFunc);
-        adapter.message(command);
-        return "???";
+    public int evaluateWatch(String watch, boolean canCallFunc) {
+        String context = canCallFunc
+            ? EvaluateWatchCommand.EVALUATE_CONTEXT_WATCH
+            : EvaluateWatchCommand.EVALUATE_CONTEXT_VARIABLES;
+        DebugCommand command = new EvaluateWatchCommand(watch, context);
+
+        int requestId = adapter.message(command);
+        return requestId;
     }
 
     @Override

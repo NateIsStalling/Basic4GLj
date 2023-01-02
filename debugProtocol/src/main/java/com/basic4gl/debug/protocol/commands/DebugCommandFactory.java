@@ -16,7 +16,7 @@ public class DebugCommandFactory {
 
         try {
             command = gson.fromJson(commandJson, DebugCommand.class);
-            if (!Objects.equals(command.type, DebugCommand.TYPE)) {
+            if (!Objects.equals(command.getType(), DebugCommand.TYPE)) {
                 return null;
             }
 

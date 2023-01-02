@@ -14,9 +14,12 @@ import javax.websocket.WebSocketContainer;
 import java.net.URI;
 
 public class DebugClientAdapter implements IDebugCommandListener {
-    WebSocketContainer container;
-    Session session;
-    IDebugCallbackListener callbackListener;
+    private WebSocketContainer container;
+    private Session session;
+    private IDebugCallbackListener callbackListener;
+
+    private int lastRequestId;
+
     public DebugClientAdapter(IDebugCallbackListener callbackListener) {
         this.callbackListener = callbackListener;
     }
@@ -89,16 +92,30 @@ public class DebugClientAdapter implements IDebugCommandListener {
 
     }
 
-    public void message(DebugCommand command) {
+    public int message(DebugCommand command) {
         Gson gson = new Gson();
         if (session != null && session.isOpen()) {
             try {
+                int requestId = newRequestId();
 
+                command.setId(requestId);
                 String json = gson.toJson(command);
                 session.getBasicRemote().sendText(json);
+
+                return requestId;
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+
+        return 0;
+    }
+
+
+    private int newRequestId() {
+        // TODO consider synchronized block
+        int requestId = lastRequestId + 1;
+        lastRequestId = requestId;
+        return requestId;
     }
 }

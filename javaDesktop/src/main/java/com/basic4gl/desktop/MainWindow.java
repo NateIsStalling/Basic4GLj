@@ -1334,17 +1334,10 @@ public class MainWindow implements
         if (mode != ApMode.AP_PAUSED) {
             // Clear debug controls
             mGosubListModel.clear();
+            mWatchListModel.clear();
         }
 
-        // TODO 12/2022 handle watchlist with separate callbacks
-        // Clear debug controls
-        mWatchListModel.clear();
-
-        for (String watch : mWatches) {
-
-            mWatchListModel.addElement(watch + ": " + mEditor.evaluateWatch(watch, true));
-        }
-        mWatchListModel.addElement(" ");              // Last line is blank, and can be clicked on to add new watch
+        updateWatchList();
     }
 
     @Override
@@ -1382,6 +1375,28 @@ public class MainWindow implements
                 mGosubListModel.addElement(frame.name);
             }
         }
+    }
+
+    @Override
+    public void updateEvaluateWatch(String evaluatedWatch, String result) {
+        int index = 0;
+        for (String watch : mWatches) {
+            if (Objects.equals(watch, evaluatedWatch)) {
+                mWatchListModel.setElementAt(watch +": " + result, index);
+            }
+            index++;
+        }
+    }
+
+    public void updateWatchList() {
+        // Clear debug controls
+        mWatchListModel.clear();
+
+        for (String watch : mWatches) {
+
+            mWatchListModel.addElement(watch + ": " + mEditor.evaluateWatch(watch, true));
+        }
+        mWatchListModel.addElement(" ");              // Last line is blank, and can be clicked on to add new watch
     }
 
     private void EditWatch() {

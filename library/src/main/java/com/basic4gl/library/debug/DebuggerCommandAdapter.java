@@ -179,8 +179,8 @@ public class DebuggerCommandAdapter
                 break;
             case EvaluateWatchCommand.COMMAND:
                 EvaluateWatchCommand c = (EvaluateWatchCommand) command;
-                EvaluateWatchHandler evaluateWatchHandler = new EvaluateWatchHandler(mVMDriver, mComp, mVM);
-                evaluateWatchHandler.EvaluateWatch(c.watch, c.canCallFunc, session);
+                EvaluateWatchHandler evaluateWatchHandler = new EvaluateWatchHandler(mVMDriver, mComp, mVM, gson);
+                evaluateWatchHandler.handle(c.watch, c.context, c.getId(), session);
                 break;
             case PauseCommand.COMMAND:
                 PauseHandler pauseHandler = new PauseHandler(mVM);
