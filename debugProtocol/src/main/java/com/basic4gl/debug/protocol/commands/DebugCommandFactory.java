@@ -37,10 +37,12 @@ public class DebugCommandFactory {
                     return gson.fromJson(commandJson, StepCommand.class);
                 case StopCommand.COMMAND:
                     return gson.fromJson(commandJson, StopCommand.class);
-                case TerminateCommand.COMMAND:
-                    return gson.fromJson(commandJson, TerminateCommand.class);
+                case DisconnectCommand.COMMAND:
+                    return gson.fromJson(commandJson, DisconnectCommand.class);
                 case ToggleBreakpointCommand.COMMAND:
                     return gson.fromJson(commandJson, ToggleBreakpointCommand.class);
+                case TerminateCommand.COMMAND:
+                    return gson.fromJson(commandJson, TerminateCommand.class);
                 default:
                     return gson.fromJson(commandJson, UnsupportedCommand.class);
             }

@@ -8,7 +8,6 @@ import javax.websocket.WebSocketContainer;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.debug.protocol.callbacks.Callback;
-import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VMStatus;
 import com.basic4gl.debug.protocol.commands.*;
 import com.basic4gl.debug.websocket.DebugClientSocket;
@@ -203,8 +202,11 @@ public class DebuggerCommandAdapter
                 StopHandler stopHandler = new StopHandler(mVMDriver);
                 stopHandler.stop();
                 break;
-            case TerminateCommand.COMMAND:
+            case DisconnectCommand.COMMAND:
                 stop();
+                break;
+            case TerminateCommand.COMMAND:
+                mVMDriver.terminate();
                 break;
             case ToggleBreakpointCommand.COMMAND:
                 ToggleBreakpointCommand toggleBreakpointCommand = (ToggleBreakpointCommand) command;

@@ -403,6 +403,13 @@ public class BasicEditor implements MainEditor,
     public void reset() {
         mComp.VM().Pause();
         if (mWorker != null) {
+            // TODO 1/2023 need to restart the existing app to free up the JVM port used for debugging
+            mWorker.terminateApplication();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             mWorker.cancel(true);
             //TODO confirm there is no overlap with this thread stopping and starting a new one to avoid GL errors
             try {

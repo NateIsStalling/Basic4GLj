@@ -59,6 +59,12 @@ public class RemoteDebugger implements IDebugger {
     }
 
     @Override
+    public void terminateApplication() {
+        DebugCommand command = new TerminateCommand();
+        adapter.message(command);
+    }
+
+    @Override
     public boolean toggleBreakpoint(String filename, int line) {
         DebugCommand command = new ToggleBreakpointCommand(filename, line);
         adapter.message(command);

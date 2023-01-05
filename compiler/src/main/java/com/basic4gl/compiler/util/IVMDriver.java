@@ -20,6 +20,8 @@ public interface IVMDriver {
 	void hide();
 	//Stop VM; window may enter an idle state or close
 	void stop();
+	//Stop VM and close window
+	void terminate();
 
 	//Check window state
 	boolean isFullscreen();

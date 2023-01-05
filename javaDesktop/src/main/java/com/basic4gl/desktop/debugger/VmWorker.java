@@ -75,9 +75,11 @@ implements IDebugCallbackListener, IDebugger {
 
             //Debugger is attached
             while (!this.isCancelled()
-                && (mMessage.getStatus() == CallbackMessage.STOPPED
-                || mMessage.getStatus() == CallbackMessage.WORKING
-                || mMessage.getStatus() == CallbackMessage.PAUSED)) {
+//TODO 1/2023 need to keep connection alive while debugee is idle
+//                    && (mMessage.getStatus() == CallbackMessage.STOPPED
+//                    || mMessage.getStatus() == CallbackMessage.WORKING
+//                    || mMessage.getStatus() == CallbackMessage.PAUSED)
+            ) {
                 // idle thread;
                 Thread.sleep(100);
             }
@@ -174,6 +176,13 @@ implements IDebugCallbackListener, IDebugger {
     public void step(int type) {
         if (remoteDebugger != null) {
             remoteDebugger.step(type);
+        }
+    }
+
+    @Override
+    public void terminateApplication() {
+        if (remoteDebugger != null) {
+            remoteDebugger.terminateApplication();
         }
     }
 

@@ -10,6 +10,7 @@ public interface IDebugger {
     void stopApplication();
 
     void step(int type);
+    void terminateApplication();
     boolean toggleBreakpoint(String filename, int line);
     int evaluateWatch(String watch, boolean canCallFunc);
 

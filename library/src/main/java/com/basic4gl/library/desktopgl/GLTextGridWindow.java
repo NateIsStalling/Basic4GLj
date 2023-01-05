@@ -293,6 +293,13 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		mVM.Stop();
 	}
 
+	@Override
+	public void terminate() {
+		mClosing = true;
+
+		stop();
+	}
+
 
 	@Override
 	public boolean isFullscreen() {
@@ -412,7 +419,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 //				glDepthFunc(GL_LEQUAL);                         // The Type Of Depth Test To Do
 				//Keep window responsive until closed
 				while (!Thread.currentThread().isInterrupted() && m_window != 0 && !isClosing()) {
-					System.out.println("idle");
+					//System.out.println("idle");
 					try {
 						//Go easy on the processor
 						Thread.sleep(10);

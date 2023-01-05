@@ -3,7 +3,7 @@ package com.basic4gl.debug.websocket;
 import com.basic4gl.debug.protocol.callbacks.CallbackMessage;
 import com.basic4gl.debug.protocol.commands.DebugCommand;
 import com.basic4gl.debug.protocol.commands.DebugCommandFactory;
-import com.basic4gl.debug.protocol.commands.TerminateCommand;
+import com.basic4gl.debug.protocol.commands.DisconnectCommand;
 import com.google.gson.Gson;
 
 import javax.websocket.*;
@@ -55,7 +55,7 @@ public class DebugSocket
 
         // handle terminated command
         DebugCommand command = adapter.FromJson(message);
-        if (command != null && Objects.equals(command.getCommand(), TerminateCommand.COMMAND)) {
+        if (command != null && Objects.equals(command.getCommand(), DisconnectCommand.COMMAND)) {
             sess.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Debug Session Terminated"));
         }
     }
