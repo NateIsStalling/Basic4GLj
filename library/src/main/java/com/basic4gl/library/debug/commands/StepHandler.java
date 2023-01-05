@@ -8,7 +8,7 @@ public class StepHandler extends ContinueHandler {
     private final TomVM mVM;
 
     public StepHandler(DebuggerCallbackMessage message, TomVM vm) {
-        super(message);
+        super(vm, message);
         mVM = vm;
     }
 

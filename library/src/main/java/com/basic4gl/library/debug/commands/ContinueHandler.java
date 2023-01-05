@@ -2,17 +2,27 @@ package com.basic4gl.library.debug.commands;
 
 import com.basic4gl.lib.util.CallbackMessage;
 import com.basic4gl.lib.util.DebuggerCallbackMessage;
+import com.basic4gl.runtime.TomVM;
 
 public class ContinueHandler {
-    public final DebuggerCallbackMessage mMessage;
 
-    public ContinueHandler(DebuggerCallbackMessage message) {
+    public final DebuggerCallbackMessage mMessage;
+    public final TomVM mVM;
+
+    public ContinueHandler(
+        TomVM vm,
+        DebuggerCallbackMessage message) {
         mMessage = message;
+        mVM = vm;
     }
 
+    public void handle() {
+        mVM.ClearTempBreakPts();
+        Continue();
+    }
     @Deprecated
     //"Doesn't work with remote launch"
-    public void Continue() {
+    protected void Continue() {
         //TODO fix this section
         //throw new NotImplementedException();
 

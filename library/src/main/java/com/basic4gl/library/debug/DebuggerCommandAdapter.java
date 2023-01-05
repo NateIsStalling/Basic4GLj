@@ -174,8 +174,8 @@ public class DebuggerCommandAdapter
 
         switch (command.getCommand()) {
             case ContinueCommand.COMMAND:
-                ContinueHandler continueHandler = new ContinueHandler(mMessage);
-                continueHandler.Continue();
+                ContinueHandler continueHandler = new ContinueHandler(mVM, mMessage);
+                continueHandler.handle();
                 break;
             case EvaluateWatchCommand.COMMAND:
                 EvaluateWatchCommand c = (EvaluateWatchCommand) command;
@@ -187,8 +187,8 @@ public class DebuggerCommandAdapter
                 pauseHandler.pause();
                 break;
             case ResumeCommand.COMMAND:
-                continueHandler = new ContinueHandler(mMessage);
-                continueHandler.Continue();
+                continueHandler = new ContinueHandler(mVM, mMessage);
+                continueHandler.handle();
                 break;
             case StackTraceCommand.COMMAND:
                 StackTraceCommandHandler stackTraceCommandHandler = new StackTraceCommandHandler(mVM, gson);
