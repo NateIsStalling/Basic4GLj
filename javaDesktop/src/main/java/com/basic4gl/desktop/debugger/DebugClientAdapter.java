@@ -1,6 +1,5 @@
 package com.basic4gl.desktop.debugger;
 
-import com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage;
 import com.basic4gl.debug.protocol.commands.DebugCommand;
 import com.basic4gl.debug.websocket.DebugClientSocket;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
@@ -32,36 +31,11 @@ public class DebugClientAdapter implements IDebugCommandListener {
         {
             container = ContainerProvider.getWebSocketContainer();
 
-            try
-            {
-                // Create client side endpoint
-                DebugClientSocket clientEndpoint = new DebugClientSocket(this, callbackListener);
+            // Create client side endpoint
+            DebugClientSocket clientEndpoint = new DebugClientSocket(this, callbackListener);
 
-                // Attempt Connect
-                session = container.connectToServer(clientEndpoint,uri);
-
-//                callMeMaybe.session = session;
-//
-//                // Send a message
-//                session.getBasicRemote().sendText("Hello");
-//
-//                // Send another message
-//                session.getBasicRemote().sendText("Goodbye");
-//
-//                // Wait for remote to close
-//                clientEndpoint.awaitClosure();
-//
-//                // Close session
-//                session.close();
-            }
-            finally
-            {
-                // Force lifecycle stop when done with container.
-                // This is to free up threads and resources that the
-                // JSR-356 container allocates. But unfortunately
-                // the JSR-356 spec does not handle lifecycles (yet)
-//                LifeCycle.stop(container);
-            }
+            // Attempt Connect
+            session = container.connectToServer(clientEndpoint,uri);
         }
         catch (Throwable t)
         {
@@ -90,6 +64,11 @@ public class DebugClientAdapter implements IDebugCommandListener {
     @Override
     public void OnDebugCommandReceived(DebugCommand command) {
 
+    }
+
+    @Override
+    public void OnDisconnected() {
+        callbackListener.OnDisconnected();
     }
 
     public int message(DebugCommand command) {

@@ -5,4 +5,6 @@ public interface DebuggerTaskCallback {
 	public abstract void message(DebuggerCallbackMessage message);
 	public abstract void message(CallbackMessage message);
 	public abstract void messageObject(Object message);
+
+    void onDebuggerDisconnected();
 }

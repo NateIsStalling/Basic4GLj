@@ -639,6 +639,11 @@ public class BasicEditor implements MainEditor,
             }
         }
 
+        @Override
+        public void onDebuggerDisconnected() {
+            SetMode(ApMode.AP_STOPPED, mMessage.getVMStatus());
+        }
+
         // TODO 12/2022 migrate handleGLWindow to closing callback handling
 //        private void handleGLWindow() {
 //            if (mBuilder.getVMDriver().isClosing())                // Explicitly closed

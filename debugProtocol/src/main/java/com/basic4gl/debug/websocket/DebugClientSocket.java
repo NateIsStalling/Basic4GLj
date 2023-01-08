@@ -76,6 +76,9 @@ public class DebugClientSocket {
     @OnClose
     public void onWebSocketClose(CloseReason reason)
     {
+        callbackListener.OnDisconnected();
+        commandListener.OnDisconnected();
+
         System.out.println("Socket Closed: " + reason);
         closureLatch.countDown();
     }

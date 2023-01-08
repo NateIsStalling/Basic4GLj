@@ -138,6 +138,11 @@ public class DebuggerCommandAdapter
         // TODO consider removing IDebugCallbackListener from this class; not really used
     }
 
+    @Override
+    public void onDebuggerDisconnected() {
+        // do nothing
+    }
+
     private void message(String json) {
         if (session != null && session.isOpen()) {
             try {
@@ -228,5 +233,10 @@ public class DebuggerCommandAdapter
             default:
                 System.out.println("Ignored unsupported command: " + command.getCommand());
         }
+    }
+
+    @Override
+    public void OnDisconnected() {
+        // do nothing
     }
 }

@@ -106,6 +106,7 @@ implements IDebugCallbackListener, IDebugger {
             adapter.stop();
             remoteDebugger = null;
 
+            mCallbacks.onDebuggerDisconnected();
 //            driver.onFinally();
             //Confirm this thread has completed before a new one can be executed
             if (mCompletionLatch != null) {
@@ -140,6 +141,11 @@ implements IDebugCallbackListener, IDebugger {
     public void OnCallbackReceived(Callback callback) {
         // TODO 12/2022 improve type safety of interface/map callback DTO to domain model
         publish(callback);
+    }
+
+    @Override
+    public void OnDisconnected() {
+        mCallbacks.onDebuggerDisconnected();
     }
 
     @Override
