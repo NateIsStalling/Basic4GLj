@@ -1,8 +1,7 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.debug.protocol.callbacks.StackFrame;
+import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
-import com.basic4gl.debug.protocol.commands.StackTraceCommand;
 import com.basic4gl.desktop.debugger.IDebugger;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.editor.ITabProvider;
@@ -14,7 +13,6 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.stackframe.UserFuncStackFrame;
 import org.fife.ui.rsyntaxtextarea.*;
 
 import javax.swing.*;

@@ -6,6 +6,7 @@ import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.desktop.debugger.*;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
+import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.desktop.util.EditorUtil;
 import com.basic4gl.desktop.util.IFileManager;
@@ -60,14 +61,14 @@ public class BasicEditor implements MainEditor,
 
     List<String> mWatches = new ArrayList<String>();
 
-    IFileManager mFileManager;
+    FileManager mFileManager;
 
     String mLibraryPath;
 
 
     public BasicEditor(
             String libraryPath,
-            IFileManager fileManager,
+            FileManager fileManager,
             IEditorPresenter presenter,
             Preprocessor preprocessor,
             Debugger debugger,
@@ -510,6 +511,24 @@ public class BasicEditor implements MainEditor,
 
     //TODO Reimplement callbacks
     public class DebugCallback implements DebuggerTaskCallback {
+
+        @Override
+        public void onDebuggerConnected() {
+
+            mWorker.beginSessionConfiguration();
+
+            // TODO handle setting breakpoints in onDebuggerInitialized callback
+
+            // TODO separate breakpoints from file editor interfaces
+            for (int i = 0; i < mFileManager.mFileEditors.size(); i++) {
+                FileEditor editor = mFileManager.mFileEditors.get(i);
+                mWorker.setBreakpoints(
+                        editor.getFilePath(),
+                        editor.getBreakpoints());
+            }
+
+            mWorker.commitSessionConfiguration();
+        }
 
         @Override
         public void message(DebuggerCallbackMessage message) {

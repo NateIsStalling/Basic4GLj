@@ -33,6 +33,17 @@ public class Debugger extends IVMDebugger {
     {
         mUserBreakPts.clear();
     }
+    public void ClearUserBreakPts(String filename)
+    {
+        Iterator<SourceUserBreakPt> i = mUserBreakPts.iterator();
+        while (i.hasNext()) {
+            SourceUserBreakPt breakPt = i.next();
+            if (breakPt.sourceFile.equals(filename)) {
+                i.remove();
+            }
+        }
+    }
+
     public void AddUserBreakPt(String filename, int lineNo)
     {
         if (!IsUserBreakPt(filename, lineNo)) {

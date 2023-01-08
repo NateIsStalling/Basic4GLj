@@ -1,8 +1,10 @@
 package com.basic4gl.desktop.debugger;
 
 import com.basic4gl.debug.protocol.callbacks.Callback;
-import com.basic4gl.debug.protocol.callbacks.InstructionPosition;
+import com.basic4gl.debug.protocol.types.InstructionPosition;
+import com.basic4gl.debug.protocol.types.SourceBreakpoint;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
+import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.lib.util.*;
 
 import javax.swing.*;
@@ -73,6 +75,9 @@ implements IDebugCallbackListener, IDebugger {
             adapter.connect();
             remoteDebugger = new RemoteDebugger(adapter);
 
+            mCallbacks.onDebuggerConnected();
+
+
             //Debugger is attached
             while (!this.isCancelled()
 //TODO 1/2023 need to keep connection alive while debugee is idle
@@ -138,6 +143,20 @@ implements IDebugCallbackListener, IDebugger {
     }
 
     @Override
+    public void beginSessionConfiguration() {
+        if (remoteDebugger != null) {
+            remoteDebugger.beginSessionConfiguration();
+        }
+    }
+
+    @Override
+    public void commitSessionConfiguration() {
+        if (remoteDebugger != null) {
+            remoteDebugger.commitSessionConfiguration();
+        }
+    }
+
+    @Override
     public void continueApplication() {
         if (remoteDebugger != null) {
             remoteDebugger.continueApplication();
@@ -184,6 +203,14 @@ implements IDebugCallbackListener, IDebugger {
         if (remoteDebugger != null) {
             remoteDebugger.terminateApplication();
         }
+    }
+
+    @Override
+    public boolean setBreakpoints(String filename, List<Integer> breakpoints) {
+        if (remoteDebugger != null) {
+            return remoteDebugger.setBreakpoints(filename, breakpoints);
+        }
+        return false;
     }
 
     @Override

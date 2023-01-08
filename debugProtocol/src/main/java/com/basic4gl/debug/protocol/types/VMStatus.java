@@ -1,7 +1,4 @@
-package com.basic4gl.debug.protocol.callbacks;
-
-import java.util.ArrayList;
-import java.util.List;
+package com.basic4gl.debug.protocol.types;
 
 public class VMStatus {
     //TODO replace with exited event

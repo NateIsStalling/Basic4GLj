@@ -1,8 +1,7 @@
 package com.basic4gl.library.debug.commands;
 
-import com.basic4gl.debug.protocol.callbacks.StackFrame;
+import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
-import com.basic4gl.debug.protocol.commands.StackTraceCommand;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.stackframe.UserFuncStackFrame;
 import com.google.gson.Gson;

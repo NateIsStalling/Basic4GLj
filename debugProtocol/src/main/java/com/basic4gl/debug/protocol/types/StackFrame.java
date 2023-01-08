@@ -1,4 +1,4 @@
-package com.basic4gl.debug.protocol.callbacks;
+package com.basic4gl.debug.protocol.types;
 
 public class StackFrame {
 

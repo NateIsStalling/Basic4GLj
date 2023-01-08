@@ -8,7 +8,7 @@ import javax.websocket.WebSocketContainer;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.debug.protocol.callbacks.Callback;
-import com.basic4gl.debug.protocol.callbacks.VMStatus;
+import com.basic4gl.debug.protocol.types.VMStatus;
 import com.basic4gl.debug.protocol.commands.*;
 import com.basic4gl.debug.websocket.DebugClientSocket;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
@@ -64,6 +64,8 @@ public class DebuggerCommandAdapter
 
             // Attempt Connect
             session = container.connectToServer(clientEndpoint, debugSocketUri);
+
+            onDebuggerConnected();
         }
         catch (Throwable t)
         {
@@ -90,12 +92,17 @@ public class DebuggerCommandAdapter
     }
 
     @Override
+    public void onDebuggerConnected() {
+        // do nothing
+    }
+
+    @Override
     public void message(DebuggerCallbackMessage message) {
         if (message == null) {
             return;
         }
 
-        com.basic4gl.debug.protocol.callbacks.VMStatus status = null;
+        VMStatus status = null;
         if (message.getVMStatus() != null) {
             status = new VMStatus(
                 message.getVMStatus().isDone(),
@@ -119,7 +126,7 @@ public class DebuggerCommandAdapter
             return;
         }
 
-        com.basic4gl.debug.protocol.callbacks.VMStatus status = null;
+        VMStatus status = null;
         com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage(message.getStatus(), message.getText(), status);
         String json = gson.toJson(callback);
         message(json);
@@ -204,6 +211,11 @@ public class DebuggerCommandAdapter
                 break;
             case DisconnectCommand.COMMAND:
                 stop();
+                break;
+            case SetBreakpointsCommand.COMMAND:
+                SetBreakpointsCommand setBreakpointsCommand = (SetBreakpointsCommand) command;
+                SetBreakpointsHandler setBreakpointsHandler = new SetBreakpointsHandler(mDebugger, mVM);
+                setBreakpointsHandler.handle(setBreakpointsCommand);
                 break;
             case TerminateCommand.COMMAND:
                 mVMDriver.terminate();

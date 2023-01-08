@@ -1,5 +1,6 @@
 package com.basic4gl.debug.protocol.callbacks;
 
+import com.basic4gl.debug.protocol.types.InstructionPosition;
 import com.google.gson.Gson;
 
 /**

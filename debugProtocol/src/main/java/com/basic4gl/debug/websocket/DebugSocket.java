@@ -1,9 +1,7 @@
 package com.basic4gl.debug.websocket;
 
 import com.basic4gl.debug.protocol.callbacks.CallbackMessage;
-import com.basic4gl.debug.protocol.commands.DebugCommand;
-import com.basic4gl.debug.protocol.commands.DebugCommandFactory;
-import com.basic4gl.debug.protocol.commands.DisconnectCommand;
+import com.basic4gl.debug.protocol.commands.*;
 import com.google.gson.Gson;
 
 import javax.websocket.*;
@@ -17,7 +15,13 @@ import java.util.concurrent.CountDownLatch;
 @ServerEndpoint(value = "/debug/")
 public class DebugSocket
 {
+    private static Gson gson = new Gson();
+
     private static Map<UUID, Session> sessionRepository = new HashMap<UUID, Session>();
+
+    private static ArrayList<DebugCommand> initializeCommandsQueue = new ArrayList<>();
+
+    private static boolean configurationDone = false;
 
     private CountDownLatch closureLatch = new CountDownLatch(1);
 
@@ -38,6 +42,13 @@ public class DebugSocket
 
         this.adapter = new DebugCommandFactory(new Gson());
 
+        // send any initialization events to client if configuration is done
+        if (configurationDone) {
+            for (DebugCommand command: initializeCommandsQueue) {
+                sendClient(session, gson.toJson(command));
+            }
+        }
+
         System.out.println("Socket Connected: " + sess);
     }
 
@@ -45,16 +56,34 @@ public class DebugSocket
     public void onWebSocketText(Session sess, String message) throws IOException
     {
         System.out.println("Server Received TEXT message: " + message);
+        DebugCommand command = adapter.FromJson(message);
 
-        Set<Map.Entry<UUID, Session>> sessions = sessionRepository.entrySet();
-        for (Map.Entry<UUID, Session> entry: sessions) {
-            if (!entry.getKey().equals(sessionId)) {
-                sendClient(entry.getValue(), message);
+        // reset pending configuration when initialize command is received
+        if (command != null && Objects.equals(command.getCommand(), InitializeCommand.COMMAND)) {
+            configurationDone = false;
+            initializeCommandsQueue.clear();
+        }
+
+        // configuration complete
+        if (command != null && Objects.equals(command.getCommand(), ConfigurationDoneCommand.COMMAND)) {
+            configurationDone = true;
+
+            // notify others of pending events; may be processed one or more times
+            for (DebugCommand initializeCommand: initializeCommandsQueue) {
+                replyAll(gson.toJson(initializeCommand));
             }
         }
 
+        // stash breakpoints command; debugee should be initialized with them
+        if (command != null && Objects.equals(command.getCommand(), SetBreakpointsCommand.COMMAND)) {
+            if (!configurationDone) {
+                initializeCommandsQueue.add(command);
+            }
+        }
+
+        replyAll(message);
+
         // handle terminated command
-        DebugCommand command = adapter.FromJson(message);
         if (command != null && Objects.equals(command.getCommand(), DisconnectCommand.COMMAND)) {
             sess.close(new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "Debug Session Terminated"));
         }
@@ -99,6 +128,15 @@ public class DebugSocket
             session.getBasicRemote().sendText(str);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void replyAll(String message) {
+        Set<Map.Entry<UUID, Session>> sessions = sessionRepository.entrySet();
+        for (Map.Entry<UUID, Session> entry: sessions) {
+            if (!entry.getKey().equals(sessionId)) {
+                sendClient(entry.getValue(), message);
+            }
         }
     }
 }
