@@ -164,6 +164,7 @@ public class MainWindow implements
         debugServerJarPath = args[1];
 
         System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("apple.awt.application.name", "Basic4GLj" );
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Basic4GLj");
 
         new MainWindow();
