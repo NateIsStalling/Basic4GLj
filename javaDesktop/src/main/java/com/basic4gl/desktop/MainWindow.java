@@ -15,6 +15,7 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
+import com.formdev.flatlaf.FlatLightLaf;
 import org.fife.ui.rsyntaxtextarea.*;
 
 import javax.swing.*;
@@ -166,6 +167,9 @@ public class MainWindow implements
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("apple.awt.application.name", "Basic4GLj" );
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Basic4GLj");
+
+
+        FlatLightLaf.setup();
 
         new MainWindow();
     }
