@@ -15,17 +15,19 @@ import java.net.URI;
 public class DebugClientAdapter implements IDebugCommandListener {
     private WebSocketContainer container;
     private Session session;
-    private IDebugCallbackListener callbackListener;
+    private final IDebugCallbackListener callbackListener;
+    private final String debugServerPort;
 
     private int lastRequestId;
 
-    public DebugClientAdapter(IDebugCallbackListener callbackListener) {
+    public DebugClientAdapter(IDebugCallbackListener callbackListener, String debugServerPort) {
         this.callbackListener = callbackListener;
+        this.debugServerPort = debugServerPort;
     }
 
     public void connect() {
 
-        URI uri = URI.create("ws://localhost:6796/debug/");
+        URI uri = URI.create("ws://localhost:" + debugServerPort + "/debug/");
 
         try
         {

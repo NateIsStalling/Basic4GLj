@@ -23,6 +23,7 @@ public class RunHandler {
     }
 
     public void launchRemote(Library builder, String currentDirectory, String libraryPath) {
+
         //TODO 12/2020 replacing Continue();
 
         // Compile and run program from start
@@ -71,7 +72,8 @@ public class RunHandler {
                 vm.getAbsolutePath(),
                 config.getAbsolutePath(),
                 lineMapping.getAbsolutePath(),
-                currentDirectory
+                currentDirectory,
+                DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT
             };
 
             final String execCommand = "java " + jvmDebugArgs

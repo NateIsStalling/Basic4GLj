@@ -14,18 +14,8 @@ import java.util.List;
 public class RemoteDebugger implements IDebugger {
     private DebugClientAdapter adapter;
 
-
     public RemoteDebugger(DebugClientAdapter adapter) {
         this.adapter = adapter;
-    }
-
-    public void debugStart() {
-        HttpClient httpClient = new HttpClient();
-        try {
-            httpClient.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

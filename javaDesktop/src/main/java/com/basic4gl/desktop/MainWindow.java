@@ -2,6 +2,8 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
+import com.basic4gl.desktop.debugger.DebugServerConstants;
+import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.debugger.IDebugger;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.editor.ITabProvider;
@@ -673,7 +675,7 @@ public class MainWindow implements
         Debugger debugger = new Debugger(preprocessor.LineNumberMap());
         TomVM vm = new TomVM(debugger);
         TomBasicCompiler comp = new TomBasicCompiler(vm);
-        mEditor = new BasicEditor(libraryJarPath, mFileManager, this, preprocessor, debugger, vm, comp);
+        mEditor = new BasicEditor(libraryJarPath, mFileManager, this, preprocessor, debugger, comp);
 
 
         //TODO Confirm this doesn't break if app is ever signed
@@ -694,6 +696,12 @@ public class MainWindow implements
 
         mEditor.InitLibraries();
         ResetProject();
+
+
+        // Warm up the debug server
+        DebugServerFactory.startDebugServer(
+            debugServerJarPath,
+            DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
 
         // Display the window.
         mFrame.pack();

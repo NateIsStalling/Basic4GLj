@@ -2,9 +2,7 @@ package com.basic4gl.desktop.debugger;
 
 import com.basic4gl.debug.protocol.callbacks.Callback;
 import com.basic4gl.debug.protocol.types.InstructionPosition;
-import com.basic4gl.debug.protocol.types.SourceBreakpoint;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
-import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.lib.util.*;
 
 import javax.swing.*;
@@ -15,7 +13,6 @@ public class VmWorker extends SwingWorker<Object, Object>
 implements IDebugCallbackListener, IDebugger {
 
     private final IFileProvider mFiles;
-    private final DebuggerCallbackMessage mMessage;
 
     private RemoteDebugger remoteDebugger;
 
@@ -23,10 +20,8 @@ implements IDebugCallbackListener, IDebugger {
     CountDownLatch mCompletionLatch;
 
     public VmWorker(
-            IFileProvider fileOpener,
-            DebuggerCallbackMessage message) {
+            IFileProvider fileOpener) {
         mFiles = fileOpener;
-        mMessage = message;
     };
 
     public void setCompletionLatch(CountDownLatch latch) {
@@ -71,7 +66,7 @@ implements IDebugCallbackListener, IDebugger {
 //                driver.initLibrary(lib);
 //                lib.init(mVM);
 //            }
-            adapter = new DebugClientAdapter(this);
+            adapter = new DebugClientAdapter(this, DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
             adapter.connect();
             remoteDebugger = new RemoteDebugger(adapter);
 

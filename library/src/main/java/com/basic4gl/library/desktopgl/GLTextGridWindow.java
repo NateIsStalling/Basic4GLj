@@ -118,11 +118,15 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	public static void main(String[] args) {
 
 		//Load VM's state from file
-//		String stateFile = "/Users/nate/Downloads/git/Basic4GL/javaDesktop/basicvm-nehe2";//args[0];// "/" + STATE_FILE
 		String stateFile = args[0];// "/" + STATE_FILE
 		String configFile = args[1];//"/" + CONFIG_FILE;
 		String mappingFile = args[2];
 		String currentDirectory = args[3];
+
+		//TODO determine better way to handle optional params
+		String debugServerPort = args.length > 4
+			? args[4]
+			: null;
 
 		//JOptionPane.showMessageDialog(null, "Waiting...");
 		instance = new GLTextGridWindow();
@@ -197,29 +201,35 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		instance.mVM.Reset();
 		instance.activate();
 
-
+		//TODO this message has too much power
 		instance.mMessage = new DebuggerCallbackMessage(CallbackMessage.WORKING,"", null);
-		instance.debuggerAdapter = new DebuggerCommandAdapter(
-				instance.mMessage,
-				debugger, // TODO add User Breakpoints to params
-				instance,
-				instance.mComp,
-				instance.mVM);
-		URI uri = URI.create("ws://localhost:6796/debug/");
-		instance.debuggerAdapter.connect(uri);
 
-		instance.mDebugger = new DebuggerCallbacks(instance.debuggerAdapter, instance.mMessage, instance.mVM, instance) {
-			@Override
-			public void onPreLoad() {
-				// say hi
-				instance.debuggerAdapter.message(instance.mMessage);
-			}
+		if (debugServerPort != null) {
 
-			@Override
-			public void onPostLoad() {
+			URI debugServerUri = URI.create("ws://localhost:" + debugServerPort + "/debug/");
 
-			}
-		};
+			instance.debuggerAdapter = new DebuggerCommandAdapter(
+					instance.mMessage,
+					debugger,
+					instance,
+					instance.mComp,
+					instance.mVM);
+
+			instance.debuggerAdapter.connect(debugServerUri);
+
+			instance.mDebugger = new DebuggerCallbacks(instance.debuggerAdapter, instance.mMessage, instance.mVM, instance) {
+				@Override
+				public void onPreLoad() {
+					// say hi
+					instance.debuggerAdapter.message(instance.mMessage);
+				}
+
+				@Override
+				public void onPostLoad() {
+
+				}
+			};
+		}
 		instance.start(null);
 	}
 

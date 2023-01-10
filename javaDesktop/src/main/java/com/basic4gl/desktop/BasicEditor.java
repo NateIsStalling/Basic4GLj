@@ -9,7 +9,6 @@ import com.basic4gl.desktop.editor.BasicTokenMaker;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.desktop.util.EditorUtil;
-import com.basic4gl.desktop.util.IFileManager;
 import com.basic4gl.desktop.util.MainEditor;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
@@ -72,7 +71,6 @@ public class BasicEditor implements MainEditor,
             IEditorPresenter presenter,
             Preprocessor preprocessor,
             Debugger debugger,
-            TomVM vm,
             TomBasicCompiler comp) {
         mLibraryPath = libraryPath;
         mFileManager = fileManager;
@@ -303,7 +301,7 @@ public class BasicEditor implements MainEditor,
         }
 
         // VM is not running
-        VMStatus vmStatus = null;
+        final VMStatus vmStatus = null;
         SetMode(ApMode.AP_STOPPED, vmStatus);
 
         // Compile
@@ -392,8 +390,6 @@ public class BasicEditor implements MainEditor,
                 //mDLLs.ProgramPause();
             }
 
-
-
             // Set mode
             mMode = mode;
 
@@ -420,9 +416,7 @@ public class BasicEditor implements MainEditor,
             }
         }
 
-        mWorker = new VmWorker(
-                this,
-                mMessage);
+        mWorker = new VmWorker(this);
 
         mWorker.setCompletionLatch(new CountDownLatch(1));
 
