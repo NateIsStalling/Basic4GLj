@@ -62,9 +62,11 @@ run {
     }
 }
 task runWithLibrary {
+    dependsOn (":debugServer:jar")
     dependsOn (":library:jar") {
         run {
-            args rootProject.ext.get("libraryJarPath")
+            args rootProject.ext.get("libraryJarPath"),
+                rootProject.ext.get("debugServerJarPath")
         }
     }
 }

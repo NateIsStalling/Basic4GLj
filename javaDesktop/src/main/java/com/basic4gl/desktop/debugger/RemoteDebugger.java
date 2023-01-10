@@ -56,8 +56,6 @@ public class RemoteDebugger implements IDebugger {
     public void resumeApplication() {
         DebugCommand command = new ResumeCommand();
         adapter.message(command);
-//        ResumeHandler resumeHandler = new ResumeHandler();
-//        resumeHandler.resume();
     }
 
     @Override

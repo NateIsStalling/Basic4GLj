@@ -38,10 +38,6 @@ jar {
 
     def classPath = configurations.default.files.collect { it.name }.join(' ')
 
-//    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-//    from sourceSets.collect()
-//    archivesBaseName = 'anchor_echo_http_server'
-//    version = '1.0-SNAPSHOT'
     from {
         (configurations.default).collect {
             it.isDirectory() ? it : zipTree(it)

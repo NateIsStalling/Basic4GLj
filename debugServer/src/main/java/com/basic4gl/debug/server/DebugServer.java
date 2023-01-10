@@ -23,7 +23,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
-public class DebuggerServer
+public class DebugServer
 {
     public static void main(String[] args)
     {
@@ -32,8 +32,6 @@ public class DebuggerServer
         connector.setPort(6796);
         server.addConnector(connector);
 
-        // Setup the basic application "context" for this application at "/"
-        // This is also known as the handler tree (in jetty speak)
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
         server.setHandler(context);
@@ -44,10 +42,6 @@ public class DebuggerServer
             WebSocketServerContainerInitializer.configure(context,
                     (servletContext, wsContainer) ->
                     {
-                        // This lambda will be called at the appropriate place in the
-                        // ServletContext initialization phase where you can initialize
-                        // and configure  your websocket container.
-
                         // Configure defaults for container
                         wsContainer.setDefaultMaxTextMessageBufferSize(65535);
 

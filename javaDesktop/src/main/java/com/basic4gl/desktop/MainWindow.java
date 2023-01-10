@@ -153,11 +153,14 @@ public class MainWindow implements
     private boolean mDone;
 
 
+    static String debugServerJarPath;
+    static String libraryJarPath;
 
-    static String libraryPath;
 
     public static void main(String[] args) {
-        libraryPath = args[0];
+        libraryJarPath = args[0];
+        debugServerJarPath = args[1];
+
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Basic4GLj");
 
@@ -670,7 +673,7 @@ public class MainWindow implements
         Debugger debugger = new Debugger(preprocessor.LineNumberMap());
         TomVM vm = new TomVM(debugger);
         TomBasicCompiler comp = new TomBasicCompiler(vm);
-        mEditor = new BasicEditor(libraryPath, mFileManager, this, preprocessor, debugger, vm, comp);
+        mEditor = new BasicEditor(libraryJarPath, mFileManager, this, preprocessor, debugger, vm, comp);
 
 
         //TODO Confirm this doesn't break if app is ever signed
