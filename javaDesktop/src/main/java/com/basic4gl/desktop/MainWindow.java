@@ -4,7 +4,6 @@ import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
-import com.basic4gl.desktop.debugger.IDebugger;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.editor.ITabProvider;
 import com.basic4gl.desktop.editor.IToggleBreakpointListener;
@@ -24,7 +23,6 @@ import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
-import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.*;
@@ -132,12 +130,12 @@ public class MainWindow implements
     JLabel mCursorPosLabel = new JLabel("0:0"); // Cursor Position
 
     // Debugging
-    DefaultListModel mWatchListModel = new DefaultListModel();
-    JList mWatchListBox = new JList(mWatchListModel);
+    DefaultListModel<String> mWatchListModel = new DefaultListModel<>();
+    JList<String> mWatchListBox = new JList<>(mWatchListModel);
     JScrollPane mWatchListScrollPane = new JScrollPane(mWatchListBox);
     JPanel mWatchListFrame = new JPanel();
-    DefaultListModel mGosubListModel = new DefaultListModel();
-    JList mGosubListBox = new JList(mGosubListModel);
+    DefaultListModel<String> mGosubListModel = new DefaultListModel<>();
+    JList<String> mGosubListBox = new JList<>(mGosubListModel);
     JScrollPane mGosubListScrollPane = new JScrollPane(mGosubListBox);
     JPanel mGosubFrame = new JPanel();
 
@@ -145,7 +143,6 @@ public class MainWindow implements
     // Editors
     BasicEditor mEditor;
     FileManager mFileManager;
-    IDebugger mDebugger;
 
     IncludeLinkGenerator mLinkGenerator = new IncludeLinkGenerator(this);
 
@@ -154,12 +151,11 @@ public class MainWindow implements
     // Debugging
     private boolean mDebugMode = false;
 
-    private boolean mDelayScreenSwitch = false;            // Set when stepping. Delays switching to the output window for the first 1000 op-codes.
+    // Set when stepping. Delays switching to the output window for the first 1000 op-codes.
     // (To prevent excessive screen mode switches when debugging full-screen programs.)
-    private String mLine;
-    private boolean mDone;
+    private boolean mDelayScreenSwitch = false;
 
-
+    // TODO create config file
     static String debugServerJarPath;
     static String libraryJarPath;
 
@@ -232,226 +228,127 @@ public class MainWindow implements
         mHelpMenu.add(new JSeparator());
         mHelpMenu.add(mAboutMenuItem);
 
-        mNewMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
-        mNewMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                actionNew();
+        mNewMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK));
+        mNewMenuItem.addActionListener(e -> actionNew());
+        mOpenMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+        mOpenMenuItem.addActionListener(e -> actionOpen());
+        mSaveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+        mSaveMenuItem.addActionListener(e -> actionSave());
+        mSaveAsMenuItem.addActionListener(e -> actionSaveAs());
+        mExportMenuItem.addActionListener(e -> {
+            mEditor.SetMode(ApMode.AP_STOPPED, null);
+            if (mFileManager.editorCount() == 0) {
+                JOptionPane.showMessageDialog(mFrame, "Nothing to export", "Cannot export",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
             }
-        });
-        mOpenMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-        mOpenMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                actionOpen();
-            }
-        });
-        mSaveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
-        mSaveMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                actionSave();
-            }
-        });
-        mSaveAsMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                actionSaveAs();
-            }
-        });
-        mExportMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditor.SetMode(ApMode.AP_STOPPED, null);
-                if (mFileManager.editorCount() == 0) {
-                    JOptionPane.showMessageDialog(mFrame, "Nothing to export", "Cannot export",
-                            JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
 
-                // Clear source code from parser
-                mEditor.mComp.Parser().SourceCode().clear();
+            // Clear source code from parser
+            mEditor.mComp.Parser().SourceCode().clear();
 
-                if (!mEditor.LoadProgramIntoCompiler()) {
-                    mCompStatusLabel.setText(mEditor.mPreprocessor.getError());
-                    return;
-                }
-                ExportDialog dialog = new ExportDialog(MainWindow.this, mEditor.mComp, mEditor.mPreprocessor, mFileManager.mFileEditors);
-                dialog.setLibraries(mEditor.mLibraries, mEditor.mCurrentBuilder);
-                dialog.setVisible(true);
-                mEditor.mCurrentBuilder = dialog.getCurrentBuilder();
+            if (!mEditor.LoadProgramIntoCompiler()) {
+                mCompStatusLabel.setText(mEditor.mPreprocessor.getError());
+                return;
             }
+            ExportDialog dialog = new ExportDialog(MainWindow.this, mEditor.mComp, mEditor.mPreprocessor, mFileManager.mFileEditors);
+            dialog.setLibraries(mEditor.mLibraries, mEditor.mCurrentBuilder);
+            dialog.setVisible(true);
+            mEditor.mCurrentBuilder = dialog.getCurrentBuilder();
         });
-        mUndoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
-        mUndoMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.undo(i);
-            }
+        mUndoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_MASK));
+        mUndoMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.undo(i);
         });
-        mRedoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
-        mRedoMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.redo(i);
-            }
+        mRedoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_MASK));
+        mRedoMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.redo(i);
         });
-        mCutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
-        mCutMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.cut(i);
-            }
+        mCutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK));
+        mCutMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.cut(i);
         });
-        mCopyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
-        mCopyMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.copy(i);
-            }
+        mCopyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK));
+        mCopyMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.copy(i);
         });
-        mPasteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
-        mPasteMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.Paste(i);
-            }
+        mPasteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK));
+        mPasteMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.Paste(i);
         });
-        mSelectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.CTRL_MASK));
-        mSelectAllMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.SelectAll(i);
-            }
+        mSelectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK));
+        mSelectAllMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.SelectAll(i);
         });
         mNextBookmarkMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0));
-        mNextBookmarkMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.SelectNextBookmark(i);
-            }
+        mNextBookmarkMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.SelectNextBookmark(i);
         });
-        mPrevBookmarkMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, ActionEvent.SHIFT_MASK));
-        mPrevBookmarkMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.SelectPreviousBookmark(i);
-            }
+        mPrevBookmarkMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK));
+        mPrevBookmarkMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.SelectPreviousBookmark(i);
         });
 
-        mPlayPauseMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditor.actionRun();
-            }
-        });
+        mPlayPauseMenuItem.addActionListener(e -> mEditor.actionRun());
         mPlayPauseMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
-        mPlayPauseMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditor.actionPlayPause();
-            }
-        });
+        mPlayPauseMenuItem.addActionListener(e -> mEditor.actionPlayPause());
         mStepOverMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0));
-        mStepOverMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mDelayScreenSwitch = true;
-                mEditor.actionStep();
-            }
+        mStepOverMenuItem.addActionListener(e -> {
+            mDelayScreenSwitch = true;
+            mEditor.actionStep();
         });
         mStepIntoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0));
-        mStepIntoMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mDelayScreenSwitch = true;
-                mEditor.actionStepInto();
-            }
+        mStepIntoMenuItem.addActionListener(e -> {
+            mDelayScreenSwitch = true;
+            mEditor.actionStepInto();
         });
-        mStepOutOfMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F10, ActionEvent.SHIFT_MASK));
-        mStepOutOfMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mDelayScreenSwitch = true;
-                mEditor.actionStepOutOf();
-            }
+        mStepOutOfMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_MASK));
+        mStepOutOfMenuItem.addActionListener(e -> {
+            mDelayScreenSwitch = true;
+            mEditor.actionStepOutOf();
         });
 
-        mToggleBookmarkMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, ActionEvent.CTRL_MASK));
-        mToggleBookmarkMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.ToggleBookmark(i);
-            }
+        mToggleBookmarkMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK));
+        mToggleBookmarkMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.ToggleBookmark(i);
         });
         mNextBreakpointMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
-        mNextBreakpointMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.SelectNextBreakpoint(i);
-            }
+        mNextBreakpointMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.SelectNextBreakpoint(i);
         });
-        mPrevBreakpointMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, ActionEvent.SHIFT_MASK));
-        mPrevBreakpointMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.SelectPreviousBreakpoint(i);
-            }
+        mPrevBreakpointMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK));
+        mPrevBreakpointMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.SelectPreviousBreakpoint(i);
         });
-        mToggleBreakpointMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, ActionEvent.CTRL_MASK));
-        mToggleBreakpointMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.getSelectedIndex();
-                mFileManager.toggleBreakpoint(i);
-            }
+        mToggleBreakpointMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.CTRL_MASK));
+        mToggleBreakpointMenuItem.addActionListener(e -> {
+            int i = mTabControl.getSelectedIndex();
+            mFileManager.toggleBreakpoint(i);
         });
-        mDebugMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                actionDebugMode();
-            }
+        mDebugMenuItem.addActionListener(e -> actionDebugMode());
+        mRunMenuItem.addActionListener(e -> mEditor.actionRun());
+        mSettingsMenuItem.addActionListener(e -> {
+            ProjectSettingsDialog dialog = new ProjectSettingsDialog(mFrame);
+            dialog.setLibraries(mEditor.mLibraries, mEditor.mCurrentBuilder);
+            dialog.setVisible(true);
+            mEditor.mCurrentBuilder = dialog.getCurrentBuilder();
         });
-        mRunMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditor.actionRun();
-            }
+        mFunctionListMenuItem.addActionListener(e -> {
+            ReferenceWindow window = new ReferenceWindow(mFrame);
+            window.populate(mEditor.mComp);
+            window.setVisible(true);
         });
-        mSettingsMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ProjectSettingsDialog dialog = new ProjectSettingsDialog(mFrame);
-                dialog.setLibraries(mEditor.mLibraries, mEditor.mCurrentBuilder);
-                dialog.setVisible(true);
-                mEditor.mCurrentBuilder = dialog.getCurrentBuilder();
-            }
-        });
-        mFunctionListMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ReferenceWindow window = new ReferenceWindow(mFrame);
-                window.populate(mEditor.mComp);
-                window.setVisible(true);
-            }
-        });
-        mAboutMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new AboutDialog(mFrame);
-            }
-        });
+        mAboutMenuItem.addActionListener(e -> new AboutDialog(mFrame));
 
         //Debugger
         mWatchListFrame.setLayout(new BorderLayout());
@@ -493,12 +390,7 @@ public class MainWindow implements
             }
         });
 
-        mWatchListBox.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                UpdateWatchHint();
-            }
-        });
+        mWatchListBox.addListSelectionListener(e -> UpdateWatchHint());
 
         mGosubFrame.setLayout(new BorderLayout());
         JLabel callstackLabel = new JLabel("Callstack");
@@ -523,61 +415,16 @@ public class MainWindow implements
         mToolBar.add(mStepInButton);
         mToolBar.add(mStepOutButton);
 
-        mNewButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                actionNew();
-            }
-        });
-        mOpenButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                actionOpen();
-            }
-        });
-        mSaveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                actionSave();
-            }
-        });
-        mRunButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditor.actionRun();
-            }
-        });
+        mNewButton.addActionListener(e -> actionNew());
+        mOpenButton.addActionListener(e -> actionOpen());
+        mSaveButton.addActionListener(e -> actionSave());
+        mRunButton.addActionListener(e -> mEditor.actionRun());
 
-        mDebugButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                actionDebugMode();
-            }
-        });
-        mPlayButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditor.actionPlayPause();
-            }
-        });
-        mStepOverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditor.actionStep();
-            }
-        });
-        mStepInButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditor.actionStepInto();
-            }
-        });
-        mStepOutButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditor.actionStepOutOf();
-            }
-        });
+        mDebugButton.addActionListener(e -> actionDebugMode());
+        mPlayButton.addActionListener(e -> mEditor.actionPlayPause());
+        mStepOverButton.addActionListener(e -> mEditor.actionStep());
+        mStepInButton.addActionListener(e -> mEditor.actionStepInto());
+        mStepOutButton.addActionListener(e -> mEditor.actionStepOutOf());
         mRunButton.setToolTipText("Run the program!");
 
         mToolBar.setAlignmentY(1);
@@ -770,7 +617,6 @@ public class MainWindow implements
 
         //Display the editor
         mTabControl.setSelectedIndex(0);
-
     }
 
 
@@ -814,7 +660,6 @@ public class MainWindow implements
             mFileManager.mFileEditors.clear();
 
             this.addTab();
-
         }
     }
 
@@ -871,7 +716,7 @@ public class MainWindow implements
     }
 
     boolean MultifileCheckSaveChanges() {
-        Mutable<String> description = new Mutable<String>("");
+        Mutable<String> description = new Mutable<>("");
         if (mFileManager.MultifileModified(description)) {
 
             int result = JOptionPane.showConfirmDialog(mFrame,
@@ -1036,7 +881,6 @@ public class MainWindow implements
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 mTabControl.setTitleAt(index, edit.getTitle());
-  //              mTabControl.getTabComponentAt(index).invalidate();
             }
 
             @Override
@@ -1044,7 +888,6 @@ public class MainWindow implements
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 mTabControl.setTitleAt(index, edit.getTitle());
-//                mTabControl.getTabComponentAt(index).invalidate();
             }
         });
 
@@ -1094,34 +937,29 @@ public class MainWindow implements
             // Set focus
             frame.grabFocus();
 
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    int col = c;
-                    // Place cursor
-                    if (r >= 0) {
-                        try {
-                            JTextArea textArea = mFileManager.mFileEditors.get(mTabControl.getSelectedIndex()).editorPane;
-                            int offset = textArea.getLineStartOffset(r);
+            SwingUtilities.invokeLater(() -> {
+                int col1 = c;
+                // Place cursor
+                if (r >= 0) {
+                    try {
+                        JTextArea textArea = mFileManager.mFileEditors.get(mTabControl.getSelectedIndex()).editorPane;
+                        int offset = textArea.getLineStartOffset(r);
 
-                            //Reduce column position if it would place the cursor at the next line
-                            if (textArea.getLineCount() > r + 1
-                                    && offset + col == textArea.getLineStartOffset(r + 1)) {
-                                offset = textArea.getLineStartOffset(r + 1) - 1;
-                            } else {
-                                offset += col;
-                            }
-
-                            frame.setCaretPosition(offset);
-                        } catch (Exception ex) {
-                            //Do nothing
+                        //Reduce column position if it would place the cursor at the next line
+                        if (textArea.getLineCount() > r + 1
+                                && offset + col1 == textArea.getLineStartOffset(r + 1)) {
+                            offset = textArea.getLineStartOffset(r + 1) - 1;
+                        } else {
+                            offset += col1;
                         }
+
+                        frame.setCaretPosition(offset);
+                    } catch (Exception ex) {
+                        //Do nothing
                     }
                 }
             });
-
         }
-
     }
 
 
@@ -1196,8 +1034,7 @@ public class MainWindow implements
 
     @Override
     public void RefreshActions(ApMode mode) {
-        //TODO get main file index
-        int main = 0;
+
 
         // Enable/disable actions to reflect state
         switch (mode) {
@@ -1261,26 +1098,6 @@ public class MainWindow implements
                 break;
 
             case AP_RUNNING:
-                setClosingTabsEnabled(false);
-
-                mSettingsMenuItem.setEnabled(false);
-                mExportMenuItem.setEnabled(false);
-
-                mNewMenuItem.setEnabled(false);
-                mOpenMenuItem.setEnabled(false);
-                mNewButton.setEnabled(false);
-                mOpenButton.setEnabled(false);
-
-                mCutMenuItem.setEnabled(false);
-                mPasteMenuItem.setEnabled(false);
-                mUndoMenuItem.setEnabled(false);
-                mRedoMenuItem.setEnabled(false);
-
-                mFileManager.SetReadOnly(true);
-                mRunMenuItem.setText("Stop Program");
-                mRunButton.setIcon(createImageIcon(ICON_STOP_APP));
-                break;
-
             case AP_PAUSED:
                 setClosingTabsEnabled(false);
 
@@ -1301,6 +1118,7 @@ public class MainWindow implements
                 mRunMenuItem.setText("Stop Program");
                 mRunButton.setIcon(createImageIcon(ICON_STOP_APP));
                 break;
+
         }
     }
 
@@ -1319,13 +1137,7 @@ public class MainWindow implements
             //mDebugPane.setEnabled(true);
             mMainPane.setEnabled(true);
             mMainPane.setBottomComponent(mDebugPane);
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    mDebugPane.setDividerLocation(0.7);
-                }
-            });
+            SwingUtilities.invokeLater(() -> mDebugPane.setDividerLocation(0.7));
         } else {
             mMainPane.remove(mDebugPane);
             //mDebugPane.setEnabled(false);
@@ -1462,6 +1274,8 @@ public class MainWindow implements
 
     private void setClosingTabsEnabled(boolean enabled){
         mTabControl.putClientProperty( TABBED_PANE_TAB_CLOSABLE, enabled );
+        //TODO get main file index
+//        int main = 0;
         //TODO only disable closing the tab with the main program
 //        if (enabled) {
 //            for (int i = 0; i < mTabControl.getTabCount(); i++) {
