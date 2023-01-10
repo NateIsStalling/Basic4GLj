@@ -28,7 +28,7 @@ public class FileEditor {
     private static final int HEADER_BREAK_PT = 1;
 
     private static final String IMAGE_DIRECTORY = "images/";
-    private static final String THEME_DIRECTORY = IMAGE_DIRECTORY + "programmer-art/";
+    private static final String THEME_DIRECTORY = IMAGE_DIRECTORY + "material/";
     private static final String ICON_BOOKMARK = THEME_DIRECTORY + "bookmark.png";
     private static final String ICON_BREAK_PT = THEME_DIRECTORY + "BreakPt.png";
 

@@ -3,7 +3,7 @@ package com.basic4gl.desktop;
 public class Theme {
 
     public static final String IMAGE_DIRECTORY = "images/";
-    public static final String THEME_DIRECTORY = IMAGE_DIRECTORY + "programmer-art/";
+    public static final String THEME_DIRECTORY = IMAGE_DIRECTORY + "material/";
     public static final String ICON_RUN_APP = THEME_DIRECTORY + "icon_run.png";
     public static final String ICON_STOP_APP = THEME_DIRECTORY + "icon_stop.png";
     public static final String ICON_NEW = THEME_DIRECTORY + "icon_new.png";
