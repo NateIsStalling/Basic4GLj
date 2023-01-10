@@ -16,6 +16,8 @@ import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
+import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import org.fife.ui.rsyntaxtextarea.*;
 
 import javax.swing.*;
@@ -29,9 +31,11 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.formdev.flatlaf.FlatClientProperties.*;
 
 /**
  * Created by Nate on 2/24/2015.
@@ -602,8 +606,15 @@ public class MainWindow implements
         UIManager.put("TabbedPane.selected", new Color(220, 220, 220));
         UIManager.put("TabbedPane.contentAreaColor", new Color(220, 220, 220));
         UIManager.put("TabbedPane.shadow", Color.LIGHT_GRAY);
+
+
+        UIManager.put( "TabbedPane.closeHoverForeground", Color.red );
+        UIManager.put( "TabbedPane.closePressedForeground", Color.red );
+        UIManager.put( "TabbedPane.closeHoverBackground", new Color( 0, true ) );
+        UIManager.put( "TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon() );
+
         SwingUtilities.updateComponentTreeUI(mTabControl);
-        mTabControl.setUI(new BasicTabbedPaneUI() {
+        mTabControl.setUI(new FlatTabbedPaneUI() {
             @Override
             protected void installDefaults() {
                 super.installDefaults();
@@ -613,6 +624,33 @@ public class MainWindow implements
 
         // The following line enables to use scrolling tabs.
         mTabControl.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+
+        mTabControl.putClientProperty( TABBED_PANE_TAB_CLOSABLE, true );
+        mTabControl.putClientProperty( TABBED_PANE_TAB_CLOSE_TOOLTIPTEXT, "Close" );
+        mTabControl.putClientProperty( TABBED_PANE_TAB_CLOSE_CALLBACK,
+                (BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
+                    if (tabIndex != -1) {
+                        if (FileCheckSaveChanges(tabIndex)) {
+                            //Clear file's breakpoints
+                            FileEditor editor = mFileManager.mFileEditors.get(tabIndex);
+                            List<Integer> breakpoints = editor.getBreakpoints();
+                            String file = editor.getFilePath();
+
+                            for (Integer line : breakpoints) {
+                                mEditor.toggleBreakpt(file, line);
+                            }
+
+                            //Remove tab
+                            mTabControl.remove(tabIndex);
+                            mFileManager.mFileEditors.remove(tabIndex.intValue());
+
+                            //Refresh controls if no files open
+                            if (mFileManager.editorCount() == 0) {
+                                mEditor.SetMode(ApMode.AP_CLOSED, null);
+                            }
+                        }
+                    }
+                } );
 
         mMainPane.setTopComponent(mTabControl);
         mDebugPane.setLeftComponent(mWatchListFrame);
@@ -990,7 +1028,7 @@ public class MainWindow implements
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 mTabControl.setTitleAt(index, edit.getTitle());
-                mTabControl.getTabComponentAt(index).invalidate();
+//                mTabControl.getTabComponentAt(index).invalidate();
             }
 
             @Override
@@ -998,7 +1036,7 @@ public class MainWindow implements
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 mTabControl.setTitleAt(index, edit.getTitle());
-                mTabControl.getTabComponentAt(index).invalidate();
+  //              mTabControl.getTabComponentAt(index).invalidate();
             }
 
             @Override
@@ -1006,39 +1044,9 @@ public class MainWindow implements
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 mTabControl.setTitleAt(index, edit.getTitle());
-                mTabControl.getTabComponentAt(index).invalidate();
+//                mTabControl.getTabComponentAt(index).invalidate();
             }
         });
-        final ButtonTabComponent tabComponent = new ButtonTabComponent(mTabControl);
-        tabComponent.getButton().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int i = mTabControl.indexOfTabComponent(tabComponent);
-                if (i != -1) {
-                    if (FileCheckSaveChanges(i)) {
-                        //Clear file's breakpoints
-                        FileEditor editor = mFileManager.mFileEditors.get(i);
-                        List<Integer> breakpoints = editor.getBreakpoints();
-                        String file = editor.getFilePath();
-
-                        for (Integer line : breakpoints) {
-                            mEditor.toggleBreakpt(file, line);
-                        }
-
-                        //Remove tab
-                        mTabControl.remove(i);
-                        mFileManager.mFileEditors.remove(i);
-
-                        //Refresh controls if no files open
-                        if (mFileManager.editorCount() == 0) {
-                            mEditor.SetMode(ApMode.AP_CLOSED, null);
-                        }
-                    }
-
-                }
-            }
-        });
-        mTabControl.setTabComponentAt(mTabControl.getTabCount() - 1, tabComponent);
 
         //Allow user to see cursor position
         editor.editorPane.addCaretListener(TrackCaretPosition);
@@ -1232,9 +1240,7 @@ public class MainWindow implements
                 mCompStatusLabel.setText("");
                 break;
             case AP_STOPPED:
-                for (int i = 0; i < mTabControl.getTabCount(); i++) {
-                    ((ButtonTabComponent) mTabControl.getTabComponentAt(i)).getButton().setEnabled(true);
-                }
+                setClosingTabsEnabled(true);
 
                 mSettingsMenuItem.setEnabled(true);
                 mExportMenuItem.setEnabled(true);
@@ -1255,8 +1261,7 @@ public class MainWindow implements
                 break;
 
             case AP_RUNNING:
-                if (main > -1 && main < mTabControl.getTabCount())
-                    ((ButtonTabComponent) mTabControl.getTabComponentAt(main)).getButton().setEnabled(false);
+                setClosingTabsEnabled(false);
 
                 mSettingsMenuItem.setEnabled(false);
                 mExportMenuItem.setEnabled(false);
@@ -1277,9 +1282,7 @@ public class MainWindow implements
                 break;
 
             case AP_PAUSED:
-                if (main > -1 && main < mTabControl.getTabCount()) {
-                    ((ButtonTabComponent) mTabControl.getTabComponentAt(main)).getButton().setEnabled(false);
-                }
+                setClosingTabsEnabled(false);
 
                 mSettingsMenuItem.setEnabled(false);
                 mExportMenuItem.setEnabled(false);
@@ -1455,5 +1458,19 @@ public class MainWindow implements
     @Override
     public void onToggleBreakpoint(String filePath, int line) {
         mEditor.toggleBreakpt(filePath, line);
+    }
+
+    private void setClosingTabsEnabled(boolean enabled){
+        mTabControl.putClientProperty( TABBED_PANE_TAB_CLOSABLE, enabled );
+        //TODO only disable closing the tab with the main program
+//        if (enabled) {
+//            for (int i = 0; i < mTabControl.getTabCount(); i++) {
+//                ((ButtonTabComponent) mTabControl.getTabComponentAt(i)).getButton().setEnabled(true);
+//            }
+//        } else {
+//            if (main > -1 && main < mTabControl.getTabCount()) {
+//                ((ButtonTabComponent) mTabControl.getTabComponentAt(main)).getButton().setEnabled(false);
+//            }
+//        }
     }
 }
