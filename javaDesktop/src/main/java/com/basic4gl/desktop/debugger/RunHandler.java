@@ -2,7 +2,6 @@ package com.basic4gl.desktop.debugger;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.desktop.debugger.IApplicationHost;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 
@@ -23,12 +22,6 @@ public class RunHandler {
         mPreprocessor = preprocessor;
     }
 
-    public void run() {
-        // TODO called from stopped
-//        if (Compile()) {
-//            Continue();
-//        }
-    }
     public void launchRemote(Library builder, String currentDirectory, String libraryPath) {
         //TODO 12/2020 replacing Continue();
 
@@ -42,9 +35,11 @@ public class RunHandler {
             File vm = File.createTempFile("basicvm-", "", tempFolder.toFile());
             File config = File.createTempFile("basicconfig-", "", tempFolder.toFile());
             File lineMapping = File.createTempFile("basiclinemapping-", "", tempFolder.toFile());
+
             try (DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(vm))) {
-//                mComp.VM().Stre
                 mComp.StreamOut(outputStream);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             try (OutputStream outputStream = new FileOutputStream(config)) {
@@ -52,7 +47,6 @@ public class RunHandler {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
 
             try (
                 FileOutputStream outputStream = new FileOutputStream(lineMapping);
@@ -65,15 +59,39 @@ public class RunHandler {
 
             // TODO not sure how to cancel any suspended java apps that fail to connect to a debugger yet
             final String jvmDebugSuspend = "n";//"y"; // y/n whether the JVM should suspend and wait for a debugger to attach or not
-            final String jvmArgs = "-agentlib:jdwp=transport=dt_socket,address=8080,server=y,suspend=" + jvmDebugSuspend + " " +
-                    "-XstartOnFirstThread"; // needed for GLFW
-            final String execCommand = "java " + jvmArgs + " -jar " + libraryPath
-                    + " " + vm.getAbsolutePath()
-                    + " " + config.getAbsolutePath()
-                    + " " + lineMapping.getAbsolutePath()
-                    + " " + currentDirectory;
+            final String jvmDebugPort = "8080";
+            final String jvmDebugArgs = "-agentlib:jdwp=transport=dt_socket," +
+                    "address=" + jvmDebugPort + "," +
+                    "server=y," +
+                    "suspend=" + jvmDebugSuspend;
 
+            final String jvmAdditionalArgs ="-XstartOnFirstThread"; // needed for GLFW
+
+            final String[] runnerArgs = new String[] {
+                vm.getAbsolutePath(),
+                config.getAbsolutePath(),
+                lineMapping.getAbsolutePath(),
+                currentDirectory
+            };
+
+            final String execCommand = "java " + jvmDebugArgs
+                    + " " + jvmAdditionalArgs
+                    + " -jar " + libraryPath
+                    + " " + String.join(" ", runnerArgs);
+
+            // Start output window
             final Process process = Runtime.getRuntime().exec(execCommand);
+
+            // Automatically close GL window when editor closes
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("Shutdown Hook");
+                    process.destroy();
+                }
+            }));
+
+            // Handle output from GL window
             final BufferedReader errinput = new BufferedReader(new InputStreamReader(
                     process.getErrorStream()));
             final BufferedReader input = new BufferedReader(new InputStreamReader(
@@ -106,9 +124,6 @@ public class RunHandler {
                 }
             });
             thread.start();
-//            InputStream errorStream = process.getErrorStream();
-//            while (line = errorStream.s)
-//            while (p)
         } catch (IOException e) {
             e.printStackTrace();
         }
