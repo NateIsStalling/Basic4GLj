@@ -3,6 +3,7 @@ package com.basic4gl.desktop;
 import com.basic4gl.lib.util.Builder;
 import com.basic4gl.lib.util.Configuration;
 import com.basic4gl.lib.util.Library;
+import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -78,7 +79,7 @@ public class ProjectSettingsDialog {
 
 
         SwingUtilities.updateComponentTreeUI(tabbedPane);
-        tabbedPane.setUI(new BasicTabbedPaneUI() {
+        tabbedPane.setUI(new FlatTabbedPaneUI() {
             @Override
             protected void installDefaults() {
                 super.installDefaults();

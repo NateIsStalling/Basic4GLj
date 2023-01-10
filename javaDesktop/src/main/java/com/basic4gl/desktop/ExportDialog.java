@@ -6,6 +6,7 @@ import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.TomVM;
+import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import javax.swing.*;
@@ -88,7 +89,7 @@ public class ExportDialog {
 
 
         SwingUtilities.updateComponentTreeUI(mTabs);
-        mTabs.setUI(new BasicTabbedPaneUI() {
+        mTabs.setUI(new FlatTabbedPaneUI() {
             @Override
             protected void installDefaults() {
                 super.installDefaults();

@@ -3,6 +3,7 @@ package com.basic4gl.desktop;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.FuncSpec;
 import com.basic4gl.runtime.types.ValType;
+import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
@@ -30,7 +31,7 @@ public class ReferenceWindow {
         JTabbedPane tabbedPane = new JTabbedPane();
 
         SwingUtilities.updateComponentTreeUI(tabbedPane);
-        tabbedPane.setUI(new BasicTabbedPaneUI() {
+        tabbedPane.setUI(new FlatTabbedPaneUI() {
             @Override
             protected void installDefaults() {
                 super.installDefaults();
