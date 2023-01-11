@@ -468,7 +468,7 @@ public class MainWindow implements
         UIManager.put("TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon());
 
         UIManager.put("TabbedPane.selectedBackground", Color.white);
-        
+
         SwingUtilities.updateComponentTreeUI(mTabControl);
         mTabControl.setUI(new FlatTabbedPaneUI() {
             @Override
@@ -1021,7 +1021,7 @@ public class MainWindow implements
 
     @Override
     public void onModeChanged(ApMode mode, String statusMsg){
-        if (mode == ApMode.AP_CLOSED) {
+        if (mode != ApMode.AP_CLOSED) {
             mCopyMenuItem.setEnabled(true);
             mSelectAllMenuItem.setEnabled(true);
 
@@ -1065,8 +1065,8 @@ public class MainWindow implements
                 mSettingsMenuItem.setEnabled(false);
                 mExportMenuItem.setEnabled(false);
 
-                mOpenMenuItem.setEnabled(false);
-                mOpenButton.setEnabled(false);
+                mOpenMenuItem.setEnabled(true);
+                mOpenButton.setEnabled(true);
 
                 mCutMenuItem.setEnabled(false);
                 mPasteMenuItem.setEnabled(false);
