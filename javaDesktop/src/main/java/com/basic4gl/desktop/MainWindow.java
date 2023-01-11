@@ -467,6 +467,8 @@ public class MainWindow implements
         UIManager.put("TabbedPane.closeCrossFilledSize", 5.5f);
         UIManager.put("TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon());
 
+        UIManager.put("TabbedPane.selectedBackground", Color.white);
+        
         SwingUtilities.updateComponentTreeUI(mTabControl);
         mTabControl.setUI(new FlatTabbedPaneUI() {
             @Override
