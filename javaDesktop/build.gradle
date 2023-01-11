@@ -26,6 +26,8 @@ dependencies {
 //    implementation RSyntaxTextArea
 
     implementation 'com.formdev:flatlaf:3.0'
+    // for FlatDesktop Java 8 backports
+    implementation 'com.formdev:flatlaf-extras:3.0'
 
     // for debugger
     implementation ('com.google.code.gson:gson:2.10')

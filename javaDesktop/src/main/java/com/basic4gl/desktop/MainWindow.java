@@ -15,8 +15,10 @@ import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.extras.FlatDesktop;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
+import com.formdev.flatlaf.util.SystemInfo;
 import org.fife.ui.rsyntaxtextarea.*;
 
 import javax.swing.*;
@@ -175,6 +177,10 @@ public class MainWindow implements
     }
 
     public MainWindow() {
+        FlatDesktop.setAboutHandler(() -> showAboutDialog());
+        FlatDesktop.setPreferencesHandler(() -> showSettings());
+        FlatDesktop.setQuitHandler(response -> tryCloseWindow());
+
         // Create and set up the window.
         mFrame.setIconImage(createImageIcon(Application.ICON_LOGO_SMALL).getImage());
         mFrame.setPreferredSize(new Dimension(696, 480));
@@ -338,17 +344,21 @@ public class MainWindow implements
         mDebugMenuItem.addActionListener(e -> actionDebugMode());
         mRunMenuItem.addActionListener(e -> mEditor.actionRun());
         mSettingsMenuItem.addActionListener(e -> {
-            ProjectSettingsDialog dialog = new ProjectSettingsDialog(mFrame);
-            dialog.setLibraries(mEditor.mLibraries, mEditor.mCurrentBuilder);
-            dialog.setVisible(true);
-            mEditor.mCurrentBuilder = dialog.getCurrentBuilder();
+            showSettings();
         });
         mFunctionListMenuItem.addActionListener(e -> {
             ReferenceWindow window = new ReferenceWindow(mFrame);
             window.populate(mEditor.mComp);
             window.setVisible(true);
         });
-        mAboutMenuItem.addActionListener(e -> new AboutDialog(mFrame));
+        mAboutMenuItem.addActionListener(e -> showAboutDialog());
+
+        if( SystemInfo.isMacOS ) {
+            // hide menu items that are in macOS application menu
+            mAboutMenuItem.setVisible(false);
+            mSettingsMenuItem.setVisible( false );
+            //TODO mExitMenuItem.setVisible( false );
+        }
 
         //Debugger
         mWatchListFrame.setLayout(new BorderLayout());
@@ -516,22 +526,7 @@ public class MainWindow implements
 
             @Override
             public void windowClosing(WindowEvent e) {
-                // Stop program running
-                if (mEditor.mMode == ApMode.AP_RUNNING || mEditor.mMode == ApMode.AP_PAUSED) {
-                    mEditor.SetMode(ApMode.AP_STOPPED, null);
-                    return;
-                }
-
-                // Save file before closing
-                if (!MultifileCheckSaveChanges())
-                    return;
-
-                //TODO Add libraries
-                // Library cleanup functions
-                //ShutDownTomWindowsBasicLib();
-
-                mFrame.dispose();
-                System.exit(0);
+                tryCloseWindow();
             }
 
             @Override
@@ -599,8 +594,38 @@ public class MainWindow implements
         mFrame.setVisible(true);
     }
 
+    private void showAboutDialog() {
+        new AboutDialog(mFrame);
+    }
+
+    private void showSettings() {
+        ProjectSettingsDialog dialog = new ProjectSettingsDialog(mFrame);
+        dialog.setLibraries(mEditor.mLibraries, mEditor.mCurrentBuilder);
+        dialog.setVisible(true);
+        mEditor.mCurrentBuilder = dialog.getCurrentBuilder();
+    }
+
     public JFrame getFrame() {
         return mFrame;
+    }
+
+    private void tryCloseWindow() {
+        // Stop program running
+        if (mEditor.mMode == ApMode.AP_RUNNING || mEditor.mMode == ApMode.AP_PAUSED) {
+            mEditor.SetMode(ApMode.AP_STOPPED, null);
+            return;
+        }
+
+        // Save file before closing
+        if (!MultifileCheckSaveChanges())
+            return;
+
+        //TODO Add libraries
+        // Library cleanup functions
+        //ShutDownTomWindowsBasicLib();
+
+        mFrame.dispose();
+        System.exit(0);
     }
 
     private void ResetProject() {
