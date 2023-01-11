@@ -462,13 +462,10 @@ public class MainWindow implements
         // Tabs
         UIManager.put("TabbedPane.selected", new Color(220, 220, 220));
         UIManager.put("TabbedPane.contentAreaColor", new Color(220, 220, 220));
-        UIManager.put("TabbedPane.shadow", Color.LIGHT_GRAY);
 
-
-        UIManager.put( "TabbedPane.closeHoverForeground", Color.red );
-        UIManager.put( "TabbedPane.closePressedForeground", Color.red );
-        UIManager.put( "TabbedPane.closeHoverBackground", new Color( 0, true ) );
-        UIManager.put( "TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon() );
+        UIManager.put("TabbedPane.closeArc", 999);
+        UIManager.put("TabbedPane.closeCrossFilledSize", 5.5f);
+        UIManager.put("TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon());
 
         SwingUtilities.updateComponentTreeUI(mTabControl);
         mTabControl.setUI(new FlatTabbedPaneUI() {
@@ -477,7 +474,6 @@ public class MainWindow implements
                 super.installDefaults();
             }
         });
-        mTabControl.setBackground(Color.LIGHT_GRAY);
 
         // The following line enables to use scrolling tabs.
         mTabControl.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
