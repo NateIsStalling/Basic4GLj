@@ -566,19 +566,27 @@ public class Data {
 			assertTrue(false);
 		return 0;
 	}
-
 	// Converting arrays to/from C style arrays
 	public static int ReadArray(Data data, // Data
 								int index, // Index of object in data
 								ValType type, // Data type
-								Byte[] array, // Destination array
+								ByteBuffer buffer, // Destination buffer
 								int maxSize) { // Maximum # of elements
 		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
-		assertTrue(array != null);
+		assertTrue(buffer != null);
 		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return ReadArray(
+					data,
+					index,
+					type,
+					buffer.array(),
+					maxSize);
+		}
 
 		if (type.m_byRef)
 			type.m_pointerLevel--;
@@ -592,71 +600,35 @@ public class Data {
 		int elementSize = data.Data().get(index + 1).getIntVal();
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
-			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++)
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				byte[] array = new byte[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
 				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, Arrays.copyOfRange(array, arrayOffset, array.length), maxSize
+						elementType, array, maxSize
 								- arrayOffset);
+			}
+			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
-				array[i] = Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).byteValue();
+				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).byteValue());
+			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
-				array[i] = Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).byteValue();
+				buffer.put(Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).byteValue());
+			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		return 0;
-	}
-	// Converting arrays to/from C style arrays
-	public static int ReadArray(Data data, // Data
-								int index, // Index of object in data
-								ValType type, // Data type
-								Short[] array, // Destination array
-								int maxSize) { // Maximum # of elements
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
-		assertTrue(type.VirtualPointerLevel() == 0);
-		assertTrue(type.m_arrayLevel > 0);
-		assertTrue(data.IndexValid(index));
-		assertTrue(array != null);
-		assertTrue(maxSize > 0);
-
-		if (type.m_byRef)
-			type.m_pointerLevel--;
-		type.m_byRef = false;
-
-		// Convert Basic4GL format array to C format array
-		ValType elementType = new ValType(type);
-		elementType.m_arrayLevel--;
-
-		int elementCount = data.Data().get(index).getIntVal();
-		int elementSize = data.Data().get(index + 1).getIntVal();
-		if (elementType.m_arrayLevel > 0) {
-			int arrayOffset = 0;
-			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++)
-				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, Arrays.copyOfRange(array, arrayOffset, array.length), maxSize
-								- arrayOffset);
-			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
-			if (elementCount > maxSize)
-				elementCount = maxSize;
-			for (int i = 0; i < elementCount; i++)
-				array[i] = Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).shortValue();
-			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
-			if (elementCount > maxSize)
-				elementCount = maxSize;
-			for (int i = 0; i < elementCount; i++)
-				array[i] = Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).shortValue();
-			return elementCount;
-		} else
-			assertTrue(false);
+		buffer.rewind();
 		return 0;
 	}
 
@@ -664,14 +636,23 @@ public class Data {
 	public static int ReadArray(Data data, // Data
 								int index, // Index of object in data
 								ValType type, // Data type
-								Integer[] array, // Destination array
+								ShortBuffer buffer, // Destination buffer
 								int maxSize) { // Maximum # of elements
 		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
-		assertTrue(array != null);
+		assertTrue(buffer != null);
 		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return ReadArray(
+					data,
+					index,
+					type,
+					buffer.array(),
+					maxSize);
+		}
 
 		if (type.m_byRef)
 			type.m_pointerLevel--;
@@ -685,71 +666,35 @@ public class Data {
 		int elementSize = data.Data().get(index + 1).getIntVal();
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
-			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++)
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				short[] array = new short[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
 				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, Arrays.copyOfRange(array, arrayOffset, array.length), maxSize
+						elementType, array, maxSize
 								- arrayOffset);
+			}
+			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
-				array[i] = Integer.valueOf(data.Data().get(index + 2 + i).getIntVal());
+				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).shortValue());
+			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
-				array[i] = Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).intValue();
+				buffer.put(Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).shortValue());
+			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		return 0;
-	}
-	// Converting arrays to/from C style arrays
-	public static int ReadArray(Data data, // Data
-								int index, // Index of object in data
-								ValType type, // Data type
-								Long[] array, // Destination array
-								int maxSize) { // Maximum # of elements
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
-		assertTrue(type.VirtualPointerLevel() == 0);
-		assertTrue(type.m_arrayLevel > 0);
-		assertTrue(data.IndexValid(index));
-		assertTrue(array != null);
-		assertTrue(maxSize > 0);
-
-		if (type.m_byRef)
-			type.m_pointerLevel--;
-		type.m_byRef = false;
-
-		// Convert Basic4GL format array to C format array
-		ValType elementType = new ValType(type);
-		elementType.m_arrayLevel--;
-
-		int elementCount = data.Data().get(index).getIntVal();
-		int elementSize = data.Data().get(index + 1).getIntVal();
-		if (elementType.m_arrayLevel > 0) {
-			int arrayOffset = 0;
-			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++)
-				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, Arrays.copyOfRange(array, arrayOffset, array.length), maxSize
-								- arrayOffset);
-			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
-			if (elementCount > maxSize)
-				elementCount = maxSize;
-			for (int i = 0; i < elementCount; i++)
-				array[i] = Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).longValue();
-			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
-			if (elementCount > maxSize)
-				elementCount = maxSize;
-			for (int i = 0; i < elementCount; i++)
-				array[i] = Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).longValue();
-			return elementCount;
-		} else
-			assertTrue(false);
+		buffer.rewind();
 		return 0;
 	}
 
@@ -757,14 +702,23 @@ public class Data {
 	public static int ReadArray(Data data, // Data
 								int index, // Index of object in data
 								ValType type, // Data type
-								Double[] array, // Destination array
+								IntBuffer buffer, // Destination buffer
 								int maxSize) { // Maximum # of elements
 		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
-		assertTrue(array != null);
+		assertTrue(buffer != null);
 		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return ReadArray(
+					data,
+					index,
+					type,
+					buffer.array(),
+					maxSize);
+		}
 
 		if (type.m_byRef)
 			type.m_pointerLevel--;
@@ -778,25 +732,35 @@ public class Data {
 		int elementSize = data.Data().get(index + 1).getIntVal();
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
-			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++)
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				int[] array = new int[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
 				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, Arrays.copyOfRange(array, arrayOffset, array.length), maxSize
+						elementType, array, maxSize
 								- arrayOffset);
+			}
+			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
-				array[i] = Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).doubleValue();
+				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()));
+			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
-				array[i] = Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).doubleValue();
+				buffer.put(Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).intValue());
+			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
+		buffer.rewind();
 		return 0;
 	}
 
@@ -804,14 +768,23 @@ public class Data {
 	public static int ReadArray(Data data, // Data
 								int index, // Index of object in data
 								ValType type, // Data type
-								Float[] array, // Destination array
+								LongBuffer buffer, // Destination buffer
 								int maxSize) { // Maximum # of elements
 		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
-		assertTrue(array != null);
+		assertTrue(buffer != null);
 		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return ReadArray(
+					data,
+					index,
+					type,
+					buffer.array(),
+					maxSize);
+		}
 
 		if (type.m_byRef)
 			type.m_pointerLevel--;
@@ -825,25 +798,167 @@ public class Data {
 		int elementSize = data.Data().get(index + 1).getIntVal();
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
-			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++)
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				long[] array = new long[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
 				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, Arrays.copyOfRange(array, arrayOffset, array.length), maxSize
+						elementType, array, maxSize
 								- arrayOffset);
+			}
+			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
-				array[i] = Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).floatValue();
+				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).longValue());
+			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
-				array[i] = Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).floatValue();
+				buffer.put(Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).longValue());
+			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
+		buffer.rewind();
+		return 0;
+	}
+
+	// Converting arrays to/from C style arrays
+	public static int ReadArray(Data data, // Data
+								int index, // Index of object in data
+								ValType type, // Data type
+								DoubleBuffer buffer, // Destination buffer
+								int maxSize) { // Maximum # of elements
+		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.VirtualPointerLevel() == 0);
+		assertTrue(type.m_arrayLevel > 0);
+		assertTrue(data.IndexValid(index));
+		assertTrue(buffer != null);
+		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return ReadArray(
+					data,
+					index,
+					type,
+					buffer.array(),
+					maxSize);
+		}
+
+		if (type.m_byRef)
+			type.m_pointerLevel--;
+		type.m_byRef = false;
+
+		// Convert Basic4GL format array to C format array
+		ValType elementType = new ValType(type);
+		elementType.m_arrayLevel--;
+
+		int elementCount = data.Data().get(index).getIntVal();
+		int elementSize = data.Data().get(index + 1).getIntVal();
+		if (elementType.m_arrayLevel > 0) {
+			int arrayOffset = 0;
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				double[] array = new double[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
+				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
+						elementType, array, maxSize
+								- arrayOffset);
+			}
+			buffer.rewind();
+			return arrayOffset;
+		} else if (elementType.Equals(ValType.VTP_INT)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).doubleValue());
+			buffer.rewind();
+			return elementCount;
+		} else if (elementType.Equals(ValType.VTP_REAL)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				buffer.put(Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).doubleValue());
+			buffer.rewind();
+			return elementCount;
+		} else
+			assertTrue(false);
+		buffer.rewind();
+		return 0;
+	}
+
+	// Converting arrays to/from C style arrays
+	public static int ReadArray(Data data, // Data
+								int index, // Index of object in data
+								ValType type, // Data type
+								FloatBuffer buffer, // Destination buffer
+								int maxSize) { // Maximum # of elements
+		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.VirtualPointerLevel() == 0);
+		assertTrue(type.m_arrayLevel > 0);
+		assertTrue(data.IndexValid(index));
+		assertTrue(buffer != null);
+		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return ReadArray(
+					data,
+					index,
+					type,
+					buffer.array(),
+					maxSize);
+		}
+
+		if (type.m_byRef)
+			type.m_pointerLevel--;
+		type.m_byRef = false;
+
+		// Convert Basic4GL format array to C format array
+		ValType elementType = new ValType(type);
+		elementType.m_arrayLevel--;
+
+		int elementCount = data.Data().get(index).getIntVal();
+		int elementSize = data.Data().get(index + 1).getIntVal();
+		if (elementType.m_arrayLevel > 0) {
+			int arrayOffset = 0;
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				float[] array = new float[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
+				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
+						elementType, array, maxSize
+								- arrayOffset);
+			}
+			buffer.rewind();
+			return arrayOffset;
+		} else if (elementType.Equals(ValType.VTP_INT)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).floatValue());
+			buffer.rewind();
+			return elementCount;
+		} else if (elementType.Equals(ValType.VTP_REAL)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				buffer.put(data.Data().get(index + 2 + i).getRealVal());
+			buffer.rewind();
+			return elementCount;
+		} else
+			assertTrue(false);
+		buffer.rewind();
 		return 0;
 	}
 
@@ -940,6 +1055,8 @@ public class Data {
 			assertTrue(false);
 		return 0;
 	}
+
+
 
 	public static int WriteArray(Data data, // Data
 									 int index, // Index of object in data
@@ -1126,6 +1243,371 @@ public class Data {
 		return 0;
 	}
 
+	public static int WriteArray(Data data, // Data
+								 int index, // Index of object in data
+								 ValType type, // Data type
+								 ByteBuffer buffer, // Destination buffer
+								 int maxSize) { // Maximum # of elements
+		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.VirtualPointerLevel() == 0);
+		assertTrue(type.m_arrayLevel > 0);
+		assertTrue(data.IndexValid(index));
+		assertTrue(buffer != null);
+		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return Data.WriteArray(data, index, type, buffer.array(), maxSize);
+		}
+
+		if (type.m_byRef)
+			type.m_pointerLevel--;
+		type.m_byRef = false;
+
+		// Convert Basic4GL format array to C format array
+		ValType elementType = new ValType(type);
+		elementType.m_arrayLevel--;
+
+		int elementCount = data.Data().get(index).getIntVal();
+		int elementSize = data.Data().get(index + 1).getIntVal();
+		if (elementType.m_arrayLevel > 0) {
+			int arrayOffset = 0;
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				byte[] array = new byte[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
+				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
+						elementType, array, maxSize
+								- arrayOffset);
+			}
+			buffer.rewind();
+			return arrayOffset;
+		} else if (elementType.Equals(ValType.VTP_INT)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i)
+						.setIntVal((int)buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else if (elementType.Equals(ValType.VTP_REAL)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i).setRealVal((float) buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else
+			assertTrue(false);
+		buffer.rewind();
+		return 0;
+	}
+
+	public static int WriteArray(Data data, // Data
+								 int index, // Index of object in data
+								 ValType type, // Data type
+								 ShortBuffer buffer, // Destination buffer
+								 int maxSize) { // Maximum # of elements
+		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.VirtualPointerLevel() == 0);
+		assertTrue(type.m_arrayLevel > 0);
+		assertTrue(data.IndexValid(index));
+		assertTrue(buffer != null);
+		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return Data.WriteArray(data, index, type, buffer.array(), maxSize);
+		}
+
+		if (type.m_byRef)
+			type.m_pointerLevel--;
+		type.m_byRef = false;
+
+		// Convert Basic4GL format array to C format array
+		ValType elementType = new ValType(type);
+		elementType.m_arrayLevel--;
+
+		int elementCount = data.Data().get(index).getIntVal();
+		int elementSize = data.Data().get(index + 1).getIntVal();
+		if (elementType.m_arrayLevel > 0) {
+			int arrayOffset = 0;
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				short[] array = new short[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
+				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
+						elementType, array, maxSize
+								- arrayOffset);
+			}
+			buffer.rewind();
+			return arrayOffset;
+		} else if (elementType.Equals(ValType.VTP_INT)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i)
+						.setIntVal((int) buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else if (elementType.Equals(ValType.VTP_REAL)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i).setRealVal((float) buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else
+			assertTrue(false);
+		buffer.rewind();
+		return 0;
+	}
+
+
+
+	public static int WriteArray(Data data, // Data
+								 int index, // Index of object in data
+								 ValType type, // Data type
+								 IntBuffer buffer, // Destination buffer
+								 int maxSize) { // Maximum # of elements
+		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.VirtualPointerLevel() == 0);
+		assertTrue(type.m_arrayLevel > 0);
+		assertTrue(data.IndexValid(index));
+		assertTrue(buffer != null);
+		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return Data.WriteArray(data, index, type, buffer.array(), maxSize);
+		}
+
+		if (type.m_byRef)
+			type.m_pointerLevel--;
+		type.m_byRef = false;
+
+		// Convert Basic4GL format array to C format array
+		ValType elementType = new ValType(type);
+		elementType.m_arrayLevel--;
+
+		int elementCount = data.Data().get(index).getIntVal();
+		int elementSize = data.Data().get(index + 1).getIntVal();
+		if (elementType.m_arrayLevel > 0) {
+			int arrayOffset = 0;
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				int[] array = new int[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
+				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
+						elementType, array, maxSize
+								- arrayOffset);
+			}
+			buffer.rewind();
+			return arrayOffset;
+		} else if (elementType.Equals(ValType.VTP_INT)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i)
+						.setIntVal(buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else if (elementType.Equals(ValType.VTP_REAL)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i).setRealVal((float) buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else
+			assertTrue(false);
+		buffer.rewind();
+		return 0;
+	}
+	public static int WriteArray(Data data, // Data
+								 int index, // Index of object in data
+								 ValType type, // Data type
+								 LongBuffer buffer, // Destination buffer
+								 int maxSize) { // Maximum # of elements
+		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.VirtualPointerLevel() == 0);
+		assertTrue(type.m_arrayLevel > 0);
+		assertTrue(data.IndexValid(index));
+		assertTrue(buffer != null);
+		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return Data.WriteArray(data, index, type, buffer.array(), maxSize);
+		}
+
+		if (type.m_byRef)
+			type.m_pointerLevel--;
+		type.m_byRef = false;
+
+		// Convert Basic4GL format array to C format array
+		ValType elementType = new ValType(type);
+		elementType.m_arrayLevel--;
+
+		int elementCount = data.Data().get(index).getIntVal();
+		int elementSize = data.Data().get(index + 1).getIntVal();
+		if (elementType.m_arrayLevel > 0) {
+			int arrayOffset = 0;
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				long[] array = new long[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
+				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
+						elementType, array, maxSize
+								- arrayOffset);
+			}
+			buffer.rewind();
+			return arrayOffset;
+		} else if (elementType.Equals(ValType.VTP_INT)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i)
+						.setIntVal((int) buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else if (elementType.Equals(ValType.VTP_REAL)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i).setRealVal((float) buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else
+			assertTrue(false);
+		buffer.rewind();
+		return 0;
+	}
+	public static int WriteArray(Data data, // Data
+								 int index, // Index of object in data
+								 ValType type, // Data type
+								 DoubleBuffer buffer, // Destination buffer
+								 int maxSize) { // Maximum # of elements
+		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.VirtualPointerLevel() == 0);
+		assertTrue(type.m_arrayLevel > 0);
+		assertTrue(data.IndexValid(index));
+		assertTrue(buffer != null);
+		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return Data.WriteArray(data, index, type, buffer.array(), maxSize);
+		}
+
+		if (type.m_byRef)
+			type.m_pointerLevel--;
+		type.m_byRef = false;
+
+		// Convert Basic4GL format array to C format array
+		ValType elementType = new ValType(type);
+		elementType.m_arrayLevel--;
+
+		int elementCount = data.Data().get(index).getIntVal();
+		int elementSize = data.Data().get(index + 1).getIntVal();
+		if (elementType.m_arrayLevel > 0) {
+			int arrayOffset = 0;
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				double[] array = new double[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
+				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
+						elementType, array, maxSize
+								- arrayOffset);
+			}
+			buffer.rewind();
+			return arrayOffset;
+		} else if (elementType.Equals(ValType.VTP_INT)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i)
+						.setIntVal((int) buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else if (elementType.Equals(ValType.VTP_REAL)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i).setRealVal((float) buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else
+			assertTrue(false);
+		buffer.rewind();
+		return 0;
+	}
+	public static int WriteArray(Data data, // Data
+								 int index, // Index of object in data
+								 ValType type, // Data type
+								 FloatBuffer buffer, // Destination buffer
+								 int maxSize) { // Maximum # of elements
+		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.VirtualPointerLevel() == 0);
+		assertTrue(type.m_arrayLevel > 0);
+		assertTrue(data.IndexValid(index));
+		assertTrue(buffer != null);
+		assertTrue(maxSize > 0);
+
+		if (buffer.hasArray()) {
+			return Data.WriteArray(data, index, type, buffer.array(), maxSize);
+		}
+
+		if (type.m_byRef)
+			type.m_pointerLevel--;
+		type.m_byRef = false;
+
+		// Convert Basic4GL format array to C format array
+		ValType elementType = new ValType(type);
+		elementType.m_arrayLevel--;
+
+		int elementCount = data.Data().get(index).getIntVal();
+		int elementSize = data.Data().get(index + 1).getIntVal();
+		if (elementType.m_arrayLevel > 0) {
+			int arrayOffset = 0;
+			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
+				int length = buffer.capacity() - arrayOffset;
+				float[] array = new float[length];
+				buffer.position(arrayOffset);
+				buffer.get(array);
+
+				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
+						elementType, array, maxSize
+								- arrayOffset);
+			}
+			buffer.rewind();
+			return arrayOffset;
+		} else if (elementType.Equals(ValType.VTP_INT)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i)
+						.setIntVal((int) buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else if (elementType.Equals(ValType.VTP_REAL)) {
+			if (elementCount > maxSize)
+				elementCount = maxSize;
+			for (int i = 0; i < elementCount; i++)
+				data.Data().get(index + 2 + i).setRealVal(buffer.get(i));
+			buffer.rewind();
+			return elementCount;
+		} else
+			assertTrue(false);
+		buffer.rewind();
+		return 0;
+	}
+
 	public static int ReadAndZero(
 		Data data, // Data
 		int index, // Index of object in data
@@ -1234,6 +1716,156 @@ public class Data {
 		return size;
 	}
 
+	public static int ReadAndZero(
+			Data data, // Data
+			int index, // Index of object in data
+			ValType type, // Data type
+			ByteBuffer buffer, // Destination buffer
+			int maxSize) { // Maximum # of elements
+
+		if (buffer.hasArray()) {
+			return Data.ReadAndZero(data, index, type, buffer.array(), maxSize);
+		}
+
+		// Note: This template function only works for numeric types
+		// Read array
+		int size = ReadArray(data, index, type, buffer, maxSize);
+
+		// Zero remaining elements
+		buffer.position(size);
+		for (int i = size; i < maxSize; i++)
+			buffer.put((byte) 0);
+
+		buffer.rewind();
+
+		return size;
+	}
+
+	public static int ReadAndZero(
+			Data data, // Data
+			int index, // Index of object in data
+			ValType type, // Data type
+			ShortBuffer buffer, // Destination buffer
+			int maxSize) { // Maximum # of elements
+
+		if (buffer.hasArray()) {
+			return Data.ReadAndZero(data, index, type, buffer.array(), maxSize);
+		}
+
+		// Note: This template function only works for numeric types
+		// Read array
+		int size = ReadArray(data, index, type, buffer, maxSize);
+
+		// Zero remaining elements
+		buffer.position(size);
+		for (int i = size; i < maxSize; i++)
+			buffer.put((short) 0);
+
+		buffer.rewind();
+
+		return size;
+	}
+
+	public static int ReadAndZero(
+			Data data, // Data
+			int index, // Index of object in data
+			ValType type, // Data type
+			IntBuffer buffer, // Destination buffer
+			int maxSize) { // Maximum # of elements
+
+		if (buffer.hasArray()) {
+			return Data.ReadAndZero(data, index, type, buffer.array(), maxSize);
+		}
+
+		// Note: This template function only works for numeric types
+		// Read array
+		int size = ReadArray(data, index, type, buffer, maxSize);
+
+		// Zero remaining elements
+		buffer.position(size);
+		for (int i = size; i < maxSize; i++)
+			buffer.put(0);
+
+		buffer.rewind();
+
+		return size;
+	}
+
+	public static int ReadAndZero(
+			Data data, // Data
+			int index, // Index of object in data
+			ValType type, // Data type
+			LongBuffer buffer, // Destination buffer
+			int maxSize) { // Maximum # of elements
+
+		if (buffer.hasArray()) {
+			return Data.ReadAndZero(data, index, type, buffer.array(), maxSize);
+		}
+
+		// Note: This template function only works for numeric types
+		// Read array
+		int size = ReadArray(data, index, type, buffer, maxSize);
+
+		// Zero remaining elements
+		buffer.position(size);
+		for (int i = size; i < maxSize; i++)
+			buffer.put(0);
+
+		buffer.rewind();
+
+		return size;
+	}
+
+	public static int ReadAndZero(
+			Data data, // Data
+			int index, // Index of object in data
+			ValType type, // Data type
+			DoubleBuffer buffer, // Destination buffer
+			int maxSize) { // Maximum # of elements
+
+		if (buffer.hasArray()) {
+			return Data.ReadAndZero(data, index, type, buffer.array(), maxSize);
+		}
+
+		// Note: This template function only works for numeric types
+		// Read array
+		int size = ReadArray(data, index, type, buffer, maxSize);
+
+		// Zero remaining elements
+		buffer.position(size);
+		for (int i = size; i < maxSize; i++)
+			buffer.put(0);
+
+		buffer.rewind();
+
+		return size;
+	}
+
+	public static int ReadAndZero(
+			Data data, // Data
+			int index, // Index of object in data
+			ValType type, // Data type
+			FloatBuffer buffer, // Destination buffer
+			int maxSize) { // Maximum # of elements
+
+		if (buffer.hasArray()) {
+			return Data.ReadAndZero(data, index, type, buffer.array(), maxSize);
+		}
+
+		// Note: This template function only works for numeric types
+		// Read array
+		int size = ReadArray(data, index, type, buffer, maxSize);
+
+		// Zero remaining elements
+		buffer.position(size);
+		for (int i = size; i < maxSize; i++)
+			buffer.put(0);
+
+		buffer.rewind();
+
+		return size;
+	}
+
 	//TODO Check if Java has built in function for this
 	public static void ZeroArray(ByteBuffer buffer, int size) {
 		if (buffer.hasArray()) {
@@ -1242,6 +1874,7 @@ public class Data {
 			for (int i = 0; i < size; i++)
 				buffer.put((byte) 0);
 		}
+		buffer.rewind();
 	}
 	public static void ZeroArray(ShortBuffer buffer, int size) {
 		if (buffer.hasArray()) {
@@ -1250,6 +1883,7 @@ public class Data {
 			for (int i = 0; i < size; i++)
 				buffer.put((short) 0);
 		}
+		buffer.rewind();
 	}
 	public static void ZeroArray(IntBuffer buffer, int size) {
 		if (buffer.hasArray()) {
@@ -1258,6 +1892,7 @@ public class Data {
 			for (int i = 0; i < size; i++)
 				buffer.put(0);
 		}
+		buffer.rewind();
 	}
 	public static void ZeroArray(LongBuffer buffer, int size) {
 		if (buffer.hasArray()) {
@@ -1266,6 +1901,7 @@ public class Data {
 			for (int i = 0; i < size; i++)
 				buffer.put(0L);
 		}
+		buffer.rewind();
 	}
 	public static void ZeroArray(DoubleBuffer buffer, int size) {
 		if (buffer.hasArray()) {
@@ -1274,6 +1910,7 @@ public class Data {
 			for (int i = 0; i < size; i++)
 				buffer.put(0d);
 		}
+		buffer.rewind();
 	}
 	public static void ZeroArray(FloatBuffer buffer, int size) {
 		if (buffer.hasArray()) {
@@ -1282,6 +1919,7 @@ public class Data {
 			for (int i = 0; i < size; i++)
 				buffer.put(0f);
 		}
+		buffer.rewind();
 	}
 
 	public static void ZeroArray(byte[] array, int size) {
@@ -1308,7 +1946,7 @@ public class Data {
 		for (int i = 0; i < size; i++)
 			array[i] = 0;
 	}
-	
+
 	public static int TempArray(Data data, TypeLibrary typeLib,
 			int elementType, int arraySize) {
 		assertTrue(arraySize > 0);

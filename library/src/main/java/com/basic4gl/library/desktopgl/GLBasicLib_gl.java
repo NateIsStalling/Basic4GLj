@@ -4913,7 +4913,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             double[] a = new double[16];
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
                     doubleBuffer16.rewind();
@@ -4922,7 +4922,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
                         doubleBuffer16.get(a);
             Data.WriteArray(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
 
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
         }
     }
 
@@ -4933,13 +4933,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
             if (!vm.CheckNullRefParam(2)) return;
             a[0] = vm.GetRefParam(2).getRealVal();
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
                     doubleBuffer16.rewind();
             glRectdv(doubleBuffer16, a2);
             vm.GetRefParam(2).setRealVal((float) doubleBuffer16.get(0));
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
         }
     }
 
@@ -4948,7 +4948,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             double[] a = new double[16];
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-            Data.ZeroArray(a2.array(), 16);
+            Data.ZeroArray(a2, 16);
             if (!vm.CheckNullRefParam(1)) return;
             a2.put(0, vm.GetRefParam(1).getRealVal());
                     doubleBuffer16.rewind();
@@ -4969,7 +4969,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             if (!vm.CheckNullRefParam(2)) return;
             a[0] = vm.GetRefParam(2).getRealVal();
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
-            Data.ZeroArray(a2.array(), 16);
+            Data.ZeroArray(a2, 16);
             if (!vm.CheckNullRefParam(1)) return;
             a2.put(0, vm.GetRefParam(1).getRealVal());
                     doubleBuffer16.rewind();
@@ -4994,14 +4994,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
             float[] a = new float[16];
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
             FloatBuffer a2 = BufferUtils.createFloatBuffer(16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
                         floatBuffer16.rewind();
             glRectfv(floatBuffer16, a2);
             Data.WriteArray(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
 
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
         }
     }
 
@@ -5015,11 +5015,11 @@ public class GLBasicLib_gl implements FunctionLibrary {
                         floatBuffer16.put(a);
                         floatBuffer16.rewind();
             FloatBuffer a2 = BufferUtils.createFloatBuffer(16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
             glRectfv(floatBuffer16, a2);
             vm.GetRefParam(2).setRealVal(floatBuffer16.get(0));
 
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
         }
     }
 
@@ -5031,7 +5031,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
                         floatBuffer16.put(a);
                         floatBuffer16.rewind();
             FloatBuffer a2 = BufferUtils.createFloatBuffer(16);
-            Data.ZeroArray(a2.array(), 16);
+            Data.ZeroArray(a2, 16);
             if (!vm.CheckNullRefParam(1)) return;
             a2.put(0, vm.GetRefParam(1).getRealVal());
             glRectfv(floatBuffer16, a2);
@@ -5050,7 +5050,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             if (!vm.CheckNullRefParam(2)) return;
             a[0] = vm.GetRefParam(2).getRealVal();
             FloatBuffer a2 = BufferUtils.createFloatBuffer(16);
-            Data.ZeroArray(a2.array(), 16);
+            Data.ZeroArray(a2, 16);
             if (!vm.CheckNullRefParam(1)) return;
             a2.put(0, vm.GetRefParam(1).getRealVal());
 
@@ -5076,7 +5076,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             IntBuffer a2 = BufferUtils.createIntBuffer(16);
 
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
                     intBuffer16.rewind();
                     intBuffer16.put(a);
                     intBuffer16.rewind();
@@ -5086,7 +5086,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
                         intBuffer16.get(a);
             Data.WriteArray(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
 
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
         }
     }
 
@@ -5098,7 +5098,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             if (!vm.CheckNullRefParam(2)) return;
             a[0] = vm.GetRefParam(2).getIntVal();
             IntBuffer a2 = BufferUtils.createIntBuffer(16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
 
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -5106,7 +5106,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             glRectiv(intBuffer16, a2);
             vm.GetRefParam(2).setIntVal(intBuffer16.get(0));
 
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
         }
     }
 
@@ -5117,7 +5117,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             IntBuffer a2 = BufferUtils.createIntBuffer(16);
 
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-            Data.ZeroArray(a2.array(), 16);
+            Data.ZeroArray(a2, 16);
             if (!vm.CheckNullRefParam(1)) return;
             a2.put(0, vm.GetRefParam(1).getIntVal());
                     intBuffer16.rewind();
@@ -5140,7 +5140,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             if (!vm.CheckNullRefParam(2)) return;
             a[0] = vm.GetRefParam(2).getIntVal();
             IntBuffer a2 = BufferUtils.createIntBuffer(16);
-            Data.ZeroArray(a2.array(), 16);
+            Data.ZeroArray(a2, 16);
             if (!vm.CheckNullRefParam(1)) return;
             a2.put(0, vm.GetRefParam(1).getIntVal());
 
@@ -5166,7 +5166,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             short[] a = new short[16];
             ShortBuffer a2 = BufferUtils.createShortBuffer(16);
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
                     shortBuffer16.rewind();
@@ -5175,7 +5175,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
                         shortBuffer16.get(a);
             Data.WriteArray(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
 
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
         }
     }
 
@@ -5187,14 +5187,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
             if (!vm.CheckNullRefParam(2)) return;
             a[0] = (short) vm.GetRefParam(2).getIntVal();
             ShortBuffer a2 = BufferUtils.createShortBuffer(16);
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
                     shortBuffer16.rewind();
             glRectsv(shortBuffer16, a2);
             vm.GetRefParam(2).setIntVal((int) shortBuffer16.get(0));
 
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2.array(), 16);
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
         }
     }
 
@@ -5205,7 +5205,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             ShortBuffer a2 = BufferUtils.createShortBuffer(16);
 
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-            Data.ZeroArray(a2.array(), 16);
+            Data.ZeroArray(a2, 16);
             if (!vm.CheckNullRefParam(1)) return;
             a2.put(0, (short) vm.GetRefParam(1).getIntVal());
                     shortBuffer16.rewind();
@@ -5226,7 +5226,8 @@ public class GLBasicLib_gl implements FunctionLibrary {
             if (!vm.CheckNullRefParam(2)) return;
             a[0] = (short) vm.GetRefParam(2).getIntVal();
             ShortBuffer a2 = BufferUtils.createShortBuffer(16);
-            Data.ZeroArray(a2.array(), 16);
+
+            Data.ZeroArray(a2, 16);
             if (!vm.CheckNullRefParam(1)) return;
             a2.put(0, (short) vm.GetRefParam(1).getIntVal());
                     shortBuffer16.rewind();
@@ -5279,11 +5280,11 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             if (!Routines.ValidateSizeParam(vm, 2)) return;
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a1.array(), vm.GetIntParam(2));
+            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a1, vm.GetIntParam(2));
             IntBuffer b1 = a1.asIntBuffer();
             b1.limit(vm.GetIntParam(2));
             glSelectBuffer(b1);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a1.array(), vm.GetIntParam(2));
+            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a1, vm.GetIntParam(2));
         }
     }
 
