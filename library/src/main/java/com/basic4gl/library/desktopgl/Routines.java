@@ -32,6 +32,10 @@ public class Routines {
                                     ByteBuffer array,
                                     int maxSize) {
 
+        //TODO 1/2023 there is a bug with array.array() being null since the buffer having a backing array is not guaranteed per the docs;
+        // need to update Data.ReadAndZero to accept the buffers directly instead of arrays...
+        // affects flames01.gb sample program
+
         // Use the appropriate template function for the given type
         switch (cType) {
             case GL11.GL_BYTE:           return Data.ReadAndZero(vm.Data(), vm.GetIntParam(paramIndex), type, array.array(), maxSize);

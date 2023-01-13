@@ -891,7 +891,8 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                     vm.GetIntParam(4),
                     0,
                     vm.GetIntParam(3),
-                    type, data);
+                    type,
+                    data);
             GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         } else {
             glTexImage2D(vm.GetIntParam(9),
