@@ -1,5 +1,7 @@
 package com.basic4gl.debug.websocket;
 
+import com.basic4gl.debug.ConsoleLogger;
+import com.basic4gl.debug.ILogger;
 import com.basic4gl.debug.protocol.callbacks.CallbackMessage;
 import com.basic4gl.debug.protocol.commands.*;
 import com.google.gson.Gson;
@@ -15,6 +17,8 @@ import java.util.concurrent.CountDownLatch;
 @ServerEndpoint(value = "/debug/")
 public class DebugSocket
 {
+    private static ILogger logger = new ConsoleLogger();
+
     private static Gson gson = new Gson();
 
     private static Map<UUID, Session> sessionRepository = new HashMap<UUID, Session>();
@@ -49,13 +53,14 @@ public class DebugSocket
             }
         }
 
-        System.out.println("Socket Connected: " + sess);
+        logger.log("Socket Connected: " + sess);
     }
 
     @OnMessage
     public void onWebSocketText(Session sess, String message) throws IOException
     {
-        System.out.println("Server Received TEXT message: " + message);
+        logger.log("Server Received TEXT message: " + message);
+
         DebugCommand command = adapter.FromJson(message);
 
         // reset pending configuration when initialize command is received
@@ -94,7 +99,7 @@ public class DebugSocket
     {
         sessionRepository.remove(sessionId);
 
-        System.out.println("Socket Closed: " + reason);
+        logger.log("Socket Closed: " + reason);
 
         // Notify other processes debug session has disconnected
         CallbackMessage callbackMessage = new CallbackMessage(CallbackMessage.STOPPED, "closed");
@@ -114,12 +119,12 @@ public class DebugSocket
     @OnError
     public void onWebSocketError(Throwable cause)
     {
-        cause.printStackTrace(System.err);
+        logger.error(cause);
     }
 
     public void awaitClosure() throws InterruptedException
     {
-        System.out.println("Awaiting closure from remote");
+        logger.log("Awaiting closure from remote");
         closureLatch.await();
     }
 
@@ -127,7 +132,7 @@ public class DebugSocket
         try {
             session.getBasicRemote().sendText(str);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 

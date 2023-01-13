@@ -1,5 +1,7 @@
 package com.basic4gl.debug.websocket;
 
+import com.basic4gl.debug.ConsoleLogger;
+import com.basic4gl.debug.ILogger;
 import com.basic4gl.debug.protocol.callbacks.Callback;
 import com.basic4gl.debug.protocol.callbacks.CallbackFactory;
 import com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage;
@@ -15,6 +17,8 @@ import java.util.concurrent.CountDownLatch;
 
 @ClientEndpoint
 public class DebugClientSocket {
+    private static ILogger logger = new ConsoleLogger();
+
     private CountDownLatch closureLatch = new CountDownLatch(1);
     private Session session;
     private DebugCommandFactory commandFactory;
@@ -39,13 +43,13 @@ public class DebugClientSocket {
         this.commandFactory = new DebugCommandFactory(gson);
         this.callbackFactory = new CallbackFactory(gson);
 
-        System.out.println("Socket Connected: " + sess);
+        logger.log("Socket Connected: " + sess);
     }
 
     @OnMessage
     public void onWebSocketText(Session sess, String message) throws IOException
     {
-        System.out.println("Client Received TEXT message: " + message);
+        logger.log("Client Received TEXT message: " + message);
 
         DebugCommand command = commandFactory.FromJson(message);
         Callback callback = callbackFactory.FromJson(message);
@@ -56,19 +60,19 @@ public class DebugClientSocket {
         }
 
         if (command != null && command.isValid()) {
-            System.out.println("Client processing command");
+            logger.log("Client processing command");
             commandListener.OnDebugCommandReceived(command);
         } else if (callback != null) {
-            System.out.println("Client processing callback");
+            logger.log("Client processing callback");
             callbackListener.OnCallbackReceived(callback);
         } else {
             // TODO 12/2022 migrate to separate Callback subtypes to align with DAP spec
             DebuggerCallbackMessage debuggerCallbackMessage = DebuggerCallbackMessage.FromJson(message);
             if (debuggerCallbackMessage != null) {
-                System.out.println("Client processing callback");
+                logger.log("Client processing callback");
                 callbackListener.OnDebugCallbackReceived(debuggerCallbackMessage);
             } else {
-                System.out.println("Client ignoring message");
+                logger.log("Client ignoring message");
             }
         }
     }
@@ -79,19 +83,19 @@ public class DebugClientSocket {
         callbackListener.OnDisconnected();
         commandListener.OnDisconnected();
 
-        System.out.println("Socket Closed: " + reason);
+        logger.log("Socket Closed: " + reason);
         closureLatch.countDown();
     }
 
     @OnError
     public void onWebSocketError(Throwable cause)
     {
-        cause.printStackTrace(System.err);
+        logger.error(cause);
     }
 
     public void awaitClosure() throws InterruptedException
     {
-        System.out.println("Awaiting closure from remote");
+        logger.log("Awaiting closure from remote");
         closureLatch.await();
     }
 
@@ -99,7 +103,7 @@ public class DebugClientSocket {
         try {
             this.session.getBasicRemote().sendText(str);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e);
         }
     }
 }
