@@ -1,5 +1,6 @@
 package com.basic4gl.runtime;
 
+import java.nio.*;
 import java.util.*;
 
 import com.basic4gl.runtime.util.Mutable;
@@ -1125,11 +1126,12 @@ public class Data {
 		return 0;
 	}
 
-	public static int ReadAndZero(Data data, // Data
-									  int index, // Index of object in data
-									  ValType type, // Data type
-									  byte[] array, // Destination array
-									  int maxSize) { // Maximum # of elements
+	public static int ReadAndZero(
+		Data data, // Data
+		int index, // Index of object in data
+		ValType type, // Data type
+		byte[] array, // Destination array
+		int maxSize) { // Maximum # of elements
 
 		// Note: This template function only works for numeric types
 		// Read array
@@ -1142,11 +1144,12 @@ public class Data {
 		return size;
 	}
 
-	public static int ReadAndZero(Data data, // Data
-									  int index, // Index of object in data
-									  ValType type, // Data type
-									  short[] array, // Destination array
-									  int maxSize) { // Maximum # of elements
+	public static int ReadAndZero(
+		Data data, // Data
+		int index, // Index of object in data
+		ValType type, // Data type
+		short[] array, // Destination array
+		int maxSize) { // Maximum # of elements
 
 		// Note: This template function only works for numeric types
 		// Read array
@@ -1159,11 +1162,12 @@ public class Data {
 		return size;
 	}
 
-	public static int ReadAndZero(Data data, // Data
-									  int index, // Index of object in data
-									  ValType type, // Data type
-									  int[] array, // Destination array
-									  int maxSize) { // Maximum # of elements
+	public static int ReadAndZero(
+		Data data, // Data
+		int index, // Index of object in data
+		ValType type, // Data type
+		int[] array, // Destination array
+		int maxSize) { // Maximum # of elements
 
 		// Note: This template function only works for numeric types
 		// Read array
@@ -1176,11 +1180,12 @@ public class Data {
 		return size;
 	}
 
-	public static int ReadAndZero(Data data, // Data
-								  int index, // Index of object in data
-								  ValType type, // Data type
-								  long[] array, // Destination array
-								  int maxSize) { // Maximum # of elements
+	public static int ReadAndZero(
+		Data data, // Data
+		int index, // Index of object in data
+		ValType type, // Data type
+		long[] array, // Destination array
+		int maxSize) { // Maximum # of elements
 
 		// Note: This template function only works for numeric types
 		// Read array
@@ -1193,11 +1198,12 @@ public class Data {
 		return size;
 	}
 
-	public static int ReadAndZero(Data data, // Data
-								  int index, // Index of object in data
-								  ValType type, // Data type
-								  double[] array, // Destination array
-								  int maxSize) { // Maximum # of elements
+	public static int ReadAndZero(
+		Data data, // Data
+		int index, // Index of object in data
+		ValType type, // Data type
+		double[] array, // Destination array
+		int maxSize) { // Maximum # of elements
 
 		// Note: This template function only works for numeric types
 		// Read array
@@ -1210,11 +1216,12 @@ public class Data {
 		return size;
 	}
 
-	public static int ReadAndZero(Data data, // Data
-								  int index, // Index of object in data
-								  ValType type, // Data type
-								  float[] array, // Destination array
-								  int maxSize) { // Maximum # of elements
+	public static int ReadAndZero(
+		Data data, // Data
+		int index, // Index of object in data
+		ValType type, // Data type
+		float[] array, // Destination array
+		int maxSize) { // Maximum # of elements
 
 		// Note: This template function only works for numeric types
 		// Read array
@@ -1223,113 +1230,60 @@ public class Data {
 		// Zero remaining elements
 		for (int i = size; i < maxSize; i++)
 			array[i] = 0;
-
-		return size;
-	}
-
-	public static int ReadAndZero(Data data, // Data
-								  int index, // Index of object in data
-								  ValType type, // Data type
-								  Byte[] array, // Destination array
-								  int maxSize) { // Maximum # of elements
-
-		// Note: This template function only works for numeric types
-		// Read array
-		int size = ReadArray(data, index, type, array, maxSize);
-
-		// Zero remaining elements
-		for (int i = size; i < maxSize; i++)
-			array[i] = (byte) 0;
-
-		return size;
-	}
-
-	public static int ReadAndZero(Data data, // Data
-								  int index, // Index of object in data
-								  ValType type, // Data type
-								  Short[] array, // Destination array
-								  int maxSize) { // Maximum # of elements
-
-		// Note: This template function only works for numeric types
-		// Read array
-		int size = ReadArray(data, index, type, array, maxSize);
-
-		// Zero remaining elements
-		for (int i = size; i < maxSize; i++)
-			array[i] = (short) 0;
-
-		return size;
-	}
-
-	public static int ReadAndZero(Data data, // Data
-								  int index, // Index of object in data
-								  ValType type, // Data type
-								  Integer[] array, // Destination array
-								  int maxSize) { // Maximum # of elements
-
-		// Note: This template function only works for numeric types
-		// Read array
-		int size = ReadArray(data, index, type, array, maxSize);
-
-		// Zero remaining elements
-		for (int i = size; i < maxSize; i++)
-			array[i] = 0;
-
-		return size;
-	}
-
-	public static int ReadAndZero(Data data, // Data
-								  int index, // Index of object in data
-								  ValType type, // Data type
-								  Long[] array, // Destination array
-								  int maxSize) { // Maximum # of elements
-
-		// Note: This template function only works for numeric types
-		// Read array
-		int size = ReadArray(data, index, type, array, maxSize);
-
-		// Zero remaining elements
-		for (int i = size; i < maxSize; i++)
-			array[i] = 0L;
-
-		return size;
-	}
-
-	public static int ReadAndZero(Data data, // Data
-								  int index, // Index of object in data
-								  ValType type, // Data type
-								  Double[] array, // Destination array
-								  int maxSize) { // Maximum # of elements
-
-		// Note: This template function only works for numeric types
-		// Read array
-		int size = ReadArray(data, index, type, array, maxSize);
-
-		// Zero remaining elements
-		for (int i = size; i < maxSize; i++)
-			array[i] = 0d;
-
-		return size;
-	}
-
-	public static int ReadAndZero(Data data, // Data
-								  int index, // Index of object in data
-								  ValType type, // Data type
-								  Float[] array, // Destination array
-								  int maxSize) { // Maximum # of elements
-
-		// Note: This template function only works for numeric types
-		// Read array
-		int size = ReadArray(data, index, type, array, maxSize);
-
-		// Zero remaining elements
-		for (int i = size; i < maxSize; i++)
-			array[i] = 0f;
 
 		return size;
 	}
 
 	//TODO Check if Java has built in function for this
+	public static void ZeroArray(ByteBuffer buffer, int size) {
+		if (buffer.hasArray()) {
+			ZeroArray(buffer.array(), size);
+		} else {
+			for (int i = 0; i < size; i++)
+				buffer.put((byte) 0);
+		}
+	}
+	public static void ZeroArray(ShortBuffer buffer, int size) {
+		if (buffer.hasArray()) {
+			ZeroArray(buffer.array(), size);
+		} else {
+			for (int i = 0; i < size; i++)
+				buffer.put((short) 0);
+		}
+	}
+	public static void ZeroArray(IntBuffer buffer, int size) {
+		if (buffer.hasArray()) {
+			ZeroArray(buffer.array(), size);
+		} else {
+			for (int i = 0; i < size; i++)
+				buffer.put(0);
+		}
+	}
+	public static void ZeroArray(LongBuffer buffer, int size) {
+		if (buffer.hasArray()) {
+			ZeroArray(buffer.array(), size);
+		} else {
+			for (int i = 0; i < size; i++)
+				buffer.put(0L);
+		}
+	}
+	public static void ZeroArray(DoubleBuffer buffer, int size) {
+		if (buffer.hasArray()) {
+			ZeroArray(buffer.array(), size);
+		} else {
+			for (int i = 0; i < size; i++)
+				buffer.put(0d);
+		}
+	}
+	public static void ZeroArray(FloatBuffer buffer, int size) {
+		if (buffer.hasArray()) {
+			ZeroArray(buffer.array(), size);
+		} else {
+			for (int i = 0; i < size; i++)
+				buffer.put(0f);
+		}
+	}
+
 	public static void ZeroArray(byte[] array, int size) {
 		for (int i = 0; i < size; i++)
 			array[i] = 0;
@@ -1354,7 +1308,7 @@ public class Data {
 		for (int i = 0; i < size; i++)
 			array[i] = 0;
 	}
-
+	
 	public static int TempArray(Data data, TypeLibrary typeLib,
 			int elementType, int arraySize) {
 		assertTrue(arraySize > 0);
