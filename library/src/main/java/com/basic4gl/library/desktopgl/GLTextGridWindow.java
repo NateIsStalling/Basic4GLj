@@ -144,11 +144,16 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		Debugger debugger = new Debugger(lineNumberMapping);
 
 //		instance.mFiles = new FileOpener(); //TODO load embedded files
+
+		//Initialize file opener
+		System.out.println("par: " + currentDirectory);
 		instance.mFiles = new FileOpener(""); //TODO load embedded files
-		instance.mFiles.setParentDirectory("/Users/nate/Downloads/git/Basic4GL/javaDesktop/distribution");
+		instance.mFiles.setParentDirectory(currentDirectory);
+
 		instance.mComp = new TomBasicCompiler(new TomVM(debugger));
 		instance.mVM = instance.mComp.VM();
 		instance.mLibraries = new ArrayList<>();
+
 		//TODO Load libraries dynamically
 		//TODO Save/Load list of libraries in order they should be added
 		instance.mLibraries.add(new com.basic4gl.library.standard.Standard());
@@ -171,7 +176,6 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				instance.mComp.AddFunctions(lib, ((FunctionLibrary) lib).specs());
 		}
 
-		System.out.println("par: " + currentDirectory);
 		instance.mFiles.setParentDirectory(currentDirectory);
 
 		try {
@@ -192,10 +196,6 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 			System.err.println("Configuration file could not be loaded");
 		}
 
-
-		//Initialize file opener
-		instance.mFiles = new FileOpener("");
-		instance.mFiles = new FileOpener(currentDirectory);
 		//Initialize window and setup VM
 		instance.mVM.Pause();
 		instance.mVM.Reset();
