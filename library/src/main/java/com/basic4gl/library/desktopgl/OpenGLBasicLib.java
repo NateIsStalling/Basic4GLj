@@ -873,6 +873,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         ByteBuffer data = BufferUtils.createByteBuffer(maxSize * 4);
         Routines.ReadArrayDynamic(vm, 1, new ValType(elementType.m_basicType, (byte) dimensions, (byte) 1, true), type, data, maxSize);
 
+        data.rewind();
         // Generate image
         if (mipmap) {
             //GLU deprecated

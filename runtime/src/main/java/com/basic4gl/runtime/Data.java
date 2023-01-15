@@ -601,34 +601,27 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				byte[] array = new byte[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).byteValue());
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).byteValue());
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 
@@ -667,34 +660,27 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				short[] array = new short[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).shortValue());
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).shortValue());
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 
@@ -733,34 +719,27 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				int[] array = new int[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()));
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).intValue());
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 
@@ -799,34 +778,27 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				long[] array = new long[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).longValue());
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).longValue());
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 
@@ -865,34 +837,27 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				double[] array = new double[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).doubleValue());
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(Float.valueOf(data.Data().get(index + 2 + i).getRealVal()).doubleValue());
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 
@@ -931,34 +896,27 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				float[] array = new float[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).floatValue());
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				buffer.put(data.Data().get(index + 2 + i).getRealVal());
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 
@@ -1272,16 +1230,12 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				byte[] array = new byte[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
@@ -1289,18 +1243,15 @@ public class Data {
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i)
 						.setIntVal((int)buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i).setRealVal((float) buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 
@@ -1333,16 +1284,12 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				short[] array = new short[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
@@ -1350,18 +1297,15 @@ public class Data {
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i)
 						.setIntVal((int) buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i).setRealVal((float) buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 
@@ -1396,16 +1340,12 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				int[] array = new int[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
@@ -1413,18 +1353,15 @@ public class Data {
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i)
 						.setIntVal(buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i).setRealVal((float) buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 	public static int WriteArray(Data data, // Data
@@ -1456,16 +1393,12 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				long[] array = new long[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
@@ -1473,18 +1406,15 @@ public class Data {
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i)
 						.setIntVal((int) buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i).setRealVal((float) buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 	public static int WriteArray(Data data, // Data
@@ -1516,16 +1446,12 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				double[] array = new double[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
@@ -1533,18 +1459,15 @@ public class Data {
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i)
 						.setIntVal((int) buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i).setRealVal((float) buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 	public static int WriteArray(Data data, // Data
@@ -1576,16 +1499,12 @@ public class Data {
 		if (elementType.m_arrayLevel > 0) {
 			int arrayOffset = 0;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
-				int length = buffer.capacity() - arrayOffset;
-				float[] array = new float[length];
 				buffer.position(arrayOffset);
-				buffer.get(array);
 
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
-						elementType, array, maxSize
+						elementType, buffer, maxSize
 								- arrayOffset);
 			}
-			buffer.rewind();
 			return arrayOffset;
 		} else if (elementType.Equals(ValType.VTP_INT)) {
 			if (elementCount > maxSize)
@@ -1593,18 +1512,15 @@ public class Data {
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i)
 						.setIntVal((int) buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else if (elementType.Equals(ValType.VTP_REAL)) {
 			if (elementCount > maxSize)
 				elementCount = maxSize;
 			for (int i = 0; i < elementCount; i++)
 				data.Data().get(index + 2 + i).setRealVal(buffer.get(i));
-			buffer.rewind();
 			return elementCount;
 		} else
 			assertTrue(false);
-		buffer.rewind();
 		return 0;
 	}
 
