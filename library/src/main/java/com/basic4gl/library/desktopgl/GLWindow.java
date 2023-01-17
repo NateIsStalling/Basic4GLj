@@ -197,7 +197,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         }
 
         // Calculate the field of view on the XZ plane
-        m_fovX = (180 / M_PI) * 2 * Math.atan(((double) width / height) * Math.tan(m_fov / 2 * (M_PI / 180)));
+        m_fovX = (180.0 / M_PI) * 2.0 * Math.atan(((double) width / (double) height) * Math.tan(m_fov / 2.0 * (M_PI / 180.0)));
 
 /*    m_width = width;
     m_height = height;
