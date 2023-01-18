@@ -54,13 +54,28 @@ public class TrigBasicLib implements FunctionLibrary {
         negVec              = vm.AddOperatorFunction (new OpNegVec());
         negMatrix           = vm.AddOperatorFunction (new OpNegMatrix());
 
-
     }
     @Override
     public void init(TomBasicCompiler comp){
         // Compiler callback
         comp.AddUnOperExt   (new TrigUnOperatorExtension());
         comp.AddBinOperExt  (new TrigBinOperatorExtension());
+
+        scaleVec            = comp.VM().AddOperatorFunction (new OpScaleVec());
+        scaleVec2           = comp.VM().AddOperatorFunction (new OpScaleVec2());
+        scaleMatrix         = comp.VM().AddOperatorFunction (new OpScaleMatrix());
+        scaleMatrix2        = comp.VM().AddOperatorFunction (new OpScaleMatrix2());
+        divVec              = comp.VM().AddOperatorFunction (new OpDivVec());
+        divMatrix           = comp.VM().AddOperatorFunction (new OpDivMatrix());
+        matrixVec           = comp.VM().AddOperatorFunction (new OpMatrixVec());
+        matrixMatrix        = comp.VM().AddOperatorFunction (new OpMatrixMatrix());
+        vecVec              = comp.VM().AddOperatorFunction (new OpVecVec());
+        vecPlusVec          = comp.VM().AddOperatorFunction (new OpVecPlusVec());
+        vecMinusVec         = comp.VM().AddOperatorFunction (new OpVecMinusVec());
+        matrixPlusMatrix    = comp.VM().AddOperatorFunction (new OpMatrixPlusMatrix());
+        matrixMinusMatrix   = comp.VM().AddOperatorFunction (new OpMatrixMinusMatrix());
+        negVec              = comp.VM().AddOperatorFunction (new OpNegVec());
+        negMatrix           = comp.VM().AddOperatorFunction (new OpNegMatrix());
     }
 
     @Override
