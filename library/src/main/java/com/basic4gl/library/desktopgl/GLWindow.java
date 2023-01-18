@@ -301,9 +301,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         ClearKeyBuffers();
 
         // Defaults
-        m_fov = 60;
-        m_nearClip = 1;
-        m_farClip = 1000;
+        m_fov = 60.0;
+        m_nearClip = -1000.0;
+        m_farClip = 1000.0;
         m_painting = false;
         m_dontPaint = false;
         m_pausePressed = false;
