@@ -694,7 +694,7 @@ public class Data {
 		int elementCount = data.Data().get(index).getIntVal();
 		int elementSize = data.Data().get(index + 1).getIntVal();
 		if (elementType.m_arrayLevel > 0) {
-			int arrayOffset = 0;
+			int arrayOffset = offset;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
 				arrayOffset += ReadArray(data, index + 2 + i * elementSize,
 						elementType, array, maxSize - arrayOffset, arrayOffset);
@@ -1163,7 +1163,7 @@ public class Data {
 		int elementCount = data.Data().get(index).getIntVal();
 		int elementSize = data.Data().get(index + 1).getIntVal();
 		if (elementType.m_arrayLevel > 0) {
-			int arrayOffset = 0;
+			int arrayOffset = offset;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
 						elementType, array, maxSize - arrayOffset, arrayOffset);
@@ -1230,7 +1230,7 @@ public class Data {
 		int elementCount = data.Data().get(index).getIntVal();
 		int elementSize = data.Data().get(index + 1).getIntVal();
 		if (elementType.m_arrayLevel > 0) {
-			int arrayOffset = 0;
+			int arrayOffset = offset;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
 						elementType, array, maxSize - arrayOffset, arrayOffset);
@@ -1297,7 +1297,7 @@ public class Data {
 		int elementCount = data.Data().get(index).getIntVal();
 		int elementSize = data.Data().get(index + 1).getIntVal();
 		if (elementType.m_arrayLevel > 0) {
-			int arrayOffset = 0;
+			int arrayOffset = offset;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
 						elementType, array, maxSize - arrayOffset, arrayOffset);
@@ -1364,7 +1364,7 @@ public class Data {
 		int elementCount = data.Data().get(index).getIntVal();
 		int elementSize = data.Data().get(index + 1).getIntVal();
 		if (elementType.m_arrayLevel > 0) {
-			int arrayOffset = 0;
+			int arrayOffset = offset;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
 						elementType, array, maxSize
@@ -1432,7 +1432,7 @@ public class Data {
 		int elementCount = data.Data().get(index).getIntVal();
 		int elementSize = data.Data().get(index + 1).getIntVal();
 		if (elementType.m_arrayLevel > 0) {
-			int arrayOffset = 0;
+			int arrayOffset = offset;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
 						elementType, array, maxSize - arrayOffset, arrayOffset);
@@ -1499,7 +1499,7 @@ public class Data {
 		int elementCount = data.Data().get(index).getIntVal();
 		int elementSize = data.Data().get(index + 1).getIntVal();
 		if (elementType.m_arrayLevel > 0) {
-			int arrayOffset = 0;
+			int arrayOffset = offset;
 			for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
 				arrayOffset += WriteArray(data, index + 2 + i * elementSize,
 						elementType, array, maxSize
