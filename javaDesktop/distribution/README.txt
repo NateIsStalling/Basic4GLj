@@ -6,8 +6,7 @@
 	License:	New BSD; see Docs folder
 	Requires:	Java 8
 	
-	Site:		www.stallingsoftware.com
-	Contact:	support@stallingsoftware.com
+	Site:		https://github.com/NateIsStalling/Basic4GLj
 	Twitter:	@NateIsStalling
 
 ================================================

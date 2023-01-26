@@ -227,7 +227,7 @@ target.close();
     public String author() { return "Nathaniel Nielsen";}
 
     @Override
-    public String contact() { return "support@stallingsoftware.com";}
+    public String contact() { return "https://github.com/NateIsStalling/Basic4GLj/issues";}
 
     @Override
     public String id() { return "desktopgl";}
