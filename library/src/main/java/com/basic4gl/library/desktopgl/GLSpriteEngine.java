@@ -30,8 +30,9 @@ public class GLSpriteEngine extends GLTextGrid{
             m_head = null;
         }
         protected void finalize(){
-            while (m_head != null)
+            while (m_head != null) {
                 m_head.Remove ();
+            }
         }
         //public ~GLSpriteList ();
     };
@@ -101,8 +102,9 @@ public class GLSpriteEngine extends GLTextGrid{
         // Parallax settings
         float dist = (float) (m_height / (2f * Math.tan (m_fov * Standard.M_PI / 360f)));         // Effective distance of screen
 
-        if (!inFront)
+        if (!inFront) {
             m_cursor = m_sprites.m_head;    // Reset cursor to start of list
+        }
 
         // Render sprites.
         // In front:    Render all remaining sprites
@@ -158,15 +160,17 @@ public class GLSpriteEngine extends GLTextGrid{
     void InternalDraw(byte flags){
 
         // Draw sprites behind text
-        if ((flags & DRAW_SPRITES_BEHIND) != 0)
+        if ((flags & DRAW_SPRITES_BEHIND) != 0) {
             DrawSprites (false);
+        }
 
         // Draw text
         super.InternalDraw(flags);
 
         // Draw sprites in front of text
-        if ((flags & DRAW_SPRITES_INFRONT) != 0)
+        if ((flags & DRAW_SPRITES_INFRONT) != 0) {
             DrawSprites (true);
+        }
     }
 
     public float m_camX, m_camY, m_camZ;
@@ -195,15 +199,26 @@ public class GLSpriteEngine extends GLTextGrid{
     public float Width ()                  { return m_width; }
     public float Height ()                 { return m_height; }
     public float FOV ()                    { return m_fov; }
-    public void SetWidth  (float width)    { if (width != 0)  m_width  = width; }
-    public void SetHeight (float height)   { if (height != 0) m_height = height; }
-    public void SetFOV (float fov)         { if (fov >= 1 && fov <= 175)   m_fov = fov; }
+    public void SetWidth  (float width)    { if (width != 0) {
+        m_width  = width;
+    }
+    }
+    public void SetHeight (float height)   { if (height != 0) {
+        m_height = height;
+    }
+    }
+    public void SetFOV (float fov)         { if (fov >= 1 && fov <= 175) {
+        m_fov = fov;
+    }
+    }
     public void Animate () {
-        for (GLBasicSprite s = m_sprites.m_head; s != null; s = s.Next ())
+        for (GLBasicSprite s = m_sprites.m_head; s != null; s = s.Next ()) {
             s.Animate();
+        }
     }
     public void AnimateFrames() {
-        for (GLBasicSprite s = m_sprites.m_head; s != null; s = s.Next ())
+        for (GLBasicSprite s = m_sprites.m_head; s != null; s = s.Next ()) {
             s.AnimateFrame();
+        }
     }
 }

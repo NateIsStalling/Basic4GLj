@@ -140,19 +140,24 @@ public class BasicEditor implements MainEditor,
         BasicTokenMaker.mFunctions.clear();
         BasicTokenMaker.mConstants.clear();
         BasicTokenMaker.mOperators.clear();
-        for (String s : mComp.m_reservedWords)
+        for (String s : mComp.m_reservedWords) {
             BasicTokenMaker.mReservedWords.add(s);
+        }
 
-        for (String s : mComp.Constants().keySet())
+        for (String s : mComp.Constants().keySet()) {
             BasicTokenMaker.mConstants.add(s);
+        }
 
-        for (String s : mComp.m_functionIndex.keySet())
+        for (String s : mComp.m_functionIndex.keySet()) {
             BasicTokenMaker.mFunctions.add(s);
+        }
 
-        for (String s : mComp.getBinaryOperators())
+        for (String s : mComp.getBinaryOperators()) {
             BasicTokenMaker.mOperators.add(s);
-        for (String s : mComp.getUnaryOperators())
+        }
+        for (String s : mComp.getUnaryOperators()) {
             BasicTokenMaker.mOperators.add(s);
+        }
 
     }
 
@@ -526,8 +531,9 @@ public class BasicEditor implements MainEditor,
 
         @Override
         public void message(DebuggerCallbackMessage message) {
-            if (message == null)
+            if (message == null) {
                 return;
+            }
             boolean updated = mMessage.setMessage(message);
             if (!updated) {
                 return;
@@ -577,8 +583,9 @@ public class BasicEditor implements MainEditor,
 
         @Override
         public void message(CallbackMessage message) {
-            if (message == null)
+            if (message == null) {
                 return;
+            }
             boolean updated = mMessage.setMessage(message, mMessage.getVMStatus());
             if (message.getStatus() == CallbackMessage.WORKING) {
                 // ignore WORKING if no status change

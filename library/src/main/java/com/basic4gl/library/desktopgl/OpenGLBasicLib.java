@@ -77,12 +77,15 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         appWindow.ClearKeyBuffers();
 
 
-        if (textures == null)
+        if (textures == null) {
             textures = new TextureResourceStore();
-        if (images == null)
+        }
+        if (images == null) {
             images = new PointerResourceStore<>();
-        if (displayLists == null)
+        }
+        if (displayLists == null) {
             displayLists = new DisplayListResourceStore();
+        }
 
         textures.Clear();
         images.Clear();
@@ -101,12 +104,15 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     }
     @Override
     public void init(TomBasicCompiler comp){
-        if (textures == null)
+        if (textures == null) {
             textures = new TextureResourceStore();
-        if (images == null)
+        }
+        if (images == null) {
             images = new PointerResourceStore<>();
-        if (displayLists == null)
+        }
+        if (displayLists == null) {
             displayLists = new DisplayListResourceStore();
+        }
     }
 
     @Override
@@ -418,12 +424,15 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         // Return the # of frames in the image
         assertTrue(image != null);
         int w = image.getWidth(), h = image.getHeight();
-        if (frames != null)
+        if (frames != null) {
             frames.put(0, (w / frameWidth) * (h / frameHeight));
-        if (width != null)
+        }
+        if (width != null) {
             width.put(0, w);
-        if (height != null)
+        }
+        if (height != null) {
             height.put(0, h);
+        }
     }
 
     static boolean CheckFrameSize(int frameSize) {
@@ -488,8 +497,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 glGenTextures(texIntBuffer);
 
                 // Store texture handles in texture store object so Basic4GL can track them
-                for (int i = 0; i < frameCount.get(0); i++)
+                for (int i = 0; i < frameCount.get(0); i++) {
                     textures.Store(tex.asIntBuffer().get(i));
+                }
 
                 // Iterate over image in grid pattern, extracting each frame
                 int frame = 0;
@@ -640,8 +650,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         if (image != null) {
 
             // Process image
-            if (usingTransparentCol)
+            if (usingTransparentCol) {
                 image = LoadImage.ApplyTransparentColour(image, transparentCol);
+            }
             //TODO Confirm texture dimensions are powers of 2
             //image = LoadImage.ResizeImageForOpenGL(image);
 
@@ -649,23 +660,27 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             int texture = OpenGLBasicLib.UploadTexture(image);
 
             return texture;
-        } else
+        } else {
             return 0;
+        }
     }
 
     static String FileExt(String filename) {
         String ext = "";
         int i = filename.lastIndexOf('.');
-        if (i > 0)
+        if (i > 0) {
             ext = filename.substring(i + 1);
+        }
         return ext.toLowerCase();
     }
 
     static boolean IsPowerOf2(int value) {
-        if (value <= 0)
+        if (value <= 0) {
             return false;
-        while ((value & 1) == 0)
+        }
+        while ((value & 1) == 0) {
             value >>= 1;
+        }
         return value == 1;
     }
 
@@ -688,8 +703,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         for (y = 0; y < dstHeight; y++) {
             dst.position(y * dstWidth * bytesPerPixel);
             src.position(((y + srcY) * srcWidth + srcX) * bytesPerPixel);
-            for (int x = 0; x < dstWidth * bytesPerPixel; x++)
+            for (int x = 0; x < dstWidth * bytesPerPixel; x++) {
                 dst.put(src.get());
+            }
         }
         //dst.rewind();
     }
@@ -705,9 +721,11 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             Vector<Image> images = LoadImage.SplitUpImageStrip(image, frameXSize, frameYSize);
 
             // Process images
-            if (usingTransparentCol)
-                for (int i = 0; i < images.size(); i++)
+            if (usingTransparentCol) {
+                for (int i = 0; i < images.size(); i++) {
                     images.set(i, LoadImage.ApplyTransparentColour(image, transparentCol));
+                }
+            }
 
             if (truncateBlankFrames) {
                 while (images.size() > 1 && LoadImage.ImageIsBlank(images.lastElement())) {
@@ -716,13 +734,15 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             }
 
             return images;
-        } else
+        } else {
             return new Vector<Image>();
+        }
     }
 
     static void DeleteImages(Vector<Image> images) {
-        for (Image i : images)
+        for (Image i : images) {
             i.getPixels().clear().limit(0);
+        }
         images.clear();
     }
 
@@ -1288,8 +1308,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 vm.FunctionError("Count must be 0 - 65536 (Basic4GL restriction)");
                 return;
             }
-            if (count <= 0)
+            if (count <= 0) {
                 return;
+            }
 
             // Generate some texture handles
             ByteBuffer handles = BufferUtils.createByteBuffer((Integer.SIZE / Byte.SIZE) * 65536);            // 64K should be enough for anybody ;)
@@ -1299,8 +1320,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             glGenTextures(handleBuffer);
 
             // Store textures in resource store (so Basic4GL can track them and ensure they have been deallocated)
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++) {
                 OpenGLBasicLib.textures.Store(handleBuffer.get(i));
+            }
 
             // Store handles in Basic4GL array
             int t[] = new int[count];
@@ -1317,8 +1339,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 vm.FunctionError("Count must be 0 - 65536 (Basic4GL restriction)");
                 return;
             }
-            if (count <= 0)
+            if (count <= 0) {
                 return;
+            }
 
             // Read texture handles
             ByteBuffer handles = BufferUtils.createByteBuffer((Integer.SIZE / Byte.SIZE) * 65536);            // 64K should be enough for anybody ;)
@@ -1417,8 +1440,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             int base = glGenLists(count);
 
             // Track display lists, so Basic4GL can delete them if necessary
-            if (base != GL_INVALID_VALUE || base != GL_INVALID_OPERATION)
+            if (base != GL_INVALID_VALUE || base != GL_INVALID_OPERATION) {
                 OpenGLBasicLib.displayLists.Store(base, count);
+            }
 
             // Return result
             vm.Reg().setIntVal(base);
@@ -1436,8 +1460,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             glDeleteLists(base, count);
 
             // Remove display lists entry (if the range was correctly deleted)
-            if (OpenGLBasicLib.displayLists.Valid(base) && OpenGLBasicLib.displayLists.GetCount(base) <= count)
+            if (OpenGLBasicLib.displayLists.Valid(base) && OpenGLBasicLib.displayLists.GetCount(base) <= count) {
                 OpenGLBasicLib.displayLists.Remove(base);
+            }
         }
     }
 
@@ -1606,10 +1631,12 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         // Calculate frame size (each frame is square, so this represents the width
         // AND height of each frame.)
         int size = frameSize.get(0);
-        while (size > image.getWidth())
+        while (size > image.getWidth()) {
             size >>= 1;
-        while (size > image.getHeight())
+        }
+        while (size > image.getHeight()) {
             size >>= 1;
+        }
         frameSize.put(0, size);
         frames.put(0, (width.get(0) / size) * (height.get(0) / size));
     }
@@ -1662,8 +1689,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 texbuffer.limit(count);
                 glGenTextures(texbuffer);
                 // Store texture handles in texture store object so Basic4GL can track them
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < count; i++) {
                     textures.Store(texbuffer.get(i));
+                }
 
                 // Iterate over image in grid pattern, extracting each frame
                 int frame = 0;

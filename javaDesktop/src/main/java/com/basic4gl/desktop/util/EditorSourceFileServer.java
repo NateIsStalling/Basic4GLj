@@ -19,9 +19,11 @@ public class EditorSourceFileServer implements ISourceFileServer {
 
         // Search for editor with matching filename.
         // Construct an EditorSourceFile object if found.
-        for (int i = 0; i < mFileManager.editorCount(); i++)
-            if (new File(mFileManager.getFilename(i)).getAbsolutePath().equals(filename))
+        for (int i = 0; i < mFileManager.editorCount(); i++) {
+            if (new File(mFileManager.getFilename(i)).getAbsolutePath().equals(filename)) {
                 return new EditorSourceFile(mFileManager.getEditor(i), filename);
+            }
+        }
         return null;
     }
 }

@@ -116,10 +116,12 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
 
 
     static void ClearJoyInfo () {
-        if (joyInfo == null)
+        if (joyInfo == null) {
             joyInfo = BufferUtils.createFloatBuffer(2);
-        if (buttons == null)
+        }
+        if (buttons == null) {
             buttons = BufferUtils.createByteBuffer(JOY_BUTTONS);
+        }
         if (joyInfo.capacity() < 2) {
             joyInfo = BufferUtils.createFloatBuffer(2);
         }
@@ -127,11 +129,13 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
             buttons = BufferUtils.createByteBuffer(JOY_BUTTONS);
         }
         joyInfo.rewind();
-        for (int i = 0; i < joyInfo.capacity(); i++)
+        for (int i = 0; i < joyInfo.capacity(); i++) {
             joyInfo.put(0);
+        }
         buttons.rewind();
-        for (int i = 0; i < buttons.capacity(); i++)
+        for (int i = 0; i < buttons.capacity(); i++) {
             buttons.put((byte)0);
+        }
         joyInfo.put(xPosIndex, 0x8000);
         joyInfo.put(yPosIndex, 0x8000);
     }
@@ -142,13 +146,15 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
         joyInfo = glfwGetJoystickAxes(GLFW_JOYSTICK_1);
         buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1);
         if (joyInfo == null || joyInfo.capacity() < 2 ||
-                buttons == null || buttons.capacity() < JOY_BUTTONS)
+                buttons == null || buttons.capacity() < JOY_BUTTONS) {
             ClearJoyInfo();
+        }
     }
 
     static void AutoPoll () {
-        if (autoPoll)
+        if (autoPoll) {
             PollJoystick ();
+        }
     }
 
 
@@ -239,8 +245,9 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
         public void run(TomVM vm) {
             AutoPoll ();
             int index = vm.GetIntParam (1);
-            if (index >= 0 && index < JOY_BUTTONS)
-            vm.Reg ().setIntVal ( buttons != null && buttons.get(index) != 0 ? -1 : 0);
+            if (index >= 0 && index < JOY_BUTTONS) {
+                vm.Reg ().setIntVal ( buttons != null && buttons.get(index) != 0 ? -1 : 0);
+            }
         }
     }
     public final class WrapJoyKeys  implements Function {

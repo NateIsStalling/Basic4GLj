@@ -1935,7 +1935,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglAreTexturesResident implements Function {
 
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 3)) return;
+            if (!Routines.ValidateSizeParam(vm, 3)) {
+                return;
+            }
 
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
             ByteBuffer a2 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
@@ -2043,7 +2045,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             doubleBuffer16.rewind();
             doubleBuffer16.put(a);
             doubleBuffer16.put(0, vm.GetRefParam(1).getRealVal());
@@ -2080,7 +2084,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             byte[] a = new byte[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (byte) vm.GetRefParam(1).getIntVal();
                     byteBuffer16.rewind();
                     byteBuffer16.put(a);
@@ -2117,7 +2123,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             doubleBuffer16.rewind();
             doubleBuffer16.put(a);
@@ -2154,7 +2162,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16]; 
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -2191,7 +2201,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -2228,7 +2240,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -2265,7 +2279,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             byte[] a = new byte[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (byte) vm.GetRefParam(1).getIntVal();
                     byteBuffer16.rewind();
                     byteBuffer16.put(a);
@@ -2302,7 +2318,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -2339,7 +2357,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -2376,7 +2396,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             byte[] a = new byte[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (byte) vm.GetRefParam(1).getIntVal();
                     byteBuffer16.rewind();
                     byteBuffer16.put(a);
@@ -2413,7 +2435,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -2450,7 +2474,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -2487,7 +2513,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -2524,7 +2552,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -2561,7 +2591,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             byte[] a = new byte[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (byte) vm.GetRefParam(1).getIntVal();
                     byteBuffer16.rewind();
                     byteBuffer16.put(a);
@@ -2598,7 +2630,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -2635,7 +2669,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -2739,7 +2775,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglDrawArrays implements Function {
 
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 1)) return;
+            if (!Routines.ValidateSizeParam(vm, 1)) {
+                return;
+            }
             glDrawArrays(vm.GetIntParam(3), vm.GetIntParam(2), vm.GetIntParam(1));
         }
     }
@@ -2779,7 +2817,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             byte[] a = new byte[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (byte) vm.GetRefParam(1).getIntVal();
                     byteBuffer16.rewind();
                     byteBuffer16.put(a);
@@ -2837,7 +2877,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -2874,7 +2916,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -2911,7 +2955,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -2948,7 +2994,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -2989,7 +3037,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglFeedbackBuffer implements Function {
 
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 3)) return;
+            if (!Routines.ValidateSizeParam(vm, 3)) {
+                return;
+            }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
 
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a1.array(), vm.GetIntParam(3));
@@ -3043,7 +3093,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -3080,7 +3132,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -3122,7 +3176,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             byte[] a = new byte[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (byte) vm.GetRefParam(1).getIntVal();
                     byteBuffer16.rewind();
                     byteBuffer16.put(a);
@@ -3152,7 +3208,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -3182,7 +3240,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -3218,7 +3278,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -3246,7 +3308,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -3274,7 +3338,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -3302,7 +3368,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -3330,7 +3398,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -3358,7 +3428,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -3387,7 +3459,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -3415,7 +3489,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -3445,7 +3521,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -3474,7 +3552,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -3504,7 +3584,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -3533,7 +3615,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -3562,7 +3646,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -3591,7 +3677,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -3619,7 +3707,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -3647,7 +3737,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -3694,7 +3786,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -3728,7 +3822,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -3764,7 +3860,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -3799,7 +3897,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -3835,7 +3935,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             byte[] a = new byte[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (byte) vm.GetRefParam(1).getIntVal();
                     byteBuffer16.rewind();
                     byteBuffer16.put(a);
@@ -3896,7 +3998,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -3930,7 +4034,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -3964,7 +4070,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -3999,7 +4107,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -4104,7 +4214,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -4140,7 +4252,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -4186,7 +4300,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             byte[] a = new byte[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (byte) vm.GetRefParam(1).getIntVal();
                     byteBuffer16.rewind();
                     byteBuffer16.put(a);
@@ -4220,7 +4336,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -4254,7 +4372,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
             floatBuffer16.rewind();
             floatBuffer16.put(a);
@@ -4288,7 +4408,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -4323,7 +4445,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -4429,7 +4553,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglPrioritizeTextures implements Function {
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 3)) return;
+            if (!Routines.ValidateSizeParam(vm, 3)) {
+                return;
+            }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
             ByteBuffer a2 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a1.array(), vm.GetIntParam(3));
@@ -4496,7 +4622,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -4531,7 +4659,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -4565,7 +4695,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -4602,7 +4734,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -4637,7 +4771,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -4671,7 +4807,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -4705,7 +4843,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -4739,7 +4879,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -4775,7 +4917,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -4812,7 +4956,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -4848,7 +4994,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -4884,7 +5032,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -4930,7 +5080,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(2)) return;
+            if (!vm.CheckNullRefParam(2)) {
+                return;
+            }
             a[0] = vm.GetRefParam(2).getRealVal();
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
@@ -4949,7 +5101,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
             Data.ZeroArray(a2, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a2.put(0, vm.GetRefParam(1).getRealVal());
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -4966,11 +5120,15 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(2)) return;
+            if (!vm.CheckNullRefParam(2)) {
+                return;
+            }
             a[0] = vm.GetRefParam(2).getRealVal();
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
             Data.ZeroArray(a2, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a2.put(0, vm.GetRefParam(1).getRealVal());
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -5009,7 +5167,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(2)) return;
+            if (!vm.CheckNullRefParam(2)) {
+                return;
+            }
             a[0] = vm.GetRefParam(2).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -5032,7 +5192,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                         floatBuffer16.rewind();
             FloatBuffer a2 = BufferUtils.createFloatBuffer(16);
             Data.ZeroArray(a2, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a2.put(0, vm.GetRefParam(1).getRealVal());
             glRectfv(floatBuffer16, a2);
                         floatBuffer16.rewind();
@@ -5047,11 +5209,15 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(2)) return;
+            if (!vm.CheckNullRefParam(2)) {
+                return;
+            }
             a[0] = vm.GetRefParam(2).getRealVal();
             FloatBuffer a2 = BufferUtils.createFloatBuffer(16);
             Data.ZeroArray(a2, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a2.put(0, vm.GetRefParam(1).getRealVal());
 
                         floatBuffer16.rewind();
@@ -5095,7 +5261,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(2)) return;
+            if (!vm.CheckNullRefParam(2)) {
+                return;
+            }
             a[0] = vm.GetRefParam(2).getIntVal();
             IntBuffer a2 = BufferUtils.createIntBuffer(16);
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
@@ -5118,7 +5286,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
             Data.ZeroArray(a2, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a2.put(0, vm.GetRefParam(1).getIntVal());
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -5137,11 +5307,15 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(2)) return;
+            if (!vm.CheckNullRefParam(2)) {
+                return;
+            }
             a[0] = vm.GetRefParam(2).getIntVal();
             IntBuffer a2 = BufferUtils.createIntBuffer(16);
             Data.ZeroArray(a2, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a2.put(0, vm.GetRefParam(1).getIntVal());
 
                     intBuffer16.rewind();
@@ -5184,7 +5358,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(2)) return;
+            if (!vm.CheckNullRefParam(2)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(2).getIntVal();
             ShortBuffer a2 = BufferUtils.createShortBuffer(16);
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
@@ -5206,7 +5382,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
             Data.ZeroArray(a2, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a2.put(0, (short) vm.GetRefParam(1).getIntVal());
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -5223,12 +5401,16 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(2)) return;
+            if (!vm.CheckNullRefParam(2)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(2).getIntVal();
             ShortBuffer a2 = BufferUtils.createShortBuffer(16);
 
             Data.ZeroArray(a2, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a2.put(0, (short) vm.GetRefParam(1).getIntVal());
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -5278,7 +5460,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglSelectBuffer implements Function {
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 2)) return;
+            if (!Routines.ValidateSizeParam(vm, 2)) {
+                return;
+            }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
             Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), a1, vm.GetIntParam(2));
             IntBuffer b1 = a1.asIntBuffer();
@@ -5337,7 +5521,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -5373,7 +5559,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -5410,7 +5598,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -5445,7 +5635,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -5479,7 +5671,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -5513,7 +5707,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -5547,7 +5743,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -5581,7 +5779,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -5615,7 +5815,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -5649,7 +5851,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -5683,7 +5887,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -5717,7 +5923,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -5751,7 +5959,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -5785,7 +5995,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -5819,7 +6031,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -5853,7 +6067,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (byte) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -5887,7 +6103,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -5921,7 +6139,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -5955,7 +6175,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -5989,7 +6211,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -6023,7 +6247,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -6057,7 +6283,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -6091,7 +6319,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -6137,7 +6367,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -6171,7 +6403,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -6205,7 +6439,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -6239,7 +6475,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -6273,7 +6511,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -6308,7 +6548,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
 
                         floatBuffer16.rewind();
@@ -6343,7 +6585,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -6377,7 +6621,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);
@@ -6411,7 +6657,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                     doubleBuffer16.rewind();
                     doubleBuffer16.put(a);
@@ -6445,7 +6693,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             float[] a = new float[16]; 
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getRealVal();
                         floatBuffer16.rewind();
                         floatBuffer16.put(a);
@@ -6479,7 +6729,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             int[] a = new int[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = vm.GetRefParam(1).getIntVal();
                     intBuffer16.rewind();
                     intBuffer16.put(a);
@@ -6513,7 +6765,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             Data.ZeroArray(a, 16);
-            if (!vm.CheckNullRefParam(1)) return;
+            if (!vm.CheckNullRefParam(1)) {
+                return;
+            }
             a[0] = (short) vm.GetRefParam(1).getIntVal();
                     shortBuffer16.rewind();
                     shortBuffer16.put(a);

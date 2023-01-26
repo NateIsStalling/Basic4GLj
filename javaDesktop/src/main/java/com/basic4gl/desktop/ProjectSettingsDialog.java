@@ -49,15 +49,17 @@ public class ProjectSettingsDialog {
         applyButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (mCurrentBuilder != -1)
+                if (mCurrentBuilder != -1) {
                     applyConfig();
+                }
             }
         });
         acceptButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (mCurrentBuilder != -1)
+                if (mCurrentBuilder != -1) {
                     applyConfig();
+                }
                 ProjectSettingsDialog.this.setVisible(false);
             }
         });
@@ -163,8 +165,9 @@ public class ProjectSettingsDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JComboBox cb = (JComboBox) e.getSource();
-                if (cb == null)
+                if (cb == null) {
                     return;
+                }
                 mCurrentBuilder = cb.getSelectedIndex();
                 Library builder = mLibraries.get(mBuilders.get(mCurrentBuilder));
 
@@ -184,8 +187,9 @@ public class ProjectSettingsDialog {
                     val = mCurrentConfig.getValue(i);
 
                     //Override parameter type if field contains multiple values
-                    if (field.length > 1)
+                    if (field.length > 1) {
                         param = Configuration.PARAM_CHOICE;
+                    }
 
                     switch (param) {
                         case Configuration.PARAM_HEADING:
@@ -235,8 +239,9 @@ public class ProjectSettingsDialog {
                             mConfigPane.add(label);
                             label.setHorizontalAlignment(SwingConstants.LEFT);
                             JComboBox comboBox = new JComboBox();
-                            for (int j = 1; j < field.length; j++)
+                            for (int j = 1; j < field.length; j++) {
                                 comboBox.addItem(field[j]);
+                            }
                             comboBox.setSelectedIndex(Integer.valueOf(val));
                             mSettingComponents.add(comboBox);
                             mConfigPane.add(comboBox);
@@ -253,15 +258,17 @@ public class ProjectSettingsDialog {
 
     private void applyConfig(){
         String val;
-        if (mCurrentConfig == null)
+        if (mCurrentConfig == null) {
             return;
+        }
         Builder builder = (Builder)mLibraries.get(mBuilders.get(mCurrentBuilder));
         int param;
         for (int i = 0; i < mCurrentConfig.getSettingCount(); i++) {
             param = mCurrentConfig.getParamType(i);
             val = "0";
-            if (mSettingComponents.get(i) == null)
+            if (mSettingComponents.get(i) == null) {
                 continue;
+            }
             switch (param) {
                 case Configuration.PARAM_STRING:
                     val = ((JTextField)mSettingComponents.get(i)).getText();

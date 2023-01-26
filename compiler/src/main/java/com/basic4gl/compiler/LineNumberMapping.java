@@ -24,9 +24,9 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
 	{
 
 		// Is file already in list?
-		if (filenameLookup.containsKey(filename))
-			return filenameLookup.get(filename);
-		else {
+		if (filenameLookup.containsKey(filename)) {
+            return filenameLookup.get(filename);
+        } else {
 			// Otherwise, add to list
 			int index = filenames.size();
 			filenameLookup.put(filename, index);
@@ -40,18 +40,20 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
 		// Is source line valid and does it correspond to a line inside the
 		// specified file?
 		if (lineNo >= 0 && lineNo < mapping.size() &&
-				mapping.get(lineNo).getFileIndex() == fileIndex)
-			return mapping.get(lineNo).getFileLineNo();
-		else
-			return -1;
+				mapping.get(lineNo).getFileIndex() == fileIndex) {
+            return mapping.get(lineNo).getFileLineNo();
+        } else {
+            return -1;
+        }
 	}
 	int MainFromSource(int fileIndex, int fileLineNo)
 	{
 		// Check line is valid
-		if (fileLineNo >= 0 && fileLineNo < reverseMapping.get(fileIndex).size())
-			return reverseMapping.get(fileIndex).get(fileLineNo);
-		else
-			return -1;
+		if (fileLineNo >= 0 && fileLineNo < reverseMapping.get(fileIndex).size()) {
+            return reverseMapping.get(fileIndex).get(fileLineNo);
+        } else {
+            return -1;
+        }
 	}
 
 	// Mapping building
@@ -71,8 +73,9 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
 		mapping.add(new SourcePos(fileIndex, fileLineNo));
 
 		// Append reverse-mapping entry
-		while (reverseMapping.get(fileIndex).size() <= fileLineNo)
-			reverseMapping.get(fileIndex).add(-1);
+		while (reverseMapping.get(fileIndex).size() <= fileLineNo) {
+            reverseMapping.get(fileIndex).add(-1);
+        }
 		reverseMapping.get(fileIndex).set(fileLineNo, mainLineNo);
 	}
 

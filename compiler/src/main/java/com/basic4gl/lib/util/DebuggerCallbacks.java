@@ -65,8 +65,9 @@ public abstract class DebuggerCallbacks {
 //                System.out.println("paused");
 
                 //Check if program was stopped while paused
-                if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.Done() || mDriver.isClosing())
+                if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.Done() || mDriver.isClosing()) {
                     break;
+                }
             }
 //        }
         } catch (InterruptedException e){//Do nothing

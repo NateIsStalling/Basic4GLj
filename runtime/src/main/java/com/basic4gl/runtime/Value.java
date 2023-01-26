@@ -86,11 +86,13 @@ public class Value implements Streamable{
 		// 1. We are unioning two data types together.
 		// 2. We don't know at stream time what data type it is.
 		//buffer.order( ByteOrder.LITTLE_ENDIAN);
-		if (mIsInt)
-			stream.writeInt(m_intVal);
-		else
+		if (mIsInt) {
+            stream.writeInt(m_intVal);
+        } else
 			//stream.write(ByteBuffer.allocate(4).putFloat(m_realVal).array());
-			stream.writeFloat(m_realVal);
+        {
+            stream.writeFloat(m_realVal);
+        }
 	}
 
 	public boolean StreamIn(DataInputStream stream) throws IOException{

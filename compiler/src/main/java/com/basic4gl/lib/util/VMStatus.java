@@ -21,8 +21,12 @@ public class VMStatus {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         VMStatus vmStatus = (VMStatus) o;
         return done == vmStatus.done && hasError == vmStatus.hasError && Objects.equals(error, vmStatus.error);
     }

@@ -87,23 +87,26 @@ public class DiskFile implements ISourceFile {
 				b = mBuffer.get();
 				crFlag = (b == '\r'); //Set return character flag
 
-				if (b != '\n' && !crFlag)
-					lineBuffer[i] = b;
+				if (b != '\n' && !crFlag) {
+                    lineBuffer[i] = b;
+                }
 
 				//Check if return character is followed by a new line character 
 				if (crFlag){
 					b = mBuffer.get();
 					//If return character was not followed by a new line char or null char
 					//then reset the buffer's position to before the last byte read
-					if (b != '\n' && b != 0)
-						mBuffer.position(mBuffer.position() - 1);
+					if (b != '\n' && b != 0) {
+                        mBuffer.position(mBuffer.position() - 1);
+                    }
 				}
 				i++;
 			}while (mBuffer.hasRemaining() && b != '\n' && b != 0 && !crFlag);
 
 			return new String(Arrays.copyOfRange(lineBuffer, 0, i));
-		} else
-			return "";
+		} else {
+            return "";
+        }
 	}
 
 	@Override

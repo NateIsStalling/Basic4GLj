@@ -41,8 +41,9 @@ public class Preprocessor extends HasErrorState {
     {
 
         // Close all open files
-        for (int i = 0; i < openFiles.size(); i++)
+        for (int i = 0; i < openFiles.size(); i++) {
             openFiles.get(i).Release();
+        }
         openFiles.clear();
     }
     ISourceFile OpenFile(String filename)
@@ -51,8 +52,9 @@ public class Preprocessor extends HasErrorState {
         // Query file servers in order until one returns an open file.
     	for(ISourceFileServer server: fileServers){
             ISourceFile file = server.OpenSourceFile(filename);
-            if (file != null)
+            if (file != null) {
                 return file;
+            }
         }
 
         // Unable to open file
@@ -63,8 +65,9 @@ public class Preprocessor extends HasErrorState {
     /// Construct the preprocessor. Pass in 0 or more file servers to initialise.
     public Preprocessor(int serverCount, ISourceFileServer... server){
         // Register source file servers
-        for (int i = 0; i < serverCount; i++)
+        for (int i = 0; i < serverCount; i++) {
             fileServers.add(server[i]);
+        }
     }
     protected void finalize() //virtual ~Preprocessor();
     {
@@ -153,7 +156,9 @@ public class Preprocessor extends HasErrorState {
     public LineNumberMapping LineNumberMap() { return lineNumberMap; }
 
     String separatorsToSystem(String res) {
-        if (res==null) return null;
+        if (res==null) {
+            return null;
+        }
         if (File.separatorChar=='\\') {
             // From Windows to Linux/Mac
             return res.replace('/', File.separatorChar);

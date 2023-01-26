@@ -21,9 +21,11 @@ public abstract class ResourceStore<T> extends Resources {
 	public void Clear() {
 
 		// Delete each individual element
-		for (int i = 0; i < m_store.Array().size(); i++)
-			if (m_store.ValAllocated().get(i))
-				DeleteElement(i);
+		for (int i = 0; i < m_store.Array().size(); i++) {
+            if (m_store.ValAllocated().get(i)) {
+                DeleteElement(i);
+            }
+        }
 
 		// Clear store
 		m_store.Clear();
@@ -51,9 +53,9 @@ public abstract class ResourceStore<T> extends Resources {
 	}
 
 	public int Alloc(T element) {
-		if (element.equals(m_store.BlankElement()))
-			return -1;
-		else {
+		if (element.equals(m_store.BlankElement())) {
+            return -1;
+        } else {
 			int index = Alloc();
 			setValue(index, element);
 			return index;

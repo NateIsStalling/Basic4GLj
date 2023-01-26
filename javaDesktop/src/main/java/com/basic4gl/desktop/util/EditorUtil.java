@@ -4,8 +4,9 @@ public class EditorUtil {
     public static String getVariableAt(String line, int x) {
         char[] l = line.toCharArray();
         // Find character
-        if (x < 1 || x > l.length || l[x] <= ' ')
+        if (x < 1 || x > l.length || l[x] <= ' ') {
             return "";
+        }
 
         // Scan to right of word
         int right = x + 1;

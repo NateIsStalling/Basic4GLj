@@ -96,8 +96,9 @@ public class ValType implements Streamable{
 				default:
 					return "???";
 			}
-		} else
+		} else {
 			return "ADVANCED TYPE";
+		}
 	}
 
 	public ValType Set(int type) {
@@ -128,14 +129,18 @@ public class ValType implements Streamable{
 		// Return true if types match
 		// Compare basic types and array and pointer levels
 		if (m_basicType != t.m_basicType || m_arrayLevel != t.m_arrayLevel
-				|| m_pointerLevel != t.m_pointerLevel)
+				|| m_pointerLevel != t.m_pointerLevel) {
 			return false;
+		}
 
 		// Compare array dimensions (if not a pointer)
-		if (m_pointerLevel == 0)
-			for (int i = 0; i < m_arrayLevel; i++)
-				if (m_arrayDims[i] != t.m_arrayDims[i])
+		if (m_pointerLevel == 0) {
+			for (int i = 0; i < m_arrayLevel; i++) {
+				if (m_arrayDims[i] != t.m_arrayDims[i]) {
 					return false;
+				}
+			}
+		}
 
 		return true;
 	}
@@ -156,11 +161,13 @@ public class ValType implements Streamable{
 
 		// Note: The overloaded == operator uses Equals function.
 
-		if (!Equals(type))
+		if (!Equals(type)) {
 			return false;
+		}
 
-		if (m_byRef != type.m_byRef)
+		if (m_byRef != type.m_byRef) {
 			return false;
+		}
 
 		return true;
 	}
@@ -186,8 +193,9 @@ public class ValType implements Streamable{
 		assertTrue(elements > 0);
 
 		// Bump up existing elements
-		for (int i = m_arrayLevel; i > 0; i--)
+		for (int i = m_arrayLevel; i > 0; i--) {
 			m_arrayDims[i] = m_arrayDims[i - 1];
+		}
 		m_arrayLevel++;
 
 		// Add new element count at dimension 0
@@ -238,12 +246,14 @@ public class ValType implements Streamable{
 		// allocation/declaration.
 
 		int arraySize = elementSize;
-		if (arraySize > size)
+		if (arraySize > size) {
 			return true;
+		}
 
 		for (int i = 0; i < m_arrayLevel; i++) {
-			if (size < 2 || (size - 2) / m_arrayDims[i] < arraySize)
+			if (size < 2 || (size - 2) / m_arrayDims[i] < arraySize) {
 				return true;
+			}
 			arraySize *= m_arrayDims[i];
 			arraySize += 2;
 		}
@@ -289,10 +299,11 @@ public class ValType implements Streamable{
 	public int StoredType() {
 
 		// Type of actual data stored inside virtual machine register.
-		if (m_pointerLevel == 0 && m_arrayLevel == 0)
+		if (m_pointerLevel == 0 && m_arrayLevel == 0) {
 			return m_basicType;
-		else
+		} else {
 			return VTP_INT;
+		}
 	}
 
 	public boolean IsBasic() {
@@ -310,8 +321,9 @@ public class ValType implements Streamable{
 		Streaming.WriteByte(stream, m_pointerLevel);
 		Streaming.WriteByte(stream, (byte) (m_byRef ? 1 : 0));
 
-		for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++)
+		for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++) {
 			Streaming.WriteLong(stream, m_arrayDims[i]);
+		}
 	}
 
 	public boolean StreamIn(DataInputStream stream) throws IOException{
@@ -323,8 +335,9 @@ public class ValType implements Streamable{
 		m_pointerLevel = Streaming.ReadByte(stream);
 		m_byRef = Streaming.ReadByte(stream) == 1 ? true : false;
 
-		for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++)
+		for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++) {
 			m_arrayDims[i] = (int) Streaming.ReadLong(stream);
+		}
 
 		return true;
 	}

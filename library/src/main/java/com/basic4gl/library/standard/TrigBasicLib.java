@@ -204,8 +204,11 @@ public class TrigBasicLib implements FunctionLibrary {
     ////////////////////////////////////////////////////////////////////////////////
 // Basic trig functions
     public static float CalcW (float[] v1, float[] v2) {
-        if (v1 [3] == 0 && v2 [3] == 0) return 0;
-        else                            return 1;
+        if (v1 [3] == 0 && v2 [3] == 0) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 
     public static void CrossProduct (float[] v1, float[] v2, float[] result) {
@@ -255,31 +258,36 @@ public class TrigBasicLib implements FunctionLibrary {
         v [0] *= scale;
         v [1] *= scale;
         v [2] *= scale;
-        if (v [3] != 0)
+        if (v [3] != 0) {
             v [3] = 1;
+        }
     }
     public static void Scale (float[] v, int offset, float scale) {
         assertTrue(v != null);
         v [0 + offset] *= scale;
         v [1 + offset] *= scale;
         v [2 + offset] *= scale;
-        if (v [3 + offset] != 0)
+        if (v [3 + offset] != 0) {
             v [3 + offset] = 1;
+        }
     }
     public static void ScaleMatrix (float[] m, float scale) {
         assertTrue(m != null);
-        for (int i = 0; i < 16; i++)
+        for (int i = 0; i < 16; i++) {
             m [i] *= scale;
+        }
     }
     public static void Normalize (float[] v) {
         float len = Length (v);
-        if (len > 0.0001)
+        if (len > 0.0001) {
             Scale (v, 1.0f / Length (v));
+        }
     }
     public static void Normalize (float[] v, int offset) {
         float len = Length (v, offset);
-        if (len > 0.0001)
+        if (len > 0.0001) {
             Scale (v, offset, 1.0f / (Length (v, offset)));
+        }
     }
     public static float Determinant (float[] m) {
         assertTrue(m != null);
@@ -303,9 +311,11 @@ public class TrigBasicLib implements FunctionLibrary {
         assertTrue(dst != null);
 
         // Transpose matrix
-        for (int y = 0; y < 4; y++)
-            for (int x = 0; x < 4; x++)
-                dst [x * 4 + y] = src [y * 4 + x];
+        for (int y = 0; y < 4; y++) {
+            for (int x = 0; x < 4; x++) {
+                dst[x * 4 + y] = src[y * 4 + x];
+            }
+        }
     }
     public static void MatrixTimesVec (float[] m, float[] v, float[] result) {
         assertTrue(m != null);
@@ -313,8 +323,9 @@ public class TrigBasicLib implements FunctionLibrary {
         assertTrue(result != null);
         for (int y = 0; y < 4; y++) {
             float coord = 0;
-            for (int x = 0; x < 4; x++)
+            for (int x = 0; x < 4; x++) {
                 coord += v [x] * m [x * 4 + y];
+            }
             result [y] = coord;
         }
     }
@@ -324,8 +335,9 @@ public class TrigBasicLib implements FunctionLibrary {
         assertTrue(result != null);
         for (int y = 0; y < 4; y++) {
             float coord = 0;
-            for (int x = 0; x < 4; x++)
+            for (int x = 0; x < 4; x++) {
                 coord += v [x + offset2] * m [x * 4 + y + offset1];
+            }
             result [y + offset3] = coord;
         }
     }
@@ -338,8 +350,9 @@ public class TrigBasicLib implements FunctionLibrary {
         for (int x2 = 0; x2 < 4; x2++) {
             for (int y1 = 0; y1 < 4; y1++) {
                 float coord = 0;
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 4; i++) {
                     coord += m2 [x2 * 4 + i] * m1 [i * 4 + y1];
+                }
                 result [x2 * 4 + y1] = coord;
             }
         }
@@ -376,8 +389,9 @@ public class TrigBasicLib implements FunctionLibrary {
         assertTrue(result != null);
 
         // Add matrices
-        for (int i = 0; i < 16; i++)
+        for (int i = 0; i < 16; i++) {
             result [i] = m1 [i] + m2 [i];
+        }
     }
     public static void MatrixMinus (float[] m1, float[] m2, float[] result) {
         assertTrue(m1 != null);
@@ -385,8 +399,9 @@ public class TrigBasicLib implements FunctionLibrary {
         assertTrue(result != null);
 
         // Add matrices
-        for (int i = 0; i < 16; i++)
+        for (int i = 0; i < 16; i++) {
             result [i] = m1 [i] - m2 [i];
+        }
     }
     public static void RTInvert (float[] m, float[] result) {
 
@@ -552,8 +567,9 @@ public class TrigBasicLib implements FunctionLibrary {
     }
     public final class WrapMatrixRotate implements Function { public void run(TomVM vm){
 
-        if (ReadVec (vm, vm.GetIntParam(1), v1) < 0)
+        if (ReadVec (vm, vm.GetIntParam(1), v1) < 0) {
             return;
+        }
         RotateAxis(vm.GetRealParam(2), v1);
         ReturnMatrix(vm);
     }
@@ -570,8 +586,9 @@ public class TrigBasicLib implements FunctionLibrary {
     }
     public final class WrapMatrixCrossProduct implements Function { public void run(TomVM vm){
 
-        if (ReadVec (vm, vm.GetIntParam (1), v1) < 0)
+        if (ReadVec (vm, vm.GetIntParam (1), v1) < 0) {
             return;
+        }
         CrossProduct (v1);
         ReturnMatrix (vm);
     }
@@ -582,8 +599,9 @@ public class TrigBasicLib implements FunctionLibrary {
 // Fetch vectors
         int s1 = ReadVec (vm, vm.GetIntParam (2), v1),
                 s2 = ReadVec (vm, vm.GetIntParam (1), v2);
-        if (s1 < 0 || s2 < 0)
+        if (s1 < 0 || s2 < 0) {
             return;
+        }
 
 // Calculate cross product vector
         float result[] = new float [4];
@@ -598,8 +616,9 @@ public class TrigBasicLib implements FunctionLibrary {
 
 
 // Fetch vector
-        if (ReadVec (vm, vm.GetIntParam (1), v1) < 0)
+        if (ReadVec (vm, vm.GetIntParam (1), v1) < 0) {
             return;
+        }
 
 // Calculate length
         vm.Reg ().setRealVal(Length(v1));
@@ -610,8 +629,9 @@ public class TrigBasicLib implements FunctionLibrary {
 
 // Fetch vector
         int size = ReadVec (vm, vm.GetIntParam (1), v1);
-        if (size < 0)
+        if (size < 0) {
             return;
+        }
 
 // Normalize vector
         Normalize (v1);
@@ -624,8 +644,9 @@ public class TrigBasicLib implements FunctionLibrary {
 
 
 // Fetch matrix
-        if (!ReadMatrix (vm, vm.GetIntParam (1), m1))
+        if (!ReadMatrix (vm, vm.GetIntParam (1), m1)) {
             return;
+        }
 
 // Return result
         vm.Reg ().setRealVal(Determinant(m1));
@@ -635,8 +656,9 @@ public class TrigBasicLib implements FunctionLibrary {
 
 
 // Fetch matrix
-        if (!ReadMatrix (vm, vm.GetIntParam (1), m1))
+        if (!ReadMatrix (vm, vm.GetIntParam (1), m1)) {
             return;
+        }
 
 // Transpose
         Transpose (m1, m2);
@@ -649,8 +671,9 @@ public class TrigBasicLib implements FunctionLibrary {
 
 
 // Fetch matrix
-        if (!ReadMatrix (vm, vm.GetIntParam (1), m1))
+        if (!ReadMatrix (vm, vm.GetIntParam (1), m1)) {
             return;
+        }
 
 // RTInvert
         RTInvert(m1, m2);
@@ -663,8 +686,9 @@ public class TrigBasicLib implements FunctionLibrary {
 
 
 // Fetch matrix
-        if (!ReadMatrix (vm, vm.GetIntParam (1), m1))
+        if (!ReadMatrix (vm, vm.GetIntParam (1), m1)) {
             return;
+        }
 
 // Orthonormalize
         Orthonormalize(m1);
@@ -680,8 +704,9 @@ public class TrigBasicLib implements FunctionLibrary {
 
         // Extract data
         int size = ReadVec (vm, vecIndex, v1);
-        if (size < 0)
+        if (size < 0) {
             return;
+        }
 
         // Scale 3D vector
         Scale(v1, scale);
@@ -705,8 +730,9 @@ public class TrigBasicLib implements FunctionLibrary {
     void DoScaleMatrix (TomVM vm, float scale, int matrixIndex) {
 
         // Read in matrix
-        if (!ReadMatrix (vm, matrixIndex, m1))
+        if (!ReadMatrix (vm, matrixIndex, m1)) {
             return;
+        }
 
         // Scale matrix
         ScaleMatrix (m1, scale);
@@ -728,13 +754,15 @@ public class TrigBasicLib implements FunctionLibrary {
         // Matrix at reg2. Vector at reg.
 
         // Read in matrix
-        if (!ReadMatrix (vm, vm.Reg2 ().getIntVal(), m1))
+        if (!ReadMatrix (vm, vm.Reg2 ().getIntVal(), m1)) {
             return;
+        }
 
         // Read in vector
         int size = ReadVec (vm, vm.Reg ().getIntVal (), v1);
-        if (size < 0)
+        if (size < 0) {
             return;
+        }
 
         // Calculate resulting vector
         float result[] =new float[4];
@@ -748,8 +776,9 @@ public class TrigBasicLib implements FunctionLibrary {
         // Matrix * Matrix
         // Left matrix at reg2, right matrix at reg1
         if (!ReadMatrix (vm, vm.Reg2 ().getIntVal(), m1)
-                ||  !ReadMatrix (vm, vm.Reg  ().getIntVal(), m2))
+                ||  !ReadMatrix (vm, vm.Reg  ().getIntVal(), m2)) {
             return;
+        }
 
         // Multiply them out
         float result[] = new float [16];
@@ -764,8 +793,9 @@ public class TrigBasicLib implements FunctionLibrary {
 
         // Fetch vectors
         if (ReadVec (vm, vm.Reg2 ().getIntVal (), v1) < 0
-                || ReadVec (vm, vm.Reg  ().getIntVal (), v2) < 0)
+                || ReadVec (vm, vm.Reg  ().getIntVal (), v2) < 0) {
             return;
+        }
 
         // Return result
         vm.Reg ().setRealVal(DotProduct(v1, v2));
@@ -775,8 +805,9 @@ public class TrigBasicLib implements FunctionLibrary {
         // Fetch vectors
         int s1 = ReadVec (vm, vm.Reg2 ().getIntVal (), v1),
                 s2 = ReadVec (vm, vm.Reg  ().getIntVal (), v2);
-        if (s1 < 0 || s2 < 0)
+        if (s1 < 0 || s2 < 0) {
             return;
+        }
 
         // Calculate result
         float result[] = new float [4];
@@ -790,8 +821,9 @@ public class TrigBasicLib implements FunctionLibrary {
         // Fetch vectors
         int s1 = ReadVec (vm, vm.Reg2 ().getIntVal (), v1),
                 s2 = ReadVec (vm, vm.Reg  ().getIntVal (), v2);
-        if (s1 < 0 || s2 < 0)
+        if (s1 < 0 || s2 < 0) {
             return;
+        }
 
         // Calculate result
         float result[] = new float[4];
@@ -805,8 +837,9 @@ public class TrigBasicLib implements FunctionLibrary {
         // Matrix + Matrix
         // Left matrix at reg2, right matrix at reg1
         if (!ReadMatrix (vm, vm.Reg2 ().getIntVal (), m1)
-                || !ReadMatrix (vm, vm.Reg  ().getIntVal (), m2))
+                || !ReadMatrix (vm, vm.Reg  ().getIntVal (), m2)) {
             return;
+        }
 
         // Add them
         float result[] = new float[16];
@@ -820,8 +853,9 @@ public class TrigBasicLib implements FunctionLibrary {
         // Matrix - Matrix
         // Left matrix at reg2, right matrix at reg1
         if (!ReadMatrix (vm, vm.Reg2 ().getIntVal(), m1)
-                || !ReadMatrix (vm, vm.Reg  ().getIntVal (), m2))
+                || !ReadMatrix (vm, vm.Reg  ().getIntVal (), m2)) {
             return;
+        }
 
         // Add them
         float result[] = new float [16];
@@ -848,8 +882,9 @@ public class TrigBasicLib implements FunctionLibrary {
                                     Mutable<Boolean> freeTempData) {   // OUT: Set to true if temp data needs to be freed
 
         // Must be real values, and not pointers (references are OK however)
-        if (regType.get().VirtualPointerLevel() > 0 || regType.get().m_basicType != ValType.VTP_REAL)
+        if (regType.get().VirtualPointerLevel() > 0 || regType.get().m_basicType != ValType.VTP_REAL) {
             return false;
+        }
 
         if (oper == OpCode.OP_OP_NEG) {
             if (regType.get().m_arrayLevel == 1) {                // -Vector
@@ -879,24 +914,33 @@ public class TrigBasicLib implements FunctionLibrary {
                            Mutable<Boolean> freeTempData) {   // OUT: Set to true if temp data needs to be freed
 
             // Pointers not accepted (references are OK however)
-            if (regType.get().VirtualPointerLevel() > 0 || reg2Type.get().VirtualPointerLevel() > 0)
+            if (regType.get().VirtualPointerLevel() > 0 || reg2Type.get().VirtualPointerLevel() > 0) {
                 return false;
+            }
 
             // Validate data types. We will only work with ints and reals
-            if (regType.get().m_basicType != ValType.VTP_REAL && regType.get().m_basicType != ValType.VTP_INT)
+            if (regType.get().m_basicType != ValType.VTP_REAL && regType.get().m_basicType != ValType.VTP_INT) {
                 return false;
-            if (reg2Type.get().m_basicType != ValType.VTP_REAL && reg2Type.get().m_basicType != ValType.VTP_INT)
+            }
+            if (reg2Type.get().m_basicType != ValType.VTP_REAL && reg2Type.get().m_basicType != ValType.VTP_INT) {
                 return false;
+            }
 
             // Is acceptible to have an integer value, but must be typecast to a real
             // Arrays of integers not acceptible
             if (regType.get().m_basicType == ValType.VTP_INT) {
-                if (regType.get().IsBasic()) regType.get().m_basicType = ValType.VTP_REAL;
-                else return false;
+                if (regType.get().IsBasic()) {
+                    regType.get().m_basicType = ValType.VTP_REAL;
+                } else {
+                    return false;
+                }
             }
             if (reg2Type.get().m_basicType == ValType.VTP_INT) {
-                if (reg2Type.get().IsBasic()) reg2Type.get().m_basicType = ValType.VTP_REAL;
-                else return false;
+                if (reg2Type.get().IsBasic()) {
+                    reg2Type.get().m_basicType = ValType.VTP_REAL;
+                } else {
+                    return false;
+                }
             }
 
             // Look for recognised combinations

@@ -172,10 +172,11 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     void BufferScanKey(int key){
         int end = m_scanBufEnd;
         IncScanEnd ();
-        if (m_scanBufEnd != m_scanBufStart)
+        if (m_scanBufEnd != m_scanBufStart) {
             m_scanKeyBuffer [end] = key;
-        else
+        } else {
             m_scanBufEnd = end;
+        }
     }
 
 
@@ -183,10 +184,12 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     {
 
         // Sanity checks
-        if (height < 10)
+        if (height < 10) {
             height = 10;
-        if (width < 10)
+        }
+        if (width < 10) {
             width = 10;
+        }
 
         m_width = width;
         m_height = height;
@@ -456,12 +459,13 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         } catch (Exception e) {
             e.printStackTrace();
         }
-        for (i = 0; i < GL11.GL_MAX_CLIP_PLANES; i++)
+        for (i = 0; i < GL11.GL_MAX_CLIP_PLANES; i++) {
             try {
                 GL11.glDisable(GL11.GL_CLIP_PLANE0 + i);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
         FloatBuffer fog = BufferUtils.createFloatBuffer(4).put(new float[]{0f, 0f, 0f, 0f});
         fog.rewind();
         try {
@@ -1030,15 +1034,18 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                if (k == 0) try {
-                    GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                else try {
-                    GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_BLEND);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                if (k == 0) {
+                    try {
+                        GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    try {
+                        GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_BLEND);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
             try {
@@ -1326,8 +1333,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         // Create main context
 
         // Initialize GLFW. Most GLFW functions will not work before doing this.
-        if (!glfwInit())
+        if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
+        }
 
         //TODO Make context current
         /*
@@ -1443,8 +1451,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     public void Hide()            // Hide window. Switch back from fullscreen (if fullscreen mode)
     {
         DoShowCursor ();
-        if (!m_visible)
+        if (!m_visible) {
             return;
+        }
         glfwHideWindow(m_window); 		    			    // Hide the window
         //ProcessWindowsMessages ();
         m_visible = false;
@@ -1474,8 +1483,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         //ProcessWindowsMessages ();
 
         // Check for buffered keypress
-        if (m_bufStart == m_bufEnd)
+        if (m_bufStart == m_bufEnd) {
             return 0;
+        }
 
         // Extract and return it
         int result = m_keyBuffer [m_bufStart];
@@ -1489,8 +1499,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         //ProcessWindowsMessages ();
 
         // Check for buffered keypress
-        if (m_scanBufStart == m_scanBufEnd)
+        if (m_scanBufStart == m_scanBufEnd) {
             return 0;
+        }
 
         // Extract and return it
         int result = m_scanKeyBuffer [m_scanBufStart];
@@ -1502,7 +1513,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         // Clear key states
         for (int i = 0; i < m_keyDown.length; i++)
             //TODO determine correct default value; 'false' was used in original source
+        {
             m_keyDown [i] = 0;
+        }
 
         // Clear key buffer
         m_bufStart  = 0;
@@ -1524,14 +1537,16 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         boolean wasDown = (m_keyDown [scanCode]  & bitmask) != 0;
 
         // Add a keypress to buffer (if necessary)
-        if (down && !wasDown)
+        if (down && !wasDown) {
             BufferScanKey (scanCode);
+        }
 
         // Toggle key bitmask
-        if (down)
+        if (down) {
             m_keyDown [scanCode] |= bitmask;
-        else
+        } else {
             m_keyDown [scanCode] &= ~bitmask;
+        }
     }
 
     // Display screen
@@ -1602,8 +1617,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         // Read any pending windows messages
         //ProcessWindowsMessages ();
 
-        if (!m_focused)
+        if (!m_focused) {
             return 0;
+        }
 
         if (!m_mouseCentred) {
             m_mouseX = m_width / 2;
@@ -1631,8 +1647,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         // Read any pending windows messages
         //ProcessWindowsMessages ();
 
-        if (!m_focused)
+        if (!m_focused) {
             return  0;
+        }
 
         if (!m_mouseCentred) {
             m_mouseX = m_width / 2;
@@ -1686,8 +1703,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     void ClearGLMatrix() {
 
         // Clear the matrix stack by popping a lot of matrices
-        for (int i = 0; i < 256; i++)
+        for (int i = 0; i < 256; i++) {
             GL11.glPopMatrix();
+        }
 
         // Reset the matrix itself
         GL11.glLoadIdentity();

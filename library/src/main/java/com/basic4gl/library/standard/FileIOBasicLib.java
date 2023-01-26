@@ -46,8 +46,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
 
     @Override
     public void init(TomVM vm) {
-        if (fileStreams == null)
+        if (fileStreams == null) {
             fileStreams = new PointerResourceStore<FileStream>();
+        }
 
         fileStreams.Clear();
 
@@ -58,8 +59,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
 
     @Override
     public void init(TomBasicCompiler comp) {
-        if (fileStreams == null)
+        if (fileStreams == null) {
             fileStreams = new PointerResourceStore<FileStream>();
+        }
 
         // Register resources
         comp.VM().AddResources(fileStreams);
@@ -165,8 +167,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
 
     boolean GetIStream (int index) {
-        if (!GetStream (index))
+        if (!GetStream (index)) {
             return false;
+        }
         if (stream.in == null ) {
             lastError = "File not in INPUT mode";
             return false;
@@ -175,8 +178,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
 
     boolean GetOStream (int index) {
-        if (!GetStream (index))
+        if (!GetStream (index)) {
             return false;
+        }
         if (stream.out == null ) {
             lastError = "File not in OUTPUT mode";
             return false;
@@ -248,13 +252,15 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             fileStreams.Free (handle);
             lastError = "";
         }
-        else
+        else {
             lastError = "Invalid file handle";
+        }
     }
     }
     public final class WrapWriteChar  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2)))
+        if (!GetOStream (vm.GetIntParam (2))) {
             return;
+        }
 
         // Write a single character
         char c = 0;
@@ -270,8 +276,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteString  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2)))
+        if (!GetOStream (vm.GetIntParam (2))) {
             return;
+        }
 
         // Write string. (Excludes 0 terminator)
         String str = vm.GetStringParam (1);
@@ -288,8 +295,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteLine  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2)))
+        if (!GetOStream (vm.GetIntParam (2))) {
             return;
+        }
 
         // Write string. (Excludes 0 terminator)
         String str = vm.GetStringParam (1) + "\r\n";
@@ -306,8 +314,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteByte  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2)))
+        if (!GetOStream (vm.GetIntParam (2))) {
             return;
+        }
 
         byte element = vm.GetIntParam (1).byteValue();
         Exception exception = null;
@@ -321,8 +330,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteWord  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2)))
+        if (!GetOStream (vm.GetIntParam (2))) {
             return;
+        }
 
         short element = vm.GetIntParam (1).shortValue();
         Exception exception = null;
@@ -336,8 +346,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteInt  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2)))
+        if (!GetOStream (vm.GetIntParam (2))) {
             return;
+        }
 
         int element = vm.GetIntParam (1);
         Exception exception = null;
@@ -351,8 +362,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteFloat  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2)))
+        if (!GetOStream (vm.GetIntParam (2))) {
             return;
+        }
 
         float element = vm.GetRealParam (1);
         Exception exception = null;
@@ -366,8 +378,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteDouble  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2)))
+        if (!GetOStream (vm.GetIntParam (2))) {
             return;
+        }
 
         double element = vm.GetRealParam (1);
         Exception exception = null;
@@ -382,18 +395,21 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     public final class WrapReadLine  implements Function { public void run(TomVM vm) {
         vm.setRegString ( "");
-        if (!GetIStream (vm.GetIntParam (1)))
+        if (!GetIStream (vm.GetIntParam (1))) {
             return;
-        if (!UpdateError ("Read", null))
+        }
+        if (!UpdateError ("Read", null)) {
             return;
+        }
 
         // Skip returns and linefeeds
         char c = 0;
         Exception exception = null;
         try {
             c = (char)stream.in.read();
-            while ((stream.in.available() > 0) && (c == 10 || c == 13))
+            while ((stream.in.available() > 0) && (c == 10 || c == 13)) {
                 c = (char)stream.in.read();
+            }
 
             // Read printable characters
             while ((stream.in.available() > 0) && c != 10 && c != 13) {
@@ -405,16 +421,18 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             exception = e;
         }
         // Don't treat eof as an error
-        if (exception != null)
+        if (exception != null) {
             UpdateError ("Read", exception);
-        else
+        } else {
             lastError = "";
+        }
     }
     }
     public final class WrapReadChar  implements Function { public void run(TomVM vm) {
         vm.setRegString ("");
-        if (!GetIStream (vm.GetIntParam (1)))
+        if (!GetIStream (vm.GetIntParam (1))) {
             return;
+        }
 
         // Read char
         char c = 0;
@@ -425,14 +443,16 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception))
+        if (UpdateError ("Read", exception)) {
             vm.setRegString(String.valueOf(c));
+        }
     }
     }
     public final class WrapReadByte  implements Function { public void run(TomVM vm) {
         vm.Reg ().setIntVal ( 0);
-        if (!GetIStream (vm.GetIntParam (1)))
+        if (!GetIStream (vm.GetIntParam (1))) {
             return;
+        }
 
         // Read byte
         int element = 0;  //byte values are unsigned
@@ -443,14 +463,16 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception))
+        if (UpdateError ("Read", exception)) {
             vm.Reg ().setIntVal ( (int) element);
+        }
     }
     }
     public final class WrapReadWord  implements Function { public void run(TomVM vm) {
         vm.Reg ().setIntVal ( 0);
-        if (!GetIStream (vm.GetIntParam (1)))
+        if (!GetIStream (vm.GetIntParam (1))) {
             return;
+        }
 
         // Read byte
         int element = 0;    //use int since word values are unsigned
@@ -463,14 +485,16 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception))
+        if (UpdateError ("Read", exception)) {
             vm.Reg ().setIntVal ( (int)element);
+        }
     }
     }
     public final class WrapReadInt  implements Function { public void run(TomVM vm) {
         vm.Reg ().setIntVal ( 0);
-        if (!GetIStream (vm.GetIntParam (1)))
+        if (!GetIStream (vm.GetIntParam (1))) {
             return;
+        }
 
         // Read byte
         int element = 0;
@@ -483,14 +507,16 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception))
+        if (UpdateError ("Read", exception)) {
             vm.Reg ().setIntVal ( element);
+        }
     }
     }
     public final class WrapReadFloat  implements Function { public void run(TomVM vm) {
         vm.Reg ().setIntVal ( 0);
-        if (!GetIStream (vm.GetIntParam (1)))
+        if (!GetIStream (vm.GetIntParam (1))) {
             return;
+        }
 
         // Read byte
         float element = 0;
@@ -503,14 +529,16 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception))
+        if (UpdateError ("Read", exception)) {
             vm.Reg ().setRealVal(element);
+        }
     }
     }
     public final class WrapReadDouble  implements Function { public void run(TomVM vm) {
         vm.Reg ().setIntVal ( 0);
-        if (!GetIStream (vm.GetIntParam (1)))
+        if (!GetIStream (vm.GetIntParam (1))) {
             return;
+        }
 
         // Read byte
         double element = 0;
@@ -523,13 +551,15 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception))
+        if (UpdateError ("Read", exception)) {
             vm.Reg ().setRealVal ((float) element);
+        }
     }
     }
     public final class WrapSeek  implements Function { public void run(TomVM vm) {
-        if (!GetStream (vm.GetIntParam (2)))
+        if (!GetStream (vm.GetIntParam (2))) {
             return;
+        }
         Exception exception = null;
         try {
             if (stream.in != null) {
@@ -550,10 +580,12 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     public final class WrapReadText  implements Function { public void run(TomVM vm) {
 
         // Read a string of non whitespace tokens
-        if (!GetIStream (vm.GetIntParam (2)))
+        if (!GetIStream (vm.GetIntParam (2))) {
             return;
-        if (!UpdateError ("Read", null))
+        }
+        if (!UpdateError ("Read", null)) {
             return;
+        }
         boolean skipNewLines = vm.GetIntParam (1) != 0;
 
         Exception exception = null;
@@ -562,14 +594,16 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         char c = ' ';
         vm.setRegString ( "");
         try {
-            while ((c != '\n' || skipNewLines) && c <= ' ')
+            while ((c != '\n' || skipNewLines) && c <= ' ') {
                 c = (char) stream.in.read();
+            }
         } catch (Exception e){
             e.printStackTrace();
             exception = e;
         }
-        if (!UpdateError ("Read", exception))
+        if (!UpdateError ("Read", exception)) {
             return;
+        }
 
         // Read non whitespace
         try{
@@ -586,8 +620,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             exception = e;
         }
 
-        if (!UpdateError ("Read", exception))
+        if (!UpdateError ("Read", exception)) {
             return;
+        }
     }
     }
     public final class WrapFindFirstFile implements Function { public void run(TomVM vm) {
@@ -608,10 +643,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         // Find file
         lastError = "";
         Path dir = Paths.get("");
-        if (findFileCollection != null)
+        if (findFileCollection != null) {
             findFileCollection.clear();
-        else
+        } else {
             findFileCollection = new ArrayList<>();
+        }
 
         Exception exception = null;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
@@ -619,15 +655,19 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             Matcher m = regex.matcher(filename);
             StringBuffer b= new StringBuffer();
             while (m.find()) {
-                if(m.group(1) != null) m.appendReplacement(b, ".*");
-                else m.appendReplacement(b, "\\\\Q" + m.group(0) + "\\\\E");
+                if(m.group(1) != null) {
+                    m.appendReplacement(b, ".*");
+                } else {
+                    m.appendReplacement(b, "\\\\Q" + m.group(0) + "\\\\E");
+                }
             }
             m.appendTail(b);
             String pattern = b.toString();
 
             for (Path entry: stream) {
-                if (entry.toString().matches(pattern))
+                if (entry.toString().matches(pattern)) {
                     findFileCollection.add(new File(entry.toString()));
+                }
             }
             //Alphabetize file list
             Collections.sort(findFileCollection);
@@ -638,10 +678,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         findFileHandle = findFileCollection.size() > 0 ? 0 : -1;
 
         // Return filename
-        if (findFileHandle != -1 && exception == null)
+        if (findFileHandle != -1 && exception == null) {
             vm.setRegString(findFileCollection.get(0).getName());
-        else
+        } else {
             vm.setRegString( "");
+        }
     }
     }
     public final class WrapFindNextFile implements Function { public void run(TomVM vm) {
@@ -681,13 +722,16 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     public final class WrapEndOfFile  implements Function { public void run(TomVM vm) {
         vm.Reg ().setIntVal ( -1);
-        if (!GetStream (vm.GetIntParam(1)))
+        if (!GetStream (vm.GetIntParam(1))) {
             return;
+        }
         try {
             if ((stream.in != null && (stream.in.available() > 0))
                     || (stream.out != null))//Todo check if output stream is eof
                 // && (stream.out.available() > 0)))
+            {
                 vm.Reg().setIntVal(0);
+            }
         } catch (Exception e) {
             vm.Reg().setIntVal(-1);
         }

@@ -172,8 +172,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		// Register library functions
 		for (Library lib : instance.mLibraries) {
 			//instance.mComp.AddConstants(lib.constants());
-			if (lib instanceof FunctionLibrary)
+			if (lib instanceof FunctionLibrary) {
 				instance.mComp.AddFunctions(lib, ((FunctionLibrary) lib).specs());
+			}
 		}
 
 		instance.mFiles.setParentDirectory(currentDirectory);
@@ -277,8 +278,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		mClosing = false;
 
 		//Get settings
-		if (mConfiguration == null)
+		if (mConfiguration == null) {
 			mConfiguration = getSettings();
+		}
 
 
 	}
@@ -377,8 +379,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 								mVM.PatchIn();
 							}
 							//Check if program was stopped while paused
-							if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.Done() || isClosing())
+							if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.Done() || isClosing()) {
 								break;
+							}
 						}
 
 						//Continue to next OpCode
@@ -497,8 +500,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	@Override
 	public Configuration getConfiguration() {
-		if (mConfiguration == null)
+		if (mConfiguration == null) {
 			return getSettings();
+		}
 		return mConfiguration;
 	}
 
@@ -732,8 +736,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 		// Initialize Sprite Engine
 		mTextGrid = new GLSpriteEngine(mCharset, mFiles, 25, 40, 16, 16);
-		if (mTextGrid.hasError())
+		if (mTextGrid.hasError()) {
 			mVM.setError(mTextGrid.getError());
+		}
 	}
 	public void onPostExecute(){
 //		glfwSwapBuffers(m_window); // swap the color buffers
@@ -803,8 +808,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	public void    RecreateGLContext (){
 		super.RecreateGLContext();
 
-		if (mTextGrid != null)
+		if (mTextGrid != null) {
 			mTextGrid.UploadCharsetTexture();
+		}
 	}
 
 	public boolean isClosing(){
@@ -878,8 +884,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 			glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
 
 			// Initialize GLFW. Most GLFW functions will not work before doing this.
-			if (!glfwInit())
+			if (!glfwInit()) {
 				throw new IllegalStateException("Unable to initialize GLFW");
+			}
 
 			// Configure our window
 			glfwDefaultWindowHints(); // optional, the current window hints are already the default
@@ -889,8 +896,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 			// Create the window
 			m_window = glfwCreateWindow(m_width, m_height, title, NULL, NULL);
-			if (m_window == NULL)
+			if (m_window == NULL) {
 				throw new RuntimeException("Failed to create the GLFW window");
+			}
 
 			//TODO implement window icons
 
@@ -912,12 +920,13 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 					if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
 						glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
 					}
-					if (key < 0)
+					if (key < 0) {
 						return;
+					}
 					if (action == GLFW_PRESS){
-						if (key == GLFW_KEY_PAUSE)
+						if (key == GLFW_KEY_PAUSE) {
 							m_pausePressed = true;
-						else {
+						} else {
 							m_keyDown [key] |= 1;
 							BufferScanKey ((char) key );
 						}
@@ -932,14 +941,17 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				public void invoke(long window, int codepoint) {
 
 					if (codepoint == 27)               // Esc closes window
+					{
 						m_closing = true;
+					}
 
 					int end = m_bufEnd;
 					IncEnd();                    // Check for room in buffer
-					if (m_bufEnd != m_bufStart)
+					if (m_bufEnd != m_bufStart) {
 						m_keyBuffer[end] = (char)codepoint;
-					else
+					} else {
 						m_bufEnd = end;           // No room. Restore buffer pointers
+					}
 
 
 				}

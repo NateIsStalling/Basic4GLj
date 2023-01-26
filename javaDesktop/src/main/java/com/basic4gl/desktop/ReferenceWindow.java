@@ -74,14 +74,16 @@ public class ReferenceWindow {
     }
 
     public void setVisible(boolean visible) {
-        if (mFrame != null)
+        if (mFrame != null) {
             mFrame.setVisible(visible);
+        }
     }
 
     String TypeString(ValType type) {
         String result = "";
-        for (int i = 0; i < type.VirtualPointerLevel(); i++)
+        for (int i = 0; i < type.VirtualPointerLevel(); i++) {
             result = result + "&";
+        }
 
         switch (type.m_basicType) {
             case ValType.VTP_INT:
@@ -97,8 +99,9 @@ public class ReferenceWindow {
                 result = result + "???";
         }
 
-        for (int i = 0; i < type.m_arrayLevel; i++)
+        for (int i = 0; i < type.m_arrayLevel; i++) {
             result = result + "()";
+        }
 
         return result;
     }
@@ -125,8 +128,9 @@ public class ReferenceWindow {
 
     public void populate(TomBasicCompiler comp) {
         String text;
-        if (comp == null)
+        if (comp == null) {
             return;
+        }
         // Populate functions
         text = "";
         for (String key : comp.FunctionIndex().keySet()) {
@@ -139,23 +143,30 @@ public class ReferenceWindow {
                 // Build description string
                 String line = "";
                 if (spec.isFunction())                                      // Return type
+                {
                     line = line + TypeString(spec.getReturnType()) + " ";
+                }
                 line = line + name;                                         // Function name
                 if (spec.hasBrackets())                                        // Opening bracket
+                {
                     line = line + "(";
-                else
+                } else {
                     line = line + " ";
+                }
                 boolean needComma = false;
                 Vector<ValType> params = spec.getParamTypes().getParams();
-                if (params != null)
+                if (params != null) {
                     for (ValType type : params) {
-                        if (needComma)
+                        if (needComma) {
                             line = line + ", ";
+                        }
                         line = line + TypeString(type);
                         needComma = true;
                     }
-                if (spec.hasBrackets())
+                }
+                if (spec.hasBrackets()) {
                     line = line + ")";
+                }
 
                 // Store description string
                 text += line + '\n';

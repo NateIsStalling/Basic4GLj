@@ -45,8 +45,9 @@ public class Image {
                 for (int dy = 0; dy < mHeight; dy++) {
                     temp.position(dy * mWidth * mBPP);
                     mData.position((mHeight - dy - 1) * mWidth * mBPP);
-                    for (int dx = 0; dx < mWidth * mBPP; dx++)
+                    for (int dx = 0; dx < mWidth * mBPP; dx++) {
                         temp.put(mData.get());
+                    }
                 }
                 temp.rewind();
                 mData = temp;
@@ -92,8 +93,9 @@ public class Image {
     }
 
     public ByteBuffer getPixels() {
-        if (mData != null)
+        if (mData != null) {
             mData.rewind();
+        }
         return mData;}
     public int getWidth() { return mWidth;}
     public int getHeight() { return mHeight;}
@@ -101,8 +103,9 @@ public class Image {
     public int getFormat() { return mFormat;}
 
     private static ByteBuffer clone(ByteBuffer original) {
-        if (original == null)
+        if (original == null) {
             return null;
+        }
         ByteBuffer clone = ByteBuffer.allocateDirect(original.capacity());
         original.rewind();//copy from the beginning
         clone.put(original);

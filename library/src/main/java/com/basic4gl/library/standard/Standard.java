@@ -74,8 +74,9 @@ public class Standard implements FunctionLibrary {
 	// Performance counter
 	long PerformanceCounter() {
 		if (performanceFreq == 0) // No performance counter?
+		{
 			return System.currentTimeMillis(); // Degrade to tick counter
-		else {
+		} else {
 			return (System.nanoTime() * 1000) / performanceFreq;
 		}
 	}
@@ -128,7 +129,9 @@ public class Standard implements FunctionLibrary {
 			int intVal = (int) realVal;
 			if (realVal < 0 && realVal != intVal) // Special case, negative
 				// numbers
+			{
 				intVal--;
+			}
 			vm.Reg().setIntVal(intVal);
 		}
 	}
@@ -137,12 +140,13 @@ public class Standard implements FunctionLibrary {
 		public void run(TomVM vm) {
 			String s = vm.GetStringParam(2);
 			int c = vm.GetIntParam(1);
-			if (c <= 0)
+			if (c <= 0) {
 				vm.setRegString("");
-			else if (c >= s.length())
+			} else if (c >= s.length()) {
 				vm.setRegString(s);
-			else
+			} else {
 				vm.setRegString(s.substring(0, c));
+			}
 		}
 	}
 
@@ -167,11 +171,13 @@ public class Standard implements FunctionLibrary {
 				i = 0;
 			}
 			if (c > 0 && s.length() > 0 && i < s.length()) {
-				if (i + c > s.length())
+				if (i + c > s.length()) {
 					c = s.length() - i;
+				}
 				vm.setRegString(s.substring(i, i + c));
-			} else
+			} else {
 				vm.setRegString("");
+			}
 		}
 	}
 
@@ -199,12 +205,13 @@ public class Standard implements FunctionLibrary {
 		public void run(TomVM vm) {
 			String s = vm.GetStringParam(2);
 			int c = vm.GetIntParam(1);
-			if (c <= 0)
+			if (c <= 0) {
 				vm.setRegString("");
-			else if (c >= s.length())
+			} else if (c >= s.length()) {
 				vm.setRegString(s);
-			else
+			} else {
 				vm.setRegString(s.substring(s.length() - c, s.length()));
+			}
 		}
 	}
 
@@ -229,12 +236,13 @@ public class Standard implements FunctionLibrary {
 	public final class WrapSgn implements Function {
 		public void run(TomVM vm) {
 			float i = vm.GetRealParam(1);
-			if (i < 0)
+			if (i < 0) {
 				vm.Reg().setIntVal(-1);
-			else if (i == 0)
+			} else if (i == 0) {
 				vm.Reg().setIntVal(0);
-			else
+			} else {
 				vm.Reg().setIntVal(1);
+			}
 		}
 	}
 
@@ -247,20 +255,22 @@ public class Standard implements FunctionLibrary {
 	public final class WrapSqrt implements Function {
 		public void run(TomVM vm) {
 			float param = vm.GetRealParam(1);
-			if (param < 0)
+			if (param < 0) {
 				vm.Reg().setRealVal((float) Math.sqrt(-param));
-			else
+			} else {
 				vm.Reg().setRealVal((float) Math.sqrt(param));
+			}
 		}
 	}
 
 	public final class WrapSqr implements Function {
 		public void run(TomVM vm) {
 			float param = vm.GetRealParam(1);
-			if (param < 0)
+			if (param < 0) {
 				vm.Reg().setRealVal((float) Math.sqrt(-param));
-			else
+			} else {
 				vm.Reg().setRealVal((float) Math.sqrt(param));
+			}
 		}
 	}
 
@@ -303,18 +313,21 @@ public class Standard implements FunctionLibrary {
 		public void run(TomVM vm) {
 			// Fetch and validate delay
 			int delay = vm.GetIntParam(1);
-			if (delay < 0)
+			if (delay < 0) {
 				delay = 0;
-			if (delay > 5000)
+			}
+			if (delay > 5000) {
 				delay = 5000;
+			}
 
 			// Find clock tick count to wait for
 			lastTickCount += delay;
 			// if (GetTickCount () > lastTickCount)
 			// lastTickCount = GetTickCount ();
 			long tickCount = PerformanceCounter();
-			if (tickCount > lastTickCount)
+			if (tickCount > lastTickCount) {
 				lastTickCount = tickCount;
+			}
 
 			// Wait for tick count
 			// int dif = lastTickCount - GetTickCount();
@@ -337,8 +350,9 @@ public class Standard implements FunctionLibrary {
 	public final class WrapSyncTimerCatchup implements Function {
 		public void run(TomVM vm) {
 			maxCatchupTime = vm.GetIntParam(1);
-			if (maxCatchupTime < 1)
+			if (maxCatchupTime < 1) {
 				maxCatchupTime = 1;
+			}
 		}
 	}
 
@@ -346,10 +360,12 @@ public class Standard implements FunctionLibrary {
 		public void run(TomVM vm) {
 			// Fetch and validate delay
 			int delay = vm.GetIntParam(1);
-			if (delay < 0)
+			if (delay < 0) {
 				delay = 0;
-			if (delay > 5000)
+			}
+			if (delay > 5000) {
 				delay = 5000;
+			}
 
 			// int tickCount = GetTickCount ();
 			long tickCount = PerformanceCounter();
@@ -414,10 +430,11 @@ public class Standard implements FunctionLibrary {
 	public final class WrapArg implements Function {
 		public void run(TomVM vm) {
 			int index = vm.GetIntParam(1);
-			if (index >= 0 && index < mArguments.size())
+			if (index >= 0 && index < mArguments.size()) {
 				vm.setRegString(mArguments.get(index));
-			else
+			} else {
 				vm.setRegString("");
+			}
 		}
 	}
 

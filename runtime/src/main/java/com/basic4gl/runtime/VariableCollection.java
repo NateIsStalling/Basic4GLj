@@ -109,8 +109,9 @@ public class VariableCollection implements Streamable{
 
 		// Deallocate all variable data.
 		// Variables and data type info remain.
-		for (Variable var : mVariables)
+		for (Variable var : mVariables) {
 			var.Deallocate();
+		}
 		mData.Clear();
 	}
 
@@ -126,9 +127,11 @@ public class VariableCollection implements Streamable{
 	// Finding variables
 	public int getVariableIndex(String name) {
 		name = name.toLowerCase();
-		for (int i = 0; i < mVariables.size(); i++)
-			if (mVariables.get(i).m_name.equals(name))
+		for (int i = 0; i < mVariables.size(); i++) {
+			if (mVariables.get(i).m_name.equals(name)) {
 				return i;
+			}
+		}
 		return -1;
 	}
 
@@ -166,8 +169,9 @@ public class VariableCollection implements Streamable{
 
 		// Stream out variables
 		Streaming.WriteLong(stream, mVariables.size());
-		for (int i = 0; i < mVariables.size(); i++)
+		for (int i = 0; i < mVariables.size(); i++) {
 			mVariables.get(i).StreamOut(stream);
+		}
 	}
 
 	public boolean StreamIn(DataInputStream stream) throws IOException{

@@ -72,19 +72,21 @@ public class BuilderDesktopGL extends Builder {
         //Generate class path
         dependencies = mTarget.getClassPathObjects();
         i = 0;
-        if (dependencies != null)
+        if (dependencies != null) {
             for (String dependency: dependencies) {
                 classpath += " " + dependency;
                 i++;
             }
+        }
 
         //Add external dependencies
         dependencies = mTarget.getDependencies();
-        if (dependencies != null)
+        if (dependencies != null) {
             for (String dependency : dependencies) {
                 File source = new File(dependency);
-                if (!source.exists())
+                if (!source.exists()) {
                     continue;       //TODO throw build error
+                }
                 FileInputStream input = new FileInputStream(source);
 
                 zipEntry = new ZipEntry(dependency);
@@ -96,6 +98,7 @@ public class BuilderDesktopGL extends Builder {
                 }
                 output.closeEntry();
             }
+        }
 
         //Add launcher script
         //TODO add additional scripts for each platform

@@ -118,15 +118,19 @@ public class FileManager implements IFileManager {
     }
 
     public void redo(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size())
-            if (mFileEditors.get(i).editorPane.canRedo())
+        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
+            if (mFileEditors.get(i).editorPane.canRedo()) {
                 mFileEditors.get(i).editorPane.redoLastAction();
+            }
+        }
     }
 
     public void undo(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size())
-            if (mFileEditors.get(i).editorPane.canUndo())
+        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
+            if (mFileEditors.get(i).editorPane.canUndo()) {
                 mFileEditors.get(i).editorPane.undoLastAction();
+            }
+        }
     }
 
     public void toggleBreakpoint(int i) {
@@ -148,8 +152,9 @@ public class FileManager implements IFileManager {
         for (int i = 0; i < mFileEditors.size(); i++) {
             if (mFileEditors.get(i).isModified()) {
                 result = true;
-                if (!desc.equals(""))
+                if (!desc.equals("")) {
                     desc += ", ";
+                }
                 String filename = mFileEditors.get(i).getShortFilename();
 
                 desc += filename;

@@ -46,7 +46,8 @@ public class UserFuncStackFrame {
 		int oldSize = localVarDataOffsets.size();
 		int newSize = prototype.localVarTypes.size();
 		localVarDataOffsets.setSize(newSize);
-		for (int i = oldSize; i < newSize; i++)
+		for (int i = oldSize; i < newSize; i++) {
 			localVarDataOffsets.set(i, 0);
+		}
 	}
 }

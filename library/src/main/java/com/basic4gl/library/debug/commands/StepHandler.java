@@ -33,7 +33,9 @@ public class StepHandler extends ContinueHandler {
                 break;        // Step into
             case 3:
                 if (!mVM.AddStepOutBreakPt())                 // Step out
+                {
                     return;                                     // (No gosub to step out of)
+                }
                 break;
         }
 

@@ -87,10 +87,11 @@ public class GLTileMap extends GLBasicSprite {
         assertTrue(tiles.size() >= xTiles * yTiles);
         m_xTiles = xTiles;
         m_yTiles = yTiles;
-        if (xTiles > 0 || yTiles > 0)
+        if (xTiles > 0 || yTiles > 0) {
             m_tiles = tiles;
-        else
+        } else {
             m_tiles.clear();
+        }
     }
 
     // Rendering
@@ -103,8 +104,9 @@ public class GLTileMap extends GLBasicSprite {
         // accordingly.
 
         // Sprite must be visible
-        if (!m_visible || m_xTiles == 0 || m_yTiles == 0)
+        if (!m_visible || m_xTiles == 0 || m_yTiles == 0) {
             return;
+        }
 
         ByteBuffer byteBuf = BufferUtils.createByteBuffer(m_colour.length * 4); //4 bytes per float
         FloatBuffer buffer = byteBuf.asFloatBuffer();
@@ -133,8 +135,9 @@ public class GLTileMap extends GLBasicSprite {
             glRotatef(m_angle, 0, 0, 1);
             TrigBasicLib.RotateZ(-m_angle);
             TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
-        } else
+        } else {
             TrigBasicLib.CopyMatrix(m2, m1);
+        }
 
         // Scale to tile size
         glScalef(m_xSize * m_scale,
@@ -150,8 +153,9 @@ public class GLTileMap extends GLBasicSprite {
             glTranslatef(-m_xCentre, -m_yCentre, 0);
             TrigBasicLib.Translate(m_xCentre, m_yCentre, 0);
             TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
-        } else
+        } else {
             TrigBasicLib.CopyMatrix(m2, m1);
+        }
 
         // Note: Flip not implemented yet!
 
@@ -164,10 +168,18 @@ public class GLTileMap extends GLBasicSprite {
             float tileSpaceCorner[] = new float[4];
             TrigBasicLib.MatrixTimesVec(m2, camCorner[i], tileSpaceCorner);
             int x = (int) tileSpaceCorner[0], y = (int) tileSpaceCorner[1];
-            if (x < minX) minX = x;
-            if (x > maxX) maxX = x;
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
+            if (x < minX) {
+                minX = x;
+            }
+            if (x > maxX) {
+                maxX = x;
+            }
+            if (y < minY) {
+                minY = y;
+            }
+            if (y > maxY) {
+                maxY = y;
+            }
         }
 
         minX--;
@@ -175,18 +187,30 @@ public class GLTileMap extends GLBasicSprite {
         if (!m_xRepeat) {
 
             // Clamp x
-            if (minX < 0) minX = 0;
-            if (maxX >= m_xTiles) maxX = m_xTiles - 1;
+            if (minX < 0) {
+                minX = 0;
+            }
+            if (maxX >= m_xTiles) {
+                maxX = m_xTiles - 1;
+            }
         }
         if (!m_yRepeat) {
 
             // Clamp y
-            if (minY < 0) minY = 0;
-            if (maxY >= m_yTiles) maxY = m_yTiles - 1;
+            if (minY < 0) {
+                minY = 0;
+            }
+            if (maxY >= m_yTiles) {
+                maxY = m_yTiles - 1;
+            }
         }
         int startTileX = minX % m_xTiles, startTileY = minY % m_yTiles;
-        if (startTileX < 0) startTileX += m_xTiles;
-        if (startTileY < 0) startTileY += m_yTiles;
+        if (startTileX < 0) {
+            startTileX += m_xTiles;
+        }
+        if (startTileY < 0) {
+            startTileY += m_yTiles;
+        }
 
         // Draw tile map
         if (minX <= maxX && minY <= maxY) {

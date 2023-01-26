@@ -78,15 +78,17 @@ public class MultiHeaderGutter extends JPanel {
     }
 
     public GutterIconInfo addOffsetTrackingIcon(int headerIndex, int offs, Icon icon, String tip) throws BadLocationException {
-        if (headerIndex > -1 && headerIndex < iconAreas.size())
+        if (headerIndex > -1 && headerIndex < iconAreas.size()) {
             return this.iconAreas.get(headerIndex).addOffsetTrackingIcon(offs, icon, tip);
-        else
+        } else {
             return null;
+        }
     }
 
     private void clearActiveLineRange() {
-        for (IconRowHeader iconArea: this.iconAreas)
+        for (IconRowHeader iconArea: this.iconAreas) {
             iconArea.clearActiveLineRange();
+        }
     }
 
     private void clearActiveLineRange(int headerIndex) {
@@ -182,8 +184,9 @@ public class MultiHeaderGutter extends JPanel {
     }
 
     public void removeAllTrackingIcons() {
-        for(IconRowHeader iconArea: this.iconAreas)
+        for(IconRowHeader iconArea: this.iconAreas) {
             iconArea.removeAllTrackingIcons();
+        }
     }
     public void removeAllTrackingIcons(int headerIndex) {
         this.iconAreas.get(headerIndex).removeAllTrackingIcons();
@@ -194,8 +197,9 @@ public class MultiHeaderGutter extends JPanel {
     }
 
     private void setActiveLineRange(int startLine, int endLine) {
-        for(IconRowHeader iconArea: this.iconAreas)
+        for(IconRowHeader iconArea: this.iconAreas) {
             iconArea.setActiveLineRange(startLine, endLine);
+        }
     }
 
     public void setBookmarkIcon(int headerIndex, Icon icon) {
@@ -268,8 +272,9 @@ public class MultiHeaderGutter extends JPanel {
         this.iconAreas.remove(headerIndex);
     }
     public void addIconRowHeader(){
-        if (this.iconAreas == null)
+        if (this.iconAreas == null) {
             this.iconAreas = new ArrayList<IconRowHeader>();
+        }
         RTextAreaEditorKit kit = (RTextAreaEditorKit)textArea.getUI().getEditorKit(textArea);
         IconRowHeader header = kit.createIconRowHeader(textArea);
         header.setInheritsGutterBackground(this.getIconRowHeaderInheritsGutterBackground());
@@ -278,8 +283,9 @@ public class MultiHeaderGutter extends JPanel {
         setIconRowHeaderEnabled(this.iconAreas.size() - 1, true);
     }
     void addIconRowHeader(RTextArea textArea){
-        if (this.iconAreas == null)
+        if (this.iconAreas == null) {
             this.iconAreas = new ArrayList<IconRowHeader>();
+        }
         RTextAreaEditorKit kit = (RTextAreaEditorKit)textArea.getUI().getEditorKit(textArea);
         IconRowHeader header = kit.createIconRowHeader(textArea);
         header.setInheritsGutterBackground(this.getIconRowHeaderInheritsGutterBackground());
@@ -291,8 +297,9 @@ public class MultiHeaderGutter extends JPanel {
         return this.iconAreas.get(headerIndex);
     }
     void setIconRowHeaderEnabled(int headerIndex, boolean enabled) {
-        if (this.iconAreas == null)
+        if (this.iconAreas == null) {
             return;
+        }
         if(headerIndex > -1 && headerIndex < this.iconAreas.size()
                 && this.iconAreas.get(headerIndex) != null) {
             if(enabled) {
@@ -313,10 +320,11 @@ public class MultiHeaderGutter extends JPanel {
     public void setIconRowHeaderInheritsGutterBackground(boolean inherits) {
         if(inherits != this.iconRowHeaderInheritsGutterBackground) {
             this.iconRowHeaderInheritsGutterBackground = inherits;
-            for (IconRowHeader iconArea: this.iconAreas)
+            for (IconRowHeader iconArea: this.iconAreas) {
                 if(iconArea != null) {
                     iconArea.setInheritsGutterBackground(inherits);
                 }
+            }
         }
 
     }
@@ -324,10 +332,11 @@ public class MultiHeaderGutter extends JPanel {
     public void setIconRowHeaderInheritsGutterBackground(int headerIndex, boolean inherits) {
         if(inherits != this.iconRowHeaderInheritsGutterBackground) {
             this.iconRowHeaderInheritsGutterBackground = inherits;
-            if (headerIndex > -1 && headerIndex < this.iconAreas.size())
+            if (headerIndex > -1 && headerIndex < this.iconAreas.size()) {
                 if(iconAreas.get(headerIndex) != null) {
                     this.iconAreas.get(headerIndex).setInheritsGutterBackground(inherits);
                 }
+            }
         }
 
     }
@@ -398,11 +407,13 @@ public class MultiHeaderGutter extends JPanel {
             } else {
                 this.lineNumberList.setTextArea(textArea);
             }
-            if(this.iconAreas == null)
+            if(this.iconAreas == null) {
                 this.iconAreas = new ArrayList<IconRowHeader>();
+            }
             if(this.iconAreas.size() != 0) {
-                for (IconRowHeader iconArea: this.iconAreas)
+                for (IconRowHeader iconArea: this.iconAreas) {
                     iconArea.setTextArea(textArea);
+                }
             }
 
             if(this.foldIndicator == null) {
@@ -421,19 +432,22 @@ public class MultiHeaderGutter extends JPanel {
         int bookmarkCount = this.getBookmarks(headerIndex).length;
         boolean result = this.iconAreas.get(headerIndex).toggleBookmark(line);
         if (this.autoHideIconArea.get(headerIndex)) {
-            if (this.getBookmarks(headerIndex).length == 0)
+            if (this.getBookmarks(headerIndex).length == 0) {
                 this.setIconRowHeaderEnabled(headerIndex, false);
-            else if (bookmarkCount == 0 && this.getBookmarks(headerIndex).length > 0)
+            } else if (bookmarkCount == 0 && this.getBookmarks(headerIndex).length > 0) {
                 this.setIconRowHeaderEnabled(headerIndex, true);
+            }
         }
         return result;
     }
 
     public void setAutohideIconRowHeader(int headerIndex, boolean autohide){
-        if (headerIndex > -1 && headerIndex < this.autoHideIconArea.size())
+        if (headerIndex > -1 && headerIndex < this.autoHideIconArea.size()) {
             this.autoHideIconArea.set(headerIndex, autohide);
-        if (this.iconAreas.get(headerIndex).getBookmarks().length == 0)
+        }
+        if (this.iconAreas.get(headerIndex).getBookmarks().length == 0) {
             setIconRowHeaderEnabled(headerIndex, false);
+        }
     }
     public void setBorder(Border border) {
         if(border instanceof MultiHeaderGutter.GutterBorder) {

@@ -26,8 +26,9 @@ public class CodeBlock implements Streamable{
 	}
 
 	public void SetLengthAtLeast(int length) {
-		if (runtimeFunctions.size() < length)
-			runtimeFunctions.setSize(length);
+		if (runtimeFunctions.size() < length) {
+            runtimeFunctions.setSize(length);
+        }
 	}
 
 	public RuntimeFunction GetRuntimeFunction(int index) {
@@ -41,8 +42,9 @@ public class CodeBlock implements Streamable{
 		Streaming.WriteLong(stream, programOffset);
 		Streaming.WriteLong(stream, runtimeFunctions.size());
 
-		for (RuntimeFunction f : runtimeFunctions)
-			f.StreamOut(stream);
+		for (RuntimeFunction f : runtimeFunctions) {
+            f.StreamOut(stream);
+        }
 	}
 
 	public boolean StreamIn(DataInputStream stream) throws IOException {

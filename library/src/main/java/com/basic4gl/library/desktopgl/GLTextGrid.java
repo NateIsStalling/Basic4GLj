@@ -144,8 +144,9 @@ public class GLTextGrid extends HasErrorState {
 
         // Draw text flag must be present
         //TODO test possible values of flags
-        if (((flags & DRAW_TEXT) == 0))
+        if (((flags & DRAW_TEXT) == 0)) {
             return;
+        }
 
         // Create perspective transform
         glMatrixMode(GL_PROJECTION);
@@ -275,9 +276,11 @@ public class GLTextGrid extends HasErrorState {
 
         // Move rows up
         int x, y;
-        for (y = 1; y < m_rows; y++)
-            for (x = 0; x < m_cols; x++)
-            m_chars[((y - 1) * m_cols) + x] = m_chars [(y * m_cols) + x];
+        for (y = 1; y < m_rows; y++) {
+            for (x = 0; x < m_cols; x++) {
+                m_chars[((y - 1) * m_cols) + x] = m_chars[(y * m_cols) + x];
+            }
+        }
         // Clear bottom line
         Arrays.fill(m_chars, (m_rows - 1) * m_cols, ((m_rows - 1) * m_cols) + m_cols, ' ' );
 
@@ -285,14 +288,18 @@ public class GLTextGrid extends HasErrorState {
         // Do the same to the colour map
         m_colours.rewind();
         LongBuffer col = m_colours.asLongBuffer();
-        for (y = 1; y < m_rows; y++)
-            for (x = 0; x < m_cols; x++)
-                col.put(((y - 1) * m_cols) + x ,col.get((y * m_cols) + x));
+        for (y = 1; y < m_rows; y++) {
+            for (x = 0; x < m_cols; x++) {
+                col.put(((y - 1) * m_cols) + x, col.get((y * m_cols) + x));
+            }
+        }
 
         // And the texture line
-        for (y = 1; y < m_rows; y++)
-            for (x = 0; x < m_cols; x++)
-                m_textures [((y - 1) * m_cols) + x] = m_textures [(y * m_cols) + y];
+        for (y = 1; y < m_rows; y++) {
+            for (x = 0; x < m_cols; x++) {
+                m_textures[((y - 1) * m_cols) + x] = m_textures[(y * m_cols) + y];
+            }
+        }
 
         // Move cursor up
         CursorUp();
@@ -306,28 +313,39 @@ public class GLTextGrid extends HasErrorState {
     public void ShowCursor ()  { m_showCursor = true; }
     public void HideCursor ()  { m_showCursor = false; }
     public void MoveCursor (int x, int y) {
-        if (x < 0)          x = 0;
-        if (x >= m_cols)    x = m_cols - 1;
-        if (y < 0)          y = 0;
-        if (y >= m_rows)    y = m_rows - 1;
+        if (x < 0) {
+            x = 0;
+        }
+        if (x >= m_cols) {
+            x = m_cols - 1;
+        }
+        if (y < 0) {
+            y = 0;
+        }
+        if (y >= m_rows) {
+            y = m_rows - 1;
+        }
         m_cx = x;
         m_cy = y;
     }
     public void CursorUp () {
-        if (--m_cy < 0)
+        if (--m_cy < 0) {
             m_cy = 0;
+        }
     }
     public void CursorDown () {
         if (++m_cy >= m_rows) {
-            if (m_scroll)
+            if (m_scroll) {
                 ScrollUp ();
-            else
+            } else {
                 CursorUp ();
+            }
         }
     }
     public void CursorLeft () {
-        if (--m_cx < 0)
+        if (--m_cx < 0) {
             m_cx = 0;
+        }
     }
     public void NewLine () {
         m_cx = 0;
@@ -376,8 +394,9 @@ public class GLTextGrid extends HasErrorState {
 
             return true;
         }
-        else
+        else {
             return false;
+        }
     }
     public boolean Backspace (){
         if (m_cx > 0) {
@@ -385,8 +404,9 @@ public class GLTextGrid extends HasErrorState {
             Delete ();
             return true;
         }
-        else
+        else {
             return false;
+        }
     }
 
     // Writing commands
@@ -406,15 +426,17 @@ public class GLTextGrid extends HasErrorState {
 
             // Determine length of next substring
             int subLen = m_cols - m_cx;
-            if (subLen > len)
+            if (subLen > len) {
                 subLen = len;
+            }
 
             // Write out bit
             int offset = m_cy * m_cols + m_cx;
             if (subLen > 0) {
                 //TODO properly set characters
-                for (int i = 0; i < subLen; i++)
+                for (int i = 0; i < subLen; i++) {
                     m_chars[offset + i] = s.charAt(index + i);
+                }
                     //Arrays.fill(m_chars, offset, subLen ,s.charAt(index));
                 index += subLen;
                 len -= subLen;
@@ -424,10 +446,12 @@ public class GLTextGrid extends HasErrorState {
             int x;
             m_colours.rewind();
             LongBuffer col = m_colours.asLongBuffer();
-            for (x = 0; x < subLen; x++)
+            for (x = 0; x < subLen; x++) {
                 col.put(offset + x, m_currentColour);
-            for (x = 0; x < subLen; x++)
+            }
+            for (x = 0; x < subLen; x++) {
                 m_textures [offset + x] = m_currentTexture;
+            }
 
             // Advance cursor
             CursorRight (subLen);
@@ -441,15 +465,26 @@ public class GLTextGrid extends HasErrorState {
     public void ClearRegion (int x1, int y1, int x2, int y2){
 
         // Validate region
-        if (x1 < 0)         x1 = 0;
-        if (y1 < 0)         y1 = 0;
-        if (x2 >= m_cols)   x2 = m_cols - 1;
-        if (y2 >= m_rows)   y2 = m_rows - 1;
+        if (x1 < 0) {
+            x1 = 0;
+        }
+        if (y1 < 0) {
+            y1 = 0;
+        }
+        if (x2 >= m_cols) {
+            x2 = m_cols - 1;
+        }
+        if (y2 >= m_rows) {
+            y2 = m_rows - 1;
+        }
         if (x2 >= x1 && y2 >= y1)
 
             // Clear it
-            for (int y = y1; y <= y2; y++)
-                Arrays.fill(m_chars, y * m_cols + x1,  (y * m_cols + x1) + x2 - x1 + 1, ' ');
+        {
+            for (int y = y1; y <= y2; y++) {
+                Arrays.fill(m_chars, y * m_cols + x1, (y * m_cols + x1) + x2 - x1 + 1, ' ');
+            }
+        }
     }
 
     // Reading commands
@@ -457,10 +492,11 @@ public class GLTextGrid extends HasErrorState {
         if (    x < 0
                 ||  x >= m_cols
                 ||  y < 0
-                ||  y >= m_rows)
+                ||  y >= m_rows) {
             return 0;
-        else
+        } else {
             return m_chars [y * m_cols + x];
+        }
     }
     //unsigned
     public long ColourAt (int x, int y) {
@@ -469,20 +505,22 @@ public class GLTextGrid extends HasErrorState {
         if (    x < 0
                 ||  x >= m_cols
                 ||  y < 0
-                ||  y >= m_rows)
+                ||  y >= m_rows) {
             return m_currentColour;
-        else
+        } else {
             return col.get(y * m_cols + x);
+        }
     }
     //GLuint
     public int TextureAt (int x, int y) {
         if (    x < 0
                 ||  x >= m_cols
                 ||  y < 0
-                ||  y >= m_rows)
+                ||  y >= m_rows) {
             return m_currentTexture;
-        else
+        } else {
             return m_textures [y * m_cols + x];
+        }
     }
 
     // Colour commands
@@ -527,8 +565,9 @@ public class GLTextGrid extends HasErrorState {
             int c = 0, sc = 0;
             while (c == 0 && sc == 0 && !window.isClosing ()) {
                 sc = window.getScanKey ();
-                if (sc == 0)
+                if (sc == 0) {
                     c = window.getKey ();
+                }
                 //Go easy on the processor
                 try {
                     Thread.sleep(10);
@@ -538,27 +577,32 @@ public class GLTextGrid extends HasErrorState {
                 //Keep window responsive
                 glfwPollEvents();
             }
-            if (window.isClosing())
+            if (window.isClosing()) {
                 return "";
+            }
             switch (sc) {
                 case GLFW_KEY_LEFT:
-                    if (m_cx > left)
+                    if (m_cx > left) {
                         m_cx--;
+                    }
                     break;
                 case GLFW_KEY_RIGHT:
-                    if (m_cx < m_cols - 1)
+                    if (m_cx < m_cols - 1) {
                         m_cx++;
+                    }
                     break;
                 case GLFW_KEY_DELETE:
                     Delete ();
                     break;
                 case GLFW_KEY_BACKSPACE:
-                    if (m_cx > left)
+                    if (m_cx > left) {
                         Backspace ();
+                    }
                     break;
             }
-            if (sc == GLFW_KEY_ENTER)
+            if (sc == GLFW_KEY_ENTER) {
                 done = true;
+            }
             if (c >= ' ') {
                 if (m_cx < m_cols - 1 && Insert ()) {
                     m_chars     [m_cy * m_cols + m_cx] = (char)c;
@@ -577,18 +621,24 @@ public class GLTextGrid extends HasErrorState {
             glfwPollEvents();
 
         }
-        if (window.isClosing())
+        if (window.isClosing()) {
             return "";
+        }
         // Extract string
         int lineOffset  = m_cy * m_cols;
         int right       = m_cols;
         while (right > left && m_chars [lineOffset + right - 1] <= ' ')      // Trim spaces from right
+        {
             right--;
+        }
         while (left < right && m_chars [lineOffset + left] <= ' ')           // Trim spaces from left
+        {
             left++;
+        }
         String result = "";
-        for (int i = left; i < right; i++)
+        for (int i = left; i < right; i++) {
             result = result + m_chars [lineOffset + i];
+        }
 
         // Restore cursor, perform newline and update screen
         NewLine ();

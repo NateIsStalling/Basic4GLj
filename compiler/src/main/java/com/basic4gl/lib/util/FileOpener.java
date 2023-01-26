@@ -130,8 +130,9 @@ public class FileOpener extends HasErrorState {
         } else {
             System.out.println("file embedded! " + filename + " : " + filesFolder);
             FileInputStream result = mEmbeddedFiles.OpenOrLoad (filename);
-            if (result == null)
+            if (result == null) {
                 setError("Failed to open " + filename);
+            }
             return result;
         }
     }
@@ -149,8 +150,9 @@ public class FileOpener extends HasErrorState {
             Exception exception = null;
 
             try {
-                if (file.exists())
+                if (file.exists()) {
                     stream = new FileOutputStream(file);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 exception = e;

@@ -46,24 +46,29 @@ public class GLSprite extends GLBasicSprite {
         // An obscure bug which I haven't tracked down yet occasionally causes
         // m_frame to go to +INF, which causes an infinite loop.
         // Workaround for now is to reset it to 0 when goes out (sane) range.
-        if (m_frame < -10000 || m_frame > 10000)
+        if (m_frame < -10000 || m_frame > 10000) {
             m_frame = 0;
+        }
 
         if (!m_textures.isEmpty()) {
             if (m_animLoop) {
 
                 // Looped animation.
-                while (m_frame < 0)
+                while (m_frame < 0) {
                     m_frame += m_textures.size();
-                while (m_frame >= m_textures.size())
+                }
+                while (m_frame >= m_textures.size()) {
                     m_frame -= m_textures.size();
+                }
             } else {
 
                 // Clamped animation
-                if (m_frame < 0)
+                if (m_frame < 0) {
                     m_frame = 0;
-                if (m_frame >= m_textures.size())
+                }
+                if (m_frame >= m_textures.size()) {
                     m_frame = (float) m_textures.size() - 0.001f;
+                }
             }
         }
     }
@@ -122,8 +127,9 @@ public class GLSprite extends GLBasicSprite {
         // accordingly.
 
         // Sprite must be visible
-        if (!m_visible || FrameCount() == 0)
+        if (!m_visible || FrameCount() == 0) {
             return;
+        }
 
         // Setup texture and colour
         int frame = (int) m_frame;
@@ -141,13 +147,15 @@ public class GLSprite extends GLBasicSprite {
 
         // Translation, rotation & scaling
         glTranslatef(m_x, m_y, 0);
-        if (m_angle != 0)
+        if (m_angle != 0) {
             glRotatef(m_angle, 0, 0, 1);
+        }
         glScalef(m_xSize * m_scale,
                 m_ySize * m_scale,
                 1);
-        if (m_xCentre != 0 || m_yCentre != 0)
+        if (m_xCentre != 0 || m_yCentre != 0) {
             glTranslatef(-m_xCentre, -m_yCentre, 0);
+        }
 
         float x1 = 0, x2 = 1,
                 y1 = 1, y2 = 0;

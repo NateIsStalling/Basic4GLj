@@ -54,8 +54,9 @@ public class TypeLibrary implements Streamable {
 	{
 		name = name.toLowerCase();
 		for (int i = 0; i < m_structures.size (); i++) {
-			if (m_structures.get(i).m_name.equals(name))
-				return i;
+			if (m_structures.get(i).m_name.equals(name)) {
+                return i;
+            }
 		}
 		return -1;
 	}
@@ -68,8 +69,9 @@ public class TypeLibrary implements Streamable {
 				i++) {
 			assertTrue(i >= 0);
 			assertTrue(i < m_fields.size ());
-			if (m_fields .get(i).m_name.equals(fieldName))
-				return i;
+			if (m_fields .get(i).m_name.equals(fieldName)) {
+                return i;
+            }
 		}
 		return -1;
 	}
@@ -79,10 +81,14 @@ public class TypeLibrary implements Streamable {
 
 		// How big would a variable of type "type" be?
 		if (type.PhysicalPointerLevel () > 0)       // Pointers are always one element long
-			return 1;
+        {
+            return 1;
+        }
 
 		if (type.m_arrayLevel > 0)                  // Calculate array size
-			return type.ArraySize (DataSize (new ValType (type.m_basicType)));
+        {
+            return type.ArraySize (DataSize (new ValType (type.m_basicType)));
+        }
 
 		if (type.m_basicType >= 0) {
 
@@ -107,8 +113,9 @@ public class TypeLibrary implements Streamable {
 			element.m_arrayLevel = 0;
 			return type.ArraySizeBiggerThan (size, DataSize (element));
 		}
-		else
-			return DataSize (type) > size;
+		else {
+            return DataSize (type) > size;
+        }
 	}
 
 	public boolean TypeValid(ValType type)
@@ -124,14 +131,16 @@ public class TypeLibrary implements Streamable {
 
 		// Pointers to objects don't *contain* anything.
 		// (Pointing to something that contains a string doesn't count.)
-		if (type.VirtualPointerLevel() > 0)
-			return false;
+		if (type.VirtualPointerLevel() > 0) {
+            return false;
+        }
 
 		// Examine data type
-		if (type.m_basicType < 0)
-			return type.m_basicType == ValType.VTP_STRING;
-		else
-			return m_structures.get(type.m_basicType).m_containsString;
+		if (type.m_basicType < 0) {
+            return type.m_basicType == ValType.VTP_STRING;
+        } else {
+            return m_structures.get(type.m_basicType).m_containsString;
+        }
 	}
 
 	public boolean ContainsArray(ValType type) {
@@ -152,12 +161,14 @@ public class TypeLibrary implements Streamable {
 		assertTrue(TypeValid(type));
 
 		// Type is a pointer?
-		if (type.m_pointerLevel > 0)
-			return true;
+		if (type.m_pointerLevel > 0) {
+            return true;
+        }
 
 		// Is a structure (or array of structures) containing a pointer?
-		if (type.m_basicType >= 0)
-			return m_structures.get(type.m_basicType).m_containsPointer;
+		if (type.m_basicType >= 0) {
+            return m_structures.get(type.m_basicType).m_containsPointer;
+        }
 
 		return false;
 	}
@@ -229,24 +240,27 @@ public class TypeLibrary implements Streamable {
 	// Debugging/output
 	public String DescribeVariable(String name, ValType type) {
 
-		if (!TypeValid(type))
-			return "INVALID TYPE " + name;
+		if (!TypeValid(type)) {
+            return "INVALID TYPE " + name;
+        }
 
 		// Return a string describing what the variable stores
 		String result;
 
 		// Var type
-		if (type.m_basicType >= 0)
-			result = m_structures.get(type.m_basicType).m_name
-					+ " "; // Structure type
-		else
-			result = ValType.BasicValTypeName(type.m_basicType) + " "; // Basic
+		if (type.m_basicType >= 0) {
+            result = m_structures.get(type.m_basicType).m_name
+                    + " "; // Structure type
+        } else {
+            result = ValType.BasicValTypeName(type.m_basicType) + " "; // Basic
+        }
 		// type
 
 		// Append pointer prefix
 		int i;
-		for (i = 0; i < type.VirtualPointerLevel(); i++)
-			result += "&";
+		for (i = 0; i < type.VirtualPointerLevel(); i++) {
+            result += "&";
+        }
 
 		// Var name
 		result += name;
@@ -254,8 +268,9 @@ public class TypeLibrary implements Streamable {
 		// Append array indices
 		for (i = type.m_arrayLevel - 1; i >= 0; i--) {
 			result += "(";
-			if (type.VirtualPointerLevel() == 0)
-				result += String.valueOf(type.m_arrayDims[i] - 1);
+			if (type.VirtualPointerLevel() == 0) {
+                result += String.valueOf(type.m_arrayDims[i] - 1);
+            }
 			result += ")";
 		}
 
@@ -267,13 +282,15 @@ public class TypeLibrary implements Streamable {
 		int i;
 		// Write out fields
 		Streaming.WriteLong(stream, m_fields.size());
-		for (i = 0; i < m_fields.size(); i++)
-			m_fields.get(i).StreamOut(stream);
+		for (i = 0; i < m_fields.size(); i++) {
+            m_fields.get(i).StreamOut(stream);
+        }
 
 		// Write out structures
 		Streaming.WriteLong(stream, m_structures.size());
-		for (i = 0; i < m_structures.size(); i++)
-			m_structures.get(i).StreamOut(stream);
+		for (i = 0; i < m_structures.size(); i++) {
+            m_structures.get(i).StreamOut(stream);
+        }
 	}
 
 	public boolean StreamIn(DataInputStream stream) throws IOException{

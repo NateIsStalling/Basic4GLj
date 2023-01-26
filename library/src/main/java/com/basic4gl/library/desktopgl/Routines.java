@@ -16,7 +16,9 @@ public class Routines {
     public static boolean ValidateSizeParam (TomVM vm, int paramIndex) {
         int size = vm.GetIntParam (paramIndex);
         if (size <= 0)                      // If size is 0, do nothing.
+        {
             return false;                   // Program will still proceed.
+        }
         if (size > 65536) {                 // If size is greater 64K, this is a run-time error
             vm.FunctionError ("Size must be 0 - 65536 (Basic4GL restriction)");
             return false;

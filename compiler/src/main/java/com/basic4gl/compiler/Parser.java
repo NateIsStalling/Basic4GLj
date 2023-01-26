@@ -30,26 +30,30 @@ public class Parser extends HasErrorState {
 			m_col = 0;
 			m_line++;
 		} else {
-			if (m_special)
+			if (m_special) {
 				m_specialCol++;
-			else
+			} else {
 				m_col++;
+			}
 		}
 		return c;
 	}
 
 	char PeekChar(boolean inString) {
 		if (Eof()) // End of file
+		{
 			return 0;
-		else if (m_special)
+		} else if (m_special) {
 			return m_specialText.charAt(m_specialCol);
-		else if (m_col >= Text().length()
+		} else if (m_col >= Text().length()
 				|| (Text().charAt(m_col) == '\'' && !inString)) // End of line,
 																// or start of
 																// comment
+		{
 			return 13;
-		else
+		} else {
 			return Text().charAt(m_col); // Regular text
+		}
 	}
 
 	String Text() {
@@ -95,10 +99,11 @@ public class Parser extends HasErrorState {
 	}
 
 	public boolean Eof() {
-		if (m_special)
+		if (m_special) {
 			return m_specialCol >= m_specialText.length();
-		else
+		} else {
 			return m_line >= m_sourceCode.size();
+		}
 	}
 
 	public Token NextToken() {
@@ -142,46 +147,51 @@ public class Parser extends HasErrorState {
 		}
 
 		// Determine token type
-		if (c == 0)
+		if (c == 0) {
 			t.m_type = TokenType.CTT_EOF;
-		else if (c == 13)
+		} else if (c == 13) {
 			t.m_type = TokenType.CTT_EOL;
-		else if (c == '"') {
+		} else if (c == '"') {
 			t.m_type = TokenType.CTT_CONSTANT;
 			t.m_valType = ValType.VTP_STRING;
 		} else if (!dataMode) {
 			if (IsNumber((char) c)) {
 				t.m_type = TokenType.CTT_CONSTANT;
-				if (c == '.')
+				if (c == '.') {
 					t.m_valType = ValType.VTP_REAL;
+				}
 			} else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
-					|| c == '_')
+					|| c == '_') {
 				t.m_type = TokenType.CTT_TEXT;
-			else
+			} else {
 				t.m_type = TokenType.CTT_SYMBOL;
+			}
 		} else {
 
 			// Data mode. (And not a quoted string or EOF/EOL).
 			// Comma and colon are recognised separators (colon also means end
 			// of statement).
 			// Anything else is considered part of the data element.
-			if (c == ',' || c == ':')
+			if (c == ',' || c == ':') {
 				t.m_type = TokenType.CTT_SYMBOL;
-			else
+			} else {
 				t.m_type = TokenType.CTT_TEXT;
+			}
 		}
 
 		// Empty token types
 		if (t.m_type == TokenType.CTT_EOF
-				|| t.m_type == TokenType.CTT_EOL)
+				|| t.m_type == TokenType.CTT_EOL) {
 			return t;
+		}
 
 		// Extract token text
 		// Regular case, not dataMode text
 		if (!dataMode || t.m_type != TokenType.CTT_TEXT) {
 			// Don't include leading quote (if string constant)
-			if (!(t.m_type == TokenType.CTT_CONSTANT && t.m_valType == ValType.VTP_STRING))
+			if (!(t.m_type == TokenType.CTT_CONSTANT && t.m_valType == ValType.VTP_STRING)) {
 				t.m_text = t.m_text + (char) c;
+			}
 			c = PeekChar(t.m_valType == ValType.VTP_STRING);
 			byte lcase = (byte) Character.toLowerCase(c);
 			boolean done = false;
@@ -203,11 +213,14 @@ public class Parser extends HasErrorState {
 					} else {
 						boolean validDecimalPt = (c == '.' && t.m_valType == ValType.VTP_INT);
 						if (validDecimalPt) // Floating point number
+						{
 							t.m_valType = ValType.VTP_REAL;
+						}
 
 	                    boolean hexSpecifier = lcase == 'x' && (t.m_text.equals("0") || t.m_text.equals("-0"));
-	                    if (hexSpecifier)
-	                        hex = true;
+	                    if (hexSpecifier) {
+							hex = true;
+						}
 	                    done = !(   (c >= '0' && c <= '9')
 	                                || validDecimalPt
 	                                || hexSpecifier                             // Hex specifier
@@ -221,7 +234,9 @@ public class Parser extends HasErrorState {
 					if (c == '$' || c == '%' || c == '#') // Variables can be
 															// trailed with a $,
 															// # or %
+					{
 						t.m_text = t.m_text + GetChar(false);
+					}
 					break;
 				case CTT_SYMBOL:
 					done = !(IsComparison(t.m_text.charAt(0)) && IsComparison(c));
@@ -242,8 +257,9 @@ public class Parser extends HasErrorState {
 	                if (t.m_type == TokenType.CTT_CONSTANT && t.m_valType == ValType.VTP_INT) {
 	                    // Check integer number is valid
 	                    char last = t.m_text.charAt(t.m_text.length() - 1);
-	                    if (last == 'x' || last == 'X')
-	                        setError("'" + t.m_text + "' is not a valid number");
+	                    if (last == 'x' || last == 'X') {
+							setError("'" + t.m_text + "' is not a valid number");
+						}
 	                }
 	            }
 
@@ -277,10 +293,13 @@ public class Parser extends HasErrorState {
 
 						boolean validDecimalPt = (c == '.' && t.m_valType == ValType.VTP_INT);
 	                    if (validDecimalPt)                                   // Floating point number
+						{
 							t.m_valType = ValType.VTP_REAL;
+						}
 	                    boolean hexSpecifier = (lcase == 'x' && (t.m_text.equals("0") || t.m_text.equals("-0")));
-	                    if (hexSpecifier)
-	                        hex = true;
+	                    if (hexSpecifier) {
+							hex = true;
+						}
 	                    if (!(  (c >= '0' && c <= '9')
 	                            ||  validDecimalPt                              // Regular decimal number
 	                            ||  hexSpecifier
@@ -292,16 +311,20 @@ public class Parser extends HasErrorState {
 						|| (c <= ' ')) // Trailing whitespace
 								|| (c > ' ' && whiteSpaceFound)) // Contained
 																	// whitespace
+						{
 							t.m_valType = ValType.VTP_STRING;
+						}
 					}
-					if (c <= ' ')
+					if (c <= ' ') {
 						whiteSpaceFound = true;
+					}
 				}
 				if (!done) {
-					if (firstIteration)
+					if (firstIteration) {
 						t.m_text = String.valueOf((char) c);
-					else
+					} else {
 						t.m_text = t.m_text + GetChar(false);
+					}
 					c = PeekChar(false);
 					lcase = (byte) Character.toLowerCase(c);
 				}
@@ -310,8 +333,9 @@ public class Parser extends HasErrorState {
 	                if (t.m_type == TokenType.CTT_CONSTANT && t.m_valType == ValType.VTP_INT) {
 	                    // Check integer number is valid
 	                    char last = t.m_text.charAt(t.m_text.length() - 1);
-	                    if (last == 'x' || last == 'X')
-	                        setError("'" + t.m_text + "' is not a valid number");
+	                    if (last == 'x' || last == 'X') {
+							setError("'" + t.m_text + "' is not a valid number");
+						}
 	                }
 	            }
 
@@ -320,8 +344,9 @@ public class Parser extends HasErrorState {
 
 			// Trim trailing whitespace
 			int end = t.m_text.length() - 1;
-			while (end >= 0 && t.m_text.charAt(end) <= ' ')
+			while (end >= 0 && t.m_text.charAt(end) <= ' ') {
 				end--;
+			}
 			t.m_text = t.m_text.substring(0, end + 1);
 		}
 
@@ -368,14 +393,16 @@ public class Parser extends HasErrorState {
 		m_specialText = text;
 		m_specialCol = 0;
 		m_specialSourceCol = col;
-		if (line >= 0)
+		if (line >= 0) {
 			m_specialSourceLine = line;
-		else
+		} else {
 			m_specialSourceLine = m_line;
-		if (col >= 0)
+		}
+		if (col >= 0) {
 			m_specialSourceCol = col;
-		else
+		} else {
 			m_specialSourceCol = m_col;
+		}
 	}
 
 	public void SetNormal() {

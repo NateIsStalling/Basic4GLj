@@ -43,8 +43,9 @@ public class MainWindow {
 
 //            debugProc = GLUtil.setupDebugMessageCallback();
             // Initialize GLFW. Most GLFW functions will not work before doing this.
-            if (!glfwInit())
+            if (!glfwInit()) {
                 throw new IllegalStateException("Unable to initialize GLFW");
+            }
 
             // Configure GLFW
             glfwDefaultWindowHints(); // optional, the current window hints are already the default
@@ -53,13 +54,15 @@ public class MainWindow {
 
             // Create the window
             window = glfwCreateWindow((int)width, (int)height, "Hello World!", NULL, NULL);
-            if (window == NULL)
+            if (window == NULL) {
                 throw new RuntimeException("Failed to create the GLFW window");
+            }
 
             // Setup a key callback. It will be called every time a key is pressed, repeated or released.
             glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-                if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
+                if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                     glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+                }
             });
 
             // Get the thread stack and push a new frame

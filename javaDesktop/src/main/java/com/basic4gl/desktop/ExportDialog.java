@@ -124,12 +124,14 @@ public class ExportDialog {
                     Builder builder = (Builder)mLibraries.get(mBuilders.get(i));
                     FileNameExtensionFilter filter = new FileNameExtensionFilter(builder.getFileDescription(),
                             builder.getFileExtension());
-                    if (i == mCurrentBuilder)
+                    if (i == mCurrentBuilder) {
                         currentFilter = filter;
+                    }
                     dialog.addChoosableFileFilter(filter);
                 }
-                if (currentFilter != null)
+                if (currentFilter != null) {
                     dialog.setFileFilter(currentFilter);
+                }
 
                 int result = dialog.showSaveDialog(mDialog);
 
@@ -148,8 +150,9 @@ public class ExportDialog {
 
                     //Change current target to match file extension if applicable
                     int index = Arrays.asList(dialog.getChoosableFileFilters()).indexOf(dialog.getFileFilter());
-                    if (index != mCurrentBuilder)
+                    if (index != mCurrentBuilder) {
                         mBuilderComboBox.setSelectedIndex(index);
+                    }
                 }
             }
         });
@@ -214,8 +217,9 @@ public class ExportDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JComboBox cb = (JComboBox) e.getSource();
-                if (cb == null)
+                if (cb == null) {
                     return;
+                }
                 mCurrentBuilder = cb.getSelectedIndex();
                 Library target = mLibraries.get(mBuilders.get(mCurrentBuilder));
 
@@ -235,8 +239,9 @@ public class ExportDialog {
                     val = mCurrentConfig.getValue(i);
 
                     //Override parameter type if field contains multiple values
-                    if (field.length > 1)
+                    if (field.length > 1) {
                         param = Configuration.PARAM_CHOICE;
+                    }
 
                     switch (param) {
                         case Configuration.PARAM_HEADING:
@@ -286,8 +291,9 @@ public class ExportDialog {
                             mConfigPane.add(label);
                             label.setHorizontalAlignment(SwingConstants.LEFT);
                             JComboBox comboBox = new JComboBox();
-                            for (int j = 1; j < field.length; j++)
+                            for (int j = 1; j < field.length; j++) {
                                 comboBox.addItem(field[j]);
+                            }
                             comboBox.setSelectedIndex(Integer.valueOf(val));
                             mSettingComponents.add(comboBox);
                             mConfigPane.add(comboBox);
@@ -304,15 +310,17 @@ public class ExportDialog {
 
     private void applyConfig(){
         String val;
-        if (mCurrentConfig == null)
+        if (mCurrentConfig == null) {
             return;
+        }
         Builder builder = (Builder)mLibraries.get(mBuilders.get(mCurrentBuilder));
         int param;
         for (int i = 0; i < mCurrentConfig.getSettingCount(); i++) {
             param = mCurrentConfig.getParamType(i);
             val = "0";
-            if (mSettingComponents.get(i) == null)
+            if (mSettingComponents.get(i) == null) {
                 continue;
+            }
             switch (param) {
                 case Configuration.PARAM_STRING:
                     val = ((JTextField)mSettingComponents.get(i)).getText();
@@ -380,8 +388,9 @@ public class ExportDialog {
                     JOptionPane.showMessageDialog(mDialog,"Please enter a filename.");
                     return;
                 }
-                if (!mFilePathTextField.getText().endsWith("." + builder.getFileExtension()))
+                if (!mFilePathTextField.getText().endsWith("." + builder.getFileExtension())) {
                     dest = new File(mFilePathTextField.getText() + "." + builder.getFileExtension());
+                }
 
                 if (dest.exists()){
                     Object[] options = {"Yes",
@@ -389,8 +398,9 @@ public class ExportDialog {
                     decision = JOptionPane.showOptionDialog(mDialog, "File already exists! Overwrite?",
                             "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
                             options, options[1]);
-                    if (decision == 1)
+                    if (decision == 1) {
                         return;
+                    }
                 }
                 enableComponents(mTabs, false);
                 mExportButton.setEnabled(false);
@@ -434,8 +444,9 @@ public class ExportDialog {
         protected Object doInBackground() throws Exception {
             mMessage = new CallbackMessage(CallbackMessage.WORKING, "");
 
-            if (!Compile())
+            if (!Compile()) {
                 return null; //TODO Throw error
+            }
             //Export to file
             FileOutputStream stream = new FileOutputStream(mDest);
             mBuilder.export(mDest.getName(), stream, mCallback);

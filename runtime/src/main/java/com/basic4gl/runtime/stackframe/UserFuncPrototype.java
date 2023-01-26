@@ -61,9 +61,11 @@ public class UserFuncPrototype implements Streamable {
 		// Return user variable name, given its index.
 		// Not particularly efficient. Used for debugging functions (VM view
 		// etc)
-		for (String key : localVarIndex.keySet())
-			if (localVarIndex.get(key) == index)
+		for (String key : localVarIndex.keySet()) {
+			if (localVarIndex.get(key) == index) {
 				return key;
+			}
+		}
 		return "???";
 	}
 
@@ -97,15 +99,18 @@ public class UserFuncPrototype implements Streamable {
 	public boolean Matches(UserFuncPrototype func) {
 
 		// Match return value
-		if (hasReturnVal != func.hasReturnVal)
+		if (hasReturnVal != func.hasReturnVal) {
 			return false;
+		}
 
-		if (hasReturnVal && !returnValType.ExactEquals(func.returnValType))
+		if (hasReturnVal && !returnValType.ExactEquals(func.returnValType)) {
 			return false;
+		}
 
 		// Match parameters
-		if (paramCount != func.paramCount)
+		if (paramCount != func.paramCount) {
 			return false;
+		}
 
 		// Loop through local vars/params
 		// for ( map<string,int>::iterator i = localVarIndex.begin();
@@ -120,17 +125,20 @@ public class UserFuncPrototype implements Streamable {
 				Integer funcI = func.localVarIndex.get(key);
 
 				// Param must exist
-				if (funcI == null)
+				if (funcI == null) {
 					return false;
+				}
 
 				// Must have same index
-				if (!localVarIndex.get(key).equals(funcI))
+				if (!localVarIndex.get(key).equals(funcI)) {
 					return false;
+				}
 
 				// Types must match
 				if (!localVarTypes.get(localVarIndex.get(key)).ExactEquals(
-						func.localVarTypes.get(funcI)))
+						func.localVarTypes.get(funcI))) {
 					return false;
+				}
 			}
 		}
 
@@ -141,8 +149,9 @@ public class UserFuncPrototype implements Streamable {
 	public void StreamOut(DataOutputStream stream) throws IOException{
 		// Return value
 		Streaming.WriteByte(stream, hasReturnVal ? (byte) 1 : 0);
-		if (hasReturnVal)
+		if (hasReturnVal) {
 			returnValType.StreamOut(stream);
+		}
 
 		// Parameters/local variables
 		Streaming.WriteLong(stream, localVarTypes.size());
@@ -162,8 +171,9 @@ public class UserFuncPrototype implements Streamable {
 		// Return value
 		hasReturnVal = Streaming.ReadByte(stream) != 0;
 
-		if (hasReturnVal)
+		if (hasReturnVal) {
 			returnValType.StreamIn(stream);
+		}
 
 		// Parameters/local variables
 		int count = (int) Streaming.ReadLong(stream);

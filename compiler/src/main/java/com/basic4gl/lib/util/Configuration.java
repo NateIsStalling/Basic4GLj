@@ -22,11 +22,17 @@ public class Configuration implements Serializable {
     public Configuration(){}
     public Configuration(Configuration config){
         mFields = new ArrayList<String[]>(config.mFields.size());
-        for(String[] item: config.mFields) mFields.add(item.clone());
+        for(String[] item: config.mFields) {
+            mFields.add(item.clone());
+        }
         mParameters = new ArrayList<Integer>(config.mParameters.size());
-        for(Integer item: config.mParameters) mParameters.add(item);
+        for(Integer item: config.mParameters) {
+            mParameters.add(item);
+        }
         mValues = new ArrayList<String>(config.mValues.size());
-        for(String item: config.mValues) mValues.add(item);
+        for(String item: config.mValues) {
+            mValues.add(item);
+        }
 
     }
     public int getSettingCount(){return mFields.size();}

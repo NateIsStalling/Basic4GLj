@@ -35,9 +35,11 @@ public class ValTypeSet implements Streamable{
 
 		// Look for type
 		int i;
-		for (i = 0; i < mTypes.size(); i++)
-			if (mTypes.get(i).Equals(type))
+		for (i = 0; i < mTypes.size(); i++) {
+			if (mTypes.get(i).Equals(type)) {
 				return i;
+			}
+		}
 
 		// Otherwise create new one
 		i = mTypes.size();
@@ -46,8 +48,9 @@ public class ValTypeSet implements Streamable{
 	}
 
 	public ValType getValType(int index) {
-		if (index >= 0 && index < mTypes.size())
+		if (index >= 0 && index < mTypes.size()) {
 			return mTypes.get(index);
+		}
 		return null;
 	}
 
@@ -55,8 +58,9 @@ public class ValTypeSet implements Streamable{
 	public void StreamOut(DataOutputStream stream) throws IOException{
 
 		Streaming.WriteLong(stream, mTypes.size());
-		for (int i = 0; i < mTypes.size(); i++)
+		for (int i = 0; i < mTypes.size(); i++) {
 			mTypes.get(i).StreamOut(stream);
+		}
 
 	}
 

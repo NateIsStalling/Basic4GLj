@@ -29,12 +29,15 @@ public class Exporter {
             JarInputStream input = new JarInputStream(jar.openStream());
             while (true) {
                 ZipEntry e = input.getNextEntry();
-                if (e == null)
+                if (e == null) {
                     break;
+                }
                 String name = e.getName();
 
                 if (name.startsWith("META-INF/"))   //Do not copy manifest to destination
+                {
                     continue;
+                }
 
                 //Check if file should be added
                 copy = false;
@@ -42,13 +45,16 @@ public class Exporter {
                 if (tempPath != null && name.startsWith(tempPath)) {
                     copy = true;
                 }
-                if (!copy)
+                if (!copy) {
                     for (String file : files)    //Check if entry name is in file list
+                    {
                         if (name.startsWith(file)) {
                             tempPath = file;    //Cache path
                             copy = true;
                             break;
                         }
+                    }
+                }
                 //Copy file to destination
                 if (copy) {
                     target.putNextEntry(e);

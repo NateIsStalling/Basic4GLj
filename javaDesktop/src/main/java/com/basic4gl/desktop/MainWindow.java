@@ -385,15 +385,16 @@ public class MainWindow implements
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     EditWatch();
+                }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_DELETE)
+                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
                     DeleteWatch();
-                else if (e.getKeyCode() == KeyEvent.VK_INSERT) {
+                } else if (e.getKeyCode() == KeyEvent.VK_INSERT) {
                     mWatchListBox.setSelectedIndex(mEditor.getWatchListSize());
                     EditWatch();
                 }
@@ -615,8 +616,9 @@ public class MainWindow implements
         }
 
         // Save file before closing
-        if (!MultifileCheckSaveChanges())
+        if (!MultifileCheckSaveChanges()) {
             return;
+        }
 
         //TODO Add libraries
         // Library cleanup functions
@@ -767,12 +769,14 @@ public class MainWindow implements
     boolean MultifileSaveAll() {
 
         // Save all modified files
-        for (int i = 0; i < mFileManager.mFileEditors.size(); i++)
+        for (int i = 0; i < mFileManager.mFileEditors.size(); i++) {
             if (mFileManager.mFileEditors.get(i).isModified()) {
                 mTabControl.setSelectedIndex(i);
-                if (!actionSave(i))
+                if (!actionSave(i)) {
                     return false;
+                }
             }
+        }
 
         return true;
     }
@@ -781,8 +785,9 @@ public class MainWindow implements
         //Save content of current tab
         if (mFileManager.mFileEditors.isEmpty()
                 || this.mTabControl.getTabCount() == 0
-                || this.mTabControl.getSelectedIndex() == -1)
+                || this.mTabControl.getSelectedIndex() == -1) {
             return false;
+        }
 
         int index = mTabControl.getSelectedIndex();
         boolean saved = mFileManager.mFileEditors.get(index).save(false, mFileManager.mCurrentDirectory);
@@ -804,8 +809,9 @@ public class MainWindow implements
         //Save content of current tab
         if (mFileManager.mFileEditors.isEmpty()
                 || this.mTabControl.getTabCount() == 0
-                || this.mTabControl.getSelectedIndex() == -1)
+                || this.mTabControl.getSelectedIndex() == -1) {
             return false;
+        }
 
         boolean saved = mFileManager.mFileEditors.get(index).save(false, mFileManager.mCurrentDirectory);
         if (saved) {
@@ -826,8 +832,9 @@ public class MainWindow implements
         //Save content of current tab as new file
         if (mFileManager.mFileEditors.isEmpty()
                 || this.mTabControl.getTabCount() == 0
-                || this.mTabControl.getSelectedIndex() == -1)
+                || this.mTabControl.getSelectedIndex() == -1) {
             return;
+        }
         int index = mTabControl.getSelectedIndex();
 
         mFileManager.mCurrentDirectory = mFileManager.mFileDirectory;

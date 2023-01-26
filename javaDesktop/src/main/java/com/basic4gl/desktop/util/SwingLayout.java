@@ -30,8 +30,9 @@ public class SwingLayout {
             mMenuBar.add(menu);
         }
 
-        if (menu != null)
+        if (menu != null) {
             menu.add(item);
+        }
     }
 
 

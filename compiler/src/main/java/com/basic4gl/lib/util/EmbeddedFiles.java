@@ -194,7 +194,9 @@ public class EmbeddedFiles {
 
 
     String separatorsToSystem(String res) {
-        if (res==null) return null;
+        if (res==null) {
+            return null;
+        }
         if (File.separatorChar=='\\') {
             // From Windows to Linux/Mac
             return res.replace('/', File.separatorChar);

@@ -23,14 +23,16 @@ public abstract class GLBasicSprite {
         assertTrue(m_list != null);
 
         // Link prev item to next
-        if (m_prev != null)
+        if (m_prev != null) {
             m_prev.m_next = m_next;
-        else
+        } else {
             m_list.m_head = m_next;
+        }
 
         // Link next item to prev
-        if (m_next != null)
+        if (m_next != null) {
             m_next.m_prev = m_prev;
+        }
 
         // Unlink this item
         m_prev = null;
@@ -56,22 +58,25 @@ public abstract class GLBasicSprite {
             }
 
             // Otherwise we're done
-            else
+            else {
                 done = true;
+            }
         }
 
         // Insert sprite between prev and next
         assertTrue(m_list != null);
 
         // Link prev to us
-        if (prev != null)
+        if (prev != null) {
             prev.m_next = this;
-        else
+        } else {
             m_list.m_head = this;
+        }
 
         // Link next to us
-        if (next != null)
+        if (next != null) {
             next.m_prev = this;
+        }
 
         // Link us to next & prev
         m_prev = prev;

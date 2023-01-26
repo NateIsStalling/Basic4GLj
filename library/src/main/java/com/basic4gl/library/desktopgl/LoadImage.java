@@ -50,11 +50,13 @@ public class LoadImage {
         filename = mFiles.FilenameForRead (filename, false);
         File file;
         if (filename != null && !filename.equals("") && mFiles.getError().equals("") &&
-                (file = new File(mFiles.getParentDirectory(), filename)).exists() && !file.isDirectory())
+                (file = new File(mFiles.getParentDirectory(), filename)).exists() && !file.isDirectory()) {
             image = new Image(file.getAbsolutePath());//files.FilenameForRead (filename, false));
+        }
 
-        if (image != null && image.getPixels() == null)
+        if (image != null && image.getPixels() == null) {
             return null;
+        }
         //TODO Check image format; Image constructor currently forces RGBA so this step may be unnecessary
             /*
             if (image != null) {
@@ -265,17 +267,20 @@ public class LoadImage {
         if (frameWidth <= 0 || frameHeight <= 0) {
 
             // Default to square image.
-            if (image.getWidth() < image.getHeight())
+            if (image.getWidth() < image.getHeight()) {
                 frameWidth = image.getWidth();
-            else
+            } else {
                 frameWidth = image.getHeight();
+            }
             frameHeight = frameWidth;
         }
 
-        if (frameWidth > image.getWidth())
+        if (frameWidth > image.getWidth()) {
             frameWidth = image.getWidth();
-        if (frameHeight > image.getHeight())
+        }
+        if (frameHeight > image.getHeight()) {
             frameHeight = image.getHeight();
+        }
 
         // Extract images
         Vector<Image> images = new Vector<Image>();
@@ -293,8 +298,9 @@ public class LoadImage {
                 for (int dy = 0; dy < frameHeight; dy++){
                     dstPixels.position(dy * frameWidth * bpp);
                     srcPixels.position(((y + dy) * image.getWidth() + x) * bpp);
-                    for (int dx = 0; dx < frameWidth * bpp; dx++)
+                    for (int dx = 0; dx < frameWidth * bpp; dx++) {
                         dstPixels.put(srcPixels.get());
+                    }
 
                 }
             }
@@ -317,9 +323,11 @@ public class LoadImage {
 
         // Search for non-transparent pixel
         ByteBuffer pixels = image.getPixels();
-        for (int i = 0; i < image.getWidth() * image.getHeight(); i++)
-            if (pixels.get(i * 4 + 3) != 0)
+        for (int i = 0; i < image.getWidth() * image.getHeight(); i++) {
+            if (pixels.get(i * 4 + 3) != 0) {
                 return false;
+            }
+        }
 
         return true;
     }
@@ -329,16 +337,20 @@ public class LoadImage {
 
         // Clone image and convert to RGBA
         Image dst = new Image(image, 4);//STBImage.STBI_rgb_alpha);
-        if (dst.getPixels() == null)
+        if (dst.getPixels() == null) {
             return image;           // Unable to convert. Just return original image
+        }
 
         // Convert pixels to transparent
         LongBuffer pixels = dst.getPixels().asLongBuffer();
         int count = dst.getWidth() * dst.getHeight();
         col = col & 0x00ffffff;                     // Mask out alpha channel
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < count; i++) {
             if ((pixels.get(i) & 0x00ffffff) == col)    // We mask out the alpha before comparing
+            {
                 pixels.put(i, 0);
+            }
+        }
 
         return dst;
     }

@@ -140,8 +140,9 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
 // Performance counter
     long PerformanceCounter() {
         if (performanceFreq == 0)       // No performance counter?
+        {
             return System.currentTimeMillis();      // Degrade to tick counter
-        else {
+        } else {
             long counter;
             counter = System.nanoTime();
             return (counter / performanceFreq) * 1000;
@@ -161,13 +162,15 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
     public final class WrapSleep implements Function {
         public void run(TomVM vm)          {
         int msec = vm.GetIntParam (1);
-        if (msec > 5000)
+        if (msec > 5000) {
             msec = 5000;
-        if (msec > 0)
+        }
+        if (msec > 0) {
             try {
                 Thread.sleep(msec);
             } catch (InterruptedException e) { // do nothing
             }
+        }
     }
     }
     public final class  WrapTickCount implements Function {

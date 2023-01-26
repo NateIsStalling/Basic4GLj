@@ -127,8 +127,9 @@ public class FileEditor {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (gutter.getBookmarks(HEADER_BOOKMARK).length == 0)
+                if (gutter.getBookmarks(HEADER_BOOKMARK).length == 0) {
                     pane.setIconRowHeaderEnabled(HEADER_BOOKMARK, false);
+                }
             }
 
             @Override
@@ -221,8 +222,9 @@ public class FileEditor {
         result  = (mFilename.equals("") ? DEFAULT_NAME : mFilename).toLowerCase();
 
         // Append asterisk if modified
-        if (mIsModified)
+        if (mIsModified) {
             result = result + " *";
+        }
 
         return result;
     }
@@ -267,8 +269,9 @@ public class FileEditor {
                     //Append extension if needed
                     if(((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions().length > 0){
                         String extension = ((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions()[0];
-                        if (!path.endsWith("." + extension))
+                        if (!path.endsWith("." + extension)) {
                             path += "." + extension;
+                        }
                     }
                 }
                 mFilePath = path;
@@ -277,7 +280,7 @@ public class FileEditor {
                 save = false;
             }
         }
-        if (save)
+        if (save) {
             try {
                 FileWriter fw = new FileWriter(mFilePath, false);
                 editorPane.write(fw);
@@ -290,6 +293,7 @@ public class FileEditor {
                 e.printStackTrace();
                 return false;
             }
+        }
 
         return false;
     }

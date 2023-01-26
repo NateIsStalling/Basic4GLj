@@ -204,8 +204,9 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             InternalExecute(vm, offset, true);
 
             // Check for error/end program
-            if (vm.hasError() || vm.Done())
+            if (vm.hasError() || vm.Done()) {
                 return false;
+            }
 
             // Restore stack
             vm.Data().RestoreState(stackTop.get(), tempDataLock.get(), false);
@@ -311,15 +312,17 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         if (!vm.UserFunctionPrototypes().isEmpty()) {
             vm.FunctionError("'Compile' and 'Execute' cannot be used in programs that have functions/subs. Use 'Comp' and 'Exec' instead");
             return false;
-        } else
+        } else {
             return true;
+        }
     }
 
     void DoOldCompile(TomVM vm) {
 
         // Not allowed in programs with functions/subs (see note in CheckForFunctions)
-        if (!CheckForFunctions(vm))
+        if (!CheckForFunctions(vm)) {
             return;
+        }
 
         // Compiled code will be added to end of program
         long offset = vm.InstructionCount();
@@ -351,10 +354,11 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     void DoCompile(TomVM vm, boolean useOldMethod) {
-        if (useOldMethod)
+        if (useOldMethod) {
             DoOldCompile(vm);
-        else
+        } else {
             vm.Reg().setIntVal(DoNewCompile(vm));
+        }
     }
 
     void DoCompileText(TomVM vm, String text, boolean useOldMethod) {
@@ -553,8 +557,9 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         public void run(TomVM vm) {
 
             // Not allowed in programs with functions/subs (see note in CheckForFunctions)
-            if (!CheckForFunctions(vm))
+            if (!CheckForFunctions(vm)) {
                 return;
+            }
 
             ClearError();
             int result = -1;

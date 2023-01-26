@@ -36,17 +36,21 @@ public class BasicTokenMaker extends AbstractTokenMaker {
     public TokenMap getWordsToHighlight() {
         TokenMap tokenMap = new TokenMap(true);
 
-        for (String token : mReservedWords)
+        for (String token : mReservedWords) {
             tokenMap.put(token, Token.RESERVED_WORD);
+        }
 
-        for (String token : mFunctions)
+        for (String token : mFunctions) {
             tokenMap.put(token, Token.FUNCTION);
+        }
 
-        for (String token : mConstants)
+        for (String token : mConstants) {
             tokenMap.put(token, Token.RESERVED_WORD_2);
+        }
 
-        for (String token : mOperators)
+        for (String token : mOperators) {
             tokenMap.put(token, Token.OPERATOR);
+        }
 
 
         return tokenMap;
