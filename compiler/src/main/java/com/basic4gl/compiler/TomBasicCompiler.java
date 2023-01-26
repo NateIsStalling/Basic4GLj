@@ -894,8 +894,7 @@ public class TomBasicCompiler extends HasErrorState {
 		return !m_flowControl.isEmpty() && FlowControlTOS().m_type == type;
 	}
 
-	// TODO rename
-	UserFunc _UserFunc() {
+	UserFunc getCurrentUserFunction() {
 		// Return function currently being declared
 		assertTrue(mVM.UserFunctions().size() > 0);
 		assertTrue(m_currentFunction >= 0);
@@ -903,13 +902,13 @@ public class TomBasicCompiler extends HasErrorState {
 		return mVM.UserFunctions().get(m_currentFunction);
 	}
 
-	UserFuncPrototype UserPrototype() {
+	UserFuncPrototype getCurrentUserFunctionPrototype() {
 		// Return prototype of function currently being declared
 		assertTrue(mVM.UserFunctionPrototypes().size() > 0);
-		assertTrue(_UserFunc().mPrototypeIndex >= 0);
-		assertTrue(_UserFunc().mPrototypeIndex < mVM.UserFunctionPrototypes()
+		assertTrue(getCurrentUserFunction().mPrototypeIndex >= 0);
+		assertTrue(getCurrentUserFunction().mPrototypeIndex < mVM.UserFunctionPrototypes()
 				.size());
-		return mVM.UserFunctionPrototypes().get(_UserFunc().mPrototypeIndex);
+		return mVM.UserFunctionPrototypes().get(getCurrentUserFunction().mPrototypeIndex);
 	}
 
 	boolean InternalCompileBindCode() {
@@ -1069,7 +1068,7 @@ public class TomBasicCompiler extends HasErrorState {
 					m_functionStart.getSourceColumn());
 
 			// Return error
-			if (UserPrototype().hasReturnVal) {
+			if (getCurrentUserFunctionPrototype().hasReturnVal) {
 				setError("'function' without 'endfunction'");
 			} else {
 				setError("'sub' without 'endsub'");
@@ -1603,9 +1602,9 @@ public class TomBasicCompiler extends HasErrorState {
 
 					// Check if variable has already been DIMmed locally.
 					// (This is allowed, but only if DIMmed to the same type.)
-					int varIndex = UserPrototype().GetLocalVar(name);
+					int varIndex = getCurrentUserFunctionPrototype().GetLocalVar(name);
 					if (varIndex >= 0) {
-						if (!(UserPrototype().localVarTypes.get(varIndex).Equals(type))) {
+						if (!(getCurrentUserFunctionPrototype().localVarTypes.get(varIndex).Equals(type))) {
 							setError("Local variable '"
 									+ name
 									+ "' has already been allocated as a different type.");
@@ -1618,7 +1617,7 @@ public class TomBasicCompiler extends HasErrorState {
 					} else
 						// Create new variable
 					{
-						varIndex = UserPrototype().NewLocalVar(name, type);
+						varIndex = getCurrentUserFunctionPrototype().NewLocalVar(name, type);
 					}
 
 					// Generate code to allocate local variable data
@@ -1643,7 +1642,7 @@ public class TomBasicCompiler extends HasErrorState {
 								ValType.VTP_INT, new Value(varIndex));
 
 						// Set register type
-						m_regType.Set(UserPrototype().localVarTypes
+						m_regType.Set(getCurrentUserFunctionPrototype().localVarTypes
 								.get(varIndex));
 						m_regType.m_pointerLevel++;
 
@@ -2017,7 +2016,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (m_inFunction) {
 
 			// Look for variable
-			int varIndex = UserPrototype().GetLocalVar(varName);
+			int varIndex = getCurrentUserFunctionPrototype().GetLocalVar(varName);
 
 			// Set register type
 			if (varIndex >= 0) {
@@ -2027,7 +2026,7 @@ public class TomBasicCompiler extends HasErrorState {
 						ValType.VTP_INT, new Value(varIndex));
 
 				// Set register type
-				m_regType.Set(UserPrototype().localVarTypes.get(varIndex));
+				m_regType.Set(getCurrentUserFunctionPrototype().localVarTypes.get(varIndex));
 				m_regType.m_pointerLevel++;
 
 				found = true;
@@ -3223,14 +3222,14 @@ public class TomBasicCompiler extends HasErrorState {
 		if (m_inFunction) {
 
 			// Look for variable
-			int varIndex = UserPrototype().GetLocalVar(loopVar);
+			int varIndex = getCurrentUserFunctionPrototype().GetLocalVar(loopVar);
 
 			// Set register type
 			if (varIndex >= 0) {
 				found = true;
 
 				// Check type is INT or REAL
-				ValType type = new ValType(UserPrototype().localVarTypes.get(varIndex));
+				ValType type = new ValType(getCurrentUserFunctionPrototype().localVarTypes.get(varIndex));
 				if (!(type.Equals(ValType.VTP_INT) || type
 						.Equals(ValType.VTP_REAL))) {
 					setError("Loop variable must be an Integer or Real");
@@ -5416,7 +5415,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Match end sub/function against sub/function type
-		if (UserPrototype().hasReturnVal != hasReturnVal) {
+		if (getCurrentUserFunctionPrototype().hasReturnVal != hasReturnVal) {
 			if (hasReturnVal) {
 				setError("'endfunction' without 'function'");
 			} else {
@@ -5437,7 +5436,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// If end of function is reached without a return value, need to trigger
 		// a runtime error.
-		if (UserPrototype().hasReturnVal) {
+		if (getCurrentUserFunctionPrototype().hasReturnVal) {
 			AddInstruction(OpCode.OP_NO_VALUE_RETURNED, ValType.VTP_INT,
 					new Value(0));
 		} else
@@ -5680,8 +5679,8 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		if (m_inFunction) {
-			if (UserPrototype().hasReturnVal) {
-				ValType type = new ValType(UserPrototype().returnValType);
+			if (getCurrentUserFunctionPrototype().hasReturnVal) {
+				ValType type = new ValType(getCurrentUserFunctionPrototype().returnValType);
 
 				// Generate code to compile and return value
 				if (!CompileExpression()) {

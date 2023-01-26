@@ -19,8 +19,8 @@ public class RuntimeFunction implements Streamable{
 		functionIndex = -1;
 	}
 
-	public RuntimeFunction(int _functionIndex) {
-		functionIndex = _functionIndex;
+	public RuntimeFunction(int functionIndex) {
+		this.functionIndex = functionIndex;
 	}
 
 	@Override

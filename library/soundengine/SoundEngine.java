@@ -30,10 +30,10 @@ public class SoundEngine extends HasErrorState {
     private ByteBuffer      voices;			            // OpenAL voices.
     private List<Integer>   queue = new ArrayList<>();	// Queued voices. Each entry indexes into voices array.
 
-    public SoundEngine(int _voiceCount) {
-        voiceCount = _voiceCount;
-        assertTrue(voiceCount > 0);
-        assertTrue(voiceCount <= 1000);
+    public SoundEngine(int voiceCount) {
+        this.voiceCount = voiceCount;
+        assertTrue(this.voiceCount > 0);
+        assertTrue(this.voiceCount <= 1000);
 
         // Initialise OpenAL
         context = ALContext.create();
@@ -54,9 +54,9 @@ public class SoundEngine extends HasErrorState {
         Sound.init();
 
         // Allocate voices
-        voices = BufferUtils.createByteBuffer(voiceCount * Integer.SIZE/Byte.SIZE);
+        voices = BufferUtils.createByteBuffer(this.voiceCount * Integer.SIZE/Byte.SIZE);
         AL10.alGetError();
-        AL10.alGenSources(voiceCount, voices);
+        AL10.alGenSources(this.voiceCount, voices);
         error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
             setError(GetALErrorString(error));

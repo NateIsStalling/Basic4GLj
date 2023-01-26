@@ -16,8 +16,8 @@ public class RuntimeFunction implements Streamable {
 		prototypeIndex = -1;
 	}
 
-	public RuntimeFunction(int _prototypeIndex) {
-		prototypeIndex = _prototypeIndex;
+	public RuntimeFunction(int prototypeIndex) {
+		this.prototypeIndex = prototypeIndex;
 	}
 	@Override
 	public void StreamOut(DataOutputStream stream) throws IOException{

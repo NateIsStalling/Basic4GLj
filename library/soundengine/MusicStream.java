@@ -197,9 +197,9 @@ public class MusicStream extends HasErrorState implements Runnable {
         OpenFile(filename, gain, false);
     }
 
-    public void OpenFile(String filename, float gain, boolean _looping)    // Open file and start playing
+    public void OpenFile(String filename, float gain, boolean looping)    // Open file and start playing
     {
-        SendCmd(MusicStreamCmdCode.MSC_OpenFile, filename, gain, _looping);
+        SendCmd(MusicStreamCmdCode.MSC_OpenFile, filename, gain, looping);
     }
 
     public void CloseFile() {

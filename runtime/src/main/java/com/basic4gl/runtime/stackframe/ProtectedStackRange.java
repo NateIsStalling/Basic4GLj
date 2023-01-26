@@ -12,9 +12,9 @@ public class ProtectedStackRange {
 		startAddr = 0;
 		endAddr = 0;
 	}
-	public ProtectedStackRange(int _startAddr, int _endAddr) {
-		startAddr = _startAddr;
-		endAddr = _endAddr;
+	public ProtectedStackRange(int startAddr, int endAddr) {
+		this.startAddr = startAddr;
+		this.endAddr = endAddr;
 	}
 
 	public boolean ContainsAddr(int addr) { return addr >= startAddr && addr < endAddr; }

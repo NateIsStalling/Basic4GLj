@@ -4,9 +4,9 @@ public class SourceUserBreakPt {
 	public String sourceFile;
 	public int lineNo;
 
-	public SourceUserBreakPt(String _sourceFile, int _lineNo) {
-		sourceFile = _sourceFile;
-		lineNo = _lineNo;
+	public SourceUserBreakPt(String sourceFile, int lineNo) {
+		this.sourceFile = sourceFile;
+		this.lineNo = lineNo;
 	}
 
 	public SourceUserBreakPt(SourceUserBreakPt b) {

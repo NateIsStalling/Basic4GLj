@@ -32,14 +32,14 @@ public class UserFuncStackFrame {
 		localVarDataOffsets = new Vector<Integer>();
 	}
 
-	public void InitForGosub(int _returnAddr) {
+	public void InitForGosub(int returnAddr) {
 		userFuncIndex = -1;
-		returnAddr = _returnAddr;
+		this.returnAddr = returnAddr;
 		localVarDataOffsets.clear();
 	}
 
-	public void InitForUserFunction(UserFuncPrototype prototype, int _userFuncIndex) {
-		userFuncIndex = _userFuncIndex;
+	public void InitForUserFunction(UserFuncPrototype prototype, int userFuncIndex) {
+		this.userFuncIndex = userFuncIndex;
 		returnAddr = -1;
 
 		// Allocate local variable data offsets

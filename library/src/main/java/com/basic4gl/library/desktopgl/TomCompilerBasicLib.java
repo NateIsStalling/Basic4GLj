@@ -686,9 +686,9 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 // Initialisation
 
     void InitTomCompilerBasicLib(
-            TomBasicCompiler _comp,
-            VMHostApplication _host,
-            FileOpener _files) {
+            TomBasicCompiler comp,
+            VMHostApplication host,
+            FileOpener files) {
 
     }
 

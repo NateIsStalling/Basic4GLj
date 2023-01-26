@@ -172,12 +172,12 @@ public class MusicStreamPolled extends HasErrorState {
         OpenFile(filename, gain, false);
     }
 
-    public void OpenFile(String filename, float gain, boolean _looping)    // Open file and start playing
+    public void OpenFile(String filename, float gain, boolean looping)    // Open file and start playing
     {
         if (!initialised)
             return;
 
-        looping = _looping;
+        this.looping = looping;
 
         // Close any existing open file
         CloseFile();

@@ -15,9 +15,9 @@ public class StackDestructor {
 	/// Index of data type
 	public int dataTypeIndex;
 
-	public StackDestructor(int _addr, int _dataTypeIndex)
+	public StackDestructor(int addr, int dataTypeIndex)
 	{
-		addr = _addr; 
-		dataTypeIndex = _dataTypeIndex;
+		this.addr = addr;
+		this.dataTypeIndex = dataTypeIndex;
 	}
 }
