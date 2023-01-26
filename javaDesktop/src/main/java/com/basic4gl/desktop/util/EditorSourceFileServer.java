@@ -2,7 +2,6 @@ package com.basic4gl.desktop.util;
 
 import com.basic4gl.compiler.util.ISourceFile;
 import com.basic4gl.compiler.util.ISourceFileServer;
-import com.basic4gl.desktop.MainWindow;
 
 import java.io.File;
 

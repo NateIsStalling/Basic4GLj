@@ -13,7 +13,6 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.opengl.GL11.*;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL14.GL_GENERATE_MIPMAP;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;

@@ -1,8 +1,6 @@
 package com.basic4gl.runtime.util;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
 public class Streaming {

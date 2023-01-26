@@ -2,8 +2,6 @@ package com.basic4gl.desktop.util;
 
 import com.basic4gl.runtime.InstructionPos;
 
-import javax.swing.*;
-
 /**
  * Created by Nate on 3/23/2015.
  */

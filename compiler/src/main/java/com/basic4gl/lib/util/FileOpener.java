@@ -3,9 +3,7 @@ package com.basic4gl.lib.util;
 import com.basic4gl.runtime.HasErrorState;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;

@@ -6,7 +6,6 @@ import com.basic4gl.runtime.types.ValType;
 import org.lwjgl.opengl.GL11;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 
 /**

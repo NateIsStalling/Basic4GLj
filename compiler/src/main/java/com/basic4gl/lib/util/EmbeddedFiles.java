@@ -4,13 +4,10 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 // EmbeddedFiles
 //

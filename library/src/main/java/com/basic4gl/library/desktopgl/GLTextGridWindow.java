@@ -13,7 +13,6 @@ import com.basic4gl.library.debug.DebuggerCommandAdapter;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.InstructionPos;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.lib.util.FunctionLibrary;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -21,7 +20,6 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.*;
 

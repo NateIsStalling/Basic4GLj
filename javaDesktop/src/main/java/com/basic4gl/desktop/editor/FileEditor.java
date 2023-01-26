@@ -15,7 +15,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 
-import com.basic4gl.desktop.FileManager;
 import com.basic4gl.desktop.util.IFileManager;
 import com.basic4gl.desktop.util.SwingIconUtil;
 import org.fife.ui.rsyntaxtextarea.*;

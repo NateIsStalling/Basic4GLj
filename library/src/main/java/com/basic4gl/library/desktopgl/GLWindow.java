@@ -6,11 +6,9 @@ import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.runtime.HasErrorState;
 import com.basic4gl.runtime.TomVM;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.glfwInit;
 
 import org.lwjgl.opengl.*;
 

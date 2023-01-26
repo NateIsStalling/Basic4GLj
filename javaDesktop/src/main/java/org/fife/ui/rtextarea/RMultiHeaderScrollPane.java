@@ -12,7 +12,7 @@ import java.awt.Font;
 import java.util.Arrays;
 import java.util.Stack;
 import javax.swing.JScrollPane;
-import org.fife.ui.rtextarea.Gutter;
+
 import org.fife.ui.rtextarea.RTextArea;
 
 public class RMultiHeaderScrollPane extends JScrollPane {

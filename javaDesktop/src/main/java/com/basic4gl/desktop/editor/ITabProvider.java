@@ -1,7 +1,5 @@
 package com.basic4gl.desktop.editor;
 
-import java.io.File;
-
 public interface ITabProvider {
     int getFileTabIndex(String filename);
     int getTabIndex(String filePath);

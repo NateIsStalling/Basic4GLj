@@ -18,7 +18,6 @@ import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import com.basic4gl.runtime.stackframe.*;
-import com.basic4gl.runtime.stackframe.ProtectedStackRange;
 import com.basic4gl.runtime.types.Structure;
 import com.basic4gl.runtime.types.StructureField;
 import com.basic4gl.runtime.types.TypeLibrary;

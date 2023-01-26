@@ -7,7 +7,6 @@ package com.basic4gl.desktop.util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.lang.reflect.Array;
 import java.nio.*;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;

@@ -15,7 +15,6 @@ import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 import com.basic4gl.library.desktopgl.GLTextGridWindow;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.InstructionPos;
-import com.basic4gl.runtime.TomVM;
 
 import java.util.ArrayList;
 import java.util.HashMap;
