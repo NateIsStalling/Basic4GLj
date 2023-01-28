@@ -9,5 +9,5 @@ public class Mutable<T> {
 	private T mValue;
 	public Mutable(T value){ mValue = value;}
 	public void set(T value){ mValue = value;}
-	public T get(){return mValue;};
+	public T get(){return mValue;}
 }

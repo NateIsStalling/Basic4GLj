@@ -215,8 +215,6 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         }
     }
 
-    ;
-
     // Globals
     static TomBasicCompiler comp = null;
     static IVMDriver host = null;

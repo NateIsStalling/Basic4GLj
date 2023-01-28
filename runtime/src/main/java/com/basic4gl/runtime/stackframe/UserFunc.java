@@ -15,9 +15,9 @@ public class UserFunc implements Streamable{
 	public int mProgramOffset;
 
 	public UserFunc() {
-	};
+	}
 
-	public UserFunc(int prototypeIndex, boolean implemented) {
+    public UserFunc(int prototypeIndex, boolean implemented) {
 		this(prototypeIndex, implemented, -1);
 	}
 

@@ -270,7 +270,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 	enum UserFunctionType {
 		UFT_IMPLEMENTATION, UFT_FWDDECLARATION, UFT_RUNTIMEDECLARATION
-	};
+	}
 
 	// //////////////////////////////////////////////////////////////////////////////
 	// RollbackPoint
@@ -635,7 +635,6 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Compile code
 		while (!m_parser.Eof() && CompileInstruction()) {
-			;
 		}
 
 		// Terminate program

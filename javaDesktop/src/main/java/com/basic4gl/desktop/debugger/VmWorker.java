@@ -22,7 +22,7 @@ implements IDebugCallbackListener, IDebugger {
     public VmWorker(
             IFileProvider fileOpener) {
         mFiles = fileOpener;
-    };
+    }
 
     public void setCompletionLatch(CountDownLatch latch) {
         mCompletionLatch = latch;

@@ -130,7 +130,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
             setValue(index, null);
         }
         public WindowsWavStore (){ super(null); }
-    };
+    }
 
 
     WindowsWavStore wavFiles;

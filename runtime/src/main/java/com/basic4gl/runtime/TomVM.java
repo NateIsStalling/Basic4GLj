@@ -1278,7 +1278,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     int ptr = Reg().getIntVal();
                     assertTrue(ptr >= 0);
                     if (ptr == 0) {
-                        ; // Do nothing
+                        // Do nothing
                     } else if (ptr < mData.TempData()) {
 
                         // Pointer into temp data found

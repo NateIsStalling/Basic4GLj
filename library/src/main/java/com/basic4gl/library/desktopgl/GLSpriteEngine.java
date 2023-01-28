@@ -35,7 +35,7 @@ public class GLSpriteEngine extends GLTextGrid{
             }
         }
         //public ~GLSpriteList ();
-    };
+    }
 
     public enum GLSpriteType {
         SPR_INVALID(0), SPR_SPRITE(1), SPR_TILEMAP(2);
@@ -44,8 +44,7 @@ public class GLSpriteEngine extends GLTextGrid{
             mType = type;
         }
         public int getType() { return mType;}
-    };
-    ;
+    }
 
 
     ////////////////////////////////////////////////////////////////////////////////

@@ -132,7 +132,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		LineNumberMapping lineNumberMapping = null;
 		try (
 				FileInputStream streamIn = new FileInputStream(mappingFile);
-				ObjectInputStream objectinputstream = new ObjectInputStream(streamIn);
+				ObjectInputStream objectinputstream = new ObjectInputStream(streamIn)
 		) {
 			lineNumberMapping = (LineNumberMapping) objectinputstream.readObject();
 		} catch (Exception e) {

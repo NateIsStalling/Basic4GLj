@@ -51,7 +51,7 @@ public class RunHandler {
 
             try (
                 FileOutputStream outputStream = new FileOutputStream(lineMapping);
-                ObjectOutputStream oos = new ObjectOutputStream(outputStream);
+                ObjectOutputStream oos = new ObjectOutputStream(outputStream)
             ) {
                 oos.writeObject(mPreprocessor.LineNumberMap());
             } catch (Exception e) {
