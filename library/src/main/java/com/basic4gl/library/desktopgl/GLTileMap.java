@@ -122,7 +122,7 @@ public class GLTileMap extends GLBasicSprite {
         //          Second is an INVERSE of all the operations. This will be used to
         //          determine where the screen corners map to the tile map, so we
         //          can calculate what range of tiles needs to be drawn.
-        float m1[] = new float[16], m2[] = new float[16];
+        float[] m1 = new float[16], m2 = new float[16];
         glPushMatrix();
 
         // Translate to object position
@@ -161,11 +161,11 @@ public class GLTileMap extends GLBasicSprite {
 
         // Now we can use our m1 matrix to translate from camera space into tile space
         // Find range of tiles spanned.
-        float camCorner[][] = new float[][]{{0, 0, 0, 1}, {1, 0, 0, 1}, {0, 1, 0, 1}, {1, 1, 0, 1}};
+        float[][] camCorner = new float[][]{{0, 0, 0, 1}, {1, 0, 0, 1}, {0, 1, 0, 1}, {1, 1, 0, 1}};
 //    vmReal camCorner[4][4] = {{.1,.1, 0, 1}, {.9,.1, 0, 1}, {.1,.9, 0, 1}, {.9,.9, 0, 1} };       // DEBUGGING!!!
         int maxX = -1000000, minX = 1000000, maxY = -1000000, minY = 1000000;
         for (int i = 0; i < 4; i++) {
-            float tileSpaceCorner[] = new float[4];
+            float[] tileSpaceCorner = new float[4];
             TrigBasicLib.MatrixTimesVec(m2, camCorner[i], tileSpaceCorner);
             int x = (int) tileSpaceCorner[0], y = (int) tileSpaceCorner[1];
             if (x < minX) {
