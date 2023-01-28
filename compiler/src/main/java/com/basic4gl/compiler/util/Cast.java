@@ -2,7 +2,7 @@ package com.basic4gl.compiler.util;
 
 public class Cast {
 
-	public static int[] toIntArray(float array[]){
+	public static int[] toIntArray(float[] array){
 		if (array == null)
 	    {
 	        return null; 
@@ -15,7 +15,7 @@ public class Cast {
 	    return output;
 	}
 	
-	public static float[] toFloatArray(int array[]){
+	public static float[] toFloatArray(int[] array){
 		if (array == null)
 	    {
 	        return null; 

@@ -158,7 +158,7 @@ public abstract class GLBasicSprite {
     public float m_xCentre, m_yCentre;
     public boolean m_xFlip, m_yFlip, m_visible, m_parallax, m_solid;
     public float m_angle;
-    public float m_colour[] = new float[4];
+    public float[] m_colour = new float[4];
     public int m_srcBlend, m_dstBlend;
 
     // Construction/destruction

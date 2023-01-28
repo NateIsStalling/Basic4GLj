@@ -79,7 +79,7 @@ public class GLSpriteEngine extends GLTextGrid{
         glLoadIdentity ();
 
         // Apply camera transformations
-        float m1[] = new float[16], m2[] = new float[16];
+        float[] m1 = new float[16], m2 = new float[16];
 
 //        System.out.println("width "+ m_width + ", " + m_height);
         // Scale in window dimensions
@@ -96,7 +96,7 @@ public class GLSpriteEngine extends GLTextGrid{
         TrigBasicLib.RotateZ(m_camAngle);
         TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m2, m1);
 
-        float camInv[] = new float[16];
+        float[] camInv = new float[16];
         TrigBasicLib.CopyMatrix(camInv, m1);
 
         // Parallax settings

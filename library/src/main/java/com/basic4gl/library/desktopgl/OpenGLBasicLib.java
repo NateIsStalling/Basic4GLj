@@ -557,7 +557,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                         frame++;
                     }
                 }
-                int t[] = new int[tex.asIntBuffer().capacity()];
+                int[] t = new int[tex.asIntBuffer().capacity()];
                 tex.asIntBuffer().get(t);
                 // Return array of textures
                 vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), frameCount.get(0), t));
@@ -945,14 +945,14 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
             // Convert to array and return
             if (texs.size() > 0) {
-                int array[] = new int[texs.size()];
+                int[] array = new int[texs.size()];
                 for (int i = 0; i < texs.size(); i++) {
                     array[i] = texs.get(i);
                     OpenGLBasicLib.textures.Store(texs.get(i));
                 }
                 vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), texs.size(), array));
             } else {
-                int array[] = new int[1];
+                int[] array = new int[1];
                 array[0] = 0;
                 vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), 1, array));
             }
@@ -968,14 +968,14 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
             // Convert to array and return
             if (texs.size() > 0) {
-                Integer array[] = new Integer[texs.size()];
+                Integer[] array = new Integer[texs.size()];
                 for (int i = 0; i < texs.size(); i++) {
                     array[i] = texs.get(i);
                     OpenGLBasicLib.textures.Store(texs.get(i));
                 }
                 vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), texs.size(), Arrays.asList(array)));
             } else {
-                Integer array[] = new Integer[1];
+                Integer[] array = new Integer[1];
                 array[0] = 0;
                 vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), 1, Arrays.asList(array)));
             }
@@ -1322,7 +1322,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             }
 
             // Store handles in Basic4GL array
-            int t[] = new int[count];
+            int[] t = new int[count];
             handleBuffer.rewind();
             handleBuffer.get(t);
             Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1), t, count);
@@ -1755,7 +1755,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                     }
                 }
                 tex.rewind();
-                int t[] = new int[tex.asIntBuffer().capacity()];
+                int[] t = new int[tex.asIntBuffer().capacity()];
                 tex.asIntBuffer().get(t);
                 // Return array of textures
                 vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), frameCount.get(0), t));

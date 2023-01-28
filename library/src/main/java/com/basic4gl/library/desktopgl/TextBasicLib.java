@@ -668,7 +668,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     boolean GetTextures (TomVM vm, int paramIndex, Vector<Integer> dest) {
 
         // Read in texture array and convert to vector (for storage in sprite)
-        int frames[] = new int[65536];
+        int[] frames = new int[65536];
         int size = Data.ArrayDimensionSize (vm.Data (), vm.GetIntParam (paramIndex), 0);
         if (size < 1 || size > 65536) {
             vm.FunctionError ("Texture array size must be 1-65536");
@@ -734,7 +734,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         }
     }
 
-    float vec[] = new float[4];
+    float[] vec = new float[4];
     void ReadVec (TomVM vm, int paramIndex) {
 
         // Read data
@@ -1209,7 +1209,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
                 TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y : 0);
     }}
     public final class WrapSprPos implements Function { public void run(TomVM vm) {
-        Float result [] = {0f, 0f};
+        Float[] result = {0f, 0f};
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
             result [0] = TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x;
             result [1] = TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y;
@@ -1257,7 +1257,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
                 TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_angle : 0);
     }}
     public final class WrapSprColour implements Function { public void run(TomVM vm) {
-        Float result [] = {0f, 0f, 0f, 0f};
+        Float[] result = {0f, 0f, 0f, 0f};
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
             for (int i = 0; i < 4; i ++) {
                 TextBasicLib.sprites.Value(TextBasicLib.boundSprite).m_colour[i] = result[i];
@@ -1322,7 +1322,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
                 Sprite (TextBasicLib.boundSprite).m_yd : 0);
     }}
     public final class WrapSprVel implements Function { public void run(TomVM vm) {
-        Float result [] = {0f, 0f};
+        Float[] result = {0f, 0f};
         if (IsSprite (TextBasicLib.boundSprite)) {
             result [0] = Sprite (TextBasicLib.boundSprite).m_xd;
             result [1] = Sprite (TextBasicLib.boundSprite).m_yd;
@@ -1363,7 +1363,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprPos_2 implements Function { public void run(TomVM vm) {
         int index = vm.GetIntParam (1);
-        Float result[] = {0f, 0f};
+        Float[] result = {0f, 0f};
         if (TextBasicLib.sprites.IndexStored (index)) {
             result [0] = TextBasicLib.sprites.Value (index).m_x;
             result [1] = TextBasicLib.sprites.Value (index).m_y;
@@ -1422,7 +1422,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprColour_2 implements Function { public void run(TomVM vm) {
         int index = vm.GetIntParam (1);
-        Float result [] = {0f, 0f, 0f, 0f};
+        Float[] result = {0f, 0f, 0f, 0f};
         if (TextBasicLib.sprites.IndexStored (index)) {
             for ( int i = 0; i < 4; i ++) {
                 TextBasicLib.sprites.Value(index).m_colour[i] = result[i];
@@ -1498,7 +1498,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprVel_2 implements Function { public void run(TomVM vm) {
         int index = vm.GetIntParam (1);
-        Float result [] = {0f, 0f};
+        Float[] result = {0f, 0f};
         if (IsSprite (index)) {
             result [0] = Sprite (index).m_xd;
             result [1] = Sprite (index).m_yd;
@@ -1711,7 +1711,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         vm.Reg ().setRealVal( ((GLSpriteEngine) TextBasicLib.appText).m_camZ);
     }}
     public final class WrapSprCameraPos implements Function { public void run(TomVM vm) {
-        Float result [] = {0f, 0f};
+        Float[] result = {0f, 0f};
         result [0] = ((GLSpriteEngine) TextBasicLib.appText).m_camX;
         result [1] = ((GLSpriteEngine) TextBasicLib.appText).m_camY;
         vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 2, Arrays.asList(result)));

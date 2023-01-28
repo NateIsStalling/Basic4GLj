@@ -132,7 +132,7 @@ public class TrigBasicLib implements FunctionLibrary {
 
     // Matrix constructors.
 // Note: These all drop their result into the global "matrix" variable (below)
-    public static float matrix[] = new float[16];
+    public static float[] matrix = new float[16];
     private static float[]
             v1  = new float[4],
             v2 = new float[4],
@@ -417,7 +417,7 @@ public class TrigBasicLib implements FunctionLibrary {
         result [11] = 0;
 
         // Calculate the new translation component
-        float t[] = new float[4];
+        float[] t = new float[4];
         MatrixTimesVec (result, 0, m, 12, t, 0);
         result [12] = -t[0];
         result [13] = -t[1];
@@ -445,7 +445,7 @@ public class TrigBasicLib implements FunctionLibrary {
 
         // Thanks to Satin Hinge for sending me the arbitrary axis maths
         // Normalize vector
-        float N[] = new float[3];
+        float[] N = new float[3];
         N[0] = v[0];
         N[1] = v[1];
         N[2] = v[2];
@@ -510,19 +510,19 @@ public class TrigBasicLib implements FunctionLibrary {
 
     public final class WrapVec4 implements Function { public void run(TomVM vm){
 
-        float vec4[] = new float[]{ vm.GetRealParam (4), vm.GetRealParam (3), vm.GetRealParam (2), vm.GetRealParam (1) };
+        float[] vec4 = new float[]{ vm.GetRealParam (4), vm.GetRealParam (3), vm.GetRealParam (2), vm.GetRealParam (1) };
         vm.Reg ().setIntVal ( Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 4, vec4));
     }
     }
     public final class WrapVec3 implements Function { public void run(TomVM vm){
 
-        float vec3 [] = new float[]{ vm.GetRealParam (3), vm.GetRealParam (2), vm.GetRealParam (1) };
+        float[] vec3 = new float[]{ vm.GetRealParam (3), vm.GetRealParam (2), vm.GetRealParam (1) };
         vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 3, vec3));
     }
     }
     public final class WrapVec2 implements Function { public void run(TomVM vm){
 
-        float vec2 [] = new float[]{ vm.GetRealParam (2), vm.GetRealParam (1) };
+        float[] vec2 = new float[]{ vm.GetRealParam (2), vm.GetRealParam (1) };
         vm.Reg ().setIntVal ( Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 2, vec2));
     }
     }
@@ -604,7 +604,7 @@ public class TrigBasicLib implements FunctionLibrary {
         }
 
 // Calculate cross product vector
-        float result[] = new float [4];
+        float[] result = new float [4];
         CrossProduct (v1, v2, result);
 
 // Return resulting vector
@@ -765,7 +765,7 @@ public class TrigBasicLib implements FunctionLibrary {
         }
 
         // Calculate resulting vector
-        float result[] =new float[4];
+        float[] result =new float[4];
         MatrixTimesVec (m1, v1, result);
 
         // Return as temporary vector
@@ -781,7 +781,7 @@ public class TrigBasicLib implements FunctionLibrary {
         }
 
         // Multiply them out
-        float result[] = new float [16];
+        float[] result = new float [16];
         MatrixTimesMatrix(m1, m2, result);
 
         // Return as temporary matrix
@@ -810,7 +810,7 @@ public class TrigBasicLib implements FunctionLibrary {
         }
 
         // Calculate result
-        float result[] = new float [4];
+        float[] result = new float [4];
         VecPlus (v1, v2, result);
 
         // Return as temporary vector
@@ -826,7 +826,7 @@ public class TrigBasicLib implements FunctionLibrary {
         }
 
         // Calculate result
-        float result[] = new float[4];
+        float[] result = new float[4];
         VecMinus(v1, v2, result);
 
         // Return as temporary vector
@@ -842,7 +842,7 @@ public class TrigBasicLib implements FunctionLibrary {
         }
 
         // Add them
-        float result[] = new float[16];
+        float[] result = new float[16];
         MatrixPlus(m1, m2, result);
 
         // Return as temporary matrix
@@ -858,7 +858,7 @@ public class TrigBasicLib implements FunctionLibrary {
         }
 
         // Add them
-        float result[] = new float [16];
+        float[] result = new float [16];
         MatrixMinus(m1, m2, result);
 
         // Return as temporary matrix
