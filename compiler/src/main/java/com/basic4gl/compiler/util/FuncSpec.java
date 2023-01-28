@@ -120,6 +120,7 @@ public class FuncSpec {
 	}
 
 	public FuncSpec(FuncSpec spec) {
+		mFunctionClass = spec.mFunctionClass;
 		mIsFunction = spec.mIsFunction;
 		mBrackets = spec.mBrackets;
 		mReturnType = spec.mReturnType;
