@@ -1,11 +1,10 @@
 package com.basic4gl.runtime.stackframe;
 
-////////////////////////////////////////////////////////////////////////////////
-//ProtectedStackRange
-//
-/// Indicates a range of data on the stack protected from destruction.
-/// (Used when collapsing temporary data, to destroy everything except the data
-/// to be returned).
+/**
+ * Indicates a range of data on the stack protected from destruction.
+ * (Used when collapsing temporary data, to destroy everything except the data
+ * to be returned).
+ */
 public class ProtectedStackRange {
 	int startAddr, endAddr;
 	public ProtectedStackRange() {
@@ -17,6 +16,6 @@ public class ProtectedStackRange {
 		this.endAddr = endAddr;
 	}
 
-	public boolean ContainsAddr(int addr) { return addr >= startAddr && addr < endAddr; }
-	public boolean ContainsRange(int start, int end) { return start >= startAddr && end <= endAddr; }
+	public boolean containsAddress(int addr) { return addr >= startAddr && addr < endAddr; }
+	public boolean containsRange(int start, int end) { return start >= startAddr && end <= endAddr; }
 }

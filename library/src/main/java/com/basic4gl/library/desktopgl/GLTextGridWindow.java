@@ -196,8 +196,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		}
 
 		//Initialize window and setup VM
-		instance.mVM.Pause();
-		instance.mVM.Reset();
+		instance.mVM.pause();
+		instance.mVM.resetVM();
 		instance.activate();
 
 		//TODO this message has too much power
@@ -262,7 +262,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 
 	public void pause(){
-		mVM.Pause();
+		mVM.pause();
 	}
 
 
@@ -298,9 +298,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	@Override
 	public void stop() {
 		// Clear stepping breakpoints
-		mVM.ClearTempBreakPts();
+		mVM.clearTempBreakPoints();
 
-		mVM.Stop();
+		mVM.stop();
 	}
 
 	@Override
@@ -345,7 +345,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				}
 					//Debugger is not attached
 				if (mDebugger == null) {
-					while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.Done() && !isClosing()) {
+					while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
 						//Continue to next OpCode
 						driveVM(TomVM.VM_STEPS);
 
@@ -356,11 +356,11 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				}
 				else	//Debugger is attached
 				{
-					while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.Done() && !isClosing()) {
+					while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
 						// Run the virtual machine for a certain number of steps
-						mVM.PatchIn();
+						mVM.patchIn();
 
-						if (mVM.Paused()) {
+						if (mVM.isPaused()) {
 							//Breakpoint reached or paused by debugger
 							System.out.println("VM paused");
 
@@ -374,10 +374,10 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 								mDebugger.message(driveVM(1));
 
 								// Run the virtual machine for a certain number of steps
-								mVM.PatchIn();
+								mVM.patchIn();
 							}
 							//Check if program was stopped while paused
-							if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.Done() || isClosing()) {
+							if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.isDone() || isClosing()) {
 								break;
 							}
 						}
@@ -400,7 +400,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 							: CallbackMessage.FAILED;
 
 					VMStatus vmStatus = new VMStatus(
-							mVM.Done(),
+							mVM.isDone(),
 							mVM.hasError(),
 							mVM.getError());
 
@@ -411,7 +411,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 					// Set instruction position for editor to place cursor at error
 					if (mVM.hasError()) {
-						InstructionPos ip = mVM.GetIPInSourceCode();
+						InstructionPos ip = mVM.getIPInSourceCode();
 						message.setInstructionPosition(ip);
 					}
 
@@ -637,7 +637,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 		// Execute a number of VM steps
 		try {
-			mVM.Continue(steps);
+			mVM.continueVM(steps);
 
 		} catch (Exception e) {
 			//TODO get error type
@@ -666,11 +666,11 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
                 // All other exceptions will stop the program.
                 default:*/
 			e.printStackTrace();
-			mVM.MiscError("An exception occured!");
+			mVM.miscError("An exception occured!");
 		}
 
 		// Check for error
-		if (mVM.hasError() || mVM.Done() || isClosing()) {
+		if (mVM.hasError() || mVM.isDone() || isClosing()) {
 			int success;
 			if (mDebugger != null) {
 				success = !mVM.hasError()
@@ -758,7 +758,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		synchronized (GLTextGridWindow.this) {
 			// TODO 12/2022 consolidate below; moved from main editor worker thread
 			//mDLLs.ProgramEnd();
-			mVM.ClearResources();
+			mVM.clearResources();
 
 			// Inform libraries
 			//StopTomSoundBasicLib();

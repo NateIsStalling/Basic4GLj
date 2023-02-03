@@ -9,44 +9,24 @@ import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import com.basic4gl.runtime.TomVM;
 
+import static com.basic4gl.runtime.types.BasicValType.*;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-////////////////////////////////////////////////////////////////////////////////
-// VmValType
-//
-// An extended value type.
-// Can be either of:
-// * A basic value
-// * A structure
-// * An array (one or more dimensions) of either of the above.
-// Note: Indexing an N dimensional results in an N-1 dimensional array.
-// Unless N = 1, in which case it results in an element.
-// * A pointer to any of the above.
-// * A "value by reference".
-// This is a pointer 'pretending' to be a value. Used to refer to
-// structures and anything else that can't fit into a register.
-
+/**
+ * VmValType
+ * An extended value type.
+ * Can be either of:
+ * - A basic value
+ * - A structure
+ * - An array (one or more dimensions) of either of the above.
+ * Note: Indexing an N dimensional results in an N-1 dimensional array.
+ * Unless N = 1, in which case it results in an element.
+ * - A pointer to any of the above.
+ * - A "value by reference".
+ * This is a pointer 'pretending' to be a value. Used to refer to
+ * structures and anything else that can't fit into a register.
+ */
 public class ValType implements Streamable{
-	// //////////////////////////////////////////////////////////////////////////////
-	// BasicValType
-	//
-	// Basic4GL data types are indicated by an integer.
-	// -1 is special, and indicates an undefined type.
-	// Other negative numbers are the basic supported types of language. That
-	// is,
-	// string, integer and floating point ("real").
-	//
-	// Positive numbers represent structure types, and the value is the index of
-	// the structure in the structures array.
-	//
-	// Note: Basic value types are loaded into registers directly.
-	// Other types (arrays and structures) are loaded as pointers.
-
-	public static final int	VTP_INT = -5;
-	public static final int	VTP_REAL = -4;
-	public static final int	VTP_STRING = -3;
-	public static final int	VTP_NULL = -2;
-	public static final int	VTP_UNDEFINED = -1;
 
 	public int m_basicType; // Basic type
 	public byte m_arrayLevel; // 0 = value, 1 = array, 2 = 2D array
@@ -312,7 +292,7 @@ public class ValType implements Streamable{
 	}
 
 	// Streaming
-	public void StreamOut(DataOutputStream stream) throws IOException{
+	public void streamOut(DataOutputStream stream) throws IOException{
 
 		// Write VmValType to stream
 		Streaming.WriteLong(stream, m_basicType);
@@ -326,7 +306,7 @@ public class ValType implements Streamable{
 		}
 	}
 
-	public boolean StreamIn(DataInputStream stream) throws IOException{
+	public boolean streamIn(DataInputStream stream) throws IOException{
 
 		// Read VmValType from stream
 		m_basicType = (int)Streaming.ReadLong(stream);

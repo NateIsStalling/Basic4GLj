@@ -2,11 +2,9 @@ package com.basic4gl.runtime.util;
 
 import com.basic4gl.runtime.Store;
 
-////////////////////////////////////////////////////////////////////////////////
-//vmResourceStore
-//
-//Template implementation of vmResources, using an internal Store
-
+/**
+ * Template implementation of vm Resources, using an internal Store
+ */
 public abstract class ResourceStore<T> extends Resources {
 
 	protected Store<T> m_store;
@@ -18,7 +16,7 @@ public abstract class ResourceStore<T> extends Resources {
 		m_store = new Store<T>(blankElement);
 	}
 
-	public void Clear() {
+	public void clear() {
 
 		// Delete each individual element
 		for (int i = 0; i < m_store.Array().size(); i++) {
@@ -28,7 +26,7 @@ public abstract class ResourceStore<T> extends Resources {
         }
 
 		// Clear store
-		m_store.Clear();
+		m_store.clear();
 	}
 
 	// Pass calls through to internal store
@@ -41,7 +39,7 @@ public abstract class ResourceStore<T> extends Resources {
 	}
 
 	public T Value(int index) {
-		return m_store.Value(index);
+		return m_store.valueAt(index);
 	}
 
 	public void setValue(int index, T value) {

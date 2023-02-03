@@ -500,7 +500,7 @@ public class ExportDialog {
         // Compilation and execution routines
         private boolean LoadProgramIntoCompiler (){
             //TODO Get editor assigned as main file
-            return mPreprocessor.Preprocess(
+            return mPreprocessor.preprocess(
                     new EditorSourceFile(mFileEditors.get(0).editorPane, mFileEditors.get(0).getFilePath()),
                     mComp.Parser());
         }

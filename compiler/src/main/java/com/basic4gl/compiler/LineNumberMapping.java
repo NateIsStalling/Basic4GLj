@@ -9,11 +9,12 @@ import com.basic4gl.compiler.util.SourcePos;
 import com.basic4gl.runtime.util.ILineNumberMapping;
 import com.basic4gl.runtime.util.Mutable;
 
-////////////////////////////////////////////////////////////////////////////////
-//compLineNumberMapping
-//
-/// Maps line numbers of the expanded file back to their corresponding source file.
-/// Used by debugging code so that lines correctly match up with program addresses.
+/**
+ * Compiler line number mapping.
+ *
+ * Maps line numbers of the expanded file back to their corresponding source file.
+ * Used by debugging code so that lines correctly match up with program addresses.
+ */
 public class LineNumberMapping extends ILineNumberMapping implements Serializable {
 	Vector<String> filenames = new Vector<String>();
 	Map<String,Integer> filenameLookup = new HashMap<String, Integer>();
@@ -35,7 +36,7 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
 			return index;
 		}
 	}
-	int SourceFromMain(int fileIndex, int lineNo)
+	int getSourceFromMain(int fileIndex, int lineNo)
 	{
 		// Is source line valid and does it correspond to a line inside the
 		// specified file?
@@ -81,7 +82,7 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
 
 	// ILineNumberMapping methods
 	@Override
-	public void SourceFromMain(Mutable<String> filename, Mutable<Integer> fileLineNo, int lineNo)
+	public void getSourceFromMain(Mutable<String> filename, Mutable<Integer> fileLineNo, int lineNo)
 	{
 
 		// Is source line valid
@@ -99,12 +100,12 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
 		}
 	}
 	@Override
-	public int SourceFromMain(String filename, int lineNo)
+	public int getSourceFromMain(String filename, int lineNo)
 	{
-		return SourceFromMain(GetFileIndex(filename), lineNo);
+		return getSourceFromMain(GetFileIndex(filename), lineNo);
 	}
 	@Override
-	public int MainFromSource(String filename, int fileLineNo)
+	public int getMainFromSource(String filename, int fileLineNo)
 	{
 		return MainFromSource(GetFileIndex(filename), fileLineNo);
 	}

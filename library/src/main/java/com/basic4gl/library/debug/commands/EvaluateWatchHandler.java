@@ -6,6 +6,7 @@ import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
 import com.basic4gl.debug.protocol.commands.EvaluateWatchCommand;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.VMState;
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.OpCode;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Mutable;
@@ -70,18 +71,18 @@ public class EvaluateWatchHandler {
             // Setup compiler "in function" state to match the the current VM user
             // stack state.
             int currentFunction;
-            if (mVM.CurrentUserFrame() < 0 ||
-                    mVM.UserCallStack().lastElement().userFuncIndex < 0) {
+            if (mVM.getCurrentUserFrame() < 0 ||
+                    mVM.getUserCallStack().lastElement().userFuncIndex < 0) {
                 currentFunction = -1;
             } else {
-                currentFunction = mVM.UserCallStack().get(mVM.CurrentUserFrame()).userFuncIndex;
+                currentFunction = mVM.getUserCallStack().get(mVM.getCurrentUserFrame()).userFuncIndex;
             }
 
             boolean inFunction = currentFunction >= 0;
 
             // Compile watch expression
             // This also gives us the expression result type
-            int codeStart = mVM.InstructionCount();
+            int codeStart = mVM.getInstructionCount();
             ValType valType = new ValType();
             //TODO Possibly means to pass parameters by ref
             if (!mComp.TempCompileExpression(watch, valType, inFunction, currentFunction)) {
@@ -92,18 +93,18 @@ public class EvaluateWatchHandler {
             if (!canCallFunc) {
                 // Expressions aren't allowed to call functions for mouse-over hints.
                 // Scan compiled code for OP_CALL_FUNC or OP_CALL_OPERATOR_FUNC
-                for (int i = codeStart; i < mVM.InstructionCount(); i++) {
-                    if (mVM.Instruction(i).mOpCode == OpCode.OP_CALL_FUNC
-                            || mVM.Instruction(i).mOpCode == OpCode.OP_CALL_OPERATOR_FUNC
-                            || mVM.Instruction(i).mOpCode == OpCode.OP_CALL_DLL
-                            || mVM.Instruction(i).mOpCode == OpCode.OP_CREATE_USER_FRAME) {
+                for (int i = codeStart; i < mVM.getInstructionCount(); i++) {
+                    if (mVM.getInstruction(i).mOpCode == OpCode.OP_CALL_FUNC
+                            || mVM.getInstruction(i).mOpCode == OpCode.OP_CALL_OPERATOR_FUNC
+                            || mVM.getInstruction(i).mOpCode == OpCode.OP_CALL_DLL
+                            || mVM.getInstruction(i).mOpCode == OpCode.OP_CREATE_USER_FRAME) {
                         return "Mouse hints can't call functions. Use watch instead.";
                     }
                 }
             }
 
             // Run compiled code
-            mVM.GotoInstruction(codeStart);
+            mVM.gotoInstruction(codeStart);
 
             continueApplication();
 
@@ -113,7 +114,7 @@ public class EvaluateWatchHandler {
             }
 
             // Execution didn't finish?
-            if (!mVM.Done()) {
+            if (!mVM.isDone()) {
                 return DEFAULT_VALUE;
             }
 
@@ -135,7 +136,7 @@ public class EvaluateWatchHandler {
 
             // Run the virtual machine for a certain number of steps
             //TODO Continue
-            mVM.Continue(GB_STEPS_UNTIL_REFRESH);
+            mVM.continueVM(GB_STEPS_UNTIL_REFRESH);
 
             // Process windows messages (to keep application responsive)
             //Application.ProcessMessages ();
@@ -145,19 +146,19 @@ public class EvaluateWatchHandler {
             //    mVM.Pause ();
         } while (//mMode == ApMode.AP_RUNNING
                 !mVM.hasError()
-                && !mVM.Done()
-                && !mVM.Paused()
+                && !mVM.isDone()
+                && !mVM.isPaused()
                 && !mVMDriver.isClosing());
     }
 
     private String DisplayVariable(ValType valType) {
-        if (valType.Equals(ValType.VTP_STRING)) {                              // String is special case.
-            return "\"" + mVM.RegString() + "\"";                 // Stored in string register.
+        if (valType.Equals (BasicValType.VTP_STRING)) {                              // String is special case.
+            return "\"" + mVM.getRegString() + "\"";                 // Stored in string register.
         } else {
             String temp;
             try {
                 Mutable<Integer> maxChars = new Mutable<Integer>(TomVM.DATA_TO_STRING_MAX_CHARS);
-                temp = mVM.ValToString(mVM.Reg(), valType, maxChars);
+                temp = mVM.ValToString(mVM.getReg(), valType, maxChars);
             } catch (Exception ex) {
 
                 // Floating point errors can be raised when converting floats to string

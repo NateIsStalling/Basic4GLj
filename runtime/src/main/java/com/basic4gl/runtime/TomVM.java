@@ -14,27 +14,21 @@ import java.util.Vector;
 //import com.basic4gl.nate.plugins.util.IDLL_Basic4GL_Runtime;
 
 
+import com.basic4gl.runtime.types.*;
 import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import com.basic4gl.runtime.stackframe.*;
-import com.basic4gl.runtime.types.Structure;
-import com.basic4gl.runtime.types.StructureField;
-import com.basic4gl.runtime.types.TypeLibrary;
-import com.basic4gl.runtime.types.ValType;
-import com.basic4gl.runtime.types.ValTypeSet;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.IVMDebugger;
 import com.basic4gl.runtime.util.Resources;
-import com.basic4gl.runtime.types.OpCode;
 import com.basic4gl.runtime.VariableCollection.Variable;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-////////////////////////////////////////////////////////////////////////////////
-// TomVM
-//
-// Virtual machine
+/**
+ * Virtual machine for Basic4GL
+ */
 public class TomVM extends HasErrorState implements Streamable {
     // Constants
 
@@ -121,10 +115,6 @@ public class TomVM extends HasErrorState implements Streamable {
     // Debugger
     IVMDebugger mDebugger;
 
-
-    ////////////////////////////////////
-    // Data
-
     // Variables, data and data types
     TypeLibrary mDataTypes;
     Data mData;
@@ -142,9 +132,6 @@ public class TomVM extends HasErrorState implements Streamable {
     // (e.g declared with "DATA"
     // keyword in BASIC)
     int mProgramDataOffset;
-
-    // //////////////////////////////////
-    // Code
 
     // Instructions
     //TODO make private
@@ -216,16 +203,18 @@ public class TomVM extends HasErrorState implements Streamable {
         //m_pluginRuntime = new TomVMDLLAdapter(this,
         //		m_plugins.StructureManager());
 
-        New();
+        clearProgram();
     }
 
-    public void New() // New program
+    /**
+     * New program
+     */
+    public void clearProgram()
     {
-
         // Clear variables, data and data types
-        Clr();
+        clearVariables();
         mVariables.clear();
-        mDataTypes.Clear();
+        mDataTypes.clear();
         mProgramData.clear();
         mCodeBlocks.clear();
 
@@ -246,12 +235,15 @@ public class TomVM extends HasErrorState implements Streamable {
         m_breakPtsPatched = false;
     }
 
-    public void Clr() // Clear variables
+    /**
+     * Clear variables
+     */
+    public void clearVariables()
     {
         mVariables.deallocate(); // Deallocate variables
-        mData.Clear(); // Deallocate variable data
-        mStrings.Clear(); // Clear strings
-        mStack.Clear(); // Clear runtime stacks
+        mData.clear(); // Deallocate variable data
+        mStrings.clear(); // Clear strings
+        mStack.clear(); // Clear runtime stacks
         mUserCallStack.clear();
         mStackDestructors.clear();
         mTempDestructors.clear();
@@ -259,7 +251,7 @@ public class TomVM extends HasErrorState implements Streamable {
         mBoundCodeBlock = 0;
 
         // Clear resources
-        ClearResources();
+        clearResources();
 
         // Init registers
         mReg.setIntVal(0);
@@ -272,20 +264,20 @@ public class TomVM extends HasErrorState implements Streamable {
     public IVMDebugger getDebugger(){
         return mDebugger;
     }
-    public void ClearResources() {
+    public void clearResources() {
         // Clear resources
         for (Resources res : mResources) {
-            res.Clear();
+            res.clear();
         }
     }
 
-    public void Reset() {
+    public void resetVM() {
 
         // Clear error state
         clearError();
 
         // Deallocate variables
-        Clr();
+        clearVariables();
 
         // Call registered initialisation functions
         for (int i = 0; i < mInitFunctions.size(); i++) {
@@ -297,23 +289,22 @@ public class TomVM extends HasErrorState implements Streamable {
         m_paused = false;
     }
 
-    public void Continue() {
+    public void continueVM() {
         // Reduced from 0xffffffff since Java doesn't support unsigned ints
-        Continue(0x7fffffff);
+        continueVM(0x7fffffff);
     }
 
-    public void Continue(int steps) // Continue execution from last position
+    public void continueVM(int steps) // Continue execution from last position
     {
 
         clearError();
         m_paused = false;
 
-        // //////////////////////////////////////////////////////////////////////////
-        // Virtual machine main loop
         Instruction instruction;
         int stepCount = 0;
         int tempI;
 
+        // Virtual machine main loop
         step:
         while (true) {    //breaks on last line; taking advantage of loops having labels for continue statements to replicate GOTO
 
@@ -337,7 +328,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_LOAD_CONST:
 
                     // Load value
-                    if (instruction.mType == ValType.VTP_STRING) {
+                    if (instruction.mType == BasicValType.VTP_STRING) {
                         assertTrue(instruction.mValue.getIntVal() >= 0);
                         assertTrue(instruction.mValue.getIntVal() < mStringConstants.size());
                         setRegString(mStringConstants.get(instruction.mValue
@@ -357,7 +348,7 @@ public class TomVM extends HasErrorState implements Streamable {
                             instruction.mValue.getIntVal());
                     if (var.Allocated()) {
                         // Load address of variable's data into register
-                        Reg().setIntVal(var.m_dataIndex);
+                        getReg().setIntVal(var.m_dataIndex);
                         mIp++; // Proceed to next instruction
                         continue step;
                     }
@@ -379,7 +370,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Instruction contains index of variable.
                     if (currentFrame.localVarDataOffsets.get(index) != 0) {
                         // Load address of variable's data into register
-                        Reg().setIntVal(currentFrame.localVarDataOffsets.get(index));
+                        getReg().setIntVal(currentFrame.localVarDataOffsets.get(index));
                         mIp++; // Proceed to next instruction
                         continue step;
                     }
@@ -390,19 +381,19 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_DEREF: {
 
                     // Dereference reg.
-                    if (Reg().getIntVal() != 0) {
-                        assertTrue(mData.IndexValid(Reg().getIntVal()));
+                    if (getReg().getIntVal() != 0) {
+                        assertTrue(mData.IndexValid(getReg().getIntVal()));
                         // Find value that reg points to
-                        Value val = mData.Data().get(Reg().getIntVal());
+                        Value val = mData.Data().get(getReg().getIntVal());
                         switch (instruction.mType) {
-                            case ValType.VTP_INT:
-                            case ValType.VTP_REAL:
+                            case BasicValType.VTP_INT:
+                            case BasicValType.VTP_REAL:
                                 setReg(val);
                                 mIp++; // Proceed to next instruction
                                 continue step;
-                            case ValType.VTP_STRING:
+                            case BasicValType.VTP_STRING:
                                 assertTrue(mStrings.IndexValid(val.getIntVal()));
-                                setRegString(mStrings.Value(val.getIntVal()));
+                                setRegString(mStrings.valueAt(val.getIntVal()));
                                 mIp++; // Proceed to next instruction
                                 continue step;
                             default:
@@ -415,8 +406,8 @@ public class TomVM extends HasErrorState implements Streamable {
                 }
                 case OpCode.OP_ADD_CONST:
                     // Check pointer
-                    if (Reg().getIntVal() != 0) {
-                        Reg().setIntVal(Reg().getIntVal()
+                    if (getReg().getIntVal() != 0) {
+                        getReg().setIntVal(getReg().getIntVal()
                                 + instruction.mValue.getIntVal());
                         mIp++; // Proceed to next instruction
                         continue step;
@@ -426,27 +417,27 @@ public class TomVM extends HasErrorState implements Streamable {
 
                 case OpCode.OP_ARRAY_INDEX:
 
-                    if (Reg2().getIntVal() != 0) {
+                    if (getReg2().getIntVal() != 0) {
                         // Input: mReg2 = Array address
                         // mReg = Array index
                         // Output: mReg = Element address
-                        assertTrue(mData.IndexValid(Reg2().getIntVal()));
-                        assertTrue(mData.IndexValid(Reg2().getIntVal() + 1));
+                        assertTrue(mData.IndexValid(getReg2().getIntVal()));
+                        assertTrue(mData.IndexValid(getReg2().getIntVal() + 1));
 
                         // mReg2 points to array header (2 values)
                         // First value is highest element (i.e number of elements +
                         // 1)
                         // Second value is size of array element.
                         // Array data immediately follows header
-                        if (Reg().getIntVal() >= 0
-                                && Reg().getIntVal() < mData.Data()
-                                .get(Reg2().getIntVal()).getIntVal()) {
-                            assertTrue(mData.Data().get(Reg2().getIntVal() + 1)
+                        if (getReg().getIntVal() >= 0
+                                && getReg().getIntVal() < mData.Data()
+                                .get(getReg2().getIntVal()).getIntVal()) {
+                            assertTrue(mData.Data().get(getReg2().getIntVal() + 1)
                                     .getIntVal() >= 0);
-                            Reg().setIntVal(Reg2().getIntVal()
+                            getReg().setIntVal(getReg2().getIntVal()
                                     + 2
-                                    + Reg().getIntVal()
-                                    * mData.Data().get(Reg2().getIntVal() + 1)
+                                    + getReg().getIntVal()
+                                    * mData.Data().get(getReg2().getIntVal() + 1)
                                     .getIntVal());
 
                             mIp++; // Proceed to next instruction
@@ -461,10 +452,10 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_PUSH:
 
                     // Push register to stack
-                    if (instruction.mType == ValType.VTP_STRING) {
-                        mStack.PushString(RegString());
+                    if (instruction.mType == BasicValType.VTP_STRING) {
+                        mStack.pushString(getRegString());
                     } else {
-                        mStack.Push(Reg());
+                        mStack.push(getReg());
                     }
 
                     mIp++; // Proceed to next instruction
@@ -473,11 +464,11 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_POP:
 
                     // Pop reg2 from stack
-                    if (instruction.mType == ValType.VTP_STRING) {
+                    if (instruction.mType == BasicValType.VTP_STRING) {
 
-                        setReg2String(mStack.PopString());
+                        setReg2String(mStack.popString());
                     } else {
-                        Reg2().setVal(mStack.Pop());
+                        getReg2().setVal(mStack.pop());
                     }
                     mIp++; // Proceed to next instruction
                     continue step;
@@ -485,18 +476,18 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_SAVE: {
 
                     // Save reg into [reg2]
-                    if (Reg2().getIntVal() > 0) {
-                        assertTrue(mData.IndexValid(Reg2().getIntVal()));
-                        Value dest = mData.Data().get(Reg2().getIntVal());
+                    if (getReg2().getIntVal() > 0) {
+                        assertTrue(mData.IndexValid(getReg2().getIntVal()));
+                        Value dest = mData.Data().get(getReg2().getIntVal());
                         switch (instruction.mType) {
-                            case ValType.VTP_INT:
-                            case ValType.VTP_REAL:
+                            case BasicValType.VTP_INT:
+                            case BasicValType.VTP_REAL:
                                 //mData.Data().set(mReg2.getIntVal(), new Value(mReg));
-                                dest.setVal(Reg());
+                                dest.setVal(getReg());
 
                                 mIp++; // Proceed to next instruction
                                 continue step;
-                            case ValType.VTP_STRING:
+                            case BasicValType.VTP_STRING:
 
                                 // Allocate string space if necessary
                                 if (dest.getIntVal() == 0) {
@@ -504,7 +495,7 @@ public class TomVM extends HasErrorState implements Streamable {
                                 }
 
                                 // Copy string value
-                                mStrings.setValue(dest.getIntVal(), RegString());
+                                mStrings.setValue(dest.getIntVal(), getRegString());
                                 mIp++; // Proceed to next instruction
                                 continue step;
                             default:
@@ -519,7 +510,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_COPY: {
 
                     // Copy data
-                    if (CopyData(Reg().getIntVal(), Reg2().getIntVal(),
+                    if (CopyData(getReg().getIntVal(), getReg2().getIntVal(),
                             mTypeSet.getValType(instruction.mValue.getIntVal()))) {
                         mIp++; // Proceed to next instruction
                         continue step;
@@ -602,7 +593,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     currentFrame.localVarDataOffsets.set(index, dataIndex);
 
                     // Also store in register, so that OpCode.OP_REG_DESTRUCTOR can be used
-                    Reg().setIntVal(dataIndex);
+                    getReg().setIntVal(dataIndex);
 
                     mIp++; // Proceed to next instruction
                     continue step;
@@ -621,7 +612,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Jump if reg != 0
                     assertTrue(instruction.mValue.getIntVal() >= 0);
                     assertTrue(instruction.mValue.getIntVal() < mCode.size());
-                    if (Reg().getIntVal() != 0) {
+                    if (getReg().getIntVal() != 0) {
                         mIp = instruction.mValue.getIntVal();
                         continue step; // Proceed without incrementing instruction
                     }
@@ -633,7 +624,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Jump if reg == 0
                     assertTrue(instruction.mValue.getIntVal() >= 0);
                     assertTrue(instruction.mValue.getIntVal() < mCode.size());
-                    if (Reg().getIntVal() == 0) {
+                    if (getReg().getIntVal() == 0) {
                         mIp = instruction.mValue.getIntVal();
                         continue step; // Proceed without incrementing instruction
                     }
@@ -641,10 +632,10 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_NEG:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(-Reg().getIntVal());
-                    } else if (instruction.mType == ValType.VTP_REAL) {
-                        Reg().setRealVal(-Reg().getRealVal());
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(-getReg().getIntVal());
+                    } else if (instruction.mType == BasicValType.VTP_REAL) {
+                        getReg().setRealVal(-getReg().getRealVal());
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -653,12 +644,12 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_PLUS:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(Reg().getIntVal() + Reg2().getIntVal());
-                    } else if (instruction.mType == ValType.VTP_REAL) {
-                        Reg().setRealVal(Reg().getRealVal() + Reg2().getRealVal());
-                    } else if (instruction.mType == ValType.VTP_STRING) {
-                        setRegString(Reg2String() + RegString());
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(getReg().getIntVal() + getReg2().getIntVal());
+                    } else if (instruction.mType == BasicValType.VTP_REAL) {
+                        getReg().setRealVal(getReg().getRealVal() + getReg2().getRealVal());
+                    } else if (instruction.mType == BasicValType.VTP_STRING) {
+                        setRegString(getReg2String() + getRegString());
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -667,10 +658,10 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_MINUS:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(Reg2().getIntVal() - Reg().getIntVal());
-                    } else if (instruction.mType == ValType.VTP_REAL) {
-                        Reg().setRealVal(Reg2().getRealVal() - Reg().getRealVal());
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(getReg2().getIntVal() - getReg().getIntVal());
+                    } else if (instruction.mType == BasicValType.VTP_REAL) {
+                        getReg().setRealVal(getReg2().getRealVal() - getReg().getRealVal());
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -679,10 +670,10 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_TIMES:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(Reg().getIntVal() * Reg2().getIntVal());
-                    } else if (instruction.mType == ValType.VTP_REAL) {
-                        Reg().setRealVal(Reg().getRealVal() * Reg2().getRealVal());
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(getReg().getIntVal() * getReg2().getIntVal());
+                    } else if (instruction.mType == BasicValType.VTP_REAL) {
+                        getReg().setRealVal(getReg().getRealVal() * getReg2().getRealVal());
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -691,10 +682,10 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_DIV:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(Reg2().getIntVal() / Reg().getIntVal());
-                    } else if (instruction.mType == ValType.VTP_REAL) {
-                        Reg().setRealVal(Reg2().getRealVal() / Reg().getRealVal());
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(getReg2().getIntVal() / getReg().getIntVal());
+                    } else if (instruction.mType == BasicValType.VTP_REAL) {
+                        getReg().setRealVal(getReg2().getRealVal() / getReg().getRealVal());
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -703,12 +694,12 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_MOD:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        int i = Reg2().getIntVal() % Reg().getIntVal();
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        int i = getReg2().getIntVal() % getReg().getIntVal();
                         if (i >= 0) {
-                            Reg().setIntVal(i);
+                            getReg().setIntVal(i);
                         } else {
-                            Reg().setIntVal(Reg().getIntVal() + i);
+                            getReg().setIntVal(getReg().getIntVal() + i);
                         }
                     } else {
                         setError(ERR_BAD_OPERATOR);
@@ -718,8 +709,8 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_NOT:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(Reg().getIntVal() == 0 ? -1 : 0);
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(getReg().getIntVal() == 0 ? -1 : 0);
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -728,14 +719,14 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_EQUAL:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(
-                                Reg2().getIntVal() == Reg().getIntVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_REAL) {
-                        Reg().setIntVal(
-                                Reg2().getRealVal() == Reg().getRealVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_STRING) {
-                        Reg().setIntVal(Reg2String().equals(RegString()) ? -1 : 0);
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(
+                                getReg2().getIntVal() == getReg().getIntVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_REAL) {
+                        getReg().setIntVal(
+                                getReg2().getRealVal() == getReg().getRealVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_STRING) {
+                        getReg().setIntVal(getReg2String().equals(getRegString()) ? -1 : 0);
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -744,14 +735,14 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_NOT_EQUAL:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(
-                                Reg2().getIntVal() != Reg().getIntVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_REAL) {
-                        Reg().setIntVal(
-                                Reg2().getRealVal() != Reg().getRealVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_STRING) {
-                        Reg().setIntVal(!Reg2String().equals(RegString()) ? -1 : 0);
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(
+                                getReg2().getIntVal() != getReg().getIntVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_REAL) {
+                        getReg().setIntVal(
+                                getReg2().getRealVal() != getReg().getRealVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_STRING) {
+                        getReg().setIntVal(!getReg2String().equals(getRegString()) ? -1 : 0);
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -760,15 +751,15 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_GREATER:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(
-                                Reg2().getIntVal() > Reg().getIntVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_REAL) {
-                        Reg().setIntVal(
-                                Reg2().getRealVal() > Reg().getRealVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_STRING) {
-                        Reg().setIntVal(
-                                (Reg2String().compareTo(RegString()) > 0) ? -1 : 0);
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(
+                                getReg2().getIntVal() > getReg().getIntVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_REAL) {
+                        getReg().setIntVal(
+                                getReg2().getRealVal() > getReg().getRealVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_STRING) {
+                        getReg().setIntVal(
+                                (getReg2String().compareTo(getRegString()) > 0) ? -1 : 0);
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -777,15 +768,15 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_GREATER_EQUAL:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(
-                                Reg2().getIntVal() >= Reg().getIntVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_REAL) {
-                        Reg().setIntVal(
-                                Reg2().getRealVal() >= Reg().getRealVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_STRING) {
-                        Reg().setIntVal(
-                                (Reg2String().compareTo(RegString()) >= 0) ? -1 : 0);
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(
+                                getReg2().getIntVal() >= getReg().getIntVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_REAL) {
+                        getReg().setIntVal(
+                                getReg2().getRealVal() >= getReg().getRealVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_STRING) {
+                        getReg().setIntVal(
+                                (getReg2String().compareTo(getRegString()) >= 0) ? -1 : 0);
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -794,15 +785,15 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_LESS:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(
-                                Reg2().getIntVal() < Reg().getIntVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_REAL) {
-                        Reg().setIntVal(
-                                Reg2().getRealVal() < Reg().getRealVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_STRING) {
-                        Reg().setIntVal(
-                                (Reg2String().compareTo(RegString()) < 0) ? -1 : 0);
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(
+                                getReg2().getIntVal() < getReg().getIntVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_REAL) {
+                        getReg().setIntVal(
+                                getReg2().getRealVal() < getReg().getRealVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_STRING) {
+                        getReg().setIntVal(
+                                (getReg2String().compareTo(getRegString()) < 0) ? -1 : 0);
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -811,15 +802,15 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_OP_LESS_EQUAL:
-                    if (instruction.mType == ValType.VTP_INT) {
-                        Reg().setIntVal(
-                                Reg2().getIntVal() <= Reg().getIntVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_REAL) {
-                        Reg().setIntVal(
-                                Reg2().getRealVal() <= Reg().getRealVal() ? -1 : 0);
-                    } else if (instruction.mType == ValType.VTP_STRING) {
-                        Reg().setIntVal(
-                                (Reg2String().compareTo(RegString()) <= 0) ? -1 : 0);
+                    if (instruction.mType == BasicValType.VTP_INT) {
+                        getReg().setIntVal(
+                                getReg2().getIntVal() <= getReg().getIntVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_REAL) {
+                        getReg().setIntVal(
+                                getReg2().getRealVal() <= getReg().getRealVal() ? -1 : 0);
+                    } else if (instruction.mType == BasicValType.VTP_STRING) {
+                        getReg().setIntVal(
+                                (getReg2String().compareTo(getRegString()) <= 0) ? -1 : 0);
                     } else {
                         setError(ERR_BAD_OPERATOR);
                         break;
@@ -828,57 +819,57 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
 
                 case OpCode.OP_CONV_INT_REAL:
-                    Reg().setRealVal((float) Reg().getIntVal());
+                    getReg().setRealVal((float) getReg().getIntVal());
                     mIp++; // Proceed to next instruction
                     continue step;
 
                 case OpCode.OP_CONV_INT_REAL2:
-                    Reg2().setRealVal((float) Reg2().getIntVal());
+                    getReg2().setRealVal((float) getReg2().getIntVal());
                     mIp++; // Proceed to next instruction
                     continue step;
 
                 case OpCode.OP_CONV_REAL_INT:
-                    Reg().setIntVal((int) Reg().getRealVal());
+                    getReg().setIntVal((int) getReg().getRealVal());
                     mIp++; // Proceed to next instruction
                     continue step;
 
                 case OpCode.OP_CONV_REAL_INT2:
-                    Reg2().setIntVal((int) Reg2().getRealVal());
+                    getReg2().setIntVal((int) getReg2().getRealVal());
                     mIp++; // Proceed to next instruction
                     continue step;
 
                 case OpCode.OP_CONV_INT_STRING:
-                    setRegString(String.valueOf(Reg().getIntVal()));
+                    setRegString(String.valueOf(getReg().getIntVal()));
                     mIp++; // Proceed to next instruction
                     continue step;
 
                 case OpCode.OP_CONV_REAL_STRING:
-                    setRegString(String.valueOf(Reg().getRealVal()));
+                    setRegString(String.valueOf(getReg().getRealVal()));
                     mIp++; // Proceed to next instruction
                     continue step;
 
                 case OpCode.OP_CONV_INT_STRING2:
-                    setReg2String(String.valueOf(Reg2().getIntVal()));
+                    setReg2String(String.valueOf(getReg2().getIntVal()));
                     mIp++; // Proceed to next instruction
                     continue step;
 
                 case OpCode.OP_CONV_REAL_STRING2:
-                    setReg2String(String.valueOf(Reg2().getRealVal()));
+                    setReg2String(String.valueOf(getReg2().getRealVal()));
                     mIp++; // Proceed to next instruction
                     continue step;
 
                 case OpCode.OP_OP_AND:
-                    Reg().setIntVal(Reg().getIntVal() & Reg2().getIntVal());
+                    getReg().setIntVal(getReg().getIntVal() & getReg2().getIntVal());
                     mIp++; // Proceed to next instruction
                     continue step;
 
                 case OpCode.OP_OP_OR:
-                    Reg().setIntVal(Reg().getIntVal() | Reg2().getIntVal());
+                    getReg().setIntVal(getReg().getIntVal() | getReg2().getIntVal());
                     mIp++; // Proceed to next instruction
                     continue step;
 
                 case OpCode.OP_OP_XOR:
-                    Reg().setIntVal(Reg().getIntVal() ^ Reg2().getIntVal());
+                    getReg().setIntVal(getReg().getIntVal() ^ getReg2().getIntVal());
                     mIp++; // Proceed to next instruction
                     continue step;
 
@@ -936,8 +927,8 @@ public class TomVM extends HasErrorState implements Streamable {
                     }
 
                     // Allocate and initialise new data
-                    Reg().setIntVal(mData.Allocate(mDataTypes.DataSize(type)));
-                    mData.InitData(Reg().getIntVal(), type, mDataTypes);
+                    getReg().setIntVal(mData.Allocate(mDataTypes.DataSize(type)));
+                    mData.InitData(getReg().getIntVal(), type, mDataTypes);
 
                     mIp++; // Proceed to next instruction
                     continue step;
@@ -1126,7 +1117,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     setError(ERR_NO_VALUE_RETURNED);
                     break;
                 case OpCode.OP_BINDCODE:
-                    mBoundCodeBlock = Reg().getIntVal();
+                    mBoundCodeBlock = getReg().getIntVal();
                     mIp++; // Proceed to next instruction
                     continue step;
 
@@ -1199,19 +1190,19 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Transfer register value to parameter
                     Value dest = mData.Data().get(dataIndex);
                     switch (instruction.mType) {
-                        case ValType.VTP_INT:
-                        case ValType.VTP_REAL:
+                        case BasicValType.VTP_INT:
+                        case BasicValType.VTP_REAL:
                             //TODO Confirm value is properly set
                             //TODO Check other "dest" variables
-                            dest.setVal(Reg());
+                            dest.setVal(getReg());
                             break;
-                        case ValType.VTP_STRING:
+                        case BasicValType.VTP_STRING:
 
                             // Allocate string space
                             dest.setIntVal(mStrings.Alloc());
 
                             // Copy string value
-                            mStrings.setValue(dest.getIntVal(), RegString());
+                            mStrings.setValue(dest.getIntVal(), getRegString());
                             break;
                         default:
                             assertTrue(false);
@@ -1219,7 +1210,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Save parameter offset in register (so that OpCode.OP_REG_DESTRUCTOR
                     // will work)
-                    Reg().setIntVal(dataIndex);
+                    getReg().setIntVal(dataIndex);
                     mIp++; // Proceed to next instruction
                     continue step;
                 }
@@ -1229,7 +1220,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Copy data pointed to by mReg into next stack frame
                     // parameter.
                     // Instruction value points to the parameter data type.
-                    if (CopyToParam(Reg().getIntVal(),
+                    if (CopyToParam(getReg().getIntVal(),
                             mTypeSet.getValType(instruction.mValue.getIntVal()))) {
                         mIp++; // Proceed to next instruction
                         continue step;
@@ -1240,7 +1231,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                 case OpCode.OP_MOVE_TEMP: {
 
-                    if (MoveToTemp(Reg().getIntVal(),
+                    if (MoveToTemp(getReg().getIntVal(),
                             mTypeSet.getValType(instruction.mValue.getIntVal()))) {
                         mIp++; // Proceed to next instruction
                         continue step;
@@ -1251,7 +1242,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                 case OpCode.OP_CHECK_PTR: {
 
-                    if (CheckPointer(Reg2().getIntVal(), Reg().getIntVal())) {
+                    if (CheckPointer(getReg2().getIntVal(), getReg().getIntVal())) {
                         mIp++; // Proceed to next instruction
                         continue step;
                     } else {
@@ -1261,9 +1252,9 @@ public class TomVM extends HasErrorState implements Streamable {
                 }
 
                 case OpCode.OP_CHECK_PTRS: {
-                    if (CheckPointers(Reg().getIntVal(),
+                    if (CheckPointers(getReg().getIntVal(),
                             mTypeSet.getValType(instruction.mValue.getIntVal()),
-                            Reg2().getIntVal())) {
+                            getReg2().getIntVal())) {
                         mIp++; // Proceed to next instruction
                         continue step;
                     } else {
@@ -1275,7 +1266,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_REG_DESTRUCTOR: {
 
                     // Register destructor for data pointed to by mReg.
-                    int ptr = Reg().getIntVal();
+                    int ptr = getReg().getIntVal();
                     assertTrue(ptr >= 0);
                     if (ptr == 0) {
                         // Do nothing
@@ -1303,7 +1294,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Save register pointer into param pointer
                     assertTrue(!mUserCallStack.isEmpty());
                     mUserCallStack.lastElement().localVarDataOffsets.set(
-                            instruction.mValue.getIntVal(), Reg().getIntVal());
+                            instruction.mValue.getIntVal(), getReg().getIntVal());
 
                     mIp++; // Proceed to next instruction
                     continue step;
@@ -1318,10 +1309,10 @@ public class TomVM extends HasErrorState implements Streamable {
                     // stacked state that the Execute() call is expecting to be
                     // present when
                     // it returns.
-                    if (!mStack.Empty()) {
+                    if (!mStack.isEmpty()) {
                         setError(ERR_RUN_CALLED_INSIDE_EXECUTE);
                     } else {
-                        Reset(); // Reset program
+                        resetVM(); // Reset program
                     }
                     break; // Timeshare break
 
@@ -1406,7 +1397,7 @@ public class TomVM extends HasErrorState implements Streamable {
         assertTrue(mDataTypes.TypeValid(type));
 
         // If type is basic string, copy string value
-        if (type.Equals(ValType.VTP_STRING)) {
+        if (type.Equals (BasicValType.VTP_STRING)) {
             Value src = mData.Data().get(sourceIndex);
             Value dest = mData.Data().get(destIndex);
             if (src.getIntVal() > 0 || dest.getIntVal() > 0) {
@@ -1417,7 +1408,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 }
 
                 // Copy string value
-                mStrings.setValue(dest.getIntVal(), mStrings.Value(mData.Data().get(sourceIndex).getIntVal()));
+                mStrings.setValue(dest.getIntVal(), mStrings.valueAt(mData.Data().get(sourceIndex).getIntVal()));
             }
         }
 
@@ -1607,7 +1598,7 @@ public class TomVM extends HasErrorState implements Streamable {
         int i;
         Value v = new Value();
         for (i = 0; i < type.m_arrayLevel; i++) {
-            v = mStack.Pop();
+            v = mStack.pop();
             int size = v.getIntVal() + 1;
             if (size < 1) {
                 setError(ERR_ZERO_LENGTH_ARRAY);
@@ -1676,7 +1667,7 @@ public class TomVM extends HasErrorState implements Streamable {
         }
     }
 
-    void InternalPatchOut() {
+    void internalPatchOut() {
 
         // Patch out breakpoints and restore program to its no breakpoint state.
         for (PatchedBreakPt pt : mPatchedBreakPts) {
@@ -1698,12 +1689,12 @@ public class TomVM extends HasErrorState implements Streamable {
         // restore
         // the program when we've finished.
 
-        System.out.println(mDebugger.UserBreakPtCount());
+        System.out.println(mDebugger.getUserBreakPointCount());
         // User breakpts
-        for (int i = 0; i < mDebugger.UserBreakPtCount(); i++) {
+        for (int i = 0; i < mDebugger.getUserBreakPointCount(); i++) {
 
             // Find line number
-            int line = mDebugger.UserBreakPtLine(i);
+            int line = mDebugger.getUserBreakPointLine(i);
 
             // Convert to offset
             int offset = 0;
@@ -1752,7 +1743,7 @@ public class TomVM extends HasErrorState implements Streamable {
         if (mIp >= mCode.size()) {
             return;
         }
-        PatchOut();
+        patchOut();
 
         // Calculate op-code range that corresponds to the current line.
         int line, startOffset, endOffset;
@@ -1844,12 +1835,12 @@ public class TomVM extends HasErrorState implements Streamable {
         s.reg2String = mReg2String;
 
         // Stacks
-        s.stackTop = mStack.Size();
+        s.stackTop = mStack.size();
         s.userFuncStackTop = mUserCallStack.size();
         s.currentUserFrame = mCurrentUserFrame;
 
         // Top of program
-        s.codeSize = InstructionCount();
+        s.codeSize = getInstructionCount();
         s.codeBlockCount = mCodeBlocks.size();
 
         // Var data
@@ -1884,8 +1875,8 @@ public class TomVM extends HasErrorState implements Streamable {
         mReg2String = state.reg2String;
 
         // Stacks
-        if (state.stackTop < mStack.Size()) {
-            mStack.Resize(state.stackTop);
+        if (state.stackTop < mStack.size()) {
+            mStack.resize(state.stackTop);
         }
         if (state.userFuncStackTop < mUserCallStack.size()) {
             mUserCallStack.setSize(state.userFuncStackTop);
@@ -1920,11 +1911,11 @@ public class TomVM extends HasErrorState implements Streamable {
     public String BasicValToString(Value val, int type,
                                    boolean constant) {
         switch (type) {
-            case ValType.VTP_INT:
+            case BasicValType.VTP_INT:
                 return String.valueOf(val.getIntVal());
-            case ValType.VTP_REAL:
+            case BasicValType.VTP_REAL:
                 return String.valueOf(val.getRealVal());
-            case ValType.VTP_STRING:
+            case BasicValType.VTP_STRING:
                 if (constant) {
                     if (val.getIntVal() >= 0
                             && val.getIntVal() < mStringConstants.size()) {
@@ -1934,7 +1925,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     }
                 } else {
                     return mStrings.IndexValid(val.getIntVal()) ? "\""
-                            + mStrings.Value(val.getIntVal()) + "\""
+                            + mStrings.valueAt(val.getIntVal()) + "\""
                             : "???";
                 }
             default:
@@ -2092,19 +2083,19 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // Convert to requested type
         switch (basictype) {
-            case ValType.VTP_STRING:
+            case BasicValType.VTP_STRING:
 
                 // Convert type to int.
                 switch (e.getType()) {
-                    case ValType.VTP_STRING:
+                    case BasicValType.VTP_STRING:
                         assertTrue(e.getValue().getIntVal() >= 0);
                         assertTrue(e.getValue().getIntVal() < mStringConstants.size());
                         setRegString(mStringConstants.get(e.getValue().getIntVal()));
                         return true;
-                    case ValType.VTP_INT:
+                    case BasicValType.VTP_INT:
                         setRegString(String.valueOf(e.getValue().getIntVal()));
                         return true;
-                    case ValType.VTP_REAL:
+                    case BasicValType.VTP_REAL:
                         setRegString(String.valueOf(e.getValue().getRealVal()));
                         return true;
                     default:
@@ -2112,32 +2103,32 @@ public class TomVM extends HasErrorState implements Streamable {
                 }
                 break;
 
-            case ValType.VTP_INT:
+            case BasicValType.VTP_INT:
                 switch (e.getType()) {
-                    case ValType.VTP_STRING:
+                    case BasicValType.VTP_STRING:
                         setError(ERR_DATA_IS_STRING);
                         return false;
-                    case ValType.VTP_INT:
-                        Reg().setIntVal(e.getValue().getIntVal());
+                    case BasicValType.VTP_INT:
+                        getReg().setIntVal(e.getValue().getIntVal());
                         return true;
-                    case ValType.VTP_REAL:
-                        Reg().setIntVal((int) e.getValue().getRealVal());
+                    case BasicValType.VTP_REAL:
+                        getReg().setIntVal((int) e.getValue().getRealVal());
                         return true;
                     default:
                         break;
                 }
                 break;
 
-            case ValType.VTP_REAL:
+            case BasicValType.VTP_REAL:
                 switch (e.getType()) {
-                    case ValType.VTP_STRING:
+                    case BasicValType.VTP_STRING:
                         setError(ERR_DATA_IS_STRING);
                         return false;
-                    case ValType.VTP_INT:
-                        Reg().setRealVal((float) e.getValue().getIntVal());
+                    case BasicValType.VTP_INT:
+                        getReg().setRealVal((float) e.getValue().getIntVal());
                         return true;
-                    case ValType.VTP_REAL:
-                        Reg().setRealVal(e.getValue().getRealVal());
+                    case BasicValType.VTP_REAL:
+                        getReg().setRealVal(e.getValue().getRealVal());
                         return true;
                     default:
                         break;
@@ -2193,7 +2184,7 @@ public class TomVM extends HasErrorState implements Streamable {
         }
 
         // Store pointer in register
-        Reg().setIntVal(dataIndex);
+        getReg().setIntVal(dataIndex);
 
         return true;
     }
@@ -2213,7 +2204,7 @@ public class TomVM extends HasErrorState implements Streamable {
         assertTrue(type.m_pointerLevel == 0);
 
         // Type IS string case
-        if (type.Equals(ValType.VTP_STRING)) {
+        if (type.Equals (BasicValType.VTP_STRING)) {
 
             Value val = mData.Data().get(dataIndex);
             // Empty strings (index 0) can be ignored
@@ -2224,7 +2215,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                 // Copy previous string
                 mStrings.setValue(newStringIndex,
-                        mStrings.Value(val.getIntVal()));
+                        mStrings.valueAt(val.getIntVal()));
 
                 // Point to new string
                 val.setIntVal(newStringIndex);
@@ -2322,7 +2313,7 @@ public class TomVM extends HasErrorState implements Streamable {
         }
 
         // Store pointer in register
-        Reg().setIntVal(dataIndex);
+        getReg().setIntVal(dataIndex);
 
         return true;
     }
@@ -2374,10 +2365,10 @@ public class TomVM extends HasErrorState implements Streamable {
         // stored
         // in the data. (But could later be extended to something more general
         // purpose.)
-        if (type.Equals(ValType.VTP_STRING)) {
+        if (type.Equals (BasicValType.VTP_STRING)) {
 
             // Don't destroy if in protected range
-            if (protect.ContainsAddr(index)) {
+            if (protect.containsAddress(index)) {
                 return;
             }
 
@@ -2398,7 +2389,7 @@ public class TomVM extends HasErrorState implements Streamable {
             int arrayStart = index + 2;
 
             // Don't destroy if in protected range
-            if (protect.ContainsRange(index, arrayStart + count * elementSize)) {
+            if (protect.containsRange(index, arrayStart + count * elementSize)) {
                 return;
             }
 
@@ -2419,7 +2410,7 @@ public class TomVM extends HasErrorState implements Streamable {
             Structure s = mDataTypes.Structures().get(type.m_basicType);
 
             // Don't destroy if in protected range
-            if (protect.ContainsRange(index, index + s.m_dataSize)) {
+            if (protect.containsRange(index, index + s.m_dataSize)) {
                 return;
             }
 
@@ -2469,7 +2460,7 @@ public class TomVM extends HasErrorState implements Streamable {
         return mCodeBlocks.get(index).programOffset;
     }
 
-    public RollbackPoint GetRollbackPoint() {
+    public RollbackPoint getRollbackPoint() {
         RollbackPoint r = new RollbackPoint();
 
         r.codeBlockCount = mCodeBlocks.size();
@@ -2482,7 +2473,7 @@ public class TomVM extends HasErrorState implements Streamable {
         return r;
     }
 
-    public void Rollback(RollbackPoint rollbackPoint) {
+    public void rollback(RollbackPoint rollbackPoint) {
 
         // Rollback virtual machine
         mCodeBlocks.setSize(rollbackPoint.codeBlockCount);
@@ -2494,7 +2485,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
 
     // Streaming
-    public void StreamOut(DataOutputStream stream) throws IOException {
+    public void streamOut(DataOutputStream stream) throws IOException {
         int i;
         // Stream header
         Streaming.WriteString(stream, STREAM_HEADER);
@@ -2505,7 +2496,7 @@ public class TomVM extends HasErrorState implements Streamable {
         //m_plugins.StreamOut(stream);
 
         // Variables
-        mVariables.StreamOut(stream); // Note: mVariables automatically
+        mVariables.streamOut(stream); // Note: mVariables automatically
         // streams out mDataTypes
 
         // String constants
@@ -2515,40 +2506,40 @@ public class TomVM extends HasErrorState implements Streamable {
         }
 
         // Data type lookup table
-        mTypeSet.StreamOut(stream);
+        mTypeSet.streamOut(stream);
 
         // Program code
         Streaming.WriteLong(stream, mCode.size());
         for (i = 0; i < mCode.size(); i++) {
-            mCode.get(i).StreamOut(stream);
+            mCode.get(i).streamOut(stream);
         }
 
         // Program data (for "DATA" statements)
         Streaming.WriteLong(stream, mProgramData.size());
         for (i = 0; i < mProgramData.size(); i++) {
-            mProgramData.get(i).StreamOut(stream);
+            mProgramData.get(i).streamOut(stream);
         }
 
         // User function prototypes
         Streaming.WriteLong(stream, mUserFunctionPrototypes.size());
         for (i = 0; i < mUserFunctionPrototypes.size(); i++) {
-            mUserFunctionPrototypes.get(i).StreamOut(stream);
+            mUserFunctionPrototypes.get(i).streamOut(stream);
         }
 
         // User functions
         Streaming.WriteLong(stream, mUserFunctions.size());
         for (i = 0; i < mUserFunctions.size(); i++) {
-            mUserFunctions.get(i).StreamOut(stream);
+            mUserFunctions.get(i).streamOut(stream);
         }
 
         // Code blocks
         Streaming.WriteLong(stream, mCodeBlocks.size());
         for (i = 0; i < mCodeBlocks.size(); i++) {
-            mCodeBlocks.get(i).StreamOut(stream);
+            mCodeBlocks.get(i).streamOut(stream);
         }
     }
 
-    public boolean StreamIn(DataInputStream stream) throws IOException {
+    public boolean streamIn(DataInputStream stream) throws IOException {
         // Read and validate stream header
         if (!Streaming.ReadString(stream).equals(STREAM_HEADER)) {
             return false;
@@ -2571,7 +2562,7 @@ public class TomVM extends HasErrorState implements Streamable {
 			    */
 
         // Variables
-        mVariables.StreamIn(stream);
+        mVariables.streamIn(stream);
 
         // String constants
         int count, i;
@@ -2583,7 +2574,7 @@ public class TomVM extends HasErrorState implements Streamable {
             }
 
             // Data type lookup table
-            mTypeSet.StreamIn(stream);
+            mTypeSet.streamIn(stream);
         }
         // Program code
         count = (int) Streaming.ReadLong(stream);
@@ -2591,7 +2582,7 @@ public class TomVM extends HasErrorState implements Streamable {
             mCode.setSize(count);
             for (i = 0; i < count; i++) {
                 mCode.set(i, new Instruction());
-                mCode.get(i).StreamIn(stream);
+                mCode.get(i).streamIn(stream);
             }
         }
         // Program data (for "DATA" statements)
@@ -2600,7 +2591,7 @@ public class TomVM extends HasErrorState implements Streamable {
             mProgramData.setSize(count);
             for (i = 0; i < count; i++) {
                 mProgramData.set(i, new ProgramDataElement());
-                mProgramData.get(i).StreamIn(stream);
+                mProgramData.get(i).streamIn(stream);
             }
         }
         // User function prototypes
@@ -2609,7 +2600,7 @@ public class TomVM extends HasErrorState implements Streamable {
             mUserFunctionPrototypes.setSize(count);
             for (i = 0; i < count; i++) {
                 mUserFunctionPrototypes.set(i, new UserFuncPrototype());
-                mUserFunctionPrototypes.get(i).StreamIn(stream);
+                mUserFunctionPrototypes.get(i).streamIn(stream);
             }
         }
         // User functions
@@ -2618,7 +2609,7 @@ public class TomVM extends HasErrorState implements Streamable {
             mUserFunctions.setSize(count);
             for (i = 0; i < count; i++) {
                 mUserFunctions.set(i, new UserFunc());
-                mUserFunctions.get(i).StreamIn(stream);
+                mUserFunctions.get(i).streamIn(stream);
             }
         }
         // Code blocks
@@ -2627,64 +2618,64 @@ public class TomVM extends HasErrorState implements Streamable {
             mCodeBlocks.setSize(count);
             for (i = 0; i < count; i++) {
                 mCodeBlocks.set(i, new CodeBlock());
-                mCodeBlocks.get(i).StreamIn(stream);
+                mCodeBlocks.get(i).streamIn(stream);
             }
         }
         return true;
 
     }
 
-    void PatchOut() {
+    void patchOut() {
         if (m_breakPtsPatched) {
-            InternalPatchOut();
+            internalPatchOut();
         }
     }
 
     // General
-    public boolean Done() {
-        assertTrue(IPValid());
+    public boolean isDone() {
+        assertTrue(isIPValid());
         return mStopped || mCode.get(mIp).mOpCode == OpCode.OP_END; // Reached end of
         // program?
     }
 
-    public boolean Running() {
-        return !Done() && !Paused();
+    public boolean isRunning() {
+        return !isDone() && !isPaused();
     }
 
-    public void Stop() {
+    public void stop() {
         mStopped = true;
     }
 
-    public void GetIPInSourceCode(Mutable<Integer> line, Mutable<Integer> col) {
-        assertTrue(IPValid());
+    public void getIPInSourceCode(Mutable<Integer> line, Mutable<Integer> col) {
+        assertTrue(isIPValid());
         line.set(mCode.get(mIp).mSourceLine);
         col.set(mCode.get(mIp).mSourceChar);
     }
 
-    public InstructionPos GetIPInSourceCode() {
-        assertTrue(IPValid());
+    public InstructionPos getIPInSourceCode() {
+        assertTrue(isIPValid());
         return new InstructionPos(mCode.get(mIp).mSourceLine, mCode.get(mIp).mSourceChar);
     }
 
-    public void BindCodeBlock(int index) {
+    public void bindCodeBlock(int index) {
         mBoundCodeBlock = index;
     }
 
-    public int GetBoundCodeBlock() {
+    public int getBoundCodeBlock() {
         return mBoundCodeBlock;
     }
 
 
     // IP and registers
-    public int IP() {
+    public int getIP() {
         return mIp;
     }
 
-    public Value Reg() {
+    public Value getReg() {
         return mReg;
     }
 
-    public Value Reg2() {
+    public Value getReg2() {
         return mReg2;
     }
 
@@ -2696,11 +2687,11 @@ public class TomVM extends HasErrorState implements Streamable {
         mReg2.setVal(value);
     }
 
-    public String RegString() {
+    public String getRegString() {
         return mRegString;
     }
 
-    public String Reg2String() {
+    public String getReg2String() {
         return mReg2String;
     }
 
@@ -2712,7 +2703,7 @@ public class TomVM extends HasErrorState implements Streamable {
         mReg2String = string;
     }
 
-    public ValueStack Stack() {
+    public ValueStack getStack() {
         return mStack;
     }
 
@@ -2722,76 +2713,76 @@ public class TomVM extends HasErrorState implements Streamable {
 
 
     // Variables, data and data types
-    public TypeLibrary DataTypes() {
+    public TypeLibrary getDataTypes() {
         return mDataTypes;
     }
 
-    public Data Data() {
+    public Data getData() {
         return mData;
     }
 
-    public VariableCollection Variables() {
+    public VariableCollection getVariables() {
         return mVariables;
     }
 
-    public Vector<ProgramDataElement> ProgramData() {
+    public Vector<ProgramDataElement> getProgramData() {
         return mProgramData;
     }
 
     // User functions
-    public Vector<UserFuncPrototype> UserFunctionPrototypes() {
+    public Vector<UserFuncPrototype> getUserFunctionPrototypes() {
         return mUserFunctionPrototypes;
     }
 
-    public Vector<UserFunc> UserFunctions() {
+    public Vector<UserFunc> getUserFunctions() {
         return mUserFunctions;
     }
 
-    public Vector<UserFuncStackFrame> UserCallStack() {
+    public Vector<UserFuncStackFrame> getUserCallStack() {
         return mUserCallStack;
     }
 
-    public int CurrentUserFrame() {
+    public int getCurrentUserFrame() {
         return mCurrentUserFrame;
     }
 
     // Debugging
-    public boolean Paused() {
+    public boolean isPaused() {
         return m_paused;
     }
 
-    public void Pause() {
+    public void pause() {
         m_paused = true;
     }
 
-    public boolean BreakPtsPatched() {
+    public boolean isBreakPointsPatched() {
         return m_breakPtsPatched;
     }
 
 
-    public void ClearTempBreakPts() {
-        PatchOut();
+    public void clearTempBreakPoints() {
+        patchOut();
         mTempBreakPts.clear();
     }
 
-    public void PatchIn() {
+    public void patchIn() {
         if (!m_breakPtsPatched) {
             InternalPatchIn();
         }
     }
 
-    public void RepatchBreakpts() {
-        PatchOut();
-        PatchIn();
+    public void repatchBreakpoints() {
+        patchOut();
+        patchIn();
     }
 
-    public void GotoInstruction(int offset) {
-        assertTrue(OffsetValid(offset));
+    public void gotoInstruction(int offset) {
+        assertTrue(isOffsetValid(offset));
         mIp = offset;
     }
 
-    public boolean SkipInstruction() { // USE WITH CARE!!!
-        if (mIp < InstructionCount() + 1) {
+    public boolean skipInstruction() { // USE WITH CARE!!!
+        if (mIp < getInstructionCount() + 1) {
             mIp++; // Proceed to next instruction
             return true;
         } else {
@@ -2799,173 +2790,173 @@ public class TomVM extends HasErrorState implements Streamable {
         }
     }
 
-    public boolean OffsetValid(int offset) {
-        return offset >= 0 && offset < InstructionCount();
+    public boolean isOffsetValid(int offset) {
+        return offset >= 0 && offset < getInstructionCount();
     }
 
-    public boolean IPValid() {
-        return OffsetValid(mIp);
+    public boolean isIPValid() {
+        return isOffsetValid(mIp);
     }
 
     // Building raw VM instructions
-    public int InstructionCount() {
+    public int getInstructionCount() {
         return mCode.size();
     }
 
-    public void AddInstruction(Instruction i) {
-        PatchOut();
+    public void addInstruction(Instruction i) {
+        patchOut();
         mCode.add(i);
     }
 
-    public void RollbackProgram(int size) {
+    public void rollbackProgram(int size) {
         assertTrue(size >= 0);
-        assertTrue(size <= InstructionCount());
-        while (size < InstructionCount()) {
+        assertTrue(size <= getInstructionCount());
+        while (size < getInstructionCount()) {
             mCode.remove(mCode.size() - 1);
         }
     }
 
-    public Instruction Instruction(int index) {
+    public Instruction getInstruction(int index) {
         assertTrue(index < mCode.size());
-        PatchOut();
+        patchOut();
         return mCode.get(index);
     }
     public void setInstruction(int index, Instruction instruction) {
         assertTrue(index < mCode.size());
-        PatchOut();
+        patchOut();
         mCode.set(index, instruction);
     }
 
-    public void RemoveLastInstruction() {
+    public void removeLastInstruction() {
         mCode.remove(mCode.size() - 1);
     }
 
-    public int StoreType(ValType type) {
+    public int getStoreTypeIndex(ValType type) {
         return mTypeSet.getIndex(type);
     }
 
-    public ValType GetStoredType(int index) {
+    public ValType getStoredType(int index) {
         return mTypeSet.getValType(index);
     }
 
     // Program data
-    public void StoreProgramData(int type, Value v) {
+    public void storeProgramData(int type, Value v) {
         ProgramDataElement d = new ProgramDataElement();
         d.setType(type);
         d.setValue(v);
         mProgramData.add(d);
     }
 
-    public Vector<String> StringConstants() {
+    public Vector<String> getStringConstants() {
         return mStringConstants;
     }
 
     // External functions
-    public int AddFunction(Function func) {
-        int result = FunctionCount();
+    public int addFunction(Function func) {
+        int result = getFunctionCount();
         mFunctions.add(func);
         return result;
     }
 
-    public int FunctionCount() {
+    public int getFunctionCount() {
         return mFunctions.size();
     }
 
-    public int AddOperatorFunction(Function func) {
-        int result = OperatorFunctionCount();
+    public int addOperatorFunction(Function func) {
+        int result = getOperatorFunctionCount();
         mOperatorFunctions.add(func);
         return result;
     }
 
-    public int OperatorFunctionCount() {
+    public int getOperatorFunctionCount() {
         return mOperatorFunctions.size();
     }
 
     // Called by external functions
-    public Value GetParam(int index) {
+    public Value getParam(int index) {
         // Read param from param stack.
         // Index 1 is TOS
         // Index 2 is TOS - 1
         // ...
         assertTrue(index > 0);
-        assertTrue(index <= mStack.Size());
-        return mStack.get(mStack.Size() - index);
+        assertTrue(index <= mStack.size());
+        return mStack.get(mStack.size() - index);
     }
 
-    public Integer GetIntParam(int index) {
-        return GetParam(index).getIntVal();
+    public Integer getIntParam(int index) {
+        return getParam(index).getIntVal();
     }
 
-    public Float GetRealParam(int index) {
-        return GetParam(index).getRealVal();
+    public Float getRealParam(int index) {
+        return getParam(index).getRealVal();
     }
 
-    public String GetStringParam(int index) {
-        return mStrings.Value(GetIntParam(index));
+    public String getStringParam(int index) {
+        return mStrings.valueAt(getIntParam(index));
     }
 
     public void setStringParam(int index, String string) {
-        mStrings.setValue(GetIntParam(index), string);
+        mStrings.setValue(getIntParam(index), string);
     }
 
-    public String GetString(int index) {
-        return mStrings.Value(index);
+    public String getString(int index) {
+        return mStrings.valueAt(index);
     }
 
     public void setString(int index, String string) {
         mStrings.setValue(index, string);
     }
 
-    public int AllocString() {
+    public int allocString() {
         return mStrings.Alloc();
     }
 
-    public int StoredStrings() {
-        return mStrings.StoredElements();
+    public int getStringStoreElementCount() {
+        return mStrings.getStoredElements();
     }
 
-    public Store<String> Strings() {
+    public Store<String> getStringStore() {
         return mStrings;
     }
 
     // Reference params (called by external functions)
-    public boolean CheckNullRefParam(int index) {
+    public boolean checkNullRefParam(int index) {
 
         // Return true if param is not a null reference
         // Otherwise return false and set a virtual machine error
-        boolean result = GetIntParam(index) > 0;
+        boolean result = getIntParam(index) > 0;
         if (!result) {
-            FunctionError("Unset pointer");
+            functionError("Unset pointer");
         }
         return result;
     }
 
-    public Value GetRefParam(int index) {
+    public Value getRefParam(int index) {
 
         // Get reference parameter.
         // Returns a reference to the actual Value object
-        int ptr = GetIntParam(index);
+        int ptr = getIntParam(index);
         assertTrue(ptr > 0);
         assertTrue(mData.IndexValid(ptr));
         return mData.Data().get(ptr);
     }
 
-    public void FunctionError(String name) {
+    public void functionError(String name) {
         setError("Function error: " + name);
     }
 
-    public void MiscError(String name) {
+    public void miscError(String name) {
         setError(name);
     }
 
 
     // Initialisation functions
-    public void AddInitFunc(Function func) {
+    public void addInitFunction(Function func) {
         mInitFunctions.add(func);
     }
 
     // Resources
-    public void AddResources(Resources resources) {
+    public void addResources(Resources resources) {
         mResources.add(resources);
     }
 
@@ -2974,8 +2965,8 @@ public class TomVM extends HasErrorState implements Streamable {
     //TODO Reimplement libraries
 	    /*PluginDLLManager& Plugins() { return m_plugins; }*/
     // Builtin/plugin function callback support
-    public boolean IsEndCallback() {
-        assertTrue(IPValid());
+    public boolean isEndCallback() {
+        assertTrue(isIPValid());
         return mCode.get(mIp).mOpCode == OpCode.OP_END_CALLBACK;        // Reached end callback opcode?
     }
 }

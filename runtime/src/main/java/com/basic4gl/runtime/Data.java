@@ -3,48 +3,46 @@ package com.basic4gl.runtime;
 import java.nio.*;
 import java.util.*;
 
+import com.basic4gl.runtime.types.*;
 import com.basic4gl.runtime.util.Mutable;
-import com.basic4gl.runtime.types.Structure;
-import com.basic4gl.runtime.types.StructureField;
-import com.basic4gl.runtime.types.TypeLibrary;
-import com.basic4gl.runtime.types.ValType;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
+/**
+ * VM Data
+ *
+ * Data layout (mData array)
+ * -------------------------------------------------------------------------
+ * 0 Reserved for null pointers
+ * -------------------------------------------------------------------------
+ * 1 Temporary data (allocated during expression
+ * : evaluation. Grows downward)
+ * m_tempData - 1
+ * -------------------------------------------------------------------------
+ * m_tempData
+ * : Unused stack/temp space
+ * m_stackTop - 1
+ * -------------------------------------------------------------------------
+ * m_stackTop Local variable/parameter stack space. Used by user
+ * : defined functions.
+ * m_permanent - 1
+ * -------------------------------------------------------------------------
+ * m_permanent
+ * : Permanent (global) variable storage
+ * size()-1
+ * -------------------------------------------------------------------------
+ *
+ * Stack overflow occurs when m_tempData > m_stackTop.
+ * Out of memory occurs when size() > m_maxDataSize.
+ */
 public class Data {
 
-	// //////////////////////////////////////////////////////////////////////////////
-	// vmData
-	//
-
-	// Data layout (mData array)
-	// -------------------------------------------------------------------------
-	// 0 Reserved for null pointers
-	// -------------------------------------------------------------------------
-	// 1 Temporary data (allocated during expression
-	// : evaluation. Grows downward)
-	// m_tempData - 1
-	// -------------------------------------------------------------------------
-	// m_tempData
-	// : Unused stack/temp space
-	// m_stackTop - 1
-	// -------------------------------------------------------------------------
-	// m_stackTop Local variable/parameter stack space. Used by user
-	// : defined functions.
-	// m_permanent - 1
-	// -------------------------------------------------------------------------
-	// m_permanent
-	// : Permanent (global) variable storage
-	// size()-1
-	// -------------------------------------------------------------------------
-	//
-	// Stack overflow occurs when m_tempData > m_stackTop.
-	// Out of memory occurs when size() > m_maxDataSize.
 	private Vector<Value> m_data;
 	private int m_tempData;
 	private int m_stackTop;
 	private int m_permanent;
 	private int m_maxDataSize;
+
 	// Maximum # of permanent data values that can be stored.
 	// Note: Caller must be sure to call RoomFor before calling Allocate to
 	// ensure there is room for the data.
@@ -83,7 +81,7 @@ public class Data {
 		m_maxDataSize = maxDataSize;
 		m_permanent = stackSize;
 		m_data = new Vector<Value>();
-		Clear();
+		clear();
 	}
 
 	public Vector<Value> Data() {
@@ -110,7 +108,7 @@ public class Data {
 		return m_tempDataLock;
 	}
 
-	public void Clear() {
+	public void clear() {
 		// Clear existing data
 		m_data.clear();
 
@@ -295,9 +293,6 @@ public class Data {
 		UnlockTempData(tempDataLock);
 	}
 
-	// //////////////////////////////////////////////////////////////////////////////
-	// Misc functions
-
 	// Converting arrays to/from C style arrays
 	public static int ReadArray(
 		Data data, // Data
@@ -320,7 +315,7 @@ public class Data {
 
 		System.out.println("testing ReadArray");
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -345,7 +340,7 @@ public class Data {
 						elementType, array, maxSize - arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -354,7 +349,7 @@ public class Data {
 				array[withOffset] = Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).byteValue();
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -391,7 +386,7 @@ public class Data {
 
 		System.out.println("testing ReadArray");
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -416,7 +411,7 @@ public class Data {
 						elementType, array, maxSize - arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -425,7 +420,7 @@ public class Data {
 				array[withOffset] = Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).shortValue();
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -462,7 +457,7 @@ public class Data {
 
 		System.out.println("testing ReadArray");
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -487,7 +482,7 @@ public class Data {
 						elementType, array, maxSize - arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -496,7 +491,7 @@ public class Data {
 				array[withOffset] = data.Data().get(index + 2 + i).getIntVal();
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -533,7 +528,7 @@ public class Data {
 
 		System.out.println("testing ReadArray");
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -558,7 +553,7 @@ public class Data {
 						elementType, array, maxSize - arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -567,7 +562,7 @@ public class Data {
 				array[withOffset] = Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).longValue();
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -604,7 +599,7 @@ public class Data {
 
 		System.out.println("testing ReadArray");
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -629,7 +624,7 @@ public class Data {
 						elementType, array, maxSize - arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -638,7 +633,7 @@ public class Data {
 				array[withOffset] = Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).doubleValue();
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -675,7 +670,7 @@ public class Data {
 
 		System.out.println("testing ReadArray");
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -700,7 +695,7 @@ public class Data {
 						elementType, array, maxSize - arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -709,7 +704,7 @@ public class Data {
 				array[withOffset] = Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).floatValue();
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -732,7 +727,7 @@ public class Data {
 		ByteBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -769,7 +764,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -777,7 +772,7 @@ public class Data {
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).byteValue());
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -799,7 +794,7 @@ public class Data {
 		ShortBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -836,7 +831,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -844,7 +839,7 @@ public class Data {
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).shortValue());
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -866,7 +861,7 @@ public class Data {
 		IntBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -903,7 +898,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -911,7 +906,7 @@ public class Data {
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()));
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -933,7 +928,7 @@ public class Data {
 		LongBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -970,7 +965,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -978,7 +973,7 @@ public class Data {
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).longValue());
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1000,7 +995,7 @@ public class Data {
 		DoubleBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1037,7 +1032,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1045,7 +1040,7 @@ public class Data {
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).doubleValue());
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1067,7 +1062,7 @@ public class Data {
 		FloatBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1104,7 +1099,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1112,7 +1107,7 @@ public class Data {
 				buffer.put(Integer.valueOf(data.Data().get(index + 2 + i).getIntVal()).floatValue());
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1144,7 +1139,7 @@ public class Data {
 		int maxSize, // Maximum # of elements
 		int offset) { // starting index offset of destination array
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1169,7 +1164,7 @@ public class Data {
 						elementType, array, maxSize - arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1178,7 +1173,7 @@ public class Data {
 				data.Data().get(index + 2 + i).setIntVal((int)array[withOffset]);
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1211,7 +1206,7 @@ public class Data {
 		int maxSize, // Maximum # of elements
 		int offset) { // starting index offset of destination array
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1236,7 +1231,7 @@ public class Data {
 						elementType, array, maxSize - arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1245,7 +1240,7 @@ public class Data {
 				data.Data().get(index + 2 + i).setIntVal((int) array[withOffset]);
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1278,7 +1273,7 @@ public class Data {
 		int maxSize, // Maximum # of elements
 		int offset) { // starting index offset of destination array
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1303,7 +1298,7 @@ public class Data {
 						elementType, array, maxSize - arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1312,7 +1307,7 @@ public class Data {
 				data.Data().get(index + 2 + i).setIntVal(array[withOffset]);
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1345,7 +1340,7 @@ public class Data {
 		int maxSize, // Maximum # of elements
 		int offset) { // starting index offset of destination array
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1371,7 +1366,7 @@ public class Data {
 								- arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1380,7 +1375,7 @@ public class Data {
 				data.Data().get(index + 2 + i).setIntVal((int) array[withOffset]);
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1413,7 +1408,7 @@ public class Data {
 		int maxSize, // Maximum # of elements
 		int offset) { // starting index offset of destination array
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1438,7 +1433,7 @@ public class Data {
 						elementType, array, maxSize - arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1447,7 +1442,7 @@ public class Data {
 				data.Data().get(index + 2 + i).setIntVal((int) array[withOffset]);
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1480,7 +1475,7 @@ public class Data {
 		int maxSize, // Maximum # of elements
 		int offset) { // starting index offset of destination array
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1506,7 +1501,7 @@ public class Data {
 								- arrayOffset, arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1515,7 +1510,7 @@ public class Data {
 				data.Data().get(index + 2 + i).setIntVal((int) array[withOffset]);
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1537,7 +1532,7 @@ public class Data {
 		ByteBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1568,7 +1563,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1577,7 +1572,7 @@ public class Data {
 						.setIntVal((int)buffer.get(i));
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1598,7 +1593,7 @@ public class Data {
 		ShortBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1630,7 +1625,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1639,7 +1634,7 @@ public class Data {
 						.setIntVal((int) buffer.get(i));
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1660,7 +1655,7 @@ public class Data {
 		IntBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1692,7 +1687,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1701,7 +1696,7 @@ public class Data {
 						.setIntVal(buffer.get(i));
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1721,7 +1716,7 @@ public class Data {
 		LongBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1753,7 +1748,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1762,7 +1757,7 @@ public class Data {
 						.setIntVal((int) buffer.get(i));
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1782,7 +1777,7 @@ public class Data {
 		DoubleBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1814,7 +1809,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1823,7 +1818,7 @@ public class Data {
 						.setIntVal((int) buffer.get(i));
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1843,7 +1838,7 @@ public class Data {
 		FloatBuffer buffer, // Destination buffer
 		int maxSize) { // Maximum # of elements
 
-		assertTrue(type.m_basicType == ValType.VTP_INT || type.m_basicType == ValType.VTP_REAL);
+		assertTrue(type.m_basicType == BasicValType.VTP_INT || type.m_basicType == BasicValType.VTP_REAL);
 		assertTrue(type.VirtualPointerLevel() == 0);
 		assertTrue(type.m_arrayLevel > 0);
 		assertTrue(data.IndexValid(index));
@@ -1875,7 +1870,7 @@ public class Data {
 								- arrayOffset);
 			}
 			return arrayOffset;
-		} else if (elementType.Equals(ValType.VTP_INT)) {
+		} else if (elementType.Equals (BasicValType.VTP_INT)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -1884,7 +1879,7 @@ public class Data {
 						.setIntVal((int) buffer.get(i));
 			}
 			return elementCount;
-		} else if (elementType.Equals(ValType.VTP_REAL)) {
+		} else if (elementType.Equals (BasicValType.VTP_REAL)) {
 			if (elementCount > maxSize) {
 				elementCount = maxSize;
 			}
@@ -2280,7 +2275,7 @@ public class Data {
 		assertTrue(array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray(data, typeLib, ValType.VTP_INT,
+		int dataIndex = TempArray(data, typeLib, BasicValType.VTP_INT,
 				arraySize);
 
 		// Translate C array into data
@@ -2297,7 +2292,7 @@ public class Data {
 		assertTrue(array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray(data, typeLib, ValType.VTP_INT,
+		int dataIndex = TempArray(data, typeLib, BasicValType.VTP_INT,
 				arraySize);
 
 		// Translate C array into data
@@ -2315,7 +2310,7 @@ public class Data {
 		assertTrue(array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray(data, typeLib, ValType.VTP_REAL,
+		int dataIndex = TempArray(data, typeLib, BasicValType.VTP_REAL,
 				arraySize);
 
 		// Translate C array into data
@@ -2332,7 +2327,7 @@ public class Data {
 		assertTrue(array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray(data, typeLib, ValType.VTP_REAL,
+		int dataIndex = TempArray(data, typeLib, BasicValType.VTP_REAL,
 				arraySize);
 
 		// Translate C array into data
@@ -2348,7 +2343,7 @@ public class Data {
 		assertTrue(array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray(data, typeLib, ValType.VTP_REAL,
+		int dataIndex = TempArray(data, typeLib, BasicValType.VTP_REAL,
 				arraySize);
 
 		// Translate C array into data
@@ -2380,7 +2375,7 @@ public class Data {
 		assertTrue(array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray2D(data, typeLib, ValType.VTP_INT,
+		int dataIndex = TempArray2D(data, typeLib, BasicValType.VTP_INT,
 				arraySize1, arraySize2);
 
 		// Translate C array into data
@@ -2403,7 +2398,7 @@ public class Data {
 		assertTrue(array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray2D(data, typeLib, ValType.VTP_REAL,
+		int dataIndex = TempArray2D(data, typeLib, BasicValType.VTP_REAL,
 				arraySize1, arraySize2);
 
 		// Translate C array into data
@@ -2425,7 +2420,7 @@ public class Data {
 		assertTrue(array != null);
 
 		// Allocate temporary array
-		int dataIndex = TempArray2D(data, typeLib, ValType.VTP_REAL,
+		int dataIndex = TempArray2D(data, typeLib, BasicValType.VTP_REAL,
 				arraySize1, arraySize2);
 
 		// Translate C array into data

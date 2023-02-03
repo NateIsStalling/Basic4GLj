@@ -14,7 +14,7 @@ public class EditorSourceFileServer implements ISourceFileServer {
         mFileManager = fileManager;
     }
     @Override
-    public ISourceFile OpenSourceFile(String filename) {
+    public ISourceFile openSourceFile(String filename) {
 
         // Search for editor with matching filename.
         // Construct an EditorSourceFile object if found.

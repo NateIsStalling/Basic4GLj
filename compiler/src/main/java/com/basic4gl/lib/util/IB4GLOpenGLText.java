@@ -24,8 +24,8 @@ public interface IB4GLOpenGLText {
         }
         public int getMode(){ return mMode;}
     }
-    void Font(int fontTexture);
-    int DefaultFont();
-    void SetTextMode(TextMode mode);
-    void Color(byte red, byte green, byte blue);
+    void setFont(int fontTexture);
+    int getDefaultFont();
+    void setTextMode(TextMode mode);
+    void setColor(byte red, byte green, byte blue);
 }

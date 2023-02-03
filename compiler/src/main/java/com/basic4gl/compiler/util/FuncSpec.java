@@ -3,15 +3,16 @@ package com.basic4gl.compiler.util;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.runtime.types.ValType;
 
-////////////////////////////////////////////////////////////////////////////////
-//FuncSpec
-//
-//Specifies a function and parameters
+/**
+ * FuncSpec
+ *
+ * Specifies a function and parameters
+ */
 public class FuncSpec {
 	Class<?> mFunctionClass;	//Canonical name of function wrapper class
 	ParamTypeList mParamTypes;
-	boolean mBrackets, 		// True if function requires brackets around parameters
-			mIsFunction; 	// True if function returns a value
+	boolean mBrackets; 		// True if function requires brackets around parameters
+ 	boolean mIsFunction; 	// True if function returns a value
 	ValType mReturnType;
 	boolean mTimeshare; 	// True if virtual machine should perform a timesharing
 							// break immediately after returning

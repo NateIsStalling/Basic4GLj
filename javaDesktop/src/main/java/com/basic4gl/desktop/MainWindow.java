@@ -556,7 +556,7 @@ public class MainWindow implements
         //mDLLs(GetCurrentDir().c_str(), false)
         mFileManager = new FileManager();
         Preprocessor preprocessor = new Preprocessor(2, new EditorSourceFileServer(mFileManager), new DiskFileServer());
-        Debugger debugger = new Debugger(preprocessor.LineNumberMap());
+        Debugger debugger = new Debugger(preprocessor.getLineNumberMap());
         TomVM vm = new TomVM(debugger);
         TomBasicCompiler comp = new TomBasicCompiler(vm);
         mEditor = new BasicEditor(libraryJarPath, mFileManager, this, preprocessor, debugger, comp);
@@ -944,7 +944,7 @@ public class MainWindow implements
         // Find corresponding source position
         Mutable<String> filename = new Mutable<String>("");
         Mutable<Integer> fileRow = new Mutable<Integer>(0);
-        mEditor.mPreprocessor.LineNumberMap().SourceFromMain(filename, fileRow, row);
+        mEditor.mPreprocessor.getLineNumberMap().getSourceFromMain(filename, fileRow, row);
 
         final String file = filename.get();
         final int r = fileRow.get();

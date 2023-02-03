@@ -7,7 +7,9 @@ import java.io.IOException;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 
-/// A runtime function
+/**
+ * A runtime function
+ */
 public class RuntimeFunction implements Streamable {
 
 	int prototypeIndex;
@@ -19,12 +21,13 @@ public class RuntimeFunction implements Streamable {
 	public RuntimeFunction(int prototypeIndex) {
 		this.prototypeIndex = prototypeIndex;
 	}
+
 	@Override
-	public void StreamOut(DataOutputStream stream) throws IOException{
+	public void streamOut(DataOutputStream stream) throws IOException{
 		Streaming.WriteLong(stream, prototypeIndex);
 	}
 	@Override
-	public boolean StreamIn(DataInputStream stream) throws IOException{
+	public boolean streamIn(DataInputStream stream) throws IOException{
 		prototypeIndex = (int) Streaming.ReadLong(stream);
 		return true;
 	}

@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.basic4gl.compiler.Token.TokenType;
 import com.basic4gl.runtime.HasErrorState;
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.ValType;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
@@ -117,7 +118,7 @@ public class Parser extends HasErrorState {
 		// Create token, with some defaults
 		Token t = new Token();
 		t.m_text = "";
-		t.m_valType = ValType.VTP_INT;
+		t.m_valType = BasicValType.VTP_INT;
 		t.m_newLine = (m_col == 0);
 
 		// Skip leading whitespace.
@@ -153,12 +154,12 @@ public class Parser extends HasErrorState {
 			t.m_type = TokenType.CTT_EOL;
 		} else if (c == '"') {
 			t.m_type = TokenType.CTT_CONSTANT;
-			t.m_valType = ValType.VTP_STRING;
+			t.m_valType = BasicValType.VTP_STRING;
 		} else if (!dataMode) {
 			if (IsNumber((char) c)) {
 				t.m_type = TokenType.CTT_CONSTANT;
 				if (c == '.') {
-					t.m_valType = ValType.VTP_REAL;
+					t.m_valType = BasicValType.VTP_REAL;
 				}
 			} else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
 					|| c == '_') {
@@ -189,10 +190,10 @@ public class Parser extends HasErrorState {
 		// Regular case, not dataMode text
 		if (!dataMode || t.m_type != TokenType.CTT_TEXT) {
 			// Don't include leading quote (if string constant)
-			if (!(t.m_type == TokenType.CTT_CONSTANT && t.m_valType == ValType.VTP_STRING)) {
+			if (!(t.m_type == TokenType.CTT_CONSTANT && t.m_valType == BasicValType.VTP_STRING)) {
 				t.m_text = t.m_text + (char) c;
 			}
-			c = PeekChar(t.m_valType == ValType.VTP_STRING);
+			c = PeekChar(t.m_valType == BasicValType.VTP_STRING);
 			byte lcase = (byte) Character.toLowerCase(c);
 			boolean done = false;
 			boolean hex = false;
@@ -202,7 +203,7 @@ public class Parser extends HasErrorState {
 				// Determine whether found end of token
 				switch (t.m_type) {
 				case CTT_CONSTANT:
-					if (t.m_valType == ValType.VTP_STRING) {
+					if (t.m_valType == BasicValType.VTP_STRING) {
 						if (c == '"') {
 							done = true;
 							GetChar(false); // Skip terminating quote
@@ -211,10 +212,10 @@ public class Parser extends HasErrorState {
 							done = true;
 						}
 					} else {
-						boolean validDecimalPt = (c == '.' && t.m_valType == ValType.VTP_INT);
+						boolean validDecimalPt = (c == '.' && t.m_valType == BasicValType.VTP_INT);
 						if (validDecimalPt) // Floating point number
 						{
-							t.m_valType = ValType.VTP_REAL;
+							t.m_valType = BasicValType.VTP_REAL;
 						}
 
 	                    boolean hexSpecifier = lcase == 'x' && (t.m_text.equals("0") || t.m_text.equals("-0"));
@@ -248,13 +249,13 @@ public class Parser extends HasErrorState {
 				// Store character
 				if (!done) {
 					t.m_text = t.m_text
-							+ GetChar(t.m_valType == ValType.VTP_STRING);
-					c = PeekChar(t.m_valType == ValType.VTP_STRING);
+							+ GetChar(t.m_valType == BasicValType.VTP_STRING);
+					c = PeekChar(t.m_valType == BasicValType.VTP_STRING);
 					lcase = (byte) Character.toLowerCase(c);
 				}
 	            else {
 	                // Check token is well formed
-	                if (t.m_type == TokenType.CTT_CONSTANT && t.m_valType == ValType.VTP_INT) {
+	                if (t.m_type == TokenType.CTT_CONSTANT && t.m_valType == BasicValType.VTP_INT) {
 	                    // Check integer number is valid
 	                    char last = t.m_text.charAt(t.m_text.length() - 1);
 	                    if (last == 'x' || last == 'X') {
@@ -289,12 +290,12 @@ public class Parser extends HasErrorState {
 					// Assume numeric until non-numeric character found.
 					// (Also, numeric types can't have spaces).
 					// Decimal point means floating point (real) type.
-					if (t.m_valType != ValType.VTP_STRING) {
+					if (t.m_valType != BasicValType.VTP_STRING) {
 
-						boolean validDecimalPt = (c == '.' && t.m_valType == ValType.VTP_INT);
+						boolean validDecimalPt = (c == '.' && t.m_valType == BasicValType.VTP_INT);
 	                    if (validDecimalPt)                                   // Floating point number
 						{
-							t.m_valType = ValType.VTP_REAL;
+							t.m_valType = BasicValType.VTP_REAL;
 						}
 	                    boolean hexSpecifier = (lcase == 'x' && (t.m_text.equals("0") || t.m_text.equals("-0")));
 	                    if (hexSpecifier) {
@@ -312,7 +313,7 @@ public class Parser extends HasErrorState {
 								|| (c > ' ' && whiteSpaceFound)) // Contained
 																	// whitespace
 						{
-							t.m_valType = ValType.VTP_STRING;
+							t.m_valType = BasicValType.VTP_STRING;
 						}
 					}
 					if (c <= ' ') {
@@ -330,7 +331,7 @@ public class Parser extends HasErrorState {
 				}
 	            else {
 	                // Check token is well formed
-	                if (t.m_type == TokenType.CTT_CONSTANT && t.m_valType == ValType.VTP_INT) {
+	                if (t.m_type == TokenType.CTT_CONSTANT && t.m_valType == BasicValType.VTP_INT) {
 	                    // Check integer number is valid
 	                    char last = t.m_text.charAt(t.m_text.length() - 1);
 	                    if (last == 'x' || last == 'X') {

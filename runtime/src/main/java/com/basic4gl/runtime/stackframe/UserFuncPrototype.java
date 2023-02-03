@@ -5,22 +5,16 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import com.basic4gl.runtime.types.ValType;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-//---------------------------------------------------------------------------
-//Created 8-Dec-07: Thomas Mulgrew
-//
-//Virtual Machine run-time stack-frame entry, for user defined functions.
-
-////////////////////////////////////////////////////////////////////////////////
-//UserFuncPrototype
-//
-/// Describes a user function call signiture and return value
-
+/**
+ * Describes a user function call signature and return value
+ */
 public class UserFuncPrototype implements Streamable {
 
 	// Paramter and local variable types
@@ -36,19 +30,19 @@ public class UserFuncPrototype implements Streamable {
 	public UserFuncPrototype() {
 		localVarTypes = new Vector<ValType>();
 		localVarIndex = new HashMap<String, Integer>();
-		Reset();
+		reset();
 	}
 
-	public void Reset() {
+	public void reset() {
 		paramCount = 0;
 		localVarTypes.clear();
 		localVarIndex.clear();
 		hasReturnVal = false;
-		returnValType = new ValType(ValType.VTP_UNDEFINED);
+		returnValType = new ValType (BasicValType.VTP_UNDEFINED);
 	}
 
 	// Return index of local variable, or if not found
-	public int GetLocalVar(String name) {
+	public int getLocalVar(String name) {
 		Integer val = localVarIndex.get(name);
 		return val == null ? -1 : val;
 	}
@@ -56,7 +50,7 @@ public class UserFuncPrototype implements Streamable {
 	// Find local variable name.
 	// This is inefficient. Used for debugging views etc where performance is
 	// not a big priority.
-	public String GetLocalVarName(int index) {
+	public String getLocalVarName(int index) {
 
 		// Return user variable name, given its index.
 		// Not particularly efficient. Used for debugging functions (VM view
@@ -70,7 +64,7 @@ public class UserFuncPrototype implements Streamable {
 	}
 
 	// Add a new local variable and return its index
-	public int NewLocalVar(String name, ValType type) {
+	public int newLocalVar(String name, ValType type) {
 		int index = localVarTypes.size();
 
 		// Create new variable definition
@@ -81,13 +75,13 @@ public class UserFuncPrototype implements Streamable {
 		return index;
 	}
 
-	public int NewParam(String name, ValType type) {
+	public int newParam(String name, ValType type) {
 
 		// Parameters must be added before local variables
 		assertTrue(paramCount == localVarTypes.size());
 
 		// Add parameter like a local variable
-		int index = NewLocalVar(name, type);
+		int index = newLocalVar(name, type);
 
 		// Track that it is a parameter
 		paramCount++;
@@ -96,7 +90,7 @@ public class UserFuncPrototype implements Streamable {
 	}
 
 	// Return true if this function protype matches the other one.
-	public boolean Matches(UserFuncPrototype func) {
+	public boolean matches(UserFuncPrototype func) {
 
 		// Match return value
 		if (hasReturnVal != func.hasReturnVal) {
@@ -146,33 +140,33 @@ public class UserFuncPrototype implements Streamable {
 		return true;
 	}
 
-	public void StreamOut(DataOutputStream stream) throws IOException{
+	public void streamOut(DataOutputStream stream) throws IOException{
 		// Return value
 		Streaming.WriteByte(stream, hasReturnVal ? (byte) 1 : 0);
 		if (hasReturnVal) {
-			returnValType.StreamOut(stream);
+			returnValType.streamOut(stream);
 		}
 
 		// Parameters/local variables
 		Streaming.WriteLong(stream, localVarTypes.size());
 		for (int i = 0; i < localVarTypes.size(); i++) {
 			// #ifdef STREAM_NAMES
-			String name = GetLocalVarName(i);
+			String name = getLocalVarName(i);
 			Streaming.WriteString(stream, name);
 			// #endif
-			localVarTypes.get(i).StreamOut(stream);
+			localVarTypes.get(i).streamOut(stream);
 		}
 		Streaming.WriteLong(stream, paramCount);
 	}
 
-	public boolean StreamIn(DataInputStream stream) throws IOException{
-		Reset();
+	public boolean streamIn(DataInputStream stream) throws IOException{
+		reset();
 
 		// Return value
 		hasReturnVal = Streaming.ReadByte(stream) != 0;
 
 		if (hasReturnVal) {
-			returnValType.StreamIn(stream);
+			returnValType.streamIn(stream);
 		}
 
 		// Parameters/local variables
@@ -184,10 +178,9 @@ public class UserFuncPrototype implements Streamable {
 			localVarIndex.put(name, i);
 			// #endif
 			localVarTypes.set(i, new ValType());
-			localVarTypes.get(i).StreamIn(stream);
+			localVarTypes.get(i).streamIn(stream);
 		}
 		paramCount = (int) Streaming.ReadLong(stream);
 		return true;
 	}
-
 }

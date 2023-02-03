@@ -43,6 +43,6 @@ public class SetBreakpointsHandler {
             //TODO send verifiedBreakpoint in response
         }
 
-        mVM.RepatchBreakpts();
+        mVM.repatchBreakpoints();
     }
 }

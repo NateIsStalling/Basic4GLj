@@ -8,7 +8,7 @@ import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IFileAccess;
 import com.basic4gl.compiler.util.FuncSpec;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.ValType;
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.ResourceStore;
 
@@ -40,7 +40,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
     public void init(TomBasicCompiler comp) {
         wavFiles = new WindowsWavStore();
         // Register resources
-        comp.VM().AddResources (wavFiles);
+        comp.VM().addResources(wavFiles);
     }
 
     @Override
@@ -56,10 +56,10 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
     @Override
     public Map<String, FuncSpec[]> specs() {
         Map<String, FuncSpec[]> s = new HashMap<>();
-        s.put("beep", new FuncSpec[]{new FuncSpec(WrapBeep.class, new ParamTypeList(), true, false, ValType.VTP_INT, true, false, null)});
-        s.put("sleep", new FuncSpec[]{new FuncSpec(WrapSleep.class, new ParamTypeList(ValType.VTP_INT), true, false, ValType.VTP_INT, true, false, null)});
-        s.put("tickcount", new FuncSpec[]{new FuncSpec(WrapTickCount.class, new ParamTypeList(), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("performancecounter", new FuncSpec[]{new FuncSpec(WrapPerformanceCounter.class, new ParamTypeList(), true, true, ValType.VTP_INT, false, false, null)});
+        s.put("beep", new FuncSpec[]{new FuncSpec(WrapBeep.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put("sleep", new FuncSpec[]{new FuncSpec(WrapSleep.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put("tickcount", new FuncSpec[]{new FuncSpec(WrapTickCount.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("performancecounter", new FuncSpec[]{new FuncSpec(WrapPerformanceCounter.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
         return s;
     }
 
@@ -79,7 +79,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
     }
 
 
-// Globals
+    // Globals
     static FileOpener files = null;
     static long performanceFreq;
 
@@ -88,10 +88,9 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
         WindowsBasicLib.files = files;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
-// WindowsWav
-//
-// Represents a loaded windows .wav file.
+    /**
+     * Represents a loaded windows .wav file.
+     */
     class WindowsWav {
         ByteBuffer sound;
         int len;
@@ -121,10 +120,9 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
         */
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
-// WindowsWavStore
-//
-// Used to track WindowsWavObjects
+    /**
+     * Used to track WindowsWavObjects
+     */
     class WindowsWavStore extends ResourceStore<WindowsWav> {
         protected void DeleteElement (int index){
             setValue(index, null);
@@ -135,9 +133,9 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
 
     WindowsWavStore wavFiles;
 
-
-    ////////////////////////////////////////////////////////////////////////////////
-// Performance counter
+    /**
+     * Performance counter
+     */
     long PerformanceCounter() {
         if (performanceFreq == 0)       // No performance counter?
         {
@@ -149,9 +147,6 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
         }
     }
 
-////////////////////////////////////////////////////////////////////////////////
-// Function wrappers
-
     public final class WrapBeep implements Function {
         public void run(TomVM vm) {
             // TODO without AWT!
@@ -161,7 +156,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
 
     public final class WrapSleep implements Function {
         public void run(TomVM vm)          {
-        int msec = vm.GetIntParam (1);
+        int msec = vm.getIntParam(1);
         if (msec > 5000) {
             msec = 5000;
         }
@@ -175,12 +170,12 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
     }
     public final class  WrapTickCount implements Function {
         public void run(TomVM vm) {
-            vm.Reg().setIntVal((int)(System.currentTimeMillis() % Integer.MAX_VALUE));
+            vm.getReg().setIntVal((int)(System.currentTimeMillis() % Integer.MAX_VALUE));
         }
     }
     public final class WrapPerformanceCounter implements Function {
         public void run(TomVM vm) {
-            vm.Reg().setIntVal((int)(PerformanceCounter() % Integer.MAX_VALUE));
+            vm.getReg().setIntVal((int)(PerformanceCounter() % Integer.MAX_VALUE));
         }
     }
 

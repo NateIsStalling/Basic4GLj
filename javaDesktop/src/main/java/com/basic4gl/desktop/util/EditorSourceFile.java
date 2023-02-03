@@ -18,10 +18,10 @@ public class EditorSourceFile implements ISourceFile {
         this.filename = filename;
     }
     @Override
-    public String GetNextLine() {
+    public String getNextLine() {
         int start, stop;
         String line;
-        if (!Eof()) {
+        if (!isEof()) {
             try {
 
                 start = sourceMemo.getLineStartOffset(lineNumber);
@@ -41,22 +41,22 @@ public class EditorSourceFile implements ISourceFile {
     }
 
     @Override
-    public String Filename() {
+    public String getFilename() {
         return filename;
     }
 
     @Override
-    public int LineNumber() {
+    public int getLineNumber() {
         return lineNumber;
     }
 
     @Override
-    public boolean Eof() {
+    public boolean isEof() {
         return lineNumber >= sourceMemo.getLineCount();
     }
 
     @Override
-    public void Release() {
+    public void release() {
 
     }
 }

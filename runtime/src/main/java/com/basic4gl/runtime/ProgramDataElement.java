@@ -7,10 +7,9 @@ import java.io.IOException;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 
-////////////////////////////////////////////////////////////////////////////////
-//vmProgramDataElement
-//
-//General purpose program data (as allocated with "DATA" statement in BASIC).
+/**
+ * General purpose program data (as allocated with "DATA" statement in BASIC).
+ */
 class ProgramDataElement implements Streamable{
 	int mBasicType;
 	Value mValue;
@@ -32,14 +31,14 @@ class ProgramDataElement implements Streamable{
 	}
 
 	// Streaming
-	public void StreamOut(DataOutputStream stream) throws IOException{
+	public void streamOut(DataOutputStream stream) throws IOException{
 		Streaming.WriteLong(stream, mBasicType);
-		mValue.StreamOut(stream);
+		mValue.streamOut(stream);
 	}
 
-	public boolean StreamIn(DataInputStream stream) throws IOException{
+	public boolean streamIn(DataInputStream stream) throws IOException{
 		mBasicType = (int)Streaming.ReadLong(stream);
-		mValue.StreamIn(stream);
+		mValue.streamIn(stream);
 		return true;
 	}
 }

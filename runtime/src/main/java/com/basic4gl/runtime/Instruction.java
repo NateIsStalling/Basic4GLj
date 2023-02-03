@@ -4,14 +4,15 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import com.basic4gl.runtime.types.OpCode;
-import com.basic4gl.runtime.types.ValType;
 
-// //////////////////////////////////////////////////////////////////////////////
-// Instruction
-// #pragma pack (push, 1)
+/**
+ * Instruction
+ * porting note: contained directive `#pragma pack (push, 1)`
+ */
 public class Instruction implements Streamable{
 
 	// Note: Instruction size = 12 bytes.
@@ -28,7 +29,7 @@ public class Instruction implements Streamable{
 	public Instruction() {
 		mOpCode = OpCode.OP_NOP;
 		// TODO Original source initializes with 0 instead of -1
-		mType = ValType.VTP_UNDEFINED;
+		mType = BasicValType.VTP_UNDEFINED;
 		mSourceLine = 0;
 		mSourceChar = 0;
 		mValue = new Value();
@@ -56,19 +57,19 @@ public class Instruction implements Streamable{
 
 	// Streaming
 	// #ifdef VM_STATE_STREAMING
-	public void StreamOut(DataOutputStream stream) throws IOException {
+	public void streamOut(DataOutputStream stream) throws IOException {
 		Streaming.WriteShort(stream, mOpCode);
 		Streaming.WriteLong(stream, mType);
-		mValue.StreamOut(stream);
+		mValue.streamOut(stream);
 
 		Streaming.WriteLong(stream, mSourceLine);
 		Streaming.WriteLong(stream, mSourceChar);
 	}
 
-	public boolean StreamIn(DataInputStream stream) throws IOException {
+	public boolean streamIn(DataInputStream stream) throws IOException {
 		mOpCode = Streaming.ReadShort(stream);
 		mType = (int)Streaming.ReadLong(stream);
-		mValue.StreamIn(stream);
+		mValue.streamIn(stream);
 
 		mSourceLine = (int) Streaming.ReadLong(stream);
 		mSourceChar = (int) Streaming.ReadLong(stream);

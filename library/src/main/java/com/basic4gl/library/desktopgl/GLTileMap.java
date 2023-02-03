@@ -9,19 +9,15 @@ import java.util.Vector;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.opengl.GL11.*;
-/**
- * Created by Nate on 11/2/2015.
- */
-////////////////////////////////////////////////////////////////////////////////
-// GLTileMap
-//
-// A 2D grid of texture tiles for use in 2D sprite drawing.
-// Can be manipulated as a glBasicSprite.
-//
-// Textures are loaded with SetTexture(s) or AddTexture(s). The first texture
-// loaded is index 0. The tile map is specified as a 2D grid of integers, each
-// corresponding to an index in the textures array.
 
+/**
+ * A 2D grid of texture tiles for use in 2D sprite drawing.
+ * Can be manipulated as a glBasicSprite.
+ *
+ * Textures are loaded with SetTexture(s) or AddTexture(s). The first texture
+ * loaded is index 0. The tile map is specified as a 2D grid of integers, each
+ * corresponding to an index in the textures array.
+ */
 public class GLTileMap extends GLBasicSprite {
 
     private int m_xTiles, m_yTiles;

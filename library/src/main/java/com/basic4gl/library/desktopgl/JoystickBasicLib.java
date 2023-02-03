@@ -5,7 +5,7 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.compiler.util.FuncSpec;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.ValType;
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
 import org.lwjgl.BufferUtils;
 
@@ -66,7 +66,7 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
     @Override
     public void init(TomBasicCompiler comp) {
         // Init function
-        comp.VM().AddInitFunc (new InitLibFunction());		// This function will be called before Basic4GL runs any program
+        comp.VM().addInitFunction(new InitLibFunction());		// This function will be called before Basic4GL runs any program
     }
 
     @Override
@@ -83,19 +83,19 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
     public Map<String, FuncSpec[]> specs() {
         // Register functions
         Map<String, FuncSpec[]> s = new HashMap<>();
-        s.put("UpdateJoystick", new FuncSpec[]{ new FuncSpec( WrapUpdateJoystick.class, new ParamTypeList (),true, false, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_Left", new FuncSpec[]{ new FuncSpec( WrapJoyLeft.class, new ParamTypeList(),true, true, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_Right", new FuncSpec[]{ new FuncSpec( WrapJoyRight.class, new ParamTypeList (),true, true, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_Up", new FuncSpec[]{ new FuncSpec( WrapJoyUp.class, new ParamTypeList (),true, true, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_Down", new FuncSpec[]{ new FuncSpec( WrapJoyDown.class, new ParamTypeList (),true, true, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_0", new FuncSpec[]{ new FuncSpec( WrapJoyButton0.class, new ParamTypeList (),true, true, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_1", new FuncSpec[]{ new FuncSpec( WrapJoyButton1.class, new ParamTypeList (),true, true, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_2", new FuncSpec[]{ new FuncSpec( WrapJoyButton2.class, new ParamTypeList (),true, true, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_3", new FuncSpec[]{ new FuncSpec( WrapJoyButton3.class, new ParamTypeList (),true, true, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_X", new FuncSpec[]{ new FuncSpec( WrapJoyX.class, new ParamTypeList (),true, true, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_Y", new FuncSpec[]{ new FuncSpec( WrapJoyY.class, new ParamTypeList (),true, true, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_Button", new FuncSpec[]{ new FuncSpec( WrapJoyButton.class, new ParamTypeList (ValType.VTP_INT), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("Joy_Keys", new FuncSpec[]{ new FuncSpec( WrapJoyKeys.class, new ParamTypeList (),true, false, ValType.VTP_INT, false, false, null)});
+        s.put("UpdateJoystick", new FuncSpec[]{ new FuncSpec( WrapUpdateJoystick.class, new ParamTypeList (),true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Left", new FuncSpec[]{ new FuncSpec( WrapJoyLeft.class, new ParamTypeList(),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Right", new FuncSpec[]{ new FuncSpec( WrapJoyRight.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Up", new FuncSpec[]{ new FuncSpec( WrapJoyUp.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Down", new FuncSpec[]{ new FuncSpec( WrapJoyDown.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_0", new FuncSpec[]{ new FuncSpec( WrapJoyButton0.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_1", new FuncSpec[]{ new FuncSpec( WrapJoyButton1.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_2", new FuncSpec[]{ new FuncSpec( WrapJoyButton2.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_3", new FuncSpec[]{ new FuncSpec( WrapJoyButton3.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_X", new FuncSpec[]{ new FuncSpec( WrapJoyX.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Y", new FuncSpec[]{ new FuncSpec( WrapJoyY.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Button", new FuncSpec[]{ new FuncSpec( WrapJoyButton.class, new ParamTypeList  (BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Keys", new FuncSpec[]{ new FuncSpec( WrapJoyKeys.class, new ParamTypeList (),true, false, BasicValType.VTP_INT, false, false, null)});
         return s;
     }
 
@@ -184,69 +184,69 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
     public final class WrapJoyLeft  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
-            vm.Reg ().setIntVal ( JoyX () <= -threshHold ? -1 : 0);
+            vm.getReg().setIntVal ( JoyX () <= -threshHold ? -1 : 0);
         }
     }
     public final class WrapJoyRight  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
-            vm.Reg ().setIntVal ( JoyX () >= threshHold ? -1 : 0);
+            vm.getReg().setIntVal ( JoyX () >= threshHold ? -1 : 0);
         }
     }
     public final class WrapJoyUp  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
-            vm.Reg ().setIntVal ( JoyY () <= -threshHold ? -1 : 0);
+            vm.getReg().setIntVal ( JoyY () <= -threshHold ? -1 : 0);
         }
     }
     public final class WrapJoyDown  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
-            vm.Reg ().setIntVal ( JoyY () >= threshHold ? -1 : 0);
+            vm.getReg().setIntVal ( JoyY () >= threshHold ? -1 : 0);
         }
     }
     public final class WrapJoyButton0  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
-            vm.Reg ().setIntVal ( buttons != null && buttons.get(0) != 0 ? -1 : 0);
+            vm.getReg().setIntVal ( buttons != null && buttons.get(0) != 0 ? -1 : 0);
         }
     }
     public final class WrapJoyButton1  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
-            vm.Reg ().setIntVal ( buttons != null && buttons.get(1) != 0 ? -1 : 0);
+            vm.getReg().setIntVal ( buttons != null && buttons.get(1) != 0 ? -1 : 0);
         }
     }
     public final class WrapJoyButton2  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
-            vm.Reg ().setIntVal ( buttons != null && buttons.get(2) != 0 ? -1 : 0);
+            vm.getReg().setIntVal ( buttons != null && buttons.get(2) != 0 ? -1 : 0);
         }
     }
     public final class WrapJoyButton3  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
-            vm.Reg ().setIntVal ( buttons != null && buttons.get(3) != 0 ? -1 : 0);
+            vm.getReg().setIntVal ( buttons != null && buttons.get(3) != 0 ? -1 : 0);
         }
     }
     public final class WrapJoyX  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
-            vm.Reg ().setIntVal ( JoyX ());
+            vm.getReg().setIntVal ( JoyX ());
         }
     }
     public final class WrapJoyY  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
-            vm.Reg ().setIntVal ( JoyY ());
+            vm.getReg().setIntVal ( JoyY ());
         }
     }
     public final class WrapJoyButton  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
-            int index = vm.GetIntParam (1);
+            int index = vm.getIntParam(1);
             if (index >= 0 && index < JOY_BUTTONS) {
-                vm.Reg ().setIntVal ( buttons != null && buttons.get(index) != 0 ? -1 : 0);
+                vm.getReg().setIntVal ( buttons != null && buttons.get(index) != 0 ? -1 : 0);
             }
         }
     }

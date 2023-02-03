@@ -6,7 +6,7 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.compiler.util.FuncSpec;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.ValType;
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
 
 import java.util.HashMap;
@@ -168,9 +168,9 @@ public class GLUBasicLib implements FunctionLibrary {
     @Override
     public Map<String, FuncSpec[]> specs() {
         Map<String, FuncSpec[]> s = new HashMap<String, FuncSpec[]>();
-        s.put("gluOrtho2D", new FuncSpec[]{new FuncSpec(WrapgluOrtho2D.class, new ParamTypeList(ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("gluPerspective", new FuncSpec[]{new FuncSpec(WrapgluPerspective.class, new ParamTypeList(ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("gluLookAt", new FuncSpec[]{new FuncSpec(WrapgluLookAt.class, new ParamTypeList(ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL), true, false, ValType.VTP_INT, false, false, null)});
+        s.put("gluOrtho2D", new FuncSpec[]{new FuncSpec(WrapgluOrtho2D.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("gluPerspective", new FuncSpec[]{new FuncSpec(WrapgluPerspective.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("gluLookAt", new FuncSpec[]{new FuncSpec(WrapgluLookAt.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
         return s;
     }
 
@@ -195,10 +195,10 @@ public class GLUBasicLib implements FunctionLibrary {
     {
         public void run(TomVM vm) {
             //gluOrtho2D();   //Replaced with glOrtho
-            glOrtho(vm.GetRealParam(4),
-                    vm.GetRealParam(3),
-                    vm.GetRealParam(2),
-                    vm.GetRealParam(1),
+            glOrtho(vm.getRealParam(4),
+                    vm.getRealParam(3),
+                    vm.getRealParam(2),
+                    vm.getRealParam(1),
                     -1, 1);
         }
     }
@@ -209,10 +209,10 @@ public class GLUBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             //gluPerspective(); //Replaced with glFrustrum
 
-            perspectiveGL(vm.GetRealParam(4),
-                    vm.GetRealParam(3),
-                    vm.GetRealParam(2),
-                    vm.GetRealParam(1));
+            perspectiveGL(vm.getRealParam(4),
+                    vm.getRealParam(3),
+                    vm.getRealParam(2),
+                    vm.getRealParam(1));
         }
         private void perspectiveGL(double fovY, double aspect, double zNear, double zFar){
             double fW, fH;

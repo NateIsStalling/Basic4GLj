@@ -19,7 +19,7 @@ public class StackTraceCommandHandler {
     }
 
     public void handle(Session session) {
-        Vector<UserFuncStackFrame> callStack = mVM.UserCallStack();
+        Vector<UserFuncStackFrame> callStack = mVM.getUserCallStack();
         StackTraceCallback callback = new StackTraceCallback();
 
         for (UserFuncStackFrame stackFrame: callStack) {

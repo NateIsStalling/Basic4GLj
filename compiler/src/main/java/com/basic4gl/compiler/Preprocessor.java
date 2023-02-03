@@ -14,14 +14,14 @@ import com.basic4gl.runtime.HasErrorState;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-
-////////////////////////////////////////////////////////////////////////////////
-//  Preprocessor
-//
-/// Basic4GL compiler preprocessor.
-/// Note: Basic4GL doesn't do a lot of preprocessing. But we do implement an
-///     #include file mechanism. The preprocessor has the task of transparently
-///     expanding #includes into a single large source file.
+/**
+ * Preprocessor
+ *
+ * Basic4GL compiler preprocessor.
+ * Note: Basic4GL doesn't do a lot of preprocessing. But we do implement an
+ * #include file mechanism. The preprocessor has the task of transparently
+ * expanding #includes into a single large source file.
+ */
 public class Preprocessor extends HasErrorState {
 
     // Registered source file servers
@@ -37,12 +37,12 @@ public class Preprocessor extends HasErrorState {
     // Source file <=> Processed file mapping
     LineNumberMapping lineNumberMap = new LineNumberMapping();
 
-    void CloseAll()
+    void closeAll()
     {
 
         // Close all open files
         for (int i = 0; i < openFiles.size(); i++) {
-            openFiles.get(i).Release();
+            openFiles.get(i).release();
         }
         openFiles.clear();
     }
@@ -51,7 +51,7 @@ public class Preprocessor extends HasErrorState {
         System.out.println("Preprocessing include file: \n" + filename);
         // Query file servers in order until one returns an open file.
     	for(ISourceFileServer server: fileServers){
-            ISourceFile file = server.OpenSourceFile(filename);
+            ISourceFile file = server.openSourceFile(filename);
             if (file != null) {
                 return file;
             }
@@ -61,8 +61,9 @@ public class Preprocessor extends HasErrorState {
         return null;
     }
 
-
-    /// Construct the preprocessor. Pass in 0 or more file servers to initialise.
+    /**
+     * Construct the preprocessor. Pass in 0 or more file servers to initialise.
+     */
     public Preprocessor(int serverCount, ISourceFileServer... server){
         // Register source file servers
         for (int i = 0; i < serverCount; i++) {
@@ -73,20 +74,23 @@ public class Preprocessor extends HasErrorState {
     {
 
         // Ensure no source files are still open
-        CloseAll();
+        closeAll();
         
      // Delete source file servers
         fileServers.clear();
         fileServers = null;
     }
-    /// Process source file into one large file.
-    /// Parser is initialised with the expanded file.
-    public boolean Preprocess(ISourceFile mainFile, Parser parser)
+
+    /**
+     * Process source file into one large file.
+     * Parser is initialised with the expanded file.
+     */
+    public boolean preprocess(ISourceFile mainFile, Parser parser)
     {
         assertTrue(mainFile != null);
 
         // Reset
-        CloseAll();
+        closeAll();
         visitedFiles.clear();
         lineNumberMap.Clear();
         clearError();
@@ -100,17 +104,17 @@ public class Preprocessor extends HasErrorState {
         // Process files
         while (!openFiles.isEmpty() && !hasError()) {
             // Check for Eof
-            if (openFiles.lastElement().Eof()) {
+            if (openFiles.lastElement().isEof()) {
 
                 // Close innermost file
-                openFiles.lastElement().Release();
+                openFiles.lastElement().release();
                 openFiles.remove(openFiles.size()-1);
             }
             else {
 
                 // Read a line from the source file
-                int lineNo = openFiles.lastElement().LineNumber();
-                String line = openFiles.lastElement().GetNextLine();
+                int lineNo = openFiles.lastElement().getLineNumber();
+                String line = openFiles.lastElement().getNextLine();
 
                 // Check for #include
                 boolean include = (line.length() >= 8 && line.substring(0, 8).toLowerCase().equals("include "));
@@ -118,7 +122,7 @@ public class Preprocessor extends HasErrorState {
 
                     // Get filename
                     String includeName = separatorsToSystem(line.substring(8, line.length()).trim());
-                    String parent = new File(mainFile.Filename()).getParent();  //Parent directory
+                    String parent = new File(mainFile.getFilename()).getParent();  //Parent directory
                     String filename = new File(parent, includeName).getAbsolutePath();
 
                     // Check this file hasn't been included already
@@ -143,7 +147,7 @@ public class Preprocessor extends HasErrorState {
                 else {
                     // Not an #include line
                     // Add to parser, and line number map
-                    lineNumberMap.AddLine(openFiles.lastElement().Filename(), lineNo);
+                    lineNumberMap.AddLine(openFiles.lastElement().getFilename(), lineNo);
                     parser.SourceCode().add(line);
                 }
             }
@@ -152,8 +156,8 @@ public class Preprocessor extends HasErrorState {
         // Return true if no error encountered
         return !hasError();
     }
-    /// Member access
-    public LineNumberMapping LineNumberMap() { return lineNumberMap; }
+
+    public LineNumberMapping getLineNumberMap() { return lineNumberMap; }
 
     String separatorsToSystem(String res) {
         if (res==null) {

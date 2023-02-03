@@ -44,10 +44,10 @@ public abstract class DebuggerCallbacks {
 
     public void pause(String message){
         InstructionPos instructionPos = null;
-        if (mVM.IPValid()) {
-            instructionPos = mVM.GetIPInSourceCode();
+        if (mVM.isIPValid()) {
+            instructionPos = mVM.getIPInSourceCode();
         }
-        VMStatus vmStatus = new VMStatus(mVM.Done(), mVM.hasError(), mVM.getError());
+        VMStatus vmStatus = new VMStatus(mVM.isDone(), mVM.hasError(), mVM.getError());
         mMessage.setMessage(CallbackMessage.PAUSED, message, vmStatus);
         mMessage.setInstructionPosition(instructionPos);
 
@@ -65,7 +65,7 @@ public abstract class DebuggerCallbacks {
 //                System.out.println("paused");
 
                 //Check if program was stopped while paused
-                if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.Done() || mDriver.isClosing()) {
+                if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.isDone() || mDriver.isClosing()) {
                     break;
                 }
             }
@@ -111,7 +111,7 @@ public abstract class DebuggerCallbacks {
         DebuggerCallbackMessage debuggerCallbackMessage = null;
 
         if (message != null) {
-            VMStatus vmStatus = new VMStatus(mVM.Done(), mVM.hasError(), mVM.getError());
+            VMStatus vmStatus = new VMStatus(mVM.isDone(), mVM.hasError(), mVM.getError());
             debuggerCallbackMessage = new DebuggerCallbackMessage(message.getStatus(), message.getText(), vmStatus);
         }
         mMessage.setMessage(debuggerCallbackMessage);

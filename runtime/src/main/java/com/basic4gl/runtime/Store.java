@@ -5,14 +5,13 @@ import java.util.Vector;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-////////////////////////////////////////////////////////////////////////////////
-//Store
-//
-//Abstract template class for allocating and referencing a specific type of
-//object.
-//Used for strings, pointers, handles e.t.c.
-//The virtual machine stores only the array index, and thus VM programs avoid
-//having to see and manipulate pointers, handles e.t.c.
+/**
+ * Abstract template class for allocating and referencing a specific type of
+ * object.
+ * Used for strings, pointers, handles e.t.c.
+ * The virtual machine stores only the array index, and thus VM programs avoid
+ * having to see and manipulate pointers, handles e.t.c.
+ */
 public class Store<T> {
 	Vector<T> m_array;
 	Vector<Boolean> m_valAllocated;
@@ -38,7 +37,7 @@ public class Store<T> {
 		return index != 0 && IndexValid(index);
 	}
 
-	public T Value(int index) {
+	public T valueAt(int index) {
 		assertTrue(IndexValid(index));
 		return m_array.get(index);
 	}
@@ -79,7 +78,7 @@ public class Store<T> {
 		m_freeList.add(0, index);
 	}
 
-	public void Clear() {
+	public void clear() {
 
 		// Clear allocated values
 		m_freeList.clear();
@@ -91,7 +90,7 @@ public class Store<T> {
 		Alloc();
 	}
 
-	public int StoredElements() {
+	public int getStoredElements() {
 		return m_array.size() - m_freeList.size();
 	}
 

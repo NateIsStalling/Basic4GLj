@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import com.basic4gl.runtime.types.TypeLibrary;
@@ -12,7 +13,9 @@ import com.basic4gl.runtime.types.ValType;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-//An array of variables.
+/**
+ * An array of variables.
+ */
 public class VariableCollection implements Streamable{
 	public class Variable implements Streamable {
 		public String m_name; // Var name
@@ -23,7 +26,7 @@ public class VariableCollection implements Streamable{
 		public Variable() {
 			m_name = "";
 			m_dataIndex = 0;
-			m_type = new ValType(ValType.VTP_INT);
+			m_type = new ValType (BasicValType.VTP_INT);
 		}
 
 		public Variable(String name, ValType type) {
@@ -63,20 +66,20 @@ public class VariableCollection implements Streamable{
 
 		// Streaming
 		@Override
-		public void StreamOut(DataOutputStream stream) throws IOException{
+		public void streamOut(DataOutputStream stream) throws IOException{
 
 			Streaming.WriteString(stream, m_name);
 			Streaming.WriteLong(stream, m_dataIndex);
 
-			m_type.StreamOut(stream);
+			m_type.streamOut(stream);
 		}
 
-		public boolean StreamIn(DataInputStream stream) throws IOException{
+		public boolean streamIn(DataInputStream stream) throws IOException{
 
 			m_name = Streaming.ReadString(stream);
 			m_dataIndex = (int) Streaming.ReadLong(stream);
 
-			m_type.StreamIn(stream);
+			m_type.streamIn(stream);
 
 			return true;
 		}
@@ -112,7 +115,7 @@ public class VariableCollection implements Streamable{
 		for (Variable var : mVariables) {
 			var.Deallocate();
 		}
-		mData.Clear();
+		mData.clear();
 	}
 
 	public void clear() {
@@ -120,8 +123,8 @@ public class VariableCollection implements Streamable{
 		// Deallocate everything.
 		// No variables, data or type information remains
 		mVariables.clear();
-		mData.Clear();
-		mTypes.Clear();
+		mData.clear();
+		mTypes.clear();
 	}
 
 	// Finding variables
@@ -162,29 +165,29 @@ public class VariableCollection implements Streamable{
 	}
 
 	// Streaming
-	public void StreamOut(DataOutputStream stream) throws IOException{
+	public void streamOut(DataOutputStream stream) throws IOException{
 
 		// Stream out type data
-		mTypes.StreamOut(stream);
+		mTypes.streamOut(stream);
 
 		// Stream out variables
 		Streaming.WriteLong(stream, mVariables.size());
 		for (int i = 0; i < mVariables.size(); i++) {
-			mVariables.get(i).StreamOut(stream);
+			mVariables.get(i).streamOut(stream);
 		}
 	}
 
-	public boolean StreamIn(DataInputStream stream) throws IOException{
+	public boolean streamIn(DataInputStream stream) throws IOException{
 
 		// Stream in type data
-		mTypes.StreamIn(stream);
+		mTypes.streamIn(stream);
 
 		// Stream in variables
 		long count = Streaming.ReadLong(stream);
 		mVariables.setSize((int) count);
 		for (int i = 0; i < count; i++) {
 			mVariables.set(i, new Variable());
-			mVariables.get(i).StreamIn(stream);
+			mVariables.get(i).streamIn(stream);
 		}
 		return true;
 	}

@@ -22,13 +22,6 @@ import java.util.List;
 /**
  * Created by Nate on 8/26/2015.
  */
-/*#include <windows.h>
-        #include <gl\gl.h>
-        #include <gl\glu.h>
-        #include <gl\glext.h>                           // If this line wont compile, see OpenGLHeaderFiles\Readme.txt
-        #include <string>
-        #include "HasErrorState.h"
-        #include "Misc.h"*/
 public abstract class GLWindow extends HasErrorState implements Target, IVMDriver {
     static final double M_PI = 3.1415926535897932384626433832795;
     static final int WM_MOUSEWHEEL = 0x020A;
@@ -83,26 +76,8 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         public int getMode() {
             return mode;
         }
-        }
-    ////////////////////////////////////////////////////////////////////////////////
-// Multitexturing
-//
+    }
 
-    // IMPORTANT!:
-// This code will not compile if you have an older version of glext.h (as included
-// in some older compilers).
-//
-// The file is in:					Exception e\include\gl
-// You can get a replacement from:	www.opengl.org/resources/faq/technical/extensions.htm
-    //PFNGLMULTITEXCOORD2FARBPROC glMultiTexCoord2f = null;
-    //PFNGLMULTITEXCOORD2DARBPROC glMultiTexCoord2d = null;
-    //PFNGLACTIVETEXTUREARBPROC glActiveTexture = null;
-    /*
-    HDC			m_HDC;              // Device context
-    HGLRC       m_HGLRC;            // OpenGL rendering context
-    HWND		m_HWnd;             // Window handle
-    HINSTANCE	m_HInstance;        // Instance handle
-    */
     long m_window;
 
     //long    m_HWnd;             // Window handle
@@ -1397,14 +1372,6 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         return m_resetGLMode;
     }
 
-    // Resources
-
-    // (At least some of these handles are recreated when the OpenGL settings are
-    // initialised. Calling code shouldn't rely on them staying constant.)
-    /*HDC         GetHDC ()       { return m_HDC; }
-    HGLRC       GetHGLRC ()     { return m_HGLRC; }
-    HWND        GetHWND ()      { return m_HWnd; }
-    HINSTANCE   GetHINSTANCE () { return m_HInstance; }*/
 
     // Active state
     public boolean Active() {
@@ -1423,29 +1390,29 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     public boolean Focused() {
         return m_focused;
     }
-/*
-    public boolean Show()            // Show window. Will switch to window if in fullscreen mode
-    {
+    /*
+        public boolean Show()            // Show window. Will switch to window if in fullscreen mode
+        {
 
-        if (m_visible)
-            return true;
+            if (m_visible)
+                return true;
 
-        // Attempt to set fullscreen mode
-        boolean result = true;
+            // Attempt to set fullscreen mode
+            boolean result = true;
 
-        if (m_fullScreen) {
-            result = ChangeDisplaySettings(m_screenSettings,CDS_FULLSCREEN)==DISP_CHANGE_SUCCESSFUL;
-            if (result)
-                DoHideCursor ();
-        }
-        if (result) {
-            ShowWindow(m_HWnd,SW_RESTORE);	    			    // Show the window
-            SetForegroundWindow(m_HWnd);						// Slightly Higher Priority
-            SetFocus(m_HWnd);									// Sets Keyboard Focus To The Window
-            m_visible = true;
-        }
-        return result;
-    }*/
+            if (m_fullScreen) {
+                result = ChangeDisplaySettings(m_screenSettings,CDS_FULLSCREEN)==DISP_CHANGE_SUCCESSFUL;
+                if (result)
+                    DoHideCursor ();
+            }
+            if (result) {
+                ShowWindow(m_HWnd,SW_RESTORE);	    			    // Show the window
+                SetForegroundWindow(m_HWnd);						// Slightly Higher Priority
+                SetFocus(m_HWnd);									// Sets Keyboard Focus To The Window
+                m_visible = true;
+            }
+            return result;
+        }*/
     public void Hide()            // Hide window. Switch back from fullscreen (if fullscreen mode)
     {
         DoShowCursor ();
@@ -1510,7 +1477,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
         // Clear key states
         for (int i = 0; i < m_keyDown.length; i++)
-            //TODO determine correct default value; 'false' was used in original source
+        //TODO determine correct default value; 'false' was used in original source
         {
             m_keyDown [i] = 0;
         }
@@ -1728,4 +1695,3 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         GL11.glFrustum(-fW, fW, -fH, fH, zNear, zFar);
     }
 }
-

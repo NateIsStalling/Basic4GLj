@@ -8,13 +8,12 @@ import java.util.Vector;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 
-////////////////////////////////////////////////////////////////////////////////
-// VmValTypeSet
-//
-// A small number of VM op-codes operate on VmValType advanced data types
-// (e.g. OP_COPY). Op-codes don't have storage space to specify an advanced
-// data
-// type, so instead they specify an index into this set array.
+/**
+ * A small number of VM op-codes operate on VmValType advanced data types
+ * (e.g. OP_COPY). Op-codes don't have storage space to specify an advanced
+ * data
+ * type, so instead they specify an index into this set array.
+ */
 public class ValTypeSet implements Streamable{
 
 	private Vector<ValType> mTypes;
@@ -55,23 +54,23 @@ public class ValTypeSet implements Streamable{
 	}
 
 	// Streaming
-	public void StreamOut(DataOutputStream stream) throws IOException{
+	public void streamOut(DataOutputStream stream) throws IOException{
 
 		Streaming.WriteLong(stream, mTypes.size());
 		for (int i = 0; i < mTypes.size(); i++) {
-			mTypes.get(i).StreamOut(stream);
+			mTypes.get(i).streamOut(stream);
 		}
 
 	}
 
-	public boolean StreamIn(DataInputStream stream) throws IOException{
+	public boolean streamIn(DataInputStream stream) throws IOException{
 		int count;
 		count = (int) Streaming.ReadLong(stream);
 
 		mTypes.setSize(count);
 		for (int i = 0; i < count; i++) {
 			mTypes.set(i, new ValType());
-			mTypes.get(i).StreamIn(stream);
+			mTypes.get(i).streamIn(stream);
 		}
 		return true;
 	}

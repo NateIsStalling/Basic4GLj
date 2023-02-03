@@ -22,7 +22,7 @@ public class ToggleBreakPointHandler {
         //TODO Address potential concurrency issue
 
 //        if (mVM.Running()) {
-            mVM.RepatchBreakpts();
+            mVM.repatchBreakpoints();
 //        } else {
 //            System.out.println("mVM.");
 //        }

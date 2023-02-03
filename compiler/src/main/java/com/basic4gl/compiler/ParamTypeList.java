@@ -4,18 +4,9 @@ import java.util.*;
 
 import com.basic4gl.runtime.types.ValType;
 
-////////////////////////////////////////////////////////////////////////////////
-//  Compile time parameter validation callback.
-//  Called at compile time to validate any parameters whose types are specified
-//  as VTP_UNDEFINED.
-//  Note: Index is 0 for the leftmost parameter and so on (unlike at run time)
-//  Callback should return true if parameter type is valid.
-
-
-////////////////////////////////////////////////////////////////////////////////
-// ParamTypeList
-
-
+/**
+ * ParamTypeList
+ */
 public class ParamTypeList {
     private Vector<ValType> mParams;
 

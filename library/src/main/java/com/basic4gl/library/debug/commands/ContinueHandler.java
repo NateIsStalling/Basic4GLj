@@ -17,7 +17,7 @@ public class ContinueHandler {
     }
 
     public void handle() {
-        mVM.ClearTempBreakPts();
+        mVM.clearTempBreakPoints();
         Continue();
     }
     @Deprecated

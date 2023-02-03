@@ -10,12 +10,8 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
- * Created by Nate on 11/2/2015.
+ * An animated sprite
  */
-////////////////////////////////////////////////////////////////////////////////
-// GLSprite
-//
-// An animated sprite
 public class GLSprite extends GLBasicSprite {
 
     private float m_frame;

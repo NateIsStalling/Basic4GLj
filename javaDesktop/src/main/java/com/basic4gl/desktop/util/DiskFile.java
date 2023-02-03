@@ -1,10 +1,5 @@
 package com.basic4gl.desktop.util;
 
-/*  Created 2-Jun-07: Thomas Mulgrew (tmulgrew@slingshot.co.nz)
-
- Disk file implementation of ISourceFile and ISourceFileServer.
- */
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.*;
@@ -13,10 +8,9 @@ import java.util.Arrays;
 
 import com.basic4gl.compiler.util.ISourceFile;
 
-////////////////////////////////////////////////////////////////////////////////
-//  DiskFile
-//
-/// Disk file implementation of ISourceFile
+/**
+ * Disk file implementation of ISourceFile
+ */
 public class DiskFile implements ISourceFile {
 	FileInputStream mFile;
 	FileChannel mChannel;
@@ -63,18 +57,18 @@ public class DiskFile implements ISourceFile {
 
 	// ISourceFile methods
 	@Override
-	public String Filename() {
+	public String getFilename() {
 		return mFilename;
 	}
 
 	@Override
-	public int LineNumber() {
+	public int getLineNumber() {
 		return lineNo;
 	}
 
 	@Override
-	public String GetNextLine() {
-		if (!Eof()) {
+	public String getNextLine() {
+		if (!isEof()) {
 			lineNo++;
 			byte[] lineBuffer = new byte[65536];
 			boolean crFlag = false; //Carriage return flag
@@ -109,12 +103,12 @@ public class DiskFile implements ISourceFile {
 	}
 
 	@Override
-	public boolean Eof() {
+	public boolean isEof() {
 		return Fail() || !mBuffer.hasRemaining();
 	}
 
 	@Override
-	public void Release() {
+	public void release() {
 		try {
 
 			this.finalize();

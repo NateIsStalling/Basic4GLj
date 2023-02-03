@@ -8,6 +8,7 @@ import javax.websocket.WebSocketContainer;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.debug.protocol.callbacks.Callback;
+import com.basic4gl.debug.protocol.commands.*;
 import com.basic4gl.debug.protocol.types.VMStatus;
 import com.basic4gl.debug.websocket.DebugClientSocket;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;

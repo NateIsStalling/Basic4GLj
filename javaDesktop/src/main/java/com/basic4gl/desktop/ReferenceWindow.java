@@ -2,6 +2,7 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.ValType;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 
@@ -86,13 +87,13 @@ public class ReferenceWindow {
         }
 
         switch (type.m_basicType) {
-            case ValType.VTP_INT:
+            case BasicValType.VTP_INT:
                 result = result + "int";
                 break;
-            case ValType.VTP_REAL:
+            case BasicValType.VTP_REAL:
                 result = result + "real";
                 break;
-            case ValType.VTP_STRING:
+            case BasicValType.VTP_STRING:
                 result = result + "string";
                 break;
             default:
@@ -110,13 +111,13 @@ public class ReferenceWindow {
         String result = "";
 
         switch (type) {
-            case ValType.VTP_INT:
+            case BasicValType.VTP_INT:
                 result = result + "int";
                 break;
-            case ValType.VTP_REAL:
+            case BasicValType.VTP_REAL:
                 result = result + "real";
                 break;
-            case ValType.VTP_STRING:
+            case BasicValType.VTP_STRING:
                 result = result + "string";
                 break;
             default:

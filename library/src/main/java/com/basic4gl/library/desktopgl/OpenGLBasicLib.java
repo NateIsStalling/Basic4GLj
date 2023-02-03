@@ -7,6 +7,7 @@ import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.compiler.util.FuncSpec;
 import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.IntHandleResources;
@@ -84,9 +85,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             displayLists = new DisplayListResourceStore();
         }
 
-        textures.Clear();
-        images.Clear();
-        displayLists.Clear();
+        textures.clear();
+        images.clear();
+        displayLists.clear();
 
         byteBuffer16 = BufferUtils.createByteBuffer(16);
         intBuffer16 = BufferUtils.createIntBuffer(16);
@@ -240,82 +241,82 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     @Override
     public Map<String, FuncSpec[]> specs() {
         Map<String, FuncSpec[]> s = new HashMap<String, FuncSpec[]>();
-        s.put("loadimage", new FuncSpec[]{new FuncSpec(WrapLoadImage.class, new ParamTypeList(ValType.VTP_STRING), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("deleteimage", new FuncSpec[]{new FuncSpec(WrapDeleteImage.class, new ParamTypeList(ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("imagewidth", new FuncSpec[]{new FuncSpec(WrapImageWidth.class, new ParamTypeList(ValType.VTP_INT), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("imageheight", new FuncSpec[]{new FuncSpec(WrapImageHeight.class, new ParamTypeList(ValType.VTP_INT), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("imageformat", new FuncSpec[]{new FuncSpec(WrapImageFormat.class, new ParamTypeList(ValType.VTP_INT), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("imagedatatype", new FuncSpec[]{new FuncSpec(WrapImageDataType.class, new ParamTypeList(ValType.VTP_INT), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("loadtexture", new FuncSpec[]{new FuncSpec(WrapLoadTexture.class, new ParamTypeList(ValType.VTP_STRING), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("loadmipmaptexture", new FuncSpec[]{new FuncSpec(WrapLoadMipmapTexture.class, new ParamTypeList(ValType.VTP_STRING), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("glgentexture", new FuncSpec[]{new FuncSpec(WrapglGenTexture.class, new ParamTypeList(), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("gldeletetexture", new FuncSpec[]{new FuncSpec(WrapglDeleteTexture.class, new ParamTypeList(ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glteximage2d", new FuncSpec[]{new FuncSpec(WrapglTexImage2D.class, new ParamTypeList(ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null),
-                new FuncSpec(WrapglTexImage2D_2.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null),
-                new FuncSpec(WrapglTexImage2D_3.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null),
-                new FuncSpec(WrapglTexImage2D_4.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null),
-                new FuncSpec(WrapglTexImage2D_5.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("gltexsubimage2d", new FuncSpec[]{new FuncSpec(WrapglTexSubImage2D.class, new ParamTypeList(ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glubuild2dmipmaps", new FuncSpec[]{new FuncSpec(WrapgluBuild2DMipmaps.class, new ParamTypeList(ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null),
-                new FuncSpec(WrapgluBuild2DMipmaps_2.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null),
-                new FuncSpec(WrapgluBuild2DMipmaps_3.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null),
-                new FuncSpec(WrapgluBuild2DMipmaps_4.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null),
-                new FuncSpec(WrapgluBuild2DMipmaps_5.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glgetString", new FuncSpec[]{new FuncSpec(WrapglGetString.class, new ParamTypeList(ValType.VTP_INT), true, true, ValType.VTP_STRING, false, false, null)});
-        s.put("extensionsupported", new FuncSpec[]{new FuncSpec(WrapExtensionSupported.class, new ParamTypeList(ValType.VTP_STRING), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("glmultitexcoord2f", new FuncSpec[]{new FuncSpec(WrapglMultiTexCoord2f.class, new ParamTypeList(ValType.VTP_INT, ValType.VTP_REAL, ValType.VTP_REAL), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glmultitexcoord2d", new FuncSpec[]{new FuncSpec(WrapglMultiTexCoord2d.class, new ParamTypeList(ValType.VTP_INT, ValType.VTP_REAL, ValType.VTP_REAL), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glactivetexture", new FuncSpec[]{new FuncSpec(WrapglActiveTexture.class, new ParamTypeList(ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("maxtextureunits", new FuncSpec[]{new FuncSpec(WrapMaxTextureUnits.class, new ParamTypeList(), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("windowwidth", new FuncSpec[]{new FuncSpec(WrapWindowWidth.class, new ParamTypeList(), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("windowheight", new FuncSpec[]{new FuncSpec(WrapWindowHeight.class, new ParamTypeList(), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("glgentextures", new FuncSpec[]{new FuncSpec(WrapglGenTextures.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("gldeletetextures", new FuncSpec[]{new FuncSpec(WrapglDeleteTextures.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glLoadMatrixd", new FuncSpec[]{new FuncSpec(WrapglLoadMatrixd.class, new ParamTypeList(new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glLoadMatrixf", new FuncSpec[]{new FuncSpec(WrapglLoadMatrixf.class, new ParamTypeList(new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glMultMatrixd", new FuncSpec[]{new FuncSpec(WrapglMultMatrixd.class, new ParamTypeList(new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glMultMatrixf", new FuncSpec[]{new FuncSpec(WrapglMultMatrixf.class, new ParamTypeList(new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glgetpolygonstipple", new FuncSpec[]{new FuncSpec(WrapglGetPolygonStipple.class, new ParamTypeList(new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glpolygonstipple", new FuncSpec[]{new FuncSpec(WrapglPolygonStipple.class, new ParamTypeList(new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glgenlists", new FuncSpec[]{new FuncSpec(WrapglGenLists.class, new ParamTypeList(ValType.VTP_INT), true, true, ValType.VTP_INT, false, false, null)});
-        s.put("gldeletelists", new FuncSpec[]{new FuncSpec(WrapglDeleteLists.class, new ParamTypeList(ValType.VTP_INT, ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
+        s.put("loadimage", new FuncSpec[]{new FuncSpec(WrapLoadImage.class, new ParamTypeList (BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("deleteimage", new FuncSpec[]{new FuncSpec(WrapDeleteImage.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("imagewidth", new FuncSpec[]{new FuncSpec(WrapImageWidth.class, new ParamTypeList (BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("imageheight", new FuncSpec[]{new FuncSpec(WrapImageHeight.class, new ParamTypeList (BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("imageformat", new FuncSpec[]{new FuncSpec(WrapImageFormat.class, new ParamTypeList (BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("imagedatatype", new FuncSpec[]{new FuncSpec(WrapImageDataType.class, new ParamTypeList (BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("loadtexture", new FuncSpec[]{new FuncSpec(WrapLoadTexture.class, new ParamTypeList (BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("loadmipmaptexture", new FuncSpec[]{new FuncSpec(WrapLoadMipmapTexture.class, new ParamTypeList (BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("glgentexture", new FuncSpec[]{new FuncSpec(WrapglGenTexture.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("gldeletetexture", new FuncSpec[]{new FuncSpec(WrapglDeleteTexture.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glteximage2d", new FuncSpec[]{new FuncSpec(WrapglTexImage2D.class, new ParamTypeList (BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null),
+                new FuncSpec(WrapglTexImage2D_2.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null),
+                new FuncSpec(WrapglTexImage2D_3.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null),
+                new FuncSpec(WrapglTexImage2D_4.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null),
+                new FuncSpec(WrapglTexImage2D_5.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("gltexsubimage2d", new FuncSpec[]{new FuncSpec(WrapglTexSubImage2D.class, new ParamTypeList (BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glubuild2dmipmaps", new FuncSpec[]{new FuncSpec(WrapgluBuild2DMipmaps.class, new ParamTypeList (BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null),
+                new FuncSpec(WrapgluBuild2DMipmaps_2.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null),
+                new FuncSpec(WrapgluBuild2DMipmaps_3.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null),
+                new FuncSpec(WrapgluBuild2DMipmaps_4.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null),
+                new FuncSpec(WrapgluBuild2DMipmaps_5.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glgetString", new FuncSpec[]{new FuncSpec(WrapglGetString.class, new ParamTypeList (BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, false, false, null)});
+        s.put("extensionsupported", new FuncSpec[]{new FuncSpec(WrapExtensionSupported.class, new ParamTypeList (BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("glmultitexcoord2f", new FuncSpec[]{new FuncSpec(WrapglMultiTexCoord2f.class, new ParamTypeList (BasicValType.VTP_INT, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glmultitexcoord2d", new FuncSpec[]{new FuncSpec(WrapglMultiTexCoord2d.class, new ParamTypeList (BasicValType.VTP_INT, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glactivetexture", new FuncSpec[]{new FuncSpec(WrapglActiveTexture.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("maxtextureunits", new FuncSpec[]{new FuncSpec(WrapMaxTextureUnits.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("windowwidth", new FuncSpec[]{new FuncSpec(WrapWindowWidth.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("windowheight", new FuncSpec[]{new FuncSpec(WrapWindowHeight.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("glgentextures", new FuncSpec[]{new FuncSpec(WrapglGenTextures.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("gldeletetextures", new FuncSpec[]{new FuncSpec(WrapglDeleteTextures.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glLoadMatrixd", new FuncSpec[]{new FuncSpec(WrapglLoadMatrixd.class, new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glLoadMatrixf", new FuncSpec[]{new FuncSpec(WrapglLoadMatrixf.class, new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glMultMatrixd", new FuncSpec[]{new FuncSpec(WrapglMultMatrixd.class, new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glMultMatrixf", new FuncSpec[]{new FuncSpec(WrapglMultMatrixf.class, new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glgetpolygonstipple", new FuncSpec[]{new FuncSpec(WrapglGetPolygonStipple.class, new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glpolygonstipple", new FuncSpec[]{new FuncSpec(WrapglPolygonStipple.class, new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glgenlists", new FuncSpec[]{new FuncSpec(WrapglGenLists.class, new ParamTypeList (BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("gldeletelists", new FuncSpec[]{new FuncSpec(WrapglDeleteLists.class, new ParamTypeList (BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
         s.put("glcalllists", new FuncSpec[]{
-                new FuncSpec(WrapglCallLists.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null),
-                new FuncSpec(WrapglCallLists_2.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glBegin", new FuncSpec[]{new FuncSpec(WrapglBegin.class, new ParamTypeList(ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glEnd", new FuncSpec[]{new FuncSpec(WrapglEnd.class, new ParamTypeList(), true, false, ValType.VTP_INT, false, false, null)});
+                new FuncSpec(WrapglCallLists.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null),
+                new FuncSpec(WrapglCallLists_2.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glBegin", new FuncSpec[]{new FuncSpec(WrapglBegin.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glEnd", new FuncSpec[]{new FuncSpec(WrapglEnd.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, false, false, null)});
 
-        s.put("imagestripframes", new FuncSpec[]{new FuncSpec(OldSquare_WrapImageStripFrames.class, new ParamTypeList(ValType.VTP_STRING), true, true, ValType.VTP_INT, true, false, null),
-                new FuncSpec(OldSquare_WrapImageStripFrames_2.class, new ParamTypeList(ValType.VTP_STRING, ValType.VTP_INT), true, true, ValType.VTP_INT, true, false, null),
-                new FuncSpec(WrapImageStripFrames.class, new ParamTypeList(ValType.VTP_STRING, ValType.VTP_INT, ValType.VTP_INT), true, true, ValType.VTP_INT, true, false, null)});
-        s.put("loadimagestrip", new FuncSpec[]{new FuncSpec(OldSquare_WrapLoadImageStrip.class, new ParamTypeList(ValType.VTP_STRING), true, true, new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null),
-                new FuncSpec(OldSquare_WrapLoadImageStrip_2.class, new ParamTypeList(ValType.VTP_STRING, ValType.VTP_INT), true, true, new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null),
-                new FuncSpec(WrapLoadImageStrip.class, new ParamTypeList(ValType.VTP_STRING, ValType.VTP_INT, ValType.VTP_INT), true, true, new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null)});
-        s.put("loadmipmapimagestrip", new FuncSpec[]{new FuncSpec(OldSquare_WrapLoadMipmapImageStrip.class, new ParamTypeList(ValType.VTP_STRING), true, true, new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null),
-                new FuncSpec(OldSquare_WrapLoadMipmapImageStrip_2.class, new ParamTypeList(ValType.VTP_STRING, ValType.VTP_INT), true, true, new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null),
-                new FuncSpec(WrapLoadMipmapImageStrip.class, new ParamTypeList(ValType.VTP_STRING, ValType.VTP_INT, ValType.VTP_INT), true, true, new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null)});
+        s.put("imagestripframes", new FuncSpec[]{new FuncSpec(OldSquare_WrapImageStripFrames.class, new ParamTypeList (BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null),
+                new FuncSpec(OldSquare_WrapImageStripFrames_2.class, new ParamTypeList (BasicValType.VTP_STRING, BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null),
+                new FuncSpec(WrapImageStripFrames.class, new ParamTypeList (BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put("loadimagestrip", new FuncSpec[]{new FuncSpec(OldSquare_WrapLoadImageStrip.class, new ParamTypeList (BasicValType.VTP_STRING), true, true, new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null),
+                new FuncSpec(OldSquare_WrapLoadImageStrip_2.class, new ParamTypeList (BasicValType.VTP_STRING, BasicValType.VTP_INT), true, true, new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null),
+                new FuncSpec(WrapLoadImageStrip.class, new ParamTypeList (BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT), true, true, new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null)});
+        s.put("loadmipmapimagestrip", new FuncSpec[]{new FuncSpec(OldSquare_WrapLoadMipmapImageStrip.class, new ParamTypeList (BasicValType.VTP_STRING), true, true, new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null),
+                new FuncSpec(OldSquare_WrapLoadMipmapImageStrip_2.class, new ParamTypeList (BasicValType.VTP_STRING, BasicValType.VTP_INT), true, true, new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null),
+                new FuncSpec(WrapLoadMipmapImageStrip.class, new ParamTypeList (BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT), true, true, new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null)});
 
-        s.put("glGetFloatv", new FuncSpec[]{new FuncSpec(WrapglGetFloatv_2D.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glGetDoublev", new FuncSpec[]{new FuncSpec(WrapglGetDoublev_2D.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glGetIntegerv", new FuncSpec[]{new FuncSpec(WrapglGetIntegerv_2D.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("glGetBooleanv", new FuncSpec[]{new FuncSpec(WrapglGetBooleanv_2D.class, new ParamTypeList(new ValType(ValType.VTP_INT), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, ValType.VTP_INT, false, false, null)});
+        s.put("glGetFloatv", new FuncSpec[]{new FuncSpec(WrapglGetFloatv_2D.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glGetDoublev", new FuncSpec[]{new FuncSpec(WrapglGetDoublev_2D.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glGetIntegerv", new FuncSpec[]{new FuncSpec(WrapglGetIntegerv_2D.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("glGetBooleanv", new FuncSpec[]{new FuncSpec(WrapglGetBooleanv_2D.class, new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)), true, false, BasicValType.VTP_INT, false, false, null)});
 
 
-// New texture loading
-        s.put("LoadTex", new FuncSpec[]{new FuncSpec(WrapLoadTex.class, new ParamTypeList(ValType.VTP_STRING), true, true, ValType.VTP_INT, true, false, null)});
+        // New texture loading
+        s.put("LoadTex", new FuncSpec[]{new FuncSpec(WrapLoadTex.class, new ParamTypeList (BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
         s.put("LoadTexStrip", new FuncSpec[]{
-                new FuncSpec(WrapLoadTexStrip.class, new ParamTypeList(ValType.VTP_STRING), true, true, new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null),
-                new FuncSpec(WrapLoadTexStrip2.class, new ParamTypeList(ValType.VTP_STRING, ValType.VTP_INT, ValType.VTP_INT), true, true, new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null)});
+                new FuncSpec(WrapLoadTexStrip.class, new ParamTypeList (BasicValType.VTP_STRING), true, true, new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null),
+                new FuncSpec(WrapLoadTexStrip2.class, new ParamTypeList (BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT), true, true, new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), true, false, null)});
         s.put("TexStripFrames", new FuncSpec[]{
-                new FuncSpec(WrapTexStripFrames.class, new ParamTypeList(ValType.VTP_STRING), true, true, ValType.VTP_INT, true, false, null),
-                new FuncSpec(WrapTexStripFrames2.class, new ParamTypeList(ValType.VTP_STRING, ValType.VTP_INT, ValType.VTP_INT), true, true, ValType.VTP_INT, true, false, null)});
-        s.put("SetTexIgnoreBlankFrames", new FuncSpec[]{new FuncSpec(WrapSetTexIgnoreBlankFrames.class, new ParamTypeList(ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
+                new FuncSpec(WrapTexStripFrames.class, new ParamTypeList (BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null),
+                new FuncSpec(WrapTexStripFrames2.class, new ParamTypeList (BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put("SetTexIgnoreBlankFrames", new FuncSpec[]{new FuncSpec(WrapSetTexIgnoreBlankFrames.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
         s.put("SetTexTransparentCol", new FuncSpec[]{
-                new FuncSpec(WrapSetTexTransparentCol.class, new ParamTypeList(ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null),
-                new FuncSpec(WrapSetTexTransparentCol2.class, new ParamTypeList(ValType.VTP_INT, ValType.VTP_INT, ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("SetTexNoTransparentCol", new FuncSpec[]{new FuncSpec(WrapSetTexNoTransparentCol.class, new ParamTypeList(), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("SetTexMipmap", new FuncSpec[]{new FuncSpec(WrapSetTexMipmap.class, new ParamTypeList(ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
-        s.put("SetTexLinearFilter", new FuncSpec[]{new FuncSpec(WrapSetTexLinearFilter.class, new ParamTypeList(ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
+                new FuncSpec(WrapSetTexTransparentCol.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null),
+                new FuncSpec(WrapSetTexTransparentCol2.class, new ParamTypeList (BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("SetTexNoTransparentCol", new FuncSpec[]{new FuncSpec(WrapSetTexNoTransparentCol.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("SetTexMipmap", new FuncSpec[]{new FuncSpec(WrapSetTexMipmap.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("SetTexLinearFilter", new FuncSpec[]{new FuncSpec(WrapSetTexLinearFilter.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
         return s;
     }
 
@@ -334,9 +335,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         return null;
     }
 
-    // TextureResourceStore
-//
-// Stores OpenGL texture handles
+    /**
+     * Stores OpenGL texture handles
+     */
     public class TextureResourceStore extends IntHandleResources {
         protected void DeleteHandle(int handle) {
             int texture = handle;//(GLuint) handle;
@@ -347,10 +348,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-
-    // DisplayListResourceStore
-//
-// Stores OpenGL display lists handles
+    /**
+     * Stores OpenGL display lists handles
+     */
     public class DisplayListResourceStore extends IntHandleResources {
 
         private Map<Integer, Integer> m_countMap = new HashMap<Integer, Integer>();                 // Maps base to count
@@ -359,8 +359,8 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             glDeleteLists(handle, m_countMap.get(handle));
         }
 
-        public void Clear() {
-            super.Clear();
+        public void clear() {
+            super.clear();
             m_countMap.clear();
         }
 
@@ -377,32 +377,31 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Interface for DLLs
-
+    /**
+     * Interface for plugins
+     */
     class WindowAdapter implements IB4GLOpenGLWindow {
-        public int Width() {
+        public int getWidth() {
             return OpenGLBasicLib.appWindow.Width();
         }
 
-        public int Height() {
+        public int getHeight() {
             return OpenGLBasicLib.appWindow.Height();
         }
 
-        public int BPP() {
+        public int getBPP() {
             return OpenGLBasicLib.appWindow.Bpp();
         }
 
-        public boolean Fullscreen() {
+        public boolean isFullscreen() {
             return OpenGLBasicLib.appWindow.FullScreen();
         }
 
-        public void SwapBuffers() {
+        public void swapBuffers() {
             OpenGLBasicLib.appWindow.SwapBuffers();
         }
 
-        public String Title() {
+        public String getTitle() {
             return OpenGLBasicLib.appWindow.Title();
         }
     }
@@ -443,11 +442,11 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             int frameHeight) {
 
         if (!CheckFrameSize(frameWidth)) {
-            vm.FunctionError("Frame width must be a power of 2 from 1-1024");
+            vm.functionError("Frame width must be a power of 2 from 1-1024");
             return 0;
         }
         if (!CheckFrameSize(frameHeight)) {
-            vm.FunctionError("Frame height must be a power of 2 from 1-1024");
+            vm.functionError("Frame height must be a power of 2 from 1-1024");
             return 0;
         }
 
@@ -466,11 +465,11 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             boolean mipmap) {
 
         if (!OpenGLBasicLib.CheckFrameSize(frameWidth)) {
-            vm.FunctionError("Frame width must be a power of 2 from 1-1024");
+            vm.functionError("Frame width must be a power of 2 from 1-1024");
             return;
         }
         if (!OpenGLBasicLib.CheckFrameSize(frameHeight)) {
-            vm.FunctionError("Frame height must be a power of 2 from 1-1024");
+            vm.functionError("Frame height must be a power of 2 from 1-1024");
             return;
         }
 
@@ -481,7 +480,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                     width = BufferUtils.createIntBuffer(1), height = BufferUtils.createIntBuffer(1);
             OpenGLBasicLib.CalcImageStripFrames(image, frameWidth, frameHeight, frameCount, width, height);
             if (frameCount.get(0) > 65536) {
-                vm.FunctionError("Cannot load more than 65536 images in an image strip");
+                vm.functionError("Cannot load more than 65536 images in an image strip");
                 return;
             }
             if (frameCount.get(0) > 0) {
@@ -560,7 +559,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 int[] t = new int[tex.asIntBuffer().capacity()];
                 tex.asIntBuffer().get(t);
                 // Return array of textures
-                vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), frameCount.get(0), t));
+                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), frameCount.get(0), t));
                 return;
             }
         }
@@ -568,11 +567,8 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         // Load failed.
         // Return 1 element array containing a 0.
         int blankFrame = 0;
-        vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), 1, new int[]{blankFrame}));
+        vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), 1, new int[]{blankFrame}));
     }
-
-    ////////////////////////////////////////////////////////////////////////////////
-// Helper functions
 
     static int UploadTexture(Image image) {
         assertTrue(image != null);
@@ -846,47 +842,40 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         return result;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
-// Resources
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Function wrappers
-
     static void InternalWrapglTexImage2D(TomVM vm, ValType elementType, int dimensions, boolean mipmap) {
         // Find array param, and extract dimensions
-        int arrayOffset = vm.GetIntParam(1);
+        int arrayOffset = vm.getIntParam(1);
         int maxSize;
         if (dimensions == 2) {
-            int xSize = Data.ArrayDimensionSize(vm.Data(), arrayOffset, 0),
-                    ySize = Data.ArrayDimensionSize(vm.Data(), arrayOffset, 1);
+            int xSize = Data.ArrayDimensionSize(vm.getData(), arrayOffset, 0),
+                    ySize = Data.ArrayDimensionSize(vm.getData(), arrayOffset, 1);
 
             // Verify size
             if (xSize <= 0 || ySize <= 0) {
-                vm.FunctionError("Bad array size");
+                vm.functionError("Bad array size");
                 return;
             }
             if (ySize > (OpenGLBasicLib.MAXIMAGESIZE / xSize)) {
-                vm.FunctionError("Cannot upload arrays greater than 2048 x 2048 into images");
+                vm.functionError("Cannot upload arrays greater than 2048 x 2048 into images");
                 return;
             }
             maxSize = xSize * ySize;
         } else {
             assertTrue(dimensions == 1);
-            int size = Data.ArrayDimensionSize(vm.Data(), arrayOffset, 0);
+            int size = Data.ArrayDimensionSize(vm.getData(), arrayOffset, 0);
             if (size <= 0) {
-                vm.FunctionError("Bad array size");
+                vm.functionError("Bad array size");
                 return;
             }
             if (size > OpenGLBasicLib.MAXIMAGESIZE) {
-                vm.FunctionError("Cannot upload arrays greater than 2048 x 2048 into images");
+                vm.functionError("Cannot upload arrays greater than 2048 x 2048 into images");
                 return;
             }
             maxSize = size;
         }
 
         // Read data, converted requested type
-        int type = vm.GetIntParam(2);
+        int type = vm.getIntParam(2);
         ByteBuffer data = BufferUtils.createByteBuffer(maxSize * 4);
         Routines.ReadArrayDynamic(vm, 1, new ValType(elementType.m_basicType, (byte) dimensions, (byte) 1, true), type, data, maxSize);
 
@@ -902,24 +891,24 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                     vm.GetIntParam (3),
                     type,
                     data);*/
-            GL11.glTexImage2D(vm.GetIntParam(7),
+            GL11.glTexImage2D(vm.getIntParam(7),
                     0,
-                    vm.GetIntParam(6),
-                    vm.GetIntParam(5),
-                    vm.GetIntParam(4),
+                    vm.getIntParam(6),
+                    vm.getIntParam(5),
+                    vm.getIntParam(4),
                     0,
-                    vm.GetIntParam(3),
+                    vm.getIntParam(3),
                     type,
                     data);
             GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         } else {
-            glTexImage2D(vm.GetIntParam(9),
-                    vm.GetIntParam(8),
-                    vm.GetIntParam(7),
-                    vm.GetIntParam(6),
-                    vm.GetIntParam(5),
-                    vm.GetIntParam(4),
-                    vm.GetIntParam(3),
+            glTexImage2D(vm.getIntParam(9),
+                    vm.getIntParam(8),
+                    vm.getIntParam(7),
+                    vm.getIntParam(6),
+                    vm.getIntParam(5),
+                    vm.getIntParam(4),
+                    vm.getIntParam(3),
                     type,
                     data);
         }
@@ -930,9 +919,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     public final class WrapLoadTex implements Function {
         public void run(TomVM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
-            int texture = OpenGLBasicLib.LoadTex(vm.GetStringParam(1));
+            int texture = OpenGLBasicLib.LoadTex(vm.getStringParam(1));
             OpenGLBasicLib.textures.Store(texture);
-            vm.Reg().setIntVal(texture);
+            vm.getReg().setIntVal(texture);
             glPopAttrib();
         }
 
@@ -941,7 +930,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     public final class WrapLoadTexStrip implements Function {
         public void run(TomVM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
-            Vector<Integer> texs = OpenGLBasicLib.LoadTexStrip(vm.GetStringParam(1));
+            Vector<Integer> texs = OpenGLBasicLib.LoadTexStrip(vm.getStringParam(1));
 
             // Convert to array and return
             if (texs.size() > 0) {
@@ -950,11 +939,11 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                     array[i] = texs.get(i);
                     OpenGLBasicLib.textures.Store(texs.get(i));
                 }
-                vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), texs.size(), array));
+                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), texs.size(), array));
             } else {
                 int[] array = new int[1];
                 array[0] = 0;
-                vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), 1, array));
+                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), 1, array));
             }
             glPopAttrib();
         }
@@ -964,7 +953,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     public final class WrapLoadTexStrip2 implements Function {
         public void run(TomVM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
-            Vector<Integer> texs = OpenGLBasicLib.LoadTexStrip(vm.GetStringParam(3), vm.GetIntParam(2), vm.GetIntParam(1));
+            Vector<Integer> texs = OpenGLBasicLib.LoadTexStrip(vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1));
 
             // Convert to array and return
             if (texs.size() > 0) {
@@ -973,11 +962,11 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                     array[i] = texs.get(i);
                     OpenGLBasicLib.textures.Store(texs.get(i));
                 }
-                vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), texs.size(), Arrays.asList(array)));
+                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), texs.size(), Arrays.asList(array)));
             } else {
                 Integer[] array = new Integer[1];
                 array[0] = 0;
-                vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), 1, Arrays.asList(array)));
+                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), 1, Arrays.asList(array)));
             }
             glPopAttrib();
         }
@@ -986,28 +975,28 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     public final class WrapTexStripFrames implements Function {
         public void run(TomVM vm) {
-            vm.Reg().setIntVal(OpenGLBasicLib.TexStripFrames(vm.GetStringParam(1)));
+            vm.getReg().setIntVal(OpenGLBasicLib.TexStripFrames(vm.getStringParam(1)));
         }
 
     }
 
     public final class WrapTexStripFrames2 implements Function {
         public void run(TomVM vm) {
-            vm.Reg().setIntVal(OpenGLBasicLib.TexStripFrames(vm.GetStringParam(3), vm.GetIntParam(2), vm.GetIntParam(1)));
+            vm.getReg().setIntVal(OpenGLBasicLib.TexStripFrames(vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
         }
 
     }
 
     public final class WrapSetTexIgnoreBlankFrames implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.truncateBlankFrames = vm.GetIntParam(1) != 0;
+            OpenGLBasicLib.truncateBlankFrames = vm.getIntParam(1) != 0;
         }
 
     }
 
     public final class WrapSetTexTransparentCol implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.transparentCol = vm.GetIntParam(1);
+            OpenGLBasicLib.transparentCol = vm.getIntParam(1);
             OpenGLBasicLib.usingTransparentCol = true;
         }
 
@@ -1016,9 +1005,9 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     public final class WrapSetTexTransparentCol2 implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.transparentCol =
-                    (vm.GetIntParam(3) & 0xff) |
-                            ((vm.GetIntParam(2) & 0xff) << 8) |
-                            ((vm.GetIntParam(1) & 0xff) << 16);
+                    (vm.getIntParam(3) & 0xff) |
+                            ((vm.getIntParam(2) & 0xff) << 8) |
+                            ((vm.getIntParam(1) & 0xff) << 16);
             OpenGLBasicLib.usingTransparentCol = true;
         }
 
@@ -1033,14 +1022,14 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     public final class WrapSetTexMipmap implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.doMipmap = vm.GetIntParam(1) != 0;
+            OpenGLBasicLib.doMipmap = vm.getIntParam(1) != 0;
         }
 
     }
 
     public final class WrapSetTexLinearFilter implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.doLinearFilter = vm.GetIntParam(1) != 0;
+            OpenGLBasicLib.doLinearFilter = vm.getIntParam(1) != 0;
         }
 
     }
@@ -1052,13 +1041,13 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             glGenTextures(buffer.asIntBuffer());
             texture = buffer.asIntBuffer().get(0);
             OpenGLBasicLib.textures.Store(texture);
-            vm.Reg().setIntVal(texture);
+            vm.getReg().setIntVal(texture);
         }
     }
 
     public final class WrapglDeleteTexture implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.textures.Free(vm.GetIntParam(1));
+            OpenGLBasicLib.textures.Free(vm.getIntParam(1));
         }
 
     }
@@ -1068,7 +1057,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
 
             // Load and return non-mipmapped texture
-            vm.Reg().setIntVal(OpenGLBasicLib.LoadTexture(vm.GetStringParam(1), false));
+            vm.getReg().setIntVal(OpenGLBasicLib.LoadTexture(vm.getStringParam(1), false));
         }
     }
 
@@ -1076,7 +1065,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
 
             // Load and return mipmapped texture
-            vm.Reg().setIntVal(OpenGLBasicLib.LoadTexture(vm.GetStringParam(1), true));
+            vm.getReg().setIntVal(OpenGLBasicLib.LoadTexture(vm.getStringParam(1), true));
         }
     }
 
@@ -1084,16 +1073,16 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
 
             // Attempt to load image
-            Image image = LoadImage.LoadImage(vm.GetStringParam(1));
+            Image image = LoadImage.LoadImage(vm.getStringParam(1));
 
             // If successful, store it and return handle
-            vm.Reg().setIntVal((image != null) ? OpenGLBasicLib.images.Alloc(image) : 0);
+            vm.getReg().setIntVal((image != null) ? OpenGLBasicLib.images.Alloc(image) : 0);
         }
     }
 
     public final class WrapDeleteImage implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.images.Free(vm.GetIntParam(1));
+            OpenGLBasicLib.images.Free(vm.getIntParam(1));
         }
     }
 
@@ -1101,19 +1090,19 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
 
             // Find image data
-            int index = vm.GetIntParam(1);
+            int index = vm.getIntParam(1);
             if (OpenGLBasicLib.images.IndexStored(index)) {
                 ByteBuffer pixels = images.Value(index).getPixels();
 
                 // Generate image
-                glTexImage2D(vm.GetIntParam(9),         // target
-                        vm.GetIntParam(8),         // level
-                        vm.GetIntParam(7),         // components
-                        vm.GetIntParam(6),         // width
-                        vm.GetIntParam(5),         // height
-                        vm.GetIntParam(4),         // border
-                        vm.GetIntParam(3),         // format
-                        vm.GetIntParam(2),         // type
+                glTexImage2D(vm.getIntParam(9),         // target
+                        vm.getIntParam(8),         // level
+                        vm.getIntParam(7),         // components
+                        vm.getIntParam(6),         // width
+                        vm.getIntParam(5),         // height
+                        vm.getIntParam(4),         // border
+                        vm.getIntParam(3),         // format
+                        vm.getIntParam(2),         // type
                         pixels);                    // pixels
             }
         }
@@ -1121,49 +1110,49 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     public final class WrapglTexImage2D_2 implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType(ValType.VTP_INT), 1, false);
+            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_INT), 1, false);
         }
     }
 
     public final class WrapglTexImage2D_3 implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType(ValType.VTP_REAL), 1, false);
+            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_REAL), 1, false);
         }
     }
 
     public final class WrapglTexImage2D_4 implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType(ValType.VTP_INT), 2, false);
+            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_INT), 2, false);
         }
     }
 
     public final class WrapglTexImage2D_5 implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType(ValType.VTP_REAL), 2, false);
+            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_REAL), 2, false);
         }
     }
 
     public final class WrapgluBuild2DMipmaps_2 implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType(ValType.VTP_INT), 1, true);
+            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_INT), 1, true);
         }
     }
 
     public final class WrapgluBuild2DMipmaps_3 implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType(ValType.VTP_REAL), 1, true);
+            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_REAL), 1, true);
         }
     }
 
     public final class WrapgluBuild2DMipmaps_4 implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType(ValType.VTP_INT), 2, true);
+            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_INT), 2, true);
         }
     }
 
     public final class WrapgluBuild2DMipmaps_5 implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType(ValType.VTP_REAL), 2, true);
+            OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_REAL), 2, true);
         }
     }
 
@@ -1171,19 +1160,19 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
 
             // Find image data
-            int index = vm.GetIntParam(1);
+            int index = vm.getIntParam(1);
             if (OpenGLBasicLib.images.IndexStored(index)) {
                 ByteBuffer pixels = OpenGLBasicLib.images.Value(index).getPixels();
 
                 // Generate image
-                glTexSubImage2D(vm.GetIntParam(9),     // target
-                        vm.GetIntParam(8),     // level
-                        vm.GetIntParam(7),     // xoffset
-                        vm.GetIntParam(6),     // y offset
-                        vm.GetIntParam(5),     // width
-                        vm.GetIntParam(4),     // height
-                        vm.GetIntParam(3),     // format
-                        vm.GetIntParam(2),     // type
+                glTexSubImage2D(vm.getIntParam(9),     // target
+                        vm.getIntParam(8),     // level
+                        vm.getIntParam(7),     // xoffset
+                        vm.getIntParam(6),     // y offset
+                        vm.getIntParam(5),     // width
+                        vm.getIntParam(4),     // height
+                        vm.getIntParam(3),     // format
+                        vm.getIntParam(2),     // type
                         pixels);                // pixels
             }
         }
@@ -1191,28 +1180,28 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     public final class WrapImageWidth implements Function {
         public void run(TomVM vm) {
-            int index = vm.GetIntParam(1);
-            vm.Reg().setIntVal(OpenGLBasicLib.images.IndexStored(index) ? OpenGLBasicLib.images.Value(index).getWidth() : 0);
+            int index = vm.getIntParam(1);
+            vm.getReg().setIntVal(OpenGLBasicLib.images.IndexStored(index) ? OpenGLBasicLib.images.Value(index).getWidth() : 0);
         }
     }
 
     public final class WrapImageHeight implements Function {
         public void run(TomVM vm) {
-            int index = vm.GetIntParam(1);
-            vm.Reg().setIntVal(OpenGLBasicLib.images.IndexStored(index) ? OpenGLBasicLib.images.Value(index).getHeight() : 0);
+            int index = vm.getIntParam(1);
+            vm.getReg().setIntVal(OpenGLBasicLib.images.IndexStored(index) ? OpenGLBasicLib.images.Value(index).getHeight() : 0);
         }
     }
 
     public final class WrapImageFormat implements Function {
         public void run(TomVM vm) {
-            int index = vm.GetIntParam(1);
-            vm.Reg().setIntVal(OpenGLBasicLib.images.IndexStored(index) ? LoadImage.ImageFormat(OpenGLBasicLib.images.Value(index)) : 0);
+            int index = vm.getIntParam(1);
+            vm.getReg().setIntVal(OpenGLBasicLib.images.IndexStored(index) ? LoadImage.ImageFormat(OpenGLBasicLib.images.Value(index)) : 0);
         }
     }
 
     public final class WrapImageDataType implements Function {
         public void run(TomVM vm) {
-            vm.Reg().setIntVal(GL_UNSIGNED_BYTE);             // Images always stored as unsigned bytes
+            vm.getReg().setIntVal(GL_UNSIGNED_BYTE);             // Images always stored as unsigned bytes
         }
     }
 
@@ -1220,7 +1209,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
 
             // Find image data
-            int index = vm.GetIntParam(1);
+            int index = vm.getIntParam(1);
             if (OpenGLBasicLib.images.IndexStored(index)) {
                 ByteBuffer pixels = OpenGLBasicLib.images.Value(index).getPixels();
 
@@ -1234,14 +1223,14 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                         vm.GetIntParam (2),         // type
                         pixels);                    // pixels
                 */
-                GL11.glTexImage2D(vm.GetIntParam(7),
+                GL11.glTexImage2D(vm.getIntParam(7),
                         0,
-                        vm.GetIntParam(6),
-                        vm.GetIntParam(5),
-                        vm.GetIntParam(4),
+                        vm.getIntParam(6),
+                        vm.getIntParam(5),
+                        vm.getIntParam(4),
                         0,
-                        vm.GetIntParam(3),
-                        vm.GetIntParam(2),
+                        vm.getIntParam(3),
+                        vm.getIntParam(2),
                         pixels);
                 GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
             }
@@ -1250,31 +1239,31 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     public final class WrapglMultiTexCoord2f implements Function {
         public void run(TomVM vm) {
-            glMultiTexCoord2f(vm.GetIntParam(3), vm.GetRealParam(2), vm.GetRealParam(1));
+            glMultiTexCoord2f(vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglMultiTexCoord2d implements Function {
         public void run(TomVM vm) {
-            glMultiTexCoord2d(vm.GetIntParam(3), vm.GetRealParam(2), vm.GetRealParam(1));
+            glMultiTexCoord2d(vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglActiveTexture implements Function {
         public void run(TomVM vm) {
-            glActiveTexture(vm.GetIntParam(1));
+            glActiveTexture(vm.getIntParam(1));
         }
     }
 
     public final class WrapglGetString implements Function {
         public void run(TomVM vm) {
-            vm.setRegString(glGetString(vm.GetIntParam(1)));
+            vm.setRegString(glGetString(vm.getIntParam(1)));
         }
     }
 
     public final class WrapExtensionSupported implements Function {
         public void run(TomVM vm) {
-            vm.Reg().setIntVal(OpenGLBasicLib.appWindow.ExtensionSupported(vm.GetStringParam(1)) ? 1 : 0);
+            vm.getReg().setIntVal(OpenGLBasicLib.appWindow.ExtensionSupported(vm.getStringParam(1)) ? 1 : 0);
         }
     }
 
@@ -1282,27 +1271,27 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
             IntBuffer units = BufferUtils.createIntBuffer(1);
             glGetIntegerv(ARBMultitexture.GL_MAX_TEXTURE_UNITS_ARB, units);
-            vm.Reg().setIntVal(units.get(0));
+            vm.getReg().setIntVal(units.get(0));
         }
     }
 
     public final class WrapWindowWidth implements Function {
         public void run(TomVM vm) {
-            vm.Reg().setIntVal(OpenGLBasicLib.appWindow.Width());
+            vm.getReg().setIntVal(OpenGLBasicLib.appWindow.Width());
         }
     }
 
     public final class WrapWindowHeight implements Function {
         public void run(TomVM vm) {
-            vm.Reg().setIntVal(OpenGLBasicLib.appWindow.Height());
+            vm.getReg().setIntVal(OpenGLBasicLib.appWindow.Height());
         }
     }
 
     public final class WrapglGenTextures implements Function {
         public void run(TomVM vm) {
-            int count = vm.GetIntParam(2);
+            int count = vm.getIntParam(2);
             if (count > 65536) {
-                vm.FunctionError("Count must be 0 - 65536 (Basic4GL restriction)");
+                vm.functionError("Count must be 0 - 65536 (Basic4GL restriction)");
                 return;
             }
             if (count <= 0) {
@@ -1325,15 +1314,15 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             int[] t = new int[count];
             handleBuffer.rewind();
             handleBuffer.get(t);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1), t, count);
+            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1), t, count);
         }
     }
 
     public final class WrapglDeleteTextures implements Function {
         public void run(TomVM vm) {
-            int count = vm.GetIntParam(2);
+            int count = vm.getIntParam(2);
             if (count > 65536) {
-                vm.FunctionError("Count must be 0 - 65536 (Basic4GL restriction)");
+                vm.functionError("Count must be 0 - 65536 (Basic4GL restriction)");
                 return;
             }
             if (count <= 0) {
@@ -1343,7 +1332,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             // Read texture handles
             ByteBuffer handles = BufferUtils.createByteBuffer((Integer.SIZE / Byte.SIZE) * 65536);            // 64K should be enough for anybody ;)
             int[] array = new int[65536];
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1), array, count);
+            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1), array, count);
 
             IntBuffer handlesIntBuffer = handles.asIntBuffer();
             handlesIntBuffer.put(array);
@@ -1358,56 +1347,56 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     public final class WrapglLoadMatrixd implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
             doubleBuffer16.rewind();
             doubleBuffer16.put(a);
             doubleBuffer16.rewind();
             glLoadMatrixd(doubleBuffer16);
             doubleBuffer16.rewind();
             doubleBuffer16.get(a);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
     public final class WrapglLoadMatrixf implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glLoadMatrixf(floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
     public final class WrapglMultMatrixd implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
             doubleBuffer16.rewind();
             doubleBuffer16.put(a);
             doubleBuffer16.rewind();
             glMultMatrixd(doubleBuffer16);
             doubleBuffer16.rewind();
             doubleBuffer16.get(a);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
     public final class WrapglMultMatrixf implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glMultMatrixf(floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
@@ -1415,14 +1404,14 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
             ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
             glGetPolygonStipple(mask);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
+            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
         }
     }
 
     public final class WrapglPolygonStipple implements Function {
         public void run(TomVM vm) {
             ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
-            Data.ReadAndZero(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
+            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
             glPolygonStipple(mask);
         }
     }
@@ -1431,7 +1420,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
 
             // Validate params
-            int count = vm.GetIntParam(1);
+            int count = vm.getIntParam(1);
 
             // Get display lists
             int base = glGenLists(count);
@@ -1442,7 +1431,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             }
 
             // Return result
-            vm.Reg().setIntVal(base);
+            vm.getReg().setIntVal(base);
         }
     }
 
@@ -1450,8 +1439,8 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
 
             // Get params
-            int base = vm.GetIntParam(2),
-                    count = vm.GetIntParam(1);
+            int base = vm.getIntParam(2),
+                    count = vm.getIntParam(1);
 
             // Delete display lists
             glDeleteLists(base, count);
@@ -1480,7 +1469,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 //
 //            // Get array parameter
 //            ByteBuffer array = BufferUtils.createByteBuffer(65536 * 4);
-//            if (Routines.ReadArrayDynamic(vm, 1, new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), type, array, n) == 0)
+//            if (Routines.ReadArrayDynamic(vm, 1, new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), type, array, n) == 0)
 //                return;
 //
 //            // Call glCallLists
@@ -1506,7 +1495,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 //
 //            // Get array parameter
 //            ByteBuffer array = BufferUtils.createByteBuffer(65536 * 4);
-//            if (Routines.ReadArrayDynamic(vm, 1, new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), type, array, n) == 0)
+//            if (Routines.ReadArrayDynamic(vm, 1, new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), type, array, n) == 0)
 //                return;
 //
 //            // Call glCallLists
@@ -1517,7 +1506,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     public final class WrapglBegin implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.appWindow.SetDontPaint(true);             // Dont paint on WM_PAINT messages when between a glBegin() and a glEnd ()
-            glBegin(vm.GetIntParam(1));                // This doesn't effect running code, but helps when stepping through calls in the debugger
+            glBegin(vm.getIntParam(1));                // This doesn't effect running code, but helps when stepping through calls in the debugger
         }
     }
 
@@ -1537,10 +1526,10 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             floatBuffer16.rewind();
             floatBuffer16.put(data);
             floatBuffer16.rewind();
-            glGetFloatv(vm.GetIntParam(2), floatBuffer16);
+            glGetFloatv(vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(data);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), data, 16);
+            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
@@ -1551,10 +1540,10 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             doubleBuffer16.rewind();
             doubleBuffer16.put(data);
             doubleBuffer16.rewind();
-            glGetDoublev(vm.GetIntParam(2), doubleBuffer16);
+            glGetDoublev(vm.getIntParam(2), doubleBuffer16);
             doubleBuffer16.rewind();
             doubleBuffer16.get(data);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), data, 16);
+            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
@@ -1565,10 +1554,10 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             intBuffer16.rewind();
             intBuffer16.put(data);
             intBuffer16.rewind();
-            glGetIntegerv(vm.GetIntParam(2), intBuffer16);
+            glGetIntegerv(vm.getIntParam(2), intBuffer16);
             intBuffer16.rewind();
             intBuffer16.get(data);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 2, (byte) 1, true), data, 16);
+            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
@@ -1579,28 +1568,28 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             byteBuffer16.rewind();
             byteBuffer16.put(data);
             byteBuffer16.rewind();
-            glGetBooleanv(vm.GetIntParam(2), byteBuffer16);
+            glGetBooleanv(vm.getIntParam(2), byteBuffer16);
             byteBuffer16.rewind();
             byteBuffer16.get(data);
-            Data.WriteArray(vm.Data(), vm.GetIntParam(1), new ValType(ValType.VTP_INT, (byte) 2, (byte) 1, true), data, 16);
+            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
     public final class WrapLoadImageStrip implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.LoadImageStrip(vm, vm.GetStringParam(3), vm.GetIntParam(2), vm.GetIntParam(1), false);
+            OpenGLBasicLib.LoadImageStrip(vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1), false);
         }
     }
 
     public final class WrapLoadMipmapImageStrip implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.LoadImageStrip(vm, vm.GetStringParam(3), vm.GetIntParam(2), vm.GetIntParam(1), true);
+            OpenGLBasicLib.LoadImageStrip(vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1), true);
         }
     }
 
     public final class WrapImageStripFrames implements Function {
         public void run(TomVM vm) {
-            vm.Reg().setIntVal(OpenGLBasicLib.ImageStripFrames(vm, vm.GetStringParam(3), vm.GetIntParam(2), vm.GetIntParam(1)));
+            vm.getReg().setIntVal(OpenGLBasicLib.ImageStripFrames(vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
         }
 
 
@@ -1643,7 +1632,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         // Image size must be power of 2
         final int size = frameSize.get(0);
         if (size < 1 || size > 1024 || !IsPowerOf2(size)) {
-            vm.FunctionError("Frame size must be a power of 2 from 1-1024");
+            vm.functionError("Frame size must be a power of 2 from 1-1024");
             return 0;
         }
 
@@ -1663,7 +1652,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         // Image size must be power of 2
         int size = frameSize.get(0);
         if (size < 1 || size > 1024 || !IsPowerOf2(size)) {
-            vm.FunctionError("Frame size must be a power of 2 from 1-1024");
+            vm.functionError("Frame size must be a power of 2 from 1-1024");
             return;
         }
 
@@ -1675,7 +1664,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             int count = frameCount.get(0);
             size = frameSize.get(0);
             if (count > 65536) {
-                vm.FunctionError("Cannot load more than 65536 images in an image strip");
+                vm.functionError("Cannot load more than 65536 images in an image strip");
                 return;
             }
             if (count > 0) {
@@ -1758,7 +1747,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 int[] t = new int[tex.asIntBuffer().capacity()];
                 tex.asIntBuffer().get(t);
                 // Return array of textures
-                vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), frameCount.get(0), t));
+                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), frameCount.get(0), t));
                 return;
             }
         }
@@ -1766,48 +1755,48 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         // Load failed.
         // Return 1 element array containing a 0.
         int blankFrame = 0;
-        vm.Reg().setIntVal(Data.FillTempIntArray(vm.Data(), vm.DataTypes(), 1, new int[]{blankFrame}));
+        vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), 1, new int[]{blankFrame}));
     }
 
     public final class OldSquare_WrapLoadImageStrip implements Function {
         public void run(TomVM vm) {
             IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, 1024);
-            OldSquare_LoadImageStrip(vm, vm.GetStringParam(1), frameSize, false);
+            OldSquare_LoadImageStrip(vm, vm.getStringParam(1), frameSize, false);
         }
     }
 
     public final class OldSquare_WrapLoadImageStrip_2 implements Function {
         public void run(TomVM vm) {
-            IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, vm.GetIntParam(1));
-            OldSquare_LoadImageStrip(vm, vm.GetStringParam(2), frameSize, false);
+            IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, vm.getIntParam(1));
+            OldSquare_LoadImageStrip(vm, vm.getStringParam(2), frameSize, false);
         }
     }
 
     public final class OldSquare_WrapLoadMipmapImageStrip implements Function {
         public void run(TomVM vm) {
             IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, 1024);
-            OldSquare_LoadImageStrip(vm, vm.GetStringParam(1), frameSize, true);
+            OldSquare_LoadImageStrip(vm, vm.getStringParam(1), frameSize, true);
         }
     }
 
     public final class OldSquare_WrapLoadMipmapImageStrip_2 implements Function {
         public void run(TomVM vm) {
-            IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, vm.GetIntParam(1));
-            OldSquare_LoadImageStrip(vm, vm.GetStringParam(2), frameSize, true);
+            IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, vm.getIntParam(1));
+            OldSquare_LoadImageStrip(vm, vm.getStringParam(2), frameSize, true);
         }
     }
 
     public final class OldSquare_WrapImageStripFrames implements Function {
         public void run(TomVM vm) {
             IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, 1024);
-            vm.Reg().setIntVal(OldSquare_ImageStripFrames(vm, vm.GetStringParam(1), frameSize));
+            vm.getReg().setIntVal(OldSquare_ImageStripFrames(vm, vm.getStringParam(1), frameSize));
         }
     }
 
     public final class OldSquare_WrapImageStripFrames_2 implements Function {
         public void run(TomVM vm) {
-            IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, vm.GetIntParam(1));
-            vm.Reg().setIntVal(OldSquare_ImageStripFrames(vm, vm.GetStringParam(2), frameSize));
+            IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, vm.getIntParam(1));
+            vm.getReg().setIntVal(OldSquare_ImageStripFrames(vm, vm.getStringParam(2), frameSize));
         }
     }
 

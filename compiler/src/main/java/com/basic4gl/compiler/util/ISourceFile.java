@@ -1,23 +1,34 @@
 package com.basic4gl.compiler.util;
 
-////////////////////////////////////////////////////////////////////////////////
-	// ISourceFile
-	//
-	// / Interface to a source file.
-	public interface ISourceFile {
+/**
+ * ISourceFile
+ *
+ * Interface to a source file.
+ */
+public interface ISourceFile {
 
-		// / Return the next line of source code
-		public abstract String GetNextLine();
+	/**
+	 * @return The next line of source code
+	 */
+	public abstract String getNextLine();
 
-		// / The filename
-		public abstract String Filename();
+	/**
+	 * @return The filename
+	 */
+	public abstract String getFilename();
 
-		// / Return the line number. 0 = Top line of file.
-		public abstract int LineNumber();
+	/**
+	 * @return Return the line number. 0 = Top line of file.
+	 */
+	public abstract int getLineNumber();
 
-		// / True if reached End of File
-		public abstract boolean Eof();
+	/**
+	 * @return True if reached End of File
+	 */
+	public abstract boolean isEof();
 
-		// / Called when preprocessor is finished with the source file
-		public abstract void Release();
-	}
+	/**
+	 * Called when preprocessor is finished with the source file
+	 */
+	public abstract void release();
+}

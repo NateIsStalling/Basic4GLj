@@ -6,13 +6,12 @@ import com.basic4gl.runtime.vm.HasErrorState;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 
-///////////////////////////////////////////////////////////////////////////////
-//	MusicStream
-//
-///	A polled implementation of a streaming music file.
-/// Plays an Ogg Vorbis file using OpenAL.
-/// Automatically creates its own service thread to ensure the
-/// music keeps playing.
+/**
+ * A polled implementation of a streaming music file.
+ * Plays an Ogg Vorbis file using OpenAL.
+ * Automatically creates its own service thread to ensure the
+ * music keeps playing.
+ */
 public class MusicStream extends HasErrorState implements Runnable {
 
     @Override

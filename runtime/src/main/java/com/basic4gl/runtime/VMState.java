@@ -1,12 +1,10 @@
 package com.basic4gl.runtime;
 
-////////////////////////////////////////////////////////////////////////////////
-// VM state
-//
-// Used to save virtual machine state.
-// (Debugger uses this to run small sections of code, without interrupting the
-// main program.)
-
+/**
+ * Used to save virtual machine state.
+ * (Debugger uses this to run small sections of code, without interrupting the
+ * main program.)
+ */
 public class VMState {
 
 	// Instruction pointer

@@ -11,6 +11,6 @@ public class PauseHandler {
 
     public void pause() {
         // Pause program
-        mVM.Pause();   //Rely on callbacks to alert the main window that the VM was paused to update UI
+        mVM.pause();   //Rely on callbacks to alert the main window that the VM was paused to update UI
     }
 }

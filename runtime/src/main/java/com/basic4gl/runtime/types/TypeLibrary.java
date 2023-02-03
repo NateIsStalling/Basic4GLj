@@ -11,11 +11,9 @@ import com.basic4gl.runtime.TomVM;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-////////////////////////////////////////////////////////////////////////////////
-// VmTypeLibrary
-//
-// Used to store structure definitions, and operate on data types
-
+/**
+ * Used to store structure definitions, and operate on data types
+ */
 public class TypeLibrary implements Streamable {
 	Vector<StructureField> m_fields;
 	Vector<Structure> m_structures;
@@ -32,7 +30,7 @@ public class TypeLibrary implements Streamable {
 		return m_structures;
 	}
 
-	public void Clear() {
+	public void clear() {
 		m_fields.clear();
 		m_structures.clear();
 	}
@@ -120,8 +118,8 @@ public class TypeLibrary implements Streamable {
 
 	public boolean TypeValid(ValType type)
 	{
-		return      type.m_basicType >= ValType.VTP_INT
-				&&  type.m_basicType != ValType.VTP_UNDEFINED
+		return      type.m_basicType >= BasicValType.VTP_INT
+				&&  type.m_basicType != BasicValType.VTP_UNDEFINED
 				&&  (type.m_basicType < 0 || type.m_basicType < m_structures.size ())
 				&&  type.m_arrayLevel < TomVM.ARRAY_MAX_DIMENSIONS;
 	}
@@ -137,7 +135,7 @@ public class TypeLibrary implements Streamable {
 
 		// Examine data type
 		if (type.m_basicType < 0) {
-            return type.m_basicType == ValType.VTP_STRING;
+            return type.m_basicType == BasicValType.VTP_STRING;
         } else {
             return m_structures.get(type.m_basicType).m_containsString;
         }
@@ -278,22 +276,22 @@ public class TypeLibrary implements Streamable {
 	}
 
 	// Streaming
-	public void StreamOut(DataOutputStream stream) throws IOException{
+	public void streamOut(DataOutputStream stream) throws IOException{
 		int i;
 		// Write out fields
 		Streaming.WriteLong(stream, m_fields.size());
 		for (i = 0; i < m_fields.size(); i++) {
-            m_fields.get(i).StreamOut(stream);
+            m_fields.get(i).streamOut(stream);
         }
 
 		// Write out structures
 		Streaming.WriteLong(stream, m_structures.size());
 		for (i = 0; i < m_structures.size(); i++) {
-            m_structures.get(i).StreamOut(stream);
+            m_structures.get(i).streamOut(stream);
         }
 	}
 
-	public boolean StreamIn(DataInputStream stream) throws IOException{
+	public boolean streamIn(DataInputStream stream) throws IOException{
 		int i, count;
 		// Clear existing data
 		m_fields.clear();
@@ -304,7 +302,7 @@ public class TypeLibrary implements Streamable {
 		m_fields.setSize(count);
 		for (i = 0; i < count; i++) {
 			m_fields.set(i, new StructureField());
-			m_fields.get(i).StreamIn(stream);
+			m_fields.get(i).streamIn(stream);
 		}
 
 		// Read structures
@@ -312,7 +310,7 @@ public class TypeLibrary implements Streamable {
 		m_structures.setSize(count);
 		for (i = 0; i < count; i++) {
 			m_structures.set(i, new Structure());
-			m_structures.get(i).StreamIn(stream);
+			m_structures.get(i).streamIn(stream);
 		}
 		return true;
 	}

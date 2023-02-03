@@ -7,13 +7,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-////////////////////////////////////////////////////////////////////////////////
-//Value
-//
-//Used to store a single value.
-//Used internally by registers, stack entries and variables.
-
-//#pragma pack (push, 1)
+/**
+ * Used to store a single value.
+ * Used internally by registers, stack entries and variables.
+ *
+ * porting note: had directive `#pragma pack (push, 1)`
+ */
 public class Value implements Streamable{
 	private boolean mIsInt;
 	private Integer m_intVal;
@@ -80,7 +79,7 @@ public class Value implements Streamable{
 	}
 
 	// Streaming
-	public void StreamOut(DataOutputStream stream) throws IOException{
+	public void streamOut(DataOutputStream stream) throws IOException{
 
 		// There may be some potential cross-platform streaming issues because:
 		// 1. We are unioning two data types together.
@@ -95,7 +94,7 @@ public class Value implements Streamable{
         }
 	}
 
-	public boolean StreamIn(DataInputStream stream) throws IOException{
+	public boolean streamIn(DataInputStream stream) throws IOException{
 		byte[] b = new byte[Float.SIZE / Byte.SIZE];
 		stream.read(b);
 		m_intVal = ByteBuffer.wrap(b).getInt();

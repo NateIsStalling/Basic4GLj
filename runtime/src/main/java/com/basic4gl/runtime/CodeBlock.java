@@ -11,12 +11,12 @@ import com.basic4gl.runtime.stackframe.RuntimeFunction;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-////////////////////////////////////////////////////////////////////////////////
-//  CodeBlock
-//
-/// Represents a block of code.
-/// The program is code block 0. Any other files/strings compiled at run time
-/// are also separate code blocks.
+/**
+ * CodeBlock
+ * Represents a block of code.
+ * The program is code block 0. Any other files/strings compiled at run time
+ * are also separate code blocks.
+ */
 public class CodeBlock implements Streamable{
 	public int programOffset; // -1 if code block is invalid (e.g. because of compile error)
 	public Vector<RuntimeFunction> runtimeFunctions = new Vector<RuntimeFunction>();
@@ -37,17 +37,17 @@ public class CodeBlock implements Streamable{
 		return runtimeFunctions.get(index);
 	}
 
-	public void StreamOut(DataOutputStream stream) throws IOException{
+	public void streamOut(DataOutputStream stream) throws IOException{
 
 		Streaming.WriteLong(stream, programOffset);
 		Streaming.WriteLong(stream, runtimeFunctions.size());
 
 		for (RuntimeFunction f : runtimeFunctions) {
-            f.StreamOut(stream);
+            f.streamOut(stream);
         }
 	}
 
-	public boolean StreamIn(DataInputStream stream) throws IOException {
+	public boolean streamIn(DataInputStream stream) throws IOException {
 
 		programOffset = (int) Streaming.ReadLong(stream);
 		int count = (int) Streaming.ReadLong(stream);
@@ -55,7 +55,7 @@ public class CodeBlock implements Streamable{
 
 		for (int i = 0; i < count; i++){
 			runtimeFunctions.set(i, new RuntimeFunction());
-			runtimeFunctions.get(i).StreamIn(stream);
+			runtimeFunctions.get(i).streamIn(stream);
 		}
 
 		return true;

@@ -17,11 +17,9 @@ public class GLSpriteEngine extends GLTextGrid{
     public static final byte DRAW_SPRITES_BEHIND = 4;
     public static final byte DRAW_SPRITES = DRAW_SPRITES_INFRONT | DRAW_SPRITES_BEHIND;
 
-////////////////////////////////////////////////////////////////////////////////
-// glSpriteList
-//
-// A list of glBasicSprite objects, sorted by Z order
-
+    /**
+     * A list of glBasicSprite objects, sorted by Z order
+     */
     public class GLSpriteList {
 
         public GLBasicSprite m_head;
@@ -45,11 +43,6 @@ public class GLSpriteEngine extends GLTextGrid{
         }
         public int getType() { return mType;}
     }
-
-
-    ////////////////////////////////////////////////////////////////////////////////
-// glSpriteEngine
-//
 
     // Sprites
     GLSpriteList m_sprites = new GLSpriteList();

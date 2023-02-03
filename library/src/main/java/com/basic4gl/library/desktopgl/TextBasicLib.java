@@ -7,6 +7,7 @@ import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.compiler.util.FuncSpec;
 import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.ResourceStore;
@@ -65,7 +66,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
 
         // Sprite engine defaults
         sprites = new GLSpriteStore();
-        sprites.Clear();
+        sprites.clear();
         GLSpriteEngine spriteEngine = (GLSpriteEngine) appText;
         spriteEngine.SetDefaults ();
         boundSprite = 0;
@@ -316,229 +317,229 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
 
         Map<String, FuncSpec[]> s = new HashMap<String, FuncSpec[]>();
 
-        s.put("cls", new FuncSpec[]{ new FuncSpec( WrapCls.class, new ParamTypeList (), false, false, new ValType(ValType.VTP_INT), false, false, null)});
+        s.put("cls", new FuncSpec[]{ new FuncSpec( WrapCls.class, new ParamTypeList (), false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
 
-        s.put("print", new FuncSpec[]{ new FuncSpec( WrapPrint.class, new ParamTypeList (new ValType(ValType.VTP_STRING)),false, false, new ValType(ValType.VTP_INT), false, false, null)});
+        s.put("print", new FuncSpec[]{ new FuncSpec( WrapPrint.class, new ParamTypeList (new ValType (BasicValType.VTP_STRING)),false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("printr", new FuncSpec[]{
-                new FuncSpec( WrapPrintr.class, new ParamTypeList (new ValType(ValType.VTP_STRING)),false, false, new ValType(ValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapPrintr_2.class, new ParamTypeList (), false, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("locate", new FuncSpec[]{ new FuncSpec( WrapLocate.class, new ParamTypeList (new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT)),false, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("swapbuffers", new FuncSpec[]{ new FuncSpec( WrapSwapBuffers.class, new ParamTypeList (), true, false, new ValType(ValType.VTP_INT), false, false, null)});
+                new FuncSpec( WrapPrintr.class, new ParamTypeList (new ValType (BasicValType.VTP_STRING)),false, false, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FuncSpec( WrapPrintr_2.class, new ParamTypeList (), false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("locate", new FuncSpec[]{ new FuncSpec( WrapLocate.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("swapbuffers", new FuncSpec[]{ new FuncSpec( WrapSwapBuffers.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("drawtext", new FuncSpec[]{
-                new FuncSpec( WrapDrawText.class, new ParamTypeList (), true, false, new ValType(ValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapDrawText2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("textmode", new FuncSpec[]{ new FuncSpec( WrapTextMode.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("resizetext", new FuncSpec[]{ new FuncSpec( WrapResizeText.class, new ParamTypeList (new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("textrows", new FuncSpec[]{ new FuncSpec( WrapTextRows.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("textcols", new FuncSpec[]{ new FuncSpec( WrapTextCols.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("input$", new FuncSpec[]{ new FuncSpec( WrapInput.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_STRING),true, false, null)});
-    s.put("inkey$", new FuncSpec[]{ new FuncSpec( WrapInkey.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_STRING), false, false, null)});
-    s.put("inscankey", new FuncSpec[]{ new FuncSpec( WrapInScanKey.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("clearkeys", new FuncSpec[]{ new FuncSpec( WrapClearKeys.class, new ParamTypeList (), true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("showcursor", new FuncSpec[]{ new FuncSpec( WrapShowCursor.class, new ParamTypeList (), true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("hidecursor", new FuncSpec[]{ new FuncSpec( WrapHideCursor.class, new ParamTypeList (), true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("keydown", new FuncSpec[]{ new FuncSpec( WrapKeyDown.class, new ParamTypeList (new ValType(ValType.VTP_STRING)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("scankeydown", new FuncSpec[]{ new FuncSpec( WrapScanKeyDown.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("charat$", new FuncSpec[]{ new FuncSpec( WrapCharAt.class, new ParamTypeList (new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_STRING), false, false, null)});
-    s.put("color", new FuncSpec[]{ new FuncSpec( WrapColour.class, new ParamTypeList (new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("font", new FuncSpec[]{ new FuncSpec( WrapFont.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("defaultfont", new FuncSpec[]{ new FuncSpec( WrapDefaultFont.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("mouse_x", new FuncSpec[]{ new FuncSpec( WrapMouseX.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null)});
-    s.put("mouse_y", new FuncSpec[]{ new FuncSpec( WrapMouseY.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null)});
-    s.put("mouse_xd", new FuncSpec[]{ new FuncSpec( WrapMouseXD.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null)});
-    s.put("mouse_yd", new FuncSpec[]{ new FuncSpec( WrapMouseYD.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null)});
-    s.put("mouse_button", new FuncSpec[]{ new FuncSpec( WrapMouseButton.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("mouse_wheel", new FuncSpec[]{ new FuncSpec( WrapMouseWheel.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("clearline", new FuncSpec[]{ new FuncSpec( WrapClearLine.class, new ParamTypeList (), true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("clearregion", new FuncSpec[]{ new FuncSpec( WrapClearRegion.class, new ParamTypeList (new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("textscroll", new FuncSpec[]{ new FuncSpec( WrapTextScroll.class, new ParamTypeList(), true, true, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("settextscroll", new FuncSpec[]{ new FuncSpec( WrapSetTextScroll.class, new ParamTypeList(new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("CursorCol", new FuncSpec[]{ new FuncSpec( WrapCursorCol.class, new ParamTypeList(), true, true, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("CursorRow", new FuncSpec[]{ new FuncSpec( WrapCursorRow.class, new ParamTypeList(), true, true, new ValType(ValType.VTP_INT), false, false, null)});
+                new FuncSpec( WrapDrawText.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FuncSpec( WrapDrawText2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("textmode", new FuncSpec[]{ new FuncSpec( WrapTextMode.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("resizetext", new FuncSpec[]{ new FuncSpec( WrapResizeText.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("textrows", new FuncSpec[]{ new FuncSpec( WrapTextRows.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("textcols", new FuncSpec[]{ new FuncSpec( WrapTextCols.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("input$", new FuncSpec[]{ new FuncSpec( WrapInput.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_STRING),true, false, null)});
+    s.put("inkey$", new FuncSpec[]{ new FuncSpec( WrapInkey.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_STRING), false, false, null)});
+    s.put("inscankey", new FuncSpec[]{ new FuncSpec( WrapInScanKey.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("clearkeys", new FuncSpec[]{ new FuncSpec( WrapClearKeys.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("showcursor", new FuncSpec[]{ new FuncSpec( WrapShowCursor.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("hidecursor", new FuncSpec[]{ new FuncSpec( WrapHideCursor.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("keydown", new FuncSpec[]{ new FuncSpec( WrapKeyDown.class, new ParamTypeList (new ValType (BasicValType.VTP_STRING)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("scankeydown", new FuncSpec[]{ new FuncSpec( WrapScanKeyDown.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("charat$", new FuncSpec[]{ new FuncSpec( WrapCharAt.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_STRING), false, false, null)});
+    s.put("color", new FuncSpec[]{ new FuncSpec( WrapColour.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("font", new FuncSpec[]{ new FuncSpec( WrapFont.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("defaultfont", new FuncSpec[]{ new FuncSpec( WrapDefaultFont.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("mouse_x", new FuncSpec[]{ new FuncSpec( WrapMouseX.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("mouse_y", new FuncSpec[]{ new FuncSpec( WrapMouseY.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("mouse_xd", new FuncSpec[]{ new FuncSpec( WrapMouseXD.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("mouse_yd", new FuncSpec[]{ new FuncSpec( WrapMouseYD.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("mouse_button", new FuncSpec[]{ new FuncSpec( WrapMouseButton.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("mouse_wheel", new FuncSpec[]{ new FuncSpec( WrapMouseWheel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("clearline", new FuncSpec[]{ new FuncSpec( WrapClearLine.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("clearregion", new FuncSpec[]{ new FuncSpec( WrapClearRegion.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("textscroll", new FuncSpec[]{ new FuncSpec( WrapTextScroll.class, new ParamTypeList(), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("settextscroll", new FuncSpec[]{ new FuncSpec( WrapSetTextScroll.class, new ParamTypeList(new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("CursorCol", new FuncSpec[]{ new FuncSpec( WrapCursorCol.class, new ParamTypeList(), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("CursorRow", new FuncSpec[]{ new FuncSpec( WrapCursorRow.class, new ParamTypeList(), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
 
     s.put("newsprite", new FuncSpec[]{
-            new FuncSpec( WrapNewSprite.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapNewSprite_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapNewSprite_3.class, new ParamTypeList (new ValType (ValType.VTP_INT,(byte)1, (byte)1, true)), true, true, new ValType(ValType.VTP_INT), false, false, null)});
+            new FuncSpec( WrapNewSprite.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapNewSprite_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapNewSprite_3.class, new ParamTypeList (new ValType  (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
     s.put("newtilemap", new FuncSpec[]{
-            new FuncSpec( WrapNewTileMap.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapNewTileMap_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapNewTileMap_3.class, new ParamTypeList (new ValType (ValType.VTP_INT,(byte)1, (byte)1, true)), true, true, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("deletesprite", new FuncSpec[]{ new FuncSpec( WrapDeleteSprite.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("bindsprite", new FuncSpec[]{ new FuncSpec( WrapBindSprite.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsettexture", new FuncSpec[]{ new FuncSpec( WrapSprSetTexture.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsettextures", new FuncSpec[]{ new FuncSpec( WrapSprSetTextures.class, new ParamTypeList (new ValType (ValType.VTP_INT,(byte)1, (byte)1, true)), true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("spraddtexture", new FuncSpec[]{ new FuncSpec( WrapSprAddTexture.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("spraddtextures", new FuncSpec[]{ new FuncSpec( WrapSprAddTextures.class, new ParamTypeList (new ValType(ValType.VTP_INT,(byte)1, (byte)1, true)), true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetframe", new FuncSpec[]{ new FuncSpec( WrapSprSetFrame.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetx", new FuncSpec[]{ new FuncSpec( WrapSprSetX.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsety", new FuncSpec[]{ new FuncSpec( WrapSprSetY.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetzorder", new FuncSpec[]{ new FuncSpec( WrapSprSetZOrder.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
+            new FuncSpec( WrapNewTileMap.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapNewTileMap_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapNewTileMap_3.class, new ParamTypeList (new ValType  (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("deletesprite", new FuncSpec[]{ new FuncSpec( WrapDeleteSprite.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("bindsprite", new FuncSpec[]{ new FuncSpec( WrapBindSprite.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsettexture", new FuncSpec[]{ new FuncSpec( WrapSprSetTexture.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsettextures", new FuncSpec[]{ new FuncSpec( WrapSprSetTextures.class, new ParamTypeList (new ValType  (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("spraddtexture", new FuncSpec[]{ new FuncSpec( WrapSprAddTexture.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("spraddtextures", new FuncSpec[]{ new FuncSpec( WrapSprAddTextures.class, new ParamTypeList (new ValType (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetframe", new FuncSpec[]{ new FuncSpec( WrapSprSetFrame.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetx", new FuncSpec[]{ new FuncSpec( WrapSprSetX.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsety", new FuncSpec[]{ new FuncSpec( WrapSprSetY.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetzorder", new FuncSpec[]{ new FuncSpec( WrapSprSetZOrder.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
     s.put("sprsetpos", new FuncSpec[]{
-            new FuncSpec( WrapSprSetPos.class, new ParamTypeList (new ValType (ValType.VTP_REAL ,(byte)1, (byte)1, true)), true, false, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprSetPos_2.class, new ParamTypeList (new ValType(ValType.VTP_REAL), new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetxsize", new FuncSpec[]{ new FuncSpec( WrapSprSetXSize.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetysize", new FuncSpec[]{ new FuncSpec( WrapSprSetYSize.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
+            new FuncSpec( WrapSprSetPos.class, new ParamTypeList (new ValType  (BasicValType.VTP_REAL ,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapSprSetPos_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetxsize", new FuncSpec[]{ new FuncSpec( WrapSprSetXSize.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetysize", new FuncSpec[]{ new FuncSpec( WrapSprSetYSize.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
     s.put("sprsetsize", new FuncSpec[]{
-            new FuncSpec( WrapSprSetSize.class, new ParamTypeList (new ValType(ValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprSetSize_2.class, new ParamTypeList (new ValType(ValType.VTP_REAL), new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetscale", new FuncSpec[]{ new FuncSpec( WrapSprSetScale.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetxcentre", new FuncSpec[]{ new FuncSpec( WrapSprSetXCentre.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetycentre", new FuncSpec[]{ new FuncSpec( WrapSprSetYCentre.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetxflip", new FuncSpec[]{ new FuncSpec( WrapSprSetXFlip.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetyflip", new FuncSpec[]{ new FuncSpec( WrapSprSetYFlip.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetvisible", new FuncSpec[]{ new FuncSpec( WrapSprSetVisible.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetangle", new FuncSpec[]{ new FuncSpec( WrapSprSetAngle.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
+            new FuncSpec( WrapSprSetSize.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapSprSetSize_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetscale", new FuncSpec[]{ new FuncSpec( WrapSprSetScale.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetxcentre", new FuncSpec[]{ new FuncSpec( WrapSprSetXCentre.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetycentre", new FuncSpec[]{ new FuncSpec( WrapSprSetYCentre.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetxflip", new FuncSpec[]{ new FuncSpec( WrapSprSetXFlip.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetyflip", new FuncSpec[]{ new FuncSpec( WrapSprSetYFlip.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetvisible", new FuncSpec[]{ new FuncSpec( WrapSprSetVisible.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetangle", new FuncSpec[]{ new FuncSpec( WrapSprSetAngle.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
     s.put("sprsetcolor", new FuncSpec[]{
-            new FuncSpec( WrapSprSetColour.class, new ParamTypeList (new ValType(ValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprSetColour_2.class, new ParamTypeList (new ValType(ValType.VTP_REAL), new ValType(ValType.VTP_REAL), new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprSetColour_3.class, new ParamTypeList (new ValType(ValType.VTP_REAL), new ValType(ValType.VTP_REAL), new ValType(ValType.VTP_REAL), new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetalpha", new FuncSpec[]{ new FuncSpec( WrapSprSetAlpha.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetparallax", new FuncSpec[]{ new FuncSpec( WrapSprSetParallax.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("sprsetsolid", new FuncSpec[]{ new FuncSpec( WrapSprSetSolid.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("resizespritearea", new FuncSpec[]{ new FuncSpec( WrapResizeSpriteArea.class, new ParamTypeList (new ValType(ValType.VTP_REAL), new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-    s.put("spriteareawidth", new FuncSpec[]{ new FuncSpec( WrapSpriteAreaWidth.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null)});
-    s.put("spriteareaheight", new FuncSpec[]{ new FuncSpec( WrapSpriteAreaHeight.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+            new FuncSpec( WrapSprSetColour.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapSprSetColour_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapSprSetColour_3.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetalpha", new FuncSpec[]{ new FuncSpec( WrapSprSetAlpha.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetparallax", new FuncSpec[]{ new FuncSpec( WrapSprSetParallax.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetsolid", new FuncSpec[]{ new FuncSpec( WrapSprSetSolid.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("resizespritearea", new FuncSpec[]{ new FuncSpec( WrapResizeSpriteArea.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("spriteareawidth", new FuncSpec[]{ new FuncSpec( WrapSpriteAreaWidth.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("spriteareaheight", new FuncSpec[]{ new FuncSpec( WrapSpriteAreaHeight.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
     s.put("sprframe", new FuncSpec[]{
-            new FuncSpec( WrapSprFrame.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprFrame_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+            new FuncSpec( WrapSprFrame.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FuncSpec( WrapSprFrame_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprx", new FuncSpec[]{
-                new FuncSpec( WrapSprX.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprX_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+                new FuncSpec( WrapSprX.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FuncSpec( WrapSprX_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
     s.put("spry", new FuncSpec[]{
-            new FuncSpec( WrapSprY.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprY_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+            new FuncSpec( WrapSprY.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FuncSpec( WrapSprY_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
     s.put("sprpos", new FuncSpec[]{
-            new FuncSpec( WrapSprPos.class, new ParamTypeList(), true, true, new ValType (ValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
-            new FuncSpec( WrapSprPos_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType( ValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
+            new FuncSpec( WrapSprPos.class, new ParamTypeList(), true, true, new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
+            new FuncSpec( WrapSprPos_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType( BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
 
 
         s.put("sprzorder", new FuncSpec[]{
-                new FuncSpec( WrapSprZOrder.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprZOrder_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+                new FuncSpec( WrapSprZOrder.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FuncSpec( WrapSprZOrder_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprxsize", new FuncSpec[]{
-                new FuncSpec( WrapSprXSize.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprXSize_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+                new FuncSpec( WrapSprXSize.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FuncSpec( WrapSprXSize_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprysize", new FuncSpec[]{
-                new FuncSpec( WrapSprYSize.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprYSize_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+                new FuncSpec( WrapSprYSize.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FuncSpec( WrapSprYSize_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprscale", new FuncSpec[]{
-                new FuncSpec( WrapSprScale.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprScale_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+                new FuncSpec( WrapSprScale.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FuncSpec( WrapSprScale_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprxcentre", new FuncSpec[]{
-                new FuncSpec( WrapSprXCentre.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprXCentre_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+                new FuncSpec( WrapSprXCentre.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FuncSpec( WrapSprXCentre_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprycentre", new FuncSpec[]{
-            new FuncSpec( WrapSprYCentre.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprYCentre_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+            new FuncSpec( WrapSprYCentre.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FuncSpec( WrapSprYCentre_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
 
         s.put("sprxflip", new FuncSpec[]{
-            new FuncSpec( WrapSprXFlip.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprXFlip_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
+            new FuncSpec( WrapSprXFlip.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapSprXFlip_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("spryflip", new FuncSpec[]{
-            new FuncSpec( WrapSprYFlip.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprYFlip_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
+            new FuncSpec( WrapSprYFlip.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapSprYFlip_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("sprvisible", new FuncSpec[]{
-            new FuncSpec( WrapSprVisible.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprVisible_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
+            new FuncSpec( WrapSprVisible.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapSprVisible_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("sprangle", new FuncSpec[]{
-            new FuncSpec( WrapSprAngle.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprAngle_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+            new FuncSpec( WrapSprAngle.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FuncSpec( WrapSprAngle_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprcolor", new FuncSpec[]{
-            new FuncSpec( WrapSprColour.class, new ParamTypeList (), true, true, new ValType (ValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
-            new FuncSpec( WrapSprColour_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
+            new FuncSpec( WrapSprColour.class, new ParamTypeList (), true, true, new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
+            new FuncSpec( WrapSprColour_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
         s.put("spralpha", new FuncSpec[]{
-            new FuncSpec( WrapSprAlpha.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprAlpha_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+            new FuncSpec( WrapSprAlpha.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FuncSpec( WrapSprAlpha_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprparallax", new FuncSpec[]{
-            new FuncSpec( WrapSprParallax.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprParallax_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
+            new FuncSpec( WrapSprParallax.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapSprParallax_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("sprsolid", new FuncSpec[]{
-            new FuncSpec( WrapSprSolid.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprSolid_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
+            new FuncSpec( WrapSprSolid.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapSprSolid_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("sprleft", new FuncSpec[]{
-            new FuncSpec( WrapSprLeft.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprLeft_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+            new FuncSpec( WrapSprLeft.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FuncSpec( WrapSprLeft_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprright", new FuncSpec[]{
-            new FuncSpec( WrapSprRight.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprRight_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+            new FuncSpec( WrapSprRight.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FuncSpec( WrapSprRight_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprtop", new FuncSpec[]{
-            new FuncSpec( WrapSprTop.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprTop_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+            new FuncSpec( WrapSprTop.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FuncSpec( WrapSprTop_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprbottom", new FuncSpec[]{
-            new FuncSpec( WrapSprBottom.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprBottom_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+            new FuncSpec( WrapSprBottom.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FuncSpec( WrapSprBottom_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprxvel", new FuncSpec[]{
-            new FuncSpec( WrapSprXVel.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprXVel_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+            new FuncSpec( WrapSprXVel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FuncSpec( WrapSprXVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("spryvel", new FuncSpec[]{
-                new FuncSpec( WrapSprYVel.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprYVel_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+                new FuncSpec( WrapSprYVel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FuncSpec( WrapSprYVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("sprvel", new FuncSpec[]{
-                new FuncSpec( WrapSprVel.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
-                new FuncSpec( WrapSprVel_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType (ValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
+                new FuncSpec( WrapSprVel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
+                new FuncSpec( WrapSprVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
         s.put("sprspin", new FuncSpec[]{
-                new FuncSpec( WrapSprSpin.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprSpin_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+                new FuncSpec( WrapSprSpin.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FuncSpec( WrapSprSpin_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("spranimspeed", new FuncSpec[]{
-                new FuncSpec( WrapSprAnimSpeed.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprAnimSpeed_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_REAL), false, false, null)});
+                new FuncSpec( WrapSprAnimSpeed.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FuncSpec( WrapSprAnimSpeed_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
         s.put("spranimloop", new FuncSpec[]{
-                new FuncSpec( WrapSprAnimLoop.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprAnimLoop_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
+                new FuncSpec( WrapSprAnimLoop.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FuncSpec( WrapSprAnimLoop_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("spranimdone", new FuncSpec[]{
-            new FuncSpec( WrapSprAnimDone.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprAnimDone_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
+            new FuncSpec( WrapSprAnimDone.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FuncSpec( WrapSprAnimDone_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
 
-        s.put("sprsetxvel", new FuncSpec[]{ new FuncSpec( WrapSprSetXVel.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprsetyvel", new FuncSpec[]{ new FuncSpec( WrapSprSetYVel.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
+        s.put("sprsetxvel", new FuncSpec[]{ new FuncSpec( WrapSprSetXVel.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetyvel", new FuncSpec[]{ new FuncSpec( WrapSprSetYVel.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("sprsetvel", new FuncSpec[]{
-                new FuncSpec( WrapSprSetVel.class, new ParamTypeList (new ValType (ValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType(ValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprSetVel_2.class, new ParamTypeList (new ValType(ValType.VTP_REAL), new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprsetspin", new FuncSpec[]{ new FuncSpec( WrapSprSetSpin.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprsetanimspeed", new FuncSpec[]{ new FuncSpec( WrapSprSetAnimSpeed.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprsetanimloop", new FuncSpec[]{ new FuncSpec( WrapSprSetAnimLoop.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("animatesprites", new FuncSpec[]{ new FuncSpec( WrapAnimateSprites.class, new ParamTypeList (), true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("animatespriteframes", new FuncSpec[]{ new FuncSpec( WrapAnimateSpriteFrames.class, new ParamTypeList (), true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("copysprite", new FuncSpec[]{ new FuncSpec( WrapCopySprite.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
+                new FuncSpec( WrapSprSetVel.class, new ParamTypeList (new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FuncSpec( WrapSprSetVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetspin", new FuncSpec[]{ new FuncSpec( WrapSprSetSpin.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetanimspeed", new FuncSpec[]{ new FuncSpec( WrapSprSetAnimSpeed.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetanimloop", new FuncSpec[]{ new FuncSpec( WrapSprSetAnimLoop.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("animatesprites", new FuncSpec[]{ new FuncSpec( WrapAnimateSprites.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("animatespriteframes", new FuncSpec[]{ new FuncSpec( WrapAnimateSpriteFrames.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("copysprite", new FuncSpec[]{ new FuncSpec( WrapCopySprite.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("sprtype", new FuncSpec[]{
-                new FuncSpec( WrapSprType.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprType_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
+                new FuncSpec( WrapSprType.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FuncSpec( WrapSprType_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
 
         s.put("sprxtiles", new FuncSpec[]{
-                new FuncSpec( WrapSprXTiles.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprXTiles_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
+                new FuncSpec( WrapSprXTiles.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FuncSpec( WrapSprXTiles_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
 
         s.put("sprytiles", new FuncSpec[]{
-                new FuncSpec( WrapSprYTiles.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprYTiles_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
+                new FuncSpec( WrapSprYTiles.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FuncSpec( WrapSprYTiles_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
 
-        s.put("sprsettiles", new FuncSpec[]{ new FuncSpec( WrapSprSetTiles.class, new ParamTypeList (new ValType(ValType.VTP_INT,(byte)2, (byte)1, true)), true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprsetxrepeat", new FuncSpec[]{ new FuncSpec( WrapSprSetXRepeat.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprsetyrepeat", new FuncSpec[]{ new FuncSpec( WrapSprSetYRepeat.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
+        s.put("sprsettiles", new FuncSpec[]{ new FuncSpec( WrapSprSetTiles.class, new ParamTypeList (new ValType (BasicValType.VTP_INT,(byte)2, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetxrepeat", new FuncSpec[]{ new FuncSpec( WrapSprSetXRepeat.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetyrepeat", new FuncSpec[]{ new FuncSpec( WrapSprSetYRepeat.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("sprxrepeat", new FuncSpec[]{
-                new FuncSpec( WrapSprXRepeat.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprXRepeat_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
+                new FuncSpec( WrapSprXRepeat.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FuncSpec( WrapSprXRepeat_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("spryrepeat", new FuncSpec[]{
-                new FuncSpec( WrapSprYRepeat.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprYRepeat_2.class, new ParamTypeList (new ValType(ValType.VTP_INT)),true, true, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprcamerasetx", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetX.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprcamerasety", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetY.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprcamerasetz", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetZ.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
+                new FuncSpec( WrapSprYRepeat.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FuncSpec( WrapSprYRepeat_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprcamerasetx", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetX.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprcamerasety", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetY.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprcamerasetz", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetZ.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
         s.put("sprcamerasetpos", new FuncSpec[]{
-                new FuncSpec( WrapSprCameraSetPos.class, new ParamTypeList (new ValType(ValType.VTP_REAL), new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprCameraSetPos_2.class, new ParamTypeList (new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true)), true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprcamerasetangle", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetAngle.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprcamerax", new FuncSpec[]{ new FuncSpec( WrapSprCameraX.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null)});
-        s.put("sprcameray", new FuncSpec[]{ new FuncSpec( WrapSprCameraY.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null)});
-        s.put("sprcameraz", new FuncSpec[]{ new FuncSpec( WrapSprCameraZ.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null)});
-        s.put("sprcamerapos", new FuncSpec[]{ new FuncSpec( WrapSprCameraPos.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put("sprcameraangle", new FuncSpec[]{ new FuncSpec( WrapSprCameraAngle.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null)});
-        s.put("sprcamerafov", new FuncSpec[]{ new FuncSpec( WrapSprCameraFOV.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_REAL), false, false, null)});
-        s.put("sprcamerasetfov", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetFOV.class, new ParamTypeList (new ValType(ValType.VTP_REAL)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("clearsprites", new FuncSpec[]{ new FuncSpec( WrapClearSprites.class, new ParamTypeList (), true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("sprsetblendfunc", new FuncSpec[]{ new FuncSpec( WrapSprSetBlendFunc.class, new ParamTypeList (new ValType(ValType.VTP_INT), new ValType(ValType.VTP_INT)),true, false, new ValType(ValType.VTP_INT), false, false, null)});
-        s.put("spritecount", new FuncSpec[]{ new FuncSpec( WrapSpriteCount.class, new ParamTypeList (), true, true, new ValType(ValType.VTP_INT), false, false, null)});
+                new FuncSpec( WrapSprCameraSetPos.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FuncSpec( WrapSprCameraSetPos_2.class, new ParamTypeList (new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprcamerasetangle", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetAngle.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprcamerax", new FuncSpec[]{ new FuncSpec( WrapSprCameraX.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprcameray", new FuncSpec[]{ new FuncSpec( WrapSprCameraY.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprcameraz", new FuncSpec[]{ new FuncSpec( WrapSprCameraZ.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprcamerapos", new FuncSpec[]{ new FuncSpec( WrapSprCameraPos.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put("sprcameraangle", new FuncSpec[]{ new FuncSpec( WrapSprCameraAngle.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprcamerafov", new FuncSpec[]{ new FuncSpec( WrapSprCameraFOV.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprcamerasetfov", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetFOV.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("clearsprites", new FuncSpec[]{ new FuncSpec( WrapClearSprites.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetblendfunc", new FuncSpec[]{ new FuncSpec( WrapSprSetBlendFunc.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("spritecount", new FuncSpec[]{ new FuncSpec( WrapSpriteCount.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
         return s;
     }
 
@@ -558,31 +559,31 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }
 
 
-    public void Print(String text, boolean newline) {
+    public void print(String text, boolean newline) {
         TextBasicLib.appText.Write(text);
         if (newline) {
             TextBasicLib.appText.NewLine();
         }
         TextBasicLib.Redraw();
     }
-    public void Locate(int x, int y) {
+    public void locate(int x, int y) {
         TextBasicLib.appText.MoveCursor(x, y);
     }
-    public void Cls() {
+    public void cls() {
         TextBasicLib.appText.Clear();
         TextBasicLib.Redraw();
     }
-    public void ClearRegion(int x1, int y1, int x2, int y2) {
+    public void clearRegion(int x1, int y1, int x2, int y2) {
         TextBasicLib.appText.ClearRegion(x1, y1, x2, y2);
         TextBasicLib.Redraw();
     }
-    public int TextRows() {
+    public int getTextRows() {
         return TextBasicLib.appText.Rows();
     }
-    public int TextCols() {
+    public int getTextCols() {
         return TextBasicLib.appText.Cols();
     }
-    public void ResizeText(int cols, int rows) {
+    public void resizeText(int cols, int rows) {
         if (rows < 1) {
             rows = 1;
         }
@@ -598,35 +599,34 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         TextBasicLib.appText.Resize (rows, cols);
         TextBasicLib.Redraw ();
     }
-    public void SetTextScroll(boolean scroll) {
+    public void setTextScrollEnabled(boolean scroll) {
         TextBasicLib.appText.setScroll(scroll);
     }
-    public boolean TextScroll() {
+    public boolean getTextScrollEnabled() {
         return TextBasicLib.appText.Scroll();
     }
-    public void DrawText() {
+    public void drawText() {
         TextBasicLib.ForceDraw();
     }
-    public char CharAt(int x, int y) {
+    public char getCharAt(int x, int y) {
         return TextBasicLib.appText.TextAt(x, y);
     }
-    public void Font(int fontTexture) {
+    public void setFont(int fontTexture) {
         TextBasicLib.appText.SetTexture(fontTexture);
     }
-    public int DefaultFont() {
+    public int getDefaultFont() {
         return TextBasicLib.appText.DefaultTexture();
     }
-    public void SetTextMode(TextMode mode) {
+    public void setTextMode(TextMode mode) {
         textMode = mode;
     }
-    public void Color(byte red, byte green, byte blue) {
+    public void setColor(byte red, byte green, byte blue) {
         TextBasicLib.appText.SetColour(GLTextGrid.MakeColour(red, green, blue));
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
-// glSpriteStore
-//
-// A store of glSprites
+    /**
+     * A store of glSprites
+     */
     class GLSpriteStore extends ResourceStore<GLBasicSprite> {
         protected void DeleteElement (int index){
             setValue(index, null);
@@ -642,8 +642,6 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
 
     static TextMode textMode = TextMode.TEXT_SIMPLE;
 
-////////////////////////////////////////////////////////////////////////////////
-// Helper functions
     static void ForceDraw(){ ForceDraw((byte)(GLTextGrid.DRAW_TEXT | GLSpriteEngine.DRAW_SPRITES));}
     static void ForceDraw(byte flags) {
         if (textMode == TextMode.TEXT_SIMPLE || textMode == TextMode.TEXT_BUFFERED) {
@@ -669,12 +667,12 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
 
         // Read in texture array and convert to vector (for storage in sprite)
         int[] frames = new int[65536];
-        int size = Data.ArrayDimensionSize (vm.Data (), vm.GetIntParam (paramIndex), 0);
+        int size = Data.ArrayDimensionSize (vm.getData(), vm.getIntParam(paramIndex), 0);
         if (size < 1 || size > 65536) {
-            vm.FunctionError ("Texture array size must be 1-65536");
+            vm.functionError("Texture array size must be 1-65536");
             return false;
         }
-        Data.ReadArray(vm.Data(), vm.GetIntParam(paramIndex), new ValType(ValType.VTP_INT, (byte) 1, (byte) 1, true), frames, size);
+        Data.ReadArray(vm.getData(), vm.getIntParam(paramIndex), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), frames, size);
 
         // Convert to vector
         dest.clear ();
@@ -711,9 +709,9 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     public static void GetTiles (TomVM vm, int paramIndex, IntBuffer xSize, IntBuffer ySize, Vector<Integer> dest) {
 
         // Read in texture array and convert to vector (for storage in sprite)
-        int index = vm.GetIntParam (paramIndex);
-        xSize.put(0, Data.ArrayDimensionSize(vm.Data(), index, 0));
-        ySize.put(0, Data.ArrayDimensionSize(vm.Data(), index, 1));
+        int index = vm.getIntParam(paramIndex);
+        xSize.put(0, Data.ArrayDimensionSize(vm.getData(), index, 0));
+        ySize.put(0, Data.ArrayDimensionSize(vm.getData(), index, 1));
         int x = xSize.get(0);
         int y = ySize.get(0);
         // Size must be valid and add up to 1 million or less tiles
@@ -722,7 +720,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
 
             // Read data into temp buffer
             int[] buffer = new int [x * y];
-            Data.ReadArray (vm.Data (), index, new ValType (ValType.VTP_INT, (byte) 2, (byte) 1, true), buffer, x * y);
+            Data.ReadArray (vm.getData(), index, new ValType  (BasicValType.VTP_INT, (byte) 2, (byte) 1, true), buffer, x * y);
 
             // Convert to vector
             for (int i = 0; i < x * y; i++) {
@@ -742,13 +740,11 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         vec [1] = 0;
         vec [2] = 0;
         vec [3] = 1;
-        Data.ReadArray(vm.Data(), vm.GetIntParam(paramIndex), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), vec, 4);
+        Data.ReadArray(vm.getData(), vm.getIntParam(paramIndex), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), vec, 4);
     }
-////////////////////////////////////////////////////////////////////////////////
-// Function wrappers
 
     public final class WrapTextMode implements Function { public void run(TomVM vm)       {
-        int m = vm.GetIntParam (1);
+        int m = vm.getIntParam(1);
             switch (m) {
                 case 0:
                     textMode = TextMode.TEXT_SIMPLE;
@@ -763,19 +759,19 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         }
     }
     public final class WrapCls implements Function { public void run(TomVM vm)            { appText.Clear ();  Redraw (); }}
-    public final class WrapPrint implements Function { public void run(TomVM vm)          { appText.Write (vm.GetStringParam (1)); Redraw (); }}
-    public final class WrapPrintr implements Function { public void run(TomVM vm)         { appText.Write (vm.GetStringParam (1)); appText.NewLine (); Redraw (); }}
+    public final class WrapPrint implements Function { public void run(TomVM vm)          { appText.Write (vm.getStringParam(1)); Redraw (); }}
+    public final class WrapPrintr implements Function { public void run(TomVM vm)         { appText.Write (vm.getStringParam(1)); appText.NewLine (); Redraw (); }}
     public final class WrapPrintr_2 implements Function { public void run(TomVM vm)       { appText.NewLine (); Redraw (); }}
     public final class WrapLocate implements Function
-        { public void run(TomVM vm)         { appText.MoveCursor (vm.GetIntParam (2), vm.GetIntParam (1)); }}
+        { public void run(TomVM vm)         { appText.MoveCursor (vm.getIntParam(2), vm.getIntParam(1)); }}
     public final class WrapSwapBuffers implements Function { public void run(TomVM vm)    {
         appWindow.SwapBuffers ();
         appWindow.SetDontPaint (false);
     }}
     public final class WrapDrawText implements Function { public void run(TomVM vm)        { TextBasicLib.ForceDraw(); }}
-    public final class WrapDrawText2 implements Function {  public void run(TomVM vm)       { TextBasicLib.ForceDraw(vm.GetIntParam(1).byteValue()); }}
+    public final class WrapDrawText2 implements Function {  public void run(TomVM vm)       { TextBasicLib.ForceDraw(vm.getIntParam(1).byteValue()); }}
     public final class WrapResizeText implements Function { public void run(TomVM vm) {
-        int rows = vm.GetIntParam (1), cols = vm.GetIntParam (2);
+        int rows = vm.getIntParam(1), cols = vm.getIntParam(2);
         if (rows < 1) {
             rows = 1;
         }
@@ -791,8 +787,8 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         TextBasicLib.appText.Resize (rows, cols);
         TextBasicLib.Redraw();
     }}
-    public final class WrapTextRows implements Function { public void run(TomVM vm)   { vm.Reg ().setIntVal( appText.Rows ()); }}
-    public final class WrapTextCols implements Function { public void run(TomVM vm)   { vm.Reg ().setIntVal( appText.Cols ()); }}
+    public final class WrapTextRows implements Function { public void run(TomVM vm)   { vm.getReg().setIntVal( appText.Rows ()); }}
+    public final class WrapTextCols implements Function { public void run(TomVM vm)   { vm.getReg().setIntVal( appText.Cols ()); }}
     public final class WrapInput implements Function { public void run(TomVM vm)      { vm.setRegString (appText.GetString (TextBasicLib.appWindow)); }}
     public final class WrapInkey implements Function { public void run(TomVM vm)      {
         int key = TextBasicLib.appWindow.getKey ();
@@ -803,7 +799,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         }
     }}
     public final class WrapInScanKey implements Function { public void run(TomVM vm)  {
-        vm.Reg ().setIntVal( Character.getNumericValue(TextBasicLib.appWindow.getScanKey ()));
+        vm.getReg().setIntVal( Character.getNumericValue(TextBasicLib.appWindow.getScanKey ()));
     }}
     public final class WrapClearKeys implements Function { public void run(TomVM vm) {
         appWindow.ClearKeyBuffers ();
@@ -811,25 +807,25 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     public final class WrapShowCursor implements Function { public void run(TomVM vm) { appText.ShowCursor (); Redraw (); }}
     public final class WrapHideCursor implements Function { public void run(TomVM vm) { appText.HideCursor (); Redraw (); }}
     public final class WrapKeyDown implements Function { public void run(TomVM vm)    {
-        String s = vm.GetStringParam (1);
+        String s = vm.getStringParam(1);
         if (s.equals("")) {
-            vm.Reg ().setIntVal( 0);
+            vm.getReg().setIntVal( 0);
         } else {
-            vm.Reg ().setIntVal( appWindow.isKeyDown (s.charAt(0)) ? -1 : 0);
+            vm.getReg().setIntVal( appWindow.isKeyDown (s.charAt(0)) ? -1 : 0);
         }
     }}
     public final class WrapScanKeyDown implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         // Windows version of Basic4GL only supports index range 0 - 255,
         // though this version uses a different input library that has a wider value range
         if (index < 0 || index > Character.MAX_VALUE) {
-            vm.Reg ().setIntVal( 0);
+            vm.getReg().setIntVal( 0);
         } else {
-            vm.Reg ().setIntVal( appWindow.isKeyDown ((char)index) ? -1 : 0);
+            vm.getReg().setIntVal( appWindow.isKeyDown ((char)index) ? -1 : 0);
         }
     }}
     public final class WrapCharAt implements Function { public void run(TomVM vm) {
-        char c = appText.TextAt (vm.GetIntParam (2), vm.GetIntParam (1));
+        char c = appText.TextAt (vm.getIntParam(2), vm.getIntParam(1));
         if (c == 0) {
             vm.setRegString ( "");
         } else {
@@ -837,44 +833,44 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         }
     }}
     public final class WrapColour implements Function { public void run(TomVM vm) {
-        appText.SetColour (GLTextGrid.MakeColour(vm.GetIntParam(3).shortValue(), vm.GetIntParam(2).shortValue(), vm.GetIntParam(1).shortValue()));
+        appText.SetColour (GLTextGrid.MakeColour(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue()));
     }}
     public final class WrapFont implements Function { public void run(TomVM vm) {
-        appText.SetTexture (vm.GetIntParam (1));
+        appText.SetTexture (vm.getIntParam(1));
     }}
     public final class WrapDefaultFont implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal( appText.DefaultTexture ());
+        vm.getReg().setIntVal( appText.DefaultTexture ());
     }}
     public final class WrapMouseX implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( ((float) appWindow.MouseX ()) / appWindow.Width ());
+        vm.getReg().setRealVal( ((float) appWindow.MouseX ()) / appWindow.Width ());
     }}
     public final class WrapMouseY implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( ((float) appWindow.MouseY ()) / appWindow.Height ());
+        vm.getReg().setRealVal( ((float) appWindow.MouseY ()) / appWindow.Height ());
     }}
     public final class WrapMouseXD implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( ((float) appWindow.MouseXD ()) / appWindow.Width () * 2f);
+        vm.getReg().setRealVal( ((float) appWindow.MouseXD ()) / appWindow.Width () * 2f);
     }}
     public final class WrapMouseYD implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( ((float) appWindow.MouseYD ()) / appWindow.Height () * 2f);
+        vm.getReg().setRealVal( ((float) appWindow.MouseYD ()) / appWindow.Height () * 2f);
     }}
     public final class WrapMouseButton implements Function { public void run(TomVM vm) {
-        int button = vm.GetIntParam (1);
+        int button = vm.getIntParam(1);
         if (button >= 0 && button <= 2) {
-            vm.Reg ().setIntVal( appWindow.MouseButton (button) ? -1 : 0);
+            vm.getReg().setIntVal( appWindow.MouseButton (button) ? -1 : 0);
         } else {
-            vm.Reg ().setIntVal( 0);
+            vm.getReg().setIntVal( 0);
         }
     }}
     public final class WrapMouseWheel implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal( appWindow.MouseWheel ());
+        vm.getReg().setIntVal( appWindow.MouseWheel ());
     }}
 
     public final class WrapCursorCol implements Function { public void run(TomVM vm) {
-        vm.Reg().setIntVal( appText.CursorX());
+        vm.getReg().setIntVal( appText.CursorX());
     }}
 
     public final class WrapCursorRow implements Function { public void run(TomVM vm) {
-        vm.Reg().setIntVal( appText.CursorY());
+        vm.getReg().setIntVal( appText.CursorY());
     }}
 
 // Sprite functions
@@ -890,11 +886,11 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
 
             // Add to store (so we can track it), and return index to VM
             boundSprite = sprites.Alloc(sprite);
-            vm.Reg ().setIntVal( boundSprite);
+            vm.getReg().setIntVal( boundSprite);
             return sprite;
         }
         else {
-            vm.Reg().setIntVal( 0);
+            vm.getReg().setIntVal( 0);
             return null;
         }
     }
@@ -911,11 +907,11 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
 
             // Add to store (so we can track it), and return index to VM
             boundSprite = sprites.Alloc(tileMap);
-            vm.Reg ().setIntVal( boundSprite);
+            vm.getReg().setIntVal( boundSprite);
             return tileMap;
         }
         else {
-            vm.Reg().setIntVal( 0);
+            vm.getReg().setIntVal( 0);
             return null;
         }
     }
@@ -931,7 +927,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         // Allocate sprite, and set single texture
         GLSprite sprite = NewSprite(vm);
         if (sprite != null) {
-            sprite.SetTexture(vm.GetIntParam(1));
+            sprite.SetTexture(vm.getIntParam(1));
         }
         TextBasicLib.Redraw();
     }}
@@ -964,7 +960,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         // Allocate sprite, and set single texture
         GLTileMap  sprite = NewTileMap(vm);
         if (sprite != null) {
-            sprite.SetTexture (vm.GetIntParam(1));
+            sprite.SetTexture (vm.getIntParam(1));
         }
         TextBasicLib.Redraw();
     }}
@@ -987,7 +983,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         TextBasicLib.Redraw();
     }}
     public final class WrapDeleteSprite implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         if (IsBasicSprite (index)) {
             TextBasicLib.sprites.Free (index);
             TextBasicLib.spriteCount--;
@@ -995,11 +991,11 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         }
     }}
     public final class WrapBindSprite implements Function { public void run(TomVM vm) {
-        TextBasicLib.boundSprite = vm.GetIntParam (1);
+        TextBasicLib.boundSprite = vm.getIntParam(1);
     }}
     public final class WrapSprSetTexture implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).SetTexture(vm.GetIntParam(1));
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).SetTexture(vm.getIntParam(1));
             TextBasicLib.Redraw ();
         }
     }}
@@ -1012,7 +1008,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprAddTexture implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).AddTexture(vm.GetIntParam(1));
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).AddTexture(vm.getIntParam(1));
             TextBasicLib.Redraw ();
         }
     }}
@@ -1025,19 +1021,19 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprSetFrame implements Function { public void run(TomVM vm) {
         if (IsSprite(TextBasicLib.boundSprite)) {
-            Sprite(TextBasicLib.boundSprite).SetFrame(vm.GetRealParam(1));
+            Sprite(TextBasicLib.boundSprite).SetFrame(vm.getRealParam(1));
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprSetX implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetY implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y = vm.getRealParam(1);
             TextBasicLib.Redraw ();
         }
     }}
@@ -1051,26 +1047,26 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprSetPos_2 implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x = vm.GetRealParam (2);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x = vm.getRealParam(2);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y = vm.getRealParam(1);
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprSetZOrder implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).SetZOrder(vm.GetRealParam(1));
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).SetZOrder(vm.getRealParam(1));
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetXSize implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xSize = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xSize = vm.getRealParam(1);
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprSetYSize implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_ySize = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_ySize = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
@@ -1084,57 +1080,57 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprSetSize_2 implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xSize = vm.GetRealParam (2);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_ySize = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xSize = vm.getRealParam(2);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_ySize = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetScale implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_scale = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_scale = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetXCentre implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xCentre = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xCentre = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetYCentre implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_yCentre = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_yCentre = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetXFlip implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xFlip = vm.GetIntParam (1) != 0;
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xFlip = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetYFlip implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_yFlip = vm.GetIntParam (1) != 0;
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_yFlip = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetVisible implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_visible = vm.GetIntParam (1) != 0;
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_visible = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetAngle implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_angle = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_angle = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetColour implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
             ReadVec (vm, 1);
-            int size = Data.ArrayDimensionSize(vm.Data(), vm.GetIntParam(1), 0);
+            int size = Data.ArrayDimensionSize(vm.getData(), vm.getIntParam(1), 0);
             if (size > 4) {
                 size = 4;
             }
@@ -1148,64 +1144,64 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprSetColour_2 implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [0] = vm.GetRealParam (3);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [1] = vm.GetRealParam (2);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [2] = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [0] = vm.getRealParam(3);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [1] = vm.getRealParam(2);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [2] = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetColour_3 implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [0] = vm.GetRealParam (4);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [1] = vm.GetRealParam (3);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [2] = vm.GetRealParam (2);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [3] = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [0] = vm.getRealParam(4);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [1] = vm.getRealParam(3);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [2] = vm.getRealParam(2);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [3] = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetAlpha implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [3] = vm.GetRealParam (1);
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [3] = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetParallax implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_parallax = vm.GetIntParam (1) != 0;
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_parallax = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetSolid implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_solid = vm.GetIntParam (1) != 0;
+            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_solid = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapResizeSpriteArea implements Function { public void run(TomVM vm) {
-        int width = vm.GetRealParam (2).intValue(), height = vm.GetRealParam (1).intValue();
+        int width = vm.getRealParam(2).intValue(), height = vm.getRealParam(1).intValue();
         if (width <= 0 || height <= 0) {
-            vm.FunctionError ("Width and height must both be greater than 0");
+            vm.functionError("Width and height must both be greater than 0");
             return;
         }
         ((GLSpriteEngine) TextBasicLib.appText).SetWidth  (width);
         ((GLSpriteEngine) TextBasicLib.appText).SetHeight (height);
     }}
     public final class WrapSpriteAreaWidth implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal(((GLSpriteEngine) TextBasicLib.appText).Width());
+        vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).Width());
     }}
     public final class WrapSpriteAreaHeight implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal(((GLSpriteEngine) TextBasicLib.appText).Height());
+        vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).Height());
     }}
     public final class WrapSprFrame implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( IsSprite(TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( IsSprite(TextBasicLib.boundSprite) ?
                 Sprite (TextBasicLib.boundSprite).Frame () : 0);
     }}
     public final class WrapSprX implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite) ?
                 TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x : 0);
     }}
     public final class WrapSprY implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y : 0);
     }}
     public final class WrapSprPos implements Function { public void run(TomVM vm) {
@@ -1214,46 +1210,46 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
             result [0] = TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x;
             result [1] = TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y;
         }
-        vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 2, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
     }}
     public final class WrapSprZOrder implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal(TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite) ?
                 TextBasicLib.sprites.Value(TextBasicLib.boundSprite).ZOrder() : 0);
     }}
     public final class WrapSprXSize implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xSize : 0);
     }}
     public final class WrapSprYSize implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_ySize : 0);
     }}
     public final class WrapSprScale implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_scale : 0);
     }}
     public final class WrapSprXCentre implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xCentre : 0);
     }}
     public final class WrapSprYCentre implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal(TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_yCentre : 0);
     }}
     public final class WrapSprXFlip implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 (TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xFlip ? -1f : 0) : 0);
     }}
     public final class WrapSprYFlip implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal(TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 (TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_yFlip ? -1f : 0) : 0);
     }}
     public final class WrapSprVisible implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 (TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_visible ? -1f : 0) : 0);
     }}
     public final class WrapSprAngle implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_angle : 0);
     }}
     public final class WrapSprColour implements Function { public void run(TomVM vm) {
@@ -1263,62 +1259,62 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
                 TextBasicLib.sprites.Value(TextBasicLib.boundSprite).m_colour[i] = result[i];
             }
         }
-        vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 4, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 4, Arrays.asList(result)));
     }}
     public final class WrapSprAlpha implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal(TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite) ?
                 TextBasicLib.sprites.Value(TextBasicLib.boundSprite).m_colour[3] : 0);
     }}
     public final class WrapSprParallax implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 (TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_parallax ? -1f : 0) : 0);
     }}
     public final class WrapSprSolid implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
                 (TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_solid ? -1f : 0) : 0);
     }}
     public final class WrapSprLeft implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
             GLSprite sprite = Sprite (TextBasicLib.boundSprite);
-            vm.Reg ().setRealVal( sprite.m_x + -sprite.m_xCentre * (sprite.m_xSize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.m_x + -sprite.m_xCentre * (sprite.m_xSize * sprite.m_scale));
         }
         else {
-            vm.Reg ().setRealVal( 0f);
+            vm.getReg().setRealVal( 0f);
         }
     }}
     public final class WrapSprRight implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
             GLSprite sprite = Sprite (TextBasicLib.boundSprite);
-            vm.Reg ().setRealVal( sprite.m_x + (1 - sprite.m_xCentre) * (sprite.m_xSize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.m_x + (1 - sprite.m_xCentre) * (sprite.m_xSize * sprite.m_scale));
         }
         else {
-            vm.Reg ().setRealVal( 0f);
+            vm.getReg().setRealVal( 0f);
         }
     }}
     public final class WrapSprTop implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
             GLSprite sprite = Sprite (TextBasicLib.boundSprite);
-            vm.Reg ().setRealVal( sprite.m_y + -sprite.m_yCentre * (sprite.m_ySize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.m_y + -sprite.m_yCentre * (sprite.m_ySize * sprite.m_scale));
         }
         else {
-            vm.Reg ().setRealVal( 0f);
+            vm.getReg().setRealVal( 0f);
         }
     }}
     public final class WrapSprBottom implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
             GLSprite sprite = Sprite (TextBasicLib.boundSprite);
-            vm.Reg ().setRealVal( sprite.m_y + (1 - sprite.m_yCentre) * (sprite.m_ySize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.m_y + (1 - sprite.m_yCentre) * (sprite.m_ySize * sprite.m_scale));
         }
         else {
-            vm.Reg ().setRealVal( 0f);
+            vm.getReg().setRealVal( 0f);
         }
     }}
     public final class WrapSprXVel implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( IsSprite (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( IsSprite (TextBasicLib.boundSprite) ?
                 Sprite (TextBasicLib.boundSprite).m_xd : 0);
     }}
     public final class WrapSprYVel implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( IsSprite (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( IsSprite (TextBasicLib.boundSprite) ?
                 Sprite (TextBasicLib.boundSprite).m_yd : 0);
     }}
     public final class WrapSprVel implements Function { public void run(TomVM vm) {
@@ -1327,101 +1323,101 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
             result [0] = Sprite (TextBasicLib.boundSprite).m_xd;
             result [1] = Sprite (TextBasicLib.boundSprite).m_yd;
         }
-        vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 2, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
     }}
     public final class WrapSprSpin implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal(IsSprite(TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal(IsSprite(TextBasicLib.boundSprite) ?
                 Sprite(TextBasicLib.boundSprite).m_angled : 0);
     }}
     public final class WrapSprAnimSpeed implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( IsSprite (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( IsSprite (TextBasicLib.boundSprite) ?
                 Sprite (TextBasicLib.boundSprite).m_angled : 0);
     }}
 
     public final class WrapSprAnimLoop implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( IsSprite (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( IsSprite (TextBasicLib.boundSprite) ?
                 (Sprite (TextBasicLib.boundSprite).m_animLoop ? -1f : 0) : 0);
     }}
     public final class WrapSprAnimDone implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( IsSprite (TextBasicLib.boundSprite) ?
+        vm.getReg().setRealVal( IsSprite (TextBasicLib.boundSprite) ?
                 (Sprite (TextBasicLib.boundSprite).AnimDone () ? -1f : 0) : 0);
     }}
     public final class WrapSprFrame_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( IsSprite (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( IsSprite (index) ?
                 Sprite (index).Frame () : 0);
     }}
     public final class WrapSprX_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored(index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored(index) ?
                 TextBasicLib.sprites.Value (index).m_x : 0);
     }}
     public final class WrapSprY_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
                 TextBasicLib.sprites.Value (index).m_y : 0);
     }}
     public final class WrapSprPos_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         Float[] result = {0f, 0f};
         if (TextBasicLib.sprites.IndexStored (index)) {
             result [0] = TextBasicLib.sprites.Value (index).m_x;
             result [1] = TextBasicLib.sprites.Value (index).m_y;
         }
-        vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 2, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
     }}
     public final class WrapSprZOrder_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal(TextBasicLib.sprites.IndexStored(index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored(index) ?
                 TextBasicLib.sprites.Value(index).ZOrder() : 0);
     }}
     public final class WrapSprXSize_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
                 TextBasicLib.sprites.Value (index).m_xSize : 0);
     }}
     public final class WrapSprYSize_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
                 TextBasicLib.sprites.Value (index).m_ySize : 0);
     }}
     public final class WrapSprScale_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal(  TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal(  TextBasicLib.sprites.IndexStored (index) ?
                 TextBasicLib.sprites.Value (index).m_scale : 0);
     }}
     public final class WrapSprXCentre_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
                 TextBasicLib.sprites.Value (index).m_xCentre : 0);
     }}
     public final class WrapSprYCentre_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
                 TextBasicLib.sprites.Value (index).m_yCentre : 0);
     }}
     public final class WrapSprXFlip_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
                 (TextBasicLib.sprites.Value (index).m_xFlip ? -1f : 0) : 0);
     }}
     public final class WrapSprYFlip_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
                 (TextBasicLib.sprites.Value (index).m_yFlip ? -1f : 0) : 0);
     }}
     public final class WrapSprVisible_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
                 (TextBasicLib.sprites.Value (index).m_visible ? -1f : 0) : 0);
     }}
     public final class WrapSprAngle_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
                 TextBasicLib.sprites.Value (index).m_angle : 0);
     }}
     public final class WrapSprColour_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         Float[] result = {0f, 0f, 0f, 0f};
         if (TextBasicLib.sprites.IndexStored (index)) {
             for ( int i = 0; i < 4; i ++) {
@@ -1429,110 +1425,110 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
             }
         }
 
-        vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 4, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 4, Arrays.asList(result)));
     }}
     public final class WrapSprAlpha_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal(TextBasicLib.sprites.IndexStored(index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored(index) ?
                 TextBasicLib.sprites.Value(index).m_colour[3] : 0);
     }}
     public final class WrapSprParallax_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
                 (TextBasicLib.sprites.Value (index).m_parallax ? -1f : 0) : 0);
     }}
     public final class WrapSprSolid_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
                 (TextBasicLib.sprites.Value (index).m_solid ? -1f : 0) : 0);
     }}
     public final class WrapSprLeft_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         if (IsSprite (index)) {
             GLSprite sprite = Sprite (index);
-            vm.Reg ().setRealVal( sprite.m_x + -sprite.m_xCentre * (sprite.m_xSize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.m_x + -sprite.m_xCentre * (sprite.m_xSize * sprite.m_scale));
         }
         else {
-            vm.Reg ().setRealVal( 0f);
+            vm.getReg().setRealVal( 0f);
         }
     }}
     public final class WrapSprRight_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         if (IsSprite (index)) {
             GLSprite sprite = Sprite (index);
-            vm.Reg ().setRealVal( sprite.m_x + (1 - sprite.m_xCentre) * (sprite.m_xSize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.m_x + (1 - sprite.m_xCentre) * (sprite.m_xSize * sprite.m_scale));
         }
         else {
-            vm.Reg ().setRealVal( 0f);
+            vm.getReg().setRealVal( 0f);
         }
     }}
     public final class WrapSprTop_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         if (IsSprite (index)) {
             GLSprite sprite = Sprite (index);
-            vm.Reg ().setRealVal( sprite.m_y + -sprite.m_yCentre * (sprite.m_ySize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.m_y + -sprite.m_yCentre * (sprite.m_ySize * sprite.m_scale));
         }
         else {
-            vm.Reg ().setRealVal( 0f);
+            vm.getReg().setRealVal( 0f);
         }
     }}
     public final class WrapSprBottom_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         if (IsSprite (index)) {
             GLSprite sprite = Sprite (index);
-            vm.Reg ().setRealVal( sprite.m_y + (1 - sprite.m_yCentre) * (sprite.m_ySize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.m_y + (1 - sprite.m_yCentre) * (sprite.m_ySize * sprite.m_scale));
         }
         else {
-            vm.Reg ().setRealVal( 0f);
+            vm.getReg().setRealVal( 0f);
         }
     }}
     public final class WrapSprXVel_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal(  IsSprite (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal(  IsSprite (index) ?
                 Sprite (index).m_xd : 0);
     }}
     public final class WrapSprYVel_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( IsSprite (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( IsSprite (index) ?
                 Sprite (index).m_yd : 0);
     }}
     public final class WrapSprVel_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         Float[] result = {0f, 0f};
         if (IsSprite (index)) {
             result [0] = Sprite (index).m_xd;
             result [1] = Sprite (index).m_yd;
         }
-        vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 2, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
     }}
     public final class WrapSprSpin_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal(IsSprite(index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal(IsSprite(index) ?
                 Sprite(index).m_angled : 0);
     }}
     public final class WrapSprAnimSpeed_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( IsSprite (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( IsSprite (index) ?
                 Sprite (index).m_angled : 0);
     }}
     public final class WrapSprAnimLoop_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( IsSprite (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( IsSprite (index) ?
                 (Sprite (index).m_animLoop ? -1f : 0) : 0);
     }}
     public final class WrapSprAnimDone_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setRealVal( IsSprite (index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setRealVal( IsSprite (index) ?
                 (Sprite (index).AnimDone () ? -1f : 0) : 0);
     }}
     public final class WrapSprSetXVel implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
-            Sprite (TextBasicLib.boundSprite).m_xd = vm.GetRealParam (1);
+            Sprite (TextBasicLib.boundSprite).m_xd = vm.getRealParam(1);
         }
     }}
     public final class WrapSprSetYVel implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
-            Sprite (TextBasicLib.boundSprite).m_yd = vm.GetRealParam (1);
+            Sprite (TextBasicLib.boundSprite).m_yd = vm.getRealParam(1);
         }
     }}
     public final class WrapSprSetVel implements Function { public void run(TomVM vm) {
@@ -1545,24 +1541,24 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprSetVel_2 implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
-            Sprite (TextBasicLib.boundSprite).m_xd = vm.GetRealParam (2);
-            Sprite (TextBasicLib.boundSprite).m_yd = vm.GetRealParam (1);
+            Sprite (TextBasicLib.boundSprite).m_xd = vm.getRealParam(2);
+            Sprite (TextBasicLib.boundSprite).m_yd = vm.getRealParam(1);
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprSetSpin implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
-            Sprite (TextBasicLib.boundSprite).m_angled = vm.GetRealParam (1);
+            Sprite (TextBasicLib.boundSprite).m_angled = vm.getRealParam(1);
         }
     }}
     public final class WrapSprSetAnimSpeed implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
-            Sprite (TextBasicLib.boundSprite).m_framed = vm.GetRealParam (1);
+            Sprite (TextBasicLib.boundSprite).m_framed = vm.getRealParam(1);
         }
     }}
     public final class WrapSprSetAnimLoop implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
-            Sprite (TextBasicLib.boundSprite).m_animLoop = vm.GetIntParam (1) != 0;
+            Sprite (TextBasicLib.boundSprite).m_animLoop = vm.getIntParam(1) != 0;
         }
     }}
     public final class WrapAnimateSprites implements Function { public void run(TomVM vm) {
@@ -1579,7 +1575,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         // Copies sprite "source" to sprite "dest"
         // Sprites must be the same type. I.e. you can't copy a standard sprite
         // to a tile map or vice versa.
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         if (    IsBasicSprite (TextBasicLib.boundSprite) && IsBasicSprite (index)
                 &&  BasicSprite(TextBasicLib.boundSprite).Type () == BasicSprite (index).Type ()) {
             if (IsSprite(TextBasicLib.boundSprite)) {
@@ -1591,30 +1587,30 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         }
     }}
     public final class WrapSprType implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal(   IsBasicSprite (TextBasicLib.boundSprite) ?
+        vm.getReg().setIntVal(   IsBasicSprite (TextBasicLib.boundSprite) ?
                 BasicSprite (TextBasicLib.boundSprite).Type ().getType() : GLSpriteType.SPR_INVALID.getType());
     }}
     public final class WrapSprXTiles implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal(   IsTileMap(boundSprite) ?
+        vm.getReg().setIntVal(   IsTileMap(boundSprite) ?
                 TileMap(TextBasicLib.boundSprite).XTiles() : 0);
     }}
     public final class WrapSprYTiles implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal(   IsTileMap (boundSprite ) ?
+        vm.getReg().setIntVal(   IsTileMap (boundSprite ) ?
                 TileMap (TextBasicLib.boundSprite).YTiles() : 0);
     }}
     public final class WrapSprType_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setIntVal(   IsBasicSprite(index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setIntVal(   IsBasicSprite(index) ?
                 BasicSprite(index).Type().getType() : GLSpriteType.SPR_INVALID.getType());
     }}
     public final class WrapSprXTiles_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
-        vm.Reg ().setIntVal(   IsTileMap(index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setIntVal(   IsTileMap(index) ?
                 TileMap(index).XTiles() : 0);
     }}
     public final class WrapSprYTiles_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam(1);
-        vm.Reg ().setIntVal(IsTileMap(index) ?
+        int index = vm.getIntParam(1);
+        vm.getReg().setIntVal(IsTileMap(index) ?
                 TileMap(index).YTiles() : 0);
     }
     }
@@ -1634,61 +1630,61 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprSetXRepeat implements Function { public void run(TomVM vm) {
         if (IsTileMap (TextBasicLib.boundSprite)) {
-            TileMap (TextBasicLib.boundSprite).m_xRepeat = vm.GetIntParam (1) != 0;
+            TileMap (TextBasicLib.boundSprite).m_xRepeat = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprSetYRepeat implements Function { public void run(TomVM vm) {
         if (IsTileMap (TextBasicLib.boundSprite)) {
-            TileMap (TextBasicLib.boundSprite).m_yRepeat = vm.GetIntParam (1) != 0;
+            TileMap (TextBasicLib.boundSprite).m_yRepeat = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprXRepeat implements Function { public void run(TomVM vm) {
         if (IsTileMap (TextBasicLib.boundSprite)) {
-            vm.Reg ().setIntVal( TileMap (TextBasicLib.boundSprite).m_xRepeat ? -1 : 0);
+            vm.getReg().setIntVal( TileMap (TextBasicLib.boundSprite).m_xRepeat ? -1 : 0);
         } else {
-            vm.Reg ().setIntVal( 0);
+            vm.getReg().setIntVal( 0);
         }
     }}
     public final class WrapSprYRepeat implements Function { public void run(TomVM vm) {
         if (IsTileMap (TextBasicLib.boundSprite)) {
-            vm.Reg ().setIntVal( TileMap (TextBasicLib.boundSprite).m_yRepeat ? -1 : 0);
+            vm.getReg().setIntVal( TileMap (TextBasicLib.boundSprite).m_yRepeat ? -1 : 0);
         } else {
-            vm.Reg ().setIntVal( 0);
+            vm.getReg().setIntVal( 0);
         }
     }}
     public final class WrapSprXRepeat_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         if (IsTileMap (index)) {
-            vm.Reg ().setIntVal( TileMap (index).m_xRepeat ? -1 : 0);
+            vm.getReg().setIntVal( TileMap (index).m_xRepeat ? -1 : 0);
         } else {
-            vm.Reg ().setIntVal( 0);
+            vm.getReg().setIntVal( 0);
         }
     }}
     public final class WrapSprYRepeat_2 implements Function { public void run(TomVM vm) {
-        int index = vm.GetIntParam (1);
+        int index = vm.getIntParam(1);
         if (IsTileMap (index)) {
-            vm.Reg ().setIntVal( TileMap (index).m_yRepeat ? -1 : 0);
+            vm.getReg().setIntVal( TileMap (index).m_yRepeat ? -1 : 0);
         } else {
-            vm.Reg ().setIntVal( 0);
+            vm.getReg().setIntVal( 0);
         }
     }}
     public final class WrapSprCameraSetX implements Function { public void run(TomVM vm) {
-        ((GLSpriteEngine) appText).m_camX = vm.GetRealParam (1);
+        ((GLSpriteEngine) appText).m_camX = vm.getRealParam(1);
         TextBasicLib.Redraw ();
     }}
     public final class WrapSprCameraSetY implements Function { public void run(TomVM vm) {
-        ((GLSpriteEngine) appText).m_camY = vm.GetRealParam (1);
+        ((GLSpriteEngine) appText).m_camY = vm.getRealParam(1);
         TextBasicLib.Redraw ();
     }}
     public final class WrapSprCameraSetZ implements Function { public void run(TomVM vm) {
-        ((GLSpriteEngine) appText).m_camZ = vm.GetRealParam (1);
+        ((GLSpriteEngine) appText).m_camZ = vm.getRealParam(1);
         TextBasicLib.Redraw ();
     }}
     public final class WrapSprCameraSetPos implements Function { public void run(TomVM vm) {
-        ((GLSpriteEngine) TextBasicLib.appText).m_camX = vm.GetRealParam (2);
-        ((GLSpriteEngine) TextBasicLib.appText).m_camY = vm.GetRealParam (1);
+        ((GLSpriteEngine) TextBasicLib.appText).m_camX = vm.getRealParam(2);
+        ((GLSpriteEngine) TextBasicLib.appText).m_camY = vm.getRealParam(1);
         TextBasicLib.Redraw ();
     }}
     public final class WrapSprCameraSetPos_2 implements Function { public void run(TomVM vm) {
@@ -1698,32 +1694,32 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         TextBasicLib.Redraw ();
     }}
     public final class WrapSprCameraSetAngle implements Function { public void run(TomVM vm) {
-        ((GLSpriteEngine) TextBasicLib.appText).m_camAngle = vm.GetRealParam (1);
+        ((GLSpriteEngine) TextBasicLib.appText).m_camAngle = vm.getRealParam(1);
         TextBasicLib.Redraw ();
     }}
     public final class WrapSprCameraX implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal(((GLSpriteEngine) TextBasicLib.appText).m_camX);
+        vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).m_camX);
     }}
     public final class WrapSprCameraY implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( ((GLSpriteEngine) TextBasicLib.appText).m_camY);
+        vm.getReg().setRealVal( ((GLSpriteEngine) TextBasicLib.appText).m_camY);
     }}
     public final class WrapSprCameraZ implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( ((GLSpriteEngine) TextBasicLib.appText).m_camZ);
+        vm.getReg().setRealVal( ((GLSpriteEngine) TextBasicLib.appText).m_camZ);
     }}
     public final class WrapSprCameraPos implements Function { public void run(TomVM vm) {
         Float[] result = {0f, 0f};
         result [0] = ((GLSpriteEngine) TextBasicLib.appText).m_camX;
         result [1] = ((GLSpriteEngine) TextBasicLib.appText).m_camY;
-        vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 2, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
     }}
     public final class WrapSprCameraAngle implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal(((GLSpriteEngine) TextBasicLib.appText).m_camAngle);
+        vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).m_camAngle);
     }}
     public final class WrapSprCameraFOV implements Function { public void run(TomVM vm) {
-        vm.Reg ().setRealVal( ((GLSpriteEngine) TextBasicLib.appText).FOV ());
+        vm.getReg().setRealVal( ((GLSpriteEngine) TextBasicLib.appText).FOV ());
     }}
     public final class WrapSprCameraSetFOV implements Function { public void run(TomVM vm) {
-        ((GLSpriteEngine) TextBasicLib.appText).SetFOV (vm.GetRealParam (1));
+        ((GLSpriteEngine) TextBasicLib.appText).SetFOV (vm.getRealParam(1));
         TextBasicLib.Redraw();
     }}
     public final class WrapClearLine implements Function { public void run(TomVM vm) {
@@ -1731,20 +1727,20 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         TextBasicLib.Redraw ();
     }}
     public final class WrapClearRegion implements Function { public void run(TomVM vm) {
-        TextBasicLib.appText.ClearRegion(vm.GetIntParam(4), vm.GetIntParam(3), vm.GetIntParam(2), vm.GetIntParam(1));
+        TextBasicLib.appText.ClearRegion(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         TextBasicLib.Redraw ();
     }}
 
     public final class WrapTextScroll implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal(TextBasicLib.appText.Scroll() ? 1 : 0);
+        vm.getReg().setIntVal(TextBasicLib.appText.Scroll() ? 1 : 0);
     }}
 
     public final class WrapSetTextScroll implements Function { public void run(TomVM vm) {
-        TextBasicLib.appText.setScroll(vm.GetIntParam(1) == 1);
+        TextBasicLib.appText.setScroll(vm.getIntParam(1) == 1);
     }}
 
     public final class WrapClearSprites implements Function { public void run(TomVM vm) {
-        TextBasicLib.sprites.Clear();
+        TextBasicLib.sprites.clear();
         TextBasicLib.spriteCount = 0;
         TextBasicLib.Redraw();
     }}
@@ -1752,8 +1748,8 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     public final class WrapSprSetBlendFunc implements Function { public void run(TomVM vm) {
         if (TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite)) {
             GLBasicSprite sprite = TextBasicLib.sprites.Value(TextBasicLib.boundSprite);
-            sprite.m_srcBlend = vm.GetIntParam(2);
-            sprite.m_dstBlend = vm.GetIntParam(1);
+            sprite.m_srcBlend = vm.getIntParam(2);
+            sprite.m_dstBlend = vm.getIntParam(1);
         }
     }}
 
@@ -1761,7 +1757,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
 //DLLFUNC
 public final class WrapSpriteCount implements Function {
     public void run(TomVM vm) {
-        vm.Reg().setIntVal( TextBasicLib.spriteCount);
+        vm.getReg().setIntVal( TextBasicLib.spriteCount);
     }
 }
 

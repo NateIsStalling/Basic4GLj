@@ -36,7 +36,7 @@ public class Structure implements Streamable{
 
 	// Streaming
 	@Override
-	public void StreamOut(DataOutputStream stream) throws IOException{
+	public void streamOut(DataOutputStream stream) throws IOException{
 		Streaming.WriteString(stream, m_name);
 
 		Streaming.WriteLong(stream, m_firstField);
@@ -47,7 +47,7 @@ public class Structure implements Streamable{
 	}
 
 	@Override
-	public boolean StreamIn(DataInputStream stream) throws IOException{
+	public boolean streamIn(DataInputStream stream) throws IOException{
 		m_name = Streaming.ReadString(stream);
 
 		m_firstField = (int)Streaming.ReadLong(stream);

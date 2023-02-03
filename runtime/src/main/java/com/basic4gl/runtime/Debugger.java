@@ -65,16 +65,19 @@ public class Debugger extends IVMDebugger {
             return true;
         }
     }
+
     public boolean IsUserBreakPt(String filename, int lineNo)
     {
         return FindBreakPt(filename, lineNo) != null;
     }
 
-    /// Adjust debugging information in response to an insertion/deletion of
-    /// one or more lines.
-    /// If delta is positive, |delta| lines will be inserted.
-    /// If delta is negative, |delta| lines will be deleted.
-    /// Breakpoints will be moved (or deleted) appropriately.
+    /**
+     * Adjust debugging information in response to an insertion/deletion of
+     * one or more lines.
+     * If delta is positive, |delta| lines will be inserted.
+     * If delta is negative, |delta| lines will be deleted.
+     * Breakpoints will be moved (or deleted) appropriately.
+     */
     public void InsertDeleteLines(String filename, int fileLineNo, int delta)
     {
 
@@ -106,15 +109,15 @@ public class Debugger extends IVMDebugger {
     }
 
     // IVMDebugger methods
-    public int UserBreakPtCount(){
+    public int getUserBreakPointCount(){
         return mUserBreakPts.size();
     }
-    public int UserBreakPtLine(int index){
+    public int getUserBreakPointLine(int index){
         assertTrue(index >= 0);
-        assertTrue(index < UserBreakPtCount());
+        assertTrue(index < getUserBreakPointCount());
 
         // Find breakpoint and convert to main line number
-        return mMapping.MainFromSource(
+        return mMapping.getMainFromSource(
             mUserBreakPts.get(index).sourceFile,
             mUserBreakPts.get(index).lineNo);
     }

@@ -7,6 +7,7 @@ import com.basic4gl.compiler.util.BinOperExt;
 import com.basic4gl.compiler.util.UnOperExt;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;
@@ -38,21 +39,21 @@ public class TrigBasicLib implements FunctionLibrary {
     public void init(TomVM vm) {
         //////////////////////////////////
         // Register overloaded operators
-        scaleVec            = vm.AddOperatorFunction (new OpScaleVec());
-        scaleVec2           = vm.AddOperatorFunction (new OpScaleVec2());
-        scaleMatrix         = vm.AddOperatorFunction (new OpScaleMatrix());
-        scaleMatrix2        = vm.AddOperatorFunction (new OpScaleMatrix2());
-        divVec              = vm.AddOperatorFunction (new OpDivVec());
-        divMatrix           = vm.AddOperatorFunction (new OpDivMatrix());
-        matrixVec           = vm.AddOperatorFunction (new OpMatrixVec());
-        matrixMatrix        = vm.AddOperatorFunction (new OpMatrixMatrix());
-        vecVec              = vm.AddOperatorFunction (new OpVecVec());
-        vecPlusVec          = vm.AddOperatorFunction (new OpVecPlusVec());
-        vecMinusVec         = vm.AddOperatorFunction (new OpVecMinusVec());
-        matrixPlusMatrix    = vm.AddOperatorFunction (new OpMatrixPlusMatrix());
-        matrixMinusMatrix   = vm.AddOperatorFunction (new OpMatrixMinusMatrix());
-        negVec              = vm.AddOperatorFunction (new OpNegVec());
-        negMatrix           = vm.AddOperatorFunction (new OpNegMatrix());
+        scaleVec            = vm.addOperatorFunction(new OpScaleVec());
+        scaleVec2           = vm.addOperatorFunction(new OpScaleVec2());
+        scaleMatrix         = vm.addOperatorFunction(new OpScaleMatrix());
+        scaleMatrix2        = vm.addOperatorFunction(new OpScaleMatrix2());
+        divVec              = vm.addOperatorFunction(new OpDivVec());
+        divMatrix           = vm.addOperatorFunction(new OpDivMatrix());
+        matrixVec           = vm.addOperatorFunction(new OpMatrixVec());
+        matrixMatrix        = vm.addOperatorFunction(new OpMatrixMatrix());
+        vecVec              = vm.addOperatorFunction(new OpVecVec());
+        vecPlusVec          = vm.addOperatorFunction(new OpVecPlusVec());
+        vecMinusVec         = vm.addOperatorFunction(new OpVecMinusVec());
+        matrixPlusMatrix    = vm.addOperatorFunction(new OpMatrixPlusMatrix());
+        matrixMinusMatrix   = vm.addOperatorFunction(new OpMatrixMinusMatrix());
+        negVec              = vm.addOperatorFunction(new OpNegVec());
+        negMatrix           = vm.addOperatorFunction(new OpNegMatrix());
 
     }
     @Override
@@ -61,21 +62,21 @@ public class TrigBasicLib implements FunctionLibrary {
         comp.AddUnOperExt   (new TrigUnOperatorExtension());
         comp.AddBinOperExt  (new TrigBinOperatorExtension());
 
-        scaleVec            = comp.VM().AddOperatorFunction (new OpScaleVec());
-        scaleVec2           = comp.VM().AddOperatorFunction (new OpScaleVec2());
-        scaleMatrix         = comp.VM().AddOperatorFunction (new OpScaleMatrix());
-        scaleMatrix2        = comp.VM().AddOperatorFunction (new OpScaleMatrix2());
-        divVec              = comp.VM().AddOperatorFunction (new OpDivVec());
-        divMatrix           = comp.VM().AddOperatorFunction (new OpDivMatrix());
-        matrixVec           = comp.VM().AddOperatorFunction (new OpMatrixVec());
-        matrixMatrix        = comp.VM().AddOperatorFunction (new OpMatrixMatrix());
-        vecVec              = comp.VM().AddOperatorFunction (new OpVecVec());
-        vecPlusVec          = comp.VM().AddOperatorFunction (new OpVecPlusVec());
-        vecMinusVec         = comp.VM().AddOperatorFunction (new OpVecMinusVec());
-        matrixPlusMatrix    = comp.VM().AddOperatorFunction (new OpMatrixPlusMatrix());
-        matrixMinusMatrix   = comp.VM().AddOperatorFunction (new OpMatrixMinusMatrix());
-        negVec              = comp.VM().AddOperatorFunction (new OpNegVec());
-        negMatrix           = comp.VM().AddOperatorFunction (new OpNegMatrix());
+        scaleVec            = comp.VM().addOperatorFunction(new OpScaleVec());
+        scaleVec2           = comp.VM().addOperatorFunction(new OpScaleVec2());
+        scaleMatrix         = comp.VM().addOperatorFunction(new OpScaleMatrix());
+        scaleMatrix2        = comp.VM().addOperatorFunction(new OpScaleMatrix2());
+        divVec              = comp.VM().addOperatorFunction(new OpDivVec());
+        divMatrix           = comp.VM().addOperatorFunction(new OpDivMatrix());
+        matrixVec           = comp.VM().addOperatorFunction(new OpMatrixVec());
+        matrixMatrix        = comp.VM().addOperatorFunction(new OpMatrixMatrix());
+        vecVec              = comp.VM().addOperatorFunction(new OpVecVec());
+        vecPlusVec          = comp.VM().addOperatorFunction(new OpVecPlusVec());
+        vecMinusVec         = comp.VM().addOperatorFunction(new OpVecMinusVec());
+        matrixPlusMatrix    = comp.VM().addOperatorFunction(new OpMatrixPlusMatrix());
+        matrixMinusMatrix   = comp.VM().addOperatorFunction(new OpMatrixMinusMatrix());
+        negVec              = comp.VM().addOperatorFunction(new OpNegVec());
+        negMatrix           = comp.VM().addOperatorFunction(new OpNegMatrix());
     }
 
     @Override
@@ -91,27 +92,27 @@ public class TrigBasicLib implements FunctionLibrary {
     @Override
     public Map<String, FuncSpec[]> specs() {
         Map<String, FuncSpec[]> s = new HashMap<String, FuncSpec[]>();
-        s.put ("Vec4", new FuncSpec[]{ new FuncSpec(WrapVec4.class, new ParamTypeList( ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL), true, true, new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put ("Vec3", new FuncSpec[]{ new FuncSpec(WrapVec3.class, new ParamTypeList ( ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL), true, true, new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put ("Vec2", new FuncSpec[]{ new FuncSpec(WrapVec2.class, new ParamTypeList ( ValType.VTP_REAL, ValType.VTP_REAL), true, true, new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put ("MatrixZero", new FuncSpec[]{ new FuncSpec(WrapMatrixZero.class, new ParamTypeList (), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixIdentity", new FuncSpec[]{ new FuncSpec(WrapMatrixIdentity.class, new ParamTypeList (), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixScale", new FuncSpec[]{ new FuncSpec(WrapMatrixScale.class, new ParamTypeList ( ValType.VTP_REAL), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixScale", new FuncSpec[]{ new FuncSpec(WrapMatrixScale_2.class, new ParamTypeList ( ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixTranslate", new FuncSpec[]{ new FuncSpec(WrapMatrixTranslate.class, new ParamTypeList ( ValType.VTP_REAL, ValType.VTP_REAL, ValType.VTP_REAL), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixRotateX", new FuncSpec[]{ new FuncSpec(WrapMatrixRotateX.class, new ParamTypeList ( ValType.VTP_REAL), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixRotateY", new FuncSpec[]{ new FuncSpec(WrapMatrixRotateY.class, new ParamTypeList ( ValType.VTP_REAL), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixRotateZ", new FuncSpec[]{ new FuncSpec(WrapMatrixRotateZ.class, new ParamTypeList ( ValType.VTP_REAL), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixRotate", new FuncSpec[]{ new FuncSpec(WrapMatrixRotate.class, new ParamTypeList ( new ValType(ValType.VTP_REAL), new ValType(ValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixBasis", new FuncSpec[]{ new FuncSpec(WrapMatrixBasis.class, new ParamTypeList ( new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true), new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true), new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixCrossProduct", new FuncSpec[]{ new FuncSpec(WrapMatrixCrossProduct.class, new ParamTypeList ( new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("CrossProduct", new FuncSpec[]{ new FuncSpec(WrapCross.class, new ParamTypeList ( new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true), new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put ("Length", new FuncSpec[]{ new FuncSpec(WrapLength.class, new ParamTypeList ( new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, ValType.VTP_REAL, false, false, null)});
-        s.put ("Normalize", new FuncSpec[]{ new FuncSpec(WrapNormalize.class, new ParamTypeList ( new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType (ValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put ("Determinant", new FuncSpec[]{ new FuncSpec(WrapDeterminant.class, new ParamTypeList ( new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, ValType.VTP_REAL, false, false, null)});
-        s.put ("Transpose", new FuncSpec[]{ new FuncSpec(WrapTranspose.class, new ParamTypeList ( new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("RTInvert", new FuncSpec[]{ new FuncSpec(WrapRTInvert.class, new ParamTypeList ( new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("Orthonormalize", new FuncSpec[]{ new FuncSpec(WrapOrthonormalize.class, new ParamTypeList ( new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType (ValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("Vec4", new FuncSpec[]{ new FuncSpec(WrapVec4.class, new ParamTypeList( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put ("Vec3", new FuncSpec[]{ new FuncSpec(WrapVec3.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put ("Vec2", new FuncSpec[]{ new FuncSpec(WrapVec2.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put ("MatrixZero", new FuncSpec[]{ new FuncSpec(WrapMatrixZero.class, new ParamTypeList (), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixIdentity", new FuncSpec[]{ new FuncSpec(WrapMatrixIdentity.class, new ParamTypeList (), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixScale", new FuncSpec[]{ new FuncSpec(WrapMatrixScale.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixScale", new FuncSpec[]{ new FuncSpec(WrapMatrixScale_2.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixTranslate", new FuncSpec[]{ new FuncSpec(WrapMatrixTranslate.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixRotateX", new FuncSpec[]{ new FuncSpec(WrapMatrixRotateX.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixRotateY", new FuncSpec[]{ new FuncSpec(WrapMatrixRotateY.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixRotateZ", new FuncSpec[]{ new FuncSpec(WrapMatrixRotateZ.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixRotate", new FuncSpec[]{ new FuncSpec(WrapMatrixRotate.class, new ParamTypeList ( new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixBasis", new FuncSpec[]{ new FuncSpec(WrapMatrixBasis.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixCrossProduct", new FuncSpec[]{ new FuncSpec(WrapMatrixCrossProduct.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("CrossProduct", new FuncSpec[]{ new FuncSpec(WrapCross.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put ("Length", new FuncSpec[]{ new FuncSpec(WrapLength.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, BasicValType.VTP_REAL, false, false, null)});
+        s.put ("Normalize", new FuncSpec[]{ new FuncSpec(WrapNormalize.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put ("Determinant", new FuncSpec[]{ new FuncSpec(WrapDeterminant.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, BasicValType.VTP_REAL, false, false, null)});
+        s.put ("Transpose", new FuncSpec[]{ new FuncSpec(WrapTranspose.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("RTInvert", new FuncSpec[]{ new FuncSpec(WrapRTInvert.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("Orthonormalize", new FuncSpec[]{ new FuncSpec(WrapOrthonormalize.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
         return s;
     }
 
@@ -463,7 +464,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     static void ReturnMatrix (TomVM vm) {
-        vm.Reg ().setIntVal (Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, matrix));
+        vm.getReg().setIntVal (Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, matrix));
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -475,16 +476,16 @@ public class TrigBasicLib implements FunctionLibrary {
         // Read a 3D vector.
         // This can be a 2, 3 or 4 element vector, but will always be returned as a 4
         // element vector. (z = 0 & w = 1 if not specified.)
-        int size = Data.ArrayDimensionSize(vm.Data(), index, 0);
+        int size = Data.ArrayDimensionSize(vm.getData(), index, 0);
         if (size < 2 || size > 4) {
-            vm.FunctionError ("Vector must be 2, 3 or 4 element vector");
+            vm.functionError("Vector must be 2, 3 or 4 element vector");
             return -1;                  // -1 = error
         }
 
         // Read in vector and convert to 4 element format
         v [2] = 0;
         v [3] = 1;
-        Data.ReadArray(vm.Data(), index, new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), v, size);
+        Data.ReadArray(vm.getData(), index, new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), v, size);
 
         // Return original size
         return size;
@@ -495,14 +496,14 @@ public class TrigBasicLib implements FunctionLibrary {
 
         // Read 3D matrix.
         // Matrix must be 4x4
-        if (Data.ArrayDimensionSize(vm.Data(), index, 0) != 4
-                ||  Data.ArrayDimensionSize(vm.Data(), index, 1) != 4) {
-            vm.FunctionError ("Matrix must be a 4x4 matrix (e.g 'dim matrix#(3)(3)' )");
+        if (Data.ArrayDimensionSize(vm.getData(), index, 0) != 4
+                ||  Data.ArrayDimensionSize(vm.getData(), index, 1) != 4) {
+            vm.functionError("Matrix must be a 4x4 matrix (e.g 'dim matrix#(3)(3)' )");
             return false;
         }
 
         // Read in matrix
-        Data.ReadArray(vm.Data(), index, new ValType(ValType.VTP_REAL, (byte) 2, (byte) 1, true), m, 16);
+        Data.ReadArray(vm.getData(), index, new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), m, 16);
         return true;
     }
     ////////////////////////////////////////////////////////////////////////////////
@@ -510,20 +511,20 @@ public class TrigBasicLib implements FunctionLibrary {
 
     public final class WrapVec4 implements Function { public void run(TomVM vm){
 
-        float[] vec4 = new float[]{ vm.GetRealParam (4), vm.GetRealParam (3), vm.GetRealParam (2), vm.GetRealParam (1) };
-        vm.Reg ().setIntVal ( Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 4, vec4));
+        float[] vec4 = new float[]{ vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1) };
+        vm.getReg().setIntVal ( Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 4, vec4));
     }
     }
     public final class WrapVec3 implements Function { public void run(TomVM vm){
 
-        float[] vec3 = new float[]{ vm.GetRealParam (3), vm.GetRealParam (2), vm.GetRealParam (1) };
-        vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 3, vec3));
+        float[] vec3 = new float[]{ vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1) };
+        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 3, vec3));
     }
     }
     public final class WrapVec2 implements Function { public void run(TomVM vm){
 
-        float[] vec2 = new float[]{ vm.GetRealParam (2), vm.GetRealParam (1) };
-        vm.Reg ().setIntVal ( Data.FillTempRealArray(vm.Data(), vm.DataTypes(), 2, vec2));
+        float[] vec2 = new float[]{ vm.getRealParam(2), vm.getRealParam(1) };
+        vm.getReg().setIntVal ( Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, vec2));
     }
     }
     public final class WrapMatrixZero implements Function { public void run(TomVM vm){
@@ -540,37 +541,37 @@ public class TrigBasicLib implements FunctionLibrary {
     }
     public final class WrapMatrixScale implements Function { public void run(TomVM vm){
 
-        Scale(vm.GetRealParam(1));
+        Scale(vm.getRealParam(1));
         ReturnMatrix (vm);
     }
     }
     public final class WrapMatrixScale_2 implements Function { public void run(TomVM vm){
 
-        Scale(vm.GetRealParam(3), vm.GetRealParam(2), vm.GetRealParam(1));
+        Scale(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         ReturnMatrix (vm);
     }
     }
     public final class WrapMatrixTranslate implements Function { public void run(TomVM vm){
 
-        Translate(vm.GetRealParam(3), vm.GetRealParam(2), vm.GetRealParam(1));
+        Translate(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         ReturnMatrix (vm);
     }
     }
     public final class WrapMatrixRotateX implements Function { public void run(TomVM vm){
-        RotateX(vm.GetRealParam(1)); ReturnMatrix (vm); }
+        RotateX(vm.getRealParam(1)); ReturnMatrix (vm); }
     }
     public final class WrapMatrixRotateY implements Function { public void run(TomVM vm){
-        RotateY(vm.GetRealParam(1)); ReturnMatrix (vm); }
+        RotateY(vm.getRealParam(1)); ReturnMatrix (vm); }
     }
     public final class WrapMatrixRotateZ implements Function { public void run(TomVM vm){
-        RotateZ(vm.GetRealParam(1)); ReturnMatrix (vm); }
+        RotateZ(vm.getRealParam(1)); ReturnMatrix (vm); }
     }
     public final class WrapMatrixRotate implements Function { public void run(TomVM vm){
 
-        if (ReadVec (vm, vm.GetIntParam(1), v1) < 0) {
+        if (ReadVec (vm, vm.getIntParam(1), v1) < 0) {
             return;
         }
-        RotateAxis(vm.GetRealParam(2), v1);
+        RotateAxis(vm.getRealParam(2), v1);
         ReturnMatrix(vm);
     }
     }
@@ -578,15 +579,15 @@ public class TrigBasicLib implements FunctionLibrary {
 
         ClearMatrix ();
         matrix [15] = 1;
-        Data.ReadArray(vm.Data(), vm.GetIntParam(3), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), Arrays.copyOfRange(matrix, 0, 4), 4);
-        Data.ReadArray(vm.Data(), vm.GetIntParam(2), new ValType(ValType.VTP_REAL, (byte) 1, (byte) 1, true), Arrays.copyOfRange(matrix, 4, 8), 4);
-        Data.ReadArray (vm.Data (), vm.GetIntParam (1), new ValType(ValType.VTP_REAL, (byte)1, (byte)1, true), Arrays.copyOfRange(matrix, 8, 12), 4);
+        Data.ReadArray(vm.getData(), vm.getIntParam(3), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), Arrays.copyOfRange(matrix, 0, 4), 4);
+        Data.ReadArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), Arrays.copyOfRange(matrix, 4, 8), 4);
+        Data.ReadArray (vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte)1, (byte)1, true), Arrays.copyOfRange(matrix, 8, 12), 4);
         ReturnMatrix (vm);
     }
     }
     public final class WrapMatrixCrossProduct implements Function { public void run(TomVM vm){
 
-        if (ReadVec (vm, vm.GetIntParam (1), v1) < 0) {
+        if (ReadVec (vm, vm.getIntParam(1), v1) < 0) {
             return;
         }
         CrossProduct (v1);
@@ -597,8 +598,8 @@ public class TrigBasicLib implements FunctionLibrary {
 
 
 // Fetch vectors
-        int s1 = ReadVec (vm, vm.GetIntParam (2), v1),
-                s2 = ReadVec (vm, vm.GetIntParam (1), v2);
+        int s1 = ReadVec (vm, vm.getIntParam(2), v1),
+                s2 = ReadVec (vm, vm.getIntParam(1), v2);
         if (s1 < 0 || s2 < 0) {
             return;
         }
@@ -609,26 +610,26 @@ public class TrigBasicLib implements FunctionLibrary {
 
 // Return resulting vector
 // (Vector will be the same length as the first source vector)
-        vm.Reg ().setIntVal ( Data.FillTempRealArray(vm.Data(), vm.DataTypes(), Math.max(Math.max(s1, s2), 3), result));
+        vm.getReg().setIntVal ( Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(Math.max(s1, s2), 3), result));
     }
     }
     public final class WrapLength implements Function { public void run(TomVM vm){
 
 
 // Fetch vector
-        if (ReadVec (vm, vm.GetIntParam (1), v1) < 0) {
+        if (ReadVec (vm, vm.getIntParam(1), v1) < 0) {
             return;
         }
 
 // Calculate length
-        vm.Reg ().setRealVal(Length(v1));
+        vm.getReg().setRealVal(Length(v1));
     }
     }
     public final class WrapNormalize implements Function { public void run(TomVM vm){
 
 
 // Fetch vector
-        int size = ReadVec (vm, vm.GetIntParam (1), v1);
+        int size = ReadVec (vm, vm.getIntParam(1), v1);
         if (size < 0) {
             return;
         }
@@ -637,26 +638,26 @@ public class TrigBasicLib implements FunctionLibrary {
         Normalize (v1);
 
 // Return resulting vector
-        vm.Reg ().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), size, v1));
+        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
     }
     }
     public final class WrapDeterminant implements Function { public void run(TomVM vm){
 
 
 // Fetch matrix
-        if (!ReadMatrix (vm, vm.GetIntParam (1), m1)) {
+        if (!ReadMatrix (vm, vm.getIntParam(1), m1)) {
             return;
         }
 
 // Return result
-        vm.Reg ().setRealVal(Determinant(m1));
+        vm.getReg().setRealVal(Determinant(m1));
     }
     }
     public final class WrapTranspose implements Function { public void run(TomVM vm){
 
 
 // Fetch matrix
-        if (!ReadMatrix (vm, vm.GetIntParam (1), m1)) {
+        if (!ReadMatrix (vm, vm.getIntParam(1), m1)) {
             return;
         }
 
@@ -664,14 +665,14 @@ public class TrigBasicLib implements FunctionLibrary {
         Transpose (m1, m2);
 
 // Create new matrix and assign to register
-        vm.Reg ().setIntVal(Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, m2));
+        vm.getReg().setIntVal(Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m2));
     }
     }
     public final class WrapRTInvert implements Function { public void run(TomVM vm){
 
 
 // Fetch matrix
-        if (!ReadMatrix (vm, vm.GetIntParam (1), m1)) {
+        if (!ReadMatrix (vm, vm.getIntParam(1), m1)) {
             return;
         }
 
@@ -679,14 +680,14 @@ public class TrigBasicLib implements FunctionLibrary {
         RTInvert(m1, m2);
 
 // Create new matrix and assign to register
-        vm.Reg ().setIntVal (Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, m2));
+        vm.getReg().setIntVal (Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m2));
     }
     }
     public final class WrapOrthonormalize implements Function { public void run(TomVM vm){
 
 
 // Fetch matrix
-        if (!ReadMatrix (vm, vm.GetIntParam (1), m1)) {
+        if (!ReadMatrix (vm, vm.getIntParam(1), m1)) {
             return;
         }
 
@@ -694,7 +695,7 @@ public class TrigBasicLib implements FunctionLibrary {
         Orthonormalize(m1);
 
 // Create new matrix and assign to register
-        vm.Reg ().setIntVal (Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, m1));
+        vm.getReg().setIntVal (Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m1));
     }
     }
 
@@ -712,20 +713,20 @@ public class TrigBasicLib implements FunctionLibrary {
         Scale(v1, scale);
 
         // Return as temp vector (using original size)
-        vm.Reg ().setIntVal ( Data.FillTempRealArray(vm.Data(), vm.DataTypes(), size, v1));
+        vm.getReg().setIntVal ( Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
     }
     public final class OpScaleVec implements Function {
         public void run(TomVM vm) {
-            DoScaleVec(vm, vm.Reg().getRealVal(), vm.Reg2().getIntVal());
+            DoScaleVec(vm, vm.getReg().getRealVal(), vm.getReg2().getIntVal());
         }
     }
     public final class OpScaleVec2 implements Function {
         public void run(TomVM vm) {
-        DoScaleVec (vm, vm.Reg2().getRealVal(), vm.Reg().getIntVal ());
+        DoScaleVec (vm, vm.getReg2().getRealVal(), vm.getReg().getIntVal ());
     }}
     public final class OpDivVec implements Function {
         public void run(TomVM vm) {
-        DoScaleVec (vm, (float) (1.0 / vm.Reg ().getRealVal()), vm.Reg2().getIntVal ());
+        DoScaleVec (vm, (float) (1.0 / vm.getReg().getRealVal()), vm.getReg2().getIntVal ());
     }}
     void DoScaleMatrix (TomVM vm, float scale, int matrixIndex) {
 
@@ -738,28 +739,28 @@ public class TrigBasicLib implements FunctionLibrary {
         ScaleMatrix (m1, scale);
 
         // Create new matrix and assign to register
-        vm.Reg ().setIntVal ( Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, m1));
+        vm.getReg().setIntVal ( Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m1));
     }
     public final class OpScaleMatrix implements Function { public void run(TomVM vm){
-        DoScaleMatrix (vm, vm.Reg ().getRealVal(), vm.Reg2 ().getIntVal ());
+        DoScaleMatrix (vm, vm.getReg().getRealVal(), vm.getReg2().getIntVal ());
     }}
     public final class OpScaleMatrix2 implements Function { public void run(TomVM vm){
-        DoScaleMatrix (vm, vm.Reg2().getRealVal (), vm.Reg().getIntVal ());
+        DoScaleMatrix (vm, vm.getReg2().getRealVal (), vm.getReg().getIntVal ());
     }}
     public final class OpDivMatrix implements Function { public void run(TomVM vm){
-        DoScaleMatrix (vm, (float) (1.0 / vm.Reg ().getRealVal()), vm.Reg2().getIntVal ());
+        DoScaleMatrix (vm, (float) (1.0 / vm.getReg().getRealVal()), vm.getReg2().getIntVal ());
     }}
     public final class OpMatrixVec implements Function { public void run(TomVM vm){
 
         // Matrix at reg2. Vector at reg.
 
         // Read in matrix
-        if (!ReadMatrix (vm, vm.Reg2 ().getIntVal(), m1)) {
+        if (!ReadMatrix (vm, vm.getReg2().getIntVal(), m1)) {
             return;
         }
 
         // Read in vector
-        int size = ReadVec (vm, vm.Reg ().getIntVal (), v1);
+        int size = ReadVec (vm, vm.getReg().getIntVal (), v1);
         if (size < 0) {
             return;
         }
@@ -769,14 +770,14 @@ public class TrigBasicLib implements FunctionLibrary {
         MatrixTimesVec (m1, v1, result);
 
         // Return as temporary vector
-        vm.Reg().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), size, result));
+        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), size, result));
     }}
     public final class OpMatrixMatrix implements Function { public void run(TomVM vm){
 
         // Matrix * Matrix
         // Left matrix at reg2, right matrix at reg1
-        if (!ReadMatrix (vm, vm.Reg2 ().getIntVal(), m1)
-                ||  !ReadMatrix (vm, vm.Reg  ().getIntVal(), m2)) {
+        if (!ReadMatrix (vm, vm.getReg2().getIntVal(), m1)
+                ||  !ReadMatrix (vm, vm.getReg().getIntVal(), m2)) {
             return;
         }
 
@@ -785,26 +786,26 @@ public class TrigBasicLib implements FunctionLibrary {
         MatrixTimesMatrix(m1, m2, result);
 
         // Return as temporary matrix
-        vm.Reg ().setIntVal( Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, result));
+        vm.getReg().setIntVal( Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
     }}
     public final class OpVecVec implements Function { public void run(TomVM vm){
 
         // Vector * Vector = dot product
 
         // Fetch vectors
-        if (ReadVec (vm, vm.Reg2 ().getIntVal (), v1) < 0
-                || ReadVec (vm, vm.Reg  ().getIntVal (), v2) < 0) {
+        if (ReadVec (vm, vm.getReg2().getIntVal (), v1) < 0
+                || ReadVec (vm, vm.getReg().getIntVal (), v2) < 0) {
             return;
         }
 
         // Return result
-        vm.Reg ().setRealVal(DotProduct(v1, v2));
+        vm.getReg().setRealVal(DotProduct(v1, v2));
     }}
     public final class OpVecPlusVec implements Function { public void run(TomVM vm){
 
         // Fetch vectors
-        int s1 = ReadVec (vm, vm.Reg2 ().getIntVal (), v1),
-                s2 = ReadVec (vm, vm.Reg  ().getIntVal (), v2);
+        int s1 = ReadVec (vm, vm.getReg2().getIntVal (), v1),
+                s2 = ReadVec (vm, vm.getReg().getIntVal (), v2);
         if (s1 < 0 || s2 < 0) {
             return;
         }
@@ -814,13 +815,13 @@ public class TrigBasicLib implements FunctionLibrary {
         VecPlus (v1, v2, result);
 
         // Return as temporary vector
-        vm.Reg().setIntVal(Data.FillTempRealArray(vm.Data(), vm.DataTypes(), Math.max(s1, s2), result));
+        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
     }}
     public final class OpVecMinusVec implements Function { public void run(TomVM vm){
 
         // Fetch vectors
-        int s1 = ReadVec (vm, vm.Reg2 ().getIntVal (), v1),
-                s2 = ReadVec (vm, vm.Reg  ().getIntVal (), v2);
+        int s1 = ReadVec (vm, vm.getReg2().getIntVal (), v1),
+                s2 = ReadVec (vm, vm.getReg().getIntVal (), v2);
         if (s1 < 0 || s2 < 0) {
             return;
         }
@@ -830,14 +831,14 @@ public class TrigBasicLib implements FunctionLibrary {
         VecMinus(v1, v2, result);
 
         // Return as temporary vector
-        vm.Reg ().setIntVal ( Data.FillTempRealArray(vm.Data(), vm.DataTypes(), Math.max(s1, s2), result));
+        vm.getReg().setIntVal ( Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
     }}
     public final class OpMatrixPlusMatrix implements Function { public void run(TomVM vm){
 
         // Matrix + Matrix
         // Left matrix at reg2, right matrix at reg1
-        if (!ReadMatrix (vm, vm.Reg2 ().getIntVal (), m1)
-                || !ReadMatrix (vm, vm.Reg  ().getIntVal (), m2)) {
+        if (!ReadMatrix (vm, vm.getReg2().getIntVal (), m1)
+                || !ReadMatrix (vm, vm.getReg().getIntVal (), m2)) {
             return;
         }
 
@@ -846,14 +847,14 @@ public class TrigBasicLib implements FunctionLibrary {
         MatrixPlus(m1, m2, result);
 
         // Return as temporary matrix
-        vm.Reg ().setIntVal ( Data.FillTempRealArray2D(vm.Data(), vm.DataTypes(), 4, 4, Arrays.asList(result)));
+        vm.getReg().setIntVal ( Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, Arrays.asList(result)));
     }}
     public final class OpMatrixMinusMatrix implements Function { public void run(TomVM vm){
 
         // Matrix - Matrix
         // Left matrix at reg2, right matrix at reg1
-        if (!ReadMatrix (vm, vm.Reg2 ().getIntVal(), m1)
-                || !ReadMatrix (vm, vm.Reg  ().getIntVal (), m2)) {
+        if (!ReadMatrix (vm, vm.getReg2().getIntVal(), m1)
+                || !ReadMatrix (vm, vm.getReg().getIntVal (), m2)) {
             return;
         }
 
@@ -862,10 +863,10 @@ public class TrigBasicLib implements FunctionLibrary {
         MatrixMinus(m1, m2, result);
 
         // Return as temporary matrix
-        vm.Reg ().setIntVal (Data.FillTempRealArray2D (vm.Data (), vm.DataTypes (), 4, 4, Arrays.asList(result)));
+        vm.getReg().setIntVal (Data.FillTempRealArray2D (vm.getData(), vm.getDataTypes(), 4, 4, Arrays.asList(result)));
     }}
-    public final class OpNegVec implements Function { public void run(TomVM vm)      { DoScaleVec(vm, -1, vm.Reg().getIntVal()); }}
-    public final class OpNegMatrix  implements Function { public void run(TomVM vm){ DoScaleMatrix (vm, -1, vm.Reg ().getIntVal ()); }}
+    public final class OpNegVec implements Function { public void run(TomVM vm)      { DoScaleVec(vm, -1, vm.getReg().getIntVal()); }}
+    public final class OpNegMatrix  implements Function { public void run(TomVM vm){ DoScaleMatrix (vm, -1, vm.getReg().getIntVal ()); }}
 
     // Indices
     int scaleVec, scaleVec2, scaleMatrix, scaleMatrix2, matrixVec, matrixMatrix,
@@ -882,7 +883,7 @@ public class TrigBasicLib implements FunctionLibrary {
                                     Mutable<Boolean> freeTempData) {   // OUT: Set to true if temp data needs to be freed
 
         // Must be real values, and not pointers (references are OK however)
-        if (regType.get().VirtualPointerLevel() > 0 || regType.get().m_basicType != ValType.VTP_REAL) {
+        if (regType.get().VirtualPointerLevel() > 0 || regType.get().m_basicType != BasicValType.VTP_REAL) {
             return false;
         }
 
@@ -919,25 +920,25 @@ public class TrigBasicLib implements FunctionLibrary {
             }
 
             // Validate data types. We will only work with ints and reals
-            if (regType.get().m_basicType != ValType.VTP_REAL && regType.get().m_basicType != ValType.VTP_INT) {
+            if (regType.get().m_basicType != BasicValType.VTP_REAL && regType.get().m_basicType != BasicValType.VTP_INT) {
                 return false;
             }
-            if (reg2Type.get().m_basicType != ValType.VTP_REAL && reg2Type.get().m_basicType != ValType.VTP_INT) {
+            if (reg2Type.get().m_basicType != BasicValType.VTP_REAL && reg2Type.get().m_basicType != BasicValType.VTP_INT) {
                 return false;
             }
 
             // Is acceptible to have an integer value, but must be typecast to a real
             // Arrays of integers not acceptible
-            if (regType.get().m_basicType == ValType.VTP_INT) {
+            if (regType.get().m_basicType == BasicValType.VTP_INT) {
                 if (regType.get().IsBasic()) {
-                    regType.get().m_basicType = ValType.VTP_REAL;
+                    regType.get().m_basicType = BasicValType.VTP_REAL;
                 } else {
                     return false;
                 }
             }
-            if (reg2Type.get().m_basicType == ValType.VTP_INT) {
+            if (reg2Type.get().m_basicType == BasicValType.VTP_INT) {
                 if (reg2Type.get().IsBasic()) {
-                    reg2Type.get().m_basicType = ValType.VTP_REAL;
+                    reg2Type.get().m_basicType = BasicValType.VTP_REAL;
                 } else {
                     return false;
                 }
@@ -978,7 +979,7 @@ public class TrigBasicLib implements FunctionLibrary {
                     return true;
                 } else if (regType.get().m_arrayLevel == 1 && reg2Type.get().m_arrayLevel == 1) {     // Vec * Vec (Dot product)
                     operFunction.set(vecVec);
-                    resultType.get().Set(ValType.VTP_REAL);
+                    resultType.get().Set (BasicValType.VTP_REAL);
                     freeTempData.set(false);
                     return true;
                 }

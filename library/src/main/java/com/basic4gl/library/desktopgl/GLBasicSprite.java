@@ -7,13 +7,9 @@ import java.util.Vector;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 /**
- * Created by Nate on 11/2/2015.
+ * Abstract base type for 2D sprite and sprite like objects.
+ * (Currently this includes sprites and tile map layers.)
  */
-////////////////////////////////////////////////////////////////////////////////
-// glBasicSprite
-//
-// Abstract base type for 2D sprite and sprite like objects.
-// (Currently this includes sprites and tile map layers.)
 public abstract class GLBasicSprite {
     private GLSpriteEngine.GLSpriteList m_list;
     private GLBasicSprite m_prev, m_next;

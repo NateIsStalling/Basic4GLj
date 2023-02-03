@@ -2,11 +2,9 @@ package com.basic4gl.runtime.stackframe;
 
 import java.util.Vector;
 
-////////////////////////////////////////////////////////////////////////////////
-//UserFuncStackFrame
-//
-//Stack frame created when a user function is called.
-
+/**
+ * Stack frame created when a user function is called.
+ */
 public class UserFuncStackFrame {
 
 	// Corresponding function definition. -1 if is a simple GOSUB

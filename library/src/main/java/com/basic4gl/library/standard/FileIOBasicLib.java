@@ -6,7 +6,7 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.compiler.util.FuncSpec;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.ValType;
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.PointerResourceStore;
 
@@ -50,7 +50,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             fileStreams = new PointerResourceStore<FileStream>();
         }
 
-        fileStreams.Clear();
+        fileStreams.clear();
 
         // Clear error state
         lastError = "";
@@ -64,10 +64,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         }
 
         // Register resources
-        comp.VM().AddResources(fileStreams);
+        comp.VM().addResources(fileStreams);
 
         // Register initialisation functions
-        comp.VM().AddInitFunc (new Init());
+        comp.VM().addInitFunction(new Init());
 
 
     }
@@ -93,34 +93,34 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         Map<String, FuncSpec[]> s = new HashMap<>();
         // Register function wrappers
 
-        s.put ("OpenFileRead", new FuncSpec[]{ new FuncSpec( WrapOpenFileRead.class, new ParamTypeList ( ValType.VTP_STRING), true, true, ValType.VTP_INT, true, false, null)});
-        s.put ("OpenFileWrite", new FuncSpec[]{ new FuncSpec( WrapOpenFileWrite.class, new ParamTypeList ( ValType.VTP_STRING), true, true, ValType.VTP_INT, true, false, null)});
-        s.put ("CloseFile", new FuncSpec[]{ new FuncSpec( WrapCloseFile.class, new ParamTypeList ( ValType.VTP_INT), true, false, ValType.VTP_INT, true, false, null)});
-        s.put ("FileError", new FuncSpec[]{ new FuncSpec( WrapFileError.class, new ParamTypeList (), true, true, ValType.VTP_STRING, true, false, null)});
-        s.put ("EndOfFile", new FuncSpec[]{ new FuncSpec( WrapEndOfFile.class, new ParamTypeList ( ValType.VTP_INT), true, true, ValType.VTP_INT, true, false, null)});
-        s.put ("WriteChar", new FuncSpec[]{ new FuncSpec( WrapWriteChar.class, new ParamTypeList ( ValType.VTP_INT, ValType.VTP_STRING), true, false, ValType.VTP_INT, true, false, null)});
-        s.put ("WriteString", new FuncSpec[]{ new FuncSpec( WrapWriteString.class, new ParamTypeList ( ValType.VTP_INT, ValType.VTP_STRING), true, false, ValType.VTP_INT, true, false, null)});
-        s.put ("WriteLine", new FuncSpec[]{ new FuncSpec( WrapWriteLine.class, new ParamTypeList ( ValType.VTP_INT, ValType.VTP_STRING), true, false, ValType.VTP_INT, true, false, null)});
-        s.put ("WriteByte", new FuncSpec[]{ new FuncSpec( WrapWriteByte.class, new ParamTypeList ( ValType.VTP_INT, ValType.VTP_INT), true, false, ValType.VTP_INT, true, false, null)});
-        s.put ("WriteWord", new FuncSpec[]{ new FuncSpec( WrapWriteWord.class, new ParamTypeList ( ValType.VTP_INT, ValType.VTP_INT), true, false, ValType.VTP_INT, true, false, null)});
-        s.put ("WriteInt", new FuncSpec[]{ new FuncSpec( WrapWriteInt.class, new ParamTypeList ( ValType.VTP_INT, ValType.VTP_INT), true, false, ValType.VTP_INT, true, false, null)});
-        s.put ("WriteFloat", new FuncSpec[]{ new FuncSpec( WrapWriteFloat.class, new ParamTypeList ( ValType.VTP_INT, ValType.VTP_REAL), true, false, ValType.VTP_INT, true, false, null)});
-        s.put ("WriteReal", new FuncSpec[]{ new FuncSpec( WrapWriteFloat.class, new ParamTypeList ( ValType.VTP_INT, ValType.VTP_REAL), true, false, ValType.VTP_INT, true, false, null)}); // (WriteReal is a synonym for WriteFloat)
-        s.put ("WriteDouble", new FuncSpec[]{ new FuncSpec( WrapWriteDouble.class, new ParamTypeList ( ValType.VTP_INT, ValType.VTP_REAL), true, false, ValType.VTP_INT, true, false, null)});
-        s.put ("ReadLine", new FuncSpec[]{ new FuncSpec( WrapReadLine.class, new ParamTypeList ( ValType.VTP_INT), true, true, ValType.VTP_STRING, true, false, null)});
-        s.put ("ReadChar", new FuncSpec[]{ new FuncSpec( WrapReadChar.class, new ParamTypeList ( ValType.VTP_INT), true, true, ValType.VTP_STRING, true, false, null)});
-        s.put ("ReadByte", new FuncSpec[]{ new FuncSpec( WrapReadByte.class, new ParamTypeList ( ValType.VTP_INT), true, true, ValType.VTP_INT, true, false, null)});
-        s.put ("ReadWord", new FuncSpec[]{ new FuncSpec( WrapReadWord.class, new ParamTypeList ( ValType.VTP_INT), true, true, ValType.VTP_INT, true, false, null)});
-        s.put ("ReadInt", new FuncSpec[]{ new FuncSpec( WrapReadInt.class, new ParamTypeList ( ValType.VTP_INT), true, true, ValType.VTP_INT, true, false, null)});
-        s.put ("ReadFloat", new FuncSpec[]{ new FuncSpec( WrapReadFloat.class, new ParamTypeList ( ValType.VTP_INT), true, true, ValType.VTP_REAL, true, false, null)});
-        s.put ("ReadReal", new FuncSpec[]{ new FuncSpec( WrapReadFloat.class, new ParamTypeList ( ValType.VTP_INT), true, true, ValType.VTP_REAL, true, false, null)});
-        s.put ("ReadDouble", new FuncSpec[]{ new FuncSpec( WrapReadDouble.class, new ParamTypeList ( ValType.VTP_INT), true, true, ValType.VTP_REAL, true, false, null)});
-        s.put ("Seek", new FuncSpec[]{ new FuncSpec( WrapSeek.class, new ParamTypeList ( ValType.VTP_INT, ValType.VTP_INT), true, false, ValType.VTP_REAL, true, false, null)});
-        s.put ("ReadText", new FuncSpec[]{ new FuncSpec( WrapReadText.class, new ParamTypeList ( ValType.VTP_INT, ValType.VTP_INT), true, true, ValType.VTP_STRING, true, false, null)});
-        s.put ("FindFirstFile", new FuncSpec[]{ new FuncSpec( WrapFindFirstFile.class, new ParamTypeList ( ValType.VTP_STRING), true, true, ValType.VTP_STRING, true, false, null)});
-        s.put ("FindNextFile", new FuncSpec[]{ new FuncSpec( WrapFindNextFile.class, new ParamTypeList (), true, true, ValType.VTP_STRING, true, false, null)});
-        s.put ("FindClose", new FuncSpec[]{ new FuncSpec( WrapFindClose.class, new ParamTypeList (), true, false, ValType.VTP_INT, true, false, null)});
-        s.put ("DeleteFile", new FuncSpec[]{ new FuncSpec( WrapDeleteFile.class, new ParamTypeList( ValType.VTP_STRING), true, true, ValType.VTP_INT, true, false, null)});
+        s.put ("OpenFileRead", new FuncSpec[]{ new FuncSpec( WrapOpenFileRead.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("OpenFileWrite", new FuncSpec[]{ new FuncSpec( WrapOpenFileWrite.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("CloseFile", new FuncSpec[]{ new FuncSpec( WrapCloseFile.class, new ParamTypeList ( BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("FileError", new FuncSpec[]{ new FuncSpec( WrapFileError.class, new ParamTypeList (), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("EndOfFile", new FuncSpec[]{ new FuncSpec( WrapEndOfFile.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteChar", new FuncSpec[]{ new FuncSpec( WrapWriteChar.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_STRING), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteString", new FuncSpec[]{ new FuncSpec( WrapWriteString.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_STRING), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteLine", new FuncSpec[]{ new FuncSpec( WrapWriteLine.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_STRING), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteByte", new FuncSpec[]{ new FuncSpec( WrapWriteByte.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteWord", new FuncSpec[]{ new FuncSpec( WrapWriteWord.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteInt", new FuncSpec[]{ new FuncSpec( WrapWriteInt.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteFloat", new FuncSpec[]{ new FuncSpec( WrapWriteFloat.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteReal", new FuncSpec[]{ new FuncSpec( WrapWriteFloat.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, true, false, null)}); // (WriteReal is a synonym for WriteFloat)
+        s.put ("WriteDouble", new FuncSpec[]{ new FuncSpec( WrapWriteDouble.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("ReadLine", new FuncSpec[]{ new FuncSpec( WrapReadLine.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("ReadChar", new FuncSpec[]{ new FuncSpec( WrapReadChar.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("ReadByte", new FuncSpec[]{ new FuncSpec( WrapReadByte.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("ReadWord", new FuncSpec[]{ new FuncSpec( WrapReadWord.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("ReadInt", new FuncSpec[]{ new FuncSpec( WrapReadInt.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("ReadFloat", new FuncSpec[]{ new FuncSpec( WrapReadFloat.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_REAL, true, false, null)});
+        s.put ("ReadReal", new FuncSpec[]{ new FuncSpec( WrapReadFloat.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_REAL, true, false, null)});
+        s.put ("ReadDouble", new FuncSpec[]{ new FuncSpec( WrapReadDouble.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_REAL, true, false, null)});
+        s.put ("Seek", new FuncSpec[]{ new FuncSpec( WrapSeek.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_REAL, true, false, null)});
+        s.put ("ReadText", new FuncSpec[]{ new FuncSpec( WrapReadText.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("FindFirstFile", new FuncSpec[]{ new FuncSpec( WrapFindFirstFile.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("FindNextFile", new FuncSpec[]{ new FuncSpec( WrapFindNextFile.class, new ParamTypeList (), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("FindClose", new FuncSpec[]{ new FuncSpec( WrapFindClose.class, new ParamTypeList (), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("DeleteFile", new FuncSpec[]{ new FuncSpec( WrapDeleteFile.class, new ParamTypeList( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
 
         return s;
     }
@@ -239,15 +239,15 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
 
     public final class WrapOpenFileRead  implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal (InternalOpenFileRead (vm.GetStringParam (1)));
+        vm.getReg().setIntVal (InternalOpenFileRead (vm.getStringParam(1)));
     }
     }
     public final class WrapOpenFileWrite  implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal(InternalOpenFileWrite(vm.GetStringParam(1)));
+        vm.getReg().setIntVal(InternalOpenFileWrite(vm.getStringParam(1)));
     }
     }
     public final class WrapCloseFile  implements Function { public void run(TomVM vm) {
-        int handle = vm.GetIntParam (1);
+        int handle = vm.getIntParam(1);
         if (handle > 0 && fileStreams.IndexStored (handle)) {
             fileStreams.Free (handle);
             lastError = "";
@@ -258,13 +258,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteChar  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2))) {
+        if (!GetOStream (vm.getIntParam(2))) {
             return;
         }
 
         // Write a single character
         char c = 0;
-        c = vm.GetStringParam(1).charAt(0);
+        c = vm.getStringParam(1).charAt(0);
         Exception exception = null;
         try {
             stream.out.write((byte) c);
@@ -276,12 +276,12 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteString  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2))) {
+        if (!GetOStream (vm.getIntParam(2))) {
             return;
         }
 
         // Write string. (Excludes 0 terminator)
-        String str = vm.GetStringParam (1);
+        String str = vm.getStringParam(1);
         Exception exception = null;
         if (!str.equals("")) {
             try {
@@ -295,12 +295,12 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteLine  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2))) {
+        if (!GetOStream (vm.getIntParam(2))) {
             return;
         }
 
         // Write string. (Excludes 0 terminator)
-        String str = vm.GetStringParam (1) + "\r\n";
+        String str = vm.getStringParam(1) + "\r\n";
         Exception exception = null;
         if (!str.equals("")) {
             try {
@@ -314,11 +314,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteByte  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2))) {
+        if (!GetOStream (vm.getIntParam(2))) {
             return;
         }
 
-        byte element = vm.GetIntParam (1).byteValue();
+        byte element = vm.getIntParam(1).byteValue();
         Exception exception = null;
         try {
             stream.out.write (element);
@@ -330,11 +330,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteWord  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2))) {
+        if (!GetOStream (vm.getIntParam(2))) {
             return;
         }
 
-        short element = vm.GetIntParam (1).shortValue();
+        short element = vm.getIntParam(1).shortValue();
         Exception exception = null;
         try {
             stream.out.write(ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN).putShort(element).array());
@@ -346,11 +346,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteInt  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2))) {
+        if (!GetOStream (vm.getIntParam(2))) {
             return;
         }
 
-        int element = vm.GetIntParam (1);
+        int element = vm.getIntParam(1);
         Exception exception = null;
         try {
             stream.out.write (ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(element).array());
@@ -362,11 +362,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteFloat  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2))) {
+        if (!GetOStream (vm.getIntParam(2))) {
             return;
         }
 
-        float element = vm.GetRealParam (1);
+        float element = vm.getRealParam(1);
         Exception exception = null;
         try {
             stream.out.write (ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putFloat(element).array());
@@ -378,11 +378,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteDouble  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.GetIntParam (2))) {
+        if (!GetOStream (vm.getIntParam(2))) {
             return;
         }
 
-        double element = vm.GetRealParam (1);
+        double element = vm.getRealParam(1);
         Exception exception = null;
         try {
             stream.out.write (ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putDouble(element).array());
@@ -395,7 +395,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     public final class WrapReadLine  implements Function { public void run(TomVM vm) {
         vm.setRegString ( "");
-        if (!GetIStream (vm.GetIntParam (1))) {
+        if (!GetIStream (vm.getIntParam(1))) {
             return;
         }
         if (!UpdateError ("Read", null)) {
@@ -413,7 +413,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
 
             // Read printable characters
             while ((stream.in.available() > 0) && c != 10 && c != 13) {
-                vm.setRegString(vm.RegString() + c);
+                vm.setRegString(vm.getRegString() + c);
                 c = (char)stream.in.read();
             }
         } catch (Exception e) {
@@ -430,7 +430,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     public final class WrapReadChar  implements Function { public void run(TomVM vm) {
         vm.setRegString ("");
-        if (!GetIStream (vm.GetIntParam (1))) {
+        if (!GetIStream (vm.getIntParam(1))) {
             return;
         }
 
@@ -449,8 +449,8 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapReadByte  implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal ( 0);
-        if (!GetIStream (vm.GetIntParam (1))) {
+        vm.getReg().setIntVal ( 0);
+        if (!GetIStream (vm.getIntParam(1))) {
             return;
         }
 
@@ -464,13 +464,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             exception = e;
         }
         if (UpdateError ("Read", exception)) {
-            vm.Reg ().setIntVal ( (int) element);
+            vm.getReg().setIntVal ( (int) element);
         }
     }
     }
     public final class WrapReadWord  implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal ( 0);
-        if (!GetIStream (vm.GetIntParam (1))) {
+        vm.getReg().setIntVal ( 0);
+        if (!GetIStream (vm.getIntParam(1))) {
             return;
         }
 
@@ -486,13 +486,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             exception = e;
         }
         if (UpdateError ("Read", exception)) {
-            vm.Reg ().setIntVal ( (int)element);
+            vm.getReg().setIntVal ( (int)element);
         }
     }
     }
     public final class WrapReadInt  implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal ( 0);
-        if (!GetIStream (vm.GetIntParam (1))) {
+        vm.getReg().setIntVal ( 0);
+        if (!GetIStream (vm.getIntParam(1))) {
             return;
         }
 
@@ -508,13 +508,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             exception = e;
         }
         if (UpdateError ("Read", exception)) {
-            vm.Reg ().setIntVal ( element);
+            vm.getReg().setIntVal ( element);
         }
     }
     }
     public final class WrapReadFloat  implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal ( 0);
-        if (!GetIStream (vm.GetIntParam (1))) {
+        vm.getReg().setIntVal ( 0);
+        if (!GetIStream (vm.getIntParam(1))) {
             return;
         }
 
@@ -530,13 +530,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             exception = e;
         }
         if (UpdateError ("Read", exception)) {
-            vm.Reg ().setRealVal(element);
+            vm.getReg().setRealVal(element);
         }
     }
     }
     public final class WrapReadDouble  implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal ( 0);
-        if (!GetIStream (vm.GetIntParam (1))) {
+        vm.getReg().setIntVal ( 0);
+        if (!GetIStream (vm.getIntParam(1))) {
             return;
         }
 
@@ -552,23 +552,23 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             exception = e;
         }
         if (UpdateError ("Read", exception)) {
-            vm.Reg ().setRealVal ((float) element);
+            vm.getReg().setRealVal ((float) element);
         }
     }
     }
     public final class WrapSeek  implements Function { public void run(TomVM vm) {
-        if (!GetStream (vm.GetIntParam (2))) {
+        if (!GetStream (vm.getIntParam(2))) {
             return;
         }
         Exception exception = null;
         try {
             if (stream.in != null) {
                 FileChannel ch = stream.in.getChannel();
-                ch.position(vm.GetIntParam(1));
+                ch.position(vm.getIntParam(1));
             }
             if (stream.out != null) {
                 FileChannel ch = stream.out.getChannel();
-                ch.position(vm.GetIntParam(1));
+                ch.position(vm.getIntParam(1));
             }
         } catch (Exception e){
             e.printStackTrace();
@@ -580,13 +580,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     public final class WrapReadText  implements Function { public void run(TomVM vm) {
 
         // Read a string of non whitespace tokens
-        if (!GetIStream (vm.GetIntParam (2))) {
+        if (!GetIStream (vm.getIntParam(2))) {
             return;
         }
         if (!UpdateError ("Read", null)) {
             return;
         }
-        boolean skipNewLines = vm.GetIntParam (1) != 0;
+        boolean skipNewLines = vm.getIntParam(1) != 0;
 
         Exception exception = null;
 
@@ -608,7 +608,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         // Read non whitespace
         try{
             while (c > ' ') {
-                vm.setRegString ( vm.RegString () + c);
+                vm.setRegString ( vm.getRegString() + c);
                 c = (char) stream.in.read();
             }
 
@@ -631,7 +631,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         CloseFind();
 
         // Get filename
-        String filename = vm.GetStringParam(1);
+        String filename = vm.getStringParam(1);
 
         // Check path is in files folder
         if (IsSandboxMode() && !files.CheckFilesFolder(filename)) {
@@ -705,14 +705,14 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapDeleteFile implements Function { public void run(TomVM vm) {
-        String filename = vm.GetStringParam(1);
+        String filename = vm.getStringParam(1);
         if (files.Delete(filename, IsSandboxMode())) {
             lastError = "";
-            vm.Reg().setIntVal( -1);
+            vm.getReg().setIntVal( -1);
         }
         else {
             lastError = files.getError();
-            vm.Reg().setIntVal( 0);
+            vm.getReg().setIntVal( 0);
         }
     }
     }
@@ -721,8 +721,8 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapEndOfFile  implements Function { public void run(TomVM vm) {
-        vm.Reg ().setIntVal ( -1);
-        if (!GetStream (vm.GetIntParam(1))) {
+        vm.getReg().setIntVal ( -1);
+        if (!GetStream (vm.getIntParam(1))) {
             return;
         }
         try {
@@ -730,10 +730,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
                     || (stream.out != null))//Todo check if output stream is eof
                 // && (stream.out.available() > 0)))
             {
-                vm.Reg().setIntVal(0);
+                vm.getReg().setIntVal(0);
             }
         } catch (Exception e) {
-            vm.Reg().setIntVal(-1);
+            vm.getReg().setIntVal(-1);
         }
     }
     }

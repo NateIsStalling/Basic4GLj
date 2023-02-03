@@ -12,17 +12,16 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.stb.STBVorbis.*;
 
-///////////////////////////////////////////////////////////////////////////////
-//	MusicStreamPolled
-//
-///	A polled implementation of a streaming music file.
-/// Plays an Ogg Vorbis file using OpenAL.
-/// Calling code must continually call ::Update() to ensure the
-/// music keeps playing.
-///
-/// Note: For a version that doesn't require continuous polling,
-/// use class "MusicStream" instead. ("MusicStream" uses
-/// "MusicStreamPolled internally, but automates polling itself.)
+/**
+ * A polled implementation of a streaming music file.
+ * Plays an Ogg Vorbis file using OpenAL.
+ * Calling code must continually call ::Update() to ensure the
+ * music keeps playing.
+ *
+ * Note: For a version that doesn't require continuous polling,
+ * use class "MusicStream" instead. ("MusicStream" uses
+ * "MusicStreamPolled internally, but automates polling itself.)
+ */
 public class MusicStreamPolled extends HasErrorState {
     static final int MUSICSTREAMBUFFERS = 64;
     static final int STREAMBLOCKSIZE = 4096;

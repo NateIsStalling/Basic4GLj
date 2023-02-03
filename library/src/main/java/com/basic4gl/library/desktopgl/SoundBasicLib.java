@@ -67,18 +67,18 @@
 //    @Override
 //    public Map<String, FuncSpec[]> specs() {
 //        Map<String, FuncSpec[]> s = new HashMap<>();
-//        s.put("loadsound", new FuncSpec[]{ new FuncSpec( WrapLoadSound.class, new ParamTypeList( ValType.VTP_STRING), true, true, ValType.VTP_INT, true, false, null)});
-//        s.put("deletesound", new FuncSpec[]{ new FuncSpec( WrapDeleteSound.class, new ParamTypeList(ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
-//        s.put("playsound", new FuncSpec[]{ new FuncSpec( WrapPlaySound.class, new ParamTypeList(ValType.VTP_INT), true, true, ValType.VTP_INT, false, false, null),
-//                new FuncSpec( WrapPlaySound2.class, new ParamTypeList(ValType.VTP_INT, ValType.VTP_REAL, ValType.VTP_INT), true, true, ValType.VTP_INT, false, false, null)});
-//        s.put("stopsoundvoice", new FuncSpec[]{ new FuncSpec( WrapStopSoundVoice.class, new ParamTypeList(ValType.VTP_INT), true, false, ValType.VTP_INT, false, false, null)});
-//        s.put("stopsounds", new FuncSpec[]{ new FuncSpec( WrapStopSounds.class, new ParamTypeList(), true, false, ValType.VTP_INT, false, false, null)});
-//        s.put("playmusic", new FuncSpec[]{ new FuncSpec( WrapPlayMusic.class, new ParamTypeList(ValType.VTP_STRING), true, false, ValType.VTP_INT, true, false, null),
-//                new FuncSpec( WrapPlayMusic2.class, new ParamTypeList(ValType.VTP_STRING, ValType.VTP_REAL, ValType.VTP_INT), true, false, ValType.VTP_INT, true, false, null)});
-//        s.put("stopmusic", new FuncSpec[]{ new FuncSpec( WrapStopMusic.class, new ParamTypeList(), true, false, ValType.VTP_INT, false, false, null)});
-//        s.put("musicplaying", new FuncSpec[]{ new FuncSpec( WrapMusicPlaying.class, new ParamTypeList(), true, true, ValType.VTP_INT, false, false, null)});
-//        s.put("setmusicvolume", new FuncSpec[]{ new FuncSpec( WrapSetMusicVolume.class, new ParamTypeList(ValType.VTP_REAL), true, false, ValType.VTP_INT, false, false, null)});
-//        s.put("sounderror", new FuncSpec[]{ new FuncSpec( WrapSoundError.class, new ParamTypeList(), true, true, ValType.VTP_STRING, false, false, null)});
+//        s.put("loadsound", new FuncSpec[]{ new FuncSpec( WrapLoadSound.class, new ParamTypeList( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
+//        s.put("deletesound", new FuncSpec[]{ new FuncSpec( WrapDeleteSound.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
+//        s.put("playsound", new FuncSpec[]{ new FuncSpec( WrapPlaySound.class, new ParamTypeList (BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null),
+//                new FuncSpec( WrapPlaySound2.class, new ParamTypeList (BasicValType.VTP_INT, BasicValType.VTP_REAL, BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
+//        s.put("stopsoundvoice", new FuncSpec[]{ new FuncSpec( WrapStopSoundVoice.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
+//        s.put("stopsounds", new FuncSpec[]{ new FuncSpec( WrapStopSounds.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, false, false, null)});
+//        s.put("playmusic", new FuncSpec[]{ new FuncSpec( WrapPlayMusic.class, new ParamTypeList (BasicValType.VTP_STRING), true, false, BasicValType.VTP_INT, true, false, null),
+//                new FuncSpec( WrapPlayMusic2.class, new ParamTypeList (BasicValType.VTP_STRING, BasicValType.VTP_REAL, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+//        s.put("stopmusic", new FuncSpec[]{ new FuncSpec( WrapStopMusic.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, false, false, null)});
+//        s.put("musicplaying", new FuncSpec[]{ new FuncSpec( WrapMusicPlaying.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
+//        s.put("setmusicvolume", new FuncSpec[]{ new FuncSpec( WrapSetMusicVolume.class, new ParamTypeList (BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
+//        s.put("sounderror", new FuncSpec[]{ new FuncSpec( WrapSoundError.class, new ParamTypeList(), true, true, BasicValType.VTP_STRING, false, false, null)});
 //        return s;
 //    }
 //

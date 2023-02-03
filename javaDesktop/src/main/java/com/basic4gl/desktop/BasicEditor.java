@@ -239,7 +239,7 @@ public class BasicEditor implements MainEditor,
         }
 
         // Convert to corresponding position in source file
-        return mPreprocessor.LineNumberMap().SourceFromMain(filename, instructionPos.getSourceLine());
+        return mPreprocessor.getLineNumberMap().getSourceFromMain(filename, instructionPos.getSourceLine());
 
     }
 
@@ -290,7 +290,7 @@ public class BasicEditor implements MainEditor,
         //TODO Get editor assigned as main file
         int mainFiledIndex = 0;
 
-        return mPreprocessor.Preprocess(
+        return mPreprocessor.preprocess(
                 new EditorSourceFile(mFileManager.getEditor(mainFiledIndex), mFileManager.getFilename(mainFiledIndex)),
                 mComp.Parser());
     }
@@ -402,7 +402,7 @@ public class BasicEditor implements MainEditor,
     }
 
     public void reset() {
-        mComp.VM().Pause();
+        mComp.VM().pause();
         if (mWorker != null) {
             // TODO 1/2023 need to restart the existing app to free up the JVM port used for debugging
             mWorker.terminateApplication();

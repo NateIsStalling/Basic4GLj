@@ -27,7 +27,7 @@ public class UserFunc implements Streamable{
 		mProgramOffset = programOffset;
 	}
 
-	public void StreamOut(DataOutputStream stream) throws IOException{
+	public void streamOut(DataOutputStream stream) throws IOException{
 		// Assume program is complete, i.e all functions are implemented, before
 		// streaming occurs.
 		assertTrue(mImplemented);
@@ -36,7 +36,7 @@ public class UserFunc implements Streamable{
 		Streaming.WriteLong(stream, mProgramOffset);
 	}
 
-	public boolean StreamIn(DataInputStream stream) throws IOException{
+	public boolean streamIn(DataInputStream stream) throws IOException{
 		mPrototypeIndex = (int) Streaming.ReadLong(stream);
 		mProgramOffset = (int) Streaming.ReadLong(stream);
 
