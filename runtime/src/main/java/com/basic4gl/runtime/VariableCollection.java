@@ -32,11 +32,11 @@ public class VariableCollection implements Streamable{
 		public Variable(String name, ValType type) {
 			m_name = name.toLowerCase();
 			m_type = type;
-			Deallocate();
+			deallocate();
 		}
 
 		protected void finalize() {
-			Deallocate();
+			deallocate();
 			try {
 				super.finalize();
 			} catch (Throwable e) {
@@ -45,19 +45,19 @@ public class VariableCollection implements Streamable{
 			}
 		}
 
-		public boolean Allocated() {
+		public boolean allocated() {
 			return m_dataIndex > 0;
 		}
 
 		// Allocating
-		public void Deallocate() {
+		public void deallocate() {
 			m_dataIndex = 0;
 		}
 
-		public void Allocate(Data data, TypeLibrary typeLib) {
+		public void allocate(Data data, TypeLibrary typeLib) {
 
 			// Allocate new data
-			assertTrue(!Allocated());
+			assertTrue(!allocated());
 			m_dataIndex = data.Allocate(typeLib.DataSize(m_type));
 
 			// Initialise it
@@ -113,7 +113,7 @@ public class VariableCollection implements Streamable{
 		// Deallocate all variable data.
 		// Variables and data type info remain.
 		for (Variable var : mVariables) {
-			var.Deallocate();
+			var.deallocate();
 		}
 		mData.clear();
 	}
@@ -142,16 +142,16 @@ public class VariableCollection implements Streamable{
 		return getVariableIndex(name) >= 0;
 	}
 
-	public int Size() {
+	public int size() {
 		return mVariables.size();
 	}
 
-	public boolean IndexValid(int index) {
-		return index >= 0 && index < Size();
+	public boolean isIndexValid(int index) {
+		return index >= 0 && index < size();
 	}
 
 	// Var creation and allocation
-	public int NewVar(String name, ValType type) {
+	public int createVar(String name, ValType type) {
 		assertTrue(!containsVariable(name));
 
 		// Allocate new variable and return index
@@ -160,8 +160,8 @@ public class VariableCollection implements Streamable{
 		return top;
 	}
 
-	public void AllocateVar(Variable var) {
-		var.Allocate(mData, mTypes);
+	public void allocateVar(Variable var) {
+		var.allocate(mData, mTypes);
 	}
 
 	// Streaming

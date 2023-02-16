@@ -1672,7 +1672,7 @@ public class TomBasicCompiler extends HasErrorState {
 					} else
 						// Create new variable
 					{
-						varIndex = mVM.getVariables().NewVar(name, type);
+						varIndex = mVM.getVariables().createVar(name, type);
 					}
 
 					// Generate code to allocate variable data

@@ -343,10 +343,10 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Load variable.
                     // Instruction contains index of variable.
-                    assertTrue(mVariables.IndexValid(instruction.mValue.getIntVal()));
+                    assertTrue(mVariables.isIndexValid(instruction.mValue.getIntVal()));
                     Variable var = mVariables.getVariables().get(
                             instruction.mValue.getIntVal());
-                    if (var.Allocated()) {
+                    if (var.allocated()) {
                         // Load address of variable's data into register
                         getReg().setIntVal(var.m_dataIndex);
                         mIp++; // Proceed to next instruction
@@ -521,11 +521,11 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_DECLARE: {
 
                     // Allocate variable.
-                    assertTrue(mVariables.IndexValid(instruction.mValue.getIntVal()));
+                    assertTrue(mVariables.isIndexValid(instruction.mValue.getIntVal()));
                     Variable var = mVariables.getVariables().get(instruction.mValue.getIntVal());
 
                     // Must not already be allocated
-                    if (var.Allocated()) {
+                    if (var.allocated()) {
                         setError(ERR_REDIMMED_VARIABLE);
                         break;
                     }
@@ -543,7 +543,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     }
 
                     // Allocate variable
-                    var.Allocate(mData, mDataTypes);
+                    var.allocate(mData, mDataTypes);
 
                     mIp++; // Proceed to next instruction
                     continue step;
