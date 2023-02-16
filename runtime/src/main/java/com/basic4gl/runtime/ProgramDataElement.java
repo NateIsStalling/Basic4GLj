@@ -38,6 +38,7 @@ class ProgramDataElement implements Streamable{
 
 	public boolean streamIn(DataInputStream stream) throws IOException{
 		mBasicType = (int)Streaming.ReadLong(stream);
+		mValue = new Value();
 		mValue.streamIn(stream);
 		return true;
 	}
