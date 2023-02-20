@@ -94,10 +94,10 @@ public class EvaluateWatchHandler {
                 // Expressions aren't allowed to call functions for mouse-over hints.
                 // Scan compiled code for OP_CALL_FUNC or OP_CALL_OPERATOR_FUNC
                 for (int i = codeStart; i < mVM.getInstructionCount(); i++) {
-                    if (mVM.getInstruction(i).mOpCode == OpCode.OP_CALL_FUNC
-                            || mVM.getInstruction(i).mOpCode == OpCode.OP_CALL_OPERATOR_FUNC
-                            || mVM.getInstruction(i).mOpCode == OpCode.OP_CALL_DLL
-                            || mVM.getInstruction(i).mOpCode == OpCode.OP_CREATE_USER_FRAME) {
+                    if (mVM.getInstruction(i).opCode == OpCode.OP_CALL_FUNC
+                            || mVM.getInstruction(i).opCode == OpCode.OP_CALL_OPERATOR_FUNC
+                            || mVM.getInstruction(i).opCode == OpCode.OP_CALL_DLL
+                            || mVM.getInstruction(i).opCode == OpCode.OP_CREATE_USER_FRAME) {
                         return "Mouse hints can't call functions. Use watch instead.";
                     }
                 }
@@ -152,7 +152,7 @@ public class EvaluateWatchHandler {
     }
 
     private String DisplayVariable(ValType valType) {
-        if (valType.Equals (BasicValType.VTP_STRING)) {                              // String is special case.
+        if (valType.matchesType(BasicValType.VTP_STRING)) {                              // String is special case.
             return "\"" + mVM.getRegString() + "\"";                 // Stored in string register.
         } else {
             String temp;

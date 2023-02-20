@@ -1,7 +1,7 @@
 package com.basic4gl.lib.util;
 
 import com.basic4gl.compiler.util.IVMDriver;
-import com.basic4gl.runtime.InstructionPos;
+import com.basic4gl.runtime.InstructionPosition;
 import com.basic4gl.runtime.TomVM;
 
 /**
@@ -43,13 +43,13 @@ public abstract class DebuggerCallbacks {
     }
 
     public void pause(String message){
-        InstructionPos instructionPos = null;
+        InstructionPosition instructionPosition = null;
         if (mVM.isIPValid()) {
-            instructionPos = mVM.getIPInSourceCode();
+            instructionPosition = mVM.getIPInSourceCode();
         }
         VMStatus vmStatus = new VMStatus(mVM.isDone(), mVM.hasError(), mVM.getError());
         mMessage.setMessage(CallbackMessage.PAUSED, message, vmStatus);
-        mMessage.setInstructionPosition(instructionPos);
+        mMessage.setInstructionPosition(instructionPosition);
 
         mCallback.message(mMessage);
         try{

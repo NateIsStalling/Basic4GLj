@@ -1,14 +1,7 @@
+// Created 17-Apr-06: Thomas Mulgrew (tmulgrew@slingshot.co.nz)
+// Copyright (C) Thomas Mulgrew
+
 package com.basic4gl.library.desktopgl;
-
-/*  Created 17-Apr-06: Thomas Mulgrew (tmulgrew@slingshot.co.nz)
-    Copyright (C) Thomas Mulgrew
-
-    Functions for compiling and executing code at runtime.
-*/
-//#pragma hdrstop
-//#include "TomCompilerBasicLib.h"
-//#include "Basic4GLStandardObjects.h"
-//#include <windows.h>
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
@@ -34,6 +27,9 @@ import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
 import static com.basic4gl.runtime.types.OpCode.*;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
+/**
+ * Functions for compiling and executing code at runtime.
+ */
 public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDriverAccess {
     @Override
     public Map<String, Constant> constants() {
@@ -161,11 +157,11 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             TomVM vm = comp.VM();
 
             // Load source text into compiler
-            comp.Parser().SourceCode().clear();
-            comp.Parser().SourceCode().add(sourceText);
+            comp.Parser().getSourceCode().clear();
+            comp.Parser().getSourceCode().add(sourceText);
 
             // Compile it
-            return DoNewCompile(vm);
+            return doNewCompile(vm);
         }
 
         public String getErrorText() {
@@ -196,14 +192,14 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             // Builtin/plugin functions don't normally protect the existing stack, so
             // there may be unprotected temp data that the callback code could trample.
             Mutable<Integer> stackTop = new Mutable<>(0), tempDataLock = new Mutable<>(0);
-            vm.getData().SaveState(stackTop, tempDataLock);
+            vm.getData().saveState(stackTop, tempDataLock);
 
             // Find code to execute
             // 2 op-codes earlier will be the callback hook.
             int offset = vm.GetCodeBlockOffset(codeHandle) - 2;
 
             // Execute code
-            InternalExecute(vm, offset, true);
+            internalExecute(vm, offset, true);
 
             // Check for error/end program
             if (vm.hasError() || vm.isDone()) {
@@ -211,7 +207,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             }
 
             // Restore stack
-            vm.getData().RestoreState(stackTop.get(), tempDataLock.get(), false);
+            vm.getData().restoreState(stackTop.get(), tempDataLock.get(), false);
 
             return true;
         }
@@ -229,7 +225,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
     ////////////////////////////////////////////////////////////////////////////////
     //  Helper routines
-    static void ClearError() {
+    static void clearError() {
         error = "";
         errorLine = 0;
         errorCol = 0;
@@ -242,17 +238,20 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         public void run(TomVM vm) {
             runtimeRoutines.clear();
             runtimeRoutines.add(0);
-            ClearError();
+            clearError();
         }
     }
 
-    int DoNewCompile(TomVM vm) {
-        // Comp routine internal implementation.
-        // Note: "Comp" and "Exec" replace the deprecated "Compile" and "Execute" routines
-        // (which are still maintained for backwards compatibility).
-        // The main differences are that:
-        //  * Comp adds an OP_RETURN to the end of the code, rather than an OP_END.
-        //  * Exec is a built-in keyword that effectively GOSUBs to the code.
+    /**
+     * Comp routine internal implementation.
+     * Note: "Comp" and "Exec" replace the deprecated "Compile" and "Execute" routines
+     * (which are still maintained for backwards compatibility).
+     * The main differences are that:
+     * - Comp adds an OP_RETURN to the end of the code, rather than an OP_END.
+     * - Exec is a built-in keyword that effectively GOSUBs to the code.
+     */
+    int doNewCompile(TomVM vm) {
+
         com.basic4gl.compiler.TomBasicCompiler.RollbackPoint rollbackPoint = comp.getRollbackPoint();
         comp.clearError();
         long saveIP = vm.getIP();
@@ -268,10 +267,10 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
             // Replace OP_END with OP_RETURN
             assertTrue(vm.getInstructionCount() > 0);
-            assertTrue(vm.getInstruction(vm.getInstructionCount() - 1).mOpCode == OP_END);
+            assertTrue(vm.getInstruction(vm.getInstructionCount() - 1).opCode == OP_END);
             vm.setInstruction(vm.getInstructionCount() - 1, new Instruction(OP_RETURN, VTP_INT, new Value(), 0, 0));
             // No error
-            ClearError();
+            clearError();
 
             // Return code block index
             codeBlock = vm.CurrentCodeBlockIndex();
@@ -292,22 +291,22 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         return codeBlock;
     }
 
-    boolean CheckForFunctions(TomVM vm) {
-
-        // Compile and execute cannot be used in programs that have functions/subs.
-        // This is because errors during execute don't stop the program. The main
-        // program can continue executing.
-        // However functions/subs break this as the stack is too hard to clean up
-        // correctly (with proper deallocation of evaluation stack and strings etc).
-
-        // Therefore we simply disallow 'compile' and 'execute' for programs with
-        // functions/subs.
-        // This should be a non breaking change, as existing code that uses compile/
-        // execute will be written in earlier Basic4GL versions, before functions
-        // and subs were introduced.
-
-        // The new commands 'comp' and 'exec' can be used instead.
-
+    /**
+     * Compile and execute cannot be used in programs that have functions/subs.
+     * This is because errors during execute don't stop the program. The main
+     * program can continue executing.
+     * However functions/subs break this as the stack is too hard to clean up
+     * correctly (with proper deallocation of evaluation stack and strings etc).
+     *
+     * Therefore we simply disallow 'compile' and 'execute' for programs with
+     * functions/subs.
+     * This should be a non breaking change, as existing code that uses compile/
+     * execute will be written in earlier Basic4GL versions, before functions
+     * and subs were introduced.
+     *
+     * The new commands 'comp' and 'exec' can be used instead.
+     */
+    boolean checkForFunctions(TomVM vm) {
         if (!vm.getUserFunctionPrototypes().isEmpty()) {
             vm.functionError("'Compile' and 'Execute' cannot be used in programs that have functions/subs. Use 'Comp' and 'Exec' instead");
             return false;
@@ -316,10 +315,10 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         }
     }
 
-    void DoOldCompile(TomVM vm) {
+    void doOldCompile(TomVM vm) {
 
         // Not allowed in programs with functions/subs (see note in CheckForFunctions)
-        if (!CheckForFunctions(vm)) {
+        if (!checkForFunctions(vm)) {
             return;
         }
 
@@ -332,7 +331,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         if (comp.compileOntoEnd()) {
 
             // No error
-            ClearError();
+            clearError();
 
             // Register this code block and return handle
             vm.getReg().setIntVal(runtimeRoutines.size());
@@ -352,52 +351,52 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         vm.gotoInstruction(saveIP);
     }
 
-    void DoCompile(TomVM vm, boolean useOldMethod) {
+    void doCompile(TomVM vm, boolean useOldMethod) {
         if (useOldMethod) {
-            DoOldCompile(vm);
+            doOldCompile(vm);
         } else {
-            vm.getReg().setIntVal(DoNewCompile(vm));
+            vm.getReg().setIntVal(doNewCompile(vm));
         }
     }
 
-    void DoCompileText(TomVM vm, String text, boolean useOldMethod) {
+    void doCompileText(TomVM vm, String text, boolean useOldMethod) {
         // Load it into compiler
-        comp.Parser().SourceCode().clear();
-        comp.Parser().SourceCode().add(text);
+        comp.Parser().getSourceCode().clear();
+        comp.Parser().getSourceCode().add(text);
 
         // Compile it
-        DoCompile(vm, useOldMethod);
+        doCompile(vm, useOldMethod);
     }
 
-    void DoCompileList(TomVM vm, int index, boolean useOldMethod) {
+    void doCompileList(TomVM vm, int index, boolean useOldMethod) {
 
         // Find array size
-        int arraySize = vm.getData().Data().get(index).getIntVal();
+        int arraySize = vm.getData().data().get(index).getIntVal();
         index += 2;
 
         // Load array into compiler
-        comp.Parser().SourceCode().clear();
+        comp.Parser().getSourceCode().clear();
         for (int i = 0; i < arraySize; i++) {
 
             // Find string index
-            int stringIndex = vm.getData().Data().get(index).getIntVal();
+            int stringIndex = vm.getData().data().get(index).getIntVal();
 
             // Find text
             String text = vm.getString(stringIndex);
 
             // Add to parser text
-            comp.Parser().SourceCode().add(text);
+            comp.Parser().getSourceCode().add(text);
 
             // Next line
             index++;
         }
 
         // Compile it
-        DoCompile(vm, useOldMethod);
+        doCompile(vm, useOldMethod);
     }
 
-    void DoCompileFile(TomVM vm, String filename, boolean useOldMethod) {
-        ClearError();
+    void doCompileFile(TomVM vm, String filename, boolean useOldMethod) {
+        clearError();
 
         // Attempt to open file
         IntBuffer length = IntBuffer.allocate(1);
@@ -410,7 +409,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         } else {
 
             // Read file into parser
-            comp.Parser().SourceCode().clear();
+            comp.Parser().getSourceCode().clear();
 
             byte[] buffer = new byte[4096];
             int remaining, read;
@@ -419,13 +418,13 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             try {
                 while ((remaining = file.available()) > 4096) {
                     file.read(buffer, 0, 4096);
-                    comp.Parser().SourceCode().add(new String(buffer, "UTF-8"));
+                    comp.Parser().getSourceCode().add(new String(buffer, "UTF-8"));
                 }
                 //Read remaining bytes
                 if (remaining > 0) {
                     buffer = new byte[remaining];
                     file.read(buffer, 0, remaining);
-                    comp.Parser().SourceCode().add(new String(buffer, "UTF-8"));
+                    comp.Parser().getSourceCode().add(new String(buffer, "UTF-8"));
                 }
 
                 file.close();
@@ -434,16 +433,16 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
                 e.printStackTrace();
             }
             // Compile it
-            DoCompile(vm, useOldMethod);
+            doCompile(vm, useOldMethod);
         }
     }
 
 
-    void InternalExecute(TomVM vm, int offset) {
-        InternalExecute(vm, offset, false);
+    void internalExecute(TomVM vm, int offset) {
+        internalExecute(vm, offset, false);
     }
 
-    void InternalExecute(TomVM vm, int offset, boolean isCallback) {
+    void internalExecute(TomVM vm, int offset, boolean isCallback) {
 
         // Move IP to offset
         int saveIP = vm.getIP();          // (Save current IP)
@@ -491,7 +490,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
     public final class WrapCompile implements Function {
         public void run(TomVM vm) {
-            DoCompileText(vm, vm.getStringParam(1), true);
+            doCompileText(vm, vm.getStringParam(1), true);
         }
     }
 
@@ -502,7 +501,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             comp.setSymbolPrefix(comp.getSymbolPrefix() + vm.getStringParam(1));
 
             // Compile text
-            DoCompileText(vm, vm.getStringParam(2), true);
+            doCompileText(vm, vm.getStringParam(2), true);
 
             // Restore symbol prefix
             comp.setSymbolPrefix(oldPrefix);
@@ -512,7 +511,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
     public final class WrapCompileList implements Function {
         public void run(TomVM vm) {
-            DoCompileList(vm, vm.getIntParam(1), true);
+            doCompileList(vm, vm.getIntParam(1), true);
         }
     }
 
@@ -524,7 +523,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             comp.setSymbolPrefix(comp.getSymbolPrefix() + vm.getStringParam(1));
 
             // Compile list
-            DoCompileList(vm, vm.getIntParam(2), true);
+            doCompileList(vm, vm.getIntParam(2), true);
 
             // Restore symbol prefix
             comp.setSymbolPrefix(oldPrefix);
@@ -533,7 +532,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
     public final class WrapCompileFile implements Function {
         public void run(TomVM vm) {
-            DoCompileFile(vm, vm.getStringParam(1), true);
+            doCompileFile(vm, vm.getStringParam(1), true);
         }
     }
 
@@ -545,7 +544,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             comp.setSymbolPrefix(comp.getSymbolPrefix() + vm.getStringParam(1));
 
             // Compile list
-            DoCompileFile(vm, vm.getStringParam(2), true);
+            doCompileFile(vm, vm.getStringParam(2), true);
 
             // Restore symbol prefix
             comp.setSymbolPrefix(oldPrefix);
@@ -556,11 +555,11 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         public void run(TomVM vm) {
 
             // Not allowed in programs with functions/subs (see note in CheckForFunctions)
-            if (!CheckForFunctions(vm)) {
+            if (!checkForFunctions(vm)) {
                 return;
             }
 
-            ClearError();
+            clearError();
             int result = -1;
 
             // Get code handle
@@ -576,7 +575,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
                 int offset = runtimeRoutines.get(handle);
 
                 // Run code in virtual machine
-                InternalExecute(vm, offset);
+                internalExecute(vm, offset);
 
                 // Copy error text
                 if (vm.hasError()) {
@@ -621,7 +620,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
     public final class WrapComp implements Function {
         public void run(TomVM vm) {
-            DoCompileText(vm, vm.getStringParam(1), false);
+            doCompileText(vm, vm.getStringParam(1), false);
         }
     }
 
@@ -632,7 +631,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             comp.setSymbolPrefix(comp.getSymbolPrefix() + vm.getStringParam(1));
 
             // Compile text
-            DoCompileText(vm, vm.getStringParam(2), false);
+            doCompileText(vm, vm.getStringParam(2), false);
 
             // Restore symbol prefix
             comp.setSymbolPrefix(oldPrefix);
@@ -641,7 +640,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
     public final class WrapCompList implements Function {
         public void run(TomVM vm) {
-            DoCompileList(vm, vm.getIntParam(1), false);
+            doCompileList(vm, vm.getIntParam(1), false);
         }
     }
 
@@ -653,7 +652,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             comp.setSymbolPrefix(comp.getSymbolPrefix() + vm.getStringParam(1));
 
             // Compile list
-            DoCompileList(vm, vm.getIntParam(2), false);
+            doCompileList(vm, vm.getIntParam(2), false);
 
             // Restore symbol prefix
             comp.setSymbolPrefix(oldPrefix);
@@ -662,7 +661,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
     public final class WrapCompFile implements Function {
         public void run(TomVM vm) {
-            DoCompileFile(vm, vm.getStringParam(1), false);
+            doCompileFile(vm, vm.getStringParam(1), false);
         }
     }
 
@@ -674,7 +673,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             comp.setSymbolPrefix(comp.getSymbolPrefix() + vm.getStringParam(1));
 
             // Compile list
-            DoCompileFile(vm, vm.getStringParam(2), false);
+            doCompileFile(vm, vm.getStringParam(2), false);
 
             // Restore symbol prefix
             comp.setSymbolPrefix(oldPrefix);

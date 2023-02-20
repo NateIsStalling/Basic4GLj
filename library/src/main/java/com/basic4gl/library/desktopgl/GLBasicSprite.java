@@ -11,28 +11,28 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
  * (Currently this includes sprites and tile map layers.)
  */
 public abstract class GLBasicSprite {
-    private GLSpriteEngine.GLSpriteList m_list;
-    private GLBasicSprite m_prev, m_next;
-    private float m_zOrder;
+    private GLSpriteEngine.GLSpriteList list;
+    private GLBasicSprite prev, next;
+    private float zOrder;
 
     private void InternalRemove() {
-        assertTrue(m_list != null);
+        assertTrue(list != null);
 
         // Link prev item to next
-        if (m_prev != null) {
-            m_prev.m_next = m_next;
+        if (prev != null) {
+            prev.next = next;
         } else {
-            m_list.m_head = m_next;
+            list.head = next;
         }
 
         // Link next item to prev
-        if (m_next != null) {
-            m_next.m_prev = m_prev;
+        if (next != null) {
+            next.prev = prev;
         }
 
         // Unlink this item
-        m_prev = null;
-        m_next = null;
+        prev = null;
+        next = null;
     }
 
     private void InternalReorder(GLBasicSprite prev, GLBasicSprite next) {
@@ -42,15 +42,15 @@ public abstract class GLBasicSprite {
         while (!done) {
 
             // Need to move forward?
-            if (prev != null && prev.m_zOrder < m_zOrder) {
+            if (prev != null && prev.zOrder < zOrder) {
                 next = prev;
-                prev = prev.m_prev;
+                prev = prev.prev;
             }
 
             // Need to move backward?
-            else if (next != null && next.m_zOrder > m_zOrder) {
+            else if (next != null && next.zOrder > zOrder) {
                 prev = next;
-                next = next.m_next;
+                next = next.next;
             }
 
             // Otherwise we're done
@@ -60,32 +60,32 @@ public abstract class GLBasicSprite {
         }
 
         // Insert sprite between prev and next
-        assertTrue(m_list != null);
+        assertTrue(list != null);
 
         // Link prev to us
         if (prev != null) {
-            prev.m_next = this;
+            prev.next = this;
         } else {
-            m_list.m_head = this;
+            list.head = this;
         }
 
         // Link next to us
         if (next != null) {
-            next.m_prev = this;
+            next.prev = this;
         }
 
         // Link us to next & prev
-        m_prev = prev;
-        m_next = next;
+        this.prev = prev;
+        this.next = next;
     }
 
     private void Reorder() {
 
         // Remove from linked list
-        if (m_list != null) {
+        if (list != null) {
 
             // Save original links
-            GLBasicSprite prev = m_prev, next = m_next;
+            GLBasicSprite prev = this.prev, next = this.next;
             InternalRemove();
 
             // Move to correct position
@@ -93,54 +93,52 @@ public abstract class GLBasicSprite {
         }
     }
 
-    private void SetDefaults() {
-        m_zOrder = 0;
-        m_list = null;
-        m_prev = null;
-        m_next = null;
-        m_x = 0;
-        m_y = 0;
-        m_xSize = 32;
-        m_ySize = 32;
-        m_scale = 1;
-        m_xCentre = .5f;
-        m_yCentre = .5f;
-        m_xFlip = false;
-        m_yFlip = false;
-        m_visible = true;
-        m_angle = 0;
-        m_colour[0] = 1;
-        m_colour[1] = 1;
-        m_colour[2] = 1;
-        m_colour[3] = 1;
-        m_parallax = false;
-        m_solid = false;
-        m_srcBlend = GL11.GL_SRC_ALPHA;
-        m_dstBlend = GL11.GL_ONE_MINUS_SRC_ALPHA;
+    private void setDefaults() {
+        zOrder = 0;
+        list = null;
+        prev = null;
+        next = null;
+        positionX = 0;
+        positionY = 0;
+        sizeX = 32;
+        sizeY = 32;
+        scale = 1;
+        centerX = .5f;
+        centerY = .5f;
+        flipX = false;
+        flipY = false;
+        visible = true;
+        angle = 0;
+        color[0] = 1;
+        color[1] = 1;
+        color[2] = 1;
+        color[3] = 1;
+        parallax = false;
+        solid = false;
+        srcBlend = GL11.GL_SRC_ALPHA;
+        dstBlend = GL11.GL_ONE_MINUS_SRC_ALPHA;
     }
 
-    protected Vector<Integer> m_textures = new Vector<Integer>();
-
-    protected void InternalCopy(GLBasicSprite s) {
-        SetTextures(s.m_textures);
-        m_x = s.m_x;
-        m_y = s.m_y;
-        m_xSize = s.m_xSize;
-        m_ySize = s.m_ySize;
-        m_scale = s.m_scale;
-        m_xCentre = s.m_xCentre;
-        m_yCentre = s.m_yCentre;
-        m_xFlip = s.m_xFlip;
-        m_yFlip = s.m_yFlip;
-        m_visible = s.m_visible;
-        m_angle = s.m_angle;
-        m_colour[0] = s.m_colour[0];
-        m_colour[1] = s.m_colour[1];
-        m_colour[2] = s.m_colour[2];
-        m_colour[3] = s.m_colour[3];
-        m_zOrder = s.m_zOrder;
-        m_srcBlend = s.m_srcBlend;
-        m_dstBlend = s.m_dstBlend;
+    protected void internalCopy(GLBasicSprite s) {
+        SetTextures(s.textures);
+        positionX = s.positionX;
+        positionY = s.positionY;
+        sizeX = s.sizeX;
+        sizeY = s.sizeY;
+        scale = s.scale;
+        centerX = s.centerX;
+        centerY = s.centerY;
+        flipX = s.flipX;
+        flipY = s.flipY;
+        visible = s.visible;
+        angle = s.angle;
+        color[0] = s.color[0];
+        color[1] = s.color[1];
+        color[2] = s.color[2];
+        color[3] = s.color[3];
+        zOrder = s.zOrder;
+        srcBlend = s.srcBlend;
+        dstBlend = s.dstBlend;
     }
 
     protected void CheckFrame() {
@@ -150,25 +148,27 @@ public abstract class GLBasicSprite {
     // Basic fields.
     // I can't be bothered to write getters/setters for these. Just write in the
     // values, and call Render().
-    public float m_x, m_y, m_xSize, m_ySize, m_scale;
-    public float m_xCentre, m_yCentre;
-    public boolean m_xFlip, m_yFlip, m_visible, m_parallax, m_solid;
-    public float m_angle;
-    public float[] m_colour = new float[4];
-    public int m_srcBlend, m_dstBlend;
+    public float positionX, positionY, sizeX, sizeY, scale;
+    public float centerX, centerY;
+    public boolean flipX, flipY, visible, parallax, solid;
+    public float angle;
+    public float[] color = new float[4];
+    public int srcBlend, dstBlend;
+
+    protected Vector<Integer> textures = new Vector<Integer>();
 
     // Construction/destruction
     public GLBasicSprite() {
-        SetDefaults();
+        setDefaults();
     }
 
     public GLBasicSprite(int tex) {
-        SetDefaults();
+        setDefaults();
         SetTexture(tex);
     }
 
     public GLBasicSprite(Vector<Integer> tex) {
-        SetDefaults();
+        setDefaults();
         SetTextures(tex);
     }
     /*public ~GLBasicSprite (){
@@ -176,7 +176,7 @@ public abstract class GLBasicSprite {
     }*/
 
     // Class type identification
-    public abstract GLSpriteEngine.GLSpriteType Type();
+    public abstract GLSpriteEngine.GLSpriteType getGLSpriteType();
 
     // ZOrder and list functions
     public void Insert(GLSpriteEngine.GLSpriteList list) {
@@ -186,59 +186,59 @@ public abstract class GLBasicSprite {
         Remove();
 
         // Insert into new list
-        m_list = list;
+        this.list = list;
 
         // At correct position
-        InternalReorder(null, list.m_head);
+        InternalReorder(null, list.head);
     }
 
     public void Remove() {
-        if (m_list != null) {
+        if (list != null) {
             InternalRemove();
-            m_list = null;
+            list = null;
         }
     }
 
     public float ZOrder() {
-        return m_zOrder;
+        return zOrder;
     }
 
     public void SetZOrder(float zOrder) {
-        m_zOrder = zOrder;
+        this.zOrder = zOrder;
         Reorder();
     }
 
     public GLBasicSprite Prev() {
-        return m_prev;
+        return prev;
     }
 
     public GLBasicSprite Next() {
-        return m_next;
+        return next;
     }
 
     // Texture handle storage
     public void AddTexture(int t) {
-        m_textures.add(t);
+        textures.add(t);
         CheckFrame();
     }
 
     public void AddTextures(Vector<Integer> t) {
-        m_textures.addAll(t);            // Append textures to end
+        textures.addAll(t);            // Append textures to end
         CheckFrame();
     }
 
     public void SetTexture(int t) {
-        m_textures.clear();
+        textures.clear();
         AddTexture(t);
     }
 
     public void SetTextures(Vector<Integer> t) {
-        m_textures.clear();
+        textures.clear();
         AddTextures(t);
     }
 
     // Rendering/animation
-    public abstract void Render(float[] camInv);           // camInv is the inverted camera matrix
+    public abstract void render(float[] camInv);           // camInv is the inverted camera matrix
 
     public void Animate() {
         // By default Animate does nothing. Override for types to which it is
@@ -252,12 +252,12 @@ public abstract class GLBasicSprite {
 
     // Copying/assignment
     public boolean SameTypeAs(GLBasicSprite s) {
-        return s.Type() == Type();
+        return s.getGLSpriteType() == getGLSpriteType();
     }
 
     public void Copy(GLBasicSprite s) {
         assertTrue(SameTypeAs(s));
-        InternalCopy(s);
+        internalCopy(s);
         Reorder();             // (As ZOrder may have changed)
     }
 

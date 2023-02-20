@@ -84,7 +84,7 @@ public class TomBasicCompiler extends HasErrorState {
 	// data before the next instruction
 	private int lastLine, lastCol;
 	private boolean inFunction;
-	private final InstructionPos functionStart;
+	private final InstructionPosition functionStart;
 	private int functionJumpOver;
 	private final Map<String, Integer> globalUserFunctionIndex; // Maps function name to
 	// index of function
@@ -111,6 +111,10 @@ public class TomBasicCompiler extends HasErrorState {
 	// Language extension
 	private final Vector<UnOperExt> unOperExts; // Unary operator extensions
 	private final Vector<BinOperExt> binOperExts; // Binary operator extensions
+
+	public List<String> getReservedWords() {
+		return reservedWords;
+	}
 
 	/**
 	 * Internal compiler types
@@ -215,14 +219,14 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		public void streamOut(DataOutputStream stream) throws IOException{
-			Streaming.WriteLong(stream, offset);
-			Streaming.WriteLong(stream, programDataOffset);
+			Streaming.writeLong(stream, offset);
+			Streaming.writeLong(stream, programDataOffset);
 
 		}
 
 		public boolean streamIn(DataInputStream stream) throws IOException{
-			offset = (int) Streaming.ReadLong(stream);
-			programDataOffset = (int) Streaming.ReadLong(stream);
+			offset = (int) Streaming.readLong(stream);
+			programDataOffset = (int) Streaming.readLong(stream);
 
 			return true;
 		}
@@ -354,7 +358,7 @@ public class TomBasicCompiler extends HasErrorState {
 		unOperExts = new Vector<UnOperExt>();
 		binOperExts = new Vector<BinOperExt>();
 
-		functionStart = new InstructionPos();
+		functionStart = new InstructionPosition();
 		userFuncPrototype = new UserFuncPrototype();
 
 		clearState();
@@ -553,7 +557,7 @@ public class TomBasicCompiler extends HasErrorState {
 	boolean GetToken(boolean skipEOL, boolean dataMode) {
 
 		// Read a token
-		token = parser.NextToken(skipEOL, dataMode);
+		token = parser.nextToken(skipEOL, dataMode);
 		if (!checkParser()) {
 			return false;
 		}
@@ -618,11 +622,11 @@ public class TomBasicCompiler extends HasErrorState {
 					default:
 						break;
 					}
-					token.m_valType = constant.mBasicType;
+					token.valType = constant.mBasicType;
 				}
 			}
 		} else if (token.tokenType == TokenType.CTT_CONSTANT
-				&& token.m_valType == BasicValType.VTP_STRING) {
+				&& token.valType == BasicValType.VTP_STRING) {
 
 			// 19-Jul-2003
 			// Prefix string text constants with "S". This prevents them
@@ -650,7 +654,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Compile code
-		while (!parser.Eof() && compileInstruction()) {
+		while (!parser.isEof() && compileInstruction()) {
 		}
 
 		// Terminate program
@@ -666,8 +670,8 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Point token to goto instruction, so that it will be displayed
 				// if there is an error.
-				token.line = instr.mSourceLine;
-				token.col = instr.mSourceChar;
+				token.line = instr.sourceLine;
+				token.col = instr.sourceChar;
 
 				// Label must exist
 				if (!labelExists(jump.labelName)) {
@@ -676,7 +680,7 @@ public class TomBasicCompiler extends HasErrorState {
 				}
 
 				// Patch in offset
-				instr.mValue.setIntVal(getLabel(jump.labelName).offset);
+				instr.value.setIntVal(getLabel(jump.labelName).offset);
 			}
 
 			// Link up resets
@@ -689,8 +693,8 @@ public class TomBasicCompiler extends HasErrorState {
 				// Point token to reset instruction, so that it will be
 				// displayed
 				// if there is an error.
-				token.line = instr.mSourceLine;
-				token.col = instr.mSourceChar;
+				token.line = instr.sourceLine;
+				token.col = instr.sourceChar;
 
 				// Label must exist
 				if (!labelExists(jump.labelName)) {
@@ -699,7 +703,7 @@ public class TomBasicCompiler extends HasErrorState {
 				}
 
 				// Patch in data offset
-				instr.mValue
+				instr.value
 				.setIntVal(getLabel(jump.labelName).programDataOffset);
 			}
 
@@ -1038,8 +1042,8 @@ public class TomBasicCompiler extends HasErrorState {
 			FlowControl top = getFlowControlTOS();
 
 			// Point parser to it
-			parser.SetPos(top.m_sourcePos.getSourceLine(),
-					top.m_sourcePos.getSourceColumn());
+			parser.setPos(top.sourcePos.getSourceLine(),
+					top.sourcePos.getSourceColumn());
 
 			// Set error text
 			switch (getFlowControlTOS().controlType) {
@@ -1074,7 +1078,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (inFunction) {
 
 			// Point parser to function
-			parser.SetPos(functionStart.getSourceLine(),
+			parser.setPos(functionStart.getSourceLine(),
 					functionStart.getSourceColumn());
 
 			// Return error
@@ -1126,11 +1130,11 @@ public class TomBasicCompiler extends HasErrorState {
 		// colons
 
 		// Is it a label?
-		Token nextToken = parser.PeekToken(false, false);
+		Token nextToken = parser.peekToken(false, false);
 		if (!checkParser()) {
 			return false;
 		}
-		if (token.m_newLine && token.tokenType == TokenType.CTT_TEXT
+		if (token.newLine && token.tokenType == TokenType.CTT_TEXT
 				&& nextToken.text.equals(":")) {
 
 			// Labels cannot exist inside subs/functions
@@ -1445,7 +1449,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (!checkName(name)) {
 			return false;
 		}
-		if (vm.getDataTypes().StrucStored(name)) { // Must be unused
+		if (vm.getDataTypes().isStrucStored(name)) { // Must be unused
 			setError("'" + name + "' has already been used as a structure name");
 			return false;
 		}
@@ -1460,7 +1464,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Create structure
-		vm.getDataTypes().NewStruc(name);
+		vm.getDataTypes().createStruc(name);
 
 		// Expect at least one field
 		if (token.text.equals("endstruc") || token.text.equals("end")) {
@@ -1571,22 +1575,22 @@ public class TomBasicCompiler extends HasErrorState {
 			if (forStruc) {
 
 				// Validate field name and type
-				Structure struc = vm.getDataTypes().CurrentStruc();
-				if (vm.getDataTypes().FieldStored(struc, name)) {
+				Structure struc = vm.getDataTypes().getCurrentStruc();
+				if (vm.getDataTypes().isFieldStored(struc, name)) {
 					setError((String) "Field '" + name
 							+ "' has already been DIMmed in structure '"
-							+ struc.m_name + "'");
+							+ struc.name + "'");
 					return false;
 				}
-				if (type.m_pointerLevel == 0
-						&& type.m_basicType == vm.getDataTypes()
-						.GetStruc(struc.m_name)) {
+				if (type.pointerLevel == 0
+						&& type.basicType == vm.getDataTypes()
+						.getStrucIndex(struc.name)) {
 					setError("Structure cannot contain an element of its own type");
 					return false;
 				}
 
 				// Add field to structure
-				vm.getDataTypes().NewField(name, type);
+				vm.getDataTypes().createField(name, type);
 			} else if (forFuncParam) {
 
 				// Check parameter of the same name has not already been added
@@ -1614,7 +1618,7 @@ public class TomBasicCompiler extends HasErrorState {
 					// (This is allowed, but only if DIMmed to the same type.)
 					int varIndex = getCurrentUserFunctionPrototype().getLocalVar(name);
 					if (varIndex >= 0) {
-						if (!(getCurrentUserFunctionPrototype().localVarTypes.get(varIndex).Equals(type))) {
+						if (!(getCurrentUserFunctionPrototype().localVarTypes.get(varIndex).equals(type))) {
 							setError("Local variable '"
 									+ name
 									+ "' has already been allocated as a different type.");
@@ -1638,7 +1642,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 					// Data containing strings will need to be "destroyed" when
 					// the stack unwinds.
-					if (vm.getDataTypes().ContainsString(type)) {
+					if (vm.getDataTypes().containsString(type)) {
 						AddInstruction(OpCode.OP_REG_DESTRUCTOR,
 								BasicValType.VTP_INT,
 								new Value((int) vm.getStoreTypeIndex(type)));
@@ -1652,9 +1656,9 @@ public class TomBasicCompiler extends HasErrorState {
 								BasicValType.VTP_INT, new Value(varIndex));
 
 						// Set register type
-						regType.Set(getCurrentUserFunctionPrototype().localVarTypes
+						regType.setType(getCurrentUserFunctionPrototype().localVarTypes
 								.get(varIndex));
-						regType.m_pointerLevel++;
+						regType.pointerLevel++;
 
 						// Compile single deref.
 						// Unlike standard variable assignment, we don't
@@ -1679,7 +1683,7 @@ public class TomBasicCompiler extends HasErrorState {
 					// only if DIMed to the same type.)
 					int varIndex = vm.getVariables().getVariableIndex(name);
 					if (varIndex >= 0) {
-						if (!(vm.getVariables().getVariables().get(varIndex).m_type.Equals(type))) {
+						if (!(vm.getVariables().getVariables().get(varIndex).type.equals(type))) {
 							setError("Var '"
 									+ name
 									+ "' has already been allocated as a different type.");
@@ -1710,9 +1714,9 @@ public class TomBasicCompiler extends HasErrorState {
 								BasicValType.VTP_INT, new Value(varIndex));
 
 						// Set register type
-						regType.Set(vm.getVariables().getVariables()
-								.get(varIndex).m_type);
-						regType.m_pointerLevel++;
+						regType.setType(vm.getVariables().getVariables()
+								.get(varIndex).type);
+						regType.pointerLevel++;
 
 						// Compile single deref.
 						// Unlike standard variable assignment, we don't
@@ -1736,8 +1740,8 @@ public class TomBasicCompiler extends HasErrorState {
 				// indices
 				// will have been pushed to the stack.
 				// The DECLARE operator automatically removes them however
-				if (type.PhysicalPointerLevel() == 0) {
-					for (int i = 0; i < type.m_arrayLevel; i++) {
+				if (type.getPhysicalPointerLevel() == 0) {
+					for (int i = 0; i < type.arrayLevel; i++) {
 						operandStack.remove(operandStack.size() - 1);
 					}
 				}
@@ -1776,15 +1780,15 @@ public class TomBasicCompiler extends HasErrorState {
 	private boolean compileDataType(Mutable<String> name, Mutable<ValType> type,
 			Mutable<TokenType> tokenType) {
 
-		type.get().Set(BasicValType.VTP_UNDEFINED);
+		type.get().setType(BasicValType.VTP_UNDEFINED);
 		name.set("");
 
 		// Look for structure type
 		if (token.tokenType == TokenType.CTT_TEXT) {
 			String structureName = symbolPrefix + token.text;
-			int i = vm.getDataTypes().GetStruc(structureName);
+			int i = vm.getDataTypes().getStrucIndex(structureName);
 			if (i >= 0) {
-				type.get().m_basicType = i;
+				type.get().basicType = i;
 				if (!GetToken()) // Skip token type keyword
 				{
 					return false;
@@ -1794,7 +1798,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Look for preceeding & (indicates pointer)
 		if (token.text.equals("&")) {
-			type.get().m_pointerLevel++;
+			type.get().pointerLevel++;
 			if (!GetToken()) {
 				return false;
 			}
@@ -1810,13 +1814,13 @@ public class TomBasicCompiler extends HasErrorState {
 		if (name.get().length() > 0) {
 			last = name.get().charAt(name.get().length() - 1);
 		}
-		if (type.get().m_basicType == BasicValType.VTP_UNDEFINED) {
+		if (type.get().basicType == BasicValType.VTP_UNDEFINED) {
 			if (last == '$') {
-				type.get().m_basicType = BasicValType.VTP_STRING;
+				type.get().basicType = BasicValType.VTP_STRING;
 			} else if (last == '#') {
-				type.get().m_basicType = BasicValType.VTP_REAL;
+				type.get().basicType = BasicValType.VTP_REAL;
 			} else if (last == '%') {
-				type.get().m_basicType = BasicValType.VTP_INT;
+				type.get().basicType = BasicValType.VTP_INT;
 			}
 		} else {
 			if (last == '$' || last == '#' || last == '%') {
@@ -1831,7 +1835,7 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	private boolean compileAs(Mutable<String> name, Mutable<ValType> type) {
-		if (type.get().m_basicType != BasicValType.VTP_UNDEFINED) {
+		if (type.get().basicType != BasicValType.VTP_UNDEFINED) {
 			setError("'" + name
 					+ "'s type has already been defined. Cannot use 'as' here.");
 			return false;
@@ -1849,7 +1853,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 		}
 		if (token.text.equals("integer")) {
-			type.get().m_basicType = BasicValType.VTP_INT;
+			type.get().basicType = BasicValType.VTP_INT;
 		} else if (token.text.equals("single")
 				|| token.text.equals("double"))
 
@@ -1858,19 +1862,19 @@ public class TomBasicCompiler extends HasErrorState {
 			// single
 			// precision) floating point number each time.
 		{
-			type.get().m_basicType = BasicValType.VTP_REAL;
+			type.get().basicType = BasicValType.VTP_REAL;
 		} else if (token.text.equals("string")) {
-			type.get().m_basicType = BasicValType.VTP_STRING;
+			type.get().basicType = BasicValType.VTP_STRING;
 		} else {
 
 			// Look for recognised structure name
 			String structureName = symbolPrefix + token.text;
-			int i = vm.getDataTypes().GetStruc(structureName);
+			int i = vm.getDataTypes().getStrucIndex(structureName);
 			if (i < 0) {
 				setError("Expected 'single', 'double', 'integer', 'string' or type name");
 				return false;
 			}
-			type.get().m_basicType = i;
+			type.get().basicType = i;
 		}
 
 		// Skip type name
@@ -1905,7 +1909,7 @@ public class TomBasicCompiler extends HasErrorState {
 			while (token.text.equals("(") || foundComma) {
 
 				// Room for one more dimension?
-				if (type.get().m_arrayLevel >= TomVM.ARRAY_MAX_DIMENSIONS) {
+				if (type.get().arrayLevel >= TomVM.ARRAY_MAX_DIMENSIONS) {
 					setError("Arrays cannot have more than "
 							+ String.valueOf(TomVM.ARRAY_MAX_DIMENSIONS)
 							+ " dimensions.");
@@ -1918,12 +1922,12 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Validate dimensions.
 				// Firstly, pointers don't have dimensions declared with them.
-				if (type.get().m_pointerLevel > 0) {
+				if (type.get().pointerLevel > 0) {
 					if (!token.text.equals(")")) {
 						setError("Use '()' to declare a pointer to an array");
 						return false;
 					}
-					type.get().m_arrayLevel++;
+					type.get().arrayLevel++;
 				}
 				// Structure field types must have constant array size that we
 				// can
@@ -1951,11 +1955,11 @@ public class TomBasicCompiler extends HasErrorState {
 					stringValue = stringValueRef.get();
 
 					// Store array dimension
-					type.get().AddDimension(value.getIntVal() + 1);
+					type.get().addDimension(value.getIntVal() + 1);
 				} else if (forFuncParam) {
 					// Array sizes for function parameters aren't declared.
 					// (Syntax is "dim myArray()")
-					type.get().m_arrayLevel++;
+					type.get().arrayLevel++;
 				}
 				// Regular DIMmed array dimensions are sized at run time.
 				// Here we generate code to calculate the dimension size and
@@ -1966,7 +1970,7 @@ public class TomBasicCompiler extends HasErrorState {
 							&& compileConvert (BasicValType.VTP_INT) && compilePush())) {
 						return false;
 					}
-					type.get().m_arrayLevel++;
+					type.get().arrayLevel++;
 				}
 
 				// Expect closing ')', or a separating comma
@@ -1992,8 +1996,8 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// If data type still not specified, default to integer
-		if (type.get().m_basicType == BasicValType.VTP_UNDEFINED) {
-			type.get().m_basicType = BasicValType.VTP_INT;
+		if (type.get().basicType == BasicValType.VTP_UNDEFINED) {
+			type.get().basicType = BasicValType.VTP_INT;
 		}
 
 		return true;
@@ -2036,8 +2040,8 @@ public class TomBasicCompiler extends HasErrorState {
 						BasicValType.VTP_INT, new Value(varIndex));
 
 				// Set register type
-				regType.Set(getCurrentUserFunctionPrototype().localVarTypes.get(varIndex));
-				regType.m_pointerLevel++;
+				regType.setType(getCurrentUserFunctionPrototype().localVarTypes.get(varIndex));
+				regType.pointerLevel++;
 
 				found = true;
 			}
@@ -2057,8 +2061,8 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Set register type
 				regType
-				.Set(vm.getVariables().getVariables().get(varIndex).m_type);
-				regType.m_pointerLevel++;
+				.setType(vm.getVariables().getVariables().get(varIndex).type);
+				regType.pointerLevel++;
 
 				found = true;
 			}
@@ -2088,10 +2092,10 @@ public class TomBasicCompiler extends HasErrorState {
 	private boolean compileDeref() {
 
 		// Generate code to dereference pointer in reg. (i.e reg = [reg]).
-		assertTrue(vm.getDataTypes().TypeValid(regType));
+		assertTrue(vm.getDataTypes().isTypeValid(regType));
 
 		// Not a pointer?
-		if (regType.VirtualPointerLevel() <= 0) {
+		if (regType.getVirtualPointerLevel() <= 0) {
 			assertTrue(false); // This should never happen
 			setError("INTERNAL COMPILER ERROR: Attempted to dereference a non-pointer");
 			return false;
@@ -2102,20 +2106,20 @@ public class TomBasicCompiler extends HasErrorState {
 		// Instead we leave it as a pointer, but update the type to indicate
 		// to the compiler that we are using a pointer internally to represent
 		// a variable.
-		assertTrue(!regType.m_byRef);
-		if (regType.PhysicalPointerLevel() == 1 // Must be pointer to actual
+		assertTrue(!regType.isByRef);
+		if (regType.getPhysicalPointerLevel() == 1 // Must be pointer to actual
 				// data (not pointer to
 				// pointer e.t.c)
-				&& (regType.m_arrayLevel > 0 // Array
-						|| regType.m_basicType >= 0)) { // or structure
-			regType.m_byRef = true;
+				&& (regType.arrayLevel > 0 // Array
+						|| regType.basicType >= 0)) { // or structure
+			regType.isByRef = true;
 			return true;
 		}
 
 
 		// Generate dereference instruction
-		regType.m_pointerLevel--;
-		AddInstruction(OpCode.OP_DEREF, regType.StoredType(), new Value()); // Load
+		regType.pointerLevel--;
+		AddInstruction(OpCode.OP_DEREF, regType.getStoredType(), new Value()); // Load
 		// variable
 
 		return true;
@@ -2131,7 +2135,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// In Basic4GL syntax, pointers are implicitly dereferenced (similar to
 		// C++'s
 		// "reference" type.)
-		if (regType.VirtualPointerLevel() > 0) {
+		if (regType.getVirtualPointerLevel() > 0) {
 			if (!compileDeref()) {
 				return false;
 			}
@@ -2155,13 +2159,13 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Lookup subfield
 				// Register must contain a structure type
-				if (regType.VirtualPointerLevel() != 0
-						|| regType.m_arrayLevel != 0
-						|| regType.m_basicType < 0) {
+				if (regType.getVirtualPointerLevel() != 0
+						|| regType.arrayLevel != 0
+						|| regType.basicType < 0) {
 					setError("Unexpected '.'");
 					return false;
 				}
-				assertTrue(vm.getDataTypes().TypeValid(regType));
+				assertTrue(vm.getDataTypes().isTypeValid(regType));
 
 				// Skip "."
 				if (!GetToken()) {
@@ -2179,26 +2183,26 @@ public class TomBasicCompiler extends HasErrorState {
 				}
 
 				// Validate field
-				Structure s = vm.getDataTypes().Structures()
-						.get(regType.m_basicType);
-				int fieldIndex = vm.getDataTypes().GetField(s, fieldName);
+				Structure s = vm.getDataTypes().getStructures()
+						.get(regType.basicType);
+				int fieldIndex = vm.getDataTypes().getFieldIndex(s, fieldName);
 				if (fieldIndex < 0) {
 					setError((String) "'" + fieldName
-							+ "' is not a field of structure '" + s.m_name
+							+ "' is not a field of structure '" + s.name
 							+ "'");
 					return false;
 				}
 
 				// Generate code to calculate address of field
 				// Reg is initially pointing to address of structure.
-				StructureField field = vm.getDataTypes().Fields()
+				StructureField field = vm.getDataTypes().getFields()
 						.get(fieldIndex);
 				AddInstruction(OpCode.OP_ADD_CONST, BasicValType.VTP_INT,
-						new Value(field.m_dataOffset));
+						new Value(field.dataOffset));
 
 				// Reg now contains pointer to field
-				regType.Set(field.m_type);
-				regType.m_pointerLevel++;
+				regType.setType(field.type);
+				regType.pointerLevel++;
 
 				// Dereference to reach data
 				if (!compileDerefs()) {
@@ -2207,14 +2211,14 @@ public class TomBasicCompiler extends HasErrorState {
 			} else if (token.text.equals("(")) {
 
 				// Register must contain an array
-				if (regType.VirtualPointerLevel() != 0
-						|| regType.m_arrayLevel == 0) {
+				if (regType.getVirtualPointerLevel() != 0
+						|| regType.arrayLevel == 0) {
 					setError("Unexpected '('");
 					return false;
 				}
 
 				do {
-					if (regType.m_arrayLevel == 0) {
+					if (regType.arrayLevel == 0) {
 						setError("Unexpected ','");
 						return false;
 					}
@@ -2236,7 +2240,7 @@ public class TomBasicCompiler extends HasErrorState {
 					}
 					if (!compileConvert (BasicValType.VTP_INT)) {
 						setError("Array index must be a number. "
-								+ vm.getDataTypes().DescribeVariable("",
+								+ vm.getDataTypes().describeVariable("",
 								regType) + " is not a number");
 						return false;
 					}
@@ -2254,10 +2258,10 @@ public class TomBasicCompiler extends HasErrorState {
 							BasicValType.VTP_INT, new Value());
 
 					// reg now points to an element
-					regType.Set(reg2Type);
-					regType.m_byRef = false;
-					regType.m_pointerLevel = 1;
-					regType.m_arrayLevel--;
+					regType.setType(reg2Type);
+					regType.isByRef = false;
+					regType.pointerLevel = 1;
+					regType.arrayLevel--;
 
 					// Dereference to get to element
 					if (!compileDerefs()) {
@@ -2439,7 +2443,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Can only operate on basic types.
 			// (This will change once vector and matrix routines have been
 			// implemented).
-			if (!regType.IsBasic()) {
+			if (!regType.isBasicType()) {
 				setError("Operator cannot be applied to this data type");
 				return false;
 			}
@@ -2452,13 +2456,13 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Perform unary operation
-			AddInstruction(o.operator.opCode, regType.m_basicType,
+			AddInstruction(o.operator.opCode, regType.basicType,
 					new Value());
 
 			// Special case, boolean operator
 			// Result will be an integer
 			if (o.operator.type == OperType.OT_RETURNBOOLOPERATOR) {
-				regType.Set (BasicValType.VTP_INT);
+				regType.setType(BasicValType.VTP_INT);
 			}
 		} else if (o.operator.params == 2) {
 
@@ -2476,7 +2480,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// necessary.
 
 			int opCodeType; // Data type to store in OP_CODE
-			if (regType.IsNull() || reg2Type.IsNull()) {
+			if (regType.isNull() || reg2Type.isNull()) {
 
 				// Can compare null to any pointer type. However, operator must
 				// be '=' or '<>'
@@ -2489,13 +2493,13 @@ public class TomBasicCompiler extends HasErrorState {
 				// Convert null pointer type to non null pointer type
 				// Note: If both pointers a null, CompileConvert will simply do
 				// nothing
-				if (regType.IsNull()) {
+				if (regType.isNull()) {
 					if (!compileConvert(reg2Type)) {
 						return false;
 					}
 				}
 
-				if (reg2Type.IsNull()) {
+				if (reg2Type.isNull()) {
 					if (!compileConvert2(regType)) {
 						return false;
 					}
@@ -2503,8 +2507,8 @@ public class TomBasicCompiler extends HasErrorState {
 
 				opCodeType = BasicValType.VTP_INT; // Integer comparison is
 				// used internally
-			} else if (regType.VirtualPointerLevel() > 0
-					|| reg2Type.VirtualPointerLevel() > 0) {
+			} else if (regType.getVirtualPointerLevel() > 0
+					|| reg2Type.getVirtualPointerLevel() > 0) {
 
 				// Can compare 2 pointers. However operator must be '=' or '<>'
 				// and
@@ -2514,7 +2518,7 @@ public class TomBasicCompiler extends HasErrorState {
 					setError("Operator cannot be applied to this data type");
 					return false;
 				}
-				if (!regType.ExactEquals(reg2Type)) {
+				if (!regType.exactEquals(reg2Type)) {
 					setError("Cannot compare pointers to different types");
 					return false;
 				}
@@ -2524,15 +2528,15 @@ public class TomBasicCompiler extends HasErrorState {
 			} else {
 
 				// Otherwise all operators can be applied to basic data types
-				if (!regType.IsBasic() || !reg2Type.IsBasic()) {
+				if (!regType.isBasicType() || !reg2Type.isBasicType()) {
 					setError("Operator cannot be applied to this data type");
 					return false;
 				}
 
 				// Convert operands to highest type
-				int highest = regType.m_basicType;
-				if (reg2Type.m_basicType > highest) {
-					highest = reg2Type.m_basicType;
+				int highest = regType.basicType;
+				if (reg2Type.basicType > highest) {
+					highest = reg2Type.basicType;
 				}
 				if (o.operator.type == OperType.OT_BOOLOPERATOR
 						|| o.operator.type == OperType.OT_LAZYBOOLOPERATOR) {
@@ -2562,7 +2566,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Special case, boolean operator
 			// Result will be an integer
 			if (o.operator.type == OperType.OT_RETURNBOOLOPERATOR) {
-				regType.Set (BasicValType.VTP_INT);
+				regType.setType(BasicValType.VTP_INT);
 			}
 		} else {
 			assertTrue(false);
@@ -2570,7 +2574,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Fix up lazy jumps
 		if (o.lazyJumpAddress >= 0) {
-			vm.getInstruction(o.lazyJumpAddress).mValue.setVal((int) vm
+			vm.getInstruction(o.lazyJumpAddress).value.setVal((int) vm
 					.getInstructionCount());
 		}
 
@@ -2648,7 +2652,7 @@ public class TomBasicCompiler extends HasErrorState {
 		AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_INT,
 				new Value(0)); // Load 0 into
 		// register
-		regType.Set(new ValType (BasicValType.VTP_NULL, (byte) 0, (byte) 1,
+		regType.setType(new ValType (BasicValType.VTP_NULL, (byte) 0, (byte) 1,
 				false)); // Type
 		// is
 		// pointer
@@ -2668,7 +2672,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (token.tokenType == TokenType.CTT_CONSTANT) {
 
 			// Special case, string constants
-			if (token.m_valType == BasicValType.VTP_STRING) {
+			if (token.valType == BasicValType.VTP_STRING) {
 
 				// Allocate new string constant
 				String text;
@@ -2678,15 +2682,15 @@ public class TomBasicCompiler extends HasErrorState {
 				// store load instruction
 				AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING,
 						new Value(index));
-				regType.Set (BasicValType.VTP_STRING);
-			} else if (token.m_valType == BasicValType.VTP_REAL) {
+				regType.setType(BasicValType.VTP_STRING);
+			} else if (token.valType == BasicValType.VTP_REAL) {
 				AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_REAL,
 						new Value(Float.valueOf(token.text)));
-				regType.Set (BasicValType.VTP_REAL);
-			} else if (token.m_valType == BasicValType.VTP_INT) {
+				regType.setType(BasicValType.VTP_REAL);
+			} else if (token.valType == BasicValType.VTP_INT) {
 				AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_INT,
 						new Value(Cast.StringToInt(token.text)));
-				regType.Set (BasicValType.VTP_INT);
+				regType.setType(BasicValType.VTP_INT);
 			} else {
 				setError("Unknown data type");
 				return false;
@@ -2705,7 +2709,7 @@ public class TomBasicCompiler extends HasErrorState {
 		operandStack.add(new ValType(regType));
 
 		// Generate push code
-		AddInstruction(OpCode.OP_PUSH, regType.StoredType(), new Value());
+		AddInstruction(OpCode.OP_PUSH, regType.getStoredType(), new Value());
 
 		return true;
 	}
@@ -2718,11 +2722,11 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Retrieve pushed value type
-		reg2Type.Set(operandStack.lastElement());
+		reg2Type.setType(operandStack.lastElement());
 		operandStack.remove(operandStack.size() - 1);
 
 		// Generate pop code
-		AddInstruction(OpCode.OP_POP, reg2Type.StoredType(), new Value());
+		AddInstruction(OpCode.OP_POP, reg2Type.getStoredType(), new Value());
 
 		return true;
 	}
@@ -2730,20 +2734,20 @@ public class TomBasicCompiler extends HasErrorState {
 	private boolean compileConvert(int basictype) {
 
 		// Convert reg to given type
-		if (regType.Equals(basictype)) // Already same type
+		if (regType.matchesType(basictype)) // Already same type
 		{
 			return true;
 		}
 
 		// Determine opcode
 		short code = OpCode.OP_NOP;
-		if (regType.Equals (BasicValType.VTP_INT)) {
+		if (regType.matchesType(BasicValType.VTP_INT)) {
 			if (basictype == BasicValType.VTP_REAL) {
 				code = OpCode.OP_CONV_INT_REAL;
 			} else if (basictype == BasicValType.VTP_STRING) {
 				code = OpCode.OP_CONV_INT_STRING;
 			}
-		} else if (regType.Equals (BasicValType.VTP_REAL)) {
+		} else if (regType.matchesType(BasicValType.VTP_REAL)) {
 			if (basictype == BasicValType.VTP_INT) {
 				code = OpCode.OP_CONV_REAL_INT;
 			} else if (basictype == BasicValType.VTP_STRING) {
@@ -2754,7 +2758,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Store instruction
 		if (code != OpCode.OP_NOP) {
 			AddInstruction(code, BasicValType.VTP_INT, new Value());
-			regType.Set(basictype);
+			regType.setType(basictype);
 			return true;
 		}
 
@@ -2765,20 +2769,20 @@ public class TomBasicCompiler extends HasErrorState {
 	private boolean compileConvert2(int type) {
 
 		// Convert reg2 to given type
-		if (reg2Type.Equals(type)) // Already same type
+		if (reg2Type.matchesType(type)) // Already same type
 		{
 			return true;
 		}
 
 		// Determine opcode
 		short code = OpCode.OP_NOP;
-		if (reg2Type.Equals (BasicValType.VTP_INT)) {
+		if (reg2Type.matchesType(BasicValType.VTP_INT)) {
 			if (type == BasicValType.VTP_REAL) {
 				code = OpCode.OP_CONV_INT_REAL2;
 			} else if (type == BasicValType.VTP_STRING) {
 				code = OpCode.OP_CONV_INT_STRING2;
 			}
-		} else if (reg2Type.Equals (BasicValType.VTP_REAL)) {
+		} else if (reg2Type.matchesType(BasicValType.VTP_REAL)) {
 			if (type == BasicValType.VTP_INT) {
 				code = OpCode.OP_CONV_REAL_INT2;
 			} else if (type == BasicValType.VTP_STRING) {
@@ -2789,7 +2793,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Store instruction
 		if (code != OpCode.OP_NOP) {
 			AddInstruction(code, BasicValType.VTP_INT, new Value());
-			reg2Type.Set(type);
+			reg2Type.setType(type);
 			return true;
 		}
 
@@ -2800,32 +2804,32 @@ public class TomBasicCompiler extends HasErrorState {
 	private boolean compileConvert(ValType type) {
 
 		// Can convert null to a different pointer type
-		if (regType.IsNull()) {
-			if (type.VirtualPointerLevel() <= 0) {
+		if (regType.isNull()) {
+			if (type.getVirtualPointerLevel() <= 0) {
 				setError("Cannot convert null to "
-						+ vm.getDataTypes().DescribeVariable("", type));
+						+ vm.getDataTypes().describeVariable("", type));
 				return false;
 			}
 
 			// No generated code necessary, just substitute in type
-			regType.Set(type);
+			regType.setType(type);
 			return true;
 		}
 
 		// Can convert values to references. (This is used when evaluating
 		// function
 		// parameters.)
-		if (type.m_pointerLevel == 1 && type.m_byRef // type is a reference
-				&& regType.m_pointerLevel == 0 // regType is a value
-				&& regType.m_basicType == type.m_basicType // Same type of
+		if (type.pointerLevel == 1 && type.isByRef // type is a reference
+				&& regType.pointerLevel == 0 // regType is a value
+				&& regType.basicType == type.basicType // Same type of
 				// data
-				&& regType.m_arrayLevel == type.m_arrayLevel) {
+				&& regType.arrayLevel == type.arrayLevel) {
 
 			// Convert register to pointer
 			if (compileTakeAddress()) {
 
 				// Convert pointer to reference
-				regType.m_byRef = true;
+				regType.isByRef = true;
 				return true;
 			} else {
 				return false;
@@ -2836,9 +2840,9 @@ public class TomBasicCompiler extends HasErrorState {
 		// For non basic types, all we can do is verify that the register
 		// contains
 		// the type that we expect, and raise a compiler error otherwise.
-		if (type.IsBasic()) {
-			return compileConvert(type.m_basicType);
-		} else if (regType.ExactEquals(type)) {
+		if (type.isBasicType()) {
+			return compileConvert(type.basicType);
+		} else if (regType.exactEquals(type)) {
 			return true; // Note: Exact equals is required as == will say that
 		}
 		// pointers are equal to references.
@@ -2846,22 +2850,22 @@ public class TomBasicCompiler extends HasErrorState {
 		// that programs use the correct type.)
 
 		setError("Cannot convert to "
-				+ vm.getDataTypes().DescribeVariable("", type));
+				+ vm.getDataTypes().describeVariable("", type));
 		return false;
 	}
 
 	private boolean compileConvert2(ValType type) {
 
 		// Can convert null to a different pointer type
-		if (reg2Type.IsNull()) {
-			if (type.VirtualPointerLevel() <= 0) {
+		if (reg2Type.isNull()) {
+			if (type.getVirtualPointerLevel() <= 0) {
 				setError("Cannot convert null to "
-						+ vm.getDataTypes().DescribeVariable("", type));
+						+ vm.getDataTypes().describeVariable("", type));
 				return false;
 			}
 
 			// No generated code necessary, just substitute in type
-			reg2Type.Set(type);
+			reg2Type.setType(type);
 			return true;
 		}
 
@@ -2869,9 +2873,9 @@ public class TomBasicCompiler extends HasErrorState {
 		// For non basic types, all we can do is verify that the register
 		// contains
 		// the type that we expect, and raise a compiler error otherwise.
-		if (type.IsBasic()) {
-			return compileConvert2(type.m_basicType);
-		} else if (reg2Type.ExactEquals(type)) {
+		if (type.isBasicType()) {
+			return compileConvert2(type.basicType);
+		} else if (reg2Type.exactEquals(type)) {
 			return true; // Note: Exact equals is required as == will say that
 		}
 		// pointers are equal to references.
@@ -2879,7 +2883,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// that programs use the correct type.)
 
 		setError("Cannot convert to "
-				+ vm.getDataTypes().DescribeVariable("", type));
+				+ vm.getDataTypes().describeVariable("", type));
 		return false;
 	}
 
@@ -2891,21 +2895,21 @@ public class TomBasicCompiler extends HasErrorState {
 		// (If the last instruction is not a deref, then there is a problem.)
 
 		// Special case: Implicit pointer
-		if (regType.m_byRef) {
-			regType.m_byRef = false; // Convert to explicit pointer
+		if (regType.isByRef) {
+			regType.isByRef = false; // Convert to explicit pointer
 			return true;
 		}
 
 		// Check last instruction was a deref
 		if (vm.getInstructionCount() <= 0
-				|| vm.getInstruction(vm.getInstructionCount() - 1).mOpCode != OpCode.OP_DEREF) {
+				|| vm.getInstruction(vm.getInstructionCount() - 1).opCode != OpCode.OP_DEREF) {
 			setError("Cannot take address of this data");
 			return false;
 		}
 
 		// Remove it
 		vm.removeLastInstruction();
-		regType.m_pointerLevel++;
+		regType.pointerLevel++;
 
 		return true;
 	}
@@ -2960,28 +2964,28 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Simple type case: reg2 points to basic type
-		if (reg2Type.m_pointerLevel == 1 && reg2Type.m_arrayLevel == 0
-				&& reg2Type.m_basicType < 0) {
+		if (reg2Type.pointerLevel == 1 && reg2Type.arrayLevel == 0
+				&& reg2Type.basicType < 0) {
 
 			// Attempt to convert value in reg to same type
-			if (!compileConvert(reg2Type.m_basicType)) {
+			if (!compileConvert(reg2Type.basicType)) {
 				setError("Types do not match");
 				return false;
 			}
 
 			// Save reg into [reg2]
-			AddInstruction(OpCode.OP_SAVE, reg2Type.m_basicType,
+			AddInstruction(OpCode.OP_SAVE, reg2Type.basicType,
 					new Value());
 		}
 
 		// Pointer case. m_reg2 must point to a pointer and m_reg1 point to a
 		// value.
-		else if (reg2Type.VirtualPointerLevel() == 2
-				&& regType.VirtualPointerLevel() == 1) {
+		else if (reg2Type.getVirtualPointerLevel() == 2
+				&& regType.getVirtualPointerLevel() == 1) {
 
 			// Must both point to same type, OR m_reg1 must point to null
-			if (regType.IsNull()
-					|| (regType.m_arrayLevel == reg2Type.m_arrayLevel && regType.m_basicType == reg2Type.m_basicType)) {
+			if (regType.isNull()
+					|| (regType.arrayLevel == reg2Type.arrayLevel && regType.basicType == reg2Type.basicType)) {
 
 				// Validate pointer scope before saving to variable
 				AddInstruction(OpCode.OP_CHECK_PTR, BasicValType.VTP_INT,
@@ -2997,19 +3001,19 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Copy object case
-		else if (reg2Type.VirtualPointerLevel() == 1
-				&& regType.VirtualPointerLevel() == 0
-				&& regType.PhysicalPointerLevel() == 1) {
+		else if (reg2Type.getVirtualPointerLevel() == 1
+				&& regType.getVirtualPointerLevel() == 0
+				&& regType.getPhysicalPointerLevel() == 1) {
 
 			// Check that both are the same type
-			if (regType.m_arrayLevel == reg2Type.m_arrayLevel
-					&& regType.m_basicType == reg2Type.m_basicType) {
+			if (regType.arrayLevel == reg2Type.arrayLevel
+					&& regType.basicType == reg2Type.basicType) {
 
 				// Add op-code to check pointers if necessary
 				ValType dataType = new ValType(regType);
-				dataType.m_pointerLevel--;
-				dataType.m_byRef = false;
-				if (vm.getDataTypes().ContainsPointer(dataType)) {
+				dataType.pointerLevel--;
+				dataType.isByRef = false;
+				if (vm.getDataTypes().containsPointer(dataType)) {
 					AddInstruction(OpCode.OP_CHECK_PTRS,
 							BasicValType.VTP_INT,
 							new Value((int) vm.getStoreTypeIndex(dataType)));
@@ -3070,7 +3074,7 @@ public class TomBasicCompiler extends HasErrorState {
 	private boolean compileIf(boolean elseif) {
 
 		// Skip "if"
-		int line = parser.Line(), col = parser.Col();
+		int line = parser.getLine(), col = parser.getColumn();
 		if (!GetToken()) {
 			return false;
 		}
@@ -3147,7 +3151,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// Skip "else"
 		// (But not if it's really an "elseif". CompileIf will skip over it
 		// then.)
-		int line = parser.Line(), col = parser.Col();
+		int line = parser.getLine(), col = parser.getColumn();
 		if (!elseif) {
 			if (!GetToken()) {
 				return false;
@@ -3164,7 +3168,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Fixup jump around IF block
 		assertTrue(top.jumpOut < vm.getInstructionCount());
-		vm.getInstruction(top.jumpOut).mValue.setIntVal(vm
+		vm.getInstruction(top.jumpOut).value.setIntVal(vm
 				.getInstructionCount());
 
 		needColon = false; // Don't need colon between this and next
@@ -3191,7 +3195,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Fixup jump around IF or ELSE block
 		assertTrue(top.jumpOut < vm.getInstructionCount());
-		vm.getInstruction(top.jumpOut).mValue.setIntVal(vm
+		vm.getInstruction(top.jumpOut).value.setIntVal(vm
 				.getInstructionCount());
 
 		// If there's an implied endif then add it
@@ -3205,13 +3209,13 @@ public class TomBasicCompiler extends HasErrorState {
 	private boolean compileFor() {
 
 		// Skip "for"
-		int line = parser.Line(), col = parser.Col();
+		int line = parser.getLine(), col = parser.getColumn();
 		if (!GetToken()) {
 			return false;
 		}
 
 		// Extract loop variable name
-		Token nextToken = parser.PeekToken(false, false);
+		Token nextToken = parser.peekToken(false, false);
 		if (!checkParser()) {
 			return false;
 		}
@@ -3238,12 +3242,12 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Check type is INT or REAL
 				ValType type = new ValType(getCurrentUserFunctionPrototype().localVarTypes.get(varIndex));
-				if (!(type.Equals(BasicValType.VTP_INT) || type
-						.Equals(BasicValType.VTP_REAL))) {
+				if (!(type.matchesType(BasicValType.VTP_INT) || type
+						.matchesType(BasicValType.VTP_REAL))) {
 					setError("Loop variable must be an Integer or Real");
 					return false;
 				}
-				loopVarType = type.m_basicType;
+				loopVarType = type.basicType;
 			}
 		}
 
@@ -3254,13 +3258,13 @@ public class TomBasicCompiler extends HasErrorState {
 				found = true;
 
 				// Check type is INT or REAL
-				ValType type = new ValType(vm.getVariables().getVariables().get(varIndex).m_type);
-				if (!(type.Equals (BasicValType.VTP_INT) || type
-						.Equals (BasicValType.VTP_REAL))) {
+				ValType type = new ValType(vm.getVariables().getVariables().get(varIndex).type);
+				if (!(type.matchesType(BasicValType.VTP_INT) || type
+						.matchesType(BasicValType.VTP_REAL))) {
 					setError("Loop variable must be an Integer or Real");
 					return false;
 				}
-				loopVarType = type.m_basicType;
+				loopVarType = type.basicType;
 			}
 		}
 		if (!found) {
@@ -3270,7 +3274,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Compile assignment
-		int varLine = parser.Line(), varCol = parser.Col();
+		int varLine = parser.getLine(), varCol = parser.getColumn();
 		Token varToken = token;
 		if (!compileAssignment()) {
 			return false;
@@ -3290,7 +3294,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Compile load variable and push
 		ParserPos savedPos = SavePos(); // Save parser position
-		parser.SetPos(varLine, varCol); // Point to variable name
+		parser.setPos(varLine, varCol); // Point to variable name
 		token = varToken;
 
 		if (!compileLoadVar()) // Load variable
@@ -3412,7 +3416,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Generate instruction to increment loop variable
-		parser.SetSpecial(top.data, nextLine, nextCol); // Special mode.
+		parser.setSpecial(top.data, nextLine, nextCol); // Special mode.
 		// Compile this
 		// string instead of
 		// source code.
@@ -3435,7 +3439,7 @@ public class TomBasicCompiler extends HasErrorState {
 		if (!compileAssignment()) {
 			return false;
 		}
-		parser.SetNormal();
+		parser.setNormal();
 		token = saveToken;
 
 		// Generate jump back instruction
@@ -3444,7 +3448,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Fixup jump around FOR block
 		assertTrue(top.jumpOut < vm.getInstructionCount());
-		vm.getInstruction(top.jumpOut).mValue.setIntVal(vm
+		vm.getInstruction(top.jumpOut).value.setIntVal(vm
 				.getInstructionCount());
 		return true;
 	}
@@ -3455,7 +3459,7 @@ public class TomBasicCompiler extends HasErrorState {
 		int loopPos = vm.getInstructionCount();
 
 		// Skip "while"
-		int line = parser.Line(), col = parser.Col();
+		int line = parser.getLine(), col = parser.getColumn();
 		if (!GetToken()) {
 			return false;
 		}
@@ -3506,7 +3510,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Fixup jump around WHILE block
 		assertTrue(top.jumpOut < vm.getInstructionCount());
-		vm.getInstruction(top.jumpOut).mValue.setIntVal(vm
+		vm.getInstruction(top.jumpOut).value.setIntVal(vm
 				.getInstructionCount());
 		return true;
 	}
@@ -3517,7 +3521,7 @@ public class TomBasicCompiler extends HasErrorState {
 		int loopPos = vm.getInstructionCount();
 
 		// Skip "do"
-		int line = parser.Line(), col = parser.Col();
+		int line = parser.getLine(), col = parser.getColumn();
 		if (!GetToken()) {
 			return false;
 		}
@@ -3636,7 +3640,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// block
 			if (top.controlType == FlowControlType.FCT_DO_PRE) {
 				assertTrue(top.jumpOut < vm.getInstructionCount());
-				vm.getInstruction(top.jumpOut).mValue.setIntVal(vm
+				vm.getInstruction(top.jumpOut).value.setIntVal(vm
 						.getInstructionCount());
 			}
 
@@ -3882,7 +3886,7 @@ public class TomBasicCompiler extends HasErrorState {
 						.get(count));
 
 				// Check for undefined type parameter
-				if (type.Equals (BasicValType.VTP_UNDEFINED)) {
+				if (type.matchesType(BasicValType.VTP_UNDEFINED)) {
 
 					// Function definition indicates whether parameter type is
 					// valid
@@ -3938,7 +3942,7 @@ public class TomBasicCompiler extends HasErrorState {
 						// that
 						// same type.
 						if (functions[src].spec.getParamTypes().getParams()
-								.get(count).Equals(type)) {
+								.get(count).equals(type)) {
 							functions[dst++] = functions[src];
 						}
 					}
@@ -3958,16 +3962,17 @@ public class TomBasicCompiler extends HasErrorState {
 					AddInstruction(OpCode.OP_LOAD_CONST,
 							BasicValType.VTP_INT,
 							new Value((int) vm.getStoreTypeIndex(regType)));
-					regType.Set (BasicValType.VTP_INT);
+					regType.setType(BasicValType.VTP_INT);
 					compilePush();
 					pushCount++;
 				}
 			} else {
-				return false; // No function matched. (Return last compile
+				// No function matched. (Return last compile convert error).
+				return false;
 			}
-			// convert error).
 
-			count++; // Count parameters pushed
+			// Count parameters pushed
+			count++;
 		}
 
 		// Find the first function instance that accepts this number of
@@ -4025,14 +4030,13 @@ public class TomBasicCompiler extends HasErrorState {
 		// If function has return type, it will have changed the type in the
 		// register
 		if (spec.spec.isFunction()) {
-			regType.Set(spec.spec.getReturnType());
+			regType.setType(spec.spec.getReturnType());
 
 			// If data is too large to fit in the register, it will be returned
 			// in the "temp" area. If the data contains strings, they will need
-			// to
-			// be "destroyed" when temp data is unwound.
-			if (!regType.CanStoreInRegister()
-					&& vm.getDataTypes().ContainsString(regType)) {
+			// to be "destroyed" when temp data is unwound.
+			if (!regType.canStoreInRegister()
+					&& vm.getDataTypes().containsString(regType)) {
 				AddInstruction(OpCode.OP_REG_DESTRUCTOR,
 						BasicValType.VTP_INT,
 						new Value((int) vm.getStoreTypeIndex(regType)));
@@ -4232,7 +4236,7 @@ public class TomBasicCompiler extends HasErrorState {
 		for (int i = 0; i < unOperExts.size() && !found; i++) {
 
 			// Setup input data
-			type.get().Set(regType);
+			type.get().setType(regType);
 			opFunc.set(-1);
 			freeTempData.set(false);
 			resultType.set(new ValType());
@@ -4259,7 +4263,7 @@ public class TomBasicCompiler extends HasErrorState {
 				new Value(opFunc.get()));
 
 		// Set register to result type
-		regType.Set(resultType.get());
+		regType.setType(resultType.get());
 
 		// Record whether we need to free temp data
 		this.freeTempData = this.freeTempData || freeTempData.get();
@@ -4281,8 +4285,8 @@ public class TomBasicCompiler extends HasErrorState {
 		for (int i = 0; i < binOperExts.size() && !found; i++) {
 
 			// Setup input data
-			type1.get().Set(regType);
-			type2.get().Set(reg2Type);
+			type1.get().setType(regType);
+			type2.get().setType(reg2Type);
 			opFunc.set(-1);
 			freeTempData.set(false);
 			resultType.set(new ValType());
@@ -4312,7 +4316,7 @@ public class TomBasicCompiler extends HasErrorState {
 				new Value(opFunc.get()));
 
 		// Set register to result type
-		regType.Set(resultType.get());
+		regType.setType(resultType.get());
 
 		// Record whether we need to free temp data
 		this.freeTempData = this.freeTempData || freeTempData.get();
@@ -4355,8 +4359,8 @@ public class TomBasicCompiler extends HasErrorState {
 		// Store pointer type
 		ValType ptrType = new ValType(regType), dataType = new ValType(
 				regType);
-		dataType.m_byRef = false;
-		dataType.m_pointerLevel--;
+		dataType.isByRef = false;
+		dataType.pointerLevel--;
 
 		// Get pointer address
 		if (!compileTakeAddress()) {
@@ -4371,7 +4375,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Generate code to push array dimensions (if any) to the stack.
 		int i;
-		for (i = 0; i < dataType.m_arrayLevel; i++) {
+		for (i = 0; i < dataType.arrayLevel; i++) {
 
 			// Expect ,
 			if (!token.text.equals(",")) {
@@ -4388,7 +4392,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 			if (!compileConvert (BasicValType.VTP_INT)) {
 				setError("Array index must be a number. "
-						+ vm.getDataTypes().DescribeVariable("", regType)
+						+ vm.getDataTypes().describeVariable("", regType)
 						+ " is not a number");
 				return false;
 			}
@@ -4406,15 +4410,15 @@ public class TomBasicCompiler extends HasErrorState {
 		// Instruction automatically removes all array indices that were pushed
 		// to
 		// the stack.
-		for (i = 0; i < dataType.m_arrayLevel; i++) {
+		for (i = 0; i < dataType.arrayLevel; i++) {
 			operandStack.remove(operandStack.size() - 1);
 		}
 
 		// Instruction also automatically leaves the register pointing to the
 		// new
 		// data.
-		regType.Set(ptrType);
-		regType.m_byRef = false;
+		regType.setType(ptrType);
+		regType.isByRef = false;
 
 		// Generate code to pop destination address
 		if (!compilePop()) {
@@ -4431,8 +4435,8 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Save the current parser position, so we can return to it later.
 		ParserPos pos = new ParserPos();
-		pos.line = parser.Line();
-		pos.column = parser.Col();
+		pos.line = parser.getLine();
+		pos.column = parser.getColumn();
 		pos.token = token;
 		return pos;
 	}
@@ -4440,7 +4444,7 @@ public class TomBasicCompiler extends HasErrorState {
 	void RestorePos(ParserPos pos) {
 
 		// Restore parser position
-		parser.SetPos(pos.line, pos.column);
+		parser.setPos(pos.line, pos.column);
 		token = pos.token;
 	}
 
@@ -4454,12 +4458,12 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Look at instruction immediately before return address.
 		// This should be the gosub
-		if (vm.getInstruction(returnAddr - 1).mOpCode != OpCode.OP_CALL) {
+		if (vm.getInstruction(returnAddr - 1).opCode != OpCode.OP_CALL) {
 			return "???";
 		}
 
 		// Get target address
-		int target = vm.getInstruction(returnAddr - 1).mValue.getIntVal();
+		int target = vm.getInstruction(returnAddr - 1).value.getIntVal();
 
 		// Lookup label name
 		String name = labelIndex.get(target);
@@ -4475,8 +4479,8 @@ public class TomBasicCompiler extends HasErrorState {
 			boolean inFunction, int currentFunction) {
 
 		// Load expression into parser
-		parser.SourceCode().clear();
-		parser.SourceCode().add(expression);
+		parser.getSourceCode().clear();
+		parser.getSourceCode().add(expression);
 		parser.reset();
 		lastLine = 0;
 		lastCol = 0;
@@ -4509,7 +4513,7 @@ public class TomBasicCompiler extends HasErrorState {
 		AddInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
 
 		// Return expression result type
-		valType.Set(regType);
+		valType.setType(regType);
 		return true;
 	}
 
@@ -4546,20 +4550,20 @@ public class TomBasicCompiler extends HasErrorState {
 
 				// Extract value
 				Value v = new Value();
-				if (token.m_valType == BasicValType.VTP_STRING) {
+				if (token.valType == BasicValType.VTP_STRING) {
 
 					// Allocate new string constant
 					String text = token.text.substring(1,
 							token.text.length() - 1); // Remove S prefix
 					v.setIntVal(vm.StoreStringConstant(text));
-				} else if (token.m_valType == BasicValType.VTP_INT) {
+				} else if (token.valType == BasicValType.VTP_INT) {
 					v.setIntVal(Cast.StringToInt(token.text));
 				} else {
 					v.setRealVal(Float.valueOf(token.text));
 				}
 
 				// Store data in VM
-				vm.storeProgramData(token.m_valType, v);
+				vm.storeProgramData(token.valType, v);
 
 				// Next token
 				if (!GetToken()) {
@@ -4606,7 +4610,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Must be a basic type.
 			ValType type = new ValType(regType);
-			if (!type.IsBasic()) {
+			if (!type.isBasicType()) {
 				setError("Can only READ built in types (int, real or string)");
 				return false;
 			}
@@ -4622,7 +4626,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Generate READ op-code
-			AddInstruction(OpCode.OP_DATA_READ, type.m_basicType,
+			AddInstruction(OpCode.OP_DATA_READ, type.basicType,
 					new Value());
 
 			if (!compilePop()) {
@@ -4630,7 +4634,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Save reg into [reg2]
-			AddInstruction(OpCode.OP_SAVE, reg2Type.m_basicType,
+			AddInstruction(OpCode.OP_SAVE, reg2Type.basicType,
 					new Value());
 		}
 		return true;
@@ -4730,7 +4734,7 @@ public class TomBasicCompiler extends HasErrorState {
 		vm.rollbackProgram(expressionStart);
 
 		// Set return values
-		basictype.set(regType.m_basicType);
+		basictype.set(regType.basicType);
 		if (basictype.get() == BasicValType.VTP_STRING) {
 			stringResult.set(vm.getRegString());
 		} else {
@@ -4846,7 +4850,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 			AddInstruction(OpCode.OP_OP_PLUS, BasicValType.VTP_STRING,
 					new Value());
-			regType.Set (BasicValType.VTP_STRING);
+			regType.setType(BasicValType.VTP_STRING);
 
 			operandCount--;
 		}
@@ -4902,7 +4906,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Check for prompt
 		if (token.tokenType == TokenType.CTT_CONSTANT
-				&& token.m_valType == BasicValType.VTP_STRING) {
+				&& token.valType == BasicValType.VTP_STRING) {
 
 			// Allocate new string constant
 			String text = token.text.substring(1,
@@ -4931,7 +4935,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// Generate code to print it (load, push, call "print" function)
 			AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING,
 					new Value(index));
-			regType.Set (BasicValType.VTP_STRING);
+			regType.setType(BasicValType.VTP_STRING);
 			if (!compilePush()) {
 				return false;
 			}
@@ -4963,11 +4967,11 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Must be a simple variable
-		if (!regType.IsBasic()) {
+		if (!regType.isBasicType()) {
 			setError("Input variable must be a basic string, integer or real type");
 			return false;
 		}
-		Integer variableType = regType.m_basicType;
+		Integer variableType = regType.basicType;
 
 		// Generate code to push its address to stack
 		if (!(compileTakeAddress() && compilePush())) {
@@ -4984,7 +4988,7 @@ public class TomBasicCompiler extends HasErrorState {
 		AddInstruction(OpCode.OP_TIMESHARE, BasicValType.VTP_INT,
 				new Value()); // Timesharing break
 		// is necessary
-		regType.Set (BasicValType.VTP_STRING);
+		regType.setType(BasicValType.VTP_STRING);
 
 		// If the variable is not a string, then we need to convert it to the
 		// target
@@ -5003,7 +5007,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 			AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT,
 					new Value(valSpec.getIndex()));
-			regType.Set (BasicValType.VTP_REAL);
+			regType.setType(BasicValType.VTP_REAL);
 
 			// Clean up stack
 			if (!compilePop()) {
@@ -5016,14 +5020,14 @@ public class TomBasicCompiler extends HasErrorState {
 			return false;
 		}
 
-		if (!compileConvert(reg2Type.m_basicType)) {
+		if (!compileConvert(reg2Type.basicType)) {
 			setError("Types do not match"); // Technically this should never
 			// actually happen
 			return false;
 		}
 
 		// Generate code to save value
-		AddInstruction(OpCode.OP_SAVE, reg2Type.m_basicType, new Value());
+		AddInstruction(OpCode.OP_SAVE, reg2Type.basicType, new Value());
 
 		return true;
 	}
@@ -5100,7 +5104,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Mark start of function in source code
-		functionStart.setSourcePosition(parser.Line(), parser.Col());
+		functionStart.setSourcePosition(parser.getLine(), parser.getColumn());
 
 		// Skip "func"
 		if (!GetToken()) {
@@ -5154,7 +5158,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Must not be a structure name
-		if (vm.getDataTypes().GetStruc(name) >= 0) {
+		if (vm.getDataTypes().getStrucIndex(name) >= 0) {
 			setError("'" + name + "' has already been used as a structure name");
 			return false;
 		}
@@ -5194,7 +5198,7 @@ public class TomBasicCompiler extends HasErrorState {
 			while (token.text.equals("(")) {
 
 				// Room for one more dimension?
-				if (type.m_arrayLevel >= TomVM.ARRAY_MAX_DIMENSIONS) {
+				if (type.arrayLevel >= TomVM.ARRAY_MAX_DIMENSIONS) {
 					setError((String) "Arrays cannot have more than "
 							+ String.valueOf(TomVM.ARRAY_MAX_DIMENSIONS)
 							+ " dimensions.");
@@ -5202,7 +5206,7 @@ public class TomBasicCompiler extends HasErrorState {
 				}
 
 				// Add dimension
-				type.m_arrayLevel++;
+				type.arrayLevel++;
 
 				if (!GetToken()) // Skip "("
 				{
@@ -5235,8 +5239,8 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Default basic type to int if undefined
-			if (type.m_basicType == BasicValType.VTP_UNDEFINED) {
-				type.m_basicType = BasicValType.VTP_INT;
+			if (type.basicType == BasicValType.VTP_UNDEFINED) {
+				type.basicType = BasicValType.VTP_INT;
 			}
 
 			// Store function return value type
@@ -5456,7 +5460,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Fix up jump-past-function op-code
 		assertTrue(functionJumpOver < vm.getInstructionCount());
-		vm.getInstruction(functionJumpOver).mValue.setIntVal(vm
+		vm.getInstruction(functionJumpOver).value.setIntVal(vm
 				.getInstructionCount());
 
 		// Let compiler know we have left the function
@@ -5561,8 +5565,8 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Data containing strings will need to be "destroyed" when the
 			// stack unwinds.
-			if (!prototype.returnValType.CanStoreInRegister()
-					&& vm.getDataTypes().ContainsString(prototype.returnValType)) {
+			if (!prototype.returnValType.canStoreInRegister()
+					&& vm.getDataTypes().containsString(prototype.returnValType)) {
 				AddInstruction(
 						OpCode.OP_REG_DESTRUCTOR,
 						BasicValType.VTP_INT,
@@ -5571,7 +5575,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Set register type to value returned from function (if applies)
-			regType.Set(prototype.returnValType.RegisterType());
+			regType.setType(prototype.returnValType.getRegisterType());
 			if (!compileDataLookup(false)) {
 				return false;
 			}
@@ -5579,7 +5583,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// If function returns a value larger than the register, temp data
 			// will
 			// need to be freed.
-			if (!prototype.returnValType.CanStoreInRegister()) {
+			if (!prototype.returnValType.canStoreInRegister()) {
 				freeTempData = true;
 			}
 		}
@@ -5593,7 +5597,7 @@ public class TomBasicCompiler extends HasErrorState {
 		ValType type = new ValType(prototype.get().localVarTypes.get(i));
 
 		// Basic type case
-		if (type.IsBasic()) {
+		if (type.isBasicType()) {
 
 			// Generate code to compile function parameter
 			if (!compileExpression(false)) {
@@ -5601,19 +5605,19 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Attempt to convert value in reg to same type
-			if (!compileConvert(type.m_basicType)) {
+			if (!compileConvert(type.basicType)) {
 				setError("Types do not match");
 				return false;
 			}
 
 			// Save reg into parameter
-			AddInstruction(OpCode.OP_SAVE_PARAM, type.m_basicType,
+			AddInstruction(OpCode.OP_SAVE_PARAM, type.basicType,
 					new Value(i));
 		}
 
 		// Pointer case. Parameter must be a pointer and m_reg must point to a
 		// value accessible through a variable.
-		else if (type.VirtualPointerLevel() == 1) {
+		else if (type.getVirtualPointerLevel() == 1) {
 
 			// Special case: We accept "null" to pointer parameters
 			if (token.text.equals("null")) {
@@ -5635,9 +5639,9 @@ public class TomBasicCompiler extends HasErrorState {
 				}
 
 				// Register should now match the expected type
-				if (regType.m_pointerLevel == type.m_pointerLevel
-						&& regType.m_arrayLevel == type.m_arrayLevel
-						&& regType.m_basicType == type.m_basicType) {
+				if (regType.pointerLevel == type.pointerLevel
+						&& regType.arrayLevel == type.arrayLevel
+						&& regType.basicType == type.basicType) {
 					AddInstruction(OpCode.OP_SAVE_PARAM,
 							BasicValType.VTP_INT, new Value(i));
 				} else {
@@ -5650,16 +5654,16 @@ public class TomBasicCompiler extends HasErrorState {
 		// Not basic, and not a pointer.
 		// Must be a large object (structure or array)
 		else {
-			assertTrue(type.m_pointerLevel == 0);
+			assertTrue(type.pointerLevel == 0);
 
 			// Generate code to compile function parameter
 			if (!compileExpression(false)) {
 				return false;
 			}
 
-			if (regType.m_pointerLevel == 1 && regType.m_byRef
-					&& regType.m_arrayLevel == type.m_arrayLevel
-					&& regType.m_basicType == type.m_basicType) {
+			if (regType.pointerLevel == 1 && regType.isByRef
+					&& regType.arrayLevel == type.arrayLevel
+					&& regType.basicType == type.basicType) {
 				AddInstruction(OpCode.OP_COPY_USER_STACK,
 						BasicValType.VTP_INT,
 						new Value((int) vm.getStoreTypeIndex(type)));
@@ -5673,7 +5677,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Data containing strings will need to be "destroyed" when the stack
 		// unwinds.
-		if (vm.getDataTypes().ContainsString(type)) {
+		if (vm.getDataTypes().containsString(type)) {
 			AddInstruction(OpCode.OP_REG_DESTRUCTOR, BasicValType.VTP_INT,
 					new Value((int) vm.getStoreTypeIndex(type)));
 		}
@@ -5694,12 +5698,12 @@ public class TomBasicCompiler extends HasErrorState {
 				if (!compileExpression()) {
 					return false;
 				}
-				if (!compileConvert(type.RegisterType())) {
+				if (!compileConvert(type.getRegisterType())) {
 					return false;
 				}
 
 				// Basic values and pointers can be returned in the register
-				if (!type.CanStoreInRegister()) {
+				if (!type.canStoreInRegister()) {
 
 					// Add instruction to move that data into temp data
 					AddInstruction(OpCode.OP_MOVE_TEMP, BasicValType.VTP_INT,
@@ -5745,24 +5749,24 @@ public class TomBasicCompiler extends HasErrorState {
 
 			// Stream out constants
 			for (String key : programConstants.keySet()) {
-				Streaming.WriteString(stream, key);
+				Streaming.writeString(stream, key);
 				programConstants.get(key).streamOut(stream);
 			}
-			Streaming.WriteString(stream, "");
+			Streaming.writeString(stream, "");
 
 			// Stream out labels
 			for (String key : labels.keySet()) {
-				Streaming.WriteString(stream, key);
+				Streaming.writeString(stream, key);
 				labels.get(key).streamOut(stream);
 			}
-			Streaming.WriteString(stream, "");
+			Streaming.writeString(stream, "");
 
 			// Stream out user function/subroutine names
 			for (String key : globalUserFunctionIndex.keySet()) {
-				Streaming.WriteString(stream, key);
-				Streaming.WriteLong(stream, globalUserFunctionIndex.get(key));
+				Streaming.writeString(stream, key);
+				Streaming.writeLong(stream, globalUserFunctionIndex.get(key));
 			}
-			Streaming.WriteString(stream, "");
+			Streaming.writeString(stream, "");
 
 			// Stream out runtime functions
 			// Note that strictly speaking these aren't "names", but because
@@ -5770,17 +5774,17 @@ public class TomBasicCompiler extends HasErrorState {
 			// required when name information is present, and not required when
 			// it is
 			// absent, we are bundling them into the same #ifdef
-			Streaming.WriteLong(stream, runtimeFunctions.size());
+			Streaming.writeLong(stream, runtimeFunctions.size());
 			for (int i = 0; i < runtimeFunctions.size(); i++) {
 				runtimeFunctions.get(i).streamOut(stream);
 			}
 
 			// Stream out runtime function names
 			for (String key : runtimeFunctionIndex.keySet()) {
-				Streaming.WriteString(stream, key);
-				Streaming.WriteLong(stream, runtimeFunctionIndex.get(key));
+				Streaming.writeString(stream, key);
+				Streaming.writeLong(stream, runtimeFunctionIndex.get(key));
 			}
-			Streaming.WriteString(stream, "");
+			Streaming.writeString(stream, "");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -5804,7 +5808,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Stream in constant names
-			String name = Streaming.ReadString(stream);
+			String name = Streaming.readString(stream);
 			while (!name.equals("")) {
 
 				// Read constant details
@@ -5815,11 +5819,11 @@ public class TomBasicCompiler extends HasErrorState {
 				programConstants.put(name, constant);
 
 				// Next constant
-				name = Streaming.ReadString(stream);
+				name = Streaming.readString(stream);
 			}
 
 			// Stream in label names
-			name = Streaming.ReadString(stream);
+			name = Streaming.readString(stream);
 
 			while (!name.equals("")) {
 
@@ -5832,22 +5836,22 @@ public class TomBasicCompiler extends HasErrorState {
 				labelIndex.put(label.offset, name);
 
 				// Next label
-				name = Streaming.ReadString(stream);
+				name = Streaming.readString(stream);
 
 			}
 
 			// Stream in user function/subroutine names
-			name = Streaming.ReadString(stream);
+			name = Streaming.readString(stream);
 			while (!name.equals("")) {
 
 				// Read function details
-				int index = (int) Streaming.ReadLong(stream);
+				int index = (int) Streaming.readLong(stream);
 
 				// Store function index
 				globalUserFunctionIndex.put(name, index);
 
 				// Next function
-				name = Streaming.ReadString(stream);
+				name = Streaming.readString(stream);
 			}
 			// Stream in runtime functions
 			// Note that strictly speaking these aren't "names", but because
@@ -5855,7 +5859,7 @@ public class TomBasicCompiler extends HasErrorState {
 			// required when name information is present, and not required when
 			// it is
 			// absent, we are bundling them into the same #ifdef
-			int count = (int) Streaming.ReadLong(stream);
+			int count = (int) Streaming.readLong(stream);
 			runtimeFunctions.setSize(count);
 			for (int i = 0; i < count; i++) {
 				com.basic4gl.compiler.RuntimeFunction function = new com.basic4gl.compiler.RuntimeFunction();
@@ -5863,17 +5867,17 @@ public class TomBasicCompiler extends HasErrorState {
 
 				runtimeFunctions.set(i, function);
 			}
-			name = Streaming.ReadString(stream);
+			name = Streaming.readString(stream);
 			while (!name.equals("")) {
 
 				// Read runtime function details
-				int index = (int) Streaming.ReadLong(stream);
+				int index = (int) Streaming.readLong(stream);
 
 				// Store runtime function index
 				runtimeFunctionIndex.put(name, index);
 
 				// Next function
-				name = Streaming.ReadString(stream);
+				name = Streaming.readString(stream);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

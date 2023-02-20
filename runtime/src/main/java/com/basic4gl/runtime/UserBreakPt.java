@@ -1,8 +1,11 @@
 package com.basic4gl.runtime;
 
 public class UserBreakPt {
-	int m_offset; // Note: Set to 0xffff if line is invalid.
+	/**
+	 * Note: Set to 0xffff if line is invalid.
+	 */
+	int offset;
 	public UserBreakPt(){
-		m_offset = 0xffff;
+		offset = 0xffff;
 	}
 }

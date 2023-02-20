@@ -18,7 +18,7 @@ import com.basic4gl.lib.util.DebuggerCallbackMessage;
 import com.basic4gl.lib.util.DebuggerTaskCallback;
 import com.basic4gl.library.debug.commands.*;
 import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.InstructionPos;
+import com.basic4gl.runtime.InstructionPosition;
 import com.basic4gl.runtime.TomVM;
 
 import com.google.gson.Gson;
@@ -110,10 +110,10 @@ public class DebuggerCommandAdapter
                 message.getVMStatus().getError());
         }
         com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage(message.getStatus(), message.getText(), status);
-        InstructionPos instructionPos = message.getInstructionPosition();
+        InstructionPosition instructionPosition = message.getInstructionPosition();
 
-        if (instructionPos != null) {
-            callback.setSourcePosition(instructionPos.getSourceLine(), instructionPos.getSourceColumn());
+        if (instructionPosition != null) {
+            callback.setSourcePosition(instructionPosition.getSourceLine(), instructionPosition.getSourceColumn());
         }
 
         String json = gson.toJson(callback);
@@ -165,11 +165,11 @@ public class DebuggerCommandAdapter
                 );
             }
             mMessage.setMessage(callback.status, callback.text, vmStatus);
-            InstructionPos instructionPos = null;
+            InstructionPosition instructionPosition = null;
             if (callback.getSourcePosition() != null) {
-                instructionPos = new InstructionPos(callback.getSourcePosition().line, callback.getSourcePosition().column);
+                instructionPosition = new InstructionPosition(callback.getSourcePosition().line, callback.getSourcePosition().column);
             }
-            mMessage.setInstructionPosition(instructionPos);
+            mMessage.setInstructionPosition(instructionPosition);
             mMessage.notify();
         }
     }

@@ -464,7 +464,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     static void ReturnMatrix (TomVM vm) {
-        vm.getReg().setIntVal (Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, matrix));
+        vm.getReg().setIntVal (Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, matrix));
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -476,7 +476,7 @@ public class TrigBasicLib implements FunctionLibrary {
         // Read a 3D vector.
         // This can be a 2, 3 or 4 element vector, but will always be returned as a 4
         // element vector. (z = 0 & w = 1 if not specified.)
-        int size = Data.ArrayDimensionSize(vm.getData(), index, 0);
+        int size = Data.getArrayDimensionSize(vm.getData(), index, 0);
         if (size < 2 || size > 4) {
             vm.functionError("Vector must be 2, 3 or 4 element vector");
             return -1;                  // -1 = error
@@ -485,7 +485,7 @@ public class TrigBasicLib implements FunctionLibrary {
         // Read in vector and convert to 4 element format
         v [2] = 0;
         v [3] = 1;
-        Data.ReadArray(vm.getData(), index, new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), v, size);
+        Data.readArray(vm.getData(), index, new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), v, size);
 
         // Return original size
         return size;
@@ -496,14 +496,14 @@ public class TrigBasicLib implements FunctionLibrary {
 
         // Read 3D matrix.
         // Matrix must be 4x4
-        if (Data.ArrayDimensionSize(vm.getData(), index, 0) != 4
-                ||  Data.ArrayDimensionSize(vm.getData(), index, 1) != 4) {
+        if (Data.getArrayDimensionSize(vm.getData(), index, 0) != 4
+                ||  Data.getArrayDimensionSize(vm.getData(), index, 1) != 4) {
             vm.functionError("Matrix must be a 4x4 matrix (e.g 'dim matrix#(3)(3)' )");
             return false;
         }
 
         // Read in matrix
-        Data.ReadArray(vm.getData(), index, new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), m, 16);
+        Data.readArray(vm.getData(), index, new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), m, 16);
         return true;
     }
     ////////////////////////////////////////////////////////////////////////////////
@@ -512,19 +512,19 @@ public class TrigBasicLib implements FunctionLibrary {
     public final class WrapVec4 implements Function { public void run(TomVM vm){
 
         float[] vec4 = new float[]{ vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1) };
-        vm.getReg().setIntVal ( Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 4, vec4));
+        vm.getReg().setIntVal ( Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 4, vec4));
     }
     }
     public final class WrapVec3 implements Function { public void run(TomVM vm){
 
         float[] vec3 = new float[]{ vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1) };
-        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 3, vec3));
+        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 3, vec3));
     }
     }
     public final class WrapVec2 implements Function { public void run(TomVM vm){
 
         float[] vec2 = new float[]{ vm.getRealParam(2), vm.getRealParam(1) };
-        vm.getReg().setIntVal ( Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, vec2));
+        vm.getReg().setIntVal ( Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, vec2));
     }
     }
     public final class WrapMatrixZero implements Function { public void run(TomVM vm){
@@ -579,9 +579,9 @@ public class TrigBasicLib implements FunctionLibrary {
 
         ClearMatrix ();
         matrix [15] = 1;
-        Data.ReadArray(vm.getData(), vm.getIntParam(3), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), Arrays.copyOfRange(matrix, 0, 4), 4);
-        Data.ReadArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), Arrays.copyOfRange(matrix, 4, 8), 4);
-        Data.ReadArray (vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte)1, (byte)1, true), Arrays.copyOfRange(matrix, 8, 12), 4);
+        Data.readArray(vm.getData(), vm.getIntParam(3), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), Arrays.copyOfRange(matrix, 0, 4), 4);
+        Data.readArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), Arrays.copyOfRange(matrix, 4, 8), 4);
+        Data.readArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte)1, (byte)1, true), Arrays.copyOfRange(matrix, 8, 12), 4);
         ReturnMatrix (vm);
     }
     }
@@ -610,7 +610,7 @@ public class TrigBasicLib implements FunctionLibrary {
 
 // Return resulting vector
 // (Vector will be the same length as the first source vector)
-        vm.getReg().setIntVal ( Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(Math.max(s1, s2), 3), result));
+        vm.getReg().setIntVal ( Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(Math.max(s1, s2), 3), result));
     }
     }
     public final class WrapLength implements Function { public void run(TomVM vm){
@@ -638,7 +638,7 @@ public class TrigBasicLib implements FunctionLibrary {
         Normalize (v1);
 
 // Return resulting vector
-        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
+        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
     }
     }
     public final class WrapDeterminant implements Function { public void run(TomVM vm){
@@ -665,7 +665,7 @@ public class TrigBasicLib implements FunctionLibrary {
         Transpose (m1, m2);
 
 // Create new matrix and assign to register
-        vm.getReg().setIntVal(Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m2));
+        vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m2));
     }
     }
     public final class WrapRTInvert implements Function { public void run(TomVM vm){
@@ -680,7 +680,7 @@ public class TrigBasicLib implements FunctionLibrary {
         RTInvert(m1, m2);
 
 // Create new matrix and assign to register
-        vm.getReg().setIntVal (Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m2));
+        vm.getReg().setIntVal (Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m2));
     }
     }
     public final class WrapOrthonormalize implements Function { public void run(TomVM vm){
@@ -695,7 +695,7 @@ public class TrigBasicLib implements FunctionLibrary {
         Orthonormalize(m1);
 
 // Create new matrix and assign to register
-        vm.getReg().setIntVal (Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m1));
+        vm.getReg().setIntVal (Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m1));
     }
     }
 
@@ -713,7 +713,7 @@ public class TrigBasicLib implements FunctionLibrary {
         Scale(v1, scale);
 
         // Return as temp vector (using original size)
-        vm.getReg().setIntVal ( Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
+        vm.getReg().setIntVal ( Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
     }
     public final class OpScaleVec implements Function {
         public void run(TomVM vm) {
@@ -739,7 +739,7 @@ public class TrigBasicLib implements FunctionLibrary {
         ScaleMatrix (m1, scale);
 
         // Create new matrix and assign to register
-        vm.getReg().setIntVal ( Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m1));
+        vm.getReg().setIntVal ( Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m1));
     }
     public final class OpScaleMatrix implements Function { public void run(TomVM vm){
         DoScaleMatrix (vm, vm.getReg().getRealVal(), vm.getReg2().getIntVal ());
@@ -770,7 +770,7 @@ public class TrigBasicLib implements FunctionLibrary {
         MatrixTimesVec (m1, v1, result);
 
         // Return as temporary vector
-        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), size, result));
+        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, result));
     }}
     public final class OpMatrixMatrix implements Function { public void run(TomVM vm){
 
@@ -786,7 +786,7 @@ public class TrigBasicLib implements FunctionLibrary {
         MatrixTimesMatrix(m1, m2, result);
 
         // Return as temporary matrix
-        vm.getReg().setIntVal( Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
+        vm.getReg().setIntVal( Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
     }}
     public final class OpVecVec implements Function { public void run(TomVM vm){
 
@@ -815,7 +815,7 @@ public class TrigBasicLib implements FunctionLibrary {
         VecPlus (v1, v2, result);
 
         // Return as temporary vector
-        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
+        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
     }}
     public final class OpVecMinusVec implements Function { public void run(TomVM vm){
 
@@ -831,7 +831,7 @@ public class TrigBasicLib implements FunctionLibrary {
         VecMinus(v1, v2, result);
 
         // Return as temporary vector
-        vm.getReg().setIntVal ( Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
+        vm.getReg().setIntVal ( Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
     }}
     public final class OpMatrixPlusMatrix implements Function { public void run(TomVM vm){
 
@@ -847,7 +847,7 @@ public class TrigBasicLib implements FunctionLibrary {
         MatrixPlus(m1, m2, result);
 
         // Return as temporary matrix
-        vm.getReg().setIntVal ( Data.FillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, Arrays.asList(result)));
+        vm.getReg().setIntVal ( Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, Arrays.asList(result)));
     }}
     public final class OpMatrixMinusMatrix implements Function { public void run(TomVM vm){
 
@@ -863,7 +863,7 @@ public class TrigBasicLib implements FunctionLibrary {
         MatrixMinus(m1, m2, result);
 
         // Return as temporary matrix
-        vm.getReg().setIntVal (Data.FillTempRealArray2D (vm.getData(), vm.getDataTypes(), 4, 4, Arrays.asList(result)));
+        vm.getReg().setIntVal (Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, Arrays.asList(result)));
     }}
     public final class OpNegVec implements Function { public void run(TomVM vm)      { DoScaleVec(vm, -1, vm.getReg().getIntVal()); }}
     public final class OpNegMatrix  implements Function { public void run(TomVM vm){ DoScaleMatrix (vm, -1, vm.getReg().getIntVal ()); }}
@@ -883,20 +883,20 @@ public class TrigBasicLib implements FunctionLibrary {
                                     Mutable<Boolean> freeTempData) {   // OUT: Set to true if temp data needs to be freed
 
         // Must be real values, and not pointers (references are OK however)
-        if (regType.get().VirtualPointerLevel() > 0 || regType.get().m_basicType != BasicValType.VTP_REAL) {
+        if (regType.get().getVirtualPointerLevel() > 0 || regType.get().basicType != BasicValType.VTP_REAL) {
             return false;
         }
 
         if (oper == OpCode.OP_OP_NEG) {
-            if (regType.get().m_arrayLevel == 1) {                // -Vector
+            if (regType.get().arrayLevel == 1) {                // -Vector
                 operFunction.set(negVec);
-                resultType.get().Set(regType.get());
+                resultType.get().setType(regType.get());
                 freeTempData.set(true);
                 return true;
             }
-            if (regType.get().m_arrayLevel == 2) {                // -Matrix
+            if (regType.get().arrayLevel == 2) {                // -Matrix
                 operFunction.set(negMatrix);
-                resultType.get().Set(regType.get());
+                resultType.get().setType(regType.get());
                 freeTempData.set(true);
                 return true;
             }
@@ -915,30 +915,30 @@ public class TrigBasicLib implements FunctionLibrary {
                            Mutable<Boolean> freeTempData) {   // OUT: Set to true if temp data needs to be freed
 
             // Pointers not accepted (references are OK however)
-            if (regType.get().VirtualPointerLevel() > 0 || reg2Type.get().VirtualPointerLevel() > 0) {
+            if (regType.get().getVirtualPointerLevel() > 0 || reg2Type.get().getVirtualPointerLevel() > 0) {
                 return false;
             }
 
             // Validate data types. We will only work with ints and reals
-            if (regType.get().m_basicType != BasicValType.VTP_REAL && regType.get().m_basicType != BasicValType.VTP_INT) {
+            if (regType.get().basicType != BasicValType.VTP_REAL && regType.get().basicType != BasicValType.VTP_INT) {
                 return false;
             }
-            if (reg2Type.get().m_basicType != BasicValType.VTP_REAL && reg2Type.get().m_basicType != BasicValType.VTP_INT) {
+            if (reg2Type.get().basicType != BasicValType.VTP_REAL && reg2Type.get().basicType != BasicValType.VTP_INT) {
                 return false;
             }
 
             // Is acceptible to have an integer value, but must be typecast to a real
             // Arrays of integers not acceptible
-            if (regType.get().m_basicType == BasicValType.VTP_INT) {
-                if (regType.get().IsBasic()) {
-                    regType.get().m_basicType = BasicValType.VTP_REAL;
+            if (regType.get().basicType == BasicValType.VTP_INT) {
+                if (regType.get().isBasicType()) {
+                    regType.get().basicType = BasicValType.VTP_REAL;
                 } else {
                     return false;
                 }
             }
-            if (reg2Type.get().m_basicType == BasicValType.VTP_INT) {
-                if (reg2Type.get().IsBasic()) {
-                    reg2Type.get().m_basicType = BasicValType.VTP_REAL;
+            if (reg2Type.get().basicType == BasicValType.VTP_INT) {
+                if (reg2Type.get().isBasicType()) {
+                    reg2Type.get().basicType = BasicValType.VTP_REAL;
                 } else {
                     return false;
                 }
@@ -946,78 +946,78 @@ public class TrigBasicLib implements FunctionLibrary {
 
             // Look for recognised combinations
             if (oper == OpCode.OP_OP_TIMES) {
-                if (regType.get().m_arrayLevel == 0 && reg2Type.get().m_arrayLevel == 1) {          // Vector * scalar
+                if (regType.get().arrayLevel == 0 && reg2Type.get().arrayLevel == 1) {          // Vector * scalar
                     operFunction.set(scaleVec);
-                    resultType.get().Set(reg2Type.get());
+                    resultType.get().setType(reg2Type.get());
                     freeTempData.set(true);
                     return true;
-                } else if (regType.get().m_arrayLevel == 1 && reg2Type.get().m_arrayLevel == 0) {     // Scalar * vector
+                } else if (regType.get().arrayLevel == 1 && reg2Type.get().arrayLevel == 0) {     // Scalar * vector
                     operFunction.set(scaleVec2);
-                    resultType.get().Set(regType.get());
+                    resultType.get().setType(regType.get());
                     freeTempData.set(true);
                     return true;
                 }
-                if (regType.get().m_arrayLevel == 0 && reg2Type.get().m_arrayLevel == 2) {          // Vector * scalar
+                if (regType.get().arrayLevel == 0 && reg2Type.get().arrayLevel == 2) {          // Vector * scalar
                     operFunction.set(scaleMatrix);
-                    resultType.get().Set(reg2Type.get());
+                    resultType.get().setType(reg2Type.get());
                     freeTempData.set(true);
                     return true;
-                } else if (regType.get().m_arrayLevel == 2 && reg2Type.get().m_arrayLevel == 0) {     // Scalar * vector
+                } else if (regType.get().arrayLevel == 2 && reg2Type.get().arrayLevel == 0) {     // Scalar * vector
                     operFunction.set(scaleMatrix2);
-                    resultType.get().Set(regType.get());
+                    resultType.get().setType(regType.get());
                     freeTempData.set(true);
                     return true;
-                } else if (reg2Type.get().m_arrayLevel == 2 && regType.get().m_arrayLevel == 1) {     // Matrix * vector
+                } else if (reg2Type.get().arrayLevel == 2 && regType.get().arrayLevel == 1) {     // Matrix * vector
                     operFunction.set(matrixVec);
-                    resultType.get().Set(regType.get());
+                    resultType.get().setType(regType.get());
                     freeTempData.set(true);
                     return true;
-                } else if (reg2Type.get().m_arrayLevel == 2 && regType.get().m_arrayLevel == 2) {     // Matrix * matrix
+                } else if (reg2Type.get().arrayLevel == 2 && regType.get().arrayLevel == 2) {     // Matrix * matrix
                     operFunction.set(matrixMatrix);
-                    resultType.get().Set(regType.get());
+                    resultType.get().setType(regType.get());
                     freeTempData.set(true);
                     return true;
-                } else if (regType.get().m_arrayLevel == 1 && reg2Type.get().m_arrayLevel == 1) {     // Vec * Vec (Dot product)
+                } else if (regType.get().arrayLevel == 1 && reg2Type.get().arrayLevel == 1) {     // Vec * Vec (Dot product)
                     operFunction.set(vecVec);
-                    resultType.get().Set (BasicValType.VTP_REAL);
+                    resultType.get().setType(BasicValType.VTP_REAL);
                     freeTempData.set(false);
                     return true;
                 }
                 return false;
             } else if (oper == OpCode.OP_OP_DIV) {
-                if (regType.get().m_arrayLevel == 0 && reg2Type.get().m_arrayLevel == 1) {          // Vector / scalar
+                if (regType.get().arrayLevel == 0 && reg2Type.get().arrayLevel == 1) {          // Vector / scalar
                     operFunction.set(divVec);
-                    resultType.get().Set(reg2Type.get());
+                    resultType.get().setType(reg2Type.get());
                     freeTempData.set(true);
                     return true;
                 }
-                if (regType.get().m_arrayLevel == 0 && reg2Type.get().m_arrayLevel == 2) {          // Matrix / scalar
+                if (regType.get().arrayLevel == 0 && reg2Type.get().arrayLevel == 2) {          // Matrix / scalar
                     operFunction.set(divMatrix);
-                    resultType.get().Set(reg2Type.get());
+                    resultType.get().setType(reg2Type.get());
                     freeTempData.set(true);
                     return true;
                 }
             } else if (oper == OpCode.OP_OP_PLUS) {
-                if (regType.get().m_arrayLevel == 1 && reg2Type.get().m_arrayLevel == 1) {          // Vector + vector
+                if (regType.get().arrayLevel == 1 && reg2Type.get().arrayLevel == 1) {          // Vector + vector
                     operFunction.set(vecPlusVec);
-                    resultType.get().Set(regType.get());
+                    resultType.get().setType(regType.get());
                     freeTempData.set(true);
                     return true;
-                } else if (regType.get().m_arrayLevel == 2 && reg2Type.get().m_arrayLevel == 2) {     // Matrix + matrix
+                } else if (regType.get().arrayLevel == 2 && reg2Type.get().arrayLevel == 2) {     // Matrix + matrix
                     operFunction.set(matrixPlusMatrix);
-                    resultType.get().Set(regType.get());
+                    resultType.get().setType(regType.get());
                     freeTempData.set(true);
                     return true;
                 }
             } else if (oper == OpCode.OP_OP_MINUS) {
-                if (regType.get().m_arrayLevel == 1 && reg2Type.get().m_arrayLevel == 1) {          // Vector - vector
+                if (regType.get().arrayLevel == 1 && reg2Type.get().arrayLevel == 1) {          // Vector - vector
                     operFunction.set(vecMinusVec);
-                    resultType.get().Set(regType.get());
+                    resultType.get().setType(regType.get());
                     freeTempData.set(true);
                     return true;
-                } else if (regType.get().m_arrayLevel == 2 && reg2Type.get().m_arrayLevel == 2) {     // Matrix - matrix
+                } else if (regType.get().arrayLevel == 2 && reg2Type.get().arrayLevel == 2) {     // Matrix - matrix
                     operFunction.set(matrixMinusMatrix);
-                    resultType.get().Set(regType.get());
+                    resultType.get().setType(regType.get());
                     freeTempData.set(true);
                     return true;
                 }

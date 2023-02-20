@@ -339,7 +339,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
      * Stores OpenGL texture handles
      */
     public class TextureResourceStore extends IntHandleResources {
-        protected void DeleteHandle(int handle) {
+        protected void deleteHandle(int handle) {
             int texture = handle;//(GLuint) handle;
             ByteBuffer buffer = BufferUtils.createByteBuffer(Integer.SIZE / Byte.SIZE);
             buffer.asIntBuffer().put(texture);
@@ -355,7 +355,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
         private Map<Integer, Integer> m_countMap = new HashMap<Integer, Integer>();                 // Maps base to count
 
-        protected void DeleteHandle(int handle) {
+        protected void deleteHandle(int handle) {
             glDeleteLists(handle, m_countMap.get(handle));
         }
 
@@ -365,14 +365,14 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
 
         public void Store(int handle, int count) {
-            if (!Valid(handle) || m_countMap.get(handle) < count) {   // Not already stored, or new value covers a bigger range
-                super.Store(handle);
+            if (!isHandleValid(handle) || m_countMap.get(handle) < count) {   // Not already stored, or new value covers a bigger range
+                super.addHandle(handle);
                 m_countMap.put(handle, count);
             }
         }
 
         int GetCount(int base) {
-            assertTrue(Valid(base));
+            assertTrue(isHandleValid(base));
             return m_countMap.get(base);
         }
     }
@@ -494,7 +494,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
                 // Store texture handles in texture store object so Basic4GL can track them
                 for (int i = 0; i < frameCount.get(0); i++) {
-                    textures.Store(tex.asIntBuffer().get(i));
+                    textures.addHandle(tex.asIntBuffer().get(i));
                 }
 
                 // Iterate over image in grid pattern, extracting each frame
@@ -559,7 +559,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 int[] t = new int[tex.asIntBuffer().capacity()];
                 tex.asIntBuffer().get(t);
                 // Return array of textures
-                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), frameCount.get(0), t));
+                vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), frameCount.get(0), t));
                 return;
             }
         }
@@ -567,7 +567,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         // Load failed.
         // Return 1 element array containing a 0.
         int blankFrame = 0;
-        vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), 1, new int[]{blankFrame}));
+        vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, new int[]{blankFrame}));
     }
 
     static int UploadTexture(Image image) {
@@ -832,7 +832,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             }
 
             // Store and return texture
-            textures.Store(texture);
+            textures.addHandle(texture);
             result = texture;
 
         }
@@ -847,8 +847,8 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         int arrayOffset = vm.getIntParam(1);
         int maxSize;
         if (dimensions == 2) {
-            int xSize = Data.ArrayDimensionSize(vm.getData(), arrayOffset, 0),
-                    ySize = Data.ArrayDimensionSize(vm.getData(), arrayOffset, 1);
+            int xSize = Data.getArrayDimensionSize(vm.getData(), arrayOffset, 0),
+                    ySize = Data.getArrayDimensionSize(vm.getData(), arrayOffset, 1);
 
             // Verify size
             if (xSize <= 0 || ySize <= 0) {
@@ -862,7 +862,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             maxSize = xSize * ySize;
         } else {
             assertTrue(dimensions == 1);
-            int size = Data.ArrayDimensionSize(vm.getData(), arrayOffset, 0);
+            int size = Data.getArrayDimensionSize(vm.getData(), arrayOffset, 0);
             if (size <= 0) {
                 vm.functionError("Bad array size");
                 return;
@@ -877,7 +877,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         // Read data, converted requested type
         int type = vm.getIntParam(2);
         ByteBuffer data = BufferUtils.createByteBuffer(maxSize * 4);
-        Routines.ReadArrayDynamic(vm, 1, new ValType(elementType.m_basicType, (byte) dimensions, (byte) 1, true), type, data, maxSize);
+        Routines.ReadArrayDynamic(vm, 1, new ValType(elementType.basicType, (byte) dimensions, (byte) 1, true), type, data, maxSize);
 
         data.rewind();
         // Generate image
@@ -920,7 +920,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
             int texture = OpenGLBasicLib.LoadTex(vm.getStringParam(1));
-            OpenGLBasicLib.textures.Store(texture);
+            OpenGLBasicLib.textures.addHandle(texture);
             vm.getReg().setIntVal(texture);
             glPopAttrib();
         }
@@ -937,13 +937,13 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 int[] array = new int[texs.size()];
                 for (int i = 0; i < texs.size(); i++) {
                     array[i] = texs.get(i);
-                    OpenGLBasicLib.textures.Store(texs.get(i));
+                    OpenGLBasicLib.textures.addHandle(texs.get(i));
                 }
-                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), texs.size(), array));
+                vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), texs.size(), array));
             } else {
                 int[] array = new int[1];
                 array[0] = 0;
-                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), 1, array));
+                vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, array));
             }
             glPopAttrib();
         }
@@ -960,13 +960,13 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 Integer[] array = new Integer[texs.size()];
                 for (int i = 0; i < texs.size(); i++) {
                     array[i] = texs.get(i);
-                    OpenGLBasicLib.textures.Store(texs.get(i));
+                    OpenGLBasicLib.textures.addHandle(texs.get(i));
                 }
-                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), texs.size(), Arrays.asList(array)));
+                vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), texs.size(), Arrays.asList(array)));
             } else {
                 Integer[] array = new Integer[1];
                 array[0] = 0;
-                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), 1, Arrays.asList(array)));
+                vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, Arrays.asList(array)));
             }
             glPopAttrib();
         }
@@ -1040,14 +1040,14 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             ByteBuffer buffer = BufferUtils.createByteBuffer(Integer.SIZE / Byte.SIZE);
             glGenTextures(buffer.asIntBuffer());
             texture = buffer.asIntBuffer().get(0);
-            OpenGLBasicLib.textures.Store(texture);
+            OpenGLBasicLib.textures.addHandle(texture);
             vm.getReg().setIntVal(texture);
         }
     }
 
     public final class WrapglDeleteTexture implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.textures.Free(vm.getIntParam(1));
+            OpenGLBasicLib.textures.freeHandle(vm.getIntParam(1));
         }
 
     }
@@ -1076,13 +1076,13 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             Image image = LoadImage.LoadImage(vm.getStringParam(1));
 
             // If successful, store it and return handle
-            vm.getReg().setIntVal((image != null) ? OpenGLBasicLib.images.Alloc(image) : 0);
+            vm.getReg().setIntVal((image != null) ? OpenGLBasicLib.images.alloc(image) : 0);
         }
     }
 
     public final class WrapDeleteImage implements Function {
         public void run(TomVM vm) {
-            OpenGLBasicLib.images.Free(vm.getIntParam(1));
+            OpenGLBasicLib.images.free(vm.getIntParam(1));
         }
     }
 
@@ -1091,8 +1091,8 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
             // Find image data
             int index = vm.getIntParam(1);
-            if (OpenGLBasicLib.images.IndexStored(index)) {
-                ByteBuffer pixels = images.Value(index).getPixels();
+            if (OpenGLBasicLib.images.isIndexStored(index)) {
+                ByteBuffer pixels = images.getValueAt(index).getPixels();
 
                 // Generate image
                 glTexImage2D(vm.getIntParam(9),         // target
@@ -1161,8 +1161,8 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
             // Find image data
             int index = vm.getIntParam(1);
-            if (OpenGLBasicLib.images.IndexStored(index)) {
-                ByteBuffer pixels = OpenGLBasicLib.images.Value(index).getPixels();
+            if (OpenGLBasicLib.images.isIndexStored(index)) {
+                ByteBuffer pixels = OpenGLBasicLib.images.getValueAt(index).getPixels();
 
                 // Generate image
                 glTexSubImage2D(vm.getIntParam(9),     // target
@@ -1181,21 +1181,21 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     public final class WrapImageWidth implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setIntVal(OpenGLBasicLib.images.IndexStored(index) ? OpenGLBasicLib.images.Value(index).getWidth() : 0);
+            vm.getReg().setIntVal(OpenGLBasicLib.images.isIndexStored(index) ? OpenGLBasicLib.images.getValueAt(index).getWidth() : 0);
         }
     }
 
     public final class WrapImageHeight implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setIntVal(OpenGLBasicLib.images.IndexStored(index) ? OpenGLBasicLib.images.Value(index).getHeight() : 0);
+            vm.getReg().setIntVal(OpenGLBasicLib.images.isIndexStored(index) ? OpenGLBasicLib.images.getValueAt(index).getHeight() : 0);
         }
     }
 
     public final class WrapImageFormat implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setIntVal(OpenGLBasicLib.images.IndexStored(index) ? LoadImage.ImageFormat(OpenGLBasicLib.images.Value(index)) : 0);
+            vm.getReg().setIntVal(OpenGLBasicLib.images.isIndexStored(index) ? LoadImage.ImageFormat(OpenGLBasicLib.images.getValueAt(index)) : 0);
         }
     }
 
@@ -1210,8 +1210,8 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
             // Find image data
             int index = vm.getIntParam(1);
-            if (OpenGLBasicLib.images.IndexStored(index)) {
-                ByteBuffer pixels = OpenGLBasicLib.images.Value(index).getPixels();
+            if (OpenGLBasicLib.images.isIndexStored(index)) {
+                ByteBuffer pixels = OpenGLBasicLib.images.getValueAt(index).getPixels();
 
                 // Build 2D mipmaps
                 //GLU deprecated
@@ -1307,14 +1307,14 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
             // Store textures in resource store (so Basic4GL can track them and ensure they have been deallocated)
             for (int i = 0; i < count; i++) {
-                OpenGLBasicLib.textures.Store(handleBuffer.get(i));
+                OpenGLBasicLib.textures.addHandle(handleBuffer.get(i));
             }
 
             // Store handles in Basic4GL array
             int[] t = new int[count];
             handleBuffer.rewind();
             handleBuffer.get(t);
-            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1), t, count);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1), t, count);
         }
     }
 
@@ -1332,7 +1332,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             // Read texture handles
             ByteBuffer handles = BufferUtils.createByteBuffer((Integer.SIZE / Byte.SIZE) * 65536);            // 64K should be enough for anybody ;)
             int[] array = new int[65536];
-            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1), array, count);
+            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1), array, count);
 
             IntBuffer handlesIntBuffer = handles.asIntBuffer();
             handlesIntBuffer.put(array);
@@ -1347,56 +1347,56 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     public final class WrapglLoadMatrixd implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
             doubleBuffer16.rewind();
             doubleBuffer16.put(a);
             doubleBuffer16.rewind();
             glLoadMatrixd(doubleBuffer16);
             doubleBuffer16.rewind();
             doubleBuffer16.get(a);
-            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
     public final class WrapglLoadMatrixf implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glLoadMatrixf(floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
     public final class WrapglMultMatrixd implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
             doubleBuffer16.rewind();
             doubleBuffer16.put(a);
             doubleBuffer16.rewind();
             glMultMatrixd(doubleBuffer16);
             doubleBuffer16.rewind();
             doubleBuffer16.get(a);
-            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
     public final class WrapglMultMatrixf implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glMultMatrixf(floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), a, 16);
         }
     }
 
@@ -1404,14 +1404,14 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
             ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
             glGetPolygonStipple(mask);
-            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
         }
     }
 
     public final class WrapglPolygonStipple implements Function {
         public void run(TomVM vm) {
             ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
-            Data.ReadAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
+            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
             glPolygonStipple(mask);
         }
     }
@@ -1446,8 +1446,8 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             glDeleteLists(base, count);
 
             // Remove display lists entry (if the range was correctly deleted)
-            if (OpenGLBasicLib.displayLists.Valid(base) && OpenGLBasicLib.displayLists.GetCount(base) <= count) {
-                OpenGLBasicLib.displayLists.Remove(base);
+            if (OpenGLBasicLib.displayLists.isHandleValid(base) && OpenGLBasicLib.displayLists.GetCount(base) <= count) {
+                OpenGLBasicLib.displayLists.removeHandle(base);
             }
         }
     }
@@ -1529,7 +1529,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             glGetFloatv(vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(data);
-            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), data, 16);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
@@ -1543,7 +1543,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             glGetDoublev(vm.getIntParam(2), doubleBuffer16);
             doubleBuffer16.rewind();
             doubleBuffer16.get(data);
-            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), data, 16);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
@@ -1557,7 +1557,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             glGetIntegerv(vm.getIntParam(2), intBuffer16);
             intBuffer16.rewind();
             intBuffer16.get(data);
-            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 2, (byte) 1, true), data, 16);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
@@ -1571,7 +1571,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             glGetBooleanv(vm.getIntParam(2), byteBuffer16);
             byteBuffer16.rewind();
             byteBuffer16.get(data);
-            Data.WriteArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 2, (byte) 1, true), data, 16);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
@@ -1676,7 +1676,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 glGenTextures(texbuffer);
                 // Store texture handles in texture store object so Basic4GL can track them
                 for (int i = 0; i < count; i++) {
-                    textures.Store(texbuffer.get(i));
+                    textures.addHandle(texbuffer.get(i));
                 }
 
                 // Iterate over image in grid pattern, extracting each frame
@@ -1747,7 +1747,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 int[] t = new int[tex.asIntBuffer().capacity()];
                 tex.asIntBuffer().get(t);
                 // Return array of textures
-                vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), frameCount.get(0), t));
+                vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), frameCount.get(0), t));
                 return;
             }
         }
@@ -1755,7 +1755,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         // Load failed.
         // Return 1 element array containing a 0.
         int blankFrame = 0;
-        vm.getReg().setIntVal(Data.FillTempIntArray(vm.getData(), vm.getDataTypes(), 1, new int[]{blankFrame}));
+        vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, new int[]{blankFrame}));
     }
 
     public final class OldSquare_WrapLoadImageStrip implements Function {

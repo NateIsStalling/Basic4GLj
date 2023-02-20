@@ -11,63 +11,26 @@ import java.nio.ByteBuffer;
  * Used to store a single value.
  * Used internally by registers, stack entries and variables.
  *
+ * Note: When storing a string, the actual value is stored in a separate
+ * string array. {@link #getIntVal()} then stores the index of the string in
+ * this array.
  * porting note: had directive `#pragma pack (push, 1)`
  */
 public class Value implements Streamable{
-	private boolean mIsInt;
-	private Integer m_intVal;
-	private Float m_realVal;
+	private boolean isInt;
+	private Integer intVal;
+	private Float realVal;
 
-	// Note: When storing a string, the actual value is stored in a separate
-	// string array. mIntVal then stores the index of the string in
-	// this array.
-
-	public int getIntVal() {
-		return m_intVal.intValue();
-	}
-
-	public float getRealVal() {
-		return m_realVal.floatValue();
-	}
-
-	public void setIntVal(Integer val) {
-		mIsInt = true;
-		m_intVal = val;
-		m_realVal = val.floatValue();
-
-	}
-
-	public void setRealVal(Float val) {
-		mIsInt = false;
-		m_intVal = val.intValue();
-		m_realVal = val;
-
-	}
-
-	public void setVal(Integer val) {
-		mIsInt = true;
-		setIntVal(val);
-	}
-
-	public void setVal(Float val) {
-		mIsInt = false;
-		setRealVal(val);
-	}
-	public void setVal(Value val) {
-		mIsInt = val.mIsInt;
-		m_intVal = val.m_intVal;
-		m_realVal = val.m_realVal;
-	}
 	public Value() { // Default constructor
-		mIsInt = true;
-		m_intVal = 0;
-		m_realVal = 0f;
+		isInt = true;
+		intVal = 0;
+		realVal = 0f;
 	}
 
 	Value(final Value v) { // Copy constructor
-		mIsInt = v.mIsInt;
-		m_intVal = v.m_intVal;
-		m_realVal = v.m_realVal;
+		isInt = v.isInt;
+		intVal = v.intVal;
+		realVal = v.realVal;
 	}
 
 	public Value(Integer intVal) {
@@ -77,6 +40,42 @@ public class Value implements Streamable{
 	public Value(Float realVal) {
 		setRealVal(realVal);
 	}
+	
+	public int getIntVal() {
+		return intVal.intValue();
+	}
+
+	public float getRealVal() {
+		return realVal.floatValue();
+	}
+
+	public void setIntVal(Integer val) {
+		isInt = true;
+		intVal = val;
+		realVal = val.floatValue();
+
+	}
+
+	public void setRealVal(Float val) {
+		isInt = false;
+		intVal = val.intValue();
+		realVal = val;
+	}
+
+	public void setVal(Integer val) {
+		isInt = true;
+		setIntVal(val);
+	}
+
+	public void setVal(Float val) {
+		isInt = false;
+		setRealVal(val);
+	}
+	public void setVal(Value val) {
+		isInt = val.isInt;
+		intVal = val.intVal;
+		realVal = val.realVal;
+	}
 
 	// Streaming
 	public void streamOut(DataOutputStream stream) throws IOException{
@@ -85,20 +84,20 @@ public class Value implements Streamable{
 		// 1. We are unioning two data types together.
 		// 2. We don't know at stream time what data type it is.
 		//buffer.order( ByteOrder.LITTLE_ENDIAN);
-		if (mIsInt) {
-            stream.writeInt(m_intVal);
+		if (isInt) {
+            stream.writeInt(intVal);
         } else
 			//stream.write(ByteBuffer.allocate(4).putFloat(m_realVal).array());
         {
-            stream.writeFloat(m_realVal);
+            stream.writeFloat(realVal);
         }
 	}
 
 	public boolean streamIn(DataInputStream stream) throws IOException{
 		byte[] b = new byte[Float.SIZE / Byte.SIZE];
 		stream.read(b);
-		m_intVal = ByteBuffer.wrap(b).getInt();
-		m_realVal = ByteBuffer.wrap(b).getFloat();
+		intVal = ByteBuffer.wrap(b).getInt();
+		realVal = ByteBuffer.wrap(b).getFloat();
 		return true;
 	}
 }

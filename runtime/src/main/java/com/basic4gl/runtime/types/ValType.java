@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
@@ -28,12 +29,12 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
  */
 public class ValType implements Streamable{
 
-	public int m_basicType; // Basic type
-	public byte m_arrayLevel; // 0 = value, 1 = array, 2 = 2D array
-	public byte m_pointerLevel; // 0 = value, 1 = pointer to value, 2 =
+	public int basicType; // Basic type
+	public byte arrayLevel; // 0 = value, 1 = array, 2 = 2D array
+	public byte pointerLevel; // 0 = value, 1 = pointer to value, 2 =
 	// pointer to pointer to value, ...
-	public boolean m_byRef;
-	public int[] m_arrayDims = new int[TomVM.ARRAY_MAX_DIMENSIONS]; // # of
+	public boolean isByRef;
+	public int[] arrayDimensions = new int[TomVM.ARRAY_MAX_DIMENSIONS]; // # of
 	// elements
 	// in
 	// each
@@ -41,14 +42,14 @@ public class ValType implements Streamable{
 	// dimension
 
 	public ValType() {
-		Set(VTP_UNDEFINED);
+		setType(VTP_UNDEFINED);
 	}
 	public ValType(int type) {
-		Set(type);
+		setType(type);
 	}
 
 	public ValType(ValType type) {
-		Set(type);
+		setType(type);
 	}
 
 	public ValType(int type, byte array) {
@@ -56,10 +57,14 @@ public class ValType implements Streamable{
 	}
 
 	public ValType(int type, byte array, byte pointer, boolean byRef) {
-		Set(type, array, pointer, byRef);
+		setType(type, array, pointer, byRef);
 	}
 
-	// Displaying basic types and values
+	/**
+	 * Displaying basic types and values
+	 * @param type
+	 * @return
+	 */
 	static String BasicValTypeName(int type) {
 		if (type < 0) {
 			switch (type) {
@@ -81,42 +86,48 @@ public class ValType implements Streamable{
 		}
 	}
 
-	public ValType Set(int type) {
-		return Set(type, (byte) 0, (byte) 0, false);
+	public ValType setType(int type) {
+		return setType(type, (byte) 0, (byte) 0, false);
 	}
-	public ValType Set(int type, byte array, byte pointer, boolean byRef) {
+	public ValType setType(int type, byte array, byte pointer, boolean byRef) {
 		assertTrue(array <= TomVM.ARRAY_MAX_DIMENSIONS);
-		m_basicType = type;
-		m_arrayLevel = array;
-		m_pointerLevel = pointer;
-		m_byRef = byRef;
+		basicType = type;
+		arrayLevel = array;
+		pointerLevel = pointer;
+		isByRef = byRef;
 
-		Arrays.fill(m_arrayDims, 0);
+		Arrays.fill(arrayDimensions, 0);
 		return this;
 	}
 
-	public ValType Set(ValType t) {
-		m_basicType = t.m_basicType;
-		m_arrayLevel = t.m_arrayLevel;
-		m_pointerLevel = t.m_pointerLevel;
-		m_byRef = t.m_byRef;
-		m_arrayDims = Arrays.copyOf(t.m_arrayDims, TomVM.ARRAY_MAX_DIMENSIONS);
+	public ValType setType(ValType t) {
+		basicType = t.basicType;
+		arrayLevel = t.arrayLevel;
+		pointerLevel = t.pointerLevel;
+		isByRef = t.isByRef;
+		arrayDimensions = Arrays.copyOf(t.arrayDimensions, TomVM.ARRAY_MAX_DIMENSIONS);
 		return this;
 	}
 
-	public boolean Equals(ValType t) {
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ValType valType = (ValType) o;
+
+		// TODO generated return basicType == valType.basicType && arrayLevel == valType.arrayLevel && pointerLevel == valType.pointerLevel && isByRef == valType.isByRef && Arrays.equals(arrayDimensions, valType.arrayDimensions);
 
 		// Return true if types match
 		// Compare basic types and array and pointer levels
-		if (m_basicType != t.m_basicType || m_arrayLevel != t.m_arrayLevel
-				|| m_pointerLevel != t.m_pointerLevel) {
+		if (basicType != valType.basicType || arrayLevel != valType.arrayLevel
+				|| pointerLevel != valType.pointerLevel) {
 			return false;
 		}
 
 		// Compare array dimensions (if not a pointer)
-		if (m_pointerLevel == 0) {
-			for (int i = 0; i < m_arrayLevel; i++) {
-				if (m_arrayDims[i] != t.m_arrayDims[i]) {
+		if (pointerLevel == 0) {
+			for (int i = 0; i < arrayLevel; i++) {
+				if (arrayDimensions[i] != valType.arrayDimensions[i]) {
 					return false;
 				}
 			}
@@ -125,66 +136,73 @@ public class ValType implements Streamable{
 		return true;
 	}
 
-	public boolean Equals(int type) {
-		return Equals(new ValType(type));
+	@Override
+	public int hashCode() {
+		int result = Objects.hash(basicType, arrayLevel, pointerLevel, isByRef);
+		result = 31 * result + Arrays.hashCode(arrayDimensions);
+		return result;
 	}
 
-	public boolean ExactEquals(ValType type) {
+	public boolean matchesType(int type) {
+		return equals(new ValType(type));
+	}
 
-		// Equals returns true if the types are identical in implementation.
-		// This means it will return true if one is a pointer and the other
-		// is a
-		// reference (as both are the same internally).
+	/**
+	 * Equals returns true if the types are identical in implementation.
+	 * This means it will return true if one is a pointer and the other
+	 * is a reference (as both are the same internally).
+	 *
+	 * Porting Note: The overloaded == operator uses {@link #equals(Object)} function.
+	 *
+	 * @param type
+	 * @return returns false if one is a pointer and the other is a reference.
+	 */
+	public boolean exactEquals(ValType type) {
 
-		// ExactEquals returns false if one is a pointer and the other is a
-		// reference.
-
-		// Note: The overloaded == operator uses Equals function.
-
-		if (!Equals(type)) {
+		if (!equals(type)) {
 			return false;
 		}
 
-		if (m_byRef != type.m_byRef) {
-			return false;
-		}
-
-		return true;
+		return isByRef == type.isByRef;
 	}
 
-	public boolean ExactEquals(int type) {
-		return ExactEquals(new ValType(type));
+	public boolean exactEquals(int type) {
+		return exactEquals(new ValType(type));
 	}
 
-	public boolean IsNull() {
-		return m_basicType == VTP_NULL;
+	public boolean isNull() {
+		return basicType == VTP_NULL;
 	}
 
-	public int PhysicalPointerLevel() {
-		return m_pointerLevel;
+	public int getPhysicalPointerLevel() {
+		return pointerLevel;
 	}
 
-	public int VirtualPointerLevel() {
-		return m_pointerLevel + (m_byRef ? -1 : 0);
+	public int getVirtualPointerLevel() {
+		return pointerLevel + (isByRef ? -1 : 0);
 	}
 
-	public void AddDimension(int elements) {
-		assertTrue(m_arrayLevel < TomVM.ARRAY_MAX_DIMENSIONS);
+	public void addDimension(int elements) {
+		assertTrue(arrayLevel < TomVM.ARRAY_MAX_DIMENSIONS);
 		assertTrue(elements > 0);
 
 		// Bump up existing elements
-		for (int i = m_arrayLevel; i > 0; i--) {
-			m_arrayDims[i] = m_arrayDims[i - 1];
+		for (int i = arrayLevel; i > 0; i--) {
+			arrayDimensions[i] = arrayDimensions[i - 1];
 		}
-		m_arrayLevel++;
+		arrayLevel++;
 
 		// Add new element count at dimension 0
-		m_arrayDims[0] = elements;
+		arrayDimensions[0] = elements;
 	}
 
-	public int ArraySize(int elementSize) {
+	/**
+	 * Calculate the array size based on the element size
+	 * @param elementSize
+	 * @return array size
+	 */
+	public int getArraySize(int elementSize) {
 
-		// Calculate the array size based on the element size
 		int result = elementSize;
 
 		// Note: Array data format is
@@ -201,122 +219,123 @@ public class ValType implements Streamable{
 		// size)
 		// An N+1 dimension array is simply an array of N dimension arrays.
 
-		for (int i = 0; i < m_arrayLevel; i++) {
-			result *= m_arrayDims[i];
+		for (int i = 0; i < arrayLevel; i++) {
+			result *= arrayDimensions[i];
 			result += 2;
 		}
 
 		return result;
 	}
 
-	public boolean ArraySizeBiggerThan(int size, int elementSize) {
-
-		// Returns true if the array size is bigger than size.
-		// This is logically equivalent to "ArraySize (elementSize) > size",
-		// except
-		// ArraySize can fail if the calculated size doesn't fit into an
-		// integer.
-
-		// A major goal of Basic4GL is to provide a safe environment to
-		// experiment
-		// in without worrying about breaking things.
-		// Therefore we want to prevent people from trying to allocate
-		// unrealistic
-		// amounts of memory. Thus we check array sizes upon
-		// allocation/declaration.
+	/**
+	 * This is logically equivalent to "ArraySize (elementSize) > size",
+	 * except ArraySize can fail if the calculated size doesn't fit into an integer.
+	 *
+	 * A major goal of Basic4GL is to provide a safe environment to experiment
+	 * in without worrying about breaking things.
+	 * Therefore we want to prevent people from trying to allocate
+	 * unrealistic amounts of memory.
+	 * Thus we check array sizes upon allocation/declaration.
+	 * @param size
+	 * @param elementSize
+	 * @return Returns true if the array size is bigger than size.
+	 */
+	public boolean isArraySizeBiggerThan(int size, int elementSize) {
 
 		int arraySize = elementSize;
 		if (arraySize > size) {
 			return true;
 		}
 
-		for (int i = 0; i < m_arrayLevel; i++) {
-			if (size < 2 || (size - 2) / m_arrayDims[i] < arraySize) {
+		for (int i = 0; i < arrayLevel; i++) {
+			if (size < 2 || (size - 2) / arrayDimensions[i] < arraySize) {
 				return true;
 			}
-			arraySize *= m_arrayDims[i];
+			arraySize *= arrayDimensions[i];
 			arraySize += 2;
 		}
 
 		return false;
 	}
 
-	public boolean CanStoreInRegister() {
-		return m_pointerLevel > 0 || // Pointers fit in a register
-				(m_arrayLevel == 0 && m_basicType < 0); // Or
-		// single
-		// basic
-		// types
+	/**
+	 * Pointers fit in a register, or single basic types
+	 * @return
+	 */
+	public boolean canStoreInRegister() {
+		return pointerLevel > 0 ||
+				(arrayLevel == 0 && basicType < 0);
 	}
 
-	public ValType RegisterType() {
-
-		// Return the actual type that will be stored in a register when
-		// referring
-		// to data of this type.
-		// For values that fit into a register, the register type is the
-		// same as
-		// the original type represented.
-		// For large values like structures and arrays, the register will
-		// store an
-		// implicit reference to the data instead.
+	/**
+	 * Return the actual type that will be stored in a register when
+	 * referring to data of this type.
+	 * For values that fit into a register, the register type is the
+	 * same as the original type represented.
+	 *
+	 * For large values like structures and arrays, the register will
+	 * store an implicit reference to the data instead.
+	 */
+	public ValType getRegisterType() {
 
 		// Copy this value type
 		ValType result = new ValType(this);
 
 		// Check if type is an array or structure
-		if (!result.CanStoreInRegister()) {
+		if (!result.canStoreInRegister()) {
 
 			// A structure or array cannot fit into a register.
 			// What is stored is an implicit by-reference pointer.
-			result.m_pointerLevel++;
-			result.m_byRef = true;
+			result.pointerLevel++;
+			result.isByRef = true;
 		}
 
 		return result;
 	}
 
-	public int StoredType() {
-
-		// Type of actual data stored inside virtual machine register.
-		if (m_pointerLevel == 0 && m_arrayLevel == 0) {
-			return m_basicType;
+	/**
+	 * Type of actual data stored inside virtual machine register.
+	 * @return
+	 */
+	public int getStoredType() {
+		if (pointerLevel == 0 && arrayLevel == 0) {
+			return basicType;
 		} else {
 			return VTP_INT;
 		}
 	}
 
-	public boolean IsBasic() {
-		return m_pointerLevel == 0 && m_arrayLevel == 0
-				&& m_basicType < 0;
+	public boolean isBasicType() {
+		return pointerLevel == 0 && arrayLevel == 0
+				&& basicType < 0;
 	}
 
 	// Streaming
 	public void streamOut(DataOutputStream stream) throws IOException{
 
 		// Write VmValType to stream
-		Streaming.WriteLong(stream, m_basicType);
+		Streaming.writeLong(stream, basicType);
 
-		Streaming.WriteByte(stream, m_arrayLevel);
-		Streaming.WriteByte(stream, m_pointerLevel);
-		Streaming.WriteByte(stream, (byte) (m_byRef ? 1 : 0));
+		Streaming.writeByte(stream, arrayLevel);
+		Streaming.writeByte(stream, pointerLevel);
+		Streaming.writeByte(stream, (byte) (isByRef ? 1 : 0));
 
 		for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++) {
-			Streaming.WriteLong(stream, m_arrayDims[i]);
+			Streaming.writeLong(stream, arrayDimensions[i]);
 		}
 	}
 
 	public boolean streamIn(DataInputStream stream) throws IOException{
 
 		// Read VmValType from stream
-		m_basicType = (int)Streaming.ReadLong(stream);
+		basicType = (int)Streaming.readLong(stream);
 
-		m_arrayLevel = Streaming.ReadByte(stream);
-		m_pointerLevel = Streaming.ReadByte(stream);
-		m_byRef = Streaming.ReadByte(stream) == 1 ? true : false;
+		arrayLevel = Streaming.readByte(stream);
+		pointerLevel = Streaming.readByte(stream);
+		isByRef = Streaming.readByte(stream) == 1;
 
 		for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++) {
-			m_arrayDims[i] = (int) Streaming.ReadLong(stream);
+			arrayDimensions[i] = (int) Streaming.readLong(stream);
 		}
 
 		return true;

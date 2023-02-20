@@ -15,42 +15,54 @@ import com.basic4gl.runtime.util.Streaming;
  * dim angle#, names$ (100), x, y
  * EndStruc
  */
-public class StructureField implements Streamable{
-	public String m_name; // Field name
-	public ValType m_type; // Data type
-	public int m_dataOffset; // Data offset from top of structure
+public class StructureField implements Streamable {
+
+	/**
+	 * Field name
+	 */
+	public String name;
+
+	/**
+	 * Data type
+	 */
+	public ValType type;
+
+	/**
+	 * Data offset from top of structure
+	 */
+	public int dataOffset;
 
 	public StructureField(String name, ValType type) {
 		this(name, type, 0);
 	}
 
 	public StructureField(String name, ValType type, int dataOffset) {
-		m_name = name.toLowerCase();
-		m_type = type;
-		m_dataOffset = dataOffset;
+		this.name = name.toLowerCase();
+		this.type = type;
+		this.dataOffset = dataOffset;
 	}
 
 	public StructureField() {
-		m_name = "";
-		m_type = new ValType (BasicValType.VTP_INT);
-		m_dataOffset = 0;
+		name = "";
+		type = new ValType (BasicValType.VTP_INT);
+		dataOffset = 0;
 	}
 
 	// Streaming
 	public void streamOut(DataOutputStream stream) throws IOException{
 
-		Streaming.WriteString(stream, m_name);
+		Streaming.writeString(stream, name);
 
-		m_type.streamOut(stream);
-		Streaming.WriteLong(stream, m_dataOffset);
+		type.streamOut(stream);
+		Streaming.writeLong(stream, dataOffset);
 	}
 
 	public boolean streamIn(DataInputStream stream) throws IOException{
 
-		m_name = Streaming.ReadString(stream);
+		name = Streaming.readString(stream);
 
-		m_type.streamIn(stream);
-		m_dataOffset = (int) Streaming.ReadLong(stream);
+		type.streamIn(stream);
+		dataOffset = (int) Streaming.readLong(stream);
 
 		return true;
 	}

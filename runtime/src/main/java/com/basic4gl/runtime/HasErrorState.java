@@ -1,30 +1,34 @@
 package com.basic4gl.runtime;
 
+/**
+ * Error handling
+ */
 public class HasErrorState {
-	// Error status
-	boolean mErrorOccurred;
-	String mMessage;
+	/**
+	 * Error status
+	 */
+	protected boolean hasErrorOccurred;
 
-	// Error handling
+	protected String errorMessage;
+
 	public HasErrorState() {
-		mErrorOccurred = false;
+		hasErrorOccurred = false;
 	}
 
 	public String getError() {
-		return mErrorOccurred ? mMessage : "";
+		return hasErrorOccurred ? errorMessage : "";
 	}
 
 	public void setError(String message) {
-		mErrorOccurred = true;
-		mMessage = message;
+		hasErrorOccurred = true;
+		errorMessage = message;
 	}
 
 	public boolean hasError() {
-		return mErrorOccurred;
+		return hasErrorOccurred;
 	}
 
 	public void clearError() {
-		mErrorOccurred = false;
+		hasErrorOccurred = false;
 	}
-
 }

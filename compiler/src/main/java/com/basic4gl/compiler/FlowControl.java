@@ -1,6 +1,6 @@
 package com.basic4gl.compiler;
 
-import com.basic4gl.runtime.InstructionPos;
+import com.basic4gl.runtime.InstructionPosition;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,7 +63,7 @@ class FlowControl {
 	 */
 	int jumpLoop;
 
-	InstructionPos m_sourcePos;
+	InstructionPosition sourcePos;
 
 	/**
 	 * Misc data
@@ -93,7 +93,7 @@ class FlowControl {
 		controlType = type;
 		this.jumpOut = jumpOut;
 		this.jumpLoop = jumpLoop;
-		m_sourcePos = new InstructionPos(line, col);
+		sourcePos = new InstructionPosition(line, col);
 		this.impliedEndif = impliedEndif;
 		this.data = data;
 		this.blockIf = blockIf;

@@ -32,13 +32,13 @@ public class UserFunc implements Streamable{
 		// streaming occurs.
 		assertTrue(mImplemented);
 
-		Streaming.WriteLong(stream, mPrototypeIndex);
-		Streaming.WriteLong(stream, mProgramOffset);
+		Streaming.writeLong(stream, mPrototypeIndex);
+		Streaming.writeLong(stream, mProgramOffset);
 	}
 
 	public boolean streamIn(DataInputStream stream) throws IOException{
-		mPrototypeIndex = (int) Streaming.ReadLong(stream);
-		mProgramOffset = (int) Streaming.ReadLong(stream);
+		mPrototypeIndex = (int) Streaming.readLong(stream);
+		mProgramOffset = (int) Streaming.readLong(stream);
 
 		mImplemented = true;
 

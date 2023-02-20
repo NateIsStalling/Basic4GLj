@@ -461,7 +461,7 @@ public class Standard implements FunctionLibrary {
 
 			// Arrays are prefixed with their array size.
 			// Subtract one to get the maximum accepted value.
-			vm.getReg().setIntVal(vm.getData().Data().get(dataIndex).getIntVal() - 1);
+			vm.getReg().setIntVal(vm.getData().data().get(dataIndex).getIntVal() - 1);
 		}
 	}
 
@@ -469,7 +469,7 @@ public class Standard implements FunctionLibrary {
 		public boolean run (int index, ValType type){
 			// Type must be an array type. Must not be a pointer (but can be a
 			// by-reference)
-			return type.VirtualPointerLevel() == 0 && type.m_arrayLevel > 0;
+			return type.getVirtualPointerLevel() == 0 && type.arrayLevel > 0;
 		}
 	}
 

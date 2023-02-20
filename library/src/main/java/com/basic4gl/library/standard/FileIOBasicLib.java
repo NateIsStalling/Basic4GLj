@@ -154,8 +154,8 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     boolean GetStream (int index) {
 
         // Get file stream and store in stream variable
-        if (index > 0 && fileStreams.IndexStored (index)) {
-            stream = fileStreams.Value (index);
+        if (index > 0 && fileStreams.isIndexStored(index)) {
+            stream = fileStreams.getValueAt(index);
             lastError = "";
             return true;
         }
@@ -210,7 +210,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         }
         else {
             lastError = "";
-            return fileStreams.Alloc (new FileStream (file));
+            return fileStreams.alloc(new FileStream (file));
         }
     }
 
@@ -224,7 +224,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         }
         else {
             lastError = "";
-            return fileStreams.Alloc (new FileStream (file));
+            return fileStreams.alloc(new FileStream (file));
         }
     }
 
@@ -248,8 +248,8 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     public final class WrapCloseFile  implements Function { public void run(TomVM vm) {
         int handle = vm.getIntParam(1);
-        if (handle > 0 && fileStreams.IndexStored (handle)) {
-            fileStreams.Free (handle);
+        if (handle > 0 && fileStreams.isIndexStored(handle)) {
+            fileStreams.free(handle);
             lastError = "";
         }
         else {

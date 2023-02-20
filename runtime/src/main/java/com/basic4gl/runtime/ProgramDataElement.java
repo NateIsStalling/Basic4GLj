@@ -32,12 +32,12 @@ class ProgramDataElement implements Streamable{
 
 	// Streaming
 	public void streamOut(DataOutputStream stream) throws IOException{
-		Streaming.WriteLong(stream, basicType);
+		Streaming.writeLong(stream, basicType);
 		value.streamOut(stream);
 	}
 
 	public boolean streamIn(DataInputStream stream) throws IOException{
-		basicType = (int)Streaming.ReadLong(stream);
+		basicType = (int)Streaming.readLong(stream);
 		value = new Value();
 		value.streamIn(stream);
 		return true;

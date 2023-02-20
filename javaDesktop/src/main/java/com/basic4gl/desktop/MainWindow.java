@@ -250,7 +250,7 @@ public class MainWindow implements
             }
 
             // Clear source code from parser
-            mEditor.mComp.Parser().SourceCode().clear();
+            mEditor.mComp.Parser().getSourceCode().clear();
 
             if (!mEditor.LoadProgramIntoCompiler()) {
                 mCompStatusLabel.setText(mEditor.mPreprocessor.getError());

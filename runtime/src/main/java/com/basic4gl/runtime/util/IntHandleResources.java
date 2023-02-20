@@ -11,30 +11,30 @@ import java.util.Set;
  */
 public abstract class IntHandleResources extends Resources {
 
-	protected Set<Integer> m_handles = new HashSet<Integer>();
+	protected Set<Integer> handles = new HashSet<Integer>();
 
-	protected abstract void DeleteHandle(int handle);
+	protected abstract void deleteHandle(int handle);
 
 	public void clear() {
 
 		// Clear set
-		m_handles.clear();
+		handles.clear();
 	}
 
-	public boolean Valid(int handle) {
-		return m_handles.contains(handle);
+	public boolean isHandleValid(int handle) {
+		return handles.contains(handle);
 	}
 
-	public void Store(int handle) {
-		m_handles.add(handle);
+	public void addHandle(int handle) {
+		handles.add(handle);
 	}
 
-	public void Remove(int handle) {
-		m_handles.remove(handle);
+	public void removeHandle(int handle) {
+		handles.remove(handle);
 	}
 
-	public void Free(int handle) {
-		DeleteHandle(handle);
-		Remove(handle);
+	public void freeHandle(int handle) {
+		deleteHandle(handle);
+		removeHandle(handle);
 	}
 }

@@ -20,78 +20,76 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class GLTileMap extends GLBasicSprite {
 
-    private int m_xTiles, m_yTiles;
-    private Vector<Integer> m_tiles;
+    private int xTiles, yTiles;
+    private Vector<Integer> tiles;
 
-    private void SetDefaults() {
-        m_xTiles = 0;
-        m_yTiles = 0;
-        m_xCentre = 0;
-        m_yCentre = 0;
-        m_xRepeat = true;
-        m_yRepeat = true;
-        m_solid = true;
-    }
-
-
-    protected void InternalCopy(GLBasicSprite s) {
-        super.InternalCopy(s);
-        GLTileMap t = (GLTileMap) s;
-        SetTiles(t.m_xTiles, t.m_yTiles, t.m_tiles);
-    }
-
-
-    public boolean m_xRepeat, m_yRepeat;
+    public boolean repeatX, repeatY;
 
     // Construction/destruction
     public GLTileMap() {
         super();
-        SetDefaults ();
+        setDefaults();
     }
 
     public GLTileMap(int tex) {
         super(tex);
-        SetDefaults();
+        setDefaults();
     }
 
     public GLTileMap(Vector<Integer> tex) {
         super(tex);
-        SetDefaults();
+        setDefaults();
+    }
+
+    private void setDefaults() {
+        xTiles = 0;
+        yTiles = 0;
+        centerX = 0;
+        centerY = 0;
+        repeatX = true;
+        repeatY = true;
+        solid = true;
+    }
+
+    protected void internalCopy(GLBasicSprite s) {
+        super.internalCopy(s);
+        GLTileMap t = (GLTileMap) s;
+        setTiles(t.xTiles, t.yTiles, t.tiles);
     }
 
     // Class type identification
-    public GLSpriteEngine.GLSpriteType Type() {
+    public GLSpriteEngine.GLSpriteType getGLSpriteType() {
         return GLSpriteEngine.GLSpriteType.SPR_TILEMAP;
     }
 
     // Getters/Setters
-    public int XTiles() {
-        return m_xTiles;
+    public int getTilesX() {
+        return xTiles;
     }
 
-    public int YTiles() {
-        return m_yTiles;
+    public int getTilesY() {
+        return yTiles;
     }
 
-    public Vector<Integer> Tiles() {
-        return m_tiles;
+    public Vector<Integer> getTiles() {
+        return tiles;
     }
 
-    public void SetTiles(int xTiles, int yTiles, Vector<Integer> tiles) {
+    public void setTiles(int xTiles, int yTiles, Vector<Integer> tiles) {
         assertTrue(xTiles >= 0);
         assertTrue(yTiles >= 0);
         assertTrue(tiles.size() >= xTiles * yTiles);
-        m_xTiles = xTiles;
-        m_yTiles = yTiles;
+        this.xTiles = xTiles;
+        this.yTiles = yTiles;
         if (xTiles > 0 || yTiles > 0) {
-            m_tiles = tiles;
+            this.tiles = tiles;
         } else {
-            m_tiles.clear();
+            this.tiles.clear();
         }
     }
 
     // Rendering
-    public void Render(float[] camInv) {
+    public void render(float[] camInv) {
 
         // Render tile map using OpenGL commands
 
@@ -100,17 +98,17 @@ public class GLTileMap extends GLBasicSprite {
         // accordingly.
 
         // Sprite must be visible
-        if (!m_visible || m_xTiles == 0 || m_yTiles == 0) {
+        if (!visible || xTiles == 0 || yTiles == 0) {
             return;
         }
 
-        ByteBuffer byteBuf = BufferUtils.createByteBuffer(m_colour.length * 4); //4 bytes per float
+        ByteBuffer byteBuf = BufferUtils.createByteBuffer(color.length * 4); //4 bytes per float
         FloatBuffer buffer = byteBuf.asFloatBuffer();
-        buffer.put(m_colour);
+        buffer.put(color);
         buffer.position(0);
         glColor4fv(buffer);
         buffer.rewind();
-        buffer.get(m_colour);
+        buffer.get(color);
 
         // Setup translation, rotation and scaling.
         // Note:    We will setup 2 matrices.
@@ -122,32 +120,32 @@ public class GLTileMap extends GLBasicSprite {
         glPushMatrix();
 
         // Translate to object position
-        glTranslatef(m_x, m_y, 0);
-        TrigBasicLib.Translate(-m_x, -m_y, 0);
+        glTranslatef(positionX, positionY, 0);
+        TrigBasicLib.Translate(-positionX, -positionY, 0);
         TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), camInv, m1);
 
         // Rotate by angle
-        if (m_angle != 0) {
-            glRotatef(m_angle, 0, 0, 1);
-            TrigBasicLib.RotateZ(-m_angle);
+        if (angle != 0) {
+            glRotatef(angle, 0, 0, 1);
+            TrigBasicLib.RotateZ(-angle);
             TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
         } else {
             TrigBasicLib.CopyMatrix(m2, m1);
         }
 
         // Scale to tile size
-        glScalef(m_xSize * m_scale,
-                m_ySize * m_scale,
+        glScalef(sizeX * scale,
+                sizeY * scale,
                 1);
-        TrigBasicLib.Scale(1.0f / (m_xSize * m_scale),
-                1.0f / (m_ySize * m_scale),
+        TrigBasicLib.Scale(1.0f / (sizeX * scale),
+                1.0f / (sizeY * scale),
                 1);
         TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m2, m1);
 
         // Centre offset
-        if (m_xCentre != 0 || m_yCentre != 0) {
-            glTranslatef(-m_xCentre, -m_yCentre, 0);
-            TrigBasicLib.Translate(m_xCentre, m_yCentre, 0);
+        if (centerX != 0 || centerY != 0) {
+            glTranslatef(-centerX, -centerY, 0);
+            TrigBasicLib.Translate(centerX, centerY, 0);
             TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
         } else {
             TrigBasicLib.CopyMatrix(m2, m1);
@@ -180,53 +178,53 @@ public class GLTileMap extends GLBasicSprite {
 
         minX--;
         minY--;
-        if (!m_xRepeat) {
+        if (!repeatX) {
 
             // Clamp x
             if (minX < 0) {
                 minX = 0;
             }
-            if (maxX >= m_xTiles) {
-                maxX = m_xTiles - 1;
+            if (maxX >= xTiles) {
+                maxX = xTiles - 1;
             }
         }
-        if (!m_yRepeat) {
+        if (!repeatY) {
 
             // Clamp y
             if (minY < 0) {
                 minY = 0;
             }
-            if (maxY >= m_yTiles) {
-                maxY = m_yTiles - 1;
+            if (maxY >= yTiles) {
+                maxY = yTiles - 1;
             }
         }
-        int startTileX = minX % m_xTiles, startTileY = minY % m_yTiles;
+        int startTileX = minX % xTiles, startTileY = minY % yTiles;
         if (startTileX < 0) {
-            startTileX += m_xTiles;
+            startTileX += xTiles;
         }
         if (startTileY < 0) {
-            startTileY += m_yTiles;
+            startTileY += yTiles;
         }
 
         // Draw tile map
         if (minX <= maxX && minY <= maxY) {
             int tileX = startTileX;
             for (int x = minX; x <= maxX; x++) {
-                int offset = tileX * m_yTiles;
+                int offset = tileX * yTiles;
                 int tileY = startTileY;
                 for (int y = minY; y <= maxY; y++) {
 
                     assertTrue(tileY >= 0);
                     assertTrue(tileX >= 0);
-                    assertTrue(tileY < m_yTiles);
-                    assertTrue(tileX < m_xTiles);
+                    assertTrue(tileY < yTiles);
+                    assertTrue(tileX < xTiles);
 
                     // Find tile index. Only draw if valid
-                    int tile = m_tiles.get(offset + tileY);
-                    if (tile >= 0 && tile < m_textures.size()) {
+                    int tile = tiles.get(offset + tileY);
+                    if (tile >= 0 && tile < textures.size()) {
 
                         // Bind texture
-                        glBindTexture(GL_TEXTURE_2D, m_textures.get(tile));
+                        glBindTexture(GL_TEXTURE_2D, textures.get(tile));
 
                         // Draw tile
                         glBegin(GL_QUADS);
@@ -240,9 +238,9 @@ public class GLTileMap extends GLBasicSprite {
                         glVertex2f(x, y + 1);
                         glEnd();
                     }
-                    tileY = (tileY + 1) % m_yTiles;
+                    tileY = (tileY + 1) % yTiles;
                 }
-                tileX = (tileX + 1) % m_xTiles;
+                tileX = (tileX + 1) % xTiles;
             }
         }
         glPopMatrix();

@@ -628,7 +628,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
      * A store of glSprites
      */
     class GLSpriteStore extends ResourceStore<GLBasicSprite> {
-        protected void DeleteElement (int index){
+        protected void deleteElement(int index){
             setValue(index, null);
         }
 
@@ -667,12 +667,12 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
 
         // Read in texture array and convert to vector (for storage in sprite)
         int[] frames = new int[65536];
-        int size = Data.ArrayDimensionSize (vm.getData(), vm.getIntParam(paramIndex), 0);
+        int size = Data.getArrayDimensionSize(vm.getData(), vm.getIntParam(paramIndex), 0);
         if (size < 1 || size > 65536) {
             vm.functionError("Texture array size must be 1-65536");
             return false;
         }
-        Data.ReadArray(vm.getData(), vm.getIntParam(paramIndex), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), frames, size);
+        Data.readArray(vm.getData(), vm.getIntParam(paramIndex), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), frames, size);
 
         // Convert to vector
         dest.clear ();
@@ -684,15 +684,15 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }
 
     static boolean IsBasicSprite (int index) {
-        return TextBasicLib.sprites.IndexStored (index);
+        return TextBasicLib.sprites.isIndexStored(index);
     }
     static GLBasicSprite BasicSprite (int index) {
         assertTrue(IsBasicSprite (index));
-        return TextBasicLib.sprites.Value(index);
+        return TextBasicLib.sprites.getValueAt(index);
     }
     static boolean IsSprite (int index) {
         return IsBasicSprite (index)
-                && BasicSprite (index).Type() == GLSpriteType.SPR_SPRITE;
+                && BasicSprite (index).getGLSpriteType() == GLSpriteType.SPR_SPRITE;
     }
     static GLSprite  Sprite (int index) {
         assertTrue(IsSprite (index));
@@ -700,7 +700,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }
     static boolean IsTileMap (int index) {
         return IsBasicSprite (index)
-                && BasicSprite (index).Type () == GLSpriteType.SPR_TILEMAP;
+                && BasicSprite (index).getGLSpriteType() == GLSpriteType.SPR_TILEMAP;
     }
     static GLTileMap  TileMap (int index) {
         assertTrue(IsTileMap (index));
@@ -710,8 +710,8 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
 
         // Read in texture array and convert to vector (for storage in sprite)
         int index = vm.getIntParam(paramIndex);
-        xSize.put(0, Data.ArrayDimensionSize(vm.getData(), index, 0));
-        ySize.put(0, Data.ArrayDimensionSize(vm.getData(), index, 1));
+        xSize.put(0, Data.getArrayDimensionSize(vm.getData(), index, 0));
+        ySize.put(0, Data.getArrayDimensionSize(vm.getData(), index, 1));
         int x = xSize.get(0);
         int y = ySize.get(0);
         // Size must be valid and add up to 1 million or less tiles
@@ -720,7 +720,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
 
             // Read data into temp buffer
             int[] buffer = new int [x * y];
-            Data.ReadArray (vm.getData(), index, new ValType  (BasicValType.VTP_INT, (byte) 2, (byte) 1, true), buffer, x * y);
+            Data.readArray(vm.getData(), index, new ValType  (BasicValType.VTP_INT, (byte) 2, (byte) 1, true), buffer, x * y);
 
             // Convert to vector
             for (int i = 0; i < x * y; i++) {
@@ -740,7 +740,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         vec [1] = 0;
         vec [2] = 0;
         vec [3] = 1;
-        Data.ReadArray(vm.getData(), vm.getIntParam(paramIndex), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), vec, 4);
+        Data.readArray(vm.getData(), vm.getIntParam(paramIndex), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), vec, 4);
     }
 
     public final class WrapTextMode implements Function { public void run(TomVM vm)       {
@@ -885,7 +885,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
             ((GLSpriteEngine) appText).AddSprite(sprite);
 
             // Add to store (so we can track it), and return index to VM
-            boundSprite = sprites.Alloc(sprite);
+            boundSprite = sprites.alloc(sprite);
             vm.getReg().setIntVal( boundSprite);
             return sprite;
         }
@@ -906,7 +906,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
             ((GLSpriteEngine) appText).AddSprite(tileMap);
 
             // Add to store (so we can track it), and return index to VM
-            boundSprite = sprites.Alloc(tileMap);
+            boundSprite = sprites.alloc(tileMap);
             vm.getReg().setIntVal( boundSprite);
             return tileMap;
         }
@@ -985,7 +985,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     public final class WrapDeleteSprite implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
         if (IsBasicSprite (index)) {
-            TextBasicLib.sprites.Free (index);
+            TextBasicLib.sprites.free(index);
             TextBasicLib.spriteCount--;
             TextBasicLib.Redraw();
         }
@@ -994,28 +994,28 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         TextBasicLib.boundSprite = vm.getIntParam(1);
     }}
     public final class WrapSprSetTexture implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).SetTexture(vm.getIntParam(1));
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).SetTexture(vm.getIntParam(1));
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprSetTextures implements Function { public void run(TomVM vm) {
         Vector<Integer> textures = new Vector<Integer>();
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) && GetTextures (vm, 1, textures)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).SetTextures(textures);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) && GetTextures (vm, 1, textures)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).SetTextures(textures);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprAddTexture implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).AddTexture(vm.getIntParam(1));
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).AddTexture(vm.getIntParam(1));
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprAddTextures implements Function { public void run(TomVM vm) {
         Vector<Integer> textures = new Vector<Integer>();
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) && GetTextures(vm, 1, textures)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).AddTextures(textures);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) && GetTextures(vm, 1, textures)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).AddTextures(textures);
             TextBasicLib.Redraw();
         }
     }}
@@ -1026,154 +1026,154 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         }
     }}
     public final class WrapSprSetX implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetY implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY = vm.getRealParam(1);
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprSetPos implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
             ReadVec (vm, 1);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x = vec [0];
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y = vec [1];
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX = vec [0];
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY = vec [1];
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetPos_2 implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x = vm.getRealParam(2);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX = vm.getRealParam(2);
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY = vm.getRealParam(1);
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprSetZOrder implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).SetZOrder(vm.getRealParam(1));
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).SetZOrder(vm.getRealParam(1));
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetXSize implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xSize = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeX = vm.getRealParam(1);
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprSetYSize implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_ySize = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeY = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetSize implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
             ReadVec (vm, 1);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xSize = vec [0];
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_ySize = vec [1];
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeX = vec [0];
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeY = vec [1];
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetSize_2 implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xSize = vm.getRealParam(2);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_ySize = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeX = vm.getRealParam(2);
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeY = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetScale implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_scale = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).scale = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetXCentre implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xCentre = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerX = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetYCentre implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_yCentre = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerY = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetXFlip implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xFlip = vm.getIntParam(1) != 0;
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipX = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetYFlip implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_yFlip = vm.getIntParam(1) != 0;
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipY = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetVisible implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_visible = vm.getIntParam(1) != 0;
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).visible = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetAngle implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_angle = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).angle = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetColour implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
             ReadVec (vm, 1);
-            int size = Data.ArrayDimensionSize(vm.getData(), vm.getIntParam(1), 0);
+            int size = Data.getArrayDimensionSize(vm.getData(), vm.getIntParam(1), 0);
             if (size > 4) {
                 size = 4;
             }
 
             for (int i = 0; i < size; i++) {
-                TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour[i] = vec [i];
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[i] = vec [i];
             }
 
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetColour_2 implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [0] = vm.getRealParam(3);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [1] = vm.getRealParam(2);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [2] = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[0] = vm.getRealParam(3);
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[1] = vm.getRealParam(2);
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[2] = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetColour_3 implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [0] = vm.getRealParam(4);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [1] = vm.getRealParam(3);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [2] = vm.getRealParam(2);
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [3] = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[0] = vm.getRealParam(4);
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[1] = vm.getRealParam(3);
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[2] = vm.getRealParam(2);
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[3] = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetAlpha implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_colour [3] = vm.getRealParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[3] = vm.getRealParam(1);
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetParallax implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_parallax = vm.getIntParam(1) != 0;
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).parallax = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw();
         }
     }}
     public final class WrapSprSetSolid implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_solid = vm.getIntParam(1) != 0;
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).solid = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw();
         }
     }}
@@ -1197,86 +1197,86 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
                 Sprite (TextBasicLib.boundSprite).Frame () : 0);
     }}
     public final class WrapSprX implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite) ?
-                TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX : 0);
     }}
     public final class WrapSprY implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY : 0);
     }}
     public final class WrapSprPos implements Function { public void run(TomVM vm) {
         Float[] result = {0f, 0f};
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
-            result [0] = TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_x;
-            result [1] = TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_y;
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            result [0] = TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX;
+            result [1] = TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY;
         }
-        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
     }}
     public final class WrapSprZOrder implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite) ?
-                TextBasicLib.sprites.Value(TextBasicLib.boundSprite).ZOrder() : 0);
+        vm.getReg().setRealVal(TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).ZOrder() : 0);
     }}
     public final class WrapSprXSize implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xSize : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeX : 0);
     }}
     public final class WrapSprYSize implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_ySize : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeY : 0);
     }}
     public final class WrapSprScale implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_scale : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).scale : 0);
     }}
     public final class WrapSprXCentre implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xCentre : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerX : 0);
     }}
     public final class WrapSprYCentre implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_yCentre : 0);
+        vm.getReg().setRealVal(TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerY : 0);
     }}
     public final class WrapSprXFlip implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                (TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_xFlip ? -1f : 0) : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipX ? -1f : 0) : 0);
     }}
     public final class WrapSprYFlip implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                (TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_yFlip ? -1f : 0) : 0);
+        vm.getReg().setRealVal(TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipY ? -1f : 0) : 0);
     }}
     public final class WrapSprVisible implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                (TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_visible ? -1f : 0) : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).visible ? -1f : 0) : 0);
     }}
     public final class WrapSprAngle implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_angle : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).angle : 0);
     }}
     public final class WrapSprColour implements Function { public void run(TomVM vm) {
         Float[] result = {0f, 0f, 0f, 0f};
-        if (TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite)) {
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
             for (int i = 0; i < 4; i ++) {
-                TextBasicLib.sprites.Value(TextBasicLib.boundSprite).m_colour[i] = result[i];
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[i] = result[i];
             }
         }
-        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 4, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 4, Arrays.asList(result)));
     }}
     public final class WrapSprAlpha implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite) ?
-                TextBasicLib.sprites.Value(TextBasicLib.boundSprite).m_colour[3] : 0);
+        vm.getReg().setRealVal(TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[3] : 0);
     }}
     public final class WrapSprParallax implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                (TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_parallax ? -1f : 0) : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).parallax ? -1f : 0) : 0);
     }}
     public final class WrapSprSolid implements Function { public void run(TomVM vm) {
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (TextBasicLib.boundSprite) ?
-                (TextBasicLib.sprites.Value (TextBasicLib.boundSprite).m_solid ? -1f : 0) : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) ?
+                (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).solid ? -1f : 0) : 0);
     }}
     public final class WrapSprLeft implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
             GLSprite sprite = Sprite (TextBasicLib.boundSprite);
-            vm.getReg().setRealVal( sprite.m_x + -sprite.m_xCentre * (sprite.m_xSize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.positionX + -sprite.centerX * (sprite.sizeX * sprite.scale));
         }
         else {
             vm.getReg().setRealVal( 0f);
@@ -1285,7 +1285,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     public final class WrapSprRight implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
             GLSprite sprite = Sprite (TextBasicLib.boundSprite);
-            vm.getReg().setRealVal( sprite.m_x + (1 - sprite.m_xCentre) * (sprite.m_xSize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.positionX + (1 - sprite.centerX) * (sprite.sizeX * sprite.scale));
         }
         else {
             vm.getReg().setRealVal( 0f);
@@ -1294,7 +1294,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     public final class WrapSprTop implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
             GLSprite sprite = Sprite (TextBasicLib.boundSprite);
-            vm.getReg().setRealVal( sprite.m_y + -sprite.m_yCentre * (sprite.m_ySize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.positionY + -sprite.centerY * (sprite.sizeY * sprite.scale));
         }
         else {
             vm.getReg().setRealVal( 0f);
@@ -1303,7 +1303,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     public final class WrapSprBottom implements Function { public void run(TomVM vm) {
         if (IsSprite (TextBasicLib.boundSprite)) {
             GLSprite sprite = Sprite (TextBasicLib.boundSprite);
-            vm.getReg().setRealVal( sprite.m_y + (1 - sprite.m_yCentre) * (sprite.m_ySize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.positionY + (1 - sprite.centerY) * (sprite.sizeY * sprite.scale));
         }
         else {
             vm.getReg().setRealVal( 0f);
@@ -1323,7 +1323,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
             result [0] = Sprite (TextBasicLib.boundSprite).m_xd;
             result [1] = Sprite (TextBasicLib.boundSprite).m_yd;
         }
-        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
     }}
     public final class WrapSprSpin implements Function { public void run(TomVM vm) {
         vm.getReg().setRealVal(IsSprite(TextBasicLib.boundSprite) ?
@@ -1349,104 +1349,104 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprX_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored(index) ?
-                TextBasicLib.sprites.Value (index).m_x : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                TextBasicLib.sprites.getValueAt(index).positionX : 0);
     }}
     public final class WrapSprY_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
-                TextBasicLib.sprites.Value (index).m_y : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                TextBasicLib.sprites.getValueAt(index).positionY : 0);
     }}
     public final class WrapSprPos_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
         Float[] result = {0f, 0f};
-        if (TextBasicLib.sprites.IndexStored (index)) {
-            result [0] = TextBasicLib.sprites.Value (index).m_x;
-            result [1] = TextBasicLib.sprites.Value (index).m_y;
+        if (TextBasicLib.sprites.isIndexStored(index)) {
+            result [0] = TextBasicLib.sprites.getValueAt(index).positionX;
+            result [1] = TextBasicLib.sprites.getValueAt(index).positionY;
         }
-        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
     }}
     public final class WrapSprZOrder_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored(index) ?
-                TextBasicLib.sprites.Value(index).ZOrder() : 0);
+        vm.getReg().setRealVal(TextBasicLib.sprites.isIndexStored(index) ?
+                TextBasicLib.sprites.getValueAt(index).ZOrder() : 0);
     }}
     public final class WrapSprXSize_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
-                TextBasicLib.sprites.Value (index).m_xSize : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                TextBasicLib.sprites.getValueAt(index).sizeX : 0);
     }}
     public final class WrapSprYSize_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
-                TextBasicLib.sprites.Value (index).m_ySize : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                TextBasicLib.sprites.getValueAt(index).sizeY : 0);
     }}
     public final class WrapSprScale_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal(  TextBasicLib.sprites.IndexStored (index) ?
-                TextBasicLib.sprites.Value (index).m_scale : 0);
+        vm.getReg().setRealVal(  TextBasicLib.sprites.isIndexStored(index) ?
+                TextBasicLib.sprites.getValueAt(index).scale : 0);
     }}
     public final class WrapSprXCentre_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
-                TextBasicLib.sprites.Value (index).m_xCentre : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                TextBasicLib.sprites.getValueAt(index).centerX : 0);
     }}
     public final class WrapSprYCentre_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
-                TextBasicLib.sprites.Value (index).m_yCentre : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                TextBasicLib.sprites.getValueAt(index).centerY : 0);
     }}
     public final class WrapSprXFlip_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
-                (TextBasicLib.sprites.Value (index).m_xFlip ? -1f : 0) : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                (TextBasicLib.sprites.getValueAt(index).flipX ? -1f : 0) : 0);
     }}
     public final class WrapSprYFlip_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
-                (TextBasicLib.sprites.Value (index).m_yFlip ? -1f : 0) : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                (TextBasicLib.sprites.getValueAt(index).flipY ? -1f : 0) : 0);
     }}
     public final class WrapSprVisible_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
-                (TextBasicLib.sprites.Value (index).m_visible ? -1f : 0) : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                (TextBasicLib.sprites.getValueAt(index).visible ? -1f : 0) : 0);
     }}
     public final class WrapSprAngle_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
-                TextBasicLib.sprites.Value (index).m_angle : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                TextBasicLib.sprites.getValueAt(index).angle : 0);
     }}
     public final class WrapSprColour_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
         Float[] result = {0f, 0f, 0f, 0f};
-        if (TextBasicLib.sprites.IndexStored (index)) {
+        if (TextBasicLib.sprites.isIndexStored(index)) {
             for ( int i = 0; i < 4; i ++) {
-                TextBasicLib.sprites.Value(index).m_colour[i] = result[i];
+                TextBasicLib.sprites.getValueAt(index).color[i] = result[i];
             }
         }
 
-        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 4, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 4, Arrays.asList(result)));
     }}
     public final class WrapSprAlpha_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal(TextBasicLib.sprites.IndexStored(index) ?
-                TextBasicLib.sprites.Value(index).m_colour[3] : 0);
+        vm.getReg().setRealVal(TextBasicLib.sprites.isIndexStored(index) ?
+                TextBasicLib.sprites.getValueAt(index).color[3] : 0);
     }}
     public final class WrapSprParallax_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
-                (TextBasicLib.sprites.Value (index).m_parallax ? -1f : 0) : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                (TextBasicLib.sprites.getValueAt(index).parallax ? -1f : 0) : 0);
     }}
     public final class WrapSprSolid_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
-        vm.getReg().setRealVal( TextBasicLib.sprites.IndexStored (index) ?
-                (TextBasicLib.sprites.Value (index).m_solid ? -1f : 0) : 0);
+        vm.getReg().setRealVal( TextBasicLib.sprites.isIndexStored(index) ?
+                (TextBasicLib.sprites.getValueAt(index).solid ? -1f : 0) : 0);
     }}
     public final class WrapSprLeft_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
         if (IsSprite (index)) {
             GLSprite sprite = Sprite (index);
-            vm.getReg().setRealVal( sprite.m_x + -sprite.m_xCentre * (sprite.m_xSize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.positionX + -sprite.centerX * (sprite.sizeX * sprite.scale));
         }
         else {
             vm.getReg().setRealVal( 0f);
@@ -1456,7 +1456,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         int index = vm.getIntParam(1);
         if (IsSprite (index)) {
             GLSprite sprite = Sprite (index);
-            vm.getReg().setRealVal( sprite.m_x + (1 - sprite.m_xCentre) * (sprite.m_xSize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.positionX + (1 - sprite.centerX) * (sprite.sizeX * sprite.scale));
         }
         else {
             vm.getReg().setRealVal( 0f);
@@ -1466,7 +1466,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         int index = vm.getIntParam(1);
         if (IsSprite (index)) {
             GLSprite sprite = Sprite (index);
-            vm.getReg().setRealVal( sprite.m_y + -sprite.m_yCentre * (sprite.m_ySize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.positionY + -sprite.centerY * (sprite.sizeY * sprite.scale));
         }
         else {
             vm.getReg().setRealVal( 0f);
@@ -1476,7 +1476,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         int index = vm.getIntParam(1);
         if (IsSprite (index)) {
             GLSprite sprite = Sprite (index);
-            vm.getReg().setRealVal( sprite.m_y + (1 - sprite.m_yCentre) * (sprite.m_ySize * sprite.m_scale));
+            vm.getReg().setRealVal( sprite.positionY + (1 - sprite.centerY) * (sprite.sizeY * sprite.scale));
         }
         else {
             vm.getReg().setRealVal( 0f);
@@ -1499,7 +1499,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
             result [0] = Sprite (index).m_xd;
             result [1] = Sprite (index).m_yd;
         }
-        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
     }}
     public final class WrapSprSpin_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
@@ -1577,7 +1577,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         // to a tile map or vice versa.
         int index = vm.getIntParam(1);
         if (    IsBasicSprite (TextBasicLib.boundSprite) && IsBasicSprite (index)
-                &&  BasicSprite(TextBasicLib.boundSprite).Type () == BasicSprite (index).Type ()) {
+                &&  BasicSprite(TextBasicLib.boundSprite).getGLSpriteType() == BasicSprite (index).getGLSpriteType()) {
             if (IsSprite(TextBasicLib.boundSprite)) {
                 Sprite (TextBasicLib.boundSprite).Copy (Sprite (index));
             } else if (IsTileMap (TextBasicLib.boundSprite)) {
@@ -1588,30 +1588,30 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
     public final class WrapSprType implements Function { public void run(TomVM vm) {
         vm.getReg().setIntVal(   IsBasicSprite (TextBasicLib.boundSprite) ?
-                BasicSprite (TextBasicLib.boundSprite).Type ().getType() : GLSpriteType.SPR_INVALID.getType());
+                BasicSprite (TextBasicLib.boundSprite).getGLSpriteType().getType() : GLSpriteType.SPR_INVALID.getType());
     }}
     public final class WrapSprXTiles implements Function { public void run(TomVM vm) {
         vm.getReg().setIntVal(   IsTileMap(boundSprite) ?
-                TileMap(TextBasicLib.boundSprite).XTiles() : 0);
+                TileMap(TextBasicLib.boundSprite).getTilesX() : 0);
     }}
     public final class WrapSprYTiles implements Function { public void run(TomVM vm) {
         vm.getReg().setIntVal(   IsTileMap (boundSprite ) ?
-                TileMap (TextBasicLib.boundSprite).YTiles() : 0);
+                TileMap (TextBasicLib.boundSprite).getTilesY() : 0);
     }}
     public final class WrapSprType_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
         vm.getReg().setIntVal(   IsBasicSprite(index) ?
-                BasicSprite(index).Type().getType() : GLSpriteType.SPR_INVALID.getType());
+                BasicSprite(index).getGLSpriteType().getType() : GLSpriteType.SPR_INVALID.getType());
     }}
     public final class WrapSprXTiles_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
         vm.getReg().setIntVal(   IsTileMap(index) ?
-                TileMap(index).XTiles() : 0);
+                TileMap(index).getTilesX() : 0);
     }}
     public final class WrapSprYTiles_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
         vm.getReg().setIntVal(IsTileMap(index) ?
-                TileMap(index).YTiles() : 0);
+                TileMap(index).getTilesY() : 0);
     }
     }
     public final class WrapSprSetTiles implements Function { public void run(TomVM vm) {
@@ -1624,32 +1624,32 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
             TextBasicLib.GetTiles(vm, 1, xSize, ySize, tiles);
 
             // Set
-            TileMap (TextBasicLib.boundSprite).SetTiles(xSize.get(0), ySize.get(0), tiles);
+            TileMap (TextBasicLib.boundSprite).setTiles(xSize.get(0), ySize.get(0), tiles);
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprSetXRepeat implements Function { public void run(TomVM vm) {
         if (IsTileMap (TextBasicLib.boundSprite)) {
-            TileMap (TextBasicLib.boundSprite).m_xRepeat = vm.getIntParam(1) != 0;
+            TileMap (TextBasicLib.boundSprite).repeatX = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprSetYRepeat implements Function { public void run(TomVM vm) {
         if (IsTileMap (TextBasicLib.boundSprite)) {
-            TileMap (TextBasicLib.boundSprite).m_yRepeat = vm.getIntParam(1) != 0;
+            TileMap (TextBasicLib.boundSprite).repeatY = vm.getIntParam(1) != 0;
             TextBasicLib.Redraw ();
         }
     }}
     public final class WrapSprXRepeat implements Function { public void run(TomVM vm) {
         if (IsTileMap (TextBasicLib.boundSprite)) {
-            vm.getReg().setIntVal( TileMap (TextBasicLib.boundSprite).m_xRepeat ? -1 : 0);
+            vm.getReg().setIntVal( TileMap (TextBasicLib.boundSprite).repeatX ? -1 : 0);
         } else {
             vm.getReg().setIntVal( 0);
         }
     }}
     public final class WrapSprYRepeat implements Function { public void run(TomVM vm) {
         if (IsTileMap (TextBasicLib.boundSprite)) {
-            vm.getReg().setIntVal( TileMap (TextBasicLib.boundSprite).m_yRepeat ? -1 : 0);
+            vm.getReg().setIntVal( TileMap (TextBasicLib.boundSprite).repeatY ? -1 : 0);
         } else {
             vm.getReg().setIntVal( 0);
         }
@@ -1657,7 +1657,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     public final class WrapSprXRepeat_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
         if (IsTileMap (index)) {
-            vm.getReg().setIntVal( TileMap (index).m_xRepeat ? -1 : 0);
+            vm.getReg().setIntVal( TileMap (index).repeatX ? -1 : 0);
         } else {
             vm.getReg().setIntVal( 0);
         }
@@ -1665,7 +1665,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     public final class WrapSprYRepeat_2 implements Function { public void run(TomVM vm) {
         int index = vm.getIntParam(1);
         if (IsTileMap (index)) {
-            vm.getReg().setIntVal( TileMap (index).m_yRepeat ? -1 : 0);
+            vm.getReg().setIntVal( TileMap (index).repeatY ? -1 : 0);
         } else {
             vm.getReg().setIntVal( 0);
         }
@@ -1710,7 +1710,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         Float[] result = {0f, 0f};
         result [0] = ((GLSpriteEngine) TextBasicLib.appText).m_camX;
         result [1] = ((GLSpriteEngine) TextBasicLib.appText).m_camY;
-        vm.getReg().setIntVal(Data.FillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
+        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
     }}
     public final class WrapSprCameraAngle implements Function { public void run(TomVM vm) {
         vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).m_camAngle);
@@ -1746,10 +1746,10 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }}
 
     public final class WrapSprSetBlendFunc implements Function { public void run(TomVM vm) {
-        if (TextBasicLib.sprites.IndexStored(TextBasicLib.boundSprite)) {
-            GLBasicSprite sprite = TextBasicLib.sprites.Value(TextBasicLib.boundSprite);
-            sprite.m_srcBlend = vm.getIntParam(2);
-            sprite.m_dstBlend = vm.getIntParam(1);
+        if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
+            GLBasicSprite sprite = TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite);
+            sprite.srcBlend = vm.getIntParam(2);
+            sprite.dstBlend = vm.getIntParam(1);
         }
     }}
 

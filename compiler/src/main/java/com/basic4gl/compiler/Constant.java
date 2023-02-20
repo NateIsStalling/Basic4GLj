@@ -7,7 +7,6 @@ import java.io.IOException;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
-import com.basic4gl.runtime.types.ValType;
 
 // Constant
 //
@@ -65,12 +64,12 @@ public class Constant implements Streamable{
 	@Override
 	public void streamOut(DataOutputStream stream) throws IOException
 	{
-			Streaming.WriteLong(stream, mBasicType);
+			Streaming.writeLong(stream, mBasicType);
 
 			switch(mBasicType) {
-			case BasicValType.VTP_INT:       Streaming.WriteLong(stream, mIntVal);        break;
-			case BasicValType.VTP_REAL:      Streaming.WriteFloat(stream, mRealVal);      break;
-			case BasicValType.VTP_STRING:    Streaming.WriteString(stream, mStringVal);   break;
+			case BasicValType.VTP_INT:       Streaming.writeLong(stream, mIntVal);        break;
+			case BasicValType.VTP_REAL:      Streaming.writeFloat(stream, mRealVal);      break;
+			case BasicValType.VTP_STRING:    Streaming.writeString(stream, mStringVal);   break;
 			default:
 				break;
 			}
@@ -78,11 +77,11 @@ public class Constant implements Streamable{
 	@Override
 	public boolean streamIn(DataInputStream stream) throws IOException
 	{
-			mBasicType = (int)Streaming.ReadLong(stream);
+			mBasicType = (int)Streaming.readLong(stream);
 			switch(mBasicType) {
-			case BasicValType.VTP_INT:       mIntVal    = (int) Streaming.ReadLong(stream);     break;
-			case BasicValType.VTP_REAL:      mRealVal   = Streaming.ReadFloat(stream);    break;
-			case BasicValType.VTP_STRING:    mStringVal = Streaming.ReadString(stream);   break;
+			case BasicValType.VTP_INT:       mIntVal    = (int) Streaming.readLong(stream);     break;
+			case BasicValType.VTP_REAL:      mRealVal   = Streaming.readFloat(stream);    break;
+			case BasicValType.VTP_STRING:    mStringVal = Streaming.readString(stream);   break;
 			default:
 				break;
 			}

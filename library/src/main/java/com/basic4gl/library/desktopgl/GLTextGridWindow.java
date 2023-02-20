@@ -11,7 +11,7 @@ import com.basic4gl.lib.util.*;
 import com.basic4gl.compiler.util.IVMDriverAccess;
 import com.basic4gl.library.debug.DebuggerCommandAdapter;
 import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.InstructionPos;
+import com.basic4gl.runtime.InstructionPosition;
 import com.basic4gl.runtime.TomVM;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -411,7 +411,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 					// Set instruction position for editor to place cursor at error
 					if (mVM.hasError()) {
-						InstructionPos ip = mVM.getIPInSourceCode();
+						InstructionPosition ip = mVM.getIPInSourceCode();
 						message.setInstructionPosition(ip);
 					}
 

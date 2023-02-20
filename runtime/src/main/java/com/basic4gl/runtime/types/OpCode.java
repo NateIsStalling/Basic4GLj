@@ -1,85 +1,263 @@
 package com.basic4gl.runtime.types;
 
+/**
+ * Enumerated opcodes
+ */
 public class OpCode {
-	// Enumerated opcodes
+	//region General
+
+	/**
+	 * No operation
+	 */
+	public static final short OP_NOP = 0x0;
+
+	/**
+	 * End program
+	 */
+	public static final short OP_END = 0x01;
+
+	/**
+	 * Load constant into reg
+	 */
+	public static final short OP_LOAD_CONST = 0x02;
+
+	/**
+	 * Load address of variable into reg
+	 */
+	public static final short OP_LOAD_VAR = 0x03;
+
+	/**
+	 * Load address of local variable into reg
+	 */
+	public static final short OP_LOAD_LOCAL_VAR = 0x04;
+
+	/**
+	 * Dereference reg (load value at [reg] into reg)
+	 */
+	public static final short OP_DEREF = 0x05;
+
+	/**
+	 * Add constant to reg. Used to address into a structure
+	 */
+	public static final short OP_ADD_CONST = 0x06;
 
 
-	// General
-	public static final short OP_NOP = 0x0; 				// No operation
-	public static final short OP_END = 0x01; 				// End program
-	public static final short OP_LOAD_CONST = 0x02; 		// Load constant into reg
-	public static final short OP_LOAD_VAR = 0x03; 			// Load address of variable into reg
-	public static final short OP_LOAD_LOCAL_VAR = 0x04; 	// Load address of local variable into reg
-	public static final short OP_DEREF = 0x05; 			// Dereference reg (load value at [reg] into reg)
-	public static final short OP_ADD_CONST = 0x06; 		// Add constant to reg. Used to address into a
-	// structure
-	public static final short OP_ARRAY_INDEX = 0x07; 		// IN: reg = array index, reg2 = array address.
-	// OUT: reg = element address.
-	public static final short OP_PUSH = 0x08; 				// Push reg to stack
-	public static final short OP_POP = 0x09; 				// Pop stack into reg2
-	public static final short OP_SAVE = 0x0A; 				// Save int, real or string in reg into [reg2]
-	public static final short OP_COPY = 0x0B; 				// Copy structure at [reg2] into [reg]. Instruction value
-	// points to data type.
-	public static final short OP_DECLARE = 0x0C; 			// Allocate a variable
-	public static final short OP_DECLARE_LOCAL = 0x0D; 	// Allocate a local variable
-	public static final short OP_TIMESHARE = 0x0E; 		// Perform a timesharing break
-	public static final short OP_FREE_TEMP = 0x0F; 		// Free temporary data
-	public static final short OP_ALLOC = 0x10; 			// Allocate variable memory
-	public static final short OP_DATA_READ = 0x11; 		// Read program data into data at [reg]. Instruction
-	// contains target data type.
-	public static final short OP_DATA_RESET = 0x12; 		// Reset program data pointer
-	public static final short OP_SAVE_PARAM = 0x13; 		// Save int, real or string in reg into parameter
-	// in pending stack frame. Instruction contains
-	// data type. Parameter # is however many
-	// parameters have been set since
-	// OP_CREATE_USER_FRAME was executed.
-	public static final short OP_SAVE_PARAM_PTR = 0x14; 	// Save pointer to data in [reg] into parameter
-	// pointer.
-	public static final short OP_COPY_USER_STACK = 0x15; 	// Copy data at [reg] to top of user stack.
-	// reg is then adjusted to point to the data
-	// in the user stack.
-	public static final short OP_MOVE_TEMP = 0x16; 		// Free temp data and move data at [reg] into temp
-	// data. (Also handles if [reg] points to temp
-	// data).
-	public static final short OP_CHECK_PTR = 0x17; 		// Check pointer scope before saving to variable.
-	// (Ptr is in reg, variable is [reg2])
-	public static final short OP_CHECK_PTRS = 0x18; 		// Check all pointers in block at [reg] before
-	// copying to [reg2]. Instruction contains data
-	// type.
-	public static final short OP_REG_DESTRUCTOR = 0x19; 	// Register string destruction block at [reg]
-	// (will be temp or stack depending on reg)
+	/**
+	 * IN: reg = array index, reg2 = array address.
+	 * OUT: reg = element address.
+	 */
 
-	// Flow control
-	public static final short OP_JUMP = 0x40; 					// Unconditional jump
-	public static final short OP_JUMP_TRUE = 0x41; 			// Jump if reg <> 0
-	public static final short OP_JUMP_FALSE = 0x42; 			// Jump if reg == 0
-	public static final short OP_CALL_FUNC = 0x43; 			// Call external function
-	public static final short OP_CALL_OPERATOR_FUNC = 0x44; 	// Call external operator function
-	public static final short OP_CALL_DLL = 0x45; 				// Call DLL function
-	public static final short OP_CALL = 0x46; 					// Call VM function
-	public static final short OP_CREATE_USER_FRAME = 0x47; 	// Create user stack frame in preparation
-	// for a call
-	public static final short OP_CALL_USER_FUNC = 0x48; 		// Call user defined function
-	public static final short OP_RETURN = 0x49; 				// Return from VM function
-	public static final short OP_RETURN_USER_FUNC = 0x4A; 		// Return from user defined function
-	public static final short OP_NO_VALUE_RETURNED = 0x4B; 	// Generates a runtime error if executed
+	public static final short OP_ARRAY_INDEX = 0x07;
 
-	//0x4C - 0x50 added after version 2.5.0
-	public static final short OP_BINDCODE = 0x4C;            // Bind a runtime code block to be executed
-	public static final short OP_EXEC = 0x4D;                // Execute runtime code block
-	public static final short OP_CREATE_RUNTIME_FRAME = 0x4F;// Create a stack frame to call a function/sub in runtime code block
-	public static final short OP_END_CALLBACK = 0x50;        // End callback initiated by built-in function or DLL function, and return control to that function.
+	/**
+	 * Push reg to stack
+	 */
+	public static final short OP_PUSH = 0x08;
 
-	// Operations
-	// Mathematical
+	/**
+	 * Pop stack into reg2
+	 */
+	public static final short OP_POP = 0x09;
+
+	/**
+	 * Save int, real or string in reg into [reg2]
+	 */
+	public static final short OP_SAVE = 0x0A;
+
+	/**
+	 * Copy structure at [reg2] into [reg].
+	 * Instruction value points to data type.
+	 */
+	public static final short OP_COPY = 0x0B;
+
+	/**
+	 * Allocate a variable
+	 */
+	public static final short OP_DECLARE = 0x0C;
+
+	/**
+	 * Allocate a local variable
+	 */
+	public static final short OP_DECLARE_LOCAL = 0x0D;
+
+	/**
+	 * Perform a timesharing break
+	 */
+	public static final short OP_TIMESHARE = 0x0E;
+
+	/**
+	 * Free temporary data
+	 */
+	public static final short OP_FREE_TEMP = 0x0F;
+
+	/**
+	 * Allocate variable memory
+	 */
+	public static final short OP_ALLOC = 0x10;
+
+	/**
+	 * Read program data into data at [reg].
+	 * Instruction contains target data type.
+	 */
+	public static final short OP_DATA_READ = 0x11;
+
+	/**
+	 * Reset program data pointer
+	 */
+	public static final short OP_DATA_RESET = 0x12;
+
+	/**
+	 * Save int, real or string in reg into parameter in pending stack frame.
+	 * Instruction contains data type.
+	 * Parameter # is however many parameters
+	 * have been set since {@link #OP_CREATE_USER_FRAME} was executed.
+	 */
+	public static final short OP_SAVE_PARAM = 0x13;
+
+	/**
+	 * Save pointer to data in [reg] into parameter pointer.
+	 */
+	public static final short OP_SAVE_PARAM_PTR = 0x14;
+
+	/**
+	 * Copy data at [reg] to top of user stack.
+	 * reg is then adjusted to point to the data in the user stack.
+	 */
+	public static final short OP_COPY_USER_STACK = 0x15;
+
+	/**
+	 * Free temp data and move data at [reg] into temp data.
+	 * (Also handles if [reg] points to temp data).
+	 */
+	public static final short OP_MOVE_TEMP = 0x16;
+
+	/**
+	 * Check pointer scope before saving to variable.
+	 * (Ptr is in reg, variable is [reg2])
+	 */
+	public static final short OP_CHECK_PTR = 0x17;
+
+	/**
+	 * Check all pointers in block at [reg] before copying to [reg2].
+	 * Instruction contains data type.
+	 */
+	public static final short OP_CHECK_PTRS = 0x18;
+
+	/**
+	 * Register string destruction block at [reg]
+	 * (will be temp or stack depending on reg)
+	 */
+	public static final short OP_REG_DESTRUCTOR = 0x19;
+
+	//endregion
+
+	//region Flow control
+
+	/**
+	 * Unconditional jump
+	 */
+	public static final short OP_JUMP = 0x40;
+
+	/**
+	 * Jump if reg <> 0
+	 */
+	public static final short OP_JUMP_TRUE = 0x41;
+
+	/**
+	 * Jump if reg == 0
+	 */
+	public static final short OP_JUMP_FALSE = 0x42;
+
+	/**
+	 * Call external function
+	 */
+	public static final short OP_CALL_FUNC = 0x43;
+
+	/**
+	 * Call external operator function
+	 */
+	public static final short OP_CALL_OPERATOR_FUNC = 0x44;
+
+	/**
+	 * Call DLL function
+	 */
+	public static final short OP_CALL_DLL = 0x45;
+
+	/**
+	 * Call VM function
+	 */
+	public static final short OP_CALL = 0x46;
+
+	/**
+	 * Create user stack frame in preparation for a call
+	 */
+	public static final short OP_CREATE_USER_FRAME = 0x47;
+
+	/**
+	 * Call user defined function
+	 */
+	public static final short OP_CALL_USER_FUNC = 0x48;
+
+	/**
+	 * Return from VM function
+	 */
+	public static final short OP_RETURN = 0x49;
+
+	/**
+	 * Return from user defined function
+	 */
+	public static final short OP_RETURN_USER_FUNC = 0x4A;
+
+	/**
+	 * Generates a runtime error if executed
+	 */
+	public static final short OP_NO_VALUE_RETURNED = 0x4B;
+
+	//region 0x4C - 0x50 added after version 2.5.0
+
+
+	/**
+	 * Bind a runtime code block to be executed
+	 */
+	public static final short OP_BINDCODE = 0x4C;
+
+	/**
+	 * Execute runtime code block
+	 */
+	public static final short OP_EXEC = 0x4D;
+
+	/**
+	 * Create a stack frame to call a function/sub in runtime code block
+	 */
+	public static final short OP_CREATE_RUNTIME_FRAME = 0x4F;
+
+	/**
+	 * End callback initiated by built-in function or DLL function,
+	 * and return control to that function.
+	 */
+	public static final short OP_END_CALLBACK = 0x50;
+
+	//endregion
+
+	//region Operations
+
+	//region Mathematical
+
 	public static final short OP_OP_NEG = 0x60;
-	public static final short OP_OP_PLUS = 0x61; // (Doubles as string concatenation)
+
+	/**
+	 * Doubles as string concatenation
+	 */
+	public static final short OP_OP_PLUS = 0x61;
 	public static final short OP_OP_MINUS = 0x62;
 	public static final short OP_OP_TIMES = 0x63;
 	public static final short OP_OP_DIV = 0x64;
 	public static final short OP_OP_MOD = 0x65;
 
-	// Logical
+	//endregion Mathematical
+
+	//region Logical
+
 	public static final short OP_OP_NOT = 0x80;
 	public static final short OP_OP_EQUAL = 0x81;
 	public static final short OP_OP_NOT_EQUAL = 0x82;
@@ -91,24 +269,63 @@ public class OpCode {
 	public static final short OP_OP_OR = 0x88;
 	public static final short OP_OP_XOR = 0x89;
 
-	// Conversion
-	public static final short OP_CONV_INT_REAL = 0xA0; 	// Convert integer in reg to real
-	public static final short OP_CONV_INT_STRING = 0xA1; 	// Convert integer in reg to string
-	public static final short OP_CONV_REAL_STRING = 0xA2; 	// Convert real in reg to string
+	//endregion Logical
+
+	//region Conversion
+
+	/**
+	 * Convert integer in reg to real
+	 */
+	public static final short OP_CONV_INT_REAL = 0xA0;
+
+	/**
+	 * Convert integer in reg to string
+	 */
+	public static final short OP_CONV_INT_STRING = 0xA1;
+
+	/**
+	 * Convert real in reg to string
+	 */
+	public static final short OP_CONV_REAL_STRING = 0xA2;
 	public static final short OP_CONV_REAL_INT = 0xA3;
-	public static final short OP_CONV_INT_REAL2 = 0xA4; 	// Convert integer in
-	// reg2 to real
-	public static final short OP_CONV_INT_STRING2 = 0xA5;	// Convert integer in reg2 to string
-	public static final short OP_CONV_REAL_STRING2 = 0xA6; // Convert real in reg2 to string
+
+	/**
+	 * Convert integer in reg2 to real
+	 */
+	public static final short OP_CONV_INT_REAL2 = 0xA4;
+
+	/**
+	 * Convert integer in reg2 to string
+	 */
+	public static final short OP_CONV_INT_STRING2 = 0xA5;
+
+	/**
+	 * Convert real in reg2 to string
+	 */
+	public static final short OP_CONV_REAL_STRING2 = 0xA6;
 	public static final short OP_CONV_REAL_INT2 = 0xA7;
 
-	// Misc routine
-	public static final short OP_RUN = 0xc0; 	// Restart program. Reinitialises variables, display,
-	// state e.t.c
+	//endregion Conversion
 
-	// Debugging
-	public static final short OP_BREAKPT = 0xe0; // Breakpoint
+	//endregion Operations
 
+	//region Misc routine
+
+	/**
+	 * Restart program. Re-initializes variables, display, state e.t.c
+	 */
+	public static final short OP_RUN = 0xc0;
+
+	//endregion
+
+	//region Debugging
+
+	/**
+	 * Breakpoint
+	 */
+	public static final short OP_BREAKPT = 0xe0;
+
+	//endregion
 
 	public static String vmOpCodeName (short code){
 		switch (code) {

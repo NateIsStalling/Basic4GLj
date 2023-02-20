@@ -17,21 +17,32 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
  * An array of variables.
  */
 public class VariableCollection implements Streamable{
-	public class Variable implements Streamable {
-		public String m_name; // Var name
-		public int m_dataIndex; // Index of data in com.basic4GL.vm.Data array. 0 = not
-		// allocated.
-		public ValType m_type; // Data type
+	public static class Variable implements Streamable {
+		/**
+		 * Var name
+		 */
+		public String name;
+
+		/**
+		 * Index of data in com.basic4GL.vm.Data array.
+		 * 0 = not allocated.
+		 */
+		public int dataIndex;
+
+		/**
+		 * Data type
+		 */
+		public ValType type;
 
 		public Variable() {
-			m_name = "";
-			m_dataIndex = 0;
-			m_type = new ValType (BasicValType.VTP_INT);
+			name = "";
+			dataIndex = 0;
+			type = new ValType (BasicValType.VTP_INT);
 		}
 
 		public Variable(String name, ValType type) {
-			m_name = name.toLowerCase();
-			m_type = type;
+			this.name = name.toLowerCase();
+			this.type = type;
 			deallocate();
 		}
 
@@ -46,92 +57,103 @@ public class VariableCollection implements Streamable{
 		}
 
 		public boolean allocated() {
-			return m_dataIndex > 0;
+			return dataIndex > 0;
 		}
 
 		// Allocating
 		public void deallocate() {
-			m_dataIndex = 0;
+			dataIndex = 0;
 		}
 
 		public void allocate(Data data, TypeLibrary typeLib) {
 
 			// Allocate new data
 			assertTrue(!allocated());
-			m_dataIndex = data.Allocate(typeLib.DataSize(m_type));
+			dataIndex = data.allocate(typeLib.getDataSize(type));
 
 			// Initialise it
-			data.InitData(m_dataIndex, m_type, typeLib);
+			data.initData(dataIndex, type, typeLib);
 		}
 
 		// Streaming
 		@Override
 		public void streamOut(DataOutputStream stream) throws IOException{
 
-			Streaming.WriteString(stream, m_name);
-			Streaming.WriteLong(stream, m_dataIndex);
+			Streaming.writeString(stream, name);
+			Streaming.writeLong(stream, dataIndex);
 
-			m_type.streamOut(stream);
+			type.streamOut(stream);
 		}
 
 		public boolean streamIn(DataInputStream stream) throws IOException{
 
-			m_name = Streaming.ReadString(stream);
-			m_dataIndex = (int) Streaming.ReadLong(stream);
+			name = Streaming.readString(stream);
+			dataIndex = (int) Streaming.readLong(stream);
 
-			m_type.streamIn(stream);
+			type.streamIn(stream);
 
 			return true;
 		}
 	}
 
-	Vector<Variable> mVariables; // Variables
-	Data mData; // Data
-	TypeLibrary mTypes; // Type information
+	private Vector<Variable> variables;
+	private Data data;
+	private TypeLibrary types;
 
 	public VariableCollection(Data data, TypeLibrary types) {
-		mData = data;
-		mTypes = types;
+		this.data = data;
+		this.types = types;
 
-		mVariables = new Vector<Variable>();
+		variables = new Vector<Variable>();
 	}
 
+	/**
+	 * Variables
+	 */
 	public Vector<Variable> getVariables() {
-		return mVariables;
+		return variables;
 	}
 
+	/**
+	 * Data
+	 */
 	public Data getData() {
-		return mData;
+		return data;
 	}
 
+	/**
+	 * Type information
+	 */
 	public TypeLibrary getTypes() {
-		return mTypes;
+		return types;
 	}
 
 	public void deallocate() {
 
 		// Deallocate all variable data.
 		// Variables and data type info remain.
-		for (Variable var : mVariables) {
+		for (Variable var : variables) {
 			var.deallocate();
 		}
-		mData.clear();
+		data.clear();
 	}
 
 	public void clear() {
 
 		// Deallocate everything.
 		// No variables, data or type information remains
-		mVariables.clear();
-		mData.clear();
-		mTypes.clear();
+		variables.clear();
+		data.clear();
+		types.clear();
 	}
 
-	// Finding variables
+	/**
+	 * Finding variables
+ 	 */
 	public int getVariableIndex(String name) {
 		name = name.toLowerCase();
-		for (int i = 0; i < mVariables.size(); i++) {
-			if (mVariables.get(i).m_name.equals(name)) {
+		for (int i = 0; i < variables.size(); i++) {
+			if (variables.get(i).name.equals(name)) {
 				return i;
 			}
 		}
@@ -143,51 +165,56 @@ public class VariableCollection implements Streamable{
 	}
 
 	public int size() {
-		return mVariables.size();
+		return variables.size();
 	}
 
 	public boolean isIndexValid(int index) {
 		return index >= 0 && index < size();
 	}
 
-	// Var creation and allocation
+	/**
+	 * Var creation and allocation
+ 	 */
 	public int createVar(String name, ValType type) {
 		assertTrue(!containsVariable(name));
 
 		// Allocate new variable and return index
-		int top = mVariables.size();
-		mVariables.add(new Variable(name, type));
+		int top = variables.size();
+		variables.add(new Variable(name, type));
 		return top;
 	}
 
+	/**
+	 * Var creation and allocation
+	 */
 	public void allocateVar(Variable var) {
-		var.allocate(mData, mTypes);
+		var.allocate(data, types);
 	}
 
 	// Streaming
 	public void streamOut(DataOutputStream stream) throws IOException{
 
 		// Stream out type data
-		mTypes.streamOut(stream);
+		types.streamOut(stream);
 
 		// Stream out variables
-		Streaming.WriteLong(stream, mVariables.size());
-		for (int i = 0; i < mVariables.size(); i++) {
-			mVariables.get(i).streamOut(stream);
+		Streaming.writeLong(stream, variables.size());
+		for (int i = 0; i < variables.size(); i++) {
+			variables.get(i).streamOut(stream);
 		}
 	}
 
 	public boolean streamIn(DataInputStream stream) throws IOException{
 
 		// Stream in type data
-		mTypes.streamIn(stream);
+		types.streamIn(stream);
 
 		// Stream in variables
-		long count = Streaming.ReadLong(stream);
-		mVariables.setSize((int) count);
+		long count = Streaming.readLong(stream);
+		variables.setSize((int) count);
 		for (int i = 0; i < count; i++) {
-			mVariables.set(i, new Variable());
-			mVariables.get(i).streamIn(stream);
+			variables.set(i, new Variable());
+			variables.get(i).streamIn(stream);
 		}
 		return true;
 	}

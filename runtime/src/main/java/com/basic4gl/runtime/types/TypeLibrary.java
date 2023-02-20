@@ -15,59 +15,59 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
  * Used to store structure definitions, and operate on data types
  */
 public class TypeLibrary implements Streamable {
-	Vector<StructureField> m_fields;
-	Vector<Structure> m_structures;
+	private Vector<StructureField> fields;
+	private Vector<Structure> structures;
 
 	public TypeLibrary() {
-		m_fields = new Vector<StructureField>();
-		m_structures = new Vector<Structure>();
+		fields = new Vector<StructureField>();
+		structures = new Vector<Structure>();
 	}
-	public Vector<StructureField> Fields() {
-		return m_fields;
+	public Vector<StructureField> getFields() {
+		return fields;
 	}
 
-	public Vector<Structure> Structures() {
-		return m_structures;
+	public Vector<Structure> getStructures() {
+		return structures;
 	}
 
 	public void clear() {
-		m_fields.clear();
-		m_structures.clear();
+		fields.clear();
+		structures.clear();
 	}
 
 	// Finding structures and fields
-	public boolean Empty() {
-		return m_structures.isEmpty();
+	public boolean isEmpty() {
+		return structures.isEmpty();
 	}
 
-	public boolean StrucStored(String name) {
-		return GetStruc(name) >= 0;
+	public boolean isStrucStored(String name) {
+		return getStrucIndex(name) >= 0;
 	}
 
-	public boolean FieldStored(Structure struc, String fieldName) {
-		return GetField(struc, fieldName) >= 0;
+	public boolean isFieldStored(Structure struc, String fieldName) {
+		return getFieldIndex(struc, fieldName) >= 0;
 	}
 
-	public int GetStruc(String name)
+	public int getStrucIndex(String name)
 	{
 		name = name.toLowerCase();
-		for (int i = 0; i < m_structures.size (); i++) {
-			if (m_structures.get(i).m_name.equals(name)) {
+		for (int i = 0; i < structures.size (); i++) {
+			if (structures.get(i).name.equals(name)) {
                 return i;
             }
 		}
 		return -1;
 	}
 
-	public int GetField(Structure struc, String fieldName)
+	public int getFieldIndex(Structure struc, String fieldName)
 	{
 		fieldName = fieldName.toLowerCase();
-		for (   int i = struc.m_firstField;
-				i < struc.m_firstField + struc.m_fieldCount;
-				i++) {
+		for (int i = struc.firstFieldIndex;
+			 i < struc.firstFieldIndex + struc.fieldCount;
+			 i++) {
 			assertTrue(i >= 0);
-			assertTrue(i < m_fields.size ());
-			if (m_fields .get(i).m_name.equals(fieldName)) {
+			assertTrue(i < fields.size ());
+			if (fields.get(i).name.equals(fieldName)) {
                 return i;
             }
 		}
@@ -75,79 +75,81 @@ public class TypeLibrary implements Streamable {
 	}
 
 	// Data type operations
-	public int DataSize(ValType type){
+	public int getDataSize(ValType type){
 
 		// How big would a variable of type "type" be?
-		if (type.PhysicalPointerLevel () > 0)       // Pointers are always one element long
+		// Pointers are always one element long
+		if (type.getPhysicalPointerLevel() > 0)
         {
             return 1;
         }
 
-		if (type.m_arrayLevel > 0)                  // Calculate array size
+		// Calculate array size
+		if (type.arrayLevel > 0)
         {
-            return type.ArraySize (DataSize (new ValType (type.m_basicType)));
+            return type.getArraySize(getDataSize(new ValType(type.basicType)));
         }
 
-		if (type.m_basicType >= 0) {
+		if (type.basicType >= 0) {
 
 			// Structured type. Lookup and return size of structure.
-			assertTrue(type.m_basicType < m_structures.size ());
-			return m_structures.get(type.m_basicType).m_dataSize;
+			assertTrue(type.basicType < structures.size ());
+			return structures.get(type.basicType).dataSize;
 		}
 
 		// Otherwise is basic type
 		return 1;
 	}
 
-	public boolean DataSizeBiggerThan(ValType type, int size)
+	public boolean isDataSizeBiggerThan(ValType type, int size)
 	{
 
 		// Return true if data size > size.
 		// This is logically equivalent to: DataSize (type) > size,
 		// except it correctly handles integer overflow for really big types.
-		assertTrue(TypeValid (type));
-		if (type.PhysicalPointerLevel () == 0 && type.m_arrayLevel > 0) {
+		assertTrue(isTypeValid(type));
+		if (type.getPhysicalPointerLevel() == 0 && type.arrayLevel > 0) {
 			ValType element = new ValType(type);
-			element.m_arrayLevel = 0;
-			return type.ArraySizeBiggerThan (size, DataSize (element));
+			element.arrayLevel = 0;
+			return type.isArraySizeBiggerThan(size, getDataSize(element));
 		}
 		else {
-            return DataSize (type) > size;
+            return getDataSize(type) > size;
         }
 	}
 
-	public boolean TypeValid(ValType type)
+	public boolean isTypeValid(ValType type)
 	{
-		return      type.m_basicType >= BasicValType.VTP_INT
-				&&  type.m_basicType != BasicValType.VTP_UNDEFINED
-				&&  (type.m_basicType < 0 || type.m_basicType < m_structures.size ())
-				&&  type.m_arrayLevel < TomVM.ARRAY_MAX_DIMENSIONS;
+		return      type.basicType >= BasicValType.VTP_INT
+				&&  type.basicType != BasicValType.VTP_UNDEFINED
+				&&  (type.basicType < 0 || type.basicType < structures.size ())
+				&&  type.arrayLevel < TomVM.ARRAY_MAX_DIMENSIONS;
 	}
 
-	public boolean ContainsString(ValType type) {
-		assertTrue(TypeValid(type));
+	public boolean containsString(ValType type) {
+		assertTrue(isTypeValid(type));
 
 		// Pointers to objects don't *contain* anything.
 		// (Pointing to something that contains a string doesn't count.)
-		if (type.VirtualPointerLevel() > 0) {
+		if (type.getVirtualPointerLevel() > 0) {
             return false;
         }
 
 		// Examine data type
-		if (type.m_basicType < 0) {
-            return type.m_basicType == BasicValType.VTP_STRING;
+		if (type.basicType < 0) {
+            return type.basicType == BasicValType.VTP_STRING;
         } else {
-            return m_structures.get(type.m_basicType).m_containsString;
+            return structures.get(type.basicType).containsString;
         }
 	}
 
-	public boolean ContainsArray(ValType type) {
-		assertTrue(TypeValid(type));
+	public boolean containsArray(ValType type) {
+		assertTrue(isTypeValid(type));
 
-		return type.VirtualPointerLevel() == 0 // Must not be a pointer
-				&& (type.m_arrayLevel > 0 // Can be an array
-				|| (type.m_basicType >= 0 && m_structures
-				.get(type.m_basicType).m_containsArray));// or
+		return type.getVirtualPointerLevel() == 0 // Must not be a pointer
+				&& (type.arrayLevel > 0 // Can be an array
+				|| (type.basicType >= 0 && structures
+				.get(type.basicType).containsArray));// or
 		// a
 		// structure
 		// containing
@@ -155,90 +157,90 @@ public class TypeLibrary implements Streamable {
 		// array
 	}
 
-	public boolean ContainsPointer(ValType type) {
-		assertTrue(TypeValid(type));
+	public boolean containsPointer(ValType type) {
+		assertTrue(isTypeValid(type));
 
 		// Type is a pointer?
-		if (type.m_pointerLevel > 0) {
+		if (type.pointerLevel > 0) {
             return true;
         }
 
 		// Is a structure (or array of structures) containing a pointer?
-		if (type.m_basicType >= 0) {
-            return m_structures.get(type.m_basicType).m_containsPointer;
+		if (type.basicType >= 0) {
+            return structures.get(type.basicType).containsPointer;
         }
 
 		return false;
 	}
 
 	// Building structures
-	public Structure CurrentStruc() {
-		assertTrue(!Empty()); // Must have at least one structure
-		return m_structures.lastElement();
+	public Structure getCurrentStruc() {
+		assertTrue(!isEmpty()); // Must have at least one structure
+		return structures.lastElement();
 	}
 
-	public StructureField CurrentField() {
-		assertTrue(m_fields.size() > CurrentStruc().m_firstField); // Current
-		// structure
-		// must have
-		// at least
-		// 1 field
-		return m_fields.lastElement();
+	public StructureField getCurrentField() {
+		// Current  structure must have at least 1 field
+		assertTrue(fields.size() > getCurrentStruc().firstFieldIndex);
+
+		return fields.lastElement();
 	}
 
-	public Structure NewStruc(String name) { // Create a new structure and
-		// make it current
-
+	/**
+	 * Create a new structure and make it current
+	 * @param name
+	 * @return current struc
+	 */
+	public Structure createStruc(String name) {
 		// Name must be valid and not already used
 		assertTrue(!name.equals(""));
-		assertTrue(!StrucStored(name));
+		assertTrue(!isStrucStored(name));
 
 		// Create new structure
-		m_structures.add(new Structure(name, m_fields.size()));
-		return CurrentStruc();
+		structures.add(new Structure(name, fields.size()));
+		return getCurrentStruc();
 	}
 
-	public StructureField NewField(String name, ValType type) { // Create
-		// a new
-		// field
-		// and
-		// assign
-		// it to
-		// the
-		// current
-		// structure
+	/**
+	 * Create a new field and assign it to the current structure
+	 * @param name
+	 * @param type
+	 * @return current field
+	 */
+	public StructureField createField(String name, ValType type) {
+
 
 		// Name must be valid and not already used within current structure
 		assertTrue(!name.equals(""));
-		assertTrue(!FieldStored(CurrentStruc(), name));
+		assertTrue(!isFieldStored(getCurrentStruc(), name));
 
 		// Type must be valid, and not an instance of the current structure
 		// type
 		// (or an array. Can be a pointer though.)
-		assertTrue(TypeValid(type));
-		assertTrue(!type.m_byRef);
-		assertTrue(type.m_pointerLevel > 0 || type.m_basicType < 0 || type.m_basicType + 1 < m_structures.size());
+		assertTrue(isTypeValid(type));
+		assertTrue(!type.isByRef);
+		assertTrue(type.pointerLevel > 0 || type.basicType < 0 || type.basicType + 1 < structures.size());
 
 		// Create new field
-		m_fields.add(new StructureField(name, type,
-				CurrentStruc().m_dataSize));
-		CurrentStruc().m_fieldCount++;
-		CurrentStruc().m_dataSize += DataSize(CurrentField().m_type);
+		fields.add(new StructureField(name, type,
+				getCurrentStruc().dataSize));
+		getCurrentStruc().fieldCount++;
+		getCurrentStruc().dataSize += getDataSize(getCurrentField().type);
 
 		// Update current structure statistics
-		CurrentStruc().m_containsString = CurrentStruc().m_containsString
-				|| ContainsString(type);
-		CurrentStruc().m_containsArray = CurrentStruc().m_containsArray
-				|| ContainsArray(type);
-		CurrentStruc().m_containsPointer = CurrentStruc().m_containsPointer
-				|| ContainsPointer(type);
-		return CurrentField();
+		getCurrentStruc().containsString = getCurrentStruc().containsString
+				|| containsString(type);
+		getCurrentStruc().containsArray = getCurrentStruc().containsArray
+				|| containsArray(type);
+		getCurrentStruc().containsPointer = getCurrentStruc().containsPointer
+				|| containsPointer(type);
+		return getCurrentField();
 	}
 
 	// Debugging/output
-	public String DescribeVariable(String name, ValType type) {
+	public String describeVariable(String name, ValType type) {
 
-		if (!TypeValid(type)) {
+		if (!isTypeValid(type)) {
             return "INVALID TYPE " + name;
         }
 
@@ -246,17 +248,18 @@ public class TypeLibrary implements Streamable {
 		String result;
 
 		// Var type
-		if (type.m_basicType >= 0) {
-            result = m_structures.get(type.m_basicType).m_name
-                    + " "; // Structure type
+		if (type.basicType >= 0) {
+			// Structure type
+            result = structures.get(type.basicType).name
+                    + " ";
         } else {
-            result = ValType.BasicValTypeName(type.m_basicType) + " "; // Basic
+			// Basic type
+            result = ValType.BasicValTypeName(type.basicType) + " ";
         }
-		// type
 
 		// Append pointer prefix
 		int i;
-		for (i = 0; i < type.VirtualPointerLevel(); i++) {
+		for (i = 0; i < type.getVirtualPointerLevel(); i++) {
             result += "&";
         }
 
@@ -264,10 +267,10 @@ public class TypeLibrary implements Streamable {
 		result += name;
 
 		// Append array indices
-		for (i = type.m_arrayLevel - 1; i >= 0; i--) {
+		for (i = type.arrayLevel - 1; i >= 0; i--) {
 			result += "(";
-			if (type.VirtualPointerLevel() == 0) {
-                result += String.valueOf(type.m_arrayDims[i] - 1);
+			if (type.getVirtualPointerLevel() == 0) {
+                result += String.valueOf(type.arrayDimensions[i] - 1);
             }
 			result += ")";
 		}
@@ -279,38 +282,38 @@ public class TypeLibrary implements Streamable {
 	public void streamOut(DataOutputStream stream) throws IOException{
 		int i;
 		// Write out fields
-		Streaming.WriteLong(stream, m_fields.size());
-		for (i = 0; i < m_fields.size(); i++) {
-            m_fields.get(i).streamOut(stream);
+		Streaming.writeLong(stream, fields.size());
+		for (i = 0; i < fields.size(); i++) {
+            fields.get(i).streamOut(stream);
         }
 
 		// Write out structures
-		Streaming.WriteLong(stream, m_structures.size());
-		for (i = 0; i < m_structures.size(); i++) {
-            m_structures.get(i).streamOut(stream);
+		Streaming.writeLong(stream, structures.size());
+		for (i = 0; i < structures.size(); i++) {
+            structures.get(i).streamOut(stream);
         }
 	}
 
 	public boolean streamIn(DataInputStream stream) throws IOException{
 		int i, count;
 		// Clear existing data
-		m_fields.clear();
-		m_structures.clear();
+		fields.clear();
+		structures.clear();
 
 		// Read fields
-		count = (int) Streaming.ReadLong(stream);
-		m_fields.setSize(count);
+		count = (int) Streaming.readLong(stream);
+		fields.setSize(count);
 		for (i = 0; i < count; i++) {
-			m_fields.set(i, new StructureField());
-			m_fields.get(i).streamIn(stream);
+			fields.set(i, new StructureField());
+			fields.get(i).streamIn(stream);
 		}
 
 		// Read structures
-		count = (int) Streaming.ReadLong(stream);
-		m_structures.setSize(count);
+		count = (int) Streaming.readLong(stream);
+		structures.setSize(count);
 		for (i = 0; i < count; i++) {
-			m_structures.set(i, new Structure());
-			m_structures.get(i).streamIn(stream);
+			structures.set(i, new Structure());
+			structures.get(i).streamIn(stream);
 		}
 		return true;
 	}

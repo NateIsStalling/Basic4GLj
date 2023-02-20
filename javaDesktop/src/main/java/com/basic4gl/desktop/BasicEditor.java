@@ -14,7 +14,7 @@ import com.basic4gl.lib.util.*;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 import com.basic4gl.library.desktopgl.GLTextGridWindow;
 import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.InstructionPos;
+import com.basic4gl.runtime.InstructionPosition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -139,7 +139,7 @@ public class BasicEditor implements MainEditor,
         BasicTokenMaker.mFunctions.clear();
         BasicTokenMaker.mConstants.clear();
         BasicTokenMaker.mOperators.clear();
-        for (String s : mComp.m_reservedWords) {
+        for (String s : mComp.getReservedWords()) {
             BasicTokenMaker.mReservedWords.add(s);
         }
 
@@ -147,7 +147,7 @@ public class BasicEditor implements MainEditor,
             BasicTokenMaker.mConstants.add(s);
         }
 
-        for (String s : mComp.m_functionIndex.keySet()) {
+        for (String s : mComp.getFunctionIndex().keySet()) {
             BasicTokenMaker.mFunctions.add(s);
         }
 
@@ -233,13 +233,13 @@ public class BasicEditor implements MainEditor,
     }
 
     @Override
-    public int getVMRow(String filename, InstructionPos instructionPos) {
-        if (mMode == ApMode.AP_RUNNING || instructionPos == null) {
+    public int getVMRow(String filename, InstructionPosition instructionPosition) {
+        if (mMode == ApMode.AP_RUNNING || instructionPosition == null) {
             return -1;
         }
 
         // Convert to corresponding position in source file
-        return mPreprocessor.getLineNumberMap().getSourceFromMain(filename, instructionPos.getSourceLine());
+        return mPreprocessor.getLineNumberMap().getSourceFromMain(filename, instructionPosition.getSourceLine());
 
     }
 
@@ -310,7 +310,7 @@ public class BasicEditor implements MainEditor,
 
         // Compile
         if (!LoadProgramIntoCompiler()) {
-            mPresenter.PlaceCursorAtProcessed(mComp.Parser().SourceCode().size() - 1, 0);
+            mPresenter.PlaceCursorAtProcessed(mComp.Parser().getSourceCode().size() - 1, 0);
             mPresenter.setCompilerStatus(mPreprocessor.getError());
             return false;
         }
@@ -540,9 +540,9 @@ public class BasicEditor implements MainEditor,
 
             VMStatus vmStatus = message.getVMStatus();
 
-            InstructionPos instructionPos = message.getInstructionPosition();
-            if (instructionPos != null) {
-                mPresenter.PlaceCursorAtProcessed(instructionPos.getSourceLine(), instructionPos.getSourceColumn());
+            InstructionPosition instructionPosition = message.getInstructionPosition();
+            if (instructionPosition != null) {
+                mPresenter.PlaceCursorAtProcessed(instructionPosition.getSourceLine(), instructionPosition.getSourceColumn());
             }
 
             if (message.getStatus() == CallbackMessage.WORKING) {

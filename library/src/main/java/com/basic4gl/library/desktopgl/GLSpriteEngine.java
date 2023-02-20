@@ -20,16 +20,16 @@ public class GLSpriteEngine extends GLTextGrid{
     /**
      * A list of glBasicSprite objects, sorted by Z order
      */
-    public class GLSpriteList {
+    public static class GLSpriteList {
 
-        public GLBasicSprite m_head;
+        public GLBasicSprite head;
 
         public GLSpriteList (){
-            m_head = null;
+            head = null;
         }
         protected void finalize(){
-            while (m_head != null) {
-                m_head.Remove ();
+            while (head != null) {
+                head.Remove ();
             }
         }
         //public ~GLSpriteList ();
@@ -37,11 +37,11 @@ public class GLSpriteEngine extends GLTextGrid{
 
     public enum GLSpriteType {
         SPR_INVALID(0), SPR_SPRITE(1), SPR_TILEMAP(2);
-        private int mType;
+        private int type;
         GLSpriteType(int type) {
-            mType = type;
+            this.type = type;
         }
-        public int getType() { return mType;}
+        public int getType() { return type;}
     }
 
     // Sprites
@@ -95,7 +95,7 @@ public class GLSpriteEngine extends GLTextGrid{
         float dist = (float) (m_height / (2f * Math.tan (m_fov * Standard.M_PI / 360f)));         // Effective distance of screen
 
         if (!inFront) {
-            m_cursor = m_sprites.m_head;    // Reset cursor to start of list
+            m_cursor = m_sprites.head;    // Reset cursor to start of list
         }
 
         // Render sprites.
@@ -105,11 +105,11 @@ public class GLSpriteEngine extends GLTextGrid{
 
             // Sprite must be visible.
             // Must also be in front of camera (if parallax mode).
-            if (m_cursor.m_visible && (!m_cursor.m_parallax || m_cursor.ZOrder () >= m_camZ - dist + 0.0001)) {
+            if (m_cursor.visible && (!m_cursor.parallax || m_cursor.ZOrder () >= m_camZ - dist + 0.0001)) {
                 glPushMatrix ();
 
                 // Build rest of camera matrix.
-                if (m_cursor.m_parallax) {
+                if (m_cursor.parallax) {
                     float parallaxFactor = dist / ((m_cursor.ZOrder () - m_camZ) + dist);
 
                     // Update camera matrix
@@ -132,14 +132,14 @@ public class GLSpriteEngine extends GLTextGrid{
                 TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m2, m1);
 
                 // Render sprite
-                if (m_cursor.m_solid) {
+                if (m_cursor.solid) {
                     glDisable (GL_BLEND);
                 }
                 else {
                     glEnable (GL_BLEND);
-                    glBlendFunc(m_cursor.m_srcBlend, m_cursor.m_dstBlend);
+                    glBlendFunc(m_cursor.srcBlend, m_cursor.dstBlend);
                 }
-                m_cursor.Render (m1);
+                m_cursor.render(m1);
                 glPopMatrix ();
             }
 
@@ -204,12 +204,12 @@ public class GLSpriteEngine extends GLTextGrid{
     }
     }
     public void Animate () {
-        for (GLBasicSprite s = m_sprites.m_head; s != null; s = s.Next ()) {
+        for (GLBasicSprite s = m_sprites.head; s != null; s = s.Next ()) {
             s.Animate();
         }
     }
     public void AnimateFrames() {
-        for (GLBasicSprite s = m_sprites.m_head; s != null; s = s.Next ()) {
+        for (GLBasicSprite s = m_sprites.head; s != null; s = s.Next ()) {
             s.AnimateFrame();
         }
     }

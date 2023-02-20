@@ -124,7 +124,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
      * Used to track WindowsWavObjects
      */
     class WindowsWavStore extends ResourceStore<WindowsWav> {
-        protected void DeleteElement (int index){
+        protected void deleteElement(int index){
             setValue(index, null);
         }
         public WindowsWavStore (){ super(null); }

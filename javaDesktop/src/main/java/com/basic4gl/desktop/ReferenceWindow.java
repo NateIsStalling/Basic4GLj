@@ -82,11 +82,11 @@ public class ReferenceWindow {
 
     String TypeString(ValType type) {
         String result = "";
-        for (int i = 0; i < type.VirtualPointerLevel(); i++) {
+        for (int i = 0; i < type.getVirtualPointerLevel(); i++) {
             result = result + "&";
         }
 
-        switch (type.m_basicType) {
+        switch (type.basicType) {
             case BasicValType.VTP_INT:
                 result = result + "int";
                 break;
@@ -100,7 +100,7 @@ public class ReferenceWindow {
                 result = result + "???";
         }
 
-        for (int i = 0; i < type.m_arrayLevel; i++) {
+        for (int i = 0; i < type.arrayLevel; i++) {
             result = result + "()";
         }
 

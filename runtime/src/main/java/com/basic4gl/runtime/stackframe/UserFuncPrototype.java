@@ -97,7 +97,7 @@ public class UserFuncPrototype implements Streamable {
 			return false;
 		}
 
-		if (hasReturnVal && !returnValType.ExactEquals(func.returnValType)) {
+		if (hasReturnVal && !returnValType.exactEquals(func.returnValType)) {
 			return false;
 		}
 
@@ -129,7 +129,7 @@ public class UserFuncPrototype implements Streamable {
 				}
 
 				// Types must match
-				if (!localVarTypes.get(localVarIndex.get(key)).ExactEquals(
+				if (!localVarTypes.get(localVarIndex.get(key)).exactEquals(
 						func.localVarTypes.get(funcI))) {
 					return false;
 				}
@@ -142,45 +142,45 @@ public class UserFuncPrototype implements Streamable {
 
 	public void streamOut(DataOutputStream stream) throws IOException{
 		// Return value
-		Streaming.WriteByte(stream, hasReturnVal ? (byte) 1 : 0);
+		Streaming.writeByte(stream, hasReturnVal ? (byte) 1 : 0);
 		if (hasReturnVal) {
 			returnValType.streamOut(stream);
 		}
 
 		// Parameters/local variables
-		Streaming.WriteLong(stream, localVarTypes.size());
+		Streaming.writeLong(stream, localVarTypes.size());
 		for (int i = 0; i < localVarTypes.size(); i++) {
 			// #ifdef STREAM_NAMES
 			String name = getLocalVarName(i);
-			Streaming.WriteString(stream, name);
+			Streaming.writeString(stream, name);
 			// #endif
 			localVarTypes.get(i).streamOut(stream);
 		}
-		Streaming.WriteLong(stream, paramCount);
+		Streaming.writeLong(stream, paramCount);
 	}
 
 	public boolean streamIn(DataInputStream stream) throws IOException{
 		reset();
 
 		// Return value
-		hasReturnVal = Streaming.ReadByte(stream) != 0;
+		hasReturnVal = Streaming.readByte(stream) != 0;
 
 		if (hasReturnVal) {
 			returnValType.streamIn(stream);
 		}
 
 		// Parameters/local variables
-		int count = (int) Streaming.ReadLong(stream);
+		int count = (int) Streaming.readLong(stream);
 		localVarTypes.setSize(count);
 		for (int i = 0; i < localVarTypes.size(); i++) {
 			// #ifdef STREAM_NAMES
-			String name = Streaming.ReadString(stream);
+			String name = Streaming.readString(stream);
 			localVarIndex.put(name, i);
 			// #endif
 			localVarTypes.set(i, new ValType());
 			localVarTypes.get(i).streamIn(stream);
 		}
-		paramCount = (int) Streaming.ReadLong(stream);
+		paramCount = (int) Streaming.readLong(stream);
 		return true;
 	}
 }

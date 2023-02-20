@@ -13,96 +13,108 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
  * having to see and manipulate pointers, handles e.t.c.
  */
 public class Store<T> {
-	Vector<T> m_array;
-	Vector<Boolean> m_valAllocated;
-	ArrayList<Integer> m_freeList; // List of free indices
-	T m_blankElement; // New elements are initialised to this
 
+	private final Vector<T> array;
+	private final Vector<Boolean> valAllocated;
+
+	/**
+	 * List of free indices
+	 */
+	private final ArrayList<Integer> freeList;
+
+	/**
+	 * New elements are initialised to this
+	 */
+	private final T blankElement;
+
+	/**
+	 * @param blankElement New elements are initialised to this
+	 */
 	public Store(T blankElement) {
-		m_blankElement = blankElement;
+		this.blankElement = blankElement;
 		
-		m_array = new Vector<T>();
-		m_valAllocated = new Vector<Boolean>();
+		array = new Vector<T>();
+		valAllocated = new Vector<Boolean>();
 		
-		m_freeList = new ArrayList<Integer>();
+		freeList = new ArrayList<Integer>();
 	}
 
-	public boolean IndexValid(int index) { // Return true if index is a valid
+	public boolean isIndexValid(int index) { // Return true if index is a valid
 		// allocated index
-		return index >= 0 && index < m_array.size()
-				&& m_valAllocated.get(index);
+		return index >= 0 && index < array.size()
+				&& valAllocated.get(index);
 	}
 
-	public boolean IndexStored(int index) {
-		return index != 0 && IndexValid(index);
+	public boolean isIndexStored(int index) {
+		return index != 0 && isIndexValid(index);
 	}
 
-	public T valueAt(int index) {
-		assertTrue(IndexValid(index));
-		return m_array.get(index);
+	public T getValueAt(int index) {
+		assertTrue(isIndexValid(index));
+		return array.get(index);
 	}
 
 	public void setValue(int index, T val) {
-		assertTrue(IndexValid(index));
-		m_array.set(index, (T) val);
+		assertTrue(isIndexValid(index));
+		array.set(index, (T) val);
 	}
 
-	public int Alloc (){
+	public int alloc(){
 		int index;
-		if (m_freeList.isEmpty ()) {
+		if (freeList.isEmpty ()) {
 
 			// Extend array by a single item, and return index of that item
-			index = m_array.size ();
-			m_array.add(m_blankElement);
-			m_valAllocated.add (true);        // Mark element as in use
+			index = array.size ();
+			array.add(blankElement);
+			valAllocated.add (true);        // Mark element as in use
 		}
 		else {
 
 			// Reuse previously freed index
-			index = m_freeList.get(0);
-			m_freeList.remove(0);
+			index = freeList.get(0);
+			freeList.remove(0);
 			//index = 0; possible porting mistake, my bad.. the index = m_freeList.get(0) should be correct
 			
 			// Initialise element
-			m_array .set(index, m_blankElement);
-			m_valAllocated .set(index, true);
+			array.set(index, blankElement);
+			valAllocated.set(index, true);
 		}
 		return index;
 	}
 
-	public void Free(int index) {
+	public void freeAtIndex(int index) {
 
 		// Deallocate index and return to array
-		assertTrue(IndexValid(index));
-		m_valAllocated.set(index, false);
-		m_freeList.add(0, index);
+		assertTrue(isIndexValid(index));
+		valAllocated.set(index, false);
+		freeList.add(0, index);
 	}
 
 	public void clear() {
 
 		// Clear allocated values
-		m_freeList.clear();
-		m_array.clear();
-		m_valAllocated.clear();
+		freeList.clear();
+		array.clear();
+		valAllocated.clear();
 
 		// Allocate a "blank" value for the 0th element.
 		// Basic4GL uses 0 to indicate that data hasn't been allocated yet.
-		Alloc();
+		alloc();
 	}
 
 	public int getStoredElements() {
-		return m_array.size() - m_freeList.size();
+		return array.size() - freeList.size();
 	}
 
-	public Vector<T> Array() {
-		return m_array;
+	public Vector<T> getArray() {
+		return array;
 	}
 
-	public Vector<Boolean> ValAllocated() {
-		return m_valAllocated;
+	public Vector<Boolean> getValAllocated() {
+		return valAllocated;
 	}
 
-	public T BlankElement() {
-		return m_blankElement;
+	public T getBlankElement() {
+		return blankElement;
 	}
 }

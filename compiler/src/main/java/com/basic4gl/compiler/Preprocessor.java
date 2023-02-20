@@ -96,7 +96,7 @@ public class Preprocessor extends HasErrorState {
         clearError();
 
         // Clear the parser
-        parser.SourceCode().clear();
+        parser.getSourceCode().clear();
 
         // Load the main file
         openFiles.add(mainFile);
@@ -148,7 +148,7 @@ public class Preprocessor extends HasErrorState {
                     // Not an #include line
                     // Add to parser, and line number map
                     lineNumberMap.AddLine(openFiles.lastElement().getFilename(), lineNo);
-                    parser.SourceCode().add(line);
+                    parser.getSourceCode().add(line);
                 }
             }
         }

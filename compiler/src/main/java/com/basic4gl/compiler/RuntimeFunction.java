@@ -24,11 +24,11 @@ public class RuntimeFunction implements Streamable {
 
 	@Override
 	public void streamOut(DataOutputStream stream) throws IOException{
-		Streaming.WriteLong(stream, prototypeIndex);
+		Streaming.writeLong(stream, prototypeIndex);
 	}
 	@Override
 	public boolean streamIn(DataInputStream stream) throws IOException{
-		prototypeIndex = (int) Streaming.ReadLong(stream);
+		prototypeIndex = (int) Streaming.readLong(stream);
 		return true;
 	}
 

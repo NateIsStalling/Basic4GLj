@@ -1,8 +1,8 @@
 package com.basic4gl.runtime;
 
 public class TempBreakPt {
-	int m_offset;
+	int offset;
 	public TempBreakPt(){
-		m_offset = 0xffff;
+		offset = 0xffff;
 	}
 }

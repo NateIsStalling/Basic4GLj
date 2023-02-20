@@ -1,6 +1,6 @@
 package com.basic4gl.lib.util;
 
-import com.basic4gl.runtime.InstructionPos;
+import com.basic4gl.runtime.InstructionPosition;
 
 import java.util.Objects;
 
@@ -17,7 +17,7 @@ public class DebuggerCallbackMessage {
 
     protected int status;
     protected String text;
-    protected InstructionPos instructionPos;
+    protected InstructionPosition instructionPosition;
     public VMStatus vmStatus;
 
     public DebuggerCallbackMessage(){
@@ -83,16 +83,16 @@ public class DebuggerCallbackMessage {
         return text;
     }
 
-    public void setInstructionPosition(InstructionPos instructionPosition) {
-        this.instructionPos = instructionPosition;
+    public void setInstructionPosition(InstructionPosition instructionPosition) {
+        this.instructionPosition = instructionPosition;
     }
 
     public void setInstructionPosition(int row, int column) {
-        this.instructionPos = new InstructionPos(row, column);
+        this.instructionPosition = new InstructionPosition(row, column);
     }
 
-    public InstructionPos getInstructionPosition() {
-        return instructionPos;
+    public InstructionPosition getInstructionPosition() {
+        return instructionPosition;
     }
 
     public VMStatus getVMStatus() {

@@ -10,140 +10,146 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 public class Parser extends HasErrorState {
 
-
 	// Text
-	Vector<String> m_sourceCode;
+	private final Vector<String> sourceCode;
 
 	// Special mode
-	boolean m_special;
-	String m_specialText;
-	int m_specialCol;
-	int m_specialSourceLine, m_specialSourceCol;
+	private boolean isSpecialMode;
+	private String specialText;
+	private int specialColumn;
+	private int specialSourceLine;
+	private int specialSourceColumn;
 
 	// State
-	int m_line, m_col;
+	private int line;
+	private int column;
+
+	public Parser() {
+		sourceCode = new Vector<String>();
+		specialText = "";
+		reset();
+	}
 
 	// Reading
-	char GetChar(boolean inString) {
-		char c = PeekChar(inString); // Read character
+	char getChar(boolean inString) {
+		char c = peekChar(inString); // Read character
 		if (c == 13) { // Advance position
-			m_col = 0;
-			m_line++;
+			column = 0;
+			line++;
 		} else {
-			if (m_special) {
-				m_specialCol++;
+			if (isSpecialMode) {
+				specialColumn++;
 			} else {
-				m_col++;
+				column++;
 			}
 		}
 		return c;
 	}
 
-	char PeekChar(boolean inString) {
-		if (Eof()) // End of file
+	char peekChar(boolean inString) {
+		if (isEof()) // End of file
 		{
 			return 0;
-		} else if (m_special) {
-			return m_specialText.charAt(m_specialCol);
-		} else if (m_col >= Text().length()
-				|| (Text().charAt(m_col) == '\'' && !inString)) // End of line,
+		} else if (isSpecialMode) {
+			return specialText.charAt(specialColumn);
+		} else if (column >= getText().length()
+				|| (getText().charAt(column) == '\'' && !inString)) // End of line,
 																// or start of
 																// comment
 		{
 			return 13;
 		} else {
-			return Text().charAt(m_col); // Regular text
+			return getText().charAt(column); // Regular text
 		}
 	}
 
-	String Text() {
-		assertTrue(!Eof());
-		return m_sourceCode.get(m_line);
+	String getText() {
+		assertTrue(!isEof());
+		return sourceCode.get(line);
 	}
 
-	boolean IsNumber(char c) {
+	boolean isNumber(char c) {
 		return ((c >= '0' && c <= '9') || c == '.');
 	}
 
-	boolean IsComparison(char c) {
+	boolean isComparison(char c) {
 		return c == '<' || c == '=' || c == '>';
 	}
 
-	public Parser() {
-		m_sourceCode = new Vector<String>();
-		m_specialText = "";
-		reset();
+
+	public Vector<String> getSourceCode() {
+		return sourceCode;
 	}
 
-	public Vector<String> SourceCode() {
-		return m_sourceCode;
-	}
-
-	public void SetPos(int line, int col) {
-		SetNormal();
-		m_line = line;
-		m_col = col;
+	public void setPos(int line, int col) {
+		setNormal();
+		this.line = line;
+		column = col;
 		clearError();
 	}
 
 	public void reset() {
-		SetPos(0, 0);
+		setPos(0, 0);
 	}
 
-	public int Line() {
-		return m_line;
+	public int getLine() {
+		return line;
 	}
 
-	public int Col() {
-		return m_col;
+	public int getColumn() {
+		return column;
 	}
 
-	public boolean Eof() {
-		if (m_special) {
-			return m_specialCol >= m_specialText.length();
+	public boolean isEof() {
+		if (isSpecialMode) {
+			return specialColumn >= specialText.length();
 		} else {
-			return m_line >= m_sourceCode.size();
+			return line >= sourceCode.size();
 		}
 	}
 
-	public Token NextToken() {
-		return NextToken(false, false);
+	public Token nextToken() {
+		return nextToken(false, false);
 	}
 
-	public Token NextToken(boolean skipEOL, boolean dataMode) {
+	public Token nextToken(boolean skipEOL, boolean dataMode) {
 
 		clearError();
 
 		// Create token, with some defaults
 		Token t = new Token();
 		t.text = "";
-		t.m_valType = BasicValType.VTP_INT;
-		t.m_newLine = (m_col == 0);
+		t.valType = BasicValType.VTP_INT;
+		t.newLine = (column == 0);
 
 		// Skip leading whitespace.
 		// Detect newlines
 		char c = ' ';
-		if (m_special) { // Special text being parsed.
-			t.line = m_specialSourceLine; // Substitute the position in the
-											// source that the special text has
-											// been
-			t.col = m_specialSourceCol; // associated with.
+		if (isSpecialMode) {
+			// Special text being parsed.
+
+			// Substitute the position in the source that
+			// the special text has been associated with.
+			t.line = specialSourceLine;
+			t.col = specialSourceColumn;
 		} else {
-			t.line = m_line;
-			t.col = m_col;
+			t.line = line;
+			t.col = column;
 		}
-		while (!Eof() && c <= ' ' && (c != 13 || skipEOL)) {
-			if (m_special) { // Special text being parsed.
-				t.line = m_specialSourceLine; // Substitute the position in
-												// the source that the special
-												// text has been
-				t.col = m_specialSourceCol; // associated with.
+		while (!isEof() && c <= ' ' && (c != 13 || skipEOL)) {
+			if (isSpecialMode) {
+				// Special text being parsed.
+
+				// Substitute the position in the source that
+				// the special text has been associated with.
+				t.line = specialSourceLine;
+				t.col = specialSourceColumn;
 			} else {
-				t.line = m_line;
-				t.col = m_col;
+				t.line = line;
+				t.col = column;
 			}
-			c = GetChar(false);
-			t.m_newLine = t.m_newLine || m_col == 0;
+			c = getChar(false);
+			t.newLine = t.newLine || column == 0;
 		}
 
 		// Determine token type
@@ -153,12 +159,12 @@ public class Parser extends HasErrorState {
 			t.tokenType = TokenType.CTT_EOL;
 		} else if (c == '"') {
 			t.tokenType = TokenType.CTT_CONSTANT;
-			t.m_valType = BasicValType.VTP_STRING;
+			t.valType = BasicValType.VTP_STRING;
 		} else if (!dataMode) {
-			if (IsNumber((char) c)) {
+			if (isNumber((char) c)) {
 				t.tokenType = TokenType.CTT_CONSTANT;
 				if (c == '.') {
-					t.m_valType = BasicValType.VTP_REAL;
+					t.valType = BasicValType.VTP_REAL;
 				}
 			} else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
 					|| c == '_') {
@@ -189,10 +195,10 @@ public class Parser extends HasErrorState {
 		// Regular case, not dataMode text
 		if (!dataMode || t.tokenType != TokenType.CTT_TEXT) {
 			// Don't include leading quote (if string constant)
-			if (!(t.tokenType == TokenType.CTT_CONSTANT && t.m_valType == BasicValType.VTP_STRING)) {
+			if (!(t.tokenType == TokenType.CTT_CONSTANT && t.valType == BasicValType.VTP_STRING)) {
 				t.text = t.text + (char) c;
 			}
-			c = PeekChar(t.m_valType == BasicValType.VTP_STRING);
+			c = peekChar(t.valType == BasicValType.VTP_STRING);
 			byte lcase = (byte) Character.toLowerCase(c);
 			boolean done = false;
 			boolean hex = false;
@@ -202,19 +208,19 @@ public class Parser extends HasErrorState {
 				// Determine whether found end of token
 				switch (t.tokenType) {
 				case CTT_CONSTANT:
-					if (t.m_valType == BasicValType.VTP_STRING) {
+					if (t.valType == BasicValType.VTP_STRING) {
 						if (c == '"') {
 							done = true;
-							GetChar(false); // Skip terminating quote
+							getChar(false); // Skip terminating quote
 						} else if (c == 0 || c == 13) {
 							setError("Unterminated string");
 							done = true;
 						}
 					} else {
-						boolean validDecimalPt = (c == '.' && t.m_valType == BasicValType.VTP_INT);
+						boolean validDecimalPt = (c == '.' && t.valType == BasicValType.VTP_INT);
 						if (validDecimalPt) // Floating point number
 						{
-							t.m_valType = BasicValType.VTP_REAL;
+							t.valType = BasicValType.VTP_REAL;
 						}
 
 	                    boolean hexSpecifier = lcase == 'x' && (t.text.equals("0") || t.text.equals("-0"));
@@ -235,11 +241,11 @@ public class Parser extends HasErrorState {
 															// trailed with a $,
 															// # or %
 					{
-						t.text = t.text + GetChar(false);
+						t.text = t.text + getChar(false);
 					}
 					break;
 				case CTT_SYMBOL:
-					done = !(IsComparison(t.text.charAt(0)) && IsComparison(c));
+					done = !(isComparison(t.text.charAt(0)) && isComparison(c));
 					break;
 				default:
 					setError("Bad token");
@@ -248,13 +254,13 @@ public class Parser extends HasErrorState {
 				// Store character
 				if (!done) {
 					t.text = t.text
-							+ GetChar(t.m_valType == BasicValType.VTP_STRING);
-					c = PeekChar(t.m_valType == BasicValType.VTP_STRING);
+							+ getChar(t.valType == BasicValType.VTP_STRING);
+					c = peekChar(t.valType == BasicValType.VTP_STRING);
 					lcase = (byte) Character.toLowerCase(c);
 				}
 	            else {
 	                // Check token is well formed
-	                if (t.tokenType == TokenType.CTT_CONSTANT && t.m_valType == BasicValType.VTP_INT) {
+	                if (t.tokenType == TokenType.CTT_CONSTANT && t.valType == BasicValType.VTP_INT) {
 	                    // Check integer number is valid
 	                    char last = t.text.charAt(t.text.length() - 1);
 	                    if (last == 'x' || last == 'X') {
@@ -279,8 +285,7 @@ public class Parser extends HasErrorState {
 
 				// Comma, colon, return, newline and eof are separators
 				// Double quotes are not allowed (syntactically), so we truncate
-				// the
-				// token at that point
+				// the token at that point
 				done = c == 13 || c == 10 || c == 0 || c == ',' || c == ':'
 						|| c == '"';
 				if (!done) {
@@ -289,12 +294,12 @@ public class Parser extends HasErrorState {
 					// Assume numeric until non-numeric character found.
 					// (Also, numeric types can't have spaces).
 					// Decimal point means floating point (real) type.
-					if (t.m_valType != BasicValType.VTP_STRING) {
+					if (t.valType != BasicValType.VTP_STRING) {
 
-						boolean validDecimalPt = (c == '.' && t.m_valType == BasicValType.VTP_INT);
+						boolean validDecimalPt = (c == '.' && t.valType == BasicValType.VTP_INT);
 	                    if (validDecimalPt)                                   // Floating point number
 						{
-							t.m_valType = BasicValType.VTP_REAL;
+							t.valType = BasicValType.VTP_REAL;
 						}
 	                    boolean hexSpecifier = (lcase == 'x' && (t.text.equals("0") || t.text.equals("-0")));
 	                    if (hexSpecifier) {
@@ -312,7 +317,7 @@ public class Parser extends HasErrorState {
 								|| (c > ' ' && whiteSpaceFound)) // Contained
 																	// whitespace
 						{
-							t.m_valType = BasicValType.VTP_STRING;
+							t.valType = BasicValType.VTP_STRING;
 						}
 					}
 					if (c <= ' ') {
@@ -323,14 +328,14 @@ public class Parser extends HasErrorState {
 					if (firstIteration) {
 						t.text = String.valueOf((char) c);
 					} else {
-						t.text = t.text + GetChar(false);
+						t.text = t.text + getChar(false);
 					}
-					c = PeekChar(false);
+					c = peekChar(false);
 					lcase = (byte) Character.toLowerCase(c);
 				}
 	            else {
 	                // Check token is well formed
-	                if (t.tokenType == TokenType.CTT_CONSTANT && t.m_valType == BasicValType.VTP_INT) {
+	                if (t.tokenType == TokenType.CTT_CONSTANT && t.valType == BasicValType.VTP_INT) {
 	                    // Check integer number is valid
 	                    char last = t.text.charAt(t.text.length() - 1);
 	                    if (last == 'x' || last == 'X') {
@@ -353,24 +358,24 @@ public class Parser extends HasErrorState {
 		return t;
 	}
 
-	public Token PeekToken() {
-		return PeekToken(false, false);
+	public Token peekToken() {
+		return peekToken(false, false);
 	}
 
-	public Token PeekToken(boolean skipEOL, boolean dataMode) {
+	public Token peekToken(boolean skipEOL, boolean dataMode) {
 
 		// Save position
-		int line = m_line, col = m_col;
+		int line = this.line, col = column;
 
 		// Read token
-		Token t = NextToken(skipEOL, dataMode);
+		Token t = nextToken(skipEOL, dataMode);
 
-		// Restore position. (Except on error, when we leave the cursor pointing
-		// to
-		// the error position.)
+		// Restore position.
+		// (Except on error, when we leave the cursor pointing
+		// to the error position.)
 		if (!hasError()) {
-			m_line = line;
-			m_col = col;
+			this.line = line;
+			column = col;
 		}
 
 		return t;
@@ -380,33 +385,33 @@ public class Parser extends HasErrorState {
 	// (Slightly different parsing rules apply.)
 
 	// Special mode
-	public boolean Special() {
-		return m_special;
+	public boolean isSpecialMode() {
+		return isSpecialMode;
 	}
 
-	public void SetSpecial(String text) {
-		SetSpecial(text, -1, -1);
+	public void setSpecial(String text) {
+		setSpecial(text, -1, -1);
 	}
 
-	public void SetSpecial(String text, int line, int col) {
-		m_special = true;
-		m_specialText = text;
-		m_specialCol = 0;
-		m_specialSourceCol = col;
+	public void setSpecial(String text, int line, int col) {
+		isSpecialMode = true;
+		specialText = text;
+		specialColumn = 0;
+		specialSourceColumn = col;
 		if (line >= 0) {
-			m_specialSourceLine = line;
+			specialSourceLine = line;
 		} else {
-			m_specialSourceLine = m_line;
+			specialSourceLine = this.line;
 		}
 		if (col >= 0) {
-			m_specialSourceCol = col;
+			specialSourceColumn = col;
 		} else {
-			m_specialSourceCol = m_col;
+			specialSourceColumn = column;
 		}
 	}
 
-	public void SetNormal() {
-		m_special = false;
+	public void setNormal() {
+		isSpecialMode = false;
 	}
 
 }

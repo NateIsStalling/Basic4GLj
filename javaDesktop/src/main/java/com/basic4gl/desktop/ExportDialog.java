@@ -467,7 +467,7 @@ public class ExportDialog {
             }
 
             // Clear source code from parser
-            mComp.Parser().SourceCode().clear();
+            mComp.Parser().getSourceCode().clear();
 
             // Load code into preprocessor; may be unnecessary
             if (!LoadProgramIntoCompiler()) {
@@ -516,7 +516,7 @@ public class ExportDialog {
 
                     line = editorPane.getText(start, stop - start);
 
-                    mComp.Parser().SourceCode().add(line);
+                    mComp.Parser().getSourceCode().add(line);
 
                 }
             } catch (BadLocationException e) {

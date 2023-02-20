@@ -7,73 +7,80 @@ import com.basic4gl.runtime.Store;
  */
 public abstract class ResourceStore<T> extends Resources {
 
-	protected Store<T> m_store;
+	protected Store<T> store;
 
-	protected abstract void DeleteElement(int index);
+	protected abstract void deleteElement(int index);
 
 	@SuppressWarnings("unchecked")
 	public ResourceStore(T blankElement) {
-		m_store = new Store<T>(blankElement);
+		store = new Store<T>(blankElement);
 	}
 
 	public void clear() {
 
 		// Delete each individual element
-		for (int i = 0; i < m_store.Array().size(); i++) {
-            if (m_store.ValAllocated().get(i)) {
-                DeleteElement(i);
+		for (int i = 0; i < store.getArray().size(); i++) {
+            if (store.getValAllocated().get(i)) {
+                deleteElement(i);
             }
         }
 
 		// Clear store
-		m_store.clear();
+		store.clear();
 	}
 
 	// Pass calls through to internal store
-	public boolean IndexValid(int index) {
-		return m_store.IndexValid(index);
+	public boolean isIndexValid(int index) {
+		return store.isIndexValid(index);
 	}
 
-	public boolean IndexStored(int index) {
-		return m_store.IndexStored(index);
+	public boolean isIndexStored(int index) {
+		return store.isIndexStored(index);
 	}
 
-	public T Value(int index) {
-		return m_store.valueAt(index);
+	public T getValueAt(int index) {
+		return store.getValueAt(index);
 	}
 
 	public void setValue(int index, T value) {
-		m_store.setValue(index, value);
+		store.setValue(index, value);
 	}
 
-	public int Alloc() {
-		return m_store.Alloc();
+	public int alloc() {
+		return store.alloc();
 	}
 
-	public int Alloc(T element) {
-		if (element.equals(m_store.BlankElement())) {
+	public int alloc(T element) {
+		if (element.equals(store.getBlankElement())) {
             return -1;
         } else {
-			int index = Alloc();
+			int index = alloc();
 			setValue(index, element);
 			return index;
 		}
 	}
 
-	public void Remove(int index) { // Remove an element without freeing it.
-									// Calling code is responsible for freeing
-									// the resource.
-		m_store.Free(index);
+	/**
+	 * Remove an element without freeing it.
+	 * Calling code is responsible for freeing the resource.
+	 * @param index
+	 */
+	public void remove(int index) {
+		store.freeAtIndex(index);
 	}
 
-	public void Free(int index) { // Remove and free element.
-		if (IndexValid(index)) {
-			DeleteElement(index);
-			Remove(index);
+	/**
+	 * Remove and free element.
+	 * @param index
+	 */
+	public void free(int index) {
+		if (isIndexValid(index)) {
+			deleteElement(index);
+			remove(index);
 		}
 	}
 
-	public Store<T> Store() {
-		return m_store;
+	public Store<T> getStore() {
+		return store;
 	}
 }

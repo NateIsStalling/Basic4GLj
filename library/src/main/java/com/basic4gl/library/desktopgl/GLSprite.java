@@ -26,8 +26,8 @@ public class GLSprite extends GLBasicSprite {
     }
 
 
-    protected void InternalCopy(GLBasicSprite s) {
-        super.InternalCopy(s);
+    protected void internalCopy(GLBasicSprite s) {
+        super.internalCopy(s);
         GLSprite spr = (GLSprite) s;
         m_frame = spr.m_frame;
         m_xd = spr.m_xd;
@@ -46,15 +46,15 @@ public class GLSprite extends GLBasicSprite {
             m_frame = 0;
         }
 
-        if (!m_textures.isEmpty()) {
+        if (!textures.isEmpty()) {
             if (m_animLoop) {
 
                 // Looped animation.
                 while (m_frame < 0) {
-                    m_frame += m_textures.size();
+                    m_frame += textures.size();
                 }
-                while (m_frame >= m_textures.size()) {
-                    m_frame -= m_textures.size();
+                while (m_frame >= textures.size()) {
+                    m_frame -= textures.size();
                 }
             } else {
 
@@ -62,8 +62,8 @@ public class GLSprite extends GLBasicSprite {
                 if (m_frame < 0) {
                     m_frame = 0;
                 }
-                if (m_frame >= m_textures.size()) {
-                    m_frame = (float) m_textures.size() - 0.001f;
+                if (m_frame >= textures.size()) {
+                    m_frame = (float) textures.size() - 0.001f;
                 }
             }
         }
@@ -89,13 +89,13 @@ public class GLSprite extends GLBasicSprite {
     }
 
     // Class type identification
-    public GLSpriteEngine.GLSpriteType Type() {
+    public GLSpriteEngine.GLSpriteType getGLSpriteType() {
         return GLSpriteEngine.GLSpriteType.SPR_SPRITE;
     }
 
     // Getters and setters.
     public int FrameCount() {
-        return m_textures.size();
+        return textures.size();
     }
 
     public float Frame() {
@@ -110,11 +110,11 @@ public class GLSprite extends GLBasicSprite {
 
     // Misc
     public boolean AnimDone() {
-        return (!m_animLoop) && m_frame >= m_textures.size() - 0.002;
+        return (!m_animLoop) && m_frame >= textures.size() - 0.002;
     }
 
     // Rendering
-    public void Render(float[] camInv) {
+    public void render(float[] camInv) {
 
         // Render sprite using OpenGL commands.
 
@@ -123,7 +123,7 @@ public class GLSprite extends GLBasicSprite {
         // accordingly.
 
         // Sprite must be visible
-        if (!m_visible || FrameCount() == 0) {
+        if (!visible || FrameCount() == 0) {
             return;
         }
 
@@ -131,35 +131,35 @@ public class GLSprite extends GLBasicSprite {
         int frame = (int) m_frame;
         assertTrue(frame >= 0);
         assertTrue(frame < FrameCount());
-        glBindTexture(GL_TEXTURE_2D, m_textures.get(frame));
+        glBindTexture(GL_TEXTURE_2D, textures.get(frame));
 
-        ByteBuffer byteBuf = BufferUtils.createByteBuffer(m_colour.length * 4); //4 bytes per float
+        ByteBuffer byteBuf = BufferUtils.createByteBuffer(color.length * 4); //4 bytes per float
         FloatBuffer buffer = byteBuf.asFloatBuffer();
-        buffer.put(m_colour);
+        buffer.put(color);
         buffer.position(0);
         glColor4fv(buffer);
         buffer.rewind();
-        buffer.get(m_colour);
+        buffer.get(color);
 
         // Translation, rotation & scaling
-        glTranslatef(m_x, m_y, 0);
-        if (m_angle != 0) {
-            glRotatef(m_angle, 0, 0, 1);
+        glTranslatef(positionX, positionY, 0);
+        if (angle != 0) {
+            glRotatef(angle, 0, 0, 1);
         }
-        glScalef(m_xSize * m_scale,
-                m_ySize * m_scale,
+        glScalef(sizeX * scale,
+                sizeY * scale,
                 1);
-        if (m_xCentre != 0 || m_yCentre != 0) {
-            glTranslatef(-m_xCentre, -m_yCentre, 0);
+        if (centerX != 0 || centerY != 0) {
+            glTranslatef(-centerX, -centerY, 0);
         }
 
         float x1 = 0, x2 = 1,
                 y1 = 1, y2 = 0;
-        if (m_xFlip) {
+        if (flipX) {
             x1 = 1;
             x2 = 0;
         }
-        if (m_yFlip) {
+        if (flipY) {
             y1 = 0;
             y2 = 1;
         }
@@ -179,9 +179,9 @@ public class GLSprite extends GLBasicSprite {
 
     // Animation
     public void Animate() {
-        m_x += m_xd;            // Simple animation
-        m_y += m_yd;
-        m_angle += m_angled;
+        positionX += m_xd;            // Simple animation
+        positionY += m_yd;
+        angle += m_angled;
         AnimateFrame();
     }
 

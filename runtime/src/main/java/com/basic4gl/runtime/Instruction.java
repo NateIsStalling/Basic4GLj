@@ -11,36 +11,45 @@ import com.basic4gl.runtime.types.OpCode;
 
 /**
  * Instruction
+ *
+ * Note: Instruction size = 12 bytes.
+ * Ordering of member fields is important, as the two 4 byte members
+ * are first (and hence aligned to a 4 byte boundary).
+ * sourceChar is next, and aligned to a 2 byte boundary.
+ * Single byte fields are last, as their alignment is unimportant.
+ *
  * porting note: contained directive `#pragma pack (push, 1)`
  */
 public class Instruction implements Streamable{
 
-	// Note: Instruction size = 12 bytes.
-	// Ordering of member fields is important, as the two 4 byte members
-	// are first (and hence aligned to a 4 byte boundary).
-	// mSourceChar is next, and aligned to a 2 byte boundary.
-	// Single byte fields are last, as their alignment is unimportant.
-	public Value mValue; // Value
-	public int mSourceLine; // For debugging
-	public int mSourceChar;
-	public short mOpCode; // (vmOpCode)
-	public int mType; // (vmBasicVarType)
+	/**
+	 * Instruction value
+	 */
+	public Value value;
+
+	/**
+	 * For debugging
+	 */
+	public int sourceLine;
+	public int sourceChar;
+	public short opCode; // (vmOpCode)
+	public int basicVarType; // (vmBasicVarType)
 
 	public Instruction() {
-		mOpCode = OpCode.OP_NOP;
+		opCode = OpCode.OP_NOP;
 		// TODO Original source initializes with 0 instead of -1
-		mType = BasicValType.VTP_UNDEFINED;
-		mSourceLine = 0;
-		mSourceChar = 0;
-		mValue = new Value();
+		basicVarType = BasicValType.VTP_UNDEFINED;
+		sourceLine = 0;
+		sourceChar = 0;
+		value = new Value();
 	}
 
 	public Instruction(Instruction i) {
-		mOpCode = i.mOpCode;
-		mType = i.mType;
-		mSourceChar = i.mSourceChar;
-		mSourceLine = i.mSourceLine;
-		mValue = i.mValue;
+		opCode = i.opCode;
+		basicVarType = i.basicVarType;
+		sourceChar = i.sourceChar;
+		sourceLine = i.sourceLine;
+		value = i.value;
 	}
 
 	public Instruction(short opCode, int type, Value val) {
@@ -48,31 +57,31 @@ public class Instruction implements Streamable{
 	}
 
 	public Instruction(short opCode, int type, Value val, int sourceLine, int sourceChar) {
-		mOpCode = opCode;
-		mType = type;
-		mValue = val;
-		mSourceLine = sourceLine;
-		mSourceChar = sourceChar;
+		this.opCode = opCode;
+		basicVarType = type;
+		value = val;
+		this.sourceLine = sourceLine;
+		this.sourceChar = sourceChar;
 	}
 
 	// Streaming
 	// #ifdef VM_STATE_STREAMING
 	public void streamOut(DataOutputStream stream) throws IOException {
-		Streaming.WriteShort(stream, mOpCode);
-		Streaming.WriteLong(stream, mType);
-		mValue.streamOut(stream);
+		Streaming.writeShort(stream, opCode);
+		Streaming.writeLong(stream, basicVarType);
+		value.streamOut(stream);
 
-		Streaming.WriteLong(stream, mSourceLine);
-		Streaming.WriteLong(stream, mSourceChar);
+		Streaming.writeLong(stream, sourceLine);
+		Streaming.writeLong(stream, sourceChar);
 	}
 
 	public boolean streamIn(DataInputStream stream) throws IOException {
-		mOpCode = Streaming.ReadShort(stream);
-		mType = (int)Streaming.ReadLong(stream);
-		mValue.streamIn(stream);
+		opCode = Streaming.readShort(stream);
+		basicVarType = (int)Streaming.readLong(stream);
+		value.streamIn(stream);
 
-		mSourceLine = (int) Streaming.ReadLong(stream);
-		mSourceChar = (int) Streaming.ReadLong(stream);
+		sourceLine = (int) Streaming.readLong(stream);
+		sourceChar = (int) Streaming.readLong(stream);
 		return true;
 	}
 }

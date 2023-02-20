@@ -13,7 +13,7 @@ delete vmResourceStore<T>.Value (index);                   // delete pointer
 */
     public PointerResourceStore (){ super(null); }
 
-    public void DeleteElement (int index) {
-        m_store.setValue( index, null); // delete pointer
+    public void deleteElement(int index) {
+        store.setValue( index, null); // delete pointer
     }
 }
