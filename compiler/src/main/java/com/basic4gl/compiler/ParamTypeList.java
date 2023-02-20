@@ -12,6 +12,7 @@ public class ParamTypeList {
 
     public ParamTypeList() { mParams = new Vector<ValType>(); }
     public ParamTypeList(ParamTypeList list){
+        mParams = new Vector<ValType>();
         for (ValType val: list.mParams) {
             mParams.add (new ValType(val));
         }
