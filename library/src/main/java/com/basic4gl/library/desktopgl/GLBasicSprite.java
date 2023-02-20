@@ -15,7 +15,26 @@ public abstract class GLBasicSprite {
     private GLBasicSprite prev, next;
     private float zOrder;
 
-    private void InternalRemove() {
+    // Construction/destruction
+    public GLBasicSprite() {
+        setDefaults();
+    }
+
+    public GLBasicSprite(int tex) {
+        setDefaults();
+        setTexture(tex);
+    }
+
+    public GLBasicSprite(Vector<Integer> tex) {
+        setDefaults();
+        setTextures(tex);
+    }
+
+    /*public ~GLBasicSprite (){
+        Remove ();
+    }*/
+
+    private void internalRemove() {
         assertTrue(list != null);
 
         // Link prev item to next
@@ -35,7 +54,7 @@ public abstract class GLBasicSprite {
         next = null;
     }
 
-    private void InternalReorder(GLBasicSprite prev, GLBasicSprite next) {
+    private void internalReorder(GLBasicSprite prev, GLBasicSprite next) {
 
         // Note: List is sorted in DESCENDING zOrder
         boolean done = false;
@@ -79,17 +98,17 @@ public abstract class GLBasicSprite {
         this.next = next;
     }
 
-    private void Reorder() {
+    private void reorder() {
 
         // Remove from linked list
         if (list != null) {
 
             // Save original links
             GLBasicSprite prev = this.prev, next = this.next;
-            InternalRemove();
+            internalRemove();
 
             // Move to correct position
-            InternalReorder(prev, next);
+            internalReorder(prev, next);
         }
     }
 
@@ -120,7 +139,7 @@ public abstract class GLBasicSprite {
     }
 
     protected void internalCopy(GLBasicSprite s) {
-        SetTextures(s.textures);
+        setTextures(s.textures);
         positionX = s.positionX;
         positionY = s.positionY;
         sizeX = s.sizeX;
@@ -141,7 +160,7 @@ public abstract class GLBasicSprite {
         dstBlend = s.dstBlend;
     }
 
-    protected void CheckFrame() {
+    protected void checkFrame() {
         // Default = do nothing.
     }
 
@@ -157,108 +176,90 @@ public abstract class GLBasicSprite {
 
     protected Vector<Integer> textures = new Vector<Integer>();
 
-    // Construction/destruction
-    public GLBasicSprite() {
-        setDefaults();
-    }
-
-    public GLBasicSprite(int tex) {
-        setDefaults();
-        SetTexture(tex);
-    }
-
-    public GLBasicSprite(Vector<Integer> tex) {
-        setDefaults();
-        SetTextures(tex);
-    }
-    /*public ~GLBasicSprite (){
-        Remove ();
-    }*/
-
     // Class type identification
     public abstract GLSpriteEngine.GLSpriteType getGLSpriteType();
 
     // ZOrder and list functions
-    public void Insert(GLSpriteEngine.GLSpriteList list) {
+    public void insert(GLSpriteEngine.GLSpriteList list) {
         assertTrue(list != null);
 
         // Remove from previous list (if any)
-        Remove();
+        remove();
 
         // Insert into new list
         this.list = list;
 
         // At correct position
-        InternalReorder(null, list.head);
+        internalReorder(null, list.head);
     }
 
-    public void Remove() {
+    public void remove() {
         if (list != null) {
-            InternalRemove();
+            internalRemove();
             list = null;
         }
     }
 
-    public float ZOrder() {
+    public float getZOrder() {
         return zOrder;
     }
 
-    public void SetZOrder(float zOrder) {
+    public void setZOrder(float zOrder) {
         this.zOrder = zOrder;
-        Reorder();
+        reorder();
     }
 
-    public GLBasicSprite Prev() {
+    public GLBasicSprite prev() {
         return prev;
     }
 
-    public GLBasicSprite Next() {
+    public GLBasicSprite next() {
         return next;
     }
 
     // Texture handle storage
-    public void AddTexture(int t) {
+    public void addTexture(int t) {
         textures.add(t);
-        CheckFrame();
+        checkFrame();
     }
 
-    public void AddTextures(Vector<Integer> t) {
+    public void addTextures(Vector<Integer> t) {
         textures.addAll(t);            // Append textures to end
-        CheckFrame();
+        checkFrame();
     }
 
-    public void SetTexture(int t) {
+    public void setTexture(int t) {
         textures.clear();
-        AddTexture(t);
+        addTexture(t);
     }
 
-    public void SetTextures(Vector<Integer> t) {
+    public void setTextures(Vector<Integer> t) {
         textures.clear();
-        AddTextures(t);
+        addTextures(t);
     }
 
     // Rendering/animation
     public abstract void render(float[] camInv);           // camInv is the inverted camera matrix
 
-    public void Animate() {
+    public void animate() {
         // By default Animate does nothing. Override for types to which it is
         // relevant.
     }
 
-    public void AnimateFrame() {
+    public void animateFrame() {
         // Restricted animate. Animate frames only. Do not move sprites.
         // (Again by default does nothing).
     }
 
     // Copying/assignment
-    public boolean SameTypeAs(GLBasicSprite s) {
+    public boolean isSameTypeAs(GLBasicSprite s) {
         return s.getGLSpriteType() == getGLSpriteType();
     }
 
-    public void Copy(GLBasicSprite s) {
-        assertTrue(SameTypeAs(s));
+    public void copy(GLBasicSprite s) {
+        assertTrue(isSameTypeAs(s));
         internalCopy(s);
-        Reorder();             // (As ZOrder may have changed)
+        reorder();             // (As ZOrder may have changed)
     }
 
     /*

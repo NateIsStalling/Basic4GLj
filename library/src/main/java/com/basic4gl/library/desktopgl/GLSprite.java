@@ -14,64 +14,64 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class GLSprite extends GLBasicSprite {
 
-    private float m_frame;
+    private float frame;
 
     private void SetDefaults() {
-        m_frame = 0;
-        m_xd = 0;
-        m_yd = 0;
-        m_angled = 0;
-        m_framed = 0;
-        m_animLoop = true;
+        frame = 0;
+        xd = 0;
+        yd = 0;
+        angled = 0;
+        framed = 0;
+        animLoop = true;
     }
 
 
     protected void internalCopy(GLBasicSprite s) {
         super.internalCopy(s);
         GLSprite spr = (GLSprite) s;
-        m_frame = spr.m_frame;
-        m_xd = spr.m_xd;
-        m_yd = spr.m_yd;
-        m_angled = spr.m_angled;
-        m_framed = spr.m_framed;
-        m_animLoop = spr.m_animLoop;
+        frame = spr.frame;
+        xd = spr.xd;
+        yd = spr.yd;
+        angled = spr.angled;
+        framed = spr.framed;
+        animLoop = spr.animLoop;
     }
 
-    protected void CheckFrame() {
+    protected void checkFrame() {
 
         // An obscure bug which I haven't tracked down yet occasionally causes
         // m_frame to go to +INF, which causes an infinite loop.
         // Workaround for now is to reset it to 0 when goes out (sane) range.
-        if (m_frame < -10000 || m_frame > 10000) {
-            m_frame = 0;
+        if (frame < -10000 || frame > 10000) {
+            frame = 0;
         }
 
         if (!textures.isEmpty()) {
-            if (m_animLoop) {
+            if (animLoop) {
 
                 // Looped animation.
-                while (m_frame < 0) {
-                    m_frame += textures.size();
+                while (frame < 0) {
+                    frame += textures.size();
                 }
-                while (m_frame >= textures.size()) {
-                    m_frame -= textures.size();
+                while (frame >= textures.size()) {
+                    frame -= textures.size();
                 }
             } else {
 
                 // Clamped animation
-                if (m_frame < 0) {
-                    m_frame = 0;
+                if (frame < 0) {
+                    frame = 0;
                 }
-                if (m_frame >= textures.size()) {
-                    m_frame = (float) textures.size() - 0.001f;
+                if (frame >= textures.size()) {
+                    frame = (float) textures.size() - 0.001f;
                 }
             }
         }
     }
 
 
-    public float m_xd, m_yd, m_angled, m_framed;
-    public boolean m_animLoop;
+    public float xd, yd, angled, framed;
+    public boolean animLoop;
 
     public GLSprite() {
         super();
@@ -94,23 +94,23 @@ public class GLSprite extends GLBasicSprite {
     }
 
     // Getters and setters.
-    public int FrameCount() {
+    public int getFrameCount() {
         return textures.size();
     }
 
-    public float Frame() {
-        return m_frame;
+    public float getFrame() {
+        return frame;
     }
 
-    public void SetFrame(float f) {
-        m_frame = f;
-        CheckFrame();
+    public void setFrame(float f) {
+        frame = f;
+        checkFrame();
     }
     // All other fields can be accessed directly.
 
     // Misc
-    public boolean AnimDone() {
-        return (!m_animLoop) && m_frame >= textures.size() - 0.002;
+    public boolean isAnimationDone() {
+        return (!animLoop) && frame >= textures.size() - 0.002;
     }
 
     // Rendering
@@ -123,14 +123,14 @@ public class GLSprite extends GLBasicSprite {
         // accordingly.
 
         // Sprite must be visible
-        if (!visible || FrameCount() == 0) {
+        if (!visible || getFrameCount() == 0) {
             return;
         }
 
         // Setup texture and colour
-        int frame = (int) m_frame;
+        int frame = (int) this.frame;
         assertTrue(frame >= 0);
-        assertTrue(frame < FrameCount());
+        assertTrue(frame < getFrameCount());
         glBindTexture(GL_TEXTURE_2D, textures.get(frame));
 
         ByteBuffer byteBuf = BufferUtils.createByteBuffer(color.length * 4); //4 bytes per float
@@ -178,15 +178,15 @@ public class GLSprite extends GLBasicSprite {
     }
 
     // Animation
-    public void Animate() {
-        positionX += m_xd;            // Simple animation
-        positionY += m_yd;
-        angle += m_angled;
-        AnimateFrame();
+    public void animate() {
+        positionX += xd;            // Simple animation
+        positionY += yd;
+        angle += angled;
+        animateFrame();
     }
 
-    public void AnimateFrame() {
-        m_frame += m_framed;
-        CheckFrame();
+    public void animateFrame() {
+        frame += framed;
+        checkFrame();
     }
 }

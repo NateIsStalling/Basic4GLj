@@ -4,131 +4,154 @@ import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.runtime.types.ValType;
 
 /**
- * FuncSpec
- *
  * Specifies a function and parameters
  */
 public class FuncSpec {
-	Class<?> mFunctionClass;	//Canonical name of function wrapper class
-	ParamTypeList mParamTypes;
-	boolean mBrackets; 		// True if function requires brackets around parameters
- 	boolean mIsFunction; 	// True if function returns a value
-	ValType mReturnType;
-	boolean mTimeshare; 	// True if virtual machine should perform a timesharing
-							// break immediately after returning
-	int mIndex; 			// Index in Virtual Machine's "functions" array
-	boolean mFreeTempData; 	// True if function allocates temporary data that
-							// should be freed before the next instruction
-	ParamValidationCallback mParamValidationCallback;
+	private Class<?> functionClass;
+	private ParamTypeList paramTypes;
+	private boolean hasBrackets;
+	private boolean isFunction;
+	private ValType returnType;
+	private boolean timeshare;
+	private int index;
+	private boolean freeTempData;
+	private ParamValidationCallback paramValidationCallback;
 
-	public Class<?> getFunctionClass() {return mFunctionClass;}
-	public ParamTypeList getParamTypes() {
-		return mParamTypes;
-	}
-
-	public void setParamTypes(ParamTypeList paramTypes) {
-		mParamTypes = paramTypes;
-	}
-
-	public boolean hasBrackets() {
-		return mBrackets;
-	}
-
-	public boolean isFunction() {
-		return mIsFunction;
-	}
-
-	public void setBrackets(boolean hasBrackets) {
-		mBrackets = hasBrackets;
-	}
-
-	public void setFunction(boolean isFunction) {
-		mIsFunction = isFunction;
-	}
-
-	public ValType getReturnType() {
-		return mReturnType;
-	}
-
-	public void setReturnType(ValType type) {
-		mReturnType = type;
-	}
-
-	public boolean getTimeshare() {
-		return mTimeshare;
-	}
-
-	public void setTimeshare(boolean timeshare) {
-		mTimeshare = timeshare;
-	}
-
-	public int getIndex() {
-		return mIndex;
-	}
-
-	public void setIndex(int index) {
-		mIndex = index;
-	}
-
-	public boolean getFreeTempData() {
-		return mFreeTempData;
-	}
-
-	public void setFreeTempData(boolean freeTempData) {
-		mFreeTempData = freeTempData;
-	}
-
-	public ParamValidationCallback getParamValidationCallback() {
-		return mParamValidationCallback;
-	}
-
-	public void setParamValidationCallback(
-			ParamValidationCallback paramValidationCallback) {
-		mParamValidationCallback = paramValidationCallback;
-	}
 
 	public FuncSpec() {
-		mParamTypes = new ParamTypeList();
-		mReturnType = new ValType();
-		mParamValidationCallback = null;
+		paramTypes = new ParamTypeList();
+		returnType = new ValType();
+		paramValidationCallback = null;
 	}
-	
+
 	public FuncSpec(Class functionClass,
 					ParamTypeList paramTypes, boolean brackets,
 					boolean isFunction, int returnType, boolean timeshare, boolean freeTempData,
 					ParamValidationCallback paramValidationCallback) {
-		mFunctionClass = functionClass;
-		mParamTypes = paramTypes;
-		mBrackets = brackets;
-		mIsFunction = isFunction;
-		mReturnType = new ValType(returnType);
-		mTimeshare = timeshare;
-		mFreeTempData = freeTempData;
-		mParamValidationCallback = paramValidationCallback;
+		this.functionClass = functionClass;
+		this.paramTypes = paramTypes;
+		hasBrackets = brackets;
+		this.isFunction = isFunction;
+		this.returnType = new ValType(returnType);
+		this.timeshare = timeshare;
+		this.freeTempData = freeTempData;
+		this.paramValidationCallback = paramValidationCallback;
 	}
 	public FuncSpec(Class functionClass,
 					ParamTypeList paramTypes, boolean brackets,
 					boolean isFunction, ValType returnType, boolean timeshare, boolean freeTempData,
 					ParamValidationCallback paramValidationCallback) {
-		mFunctionClass = functionClass;
-		mParamTypes = paramTypes;
-		mBrackets = brackets;
-		mIsFunction = isFunction;
-		mReturnType = returnType;
-		mTimeshare = timeshare;
-		mFreeTempData = freeTempData;
-		mParamValidationCallback = paramValidationCallback;
+		this.functionClass = functionClass;
+		this.paramTypes = paramTypes;
+		hasBrackets = brackets;
+		this.isFunction = isFunction;
+		this.returnType = returnType;
+		this.timeshare = timeshare;
+		this.freeTempData = freeTempData;
+		this.paramValidationCallback = paramValidationCallback;
 	}
 
 	public FuncSpec(FuncSpec spec) {
-		mFunctionClass = spec.mFunctionClass;
-		mIsFunction = spec.mIsFunction;
-		mBrackets = spec.mBrackets;
-		mReturnType = spec.mReturnType;
-		mTimeshare = spec.mTimeshare;
-		mIndex = spec.mIndex;
-		mFreeTempData = spec.mFreeTempData;
-		mParamValidationCallback = spec.mParamValidationCallback;
-		mParamTypes = spec.mParamTypes;
+		functionClass = spec.functionClass;
+		isFunction = spec.isFunction;
+		hasBrackets = spec.hasBrackets;
+		returnType = spec.returnType;
+		timeshare = spec.timeshare;
+		index = spec.index;
+		freeTempData = spec.freeTempData;
+		paramValidationCallback = spec.paramValidationCallback;
+		paramTypes = spec.paramTypes;
+	}
+
+	/**
+	 * @return Canonical name of function wrapper class
+	 */
+	public Class<?> getFunctionClass() {return functionClass;}
+	public ParamTypeList getParamTypes() {
+		return paramTypes;
+	}
+
+	public void setParamTypes(ParamTypeList paramTypes) {
+		this.paramTypes = paramTypes;
+	}
+
+	/**
+	 * @return True if function requires brackets around parameters
+	 */
+	public boolean hasBrackets() {
+		return hasBrackets;
+	}
+
+	/**
+	 * @return True if function returns a value
+	 */
+	public boolean isFunction() {
+		return isFunction;
+	}
+
+	public void setBrackets(boolean hasBrackets) {
+		this.hasBrackets = hasBrackets;
+	}
+
+	/**
+	 * @param isFunction True if function returns a value
+	 */
+	public void setFunction(boolean isFunction) {
+		this.isFunction = isFunction;
+	}
+
+	public ValType getReturnType() {
+		return returnType;
+	}
+
+	public void setReturnType(ValType type) {
+		returnType = type;
+	}
+
+	/**
+	 * True if virtual machine should perform a timesharing
+	 * break immediately after returning
+	 */
+	public boolean getTimeshare() {
+		return timeshare;
+	}
+
+	public void setTimeshare(boolean timeshare) {
+		this.timeshare = timeshare;
+	}
+
+	/**
+	 * @return Index in Virtual Machine's "functions" array
+	 */
+	public int getIndex() {
+		return index;
+	}
+
+	/**
+	 * @param index Index in Virtual Machine's "functions" array
+	 */
+	public void setIndex(int index) {
+		this.index = index;
+	}
+
+	/**
+	 * @return True if function allocates temporary data that
+	 * should be freed before the next instruction
+	 */
+	public boolean getFreeTempData() {
+		return freeTempData;
+	}
+
+	public void setFreeTempData(boolean freeTempData) {
+		this.freeTempData = freeTempData;
+	}
+
+	public ParamValidationCallback getParamValidationCallback() {
+		return paramValidationCallback;
+	}
+
+	public void setParamValidationCallback(
+			ParamValidationCallback paramValidationCallback) {
+		this.paramValidationCallback = paramValidationCallback;
 	}
 }

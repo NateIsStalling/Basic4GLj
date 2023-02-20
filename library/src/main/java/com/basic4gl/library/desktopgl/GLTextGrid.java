@@ -139,7 +139,7 @@ public class GLTextGrid extends HasErrorState {
         glPopAttrib ();
     }
     //virtual
-    void InternalDraw(byte flags){
+    void internalDraw(byte flags){
 
         // Draw text flag must be present
         //TODO test possible values of flags
@@ -266,7 +266,7 @@ public class GLTextGrid extends HasErrorState {
     // Drawing
     public void Draw(byte flags){
         SaveGLState ();
-        InternalDraw (flags);
+        internalDraw(flags);
         RestoreGLState ();
     }
 
