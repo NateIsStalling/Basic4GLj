@@ -616,13 +616,13 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	@Override
 	public void saveState(OutputStream stream) throws IOException{
 		DataOutputStream output = new DataOutputStream(stream);
-		mComp.StreamOut(output);
+		mComp.streamOut(output);
 	}
 
 	@Override
 	public void loadState(InputStream stream) throws IOException{
 		DataInputStream input = new DataInputStream(stream);
-		mComp.StreamIn(input);
+		mComp.streamIn(input);
 	}
 
 

@@ -479,7 +479,7 @@ public class ExportDialog {
 
             // Compile
             mComp.clearError();
-            mComp.Compile();
+            mComp.compile();
 
             // Return result
             if (mComp.hasError()) {

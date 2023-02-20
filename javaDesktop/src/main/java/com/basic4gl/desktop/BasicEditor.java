@@ -143,7 +143,7 @@ public class BasicEditor implements MainEditor,
             BasicTokenMaker.mReservedWords.add(s);
         }
 
-        for (String s : mComp.Constants().keySet()) {
+        for (String s : mComp.getConstants().keySet()) {
             BasicTokenMaker.mConstants.add(s);
         }
 
@@ -315,14 +315,14 @@ public class BasicEditor implements MainEditor,
             return false;
         }
         mComp.clearError();
-        mComp.Compile();
+        mComp.compile();
 
         // Inform virtual machine view that code has changed
         //TODO add VM viewer
         //VMView().RefreshVMView();
 
         if (mComp.hasError()) {
-            mPresenter.PlaceCursorAtProcessed((int) mComp.Line(), (int) mComp.Col());
+            mPresenter.PlaceCursorAtProcessed((int) mComp.getTokenLine(), (int) mComp.getTokenColumn());
             mPresenter.setCompilerStatus(mComp.getError());
 
             return false;

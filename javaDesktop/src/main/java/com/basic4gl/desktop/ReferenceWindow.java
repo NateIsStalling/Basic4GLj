@@ -134,12 +134,12 @@ public class ReferenceWindow {
         }
         // Populate functions
         text = "";
-        for (String key : comp.FunctionIndex().keySet()) {
-            for (Integer index : comp.FunctionIndex().get(key)) {
+        for (String key : comp.getFunctionIndex().keySet()) {
+            for (Integer index : comp.getFunctionIndex().get(key)) {
 
                 // Find name and function data
                 String name = key;
-                FuncSpec spec = comp.Functions().get(index);
+                FuncSpec spec = comp.getFunctions().get(index);
 
                 // Build description string
                 String line = "";
@@ -177,10 +177,10 @@ public class ReferenceWindow {
         mFunctionPane.setCaretPosition(0);
         // Populate constants
         text = "";
-        for (String key : comp.Constants().keySet()) {
+        for (String key : comp.getConstants().keySet()) {
 
             // Build description string
-            String line = key + " = (" + TypeString(comp.Constants().get(key).getType()) + ") " + comp.Constants().get(key).ToString();
+            String line = key + " = (" + TypeString(comp.getConstants().get(key).getType()) + ") " + comp.getConstants().get(key).ToString();
             text += line + '\n';
         }
         mConstantPane.setText(text);

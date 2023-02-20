@@ -253,7 +253,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         // The main differences are that:
         //  * Comp adds an OP_RETURN to the end of the code, rather than an OP_END.
         //  * Exec is a built-in keyword that effectively GOSUBs to the code.
-        com.basic4gl.compiler.TomBasicCompiler.RollbackPoint rollbackPoint = comp.GetRollbackPoint();
+        com.basic4gl.compiler.TomBasicCompiler.RollbackPoint rollbackPoint = comp.getRollbackPoint();
         comp.clearError();
         long saveIP = vm.getIP();
 
@@ -264,7 +264,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         vm.addInstruction(new Instruction(OP_END_CALLBACK, VTP_INT, new Value()));
 
         int codeBlock = 0;
-        if (comp.CompileOntoEnd()) {
+        if (comp.compileOntoEnd()) {
 
             // Replace OP_END with OP_RETURN
             assertTrue(vm.getInstructionCount() > 0);
@@ -279,11 +279,11 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
             // Set error
             error = comp.getError();
-            errorLine = (int) comp.Line();
-            errorCol = (int) comp.Col();
+            errorLine = (int) comp.getTokenLine();
+            errorCol = (int) comp.getTokenColumn();
 
             // Rollback compiler and virtual machine state
-            comp.Rollback(rollbackPoint);
+            comp.rollback(rollbackPoint);
         }
 
         // Restore IP
@@ -329,7 +329,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         // Attempt to compile text and append to end of existing program
         comp.clearError();
         int saveIP = vm.getIP();      // Compiler can set IP back to 0, so we need to preserve it explicitly
-        if (comp.CompileOntoEnd()) {
+        if (comp.compileOntoEnd()) {
 
             // No error
             ClearError();
@@ -341,8 +341,8 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
             // Set error
             error = comp.getError();
-            errorLine = (int) comp.Line();
-            errorCol = (int) comp.Col();
+            errorLine = (int) comp.getTokenLine();
+            errorCol = (int) comp.getTokenColumn();
 
             // Return 0
             vm.getReg().setIntVal(0);

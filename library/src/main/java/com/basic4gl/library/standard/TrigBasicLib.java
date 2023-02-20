@@ -59,8 +59,8 @@ public class TrigBasicLib implements FunctionLibrary {
     @Override
     public void init(TomBasicCompiler comp){
         // Compiler callback
-        comp.AddUnOperExt   (new TrigUnOperatorExtension());
-        comp.AddBinOperExt  (new TrigBinOperatorExtension());
+        comp.addUnOperExtension(new TrigUnOperatorExtension());
+        comp.addBinOperExtension(new TrigBinOperatorExtension());
 
         scaleVec            = comp.VM().addOperatorFunction(new OpScaleVec());
         scaleVec2           = comp.VM().addOperatorFunction(new OpScaleVec2());

@@ -38,7 +38,7 @@ public class RunHandler {
             File lineMapping = File.createTempFile("basiclinemapping-", "", tempFolder.toFile());
 
             try (DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(vm))) {
-                mComp.StreamOut(outputStream);
+                mComp.streamOut(outputStream);
             } catch (Exception e) {
                 e.printStackTrace();
             }

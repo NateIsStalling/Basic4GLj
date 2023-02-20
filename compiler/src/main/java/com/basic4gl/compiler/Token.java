@@ -17,10 +17,10 @@ class Token {
 		CTT_EOF
 	}
 	
-	String m_text;
-	TokenType m_type;
+	String text;
+	TokenType tokenType;
 	int m_valType; // For constants. Defines the value type.
 	boolean m_newLine; // True if immediately preceeded by newline
-	int m_line;
-	int m_col;
+	int line;
+	int col;
 }

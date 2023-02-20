@@ -1214,7 +1214,7 @@ public class MainWindow implements
                 if (userFuncIndex >= 0) {
                     // TODO 12/2022 migrate GetUserFunctionName to LineNumberMapping and handle in the DebugCommandAdapter;
                     //  would like to rely on frame.name to align with Microsoft's DAP specification
-                    mGosubListModel.addElement(mEditor.mComp.GetUserFunctionName(userFuncIndex) + "()");
+                    mGosubListModel.addElement(mEditor.mComp.getUserFunctionName(userFuncIndex) + "()");
 
                     // Otherwise must be a gosub
                 } else {

@@ -11,35 +11,35 @@ import com.basic4gl.runtime.util.Streaming;
  * General purpose program data (as allocated with "DATA" statement in BASIC).
  */
 class ProgramDataElement implements Streamable{
-	int mBasicType;
-	Value mValue;
+	private int basicType;
+	private Value value;
 
 	public int getType() {
-		return mBasicType;
+		return basicType;
 	}
 
 	public Value getValue() {
-		return mValue;
+		return value;
 	}
 
 	public void setType(int type) {
-		mBasicType = type;
+		basicType = type;
 	}
 
 	public void setValue(Value value) {
-		mValue = value;
+		this.value = value;
 	}
 
 	// Streaming
 	public void streamOut(DataOutputStream stream) throws IOException{
-		Streaming.WriteLong(stream, mBasicType);
-		mValue.streamOut(stream);
+		Streaming.WriteLong(stream, basicType);
+		value.streamOut(stream);
 	}
 
 	public boolean streamIn(DataInputStream stream) throws IOException{
-		mBasicType = (int)Streaming.ReadLong(stream);
-		mValue = new Value();
-		mValue.streamIn(stream);
+		basicType = (int)Streaming.ReadLong(stream);
+		value = new Value();
+		value.streamIn(stream);
 		return true;
 	}
 }
