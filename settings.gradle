@@ -3,8 +3,6 @@ include 'compiler'
 include 'javaDesktop'
 include 'runtime'
 include 'library'
-//include 'debugProtocol'
 include 'debugServer'
-include 'glfwPlayground'
 include 'debugProtocol'
 

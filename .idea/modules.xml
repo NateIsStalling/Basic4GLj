@@ -5,7 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/debugProtocol/Basic4GL.debugProtocol.main.iml" filepath="$PROJECT_DIR$/.idea/modules/debugProtocol/Basic4GL.debugProtocol.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/debugProtocol.iml" filepath="$PROJECT_DIR$/.idea/modules/debugProtocol.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/debugServer.iml" filepath="$PROJECT_DIR$/.idea/modules/debugServer.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/glfwPlayground.iml" filepath="$PROJECT_DIR$/.idea/modules/glfwPlayground.iml" />
     </modules>
   </component>
 </project>
