@@ -4,7 +4,7 @@ import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
@@ -313,233 +313,233 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }
 
     @Override
-    public Map<String, FuncSpec[]> specs() {
+    public Map<String, FunctionSpecification[]> specs() {
 
-        Map<String, FuncSpec[]> s = new HashMap<String, FuncSpec[]>();
+        Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
 
-        s.put("cls", new FuncSpec[]{ new FuncSpec( WrapCls.class, new ParamTypeList (), false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("cls", new FunctionSpecification[]{ new FunctionSpecification( WrapCls.class, new ParamTypeList (), false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
 
-        s.put("print", new FuncSpec[]{ new FuncSpec( WrapPrint.class, new ParamTypeList (new ValType (BasicValType.VTP_STRING)),false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("printr", new FuncSpec[]{
-                new FuncSpec( WrapPrintr.class, new ParamTypeList (new ValType (BasicValType.VTP_STRING)),false, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapPrintr_2.class, new ParamTypeList (), false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("locate", new FuncSpec[]{ new FuncSpec( WrapLocate.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("swapbuffers", new FuncSpec[]{ new FuncSpec( WrapSwapBuffers.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("drawtext", new FuncSpec[]{
-                new FuncSpec( WrapDrawText.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapDrawText2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("textmode", new FuncSpec[]{ new FuncSpec( WrapTextMode.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("resizetext", new FuncSpec[]{ new FuncSpec( WrapResizeText.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("textrows", new FuncSpec[]{ new FuncSpec( WrapTextRows.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("textcols", new FuncSpec[]{ new FuncSpec( WrapTextCols.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("input$", new FuncSpec[]{ new FuncSpec( WrapInput.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_STRING),true, false, null)});
-    s.put("inkey$", new FuncSpec[]{ new FuncSpec( WrapInkey.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_STRING), false, false, null)});
-    s.put("inscankey", new FuncSpec[]{ new FuncSpec( WrapInScanKey.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("clearkeys", new FuncSpec[]{ new FuncSpec( WrapClearKeys.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("showcursor", new FuncSpec[]{ new FuncSpec( WrapShowCursor.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("hidecursor", new FuncSpec[]{ new FuncSpec( WrapHideCursor.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("keydown", new FuncSpec[]{ new FuncSpec( WrapKeyDown.class, new ParamTypeList (new ValType (BasicValType.VTP_STRING)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("scankeydown", new FuncSpec[]{ new FuncSpec( WrapScanKeyDown.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("charat$", new FuncSpec[]{ new FuncSpec( WrapCharAt.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_STRING), false, false, null)});
-    s.put("color", new FuncSpec[]{ new FuncSpec( WrapColour.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("font", new FuncSpec[]{ new FuncSpec( WrapFont.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("defaultfont", new FuncSpec[]{ new FuncSpec( WrapDefaultFont.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("mouse_x", new FuncSpec[]{ new FuncSpec( WrapMouseX.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-    s.put("mouse_y", new FuncSpec[]{ new FuncSpec( WrapMouseY.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-    s.put("mouse_xd", new FuncSpec[]{ new FuncSpec( WrapMouseXD.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-    s.put("mouse_yd", new FuncSpec[]{ new FuncSpec( WrapMouseYD.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-    s.put("mouse_button", new FuncSpec[]{ new FuncSpec( WrapMouseButton.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("mouse_wheel", new FuncSpec[]{ new FuncSpec( WrapMouseWheel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("clearline", new FuncSpec[]{ new FuncSpec( WrapClearLine.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("clearregion", new FuncSpec[]{ new FuncSpec( WrapClearRegion.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("textscroll", new FuncSpec[]{ new FuncSpec( WrapTextScroll.class, new ParamTypeList(), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("settextscroll", new FuncSpec[]{ new FuncSpec( WrapSetTextScroll.class, new ParamTypeList(new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("CursorCol", new FuncSpec[]{ new FuncSpec( WrapCursorCol.class, new ParamTypeList(), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("CursorRow", new FuncSpec[]{ new FuncSpec( WrapCursorRow.class, new ParamTypeList(), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("print", new FunctionSpecification[]{ new FunctionSpecification( WrapPrint.class, new ParamTypeList (new ValType (BasicValType.VTP_STRING)),false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("printr", new FunctionSpecification[]{
+                new FunctionSpecification( WrapPrintr.class, new ParamTypeList (new ValType (BasicValType.VTP_STRING)),false, false, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FunctionSpecification( WrapPrintr_2.class, new ParamTypeList (), false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("locate", new FunctionSpecification[]{ new FunctionSpecification( WrapLocate.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),false, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("swapbuffers", new FunctionSpecification[]{ new FunctionSpecification( WrapSwapBuffers.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("drawtext", new FunctionSpecification[]{
+                new FunctionSpecification( WrapDrawText.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FunctionSpecification( WrapDrawText2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("textmode", new FunctionSpecification[]{ new FunctionSpecification( WrapTextMode.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("resizetext", new FunctionSpecification[]{ new FunctionSpecification( WrapResizeText.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("textrows", new FunctionSpecification[]{ new FunctionSpecification( WrapTextRows.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("textcols", new FunctionSpecification[]{ new FunctionSpecification( WrapTextCols.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("input$", new FunctionSpecification[]{ new FunctionSpecification( WrapInput.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_STRING),true, false, null)});
+    s.put("inkey$", new FunctionSpecification[]{ new FunctionSpecification( WrapInkey.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_STRING), false, false, null)});
+    s.put("inscankey", new FunctionSpecification[]{ new FunctionSpecification( WrapInScanKey.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("clearkeys", new FunctionSpecification[]{ new FunctionSpecification( WrapClearKeys.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("showcursor", new FunctionSpecification[]{ new FunctionSpecification( WrapShowCursor.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("hidecursor", new FunctionSpecification[]{ new FunctionSpecification( WrapHideCursor.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("keydown", new FunctionSpecification[]{ new FunctionSpecification( WrapKeyDown.class, new ParamTypeList (new ValType (BasicValType.VTP_STRING)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("scankeydown", new FunctionSpecification[]{ new FunctionSpecification( WrapScanKeyDown.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("charat$", new FunctionSpecification[]{ new FunctionSpecification( WrapCharAt.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_STRING), false, false, null)});
+    s.put("color", new FunctionSpecification[]{ new FunctionSpecification( WrapColour.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("font", new FunctionSpecification[]{ new FunctionSpecification( WrapFont.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("defaultfont", new FunctionSpecification[]{ new FunctionSpecification( WrapDefaultFont.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("mouse_x", new FunctionSpecification[]{ new FunctionSpecification( WrapMouseX.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("mouse_y", new FunctionSpecification[]{ new FunctionSpecification( WrapMouseY.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("mouse_xd", new FunctionSpecification[]{ new FunctionSpecification( WrapMouseXD.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("mouse_yd", new FunctionSpecification[]{ new FunctionSpecification( WrapMouseYD.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("mouse_button", new FunctionSpecification[]{ new FunctionSpecification( WrapMouseButton.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("mouse_wheel", new FunctionSpecification[]{ new FunctionSpecification( WrapMouseWheel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("clearline", new FunctionSpecification[]{ new FunctionSpecification( WrapClearLine.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("clearregion", new FunctionSpecification[]{ new FunctionSpecification( WrapClearRegion.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("textscroll", new FunctionSpecification[]{ new FunctionSpecification( WrapTextScroll.class, new ParamTypeList(), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("settextscroll", new FunctionSpecification[]{ new FunctionSpecification( WrapSetTextScroll.class, new ParamTypeList(new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("CursorCol", new FunctionSpecification[]{ new FunctionSpecification( WrapCursorCol.class, new ParamTypeList(), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("CursorRow", new FunctionSpecification[]{ new FunctionSpecification( WrapCursorRow.class, new ParamTypeList(), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
 
-    s.put("newsprite", new FuncSpec[]{
-            new FuncSpec( WrapNewSprite.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapNewSprite_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapNewSprite_3.class, new ParamTypeList (new ValType  (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("newtilemap", new FuncSpec[]{
-            new FuncSpec( WrapNewTileMap.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapNewTileMap_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapNewTileMap_3.class, new ParamTypeList (new ValType  (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("deletesprite", new FuncSpec[]{ new FuncSpec( WrapDeleteSprite.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("bindsprite", new FuncSpec[]{ new FuncSpec( WrapBindSprite.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsettexture", new FuncSpec[]{ new FuncSpec( WrapSprSetTexture.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsettextures", new FuncSpec[]{ new FuncSpec( WrapSprSetTextures.class, new ParamTypeList (new ValType  (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("spraddtexture", new FuncSpec[]{ new FuncSpec( WrapSprAddTexture.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("spraddtextures", new FuncSpec[]{ new FuncSpec( WrapSprAddTextures.class, new ParamTypeList (new ValType (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetframe", new FuncSpec[]{ new FuncSpec( WrapSprSetFrame.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetx", new FuncSpec[]{ new FuncSpec( WrapSprSetX.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsety", new FuncSpec[]{ new FuncSpec( WrapSprSetY.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetzorder", new FuncSpec[]{ new FuncSpec( WrapSprSetZOrder.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetpos", new FuncSpec[]{
-            new FuncSpec( WrapSprSetPos.class, new ParamTypeList (new ValType  (BasicValType.VTP_REAL ,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprSetPos_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetxsize", new FuncSpec[]{ new FuncSpec( WrapSprSetXSize.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetysize", new FuncSpec[]{ new FuncSpec( WrapSprSetYSize.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetsize", new FuncSpec[]{
-            new FuncSpec( WrapSprSetSize.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprSetSize_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetscale", new FuncSpec[]{ new FuncSpec( WrapSprSetScale.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetxcentre", new FuncSpec[]{ new FuncSpec( WrapSprSetXCentre.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetycentre", new FuncSpec[]{ new FuncSpec( WrapSprSetYCentre.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetxflip", new FuncSpec[]{ new FuncSpec( WrapSprSetXFlip.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetyflip", new FuncSpec[]{ new FuncSpec( WrapSprSetYFlip.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetvisible", new FuncSpec[]{ new FuncSpec( WrapSprSetVisible.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetangle", new FuncSpec[]{ new FuncSpec( WrapSprSetAngle.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetcolor", new FuncSpec[]{
-            new FuncSpec( WrapSprSetColour.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprSetColour_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprSetColour_3.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetalpha", new FuncSpec[]{ new FuncSpec( WrapSprSetAlpha.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetparallax", new FuncSpec[]{ new FuncSpec( WrapSprSetParallax.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("sprsetsolid", new FuncSpec[]{ new FuncSpec( WrapSprSetSolid.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("resizespritearea", new FuncSpec[]{ new FuncSpec( WrapResizeSpriteArea.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-    s.put("spriteareawidth", new FuncSpec[]{ new FuncSpec( WrapSpriteAreaWidth.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-    s.put("spriteareaheight", new FuncSpec[]{ new FuncSpec( WrapSpriteAreaHeight.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-    s.put("sprframe", new FuncSpec[]{
-            new FuncSpec( WrapSprFrame.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprFrame_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprx", new FuncSpec[]{
-                new FuncSpec( WrapSprX.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprX_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-    s.put("spry", new FuncSpec[]{
-            new FuncSpec( WrapSprY.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprY_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-    s.put("sprpos", new FuncSpec[]{
-            new FuncSpec( WrapSprPos.class, new ParamTypeList(), true, true, new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
-            new FuncSpec( WrapSprPos_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType( BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
+    s.put("newsprite", new FunctionSpecification[]{
+            new FunctionSpecification( WrapNewSprite.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapNewSprite_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapNewSprite_3.class, new ParamTypeList (new ValType  (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("newtilemap", new FunctionSpecification[]{
+            new FunctionSpecification( WrapNewTileMap.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapNewTileMap_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapNewTileMap_3.class, new ParamTypeList (new ValType  (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("deletesprite", new FunctionSpecification[]{ new FunctionSpecification( WrapDeleteSprite.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("bindsprite", new FunctionSpecification[]{ new FunctionSpecification( WrapBindSprite.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsettexture", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetTexture.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsettextures", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetTextures.class, new ParamTypeList (new ValType  (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("spraddtexture", new FunctionSpecification[]{ new FunctionSpecification( WrapSprAddTexture.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("spraddtextures", new FunctionSpecification[]{ new FunctionSpecification( WrapSprAddTextures.class, new ParamTypeList (new ValType (BasicValType.VTP_INT,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetframe", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetFrame.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetx", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetX.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsety", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetY.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetzorder", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetZOrder.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetpos", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprSetPos.class, new ParamTypeList (new ValType  (BasicValType.VTP_REAL ,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapSprSetPos_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetxsize", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetXSize.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetysize", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetYSize.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetsize", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprSetSize.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapSprSetSize_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetscale", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetScale.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetxcentre", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetXCentre.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetycentre", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetYCentre.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetxflip", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetXFlip.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetyflip", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetYFlip.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetvisible", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetVisible.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetangle", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetAngle.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetcolor", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprSetColour.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapSprSetColour_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapSprSetColour_3.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetalpha", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetAlpha.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetparallax", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetParallax.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("sprsetsolid", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetSolid.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("resizespritearea", new FunctionSpecification[]{ new FunctionSpecification( WrapResizeSpriteArea.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+    s.put("spriteareawidth", new FunctionSpecification[]{ new FunctionSpecification( WrapSpriteAreaWidth.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("spriteareaheight", new FunctionSpecification[]{ new FunctionSpecification( WrapSpriteAreaHeight.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("sprframe", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprFrame.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FunctionSpecification( WrapSprFrame_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprx", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprX.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FunctionSpecification( WrapSprX_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("spry", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprY.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FunctionSpecification( WrapSprY_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+    s.put("sprpos", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprPos.class, new ParamTypeList(), true, true, new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
+            new FunctionSpecification( WrapSprPos_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType( BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
 
 
-        s.put("sprzorder", new FuncSpec[]{
-                new FuncSpec( WrapSprZOrder.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprZOrder_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprxsize", new FuncSpec[]{
-                new FuncSpec( WrapSprXSize.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprXSize_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprysize", new FuncSpec[]{
-                new FuncSpec( WrapSprYSize.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprYSize_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprscale", new FuncSpec[]{
-                new FuncSpec( WrapSprScale.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprScale_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprxcentre", new FuncSpec[]{
-                new FuncSpec( WrapSprXCentre.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprXCentre_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprycentre", new FuncSpec[]{
-            new FuncSpec( WrapSprYCentre.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprYCentre_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprzorder", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprZOrder.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FunctionSpecification( WrapSprZOrder_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprxsize", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprXSize.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FunctionSpecification( WrapSprXSize_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprysize", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprYSize.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FunctionSpecification( WrapSprYSize_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprscale", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprScale.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FunctionSpecification( WrapSprScale_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprxcentre", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprXCentre.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FunctionSpecification( WrapSprXCentre_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprycentre", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprYCentre.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FunctionSpecification( WrapSprYCentre_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
 
-        s.put("sprxflip", new FuncSpec[]{
-            new FuncSpec( WrapSprXFlip.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprXFlip_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("spryflip", new FuncSpec[]{
-            new FuncSpec( WrapSprYFlip.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprYFlip_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprvisible", new FuncSpec[]{
-            new FuncSpec( WrapSprVisible.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprVisible_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprangle", new FuncSpec[]{
-            new FuncSpec( WrapSprAngle.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprAngle_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprcolor", new FuncSpec[]{
-            new FuncSpec( WrapSprColour.class, new ParamTypeList (), true, true, new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
-            new FuncSpec( WrapSprColour_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
-        s.put("spralpha", new FuncSpec[]{
-            new FuncSpec( WrapSprAlpha.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprAlpha_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprparallax", new FuncSpec[]{
-            new FuncSpec( WrapSprParallax.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprParallax_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprsolid", new FuncSpec[]{
-            new FuncSpec( WrapSprSolid.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprSolid_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprleft", new FuncSpec[]{
-            new FuncSpec( WrapSprLeft.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprLeft_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprright", new FuncSpec[]{
-            new FuncSpec( WrapSprRight.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprRight_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprtop", new FuncSpec[]{
-            new FuncSpec( WrapSprTop.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprTop_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprbottom", new FuncSpec[]{
-            new FuncSpec( WrapSprBottom.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprBottom_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprxvel", new FuncSpec[]{
-            new FuncSpec( WrapSprXVel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-            new FuncSpec( WrapSprXVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("spryvel", new FuncSpec[]{
-                new FuncSpec( WrapSprYVel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprYVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprvel", new FuncSpec[]{
-                new FuncSpec( WrapSprVel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
-                new FuncSpec( WrapSprVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
-        s.put("sprspin", new FuncSpec[]{
-                new FuncSpec( WrapSprSpin.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprSpin_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("spranimspeed", new FuncSpec[]{
-                new FuncSpec( WrapSprAnimSpeed.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
-                new FuncSpec( WrapSprAnimSpeed_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("spranimloop", new FuncSpec[]{
-                new FuncSpec( WrapSprAnimLoop.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprAnimLoop_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("spranimdone", new FuncSpec[]{
-            new FuncSpec( WrapSprAnimDone.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-            new FuncSpec( WrapSprAnimDone_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprxflip", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprXFlip.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapSprXFlip_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("spryflip", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprYFlip.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapSprYFlip_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprvisible", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprVisible.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapSprVisible_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprangle", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprAngle.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FunctionSpecification( WrapSprAngle_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprcolor", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprColour.class, new ParamTypeList (), true, true, new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
+            new FunctionSpecification( WrapSprColour_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
+        s.put("spralpha", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprAlpha.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FunctionSpecification( WrapSprAlpha_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprparallax", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprParallax.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapSprParallax_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsolid", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprSolid.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapSprSolid_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprleft", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprLeft.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FunctionSpecification( WrapSprLeft_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprright", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprRight.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FunctionSpecification( WrapSprRight_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprtop", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprTop.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FunctionSpecification( WrapSprTop_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprbottom", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprBottom.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FunctionSpecification( WrapSprBottom_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprxvel", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprXVel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+            new FunctionSpecification( WrapSprXVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("spryvel", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprYVel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FunctionSpecification( WrapSprYVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprvel", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprVel.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null),
+                new FunctionSpecification( WrapSprVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true), false, true, null)});
+        s.put("sprspin", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprSpin.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FunctionSpecification( WrapSprSpin_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("spranimspeed", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprAnimSpeed.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null),
+                new FunctionSpecification( WrapSprAnimSpeed_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("spranimloop", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprAnimLoop.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FunctionSpecification( WrapSprAnimLoop_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("spranimdone", new FunctionSpecification[]{
+            new FunctionSpecification( WrapSprAnimDone.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+            new FunctionSpecification( WrapSprAnimDone_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
 
-        s.put("sprsetxvel", new FuncSpec[]{ new FuncSpec( WrapSprSetXVel.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprsetyvel", new FuncSpec[]{ new FuncSpec( WrapSprSetYVel.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprsetvel", new FuncSpec[]{
-                new FuncSpec( WrapSprSetVel.class, new ParamTypeList (new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprSetVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprsetspin", new FuncSpec[]{ new FuncSpec( WrapSprSetSpin.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprsetanimspeed", new FuncSpec[]{ new FuncSpec( WrapSprSetAnimSpeed.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprsetanimloop", new FuncSpec[]{ new FuncSpec( WrapSprSetAnimLoop.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("animatesprites", new FuncSpec[]{ new FuncSpec( WrapAnimateSprites.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("animatespriteframes", new FuncSpec[]{ new FuncSpec( WrapAnimateSpriteFrames.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("copysprite", new FuncSpec[]{ new FuncSpec( WrapCopySprite.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprtype", new FuncSpec[]{
-                new FuncSpec( WrapSprType.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprType_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetxvel", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetXVel.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetyvel", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetYVel.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetvel", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprSetVel.class, new ParamTypeList (new ValType  (BasicValType.VTP_REAL,(byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FunctionSpecification( WrapSprSetVel_2.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetspin", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetSpin.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetanimspeed", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetAnimSpeed.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetanimloop", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetAnimLoop.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("animatesprites", new FunctionSpecification[]{ new FunctionSpecification( WrapAnimateSprites.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("animatespriteframes", new FunctionSpecification[]{ new FunctionSpecification( WrapAnimateSpriteFrames.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("copysprite", new FunctionSpecification[]{ new FunctionSpecification( WrapCopySprite.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprtype", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprType.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FunctionSpecification( WrapSprType_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
 
-        s.put("sprxtiles", new FuncSpec[]{
-                new FuncSpec( WrapSprXTiles.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprXTiles_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprxtiles", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprXTiles.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FunctionSpecification( WrapSprXTiles_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
 
-        s.put("sprytiles", new FuncSpec[]{
-                new FuncSpec( WrapSprYTiles.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprYTiles_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprytiles", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprYTiles.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FunctionSpecification( WrapSprYTiles_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
 
-        s.put("sprsettiles", new FuncSpec[]{ new FuncSpec( WrapSprSetTiles.class, new ParamTypeList (new ValType (BasicValType.VTP_INT,(byte)2, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprsetxrepeat", new FuncSpec[]{ new FuncSpec( WrapSprSetXRepeat.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprsetyrepeat", new FuncSpec[]{ new FuncSpec( WrapSprSetYRepeat.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprxrepeat", new FuncSpec[]{
-                new FuncSpec( WrapSprXRepeat.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprXRepeat_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("spryrepeat", new FuncSpec[]{
-                new FuncSpec( WrapSprYRepeat.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprYRepeat_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprcamerasetx", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetX.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprcamerasety", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetY.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprcamerasetz", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetZ.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprcamerasetpos", new FuncSpec[]{
-                new FuncSpec( WrapSprCameraSetPos.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec( WrapSprCameraSetPos_2.class, new ParamTypeList (new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprcamerasetangle", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetAngle.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprcamerax", new FuncSpec[]{ new FuncSpec( WrapSprCameraX.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprcameray", new FuncSpec[]{ new FuncSpec( WrapSprCameraY.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprcameraz", new FuncSpec[]{ new FuncSpec( WrapSprCameraZ.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprcamerapos", new FuncSpec[]{ new FuncSpec( WrapSprCameraPos.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put("sprcameraangle", new FuncSpec[]{ new FuncSpec( WrapSprCameraAngle.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprcamerafov", new FuncSpec[]{ new FuncSpec( WrapSprCameraFOV.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
-        s.put("sprcamerasetfov", new FuncSpec[]{ new FuncSpec( WrapSprCameraSetFOV.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("clearsprites", new FuncSpec[]{ new FuncSpec( WrapClearSprites.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("sprsetblendfunc", new FuncSpec[]{ new FuncSpec( WrapSprSetBlendFunc.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("spritecount", new FuncSpec[]{ new FuncSpec( WrapSpriteCount.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsettiles", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetTiles.class, new ParamTypeList (new ValType (BasicValType.VTP_INT,(byte)2, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetxrepeat", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetXRepeat.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetyrepeat", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetYRepeat.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprxrepeat", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprXRepeat.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FunctionSpecification( WrapSprXRepeat_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("spryrepeat", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprYRepeat.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FunctionSpecification( WrapSprYRepeat_2.class, new ParamTypeList (new ValType (BasicValType.VTP_INT)),true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprcamerasetx", new FunctionSpecification[]{ new FunctionSpecification( WrapSprCameraSetX.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprcamerasety", new FunctionSpecification[]{ new FunctionSpecification( WrapSprCameraSetY.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprcamerasetz", new FunctionSpecification[]{ new FunctionSpecification( WrapSprCameraSetZ.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprcamerasetpos", new FunctionSpecification[]{
+                new FunctionSpecification( WrapSprCameraSetPos.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null),
+                new FunctionSpecification( WrapSprCameraSetPos_2.class, new ParamTypeList (new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprcamerasetangle", new FunctionSpecification[]{ new FunctionSpecification( WrapSprCameraSetAngle.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprcamerax", new FunctionSpecification[]{ new FunctionSpecification( WrapSprCameraX.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprcameray", new FunctionSpecification[]{ new FunctionSpecification( WrapSprCameraY.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprcameraz", new FunctionSpecification[]{ new FunctionSpecification( WrapSprCameraZ.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprcamerapos", new FunctionSpecification[]{ new FunctionSpecification( WrapSprCameraPos.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put("sprcameraangle", new FunctionSpecification[]{ new FunctionSpecification( WrapSprCameraAngle.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprcamerafov", new FunctionSpecification[]{ new FunctionSpecification( WrapSprCameraFOV.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_REAL), false, false, null)});
+        s.put("sprcamerasetfov", new FunctionSpecification[]{ new FunctionSpecification( WrapSprCameraSetFOV.class, new ParamTypeList (new ValType (BasicValType.VTP_REAL)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("clearsprites", new FunctionSpecification[]{ new FunctionSpecification( WrapClearSprites.class, new ParamTypeList (), true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("sprsetblendfunc", new FunctionSpecification[]{ new FunctionSpecification( WrapSprSetBlendFunc.class, new ParamTypeList (new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT)),true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("spritecount", new FunctionSpecification[]{ new FunctionSpecification( WrapSpriteCount.class, new ParamTypeList (), true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
         return s;
     }
 

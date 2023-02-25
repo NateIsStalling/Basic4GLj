@@ -4,7 +4,7 @@ import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.*;
-import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
@@ -89,38 +89,38 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
 
     @Override
-    public Map<String, FuncSpec[]> specs() {
-        Map<String, FuncSpec[]> s = new HashMap<>();
+    public Map<String, FunctionSpecification[]> specs() {
+        Map<String, FunctionSpecification[]> s = new HashMap<>();
         // Register function wrappers
 
-        s.put ("OpenFileRead", new FuncSpec[]{ new FuncSpec( WrapOpenFileRead.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
-        s.put ("OpenFileWrite", new FuncSpec[]{ new FuncSpec( WrapOpenFileWrite.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
-        s.put ("CloseFile", new FuncSpec[]{ new FuncSpec( WrapCloseFile.class, new ParamTypeList ( BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put ("FileError", new FuncSpec[]{ new FuncSpec( WrapFileError.class, new ParamTypeList (), true, true, BasicValType.VTP_STRING, true, false, null)});
-        s.put ("EndOfFile", new FuncSpec[]{ new FuncSpec( WrapEndOfFile.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
-        s.put ("WriteChar", new FuncSpec[]{ new FuncSpec( WrapWriteChar.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_STRING), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put ("WriteString", new FuncSpec[]{ new FuncSpec( WrapWriteString.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_STRING), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put ("WriteLine", new FuncSpec[]{ new FuncSpec( WrapWriteLine.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_STRING), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put ("WriteByte", new FuncSpec[]{ new FuncSpec( WrapWriteByte.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put ("WriteWord", new FuncSpec[]{ new FuncSpec( WrapWriteWord.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put ("WriteInt", new FuncSpec[]{ new FuncSpec( WrapWriteInt.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put ("WriteFloat", new FuncSpec[]{ new FuncSpec( WrapWriteFloat.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put ("WriteReal", new FuncSpec[]{ new FuncSpec( WrapWriteFloat.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, true, false, null)}); // (WriteReal is a synonym for WriteFloat)
-        s.put ("WriteDouble", new FuncSpec[]{ new FuncSpec( WrapWriteDouble.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put ("ReadLine", new FuncSpec[]{ new FuncSpec( WrapReadLine.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, true, false, null)});
-        s.put ("ReadChar", new FuncSpec[]{ new FuncSpec( WrapReadChar.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, true, false, null)});
-        s.put ("ReadByte", new FuncSpec[]{ new FuncSpec( WrapReadByte.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
-        s.put ("ReadWord", new FuncSpec[]{ new FuncSpec( WrapReadWord.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
-        s.put ("ReadInt", new FuncSpec[]{ new FuncSpec( WrapReadInt.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
-        s.put ("ReadFloat", new FuncSpec[]{ new FuncSpec( WrapReadFloat.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_REAL, true, false, null)});
-        s.put ("ReadReal", new FuncSpec[]{ new FuncSpec( WrapReadFloat.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_REAL, true, false, null)});
-        s.put ("ReadDouble", new FuncSpec[]{ new FuncSpec( WrapReadDouble.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_REAL, true, false, null)});
-        s.put ("Seek", new FuncSpec[]{ new FuncSpec( WrapSeek.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_REAL, true, false, null)});
-        s.put ("ReadText", new FuncSpec[]{ new FuncSpec( WrapReadText.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, true, false, null)});
-        s.put ("FindFirstFile", new FuncSpec[]{ new FuncSpec( WrapFindFirstFile.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_STRING, true, false, null)});
-        s.put ("FindNextFile", new FuncSpec[]{ new FuncSpec( WrapFindNextFile.class, new ParamTypeList (), true, true, BasicValType.VTP_STRING, true, false, null)});
-        s.put ("FindClose", new FuncSpec[]{ new FuncSpec( WrapFindClose.class, new ParamTypeList (), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put ("DeleteFile", new FuncSpec[]{ new FuncSpec( WrapDeleteFile.class, new ParamTypeList( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("OpenFileRead", new FunctionSpecification[]{ new FunctionSpecification( WrapOpenFileRead.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("OpenFileWrite", new FunctionSpecification[]{ new FunctionSpecification( WrapOpenFileWrite.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("CloseFile", new FunctionSpecification[]{ new FunctionSpecification( WrapCloseFile.class, new ParamTypeList ( BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("FileError", new FunctionSpecification[]{ new FunctionSpecification( WrapFileError.class, new ParamTypeList (), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("EndOfFile", new FunctionSpecification[]{ new FunctionSpecification( WrapEndOfFile.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteChar", new FunctionSpecification[]{ new FunctionSpecification( WrapWriteChar.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_STRING), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteString", new FunctionSpecification[]{ new FunctionSpecification( WrapWriteString.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_STRING), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteLine", new FunctionSpecification[]{ new FunctionSpecification( WrapWriteLine.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_STRING), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteByte", new FunctionSpecification[]{ new FunctionSpecification( WrapWriteByte.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteWord", new FunctionSpecification[]{ new FunctionSpecification( WrapWriteWord.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteInt", new FunctionSpecification[]{ new FunctionSpecification( WrapWriteInt.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteFloat", new FunctionSpecification[]{ new FunctionSpecification( WrapWriteFloat.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("WriteReal", new FunctionSpecification[]{ new FunctionSpecification( WrapWriteFloat.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, true, false, null)}); // (WriteReal is a synonym for WriteFloat)
+        s.put ("WriteDouble", new FunctionSpecification[]{ new FunctionSpecification( WrapWriteDouble.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("ReadLine", new FunctionSpecification[]{ new FunctionSpecification( WrapReadLine.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("ReadChar", new FunctionSpecification[]{ new FunctionSpecification( WrapReadChar.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("ReadByte", new FunctionSpecification[]{ new FunctionSpecification( WrapReadByte.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("ReadWord", new FunctionSpecification[]{ new FunctionSpecification( WrapReadWord.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("ReadInt", new FunctionSpecification[]{ new FunctionSpecification( WrapReadInt.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, true, false, null)});
+        s.put ("ReadFloat", new FunctionSpecification[]{ new FunctionSpecification( WrapReadFloat.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_REAL, true, false, null)});
+        s.put ("ReadReal", new FunctionSpecification[]{ new FunctionSpecification( WrapReadFloat.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_REAL, true, false, null)});
+        s.put ("ReadDouble", new FunctionSpecification[]{ new FunctionSpecification( WrapReadDouble.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_REAL, true, false, null)});
+        s.put ("Seek", new FunctionSpecification[]{ new FunctionSpecification( WrapSeek.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, false, BasicValType.VTP_REAL, true, false, null)});
+        s.put ("ReadText", new FunctionSpecification[]{ new FunctionSpecification( WrapReadText.class, new ParamTypeList ( BasicValType.VTP_INT, BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("FindFirstFile", new FunctionSpecification[]{ new FunctionSpecification( WrapFindFirstFile.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("FindNextFile", new FunctionSpecification[]{ new FunctionSpecification( WrapFindNextFile.class, new ParamTypeList (), true, true, BasicValType.VTP_STRING, true, false, null)});
+        s.put ("FindClose", new FunctionSpecification[]{ new FunctionSpecification( WrapFindClose.class, new ParamTypeList (), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put ("DeleteFile", new FunctionSpecification[]{ new FunctionSpecification( WrapDeleteFile.class, new ParamTypeList( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
 
         return s;
     }

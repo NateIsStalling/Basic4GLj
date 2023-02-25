@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import com.basic4gl.compiler.util.SourcePos;
+import com.basic4gl.compiler.util.SourcePosition;
 import com.basic4gl.runtime.util.ILineNumberMapping;
 import com.basic4gl.runtime.util.Mutable;
 
@@ -18,7 +18,7 @@ import com.basic4gl.runtime.util.Mutable;
 public class LineNumberMapping extends ILineNumberMapping implements Serializable {
 	Vector<String> filenames = new Vector<String>();
 	Map<String,Integer> filenameLookup = new HashMap<String, Integer>();
-	Vector<SourcePos> mapping = new Vector<SourcePos>();
+	Vector<SourcePosition> mapping = new Vector<SourcePosition>();
 	Vector<Vector<Integer>> reverseMapping = new Vector<Vector<Integer>>();
 
 	int GetFileIndex(String filename)
@@ -71,7 +71,7 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
 		// Append mapping entry
 		int fileIndex = GetFileIndex(filename);
 		int mainLineNo = mapping.size();
-		mapping.add(new SourcePos(fileIndex, fileLineNo));
+		mapping.add(new SourcePosition(fileIndex, fileLineNo));
 
 		// Append reverse-mapping entry
 		while (reverseMapping.get(fileIndex).size() <= fileLineNo) {

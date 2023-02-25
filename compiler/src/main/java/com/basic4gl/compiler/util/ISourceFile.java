@@ -1,8 +1,6 @@
 package com.basic4gl.compiler.util;
 
 /**
- * ISourceFile
- *
  * Interface to a source file.
  */
 public interface ISourceFile {

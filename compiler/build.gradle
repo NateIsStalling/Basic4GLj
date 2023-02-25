@@ -1,6 +1,9 @@
 plugins {
     id 'java'
 }
+
+description = "Compiler for Basic4GL language"
+
 //
 //sourceSets {
 //    main {

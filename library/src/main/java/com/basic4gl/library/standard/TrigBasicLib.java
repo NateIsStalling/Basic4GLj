@@ -3,10 +3,10 @@ package com.basic4gl.library.standard;
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.BinOperExt;
-import com.basic4gl.compiler.util.UnOperExt;
+import com.basic4gl.compiler.util.BinaryOperatorExtension;
+import com.basic4gl.compiler.util.UnaryOperatorExtension;
 import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.Data;
@@ -90,29 +90,29 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public Map<String, FuncSpec[]> specs() {
-        Map<String, FuncSpec[]> s = new HashMap<String, FuncSpec[]>();
-        s.put ("Vec4", new FuncSpec[]{ new FuncSpec(WrapVec4.class, new ParamTypeList( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put ("Vec3", new FuncSpec[]{ new FuncSpec(WrapVec3.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put ("Vec2", new FuncSpec[]{ new FuncSpec(WrapVec2.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put ("MatrixZero", new FuncSpec[]{ new FuncSpec(WrapMatrixZero.class, new ParamTypeList (), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixIdentity", new FuncSpec[]{ new FuncSpec(WrapMatrixIdentity.class, new ParamTypeList (), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixScale", new FuncSpec[]{ new FuncSpec(WrapMatrixScale.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixScale", new FuncSpec[]{ new FuncSpec(WrapMatrixScale_2.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixTranslate", new FuncSpec[]{ new FuncSpec(WrapMatrixTranslate.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixRotateX", new FuncSpec[]{ new FuncSpec(WrapMatrixRotateX.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixRotateY", new FuncSpec[]{ new FuncSpec(WrapMatrixRotateY.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixRotateZ", new FuncSpec[]{ new FuncSpec(WrapMatrixRotateZ.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixRotate", new FuncSpec[]{ new FuncSpec(WrapMatrixRotate.class, new ParamTypeList ( new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixBasis", new FuncSpec[]{ new FuncSpec(WrapMatrixBasis.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("MatrixCrossProduct", new FuncSpec[]{ new FuncSpec(WrapMatrixCrossProduct.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("CrossProduct", new FuncSpec[]{ new FuncSpec(WrapCross.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put ("Length", new FuncSpec[]{ new FuncSpec(WrapLength.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, BasicValType.VTP_REAL, false, false, null)});
-        s.put ("Normalize", new FuncSpec[]{ new FuncSpec(WrapNormalize.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
-        s.put ("Determinant", new FuncSpec[]{ new FuncSpec(WrapDeterminant.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, BasicValType.VTP_REAL, false, false, null)});
-        s.put ("Transpose", new FuncSpec[]{ new FuncSpec(WrapTranspose.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("RTInvert", new FuncSpec[]{ new FuncSpec(WrapRTInvert.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
-        s.put ("Orthonormalize", new FuncSpec[]{ new FuncSpec(WrapOrthonormalize.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+    public Map<String, FunctionSpecification[]> specs() {
+        Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
+        s.put ("Vec4", new FunctionSpecification[]{ new FunctionSpecification(WrapVec4.class, new ParamTypeList( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put ("Vec3", new FunctionSpecification[]{ new FunctionSpecification(WrapVec3.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put ("Vec2", new FunctionSpecification[]{ new FunctionSpecification(WrapVec2.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put ("MatrixZero", new FunctionSpecification[]{ new FunctionSpecification(WrapMatrixZero.class, new ParamTypeList (), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixIdentity", new FunctionSpecification[]{ new FunctionSpecification(WrapMatrixIdentity.class, new ParamTypeList (), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixScale", new FunctionSpecification[]{ new FunctionSpecification(WrapMatrixScale.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixScale", new FunctionSpecification[]{ new FunctionSpecification(WrapMatrixScale_2.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixTranslate", new FunctionSpecification[]{ new FunctionSpecification(WrapMatrixTranslate.class, new ParamTypeList ( BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixRotateX", new FunctionSpecification[]{ new FunctionSpecification(WrapMatrixRotateX.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixRotateY", new FunctionSpecification[]{ new FunctionSpecification(WrapMatrixRotateY.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixRotateZ", new FunctionSpecification[]{ new FunctionSpecification(WrapMatrixRotateZ.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixRotate", new FunctionSpecification[]{ new FunctionSpecification(WrapMatrixRotate.class, new ParamTypeList ( new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixBasis", new FunctionSpecification[]{ new FunctionSpecification(WrapMatrixBasis.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("MatrixCrossProduct", new FunctionSpecification[]{ new FunctionSpecification(WrapMatrixCrossProduct.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("CrossProduct", new FunctionSpecification[]{ new FunctionSpecification(WrapCross.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put ("Length", new FunctionSpecification[]{ new FunctionSpecification(WrapLength.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, BasicValType.VTP_REAL, false, false, null)});
+        s.put ("Normalize", new FunctionSpecification[]{ new FunctionSpecification(WrapNormalize.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)1, (byte)1, true), false, true, null)});
+        s.put ("Determinant", new FunctionSpecification[]{ new FunctionSpecification(WrapDeterminant.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, BasicValType.VTP_REAL, false, false, null)});
+        s.put ("Transpose", new FunctionSpecification[]{ new FunctionSpecification(WrapTranspose.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("RTInvert", new FunctionSpecification[]{ new FunctionSpecification(WrapRTInvert.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
+        s.put ("Orthonormalize", new FunctionSpecification[]{ new FunctionSpecification(WrapOrthonormalize.class, new ParamTypeList ( new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true)), true, true, new ValType  (BasicValType.VTP_REAL, (byte)2, (byte)1, true), false, true, null)});
         return s;
     }
 
@@ -874,7 +874,7 @@ public class TrigBasicLib implements FunctionLibrary {
             matrixPlusMatrix, matrixMinusMatrix, negVec, negMatrix;
 
     // Compiler callback
-    public final class TrigUnOperatorExtension implements UnOperExt {
+    public final class TrigUnOperatorExtension implements UnaryOperatorExtension {
 
         public boolean run (  Mutable<ValType> regType,     // IN: Current type in register.                                                        OUT: Required type cast before calling function
                                     short oper,          // IN: Operator being applied; OpCode
@@ -905,7 +905,7 @@ public class TrigBasicLib implements FunctionLibrary {
         return false;
     }
     }
-    public final class TrigBinOperatorExtension implements BinOperExt {
+    public final class TrigBinOperatorExtension implements BinaryOperatorExtension {
 
         public boolean run(Mutable<ValType> regType,     // IN: Current type in register.                                                        OUT: Required type cast before calling function
                            Mutable<ValType> reg2Type,    // IN: Current type in second register (operation is reg2 OP reg1, e.g reg2 + reg1):    OUT: Required type cast before calling function

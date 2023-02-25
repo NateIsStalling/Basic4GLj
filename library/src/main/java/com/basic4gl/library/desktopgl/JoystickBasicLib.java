@@ -3,7 +3,7 @@ import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
@@ -80,22 +80,22 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
     }
 
     @Override
-    public Map<String, FuncSpec[]> specs() {
+    public Map<String, FunctionSpecification[]> specs() {
         // Register functions
-        Map<String, FuncSpec[]> s = new HashMap<>();
-        s.put("UpdateJoystick", new FuncSpec[]{ new FuncSpec( WrapUpdateJoystick.class, new ParamTypeList (),true, false, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_Left", new FuncSpec[]{ new FuncSpec( WrapJoyLeft.class, new ParamTypeList(),true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_Right", new FuncSpec[]{ new FuncSpec( WrapJoyRight.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_Up", new FuncSpec[]{ new FuncSpec( WrapJoyUp.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_Down", new FuncSpec[]{ new FuncSpec( WrapJoyDown.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_0", new FuncSpec[]{ new FuncSpec( WrapJoyButton0.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_1", new FuncSpec[]{ new FuncSpec( WrapJoyButton1.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_2", new FuncSpec[]{ new FuncSpec( WrapJoyButton2.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_3", new FuncSpec[]{ new FuncSpec( WrapJoyButton3.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_X", new FuncSpec[]{ new FuncSpec( WrapJoyX.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_Y", new FuncSpec[]{ new FuncSpec( WrapJoyY.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_Button", new FuncSpec[]{ new FuncSpec( WrapJoyButton.class, new ParamTypeList  (BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("Joy_Keys", new FuncSpec[]{ new FuncSpec( WrapJoyKeys.class, new ParamTypeList (),true, false, BasicValType.VTP_INT, false, false, null)});
+        Map<String, FunctionSpecification[]> s = new HashMap<>();
+        s.put("UpdateJoystick", new FunctionSpecification[]{ new FunctionSpecification( WrapUpdateJoystick.class, new ParamTypeList (),true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Left", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyLeft.class, new ParamTypeList(),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Right", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyRight.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Up", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyUp.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Down", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyDown.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_0", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyButton0.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_1", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyButton1.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_2", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyButton2.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_3", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyButton3.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_X", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyX.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Y", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyY.class, new ParamTypeList (),true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Button", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyButton.class, new ParamTypeList  (BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("Joy_Keys", new FunctionSpecification[]{ new FunctionSpecification( WrapJoyKeys.class, new ParamTypeList (),true, false, BasicValType.VTP_INT, false, false, null)});
         return s;
     }
 

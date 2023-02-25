@@ -7,7 +7,7 @@ import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.*;
-import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.compiler.util.IVMDriverAccess;
 import com.basic4gl.runtime.util.Mutable;
@@ -37,34 +37,34 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     @Override
-    public Map<String, FuncSpec[]> specs() {
-        Map<String, FuncSpec[]> s = new TreeMap<>();
+    public Map<String, FunctionSpecification[]> specs() {
+        Map<String, FunctionSpecification[]> s = new TreeMap<>();
         // Register functions
-        s.put("compile", new FuncSpec[]{
-                new FuncSpec(WrapCompile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FuncSpec(WrapCompile2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FuncSpec(WrapCompileList.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true)), true, true, VTP_INT, true, false, null),
-                new FuncSpec(WrapCompileList2.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true), new ValType(VTP_STRING)), true, true, VTP_INT, true, false, null)
+        s.put("compile", new FunctionSpecification[]{
+                new FunctionSpecification(WrapCompile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
+                new FunctionSpecification(WrapCompile2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null),
+                new FunctionSpecification(WrapCompileList.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true)), true, true, VTP_INT, true, false, null),
+                new FunctionSpecification(WrapCompileList2.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true), new ValType(VTP_STRING)), true, true, VTP_INT, true, false, null)
         });
 
-        s.put("compilefile", new FuncSpec[]{
-                new FuncSpec(WrapCompileFile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FuncSpec(WrapCompileFile2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null)
+        s.put("compilefile", new FunctionSpecification[]{
+                new FunctionSpecification(WrapCompileFile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
+                new FunctionSpecification(WrapCompileFile2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null)
         });
 
-        s.put("execute", new FuncSpec[]{new FuncSpec(WrapExecute.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, true, false, null)});
-        s.put("compilererror", new FuncSpec[]{new FuncSpec(WrapCompilerError.class, new ParamTypeList(), true, true, VTP_STRING, false, false, null)});
-        s.put("compilererrorline", new FuncSpec[]{new FuncSpec(WrapCompilerErrorLine.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)});
-        s.put("compilererrorcol", new FuncSpec[]{new FuncSpec(WrapCompilerErrorCol.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)});
-        s.put("comp", new FuncSpec[]{
-                new FuncSpec(WrapComp.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FuncSpec(WrapComp2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FuncSpec(WrapCompList.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true)), true, true, VTP_INT, true, false, null),
-                new FuncSpec(WrapCompList2.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true), new ValType(VTP_STRING)), true, true, VTP_INT, true, false, null)
+        s.put("execute", new FunctionSpecification[]{new FunctionSpecification(WrapExecute.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, true, false, null)});
+        s.put("compilererror", new FunctionSpecification[]{new FunctionSpecification(WrapCompilerError.class, new ParamTypeList(), true, true, VTP_STRING, false, false, null)});
+        s.put("compilererrorline", new FunctionSpecification[]{new FunctionSpecification(WrapCompilerErrorLine.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)});
+        s.put("compilererrorcol", new FunctionSpecification[]{new FunctionSpecification(WrapCompilerErrorCol.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)});
+        s.put("comp", new FunctionSpecification[]{
+                new FunctionSpecification(WrapComp.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
+                new FunctionSpecification(WrapComp2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null),
+                new FunctionSpecification(WrapCompList.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true)), true, true, VTP_INT, true, false, null),
+                new FunctionSpecification(WrapCompList2.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true), new ValType(VTP_STRING)), true, true, VTP_INT, true, false, null)
         });
-        s.put("compfile", new FuncSpec[]{
-                new FuncSpec(WrapCompFile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FuncSpec(WrapCompFile2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null)
+        s.put("compfile", new FunctionSpecification[]{
+                new FunctionSpecification(WrapCompFile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
+                new FunctionSpecification(WrapCompFile2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null)
         });
         return s;
     }

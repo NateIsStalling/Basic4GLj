@@ -54,7 +54,7 @@ public class TomBasicCompiler extends HasErrorState {
 	private final Map<String, Constant> programConstants; // Constants declared using the const command.
 
 	private final Vector<Library> libraries = new Vector<Library>();
-	private final Vector<FuncSpec> functions;
+	private final Vector<FunctionSpecification> functions;
 	private final Map<String, List<Integer>> functionIndex; // Maps function name to index of function (in mFunctions array)
 	private LanguageSyntax syntax;
 	private String symbolPrefix = ""; // Prefix all symbols with this text
@@ -109,8 +109,8 @@ public class TomBasicCompiler extends HasErrorState {
 	private final Map<String, Integer> runtimeFunctionIndex;
 
 	// Language extension
-	private final Vector<UnOperExt> unOperExts; // Unary operator extensions
-	private final Vector<BinOperExt> binOperExts; // Binary operator extensions
+	private final Vector<UnaryOperatorExtension> unaryOperatorExtensions; // Unary operator extensions
+	private final Vector<BinaryOperatorExtension> binaryOperatorExtensions; // Binary operator extensions
 
 	public List<String> getReservedWords() {
 		return reservedWords;
@@ -353,10 +353,10 @@ public class TomBasicCompiler extends HasErrorState {
 		userFunctionReverseIndex = new HashMap<Integer, String>();
 		runtimeFunctionIndex = new HashMap<String, Integer>();
 		runtimeFunctions = new Vector<com.basic4gl.compiler.RuntimeFunction>();
-		functions = new Vector<FuncSpec>();
+		functions = new Vector<FunctionSpecification>();
 
-		unOperExts = new Vector<UnOperExt>();
-		binOperExts = new Vector<BinOperExt>();
+		unaryOperatorExtensions = new Vector<UnaryOperatorExtension>();
+		binaryOperatorExtensions = new Vector<BinaryOperatorExtension>();
 
 		functionStart = new InstructionPosition();
 		userFuncPrototype = new UserFuncPrototype();
@@ -609,20 +609,20 @@ public class TomBasicCompiler extends HasErrorState {
 					token.tokenType = TokenType.CTT_CONSTANT;
 
 					// Replace text with text value of constant
-					switch (constant.mBasicType) {
+					switch (constant.basicType) {
 					case BasicValType.VTP_INT:
-						token.text = String.valueOf(constant.mIntVal);
+						token.text = String.valueOf(constant.intValue);
 						break;
 					case BasicValType.VTP_REAL:
-						token.text = String.valueOf(constant.mRealVal);
+						token.text = String.valueOf(constant.realValue);
 						break;
 					case BasicValType.VTP_STRING:
-						token.text = constant.mStringVal;
+						token.text = constant.stringValue;
 						break;
 					default:
 						break;
 					}
-					token.valType = constant.mBasicType;
+					token.valType = constant.basicType;
 				}
 			}
 		} else if (token.tokenType == TokenType.CTT_CONSTANT
@@ -815,7 +815,7 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	public Vector<Library> getLibraries() { return libraries;}
-	public Vector<FuncSpec> getFunctions() {
+	public Vector<FunctionSpecification> getFunctions() {
 		return functions;
 	}
 
@@ -824,12 +824,12 @@ public class TomBasicCompiler extends HasErrorState {
 	}
 
 	// Language extension
-	public void addUnOperExtension(UnOperExt e) {
-		unOperExts.add(e);
+	public void addUnOperExtension(UnaryOperatorExtension e) {
+		unaryOperatorExtensions.add(e);
 	}
 
-	public void addBinOperExtension(BinOperExt e) {
-		binOperExts.add(e);
+	public void addBinOperExtension(BinaryOperatorExtension e) {
+		binaryOperatorExtensions.add(e);
 	}
 
 	// Language features (for context highlighting)
@@ -3674,7 +3674,7 @@ public class TomBasicCompiler extends HasErrorState {
 			this.constants.put(key.toLowerCase(), constants.get(key));
 		}
 	}
-	public void AddFunctions(Library library, Map<String, FuncSpec[]> specs) {
+	public void AddFunctions(Library library, Map<String, FunctionSpecification[]> specs) {
 		int specIndex;
 		int vmIndex;
 		int i;
@@ -3685,7 +3685,7 @@ public class TomBasicCompiler extends HasErrorState {
 		libraries.add(library);
 		for (String name : specs.keySet()) {
 			i = 0;
-			for (FuncSpec func : specs.get(name)) {
+			for (FunctionSpecification func : specs.get(name)) {
 				//Initialize function
 				Object instance;
 				//TODO Only initialize functions that are used
@@ -3741,7 +3741,7 @@ public class TomBasicCompiler extends HasErrorState {
 		// We collect the possible candidates in an array, and prune out the
 		// ones
 		// whose paramater types are incompatible as we go..)
-		ExtFuncSpec[] functions = new ExtFuncSpec[TC_MAXOVERLOADEDFUNCTIONS];
+		ExtendedFunctionSpecification[] functions = new ExtendedFunctionSpecification[TC_MAXOVERLOADEDFUNCTIONS];
 		int functionCount = 0;
 
 		// Find builtin functions
@@ -3750,13 +3750,13 @@ public class TomBasicCompiler extends HasErrorState {
 			if (!(functionCount < TC_MAXOVERLOADEDFUNCTIONS)) {
 				break;
 			}
-			FuncSpec spec = this.functions.get(i); // Get specification
+			FunctionSpecification spec = this.functions.get(i); // Get specification
 			found = true;
 
 			// Check whether function returns a value (if we need one)
 			if (!needResult || spec.isFunction()) {
 				if (functions[functionCount] == null) {
-					functions[functionCount] = new ExtFuncSpec();
+					functions[functionCount] = new ExtendedFunctionSpecification();
 				}
 				functions[functionCount].spec = spec;
 				functions[functionCount].builtin = true;
@@ -3992,7 +3992,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 			return false;
 		}
-		ExtFuncSpec spec = functions[matchIndex];
+		ExtendedFunctionSpecification spec = functions[matchIndex];
 
 		// Expect closing bracket
 		if (brackets) {
@@ -4233,7 +4233,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Iterate through external operator extension functions until we find
 		// one that can handle our data.
-		for (int i = 0; i < unOperExts.size() && !found; i++) {
+		for (int i = 0; i < unaryOperatorExtensions.size() && !found; i++) {
 
 			// Setup input data
 			type.get().setType(regType);
@@ -4242,7 +4242,7 @@ public class TomBasicCompiler extends HasErrorState {
 			resultType.set(new ValType());
 
 			// Call function
-			found = unOperExts.get(i).run(type, operOpCode, opFunc, resultType,
+			found = unaryOperatorExtensions.get(i).run(type, operOpCode, opFunc, resultType,
 					freeTempData);
 		}
 
@@ -4282,7 +4282,7 @@ public class TomBasicCompiler extends HasErrorState {
 
 		// Iterate through external operator extension functions until we find
 		// one that can handle our data.
-		for (int i = 0; i < binOperExts.size() && !found; i++) {
+		for (int i = 0; i < binaryOperatorExtensions.size() && !found; i++) {
 
 			// Setup input data
 			type1.get().setType(regType);
@@ -4292,7 +4292,7 @@ public class TomBasicCompiler extends HasErrorState {
 			resultType.set(new ValType());
 
 			// Call function
-			found = binOperExts.get(i).run(type1, type2, operOpCode, opFunc,
+			found = binaryOperatorExtensions.get(i).run(type1, type2, operOpCode, opFunc,
 					resultType, freeTempData);
 
 		}
@@ -4782,13 +4782,13 @@ public class TomBasicCompiler extends HasErrorState {
 		return true;
 	}
 
-	FuncSpec FindFunction(String name, int paramCount) {
+	FunctionSpecification FindFunction(String name, int paramCount) {
 
 		// Search for function with matching name & param count
 		List<Integer> l = functionIndex.get(name);
 		if (l != null) {
 			for (Integer i : l) {
-				FuncSpec spec = functions.get(i);
+				FunctionSpecification spec = functions.get(i);
 				if (spec.getParamTypes().getParams().size() == paramCount) {
 					return spec;
 				}
@@ -4871,7 +4871,7 @@ public class TomBasicCompiler extends HasErrorState {
 			return true; // Do nothing!
 		}
 
-		FuncSpec spec = FindFunction(newLine ? "printr" : "print",
+		FunctionSpecification spec = FindFunction(newLine ? "printr" : "print",
 				operandCount);
 		if (spec == null) {
 			return false;
@@ -4941,7 +4941,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Generate code to call "print" function
-			FuncSpec printSpec = FindFunction("print", 1);
+			FunctionSpecification printSpec = FindFunction("print", 1);
 			if (printSpec == null) {
 				return false;
 			}
@@ -4979,7 +4979,7 @@ public class TomBasicCompiler extends HasErrorState {
 		}
 
 		// Generate code to call "input$()" function
-		FuncSpec inputSpec = FindFunction("input$", 0);
+		FunctionSpecification inputSpec = FindFunction("input$", 0);
 		if (inputSpec == null) {
 			return false;
 		}
@@ -5001,7 +5001,7 @@ public class TomBasicCompiler extends HasErrorState {
 			}
 
 			// Generate code to call "val()" function
-			FuncSpec valSpec = FindFunction("val", 1);
+			FunctionSpecification valSpec = FindFunction("val", 1);
 			if (valSpec == null) {
 				return false;
 			}

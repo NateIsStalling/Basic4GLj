@@ -2,17 +2,19 @@ package com.basic4gl.compiler.util;
 
 import java.io.Serializable;
 
-public class SourcePos implements Serializable {
-	// Source file and line number before pre-processing
+/**
+ * Source file and line number before pre-processing
+ */
+public class SourcePosition implements Serializable {
 	private int mFileIndex;
 	private int mFileLineNo;
 
-	public SourcePos(int fileIndex, int fileLineNo) {
+	public SourcePosition(int fileIndex, int fileLineNo) {
 		mFileIndex = fileIndex;
 		mFileLineNo = fileLineNo;
 	}
 
-	public SourcePos(SourcePos c) {
+	public SourcePosition(SourcePosition c) {
 		mFileIndex = c.mFileIndex;
 		mFileLineNo = c.mFileLineNo;
 	}

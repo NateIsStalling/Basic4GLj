@@ -6,7 +6,7 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.FileOpener;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IFileAccess;
-import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
@@ -54,12 +54,12 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
     }
 
     @Override
-    public Map<String, FuncSpec[]> specs() {
-        Map<String, FuncSpec[]> s = new HashMap<>();
-        s.put("beep", new FuncSpec[]{new FuncSpec(WrapBeep.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put("sleep", new FuncSpec[]{new FuncSpec(WrapSleep.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put("tickcount", new FuncSpec[]{new FuncSpec(WrapTickCount.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("performancecounter", new FuncSpec[]{new FuncSpec(WrapPerformanceCounter.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
+    public Map<String, FunctionSpecification[]> specs() {
+        Map<String, FunctionSpecification[]> s = new HashMap<>();
+        s.put("beep", new FunctionSpecification[]{new FunctionSpecification(WrapBeep.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put("sleep", new FunctionSpecification[]{new FunctionSpecification(WrapSleep.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+        s.put("tickcount", new FunctionSpecification[]{new FunctionSpecification(WrapTickCount.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
+        s.put("performancecounter", new FunctionSpecification[]{new FunctionSpecification(WrapPerformanceCounter.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
         return s;
     }
 

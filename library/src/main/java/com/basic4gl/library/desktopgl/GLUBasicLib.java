@@ -4,7 +4,7 @@ import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
@@ -166,11 +166,11 @@ public class GLUBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public Map<String, FuncSpec[]> specs() {
-        Map<String, FuncSpec[]> s = new HashMap<String, FuncSpec[]>();
-        s.put("gluOrtho2D", new FuncSpec[]{new FuncSpec(WrapgluOrtho2D.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
-        s.put("gluPerspective", new FuncSpec[]{new FuncSpec(WrapgluPerspective.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
-        s.put("gluLookAt", new FuncSpec[]{new FuncSpec(WrapgluLookAt.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
+    public Map<String, FunctionSpecification[]> specs() {
+        Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
+        s.put("gluOrtho2D", new FunctionSpecification[]{new FunctionSpecification(WrapgluOrtho2D.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("gluPerspective", new FunctionSpecification[]{new FunctionSpecification(WrapgluPerspective.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
+        s.put("gluLookAt", new FunctionSpecification[]{new FunctionSpecification(WrapgluLookAt.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
         return s;
     }
 

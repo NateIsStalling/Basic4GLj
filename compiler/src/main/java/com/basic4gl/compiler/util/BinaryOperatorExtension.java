@@ -6,7 +6,7 @@ import com.basic4gl.runtime.types.ValType;
 /**
  * Language extension: Operator overloading
  */
-public interface BinOperExt {
+public interface BinaryOperatorExtension {
 	/**
 	 *
 	 * @param regType IN: Current type in register. OUT: Required type cast before calling function

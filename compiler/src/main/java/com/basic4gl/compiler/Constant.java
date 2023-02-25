@@ -8,83 +8,124 @@ import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 
-// Constant
-//
-// Recognised constants (e.g. "true", "false")
+/**
+ * Recognised constants (e.g. "true", "false")
+ */
+public class Constant implements Streamable {
+	/**
+	 * Value type
+	 */
+    int basicType;
 
-public class Constant implements Streamable{
-	int mBasicType;          // Value type
-	int     mIntVal;           // Value
-	float	mRealVal;
-	String  mStringVal;
+	/**
+	 * Value of Constant if {@link #basicType} is {@value BasicValType#VTP_INT}
+	 */
+    int intValue;
 
-	public Constant()
-	{ mBasicType = BasicValType.VTP_STRING;
-	mStringVal ="";
-	mIntVal =0;
-	mRealVal =0f; }
-	public Constant(String s)
-	{ mBasicType = BasicValType.VTP_STRING;
-	mStringVal =s;
-	mIntVal =0;
-	mRealVal =0f; }
-	public Constant(int i)
-	{ mBasicType = BasicValType.VTP_INT;
-	mIntVal =i;
-	mStringVal ="";
-	mRealVal =0f; }
-	public Constant(float r)
-	{ mBasicType = BasicValType.VTP_REAL;
-	mRealVal =r;
-	mStringVal ="";
-	mIntVal =0; }
-	public Constant(double r)
-	{ 
-		mBasicType = BasicValType.VTP_REAL;
-		mRealVal = (float) r;
-		mStringVal = "";
-		mIntVal = 0; }
-	public Constant(Constant c)
-	{ mBasicType =c.mBasicType;
-	mRealVal =c.mRealVal;
-	mIntVal =c.mIntVal;
-	mStringVal = c.mStringVal; }
+	/**
+	 * Value of Constant if {@link #basicType} is {@value BasicValType#VTP_REAL}
+	 */
+    float realValue;
 
-	public int getType(){
-		return mBasicType;
-	}
-	public String ToString() {
-		switch(mBasicType) {
-		case BasicValType.VTP_INT:    return String.valueOf(mIntVal);
-		case BasicValType.VTP_REAL:   return String.valueOf(mRealVal);
-		case BasicValType.VTP_STRING: return mStringVal;
-		default:    return "???";
-		}
-	}
-	@Override
-	public void streamOut(DataOutputStream stream) throws IOException
-	{
-			Streaming.writeLong(stream, mBasicType);
+	/**
+	 * Value of Constant if {@link #basicType} is {@value BasicValType#VTP_STRING}
+	 */
+    String stringValue;
 
-			switch(mBasicType) {
-			case BasicValType.VTP_INT:       Streaming.writeLong(stream, mIntVal);        break;
-			case BasicValType.VTP_REAL:      Streaming.writeFloat(stream, mRealVal);      break;
-			case BasicValType.VTP_STRING:    Streaming.writeString(stream, mStringVal);   break;
-			default:
-				break;
-			}
-	}
-	@Override
-	public boolean streamIn(DataInputStream stream) throws IOException
-	{
-			mBasicType = (int)Streaming.readLong(stream);
-			switch(mBasicType) {
-			case BasicValType.VTP_INT:       mIntVal    = (int) Streaming.readLong(stream);     break;
-			case BasicValType.VTP_REAL:      mRealVal   = Streaming.readFloat(stream);    break;
-			case BasicValType.VTP_STRING:    mStringVal = Streaming.readString(stream);   break;
-			default:
-				break;
-			}
-		return true;
-	}
+    public Constant() {
+        basicType = BasicValType.VTP_STRING;
+        stringValue = "";
+        intValue = 0;
+        realValue = 0f;
+    }
+
+    public Constant(String s) {
+        basicType = BasicValType.VTP_STRING;
+        stringValue = s;
+        intValue = 0;
+        realValue = 0f;
+    }
+
+    public Constant(int i) {
+        basicType = BasicValType.VTP_INT;
+        intValue = i;
+        stringValue = "";
+        realValue = 0f;
+    }
+
+    public Constant(float r) {
+        basicType = BasicValType.VTP_REAL;
+        realValue = r;
+        stringValue = "";
+        intValue = 0;
+    }
+
+    public Constant(double r) {
+        basicType = BasicValType.VTP_REAL;
+        realValue = (float) r;
+        stringValue = "";
+        intValue = 0;
+    }
+
+    public Constant(Constant c) {
+        basicType = c.basicType;
+        realValue = c.realValue;
+        intValue = c.intValue;
+        stringValue = c.stringValue;
+    }
+
+    public int getType() {
+        return basicType;
+    }
+
+    public String ToString() {
+        switch (basicType) {
+            case BasicValType.VTP_INT:
+                return String.valueOf(intValue);
+            case BasicValType.VTP_REAL:
+                return String.valueOf(realValue);
+            case BasicValType.VTP_STRING:
+                return stringValue;
+            default:
+                return "???";
+        }
+    }
+
+    @Override
+    public void streamOut(DataOutputStream stream) throws IOException {
+        Streaming.writeLong(stream, basicType);
+
+        switch (basicType) {
+            case BasicValType.VTP_INT:
+                Streaming.writeLong(stream, intValue);
+                break;
+            case BasicValType.VTP_REAL:
+                Streaming.writeFloat(stream, realValue);
+                break;
+            case BasicValType.VTP_STRING:
+                Streaming.writeString(stream, stringValue);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public boolean streamIn(DataInputStream stream) throws IOException {
+        basicType = (int) Streaming.readLong(stream);
+        switch (basicType) {
+            case BasicValType.VTP_INT:
+                intValue = (int) Streaming.readLong(stream);
+                break;
+            case BasicValType.VTP_REAL:
+                realValue = Streaming.readFloat(stream);
+                break;
+            case BasicValType.VTP_STRING:
+                stringValue = Streaming.readString(stream);
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
 }

@@ -11,7 +11,7 @@ import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.ParamValidationCallback;
 import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.ValType;
@@ -496,8 +496,8 @@ public class Standard implements FunctionLibrary {
 		return c;
 	}
 	@Override
-	public Map<String, FuncSpec[]> specs() {
-		Map<String, FuncSpec[]> s = new HashMap<String, FuncSpec[]>();
+	public Map<String, FunctionSpecification[]> specs() {
+		Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
 
 		//new FuncSpec(params, isFunction, brackets,	new ValType(returnType),
 		//				timeshare, vmIndex, freeTempData, paramValidationCallback)
@@ -507,54 +507,54 @@ public class Standard implements FunctionLibrary {
 		//		ParamValidationCallback paramValidationCallback)
 		///////////////////////
 		// Register functions
-		s.put ("abs", new FuncSpec[]{ new FuncSpec(  WrapAbs.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("asc", new FuncSpec[]{ new FuncSpec(  WrapAsc.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, false, false, null)});
-		s.put ("atn", new FuncSpec[]{ new FuncSpec(  WrapAtn.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("chr$", new FuncSpec[]{ new FuncSpec(  WrapChr.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, false, false, null)});
-		s.put ("cos", new FuncSpec[]{ new FuncSpec(  WrapCos.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("exp", new FuncSpec[]{ new FuncSpec(  WrapExp.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("int", new FuncSpec[]{ new FuncSpec(  WrapInt.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_INT, false, false, null)});
-		s.put ("left$", new FuncSpec[]{ new FuncSpec(  WrapLeft.class, new ParamTypeList ( BasicValType.VTP_STRING,  BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, false, false, null)});
-		s.put ("len", new FuncSpec[]{ new FuncSpec(  WrapLen.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, false, false, null)});
-		s.put ("log", new FuncSpec[]{ new FuncSpec(  WrapLog.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("mid$", new FuncSpec[]{ new FuncSpec(  WrapMid.class, new ParamTypeList ( BasicValType.VTP_STRING,  BasicValType.VTP_INT,  BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, false, false, null)});
-		s.put ("pow", new FuncSpec[]{ new FuncSpec(  WrapPow.class, new ParamTypeList ( BasicValType.VTP_REAL,  BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("right$", new FuncSpec[]{ new FuncSpec(  WrapRight.class, new ParamTypeList ( BasicValType.VTP_STRING,  BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, false, false, null)});
-		s.put ("rnd", new FuncSpec[]{ new FuncSpec(  WrapRnd.class, new ParamTypeList (), true, true, BasicValType.VTP_INT, false, false, null)});
-		s.put ("sgn", new FuncSpec[]{ new FuncSpec(  WrapSgn.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_INT, false, false, null)});
-		s.put ("sin", new FuncSpec[]{ new FuncSpec(  WrapSin.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("sqrt", new FuncSpec[]{ new FuncSpec(  WrapSqrt.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("sqr", new FuncSpec[]{ new FuncSpec(  WrapSqr.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)}); // sqr = Synonym for sqrt
-		s.put ("str$", new FuncSpec[]{ new FuncSpec(  WrapStr.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_STRING, false, false, null)});
-		s.put ("tan", new FuncSpec[]{ new FuncSpec(  WrapTan.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("tanh", new FuncSpec[]{ new FuncSpec(  WrapTanh.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("val", new FuncSpec[]{ new FuncSpec(  WrapVal.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("sind", new FuncSpec[]{ new FuncSpec(  WrapSinD.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("cosd", new FuncSpec[]{ new FuncSpec(  WrapCosD.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("tand", new FuncSpec[]{ new FuncSpec(  WrapTanD.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("atand", new FuncSpec[]{ new FuncSpec(  WrapATanD.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("atnd", new FuncSpec[]{ new FuncSpec(  WrapATanD.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("atn2", new FuncSpec[]{ new FuncSpec(  WrapATan2.class, new ParamTypeList ( BasicValType.VTP_REAL,  BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("atn2d", new FuncSpec[]{ new FuncSpec(  WrapATan2D.class, new ParamTypeList ( BasicValType.VTP_REAL,  BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
-		s.put ("lcase$", new FuncSpec[]{ new FuncSpec(  WrapLCase.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_STRING, false, false, null)});
-		s.put ("ucase$", new FuncSpec[]{ new FuncSpec(  WrapUCase.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_STRING, false, false, null)});
-		s.put ("randomize", new FuncSpec[]{
-				new FuncSpec(  WrapRandomize.class, new ParamTypeList ( BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null),
-				new FuncSpec(  WrapRandomize_2.class, new ParamTypeList (), true, false, BasicValType.VTP_INT, false, false, null)});
-		s.put ("divbyzero", new FuncSpec[]{ new FuncSpec(  WrapDivByZero.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("abs", new FunctionSpecification[]{ new FunctionSpecification(  WrapAbs.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("asc", new FunctionSpecification[]{ new FunctionSpecification(  WrapAsc.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, false, false, null)});
+		s.put ("atn", new FunctionSpecification[]{ new FunctionSpecification(  WrapAtn.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("chr$", new FunctionSpecification[]{ new FunctionSpecification(  WrapChr.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, false, false, null)});
+		s.put ("cos", new FunctionSpecification[]{ new FunctionSpecification(  WrapCos.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("exp", new FunctionSpecification[]{ new FunctionSpecification(  WrapExp.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("int", new FunctionSpecification[]{ new FunctionSpecification(  WrapInt.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_INT, false, false, null)});
+		s.put ("left$", new FunctionSpecification[]{ new FunctionSpecification(  WrapLeft.class, new ParamTypeList ( BasicValType.VTP_STRING,  BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, false, false, null)});
+		s.put ("len", new FunctionSpecification[]{ new FunctionSpecification(  WrapLen.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, false, false, null)});
+		s.put ("log", new FunctionSpecification[]{ new FunctionSpecification(  WrapLog.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("mid$", new FunctionSpecification[]{ new FunctionSpecification(  WrapMid.class, new ParamTypeList ( BasicValType.VTP_STRING,  BasicValType.VTP_INT,  BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, false, false, null)});
+		s.put ("pow", new FunctionSpecification[]{ new FunctionSpecification(  WrapPow.class, new ParamTypeList ( BasicValType.VTP_REAL,  BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("right$", new FunctionSpecification[]{ new FunctionSpecification(  WrapRight.class, new ParamTypeList ( BasicValType.VTP_STRING,  BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, false, false, null)});
+		s.put ("rnd", new FunctionSpecification[]{ new FunctionSpecification(  WrapRnd.class, new ParamTypeList (), true, true, BasicValType.VTP_INT, false, false, null)});
+		s.put ("sgn", new FunctionSpecification[]{ new FunctionSpecification(  WrapSgn.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_INT, false, false, null)});
+		s.put ("sin", new FunctionSpecification[]{ new FunctionSpecification(  WrapSin.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("sqrt", new FunctionSpecification[]{ new FunctionSpecification(  WrapSqrt.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("sqr", new FunctionSpecification[]{ new FunctionSpecification(  WrapSqr.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)}); // sqr = Synonym for sqrt
+		s.put ("str$", new FunctionSpecification[]{ new FunctionSpecification(  WrapStr.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_STRING, false, false, null)});
+		s.put ("tan", new FunctionSpecification[]{ new FunctionSpecification(  WrapTan.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("tanh", new FunctionSpecification[]{ new FunctionSpecification(  WrapTanh.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("val", new FunctionSpecification[]{ new FunctionSpecification(  WrapVal.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("sind", new FunctionSpecification[]{ new FunctionSpecification(  WrapSinD.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("cosd", new FunctionSpecification[]{ new FunctionSpecification(  WrapCosD.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("tand", new FunctionSpecification[]{ new FunctionSpecification(  WrapTanD.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("atand", new FunctionSpecification[]{ new FunctionSpecification(  WrapATanD.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("atnd", new FunctionSpecification[]{ new FunctionSpecification(  WrapATanD.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("atn2", new FunctionSpecification[]{ new FunctionSpecification(  WrapATan2.class, new ParamTypeList ( BasicValType.VTP_REAL,  BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("atn2d", new FunctionSpecification[]{ new FunctionSpecification(  WrapATan2D.class, new ParamTypeList ( BasicValType.VTP_REAL,  BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
+		s.put ("lcase$", new FunctionSpecification[]{ new FunctionSpecification(  WrapLCase.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_STRING, false, false, null)});
+		s.put ("ucase$", new FunctionSpecification[]{ new FunctionSpecification(  WrapUCase.class, new ParamTypeList ( BasicValType.VTP_STRING), true, true, BasicValType.VTP_STRING, false, false, null)});
+		s.put ("randomize", new FunctionSpecification[]{
+				new FunctionSpecification(  WrapRandomize.class, new ParamTypeList ( BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null),
+				new FunctionSpecification(  WrapRandomize_2.class, new ParamTypeList (), true, false, BasicValType.VTP_INT, false, false, null)});
+		s.put ("divbyzero", new FunctionSpecification[]{ new FunctionSpecification(  WrapDivByZero.class, new ParamTypeList ( BasicValType.VTP_REAL), true, true, BasicValType.VTP_REAL, false, false, null)});
 
 		// Timer
-		s.put ("inittimer", new FuncSpec[]{ new FuncSpec(  WrapInitTimer.class, new ParamTypeList (), true, false, BasicValType.VTP_INT, false, false, null)});
-		s.put ("waittimer", new FuncSpec[]{ new FuncSpec(  WrapWaitTimer.class, new ParamTypeList ( BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
-		s.put ("synctimer", new FuncSpec[]{ new FuncSpec(  WrapSyncTimer.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
-		s.put ("synctimercatchup", new FuncSpec[]{ new FuncSpec(  WrapSyncTimerCatchup.class, new ParamTypeList ( BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
+		s.put ("inittimer", new FunctionSpecification[]{ new FunctionSpecification(  WrapInitTimer.class, new ParamTypeList (), true, false, BasicValType.VTP_INT, false, false, null)});
+		s.put ("waittimer", new FunctionSpecification[]{ new FunctionSpecification(  WrapWaitTimer.class, new ParamTypeList ( BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
+		s.put ("synctimer", new FunctionSpecification[]{ new FunctionSpecification(  WrapSyncTimer.class, new ParamTypeList ( BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
+		s.put ("synctimercatchup", new FunctionSpecification[]{ new FunctionSpecification(  WrapSyncTimerCatchup.class, new ParamTypeList ( BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
 
 		// Program arguments
-		s.put("argcount", new FuncSpec[]{ new FuncSpec(  WrapArgCount.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
-		s.put("arg", new FuncSpec[]{ new FuncSpec(  WrapArg.class, new ParamTypeList( BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, false, false, null)});
+		s.put("argcount", new FunctionSpecification[]{ new FunctionSpecification(  WrapArgCount.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
+		s.put("arg", new FunctionSpecification[]{ new FunctionSpecification(  WrapArg.class, new ParamTypeList( BasicValType.VTP_INT), true, true, BasicValType.VTP_STRING, false, false, null)});
 
 		// Array size
-		s.put("arraymax", new FuncSpec[]{ new FuncSpec(  WrapArrayMax.class, new ParamTypeList( BasicValType.VTP_UNDEFINED), true, true, BasicValType.VTP_INT, false, false, new ValidateArrayMaxParam())});
+		s.put("arraymax", new FunctionSpecification[]{ new FunctionSpecification(  WrapArrayMax.class, new ParamTypeList( BasicValType.VTP_UNDEFINED), true, true, BasicValType.VTP_INT, false, false, new ValidateArrayMaxParam())});
 		return s;
 	}
 	@Override

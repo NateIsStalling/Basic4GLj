@@ -1,7 +1,7 @@
 package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.ValType;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
@@ -139,7 +139,7 @@ public class ReferenceWindow {
 
                 // Find name and function data
                 String name = key;
-                FuncSpec spec = comp.getFunctions().get(index);
+                FunctionSpecification spec = comp.getFunctions().get(index);
 
                 // Build description string
                 String line = "";

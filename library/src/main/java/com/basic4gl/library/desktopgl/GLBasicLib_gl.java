@@ -4,7 +4,7 @@ import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.compiler.util.FuncSpec;
+import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
@@ -664,1242 +664,1242 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     @Override
-    public Map<String, FuncSpec[]> specs() {
-        Map<String, FuncSpec[]> s = new HashMap<String, FuncSpec[]>();
+    public Map<String, FunctionSpecification[]> specs() {
+        Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
 
-        s.put("glAccum", new FuncSpec[]{new FuncSpec(WrapglAccum.class,
+        s.put("glAccum", new FunctionSpecification[]{new FunctionSpecification(WrapglAccum.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL)),
                 true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glAlphaFunc", new FuncSpec[]{new FuncSpec(WrapglAlphaFunc.class,
+        s.put("glAlphaFunc", new FunctionSpecification[]{new FunctionSpecification(WrapglAlphaFunc.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL)),
                 true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glAreTexturesResident", new FuncSpec[]{new FuncSpec(WrapglAreTexturesResident.class,
+        s.put("glAreTexturesResident", new FunctionSpecification[]{new FunctionSpecification(WrapglAreTexturesResident.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
                 true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glArrayElement", new FuncSpec[]{new FuncSpec(WrapglArrayElement.class,
+        s.put("glArrayElement", new FunctionSpecification[]{new FunctionSpecification(WrapglArrayElement.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT)),
                 true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glBindTexture", new FuncSpec[]{new FuncSpec(WrapglBindTexture.class,
+        s.put("glBindTexture", new FunctionSpecification[]{new FunctionSpecification(WrapglBindTexture.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glBlendFunc", new FuncSpec[]{new FuncSpec(WrapglBlendFunc.class,
+        s.put("glBlendFunc", new FunctionSpecification[]{new FunctionSpecification(WrapglBlendFunc.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCallList", new FuncSpec[]{new FuncSpec(WrapglCallList.class,
+        s.put("glCallList", new FunctionSpecification[]{new FunctionSpecification(WrapglCallList.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClear", new FuncSpec[]{new FuncSpec(WrapglClear.class,
+        s.put("glClear", new FunctionSpecification[]{new FunctionSpecification(WrapglClear.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClearAccum", new FuncSpec[]{new FuncSpec(WrapglClearAccum.class,
+        s.put("glClearAccum", new FunctionSpecification[]{new FunctionSpecification(WrapglClearAccum.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClearColor", new FuncSpec[]{new FuncSpec(WrapglClearColor.class,
+        s.put("glClearColor", new FunctionSpecification[]{new FunctionSpecification(WrapglClearColor.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClearDepth", new FuncSpec[]{new FuncSpec(WrapglClearDepth.class,
+        s.put("glClearDepth", new FunctionSpecification[]{new FunctionSpecification(WrapglClearDepth.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClearIndex", new FuncSpec[]{new FuncSpec(WrapglClearIndex.class,
+        s.put("glClearIndex", new FunctionSpecification[]{new FunctionSpecification(WrapglClearIndex.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClearStencil", new FuncSpec[]{new FuncSpec(WrapglClearStencil.class,
+        s.put("glClearStencil", new FunctionSpecification[]{new FunctionSpecification(WrapglClearStencil.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClipPlane", new FuncSpec[]{
-                new FuncSpec(WrapglClipPlane.class,
+        s.put("glClipPlane", new FunctionSpecification[]{
+                new FunctionSpecification(WrapglClipPlane.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglClipPlane_2.class,
+                new FunctionSpecification(WrapglClipPlane_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3b", new FuncSpec[]{new FuncSpec(WrapglColor3b.class,
+        s.put("glColor3b", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3b.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3bv", new FuncSpec[]{new FuncSpec(WrapglColor3bv.class,
+        s.put("glColor3bv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3bv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor3bv_2.class,
+                new FunctionSpecification(WrapglColor3bv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3d", new FuncSpec[]{new FuncSpec(WrapglColor3d.class,
+        s.put("glColor3d", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3dv", new FuncSpec[]{new FuncSpec(WrapglColor3dv.class,
+        s.put("glColor3dv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor3dv_2.class,
+                new FunctionSpecification(WrapglColor3dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3f", new FuncSpec[]{new FuncSpec(WrapglColor3f.class,
+        s.put("glColor3f", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3fv", new FuncSpec[]{new FuncSpec(WrapglColor3fv.class,
+        s.put("glColor3fv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor3fv_2.class,
+                new FunctionSpecification(WrapglColor3fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3i", new FuncSpec[]{new FuncSpec(WrapglColor3i.class,
+        s.put("glColor3i", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3iv", new FuncSpec[]{new FuncSpec(WrapglColor3iv.class,
+        s.put("glColor3iv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor3iv_2.class,
+                new FunctionSpecification(WrapglColor3iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3s", new FuncSpec[]{new FuncSpec(WrapglColor3s.class,
+        s.put("glColor3s", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3sv", new FuncSpec[]{new FuncSpec(WrapglColor3sv.class,
+        s.put("glColor3sv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor3sv_2.class,
+                new FunctionSpecification(WrapglColor3sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3ub", new FuncSpec[]{new FuncSpec(WrapglColor3ub.class,
+        s.put("glColor3ub", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3ub.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3ubv", new FuncSpec[]{new FuncSpec(WrapglColor3ubv.class,
+        s.put("glColor3ubv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3ubv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor3ubv_2.class,
+                new FunctionSpecification(WrapglColor3ubv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3ui", new FuncSpec[]{new FuncSpec(WrapglColor3ui.class,
+        s.put("glColor3ui", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3ui.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3uiv", new FuncSpec[]{new FuncSpec(WrapglColor3uiv.class,
+        s.put("glColor3uiv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3uiv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor3uiv_2.class,
+                new FunctionSpecification(WrapglColor3uiv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3us", new FuncSpec[]{new FuncSpec(WrapglColor3us.class,
+        s.put("glColor3us", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3us.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3usv", new FuncSpec[]{new FuncSpec(WrapglColor3usv.class,
+        s.put("glColor3usv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3usv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor3usv_2.class,
+                new FunctionSpecification(WrapglColor3usv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4b", new FuncSpec[]{new FuncSpec(WrapglColor4b.class,
+        s.put("glColor4b", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4b.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4bv", new FuncSpec[]{new FuncSpec(WrapglColor4bv.class,
+        s.put("glColor4bv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4bv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor4bv_2.class,
+                new FunctionSpecification(WrapglColor4bv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4d", new FuncSpec[]{new FuncSpec(WrapglColor4d.class,
+        s.put("glColor4d", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4dv", new FuncSpec[]{new FuncSpec(WrapglColor4dv.class,
+        s.put("glColor4dv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor4dv_2.class,
+                new FunctionSpecification(WrapglColor4dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4f", new FuncSpec[]{new FuncSpec(WrapglColor4f.class,
+        s.put("glColor4f", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4fv", new FuncSpec[]{new FuncSpec(WrapglColor4fv.class,
+        s.put("glColor4fv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor4fv_2.class,
+                new FunctionSpecification(WrapglColor4fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4i", new FuncSpec[]{new FuncSpec(WrapglColor4i.class,
+        s.put("glColor4i", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4iv", new FuncSpec[]{new FuncSpec(WrapglColor4iv.class,
+        s.put("glColor4iv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor4iv_2.class,
+                new FunctionSpecification(WrapglColor4iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4s", new FuncSpec[]{new FuncSpec(WrapglColor4s.class,
+        s.put("glColor4s", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4sv", new FuncSpec[]{new FuncSpec(WrapglColor4sv.class,
+        s.put("glColor4sv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor4sv_2.class,
+                new FunctionSpecification(WrapglColor4sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4ub", new FuncSpec[]{new FuncSpec(WrapglColor4ub.class,
+        s.put("glColor4ub", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4ub.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4ubv", new FuncSpec[]{new FuncSpec(WrapglColor4ubv.class,
+        s.put("glColor4ubv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4ubv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor4ubv_2.class,
+                new FunctionSpecification(WrapglColor4ubv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4ui", new FuncSpec[]{new FuncSpec(WrapglColor4ui.class,
+        s.put("glColor4ui", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4ui.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4uiv", new FuncSpec[]{new FuncSpec(WrapglColor4uiv.class,
+        s.put("glColor4uiv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4uiv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor4uiv_2.class,
+                new FunctionSpecification(WrapglColor4uiv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4us", new FuncSpec[]{new FuncSpec(WrapglColor4us.class,
+        s.put("glColor4us", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4us.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4usv", new FuncSpec[]{new FuncSpec(WrapglColor4usv.class,
+        s.put("glColor4usv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4usv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglColor4usv_2.class,
+                new FunctionSpecification(WrapglColor4usv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColorMask", new FuncSpec[]{new FuncSpec(WrapglColorMask.class,
+        s.put("glColorMask", new FunctionSpecification[]{new FunctionSpecification(WrapglColorMask.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColorMaterial", new FuncSpec[]{new FuncSpec(WrapglColorMaterial.class,
+        s.put("glColorMaterial", new FunctionSpecification[]{new FunctionSpecification(WrapglColorMaterial.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCopyPixels", new FuncSpec[]{new FuncSpec(WrapglCopyPixels.class,
+        s.put("glCopyPixels", new FunctionSpecification[]{new FunctionSpecification(WrapglCopyPixels.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCopyTexImage1D", new FuncSpec[]{new FuncSpec(WrapglCopyTexImage1D.class,
+        s.put("glCopyTexImage1D", new FunctionSpecification[]{new FunctionSpecification(WrapglCopyTexImage1D.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCopyTexImage2D", new FuncSpec[]{new FuncSpec(WrapglCopyTexImage2D.class,
+        s.put("glCopyTexImage2D", new FunctionSpecification[]{new FunctionSpecification(WrapglCopyTexImage2D.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCopyTexSubImage1D", new FuncSpec[]{new FuncSpec(WrapglCopyTexSubImage1D.class,
+        s.put("glCopyTexSubImage1D", new FunctionSpecification[]{new FunctionSpecification(WrapglCopyTexSubImage1D.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCopyTexSubImage2D", new FuncSpec[]{new FuncSpec(WrapglCopyTexSubImage2D.class,
+        s.put("glCopyTexSubImage2D", new FunctionSpecification[]{new FunctionSpecification(WrapglCopyTexSubImage2D.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCullFace", new FuncSpec[]{new FuncSpec(WrapglCullFace.class,
+        s.put("glCullFace", new FunctionSpecification[]{new FunctionSpecification(WrapglCullFace.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDepthFunc", new FuncSpec[]{new FuncSpec(WrapglDepthFunc.class,
+        s.put("glDepthFunc", new FunctionSpecification[]{new FunctionSpecification(WrapglDepthFunc.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDepthMask", new FuncSpec[]{new FuncSpec(WrapglDepthMask.class,
+        s.put("glDepthMask", new FunctionSpecification[]{new FunctionSpecification(WrapglDepthMask.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDepthRange", new FuncSpec[]{new FuncSpec(WrapglDepthRange.class,
+        s.put("glDepthRange", new FunctionSpecification[]{new FunctionSpecification(WrapglDepthRange.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDisable", new FuncSpec[]{new FuncSpec(WrapglDisable.class,
+        s.put("glDisable", new FunctionSpecification[]{new FunctionSpecification(WrapglDisable.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDisableClientState", new FuncSpec[]{new FuncSpec(WrapglDisableClientState.class,
+        s.put("glDisableClientState", new FunctionSpecification[]{new FunctionSpecification(WrapglDisableClientState.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDrawArrays", new FuncSpec[]{new FuncSpec(WrapglDrawArrays.class,
+        s.put("glDrawArrays", new FunctionSpecification[]{new FunctionSpecification(WrapglDrawArrays.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDrawBuffer", new FuncSpec[]{new FuncSpec(WrapglDrawBuffer.class,
+        s.put("glDrawBuffer", new FunctionSpecification[]{new FunctionSpecification(WrapglDrawBuffer.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEdgeFlag", new FuncSpec[]{new FuncSpec(WrapglEdgeFlag.class,
+        s.put("glEdgeFlag", new FunctionSpecification[]{new FunctionSpecification(WrapglEdgeFlag.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEdgeFlagv", new FuncSpec[]{new FuncSpec(WrapglEdgeFlagv.class,
+        s.put("glEdgeFlagv", new FunctionSpecification[]{new FunctionSpecification(WrapglEdgeFlagv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglEdgeFlagv_2.class,
+                new FunctionSpecification(WrapglEdgeFlagv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEnable", new FuncSpec[]{new FuncSpec(WrapglEnable.class,
+        s.put("glEnable", new FunctionSpecification[]{new FunctionSpecification(WrapglEnable.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEnableClientState", new FuncSpec[]{new FuncSpec(WrapglEnableClientState.class,
+        s.put("glEnableClientState", new FunctionSpecification[]{new FunctionSpecification(WrapglEnableClientState.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEndList", new FuncSpec[]{new FuncSpec(WrapglEndList.class,
+        s.put("glEndList", new FunctionSpecification[]{new FunctionSpecification(WrapglEndList.class,
                 new ParamTypeList(new ValType[]{})
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord1d", new FuncSpec[]{new FuncSpec(WrapglEvalCoord1d.class,
+        s.put("glEvalCoord1d", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord1d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord1dv", new FuncSpec[]{new FuncSpec(WrapglEvalCoord1dv.class,
+        s.put("glEvalCoord1dv", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord1dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglEvalCoord1dv_2.class,
+                new FunctionSpecification(WrapglEvalCoord1dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord1f", new FuncSpec[]{new FuncSpec(WrapglEvalCoord1f.class,
+        s.put("glEvalCoord1f", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord1f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord1fv", new FuncSpec[]{new FuncSpec(WrapglEvalCoord1fv.class,
+        s.put("glEvalCoord1fv", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord1fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglEvalCoord1fv_2.class,
+                new FunctionSpecification(WrapglEvalCoord1fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord2d", new FuncSpec[]{new FuncSpec(WrapglEvalCoord2d.class,
+        s.put("glEvalCoord2d", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord2d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord2dv", new FuncSpec[]{new FuncSpec(WrapglEvalCoord2dv.class,
+        s.put("glEvalCoord2dv", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord2dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglEvalCoord2dv_2.class,
+                new FunctionSpecification(WrapglEvalCoord2dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord2f", new FuncSpec[]{new FuncSpec(WrapglEvalCoord2f.class,
+        s.put("glEvalCoord2f", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord2f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord2fv", new FuncSpec[]{new FuncSpec(WrapglEvalCoord2fv.class,
+        s.put("glEvalCoord2fv", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord2fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglEvalCoord2fv_2.class,
+                new FunctionSpecification(WrapglEvalCoord2fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalMesh1", new FuncSpec[]{new FuncSpec(WrapglEvalMesh1.class,
+        s.put("glEvalMesh1", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalMesh1.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalMesh2", new FuncSpec[]{new FuncSpec(WrapglEvalMesh2.class,
+        s.put("glEvalMesh2", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalMesh2.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalPoint1", new FuncSpec[]{new FuncSpec(WrapglEvalPoint1.class,
+        s.put("glEvalPoint1", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalPoint1.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalPoint2", new FuncSpec[]{new FuncSpec(WrapglEvalPoint2.class,
+        s.put("glEvalPoint2", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalPoint2.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFeedbackBuffer", new FuncSpec[]{new FuncSpec(WrapglFeedbackBuffer.class,
+        s.put("glFeedbackBuffer", new FunctionSpecification[]{new FunctionSpecification(WrapglFeedbackBuffer.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFinish", new FuncSpec[]{new FuncSpec(WrapglFinish.class,
+        s.put("glFinish", new FunctionSpecification[]{new FunctionSpecification(WrapglFinish.class,
                 new ParamTypeList(new ValType[]{})
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFlush", new FuncSpec[]{new FuncSpec(WrapglFlush.class,
+        s.put("glFlush", new FunctionSpecification[]{new FunctionSpecification(WrapglFlush.class,
                 new ParamTypeList(new ValType[]{})
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFogf", new FuncSpec[]{new FuncSpec(WrapglFogf.class,
+        s.put("glFogf", new FunctionSpecification[]{new FunctionSpecification(WrapglFogf.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFogfv", new FuncSpec[]{new FuncSpec(WrapglFogfv.class,
+        s.put("glFogfv", new FunctionSpecification[]{new FunctionSpecification(WrapglFogfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglFogfv_2.class,
+                new FunctionSpecification(WrapglFogfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFogi", new FuncSpec[]{new FuncSpec(WrapglFogi.class,
+        s.put("glFogi", new FunctionSpecification[]{new FunctionSpecification(WrapglFogi.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFogiv", new FuncSpec[]{new FuncSpec(WrapglFogiv.class,
+        s.put("glFogiv", new FunctionSpecification[]{new FunctionSpecification(WrapglFogiv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglFogiv_2.class,
+                new FunctionSpecification(WrapglFogiv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFrontFace", new FuncSpec[]{new FuncSpec(WrapglFrontFace.class,
+        s.put("glFrontFace", new FunctionSpecification[]{new FunctionSpecification(WrapglFrontFace.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFrustum", new FuncSpec[]{new FuncSpec(WrapglFrustum.class,
+        s.put("glFrustum", new FunctionSpecification[]{new FunctionSpecification(WrapglFrustum.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetBooleanv", new FuncSpec[]{new FuncSpec(WrapglGetBooleanv.class,
+        s.put("glGetBooleanv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetBooleanv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetBooleanv_2.class,
+                new FunctionSpecification(WrapglGetBooleanv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetClipPlane", new FuncSpec[]{new FuncSpec(WrapglGetClipPlane.class,
+        s.put("glGetClipPlane", new FunctionSpecification[]{new FunctionSpecification(WrapglGetClipPlane.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetClipPlane_2.class,
+                new FunctionSpecification(WrapglGetClipPlane_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetDoublev", new FuncSpec[]{new FuncSpec(WrapglGetDoublev.class,
+        s.put("glGetDoublev", new FunctionSpecification[]{new FunctionSpecification(WrapglGetDoublev.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetDoublev_2.class,
+                new FunctionSpecification(WrapglGetDoublev_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetError", new FuncSpec[]{new FuncSpec(WrapglGetError.class,
+        s.put("glGetError", new FunctionSpecification[]{new FunctionSpecification(WrapglGetError.class,
                 new ParamTypeList(new ValType[]{})
                 , true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetFloatv", new FuncSpec[]{new FuncSpec(WrapglGetFloatv.class,
+        s.put("glGetFloatv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetFloatv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetFloatv_2.class,
+                new FunctionSpecification(WrapglGetFloatv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetIntegerv", new FuncSpec[]{new FuncSpec(WrapglGetIntegerv.class,
+        s.put("glGetIntegerv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetIntegerv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetIntegerv_2.class,
+                new FunctionSpecification(WrapglGetIntegerv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetLightfv", new FuncSpec[]{new FuncSpec(WrapglGetLightfv.class,
+        s.put("glGetLightfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetLightfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetLightfv_2.class,
+                new FunctionSpecification(WrapglGetLightfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetLightiv", new FuncSpec[]{new FuncSpec(WrapglGetLightiv.class,
+        s.put("glGetLightiv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetLightiv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetLightiv_2.class,
+                new FunctionSpecification(WrapglGetLightiv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetMaterialfv", new FuncSpec[]{new FuncSpec(WrapglGetMaterialfv.class,
+        s.put("glGetMaterialfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetMaterialfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetMaterialfv_2.class,
+                new FunctionSpecification(WrapglGetMaterialfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetMaterialiv", new FuncSpec[]{new FuncSpec(WrapglGetMaterialiv.class,
+        s.put("glGetMaterialiv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetMaterialiv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetMaterialiv_2.class,
+                new FunctionSpecification(WrapglGetMaterialiv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetPixelMapuiv", new FuncSpec[]{new FuncSpec(WrapglGetPixelMapuiv.class,
+        s.put("glGetPixelMapuiv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetPixelMapuiv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetPixelMapuiv_2.class,
+                new FunctionSpecification(WrapglGetPixelMapuiv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexEnvfv", new FuncSpec[]{new FuncSpec(WrapglGetTexEnvfv.class,
+        s.put("glGetTexEnvfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexEnvfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetTexEnvfv_2.class,
+                new FunctionSpecification(WrapglGetTexEnvfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexEnviv", new FuncSpec[]{new FuncSpec(WrapglGetTexEnviv.class,
+        s.put("glGetTexEnviv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexEnviv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetTexEnviv_2.class,
+                new FunctionSpecification(WrapglGetTexEnviv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexGendv", new FuncSpec[]{new FuncSpec(WrapglGetTexGendv.class,
+        s.put("glGetTexGendv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexGendv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetTexGendv_2.class,
+                new FunctionSpecification(WrapglGetTexGendv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexGenfv", new FuncSpec[]{new FuncSpec(WrapglGetTexGenfv.class,
+        s.put("glGetTexGenfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexGenfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetTexGenfv_2.class,
+                new FunctionSpecification(WrapglGetTexGenfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexGeniv", new FuncSpec[]{new FuncSpec(WrapglGetTexGeniv.class,
+        s.put("glGetTexGeniv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexGeniv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetTexGeniv_2.class,
+                new FunctionSpecification(WrapglGetTexGeniv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexLevelParameterfv", new FuncSpec[]{new FuncSpec(WrapglGetTexLevelParameterfv.class,
+        s.put("glGetTexLevelParameterfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexLevelParameterfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetTexLevelParameterfv_2.class,
+                new FunctionSpecification(WrapglGetTexLevelParameterfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexLevelParameteriv", new FuncSpec[]{new FuncSpec(WrapglGetTexLevelParameteriv.class,
+        s.put("glGetTexLevelParameteriv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexLevelParameteriv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetTexLevelParameteriv_2.class,
+                new FunctionSpecification(WrapglGetTexLevelParameteriv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexParameterfv", new FuncSpec[]{new FuncSpec(WrapglGetTexParameterfv.class,
+        s.put("glGetTexParameterfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexParameterfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetTexParameterfv_2.class,
+                new FunctionSpecification(WrapglGetTexParameterfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexParameteriv", new FuncSpec[]{new FuncSpec(WrapglGetTexParameteriv.class,
+        s.put("glGetTexParameteriv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexParameteriv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglGetTexParameteriv_2.class,
+                new FunctionSpecification(WrapglGetTexParameteriv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glHint", new FuncSpec[]{new FuncSpec(WrapglHint.class,
+        s.put("glHint", new FunctionSpecification[]{new FunctionSpecification(WrapglHint.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)
         });
-        s.put("glIndexMask", new FuncSpec[]{new FuncSpec(WrapglIndexMask.class,
+        s.put("glIndexMask", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexMask.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexd", new FuncSpec[]{new FuncSpec(WrapglIndexd.class,
+        s.put("glIndexd", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexd.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexdv", new FuncSpec[]{new FuncSpec(WrapglIndexdv.class,
+        s.put("glIndexdv", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexdv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglIndexdv_2.class,
+                new FunctionSpecification(WrapglIndexdv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexf", new FuncSpec[]{new FuncSpec(WrapglIndexf.class,
+        s.put("glIndexf", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexf.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexfv", new FuncSpec[]{new FuncSpec(WrapglIndexfv.class,
+        s.put("glIndexfv", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglIndexfv_2.class,
+                new FunctionSpecification(WrapglIndexfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexi", new FuncSpec[]{new FuncSpec(WrapglIndexi.class,
+        s.put("glIndexi", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexi.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexiv", new FuncSpec[]{new FuncSpec(WrapglIndexiv.class,
+        s.put("glIndexiv", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexiv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglIndexiv_2.class,
+                new FunctionSpecification(WrapglIndexiv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexs", new FuncSpec[]{new FuncSpec(WrapglIndexs.class,
+        s.put("glIndexs", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexs.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexsv", new FuncSpec[]{new FuncSpec(WrapglIndexsv.class,
+        s.put("glIndexsv", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexsv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglIndexsv_2.class,
+                new FunctionSpecification(WrapglIndexsv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexub", new FuncSpec[]{new FuncSpec(WrapglIndexub.class,
+        s.put("glIndexub", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexub.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexubv", new FuncSpec[]{new FuncSpec(WrapglIndexubv.class,
+        s.put("glIndexubv", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexubv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglIndexubv_2.class,
+                new FunctionSpecification(WrapglIndexubv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glInitNames", new FuncSpec[]{new FuncSpec(WrapglInitNames.class,
+        s.put("glInitNames", new FunctionSpecification[]{new FunctionSpecification(WrapglInitNames.class,
                 new ParamTypeList(new ValType[]{})
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIsEnabled", new FuncSpec[]{new FuncSpec(WrapglIsEnabled.class,
+        s.put("glIsEnabled", new FunctionSpecification[]{new FunctionSpecification(WrapglIsEnabled.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIsList", new FuncSpec[]{new FuncSpec(WrapglIsList.class,
+        s.put("glIsList", new FunctionSpecification[]{new FunctionSpecification(WrapglIsList.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIsTexture", new FuncSpec[]{new FuncSpec(WrapglIsTexture.class,
+        s.put("glIsTexture", new FunctionSpecification[]{new FunctionSpecification(WrapglIsTexture.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightModelf", new FuncSpec[]{new FuncSpec(WrapglLightModelf.class,
+        s.put("glLightModelf", new FunctionSpecification[]{new FunctionSpecification(WrapglLightModelf.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightModelfv", new FuncSpec[]{new FuncSpec(WrapglLightModelfv.class,
+        s.put("glLightModelfv", new FunctionSpecification[]{new FunctionSpecification(WrapglLightModelfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglLightModelfv_2.class,
+                new FunctionSpecification(WrapglLightModelfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightModeli", new FuncSpec[]{new FuncSpec(WrapglLightModeli.class,
+        s.put("glLightModeli", new FunctionSpecification[]{new FunctionSpecification(WrapglLightModeli.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightModeliv", new FuncSpec[]{new FuncSpec(WrapglLightModeliv.class,
+        s.put("glLightModeliv", new FunctionSpecification[]{new FunctionSpecification(WrapglLightModeliv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglLightModeliv_2.class,
+                new FunctionSpecification(WrapglLightModeliv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightf", new FuncSpec[]{new FuncSpec(WrapglLightf.class,
+        s.put("glLightf", new FunctionSpecification[]{new FunctionSpecification(WrapglLightf.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightfv", new FuncSpec[]{new FuncSpec(WrapglLightfv.class,
+        s.put("glLightfv", new FunctionSpecification[]{new FunctionSpecification(WrapglLightfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglLightfv_2.class,
+                new FunctionSpecification(WrapglLightfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLighti", new FuncSpec[]{new FuncSpec(WrapglLighti.class,
+        s.put("glLighti", new FunctionSpecification[]{new FunctionSpecification(WrapglLighti.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightiv", new FuncSpec[]{new FuncSpec(WrapglLightiv.class,
+        s.put("glLightiv", new FunctionSpecification[]{new FunctionSpecification(WrapglLightiv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglLightiv_2.class,
+                new FunctionSpecification(WrapglLightiv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLineStipple", new FuncSpec[]{new FuncSpec(WrapglLineStipple.class,
+        s.put("glLineStipple", new FunctionSpecification[]{new FunctionSpecification(WrapglLineStipple.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLineWidth", new FuncSpec[]{new FuncSpec(WrapglLineWidth.class,
+        s.put("glLineWidth", new FunctionSpecification[]{new FunctionSpecification(WrapglLineWidth.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glListBase", new FuncSpec[]{new FuncSpec(WrapglListBase.class,
+        s.put("glListBase", new FunctionSpecification[]{new FunctionSpecification(WrapglListBase.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLoadIdentity", new FuncSpec[]{new FuncSpec(WrapglLoadIdentity.class,
+        s.put("glLoadIdentity", new FunctionSpecification[]{new FunctionSpecification(WrapglLoadIdentity.class,
                 new ParamTypeList(new ValType[]{})
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLoadName", new FuncSpec[]{new FuncSpec(WrapglLoadName.class,
+        s.put("glLoadName", new FunctionSpecification[]{new FunctionSpecification(WrapglLoadName.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLogicOp", new FuncSpec[]{new FuncSpec(WrapglLogicOp.class,
+        s.put("glLogicOp", new FunctionSpecification[]{new FunctionSpecification(WrapglLogicOp.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMapGrid1d", new FuncSpec[]{new FuncSpec(WrapglMapGrid1d.class,
+        s.put("glMapGrid1d", new FunctionSpecification[]{new FunctionSpecification(WrapglMapGrid1d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMapGrid1f", new FuncSpec[]{new FuncSpec(WrapglMapGrid1f.class,
+        s.put("glMapGrid1f", new FunctionSpecification[]{new FunctionSpecification(WrapglMapGrid1f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMapGrid2d", new FuncSpec[]{new FuncSpec(WrapglMapGrid2d.class,
+        s.put("glMapGrid2d", new FunctionSpecification[]{new FunctionSpecification(WrapglMapGrid2d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMapGrid2f", new FuncSpec[]{new FuncSpec(WrapglMapGrid2f.class,
+        s.put("glMapGrid2f", new FunctionSpecification[]{new FunctionSpecification(WrapglMapGrid2f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMaterialf", new FuncSpec[]{new FuncSpec(WrapglMaterialf.class,
+        s.put("glMaterialf", new FunctionSpecification[]{new FunctionSpecification(WrapglMaterialf.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMaterialfv", new FuncSpec[]{new FuncSpec(WrapglMaterialfv.class,
+        s.put("glMaterialfv", new FunctionSpecification[]{new FunctionSpecification(WrapglMaterialfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglMaterialfv_2.class,
+                new FunctionSpecification(WrapglMaterialfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMateriali", new FuncSpec[]{new FuncSpec(WrapglMateriali.class,
+        s.put("glMateriali", new FunctionSpecification[]{new FunctionSpecification(WrapglMateriali.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMaterialiv", new FuncSpec[]{new FuncSpec(WrapglMaterialiv.class,
+        s.put("glMaterialiv", new FunctionSpecification[]{new FunctionSpecification(WrapglMaterialiv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglMaterialiv_2.class,
+                new FunctionSpecification(WrapglMaterialiv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMatrixMode", new FuncSpec[]{new FuncSpec(WrapglMatrixMode.class,
+        s.put("glMatrixMode", new FunctionSpecification[]{new FunctionSpecification(WrapglMatrixMode.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNewList", new FuncSpec[]{new FuncSpec(WrapglNewList.class,
+        s.put("glNewList", new FunctionSpecification[]{new FunctionSpecification(WrapglNewList.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3b", new FuncSpec[]{new FuncSpec(WrapglNormal3b.class,
+        s.put("glNormal3b", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3b.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3bv", new FuncSpec[]{new FuncSpec(WrapglNormal3bv.class,
+        s.put("glNormal3bv", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3bv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglNormal3bv_2.class,
+                new FunctionSpecification(WrapglNormal3bv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3d", new FuncSpec[]{new FuncSpec(WrapglNormal3d.class,
+        s.put("glNormal3d", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3dv", new FuncSpec[]{new FuncSpec(WrapglNormal3dv.class,
+        s.put("glNormal3dv", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglNormal3dv_2.class,
+                new FunctionSpecification(WrapglNormal3dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3f", new FuncSpec[]{new FuncSpec(WrapglNormal3f.class,
+        s.put("glNormal3f", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3fv", new FuncSpec[]{new FuncSpec(WrapglNormal3fv.class,
+        s.put("glNormal3fv", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglNormal3fv_2.class,
+                new FunctionSpecification(WrapglNormal3fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3i", new FuncSpec[]{new FuncSpec(WrapglNormal3i.class,
+        s.put("glNormal3i", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3iv", new FuncSpec[]{new FuncSpec(WrapglNormal3iv.class,
+        s.put("glNormal3iv", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglNormal3iv_2.class,
+                new FunctionSpecification(WrapglNormal3iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3s", new FuncSpec[]{new FuncSpec(WrapglNormal3s.class,
+        s.put("glNormal3s", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3sv", new FuncSpec[]{new FuncSpec(WrapglNormal3sv.class,
+        s.put("glNormal3sv", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglNormal3sv_2.class,
+                new FunctionSpecification(WrapglNormal3sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glOrtho", new FuncSpec[]{new FuncSpec(WrapglOrtho.class,
+        s.put("glOrtho", new FunctionSpecification[]{new FunctionSpecification(WrapglOrtho.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPassThrough", new FuncSpec[]{new FuncSpec(WrapglPassThrough.class,
+        s.put("glPassThrough", new FunctionSpecification[]{new FunctionSpecification(WrapglPassThrough.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPixelStoref", new FuncSpec[]{new FuncSpec(WrapglPixelStoref.class,
+        s.put("glPixelStoref", new FunctionSpecification[]{new FunctionSpecification(WrapglPixelStoref.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPixelStorei", new FuncSpec[]{new FuncSpec(WrapglPixelStorei.class,
+        s.put("glPixelStorei", new FunctionSpecification[]{new FunctionSpecification(WrapglPixelStorei.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPixelTransferf", new FuncSpec[]{new FuncSpec(WrapglPixelTransferf.class,
+        s.put("glPixelTransferf", new FunctionSpecification[]{new FunctionSpecification(WrapglPixelTransferf.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPixelTransferi", new FuncSpec[]{new FuncSpec(WrapglPixelTransferi.class,
+        s.put("glPixelTransferi", new FunctionSpecification[]{new FunctionSpecification(WrapglPixelTransferi.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPixelZoom", new FuncSpec[]{new FuncSpec(WrapglPixelZoom.class,
+        s.put("glPixelZoom", new FunctionSpecification[]{new FunctionSpecification(WrapglPixelZoom.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPointSize", new FuncSpec[]{new FuncSpec(WrapglPointSize.class,
+        s.put("glPointSize", new FunctionSpecification[]{new FunctionSpecification(WrapglPointSize.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPolygonMode", new FuncSpec[]{new FuncSpec(WrapglPolygonMode.class,
+        s.put("glPolygonMode", new FunctionSpecification[]{new FunctionSpecification(WrapglPolygonMode.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPolygonOffset", new FuncSpec[]{new FuncSpec(WrapglPolygonOffset.class,
+        s.put("glPolygonOffset", new FunctionSpecification[]{new FunctionSpecification(WrapglPolygonOffset.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPopAttrib", new FuncSpec[]{new FuncSpec(WrapglPopAttrib.class,
+        s.put("glPopAttrib", new FunctionSpecification[]{new FunctionSpecification(WrapglPopAttrib.class,
                 new ParamTypeList(new ValType[]{})
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPopClientAttrib", new FuncSpec[]{new FuncSpec(WrapglPopClientAttrib.class,
+        s.put("glPopClientAttrib", new FunctionSpecification[]{new FunctionSpecification(WrapglPopClientAttrib.class,
                 new ParamTypeList(new ValType[]{})
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPopMatrix", new FuncSpec[]{new FuncSpec(WrapglPopMatrix.class,
+        s.put("glPopMatrix", new FunctionSpecification[]{new FunctionSpecification(WrapglPopMatrix.class,
                 new ParamTypeList(new ValType[]{})
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPopName", new FuncSpec[]{new FuncSpec(WrapglPopName.class,
+        s.put("glPopName", new FunctionSpecification[]{new FunctionSpecification(WrapglPopName.class,
                 new ParamTypeList(new ValType[]{})
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPrioritizeTextures", new FuncSpec[]{new FuncSpec(WrapglPrioritizeTextures.class,
+        s.put("glPrioritizeTextures", new FunctionSpecification[]{new FunctionSpecification(WrapglPrioritizeTextures.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPushAttrib", new FuncSpec[]{new FuncSpec(WrapglPushAttrib.class,
+        s.put("glPushAttrib", new FunctionSpecification[]{new FunctionSpecification(WrapglPushAttrib.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPushClientAttrib", new FuncSpec[]{new FuncSpec(WrapglPushClientAttrib.class,
+        s.put("glPushClientAttrib", new FunctionSpecification[]{new FunctionSpecification(WrapglPushClientAttrib.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPushMatrix", new FuncSpec[]{new FuncSpec(WrapglPushMatrix.class,
+        s.put("glPushMatrix", new FunctionSpecification[]{new FunctionSpecification(WrapglPushMatrix.class,
                 new ParamTypeList(new ValType[]{})
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPushName", new FuncSpec[]{new FuncSpec(WrapglPushName.class,
+        s.put("glPushName", new FunctionSpecification[]{new FunctionSpecification(WrapglPushName.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2d", new FuncSpec[]{new FuncSpec(WrapglRasterPos2d.class,
+        s.put("glRasterPos2d", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2dv", new FuncSpec[]{new FuncSpec(WrapglRasterPos2dv.class,
+        s.put("glRasterPos2dv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos2dv_2.class,
+                new FunctionSpecification(WrapglRasterPos2dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2f", new FuncSpec[]{new FuncSpec(WrapglRasterPos2f.class,
+        s.put("glRasterPos2f", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2fv", new FuncSpec[]{new FuncSpec(WrapglRasterPos2fv.class,
+        s.put("glRasterPos2fv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos2fv_2.class,
+                new FunctionSpecification(WrapglRasterPos2fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2i", new FuncSpec[]{new FuncSpec(WrapglRasterPos2i.class,
+        s.put("glRasterPos2i", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2iv", new FuncSpec[]{new FuncSpec(WrapglRasterPos2iv.class,
+        s.put("glRasterPos2iv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos2iv_2.class,
+                new FunctionSpecification(WrapglRasterPos2iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2s", new FuncSpec[]{new FuncSpec(WrapglRasterPos2s.class,
+        s.put("glRasterPos2s", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2sv", new FuncSpec[]{new FuncSpec(WrapglRasterPos2sv.class,
+        s.put("glRasterPos2sv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos2sv_2.class,
+                new FunctionSpecification(WrapglRasterPos2sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3d", new FuncSpec[]{new FuncSpec(WrapglRasterPos3d.class,
+        s.put("glRasterPos3d", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3dv", new FuncSpec[]{new FuncSpec(WrapglRasterPos3dv.class,
+        s.put("glRasterPos3dv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos3dv_2.class,
+                new FunctionSpecification(WrapglRasterPos3dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3f", new FuncSpec[]{new FuncSpec(WrapglRasterPos3f.class,
+        s.put("glRasterPos3f", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3fv", new FuncSpec[]{new FuncSpec(WrapglRasterPos3fv.class,
+        s.put("glRasterPos3fv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos3fv_2.class,
+                new FunctionSpecification(WrapglRasterPos3fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3i", new FuncSpec[]{new FuncSpec(WrapglRasterPos3i.class,
+        s.put("glRasterPos3i", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3iv", new FuncSpec[]{new FuncSpec(WrapglRasterPos3iv.class,
+        s.put("glRasterPos3iv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos3iv_2.class,
+                new FunctionSpecification(WrapglRasterPos3iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3s", new FuncSpec[]{new FuncSpec(WrapglRasterPos3s.class,
+        s.put("glRasterPos3s", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3sv", new FuncSpec[]{new FuncSpec(WrapglRasterPos3sv.class,
+        s.put("glRasterPos3sv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos3sv_2.class,
+                new FunctionSpecification(WrapglRasterPos3sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4d", new FuncSpec[]{new FuncSpec(WrapglRasterPos4d.class,
+        s.put("glRasterPos4d", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4dv", new FuncSpec[]{new FuncSpec(WrapglRasterPos4dv.class,
+        s.put("glRasterPos4dv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos4dv_2.class,
+                new FunctionSpecification(WrapglRasterPos4dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4f", new FuncSpec[]{new FuncSpec(WrapglRasterPos4f.class,
+        s.put("glRasterPos4f", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4fv", new FuncSpec[]{new FuncSpec(WrapglRasterPos4fv.class,
+        s.put("glRasterPos4fv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos4fv_2.class,
+                new FunctionSpecification(WrapglRasterPos4fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4i", new FuncSpec[]{new FuncSpec(WrapglRasterPos4i.class,
+        s.put("glRasterPos4i", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4iv", new FuncSpec[]{new FuncSpec(WrapglRasterPos4iv.class,
+        s.put("glRasterPos4iv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos4iv_2.class,
+                new FunctionSpecification(WrapglRasterPos4iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4s", new FuncSpec[]{new FuncSpec(WrapglRasterPos4s.class,
+        s.put("glRasterPos4s", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4sv", new FuncSpec[]{new FuncSpec(WrapglRasterPos4sv.class,
+        s.put("glRasterPos4sv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRasterPos4sv_2.class,
+                new FunctionSpecification(WrapglRasterPos4sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glReadBuffer", new FuncSpec[]{new FuncSpec(WrapglReadBuffer.class,
+        s.put("glReadBuffer", new FunctionSpecification[]{new FunctionSpecification(WrapglReadBuffer.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectd", new FuncSpec[]{new FuncSpec(WrapglRectd.class,
+        s.put("glRectd", new FunctionSpecification[]{new FunctionSpecification(WrapglRectd.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectdv", new FuncSpec[]{new FuncSpec(WrapglRectdv.class,
+        s.put("glRectdv", new FunctionSpecification[]{new FunctionSpecification(WrapglRectdv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectdv_2.class,
+                new FunctionSpecification(WrapglRectdv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectdv_3.class,
+                new FunctionSpecification(WrapglRectdv_3.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectdv_4.class,
+                new FunctionSpecification(WrapglRectdv_4.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectf", new FuncSpec[]{new FuncSpec(WrapglRectf.class,
+        s.put("glRectf", new FunctionSpecification[]{new FunctionSpecification(WrapglRectf.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectfv", new FuncSpec[]{new FuncSpec(WrapglRectfv.class,
+        s.put("glRectfv", new FunctionSpecification[]{new FunctionSpecification(WrapglRectfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectfv_2.class,
+                new FunctionSpecification(WrapglRectfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectfv_3.class,
+                new FunctionSpecification(WrapglRectfv_3.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectfv_4.class,
+                new FunctionSpecification(WrapglRectfv_4.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRecti", new FuncSpec[]{new FuncSpec(WrapglRecti.class,
+        s.put("glRecti", new FunctionSpecification[]{new FunctionSpecification(WrapglRecti.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectiv", new FuncSpec[]{new FuncSpec(WrapglRectiv.class,
+        s.put("glRectiv", new FunctionSpecification[]{new FunctionSpecification(WrapglRectiv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectiv_2.class,
+                new FunctionSpecification(WrapglRectiv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectiv_3.class,
+                new FunctionSpecification(WrapglRectiv_3.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectiv_4.class,
+                new FunctionSpecification(WrapglRectiv_4.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRects", new FuncSpec[]{new FuncSpec(WrapglRects.class,
+        s.put("glRects", new FunctionSpecification[]{new FunctionSpecification(WrapglRects.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectsv", new FuncSpec[]{new FuncSpec(WrapglRectsv.class,
+        s.put("glRectsv", new FunctionSpecification[]{new FunctionSpecification(WrapglRectsv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectsv_2.class,
+                new FunctionSpecification(WrapglRectsv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectsv_3.class,
+                new FunctionSpecification(WrapglRectsv_3.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglRectsv_4.class,
+                new FunctionSpecification(WrapglRectsv_4.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRenderMode", new FuncSpec[]{new FuncSpec(WrapglRenderMode.class,
+        s.put("glRenderMode", new FunctionSpecification[]{new FunctionSpecification(WrapglRenderMode.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRotated", new FuncSpec[]{new FuncSpec(WrapglRotated.class,
+        s.put("glRotated", new FunctionSpecification[]{new FunctionSpecification(WrapglRotated.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRotatef", new FuncSpec[]{new FuncSpec(WrapglRotatef.class,
+        s.put("glRotatef", new FunctionSpecification[]{new FunctionSpecification(WrapglRotatef.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glScaled", new FuncSpec[]{new FuncSpec(WrapglScaled.class,
+        s.put("glScaled", new FunctionSpecification[]{new FunctionSpecification(WrapglScaled.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glScalef", new FuncSpec[]{new FuncSpec(WrapglScalef.class,
+        s.put("glScalef", new FunctionSpecification[]{new FunctionSpecification(WrapglScalef.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glScissor", new FuncSpec[]{new FuncSpec(WrapglScissor.class,
+        s.put("glScissor", new FunctionSpecification[]{new FunctionSpecification(WrapglScissor.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glSelectBuffer", new FuncSpec[]{new FuncSpec(WrapglSelectBuffer.class,
+        s.put("glSelectBuffer", new FunctionSpecification[]{new FunctionSpecification(WrapglSelectBuffer.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glShadeModel", new FuncSpec[]{new FuncSpec(WrapglShadeModel.class,
+        s.put("glShadeModel", new FunctionSpecification[]{new FunctionSpecification(WrapglShadeModel.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glStencilFunc", new FuncSpec[]{new FuncSpec(WrapglStencilFunc.class,
+        s.put("glStencilFunc", new FunctionSpecification[]{new FunctionSpecification(WrapglStencilFunc.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glStencilMask", new FuncSpec[]{new FuncSpec(WrapglStencilMask.class,
+        s.put("glStencilMask", new FunctionSpecification[]{new FunctionSpecification(WrapglStencilMask.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glStencilOp", new FuncSpec[]{new FuncSpec(WrapglStencilOp.class,
+        s.put("glStencilOp", new FunctionSpecification[]{new FunctionSpecification(WrapglStencilOp.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1d", new FuncSpec[]{new FuncSpec(WrapglTexCoord1d.class,
+        s.put("glTexCoord1d", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1dv", new FuncSpec[]{new FuncSpec(WrapglTexCoord1dv.class,
+        s.put("glTexCoord1dv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord1dv_2.class,
+                new FunctionSpecification(WrapglTexCoord1dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1f", new FuncSpec[]{new FuncSpec(WrapglTexCoord1f.class,
+        s.put("glTexCoord1f", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1fv", new FuncSpec[]{new FuncSpec(WrapglTexCoord1fv.class,
+        s.put("glTexCoord1fv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord1fv_2.class,
+                new FunctionSpecification(WrapglTexCoord1fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1i", new FuncSpec[]{new FuncSpec(WrapglTexCoord1i.class,
+        s.put("glTexCoord1i", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1iv", new FuncSpec[]{new FuncSpec(WrapglTexCoord1iv.class,
+        s.put("glTexCoord1iv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord1iv_2.class,
+                new FunctionSpecification(WrapglTexCoord1iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1s", new FuncSpec[]{new FuncSpec(WrapglTexCoord1s.class,
+        s.put("glTexCoord1s", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1sv", new FuncSpec[]{new FuncSpec(WrapglTexCoord1sv.class,
+        s.put("glTexCoord1sv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord1sv_2.class,
+                new FunctionSpecification(WrapglTexCoord1sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2d", new FuncSpec[]{new FuncSpec(WrapglTexCoord2d.class,
+        s.put("glTexCoord2d", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2dv", new FuncSpec[]{new FuncSpec(WrapglTexCoord2dv.class,
+        s.put("glTexCoord2dv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord2dv_2.class,
+                new FunctionSpecification(WrapglTexCoord2dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2f", new FuncSpec[]{new FuncSpec(WrapglTexCoord2f.class,
+        s.put("glTexCoord2f", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2fv", new FuncSpec[]{new FuncSpec(WrapglTexCoord2fv.class,
+        s.put("glTexCoord2fv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord2fv_2.class,
+                new FunctionSpecification(WrapglTexCoord2fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2i", new FuncSpec[]{new FuncSpec(WrapglTexCoord2i.class,
+        s.put("glTexCoord2i", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2iv", new FuncSpec[]{new FuncSpec(WrapglTexCoord2iv.class,
+        s.put("glTexCoord2iv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord2iv_2.class,
+                new FunctionSpecification(WrapglTexCoord2iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2s", new FuncSpec[]{new FuncSpec(WrapglTexCoord2s.class,
+        s.put("glTexCoord2s", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2sv", new FuncSpec[]{new FuncSpec(WrapglTexCoord2sv.class,
+        s.put("glTexCoord2sv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord2sv_2.class,
+                new FunctionSpecification(WrapglTexCoord2sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3d", new FuncSpec[]{new FuncSpec(WrapglTexCoord3d.class,
+        s.put("glTexCoord3d", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3dv", new FuncSpec[]{new FuncSpec(WrapglTexCoord3dv.class,
+        s.put("glTexCoord3dv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord3dv_2.class,
+                new FunctionSpecification(WrapglTexCoord3dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3f", new FuncSpec[]{new FuncSpec(WrapglTexCoord3f.class,
+        s.put("glTexCoord3f", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3fv", new FuncSpec[]{new FuncSpec(WrapglTexCoord3fv.class,
+        s.put("glTexCoord3fv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord3fv_2.class,
+                new FunctionSpecification(WrapglTexCoord3fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3i", new FuncSpec[]{new FuncSpec(WrapglTexCoord3i.class,
+        s.put("glTexCoord3i", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3iv", new FuncSpec[]{new FuncSpec(WrapglTexCoord3iv.class,
+        s.put("glTexCoord3iv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord3iv_2.class,
+                new FunctionSpecification(WrapglTexCoord3iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3s", new FuncSpec[]{new FuncSpec(WrapglTexCoord3s.class,
+        s.put("glTexCoord3s", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3sv", new FuncSpec[]{new FuncSpec(WrapglTexCoord3sv.class,
+        s.put("glTexCoord3sv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord3sv_2.class,
+                new FunctionSpecification(WrapglTexCoord3sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4d", new FuncSpec[]{new FuncSpec(WrapglTexCoord4d.class,
+        s.put("glTexCoord4d", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4dv", new FuncSpec[]{new FuncSpec(WrapglTexCoord4dv.class,
+        s.put("glTexCoord4dv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord4dv_2.class,
+                new FunctionSpecification(WrapglTexCoord4dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4f", new FuncSpec[]{new FuncSpec(WrapglTexCoord4f.class,
+        s.put("glTexCoord4f", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4fv", new FuncSpec[]{new FuncSpec(WrapglTexCoord4fv.class,
+        s.put("glTexCoord4fv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord4fv_2.class,
+                new FunctionSpecification(WrapglTexCoord4fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4i", new FuncSpec[]{new FuncSpec(WrapglTexCoord4i.class,
+        s.put("glTexCoord4i", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4iv", new FuncSpec[]{new FuncSpec(WrapglTexCoord4iv.class,
+        s.put("glTexCoord4iv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord4iv_2.class,
+                new FunctionSpecification(WrapglTexCoord4iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4s", new FuncSpec[]{new FuncSpec(WrapglTexCoord4s.class,
+        s.put("glTexCoord4s", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4sv", new FuncSpec[]{new FuncSpec(WrapglTexCoord4sv.class,
+        s.put("glTexCoord4sv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexCoord4sv_2.class,
+                new FunctionSpecification(WrapglTexCoord4sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexEnvf", new FuncSpec[]{new FuncSpec(WrapglTexEnvf.class,
+        s.put("glTexEnvf", new FunctionSpecification[]{new FunctionSpecification(WrapglTexEnvf.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexEnvfv", new FuncSpec[]{new FuncSpec(WrapglTexEnvfv.class,
+        s.put("glTexEnvfv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexEnvfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexEnvfv_2.class,
+                new FunctionSpecification(WrapglTexEnvfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexEnvi", new FuncSpec[]{new FuncSpec(WrapglTexEnvi.class,
+        s.put("glTexEnvi", new FunctionSpecification[]{new FunctionSpecification(WrapglTexEnvi.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexEnviv", new FuncSpec[]{new FuncSpec(WrapglTexEnviv.class,
+        s.put("glTexEnviv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexEnviv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexEnviv_2.class,
+                new FunctionSpecification(WrapglTexEnviv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGend", new FuncSpec[]{new FuncSpec(WrapglTexGend.class,
+        s.put("glTexGend", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGend.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGendv", new FuncSpec[]{new FuncSpec(WrapglTexGendv.class,
+        s.put("glTexGendv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGendv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexGendv_2.class,
+                new FunctionSpecification(WrapglTexGendv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGenf", new FuncSpec[]{new FuncSpec(WrapglTexGenf.class,
+        s.put("glTexGenf", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGenf.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGenfv", new FuncSpec[]{new FuncSpec(WrapglTexGenfv.class,
+        s.put("glTexGenfv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGenfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexGenfv_2.class,
+                new FunctionSpecification(WrapglTexGenfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGeni", new FuncSpec[]{new FuncSpec(WrapglTexGeni.class,
+        s.put("glTexGeni", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGeni.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGeniv", new FuncSpec[]{new FuncSpec(WrapglTexGeniv.class,
+        s.put("glTexGeniv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGeniv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexGeniv_2.class,
+                new FunctionSpecification(WrapglTexGeniv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexParameterf", new FuncSpec[]{new FuncSpec(WrapglTexParameterf.class,
+        s.put("glTexParameterf", new FunctionSpecification[]{new FunctionSpecification(WrapglTexParameterf.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexParameterfv", new FuncSpec[]{new FuncSpec(WrapglTexParameterfv.class,
+        s.put("glTexParameterfv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexParameterfv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexParameterfv_2.class,
+                new FunctionSpecification(WrapglTexParameterfv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexParameteri", new FuncSpec[]{new FuncSpec(WrapglTexParameteri.class,
+        s.put("glTexParameteri", new FunctionSpecification[]{new FunctionSpecification(WrapglTexParameteri.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexParameteriv", new FuncSpec[]{new FuncSpec(WrapglTexParameteriv.class,
+        s.put("glTexParameteriv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexParameteriv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglTexParameteriv_2.class,
+                new FunctionSpecification(WrapglTexParameteriv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTranslated", new FuncSpec[]{new FuncSpec(WrapglTranslated.class,
+        s.put("glTranslated", new FunctionSpecification[]{new FunctionSpecification(WrapglTranslated.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTranslatef", new FuncSpec[]{new FuncSpec(WrapglTranslatef.class,
+        s.put("glTranslatef", new FunctionSpecification[]{new FunctionSpecification(WrapglTranslatef.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2d", new FuncSpec[]{new FuncSpec(WrapglVertex2d.class,
+        s.put("glVertex2d", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2dv", new FuncSpec[]{new FuncSpec(WrapglVertex2dv.class,
+        s.put("glVertex2dv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex2dv_2.class,
+                new FunctionSpecification(WrapglVertex2dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2f", new FuncSpec[]{new FuncSpec(WrapglVertex2f.class,
+        s.put("glVertex2f", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2fv", new FuncSpec[]{new FuncSpec(WrapglVertex2fv.class,
+        s.put("glVertex2fv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex2fv_2.class,
+                new FunctionSpecification(WrapglVertex2fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2i", new FuncSpec[]{new FuncSpec(WrapglVertex2i.class,
+        s.put("glVertex2i", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2iv", new FuncSpec[]{new FuncSpec(WrapglVertex2iv.class,
+        s.put("glVertex2iv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex2iv_2.class,
+                new FunctionSpecification(WrapglVertex2iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2s", new FuncSpec[]{new FuncSpec(WrapglVertex2s.class,
+        s.put("glVertex2s", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2sv", new FuncSpec[]{new FuncSpec(WrapglVertex2sv.class,
+        s.put("glVertex2sv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex2sv_2.class,
+                new FunctionSpecification(WrapglVertex2sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3d", new FuncSpec[]{new FuncSpec(WrapglVertex3d.class,
+        s.put("glVertex3d", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3dv", new FuncSpec[]{new FuncSpec(WrapglVertex3dv.class,
+        s.put("glVertex3dv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex3dv_2.class,
+                new FunctionSpecification(WrapglVertex3dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3f", new FuncSpec[]{new FuncSpec(WrapglVertex3f.class,
+        s.put("glVertex3f", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3fv", new FuncSpec[]{new FuncSpec(WrapglVertex3fv.class,
+        s.put("glVertex3fv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex3fv_2.class,
+                new FunctionSpecification(WrapglVertex3fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3i", new FuncSpec[]{new FuncSpec(WrapglVertex3i.class,
+        s.put("glVertex3i", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3iv", new FuncSpec[]{new FuncSpec(WrapglVertex3iv.class,
+        s.put("glVertex3iv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex3iv_2.class,
+                new FunctionSpecification(WrapglVertex3iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3s", new FuncSpec[]{new FuncSpec(WrapglVertex3s.class,
+        s.put("glVertex3s", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3sv", new FuncSpec[]{new FuncSpec(WrapglVertex3sv.class,
+        s.put("glVertex3sv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex3sv_2.class,
+                new FunctionSpecification(WrapglVertex3sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4d", new FuncSpec[]{new FuncSpec(WrapglVertex4d.class,
+        s.put("glVertex4d", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4d.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4dv", new FuncSpec[]{new FuncSpec(WrapglVertex4dv.class,
+        s.put("glVertex4dv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4dv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex4dv_2.class,
+                new FunctionSpecification(WrapglVertex4dv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4f", new FuncSpec[]{new FuncSpec(WrapglVertex4f.class,
+        s.put("glVertex4f", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4f.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4fv", new FuncSpec[]{new FuncSpec(WrapglVertex4fv.class,
+        s.put("glVertex4fv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4fv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex4fv_2.class,
+                new FunctionSpecification(WrapglVertex4fv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4i", new FuncSpec[]{new FuncSpec(WrapglVertex4i.class,
+        s.put("glVertex4i", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4i.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4iv", new FuncSpec[]{new FuncSpec(WrapglVertex4iv.class,
+        s.put("glVertex4iv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4iv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex4iv_2.class,
+                new FunctionSpecification(WrapglVertex4iv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4s", new FuncSpec[]{new FuncSpec(WrapglVertex4s.class,
+        s.put("glVertex4s", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4s.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4sv", new FuncSpec[]{new FuncSpec(WrapglVertex4sv.class,
+        s.put("glVertex4sv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4sv.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FuncSpec(WrapglVertex4sv_2.class,
+                new FunctionSpecification(WrapglVertex4sv_2.class,
                         new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
                         , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glViewport", new FuncSpec[]{new FuncSpec(WrapglViewport.class,
+        s.put("glViewport", new FunctionSpecification[]{new FunctionSpecification(WrapglViewport.class,
                 new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
                 , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
 

@@ -6,7 +6,7 @@ import com.basic4gl.runtime.types.ValType;
 /**
  * Specifies a function and parameters
  */
-public class FuncSpec {
+public class FunctionSpecification {
 	private Class<?> functionClass;
 	private ParamTypeList paramTypes;
 	private boolean hasBrackets;
@@ -18,16 +18,16 @@ public class FuncSpec {
 	private ParamValidationCallback paramValidationCallback;
 
 
-	public FuncSpec() {
+	public FunctionSpecification() {
 		paramTypes = new ParamTypeList();
 		returnType = new ValType();
 		paramValidationCallback = null;
 	}
 
-	public FuncSpec(Class functionClass,
-					ParamTypeList paramTypes, boolean brackets,
-					boolean isFunction, int returnType, boolean timeshare, boolean freeTempData,
-					ParamValidationCallback paramValidationCallback) {
+	public FunctionSpecification(Class functionClass,
+								 ParamTypeList paramTypes, boolean brackets,
+								 boolean isFunction, int returnType, boolean timeshare, boolean freeTempData,
+								 ParamValidationCallback paramValidationCallback) {
 		this.functionClass = functionClass;
 		this.paramTypes = paramTypes;
 		hasBrackets = brackets;
@@ -37,10 +37,10 @@ public class FuncSpec {
 		this.freeTempData = freeTempData;
 		this.paramValidationCallback = paramValidationCallback;
 	}
-	public FuncSpec(Class functionClass,
-					ParamTypeList paramTypes, boolean brackets,
-					boolean isFunction, ValType returnType, boolean timeshare, boolean freeTempData,
-					ParamValidationCallback paramValidationCallback) {
+	public FunctionSpecification(Class functionClass,
+								 ParamTypeList paramTypes, boolean brackets,
+								 boolean isFunction, ValType returnType, boolean timeshare, boolean freeTempData,
+								 ParamValidationCallback paramValidationCallback) {
 		this.functionClass = functionClass;
 		this.paramTypes = paramTypes;
 		hasBrackets = brackets;
@@ -51,7 +51,7 @@ public class FuncSpec {
 		this.paramValidationCallback = paramValidationCallback;
 	}
 
-	public FuncSpec(FuncSpec spec) {
+	public FunctionSpecification(FunctionSpecification spec) {
 		functionClass = spec.functionClass;
 		isFunction = spec.isFunction;
 		hasBrackets = spec.hasBrackets;

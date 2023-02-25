@@ -7,12 +7,12 @@ package com.basic4gl.compiler.util;
  * function is stored (whether it's built in, or stored in a DLL and which one.)
  * Used by the DLL manager to pass info to the compiler.
  */
-public class ExtFuncSpec {
+public class ExtendedFunctionSpecification {
 
 	/**
 	 * Pointer to main specification
  	 */
-	public FuncSpec spec;
+	public FunctionSpecification spec;
 
 	// Function details
 
