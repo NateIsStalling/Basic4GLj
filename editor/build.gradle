@@ -57,19 +57,31 @@ task copyTask(type: Copy) {
     from '../samples'
     into 'build/samples'
 }
-run {
-//    args project(":library").task("jar").archiveFile.get()
-    dependsOn (":library:jar") {
-//        println(project(":library").task("jar").archiveFile.get())
-        println(rootProject.ext.get("libraryJarPath"))
-//        args rootProject.ext.get("libraryJarPath")
-    }
-}
-task runWithLibrary {
+//run {
+//////    args project(":library").task("jar").archiveFile.get()
+////    dependsOn (":library:jar") {
+//////        println(project(":library").task("jar").archiveFile.get())
+////
+//////        args rootProject.ext.get("libraryJarPath")
+////    }
+//
+//    dependsOn (":debugServer:jar")
+//    dependsOn (":library:jar") {
+//        println(rootProject.ext.get("libraryJarPath"))
+//        println(rootProject.ext.get("debugServerJarPath"))
+////        run {
+//            args rootProject.ext.get("libraryJarPath"),
+//                    rootProject.ext.get("debugServerJarPath")
+////        }
+//    }
+//}
+task start {
     dependsOn (":debugServer:jar")
     dependsOn (":library:jar") {
+        println(rootProject.ext.get("libraryJarPath"))
+        println(rootProject.ext.get("debugServerJarPath"))
         run {
-            args rootProject.ext.get("libraryJarPath"),
+        args rootProject.ext.get("libraryJarPath"),
                 rootProject.ext.get("debugServerJarPath")
         }
     }
