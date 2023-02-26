@@ -1,9 +1,9 @@
 	Basic4GLj alpha 0.4.0
-	Build Date: November 15, 2015
+	Build Date: February 25, 2023
 ================================================
-	Basic4GLj	by Nathaniel Nielsen	(c) 2015
+	Basic4GLj	by Nathaniel Nielsen	(c) 2023
 	Basic4GL 	by Tom Mulgrew			(c) 2010
-	License:	New BSD; see Docs folder
+	License:	New BSD; see LICENSES folder
 	Requires:	Java 8
 	
 	Site:		https://github.com/NateIsStalling/Basic4GLj
@@ -34,9 +34,7 @@
 0.4.0   - Revived project (Hooray!)
         - Added Mac OS support
         - Java 8 now required
-        - Updated LWJGL 3 to stable release: 3.2.3
-        - Releases are now signed
-        - Removed signs of weakness
+        - Made Basic4GLj open source
 
 0.3.0	- Replaced JOGL extensions with LWJGL library implementation
 		- Implemented OpenGL, sprite, text, input, and trig function libraries

@@ -18,6 +18,9 @@ application {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
+    runtimeOnly project(':library')
+    runtimeOnly project(':debugServer')
+
     implementation project(":runtime")
     implementation project(":compiler")
     implementation project(":library")
@@ -38,6 +41,8 @@ dependencies {
 }
 
 jar {
+//    dependsOn (":debugServer:jar")
+//    dependsOn (":library:jar")
     from { configurations.default.collect { it.isDirectory() ? it : zipTree(it) } }
     from sourceSets.test.output
     manifest {
@@ -53,9 +58,15 @@ jar {
 //    from sourceSets.all
 //
 //}
-task copyTask(type: Copy) {
-    from '../samples'
-    into 'build/samples'
+task copyTask() {
+    copy {
+        from '../samples'
+        into 'build/samples'
+    }
+    copy {
+        from 'LICENSES'
+        into 'build/LICENSES'
+    }
 }
 //run {
 //////    args project(":library").task("jar").archiveFile.get()
@@ -75,17 +86,17 @@ task copyTask(type: Copy) {
 ////        }
 //    }
 //}
-task start {
-    dependsOn (":debugServer:jar")
-    dependsOn (":library:jar") {
-        println(rootProject.ext.get("libraryJarPath"))
-        println(rootProject.ext.get("debugServerJarPath"))
-        run {
-        args rootProject.ext.get("libraryJarPath"),
-                rootProject.ext.get("debugServerJarPath")
-        }
-    }
-}
+//task start {
+//    dependsOn (":debugServer:jar")
+//    dependsOn (":library:jar") {
+//        println(rootProject.ext.get("libraryJarPath"))
+//        println(rootProject.ext.get("debugServerJarPath"))
+//        run {
+//        args rootProject.ext.get("libraryJarPath"),
+//            rootProject.ext.get("debugServerJarPath")
+//        }
+//    }
+//}
 
 repositories {
     mavenCentral()
