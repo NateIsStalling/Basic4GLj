@@ -163,8 +163,15 @@ public class MainWindow implements
 
 
     public static void main(String[] args) {
-        libraryJarPath = args[0];
-        debugServerJarPath = args[1];
+        if (args.length >= 2) {
+            // for debugging; set by
+            libraryJarPath = args[0];
+            debugServerJarPath = args[1];
+        } else {
+            // TODO these should NOT be hardcoded; figure out how to generate some appconfig.json with builds to include these as config settings
+            libraryJarPath = "library-1.0-SNAPSHOT.jar";
+            debugServerJarPath = "debugServer-1.0-SNAPSHOT.jar";
+        }
 
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("apple.awt.application.name", "Basic4GLj" );
