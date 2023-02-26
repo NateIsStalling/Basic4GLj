@@ -1,6 +1,6 @@
 rootProject.name = 'Basic4GL'
+include 'app'
 include 'compiler'
-include 'editor'
 include 'runtime'
 include 'library'
 include 'debugServer'

@@ -30,7 +30,7 @@ public class AboutDialog {
         mainPanel.add(infoPanel);
         GridLayout infoLayout1 = new GridLayout(1, 2);
         infoPanel.setLayout(infoLayout1);
-        JLabel labelLogo = new JLabel(SwingIconUtil.createImageIcon(Application.ICON_LOGO_LARGE));
+        JLabel labelLogo = new JLabel(SwingIconUtil.createImageIcon(BuildInfo.ICON_LOGO_LARGE));
         infoPanel.add(labelLogo);
 
         JPanel descriptionPanel = new JPanel();
@@ -39,16 +39,16 @@ public class AboutDialog {
 
         descriptionPanel.setLayout(descriptionLayout);
         descriptionPanel.setBorder(new EmptyBorder(10, 5, 10, 5));
-        descriptionPanel.add(new JLabel(Application.APPLICATION_NAME));
-        JLabel labelDescription = new JLabel(Application.APPLICATION_DESCRIPTION);
+        descriptionPanel.add(new JLabel(BuildInfo.APPLICATION_NAME));
+        JLabel labelDescription = new JLabel(BuildInfo.APPLICATION_DESCRIPTION);
         labelDescription.setFont(new Font(Font.MONOSPACED, Font.ITALIC, 12));
         labelDescription.setBorder(new EmptyBorder(5, 5, 5, 5));
         descriptionPanel.add(labelDescription);
-        descriptionPanel.add(new JLabel("Version: " + Application.APPLICATION_VERSION));
-        descriptionPanel.add(new JLabel("Build Date: " + Application.APPLICATION_BUILD_DATE));
+        descriptionPanel.add(new JLabel("Version: " + BuildInfo.APPLICATION_VERSION));
+        descriptionPanel.add(new JLabel("Build Date: " + BuildInfo.APPLICATION_BUILD_DATE));
         descriptionPanel.add(Box.createVerticalGlue());
-        descriptionPanel.add(new JLabel(Application.APPLICATION_COPYRIGHT));
-        descriptionPanel.add(new JLabel(Application.APPLICATION_WEBSITE));
+        descriptionPanel.add(new JLabel(BuildInfo.APPLICATION_COPYRIGHT));
+        descriptionPanel.add(new JLabel(BuildInfo.APPLICATION_WEBSITE));
 
 
         JTextPane textLicenses = new JTextPane();

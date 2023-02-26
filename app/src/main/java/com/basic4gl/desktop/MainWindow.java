@@ -65,7 +65,7 @@ public class MainWindow implements
     };
 
     // Window
-    JFrame mFrame = new JFrame(Application.APPLICATION_NAME);
+    JFrame mFrame = new JFrame(BuildInfo.APPLICATION_NAME);
     JMenuBar mMenuBar = new JMenuBar();
     JToolBar mToolBar = new JToolBar();
     JSplitPane mMainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -182,7 +182,7 @@ public class MainWindow implements
         FlatDesktop.setQuitHandler(response -> tryCloseWindow());
 
         // Create and set up the window.
-        mFrame.setIconImage(createImageIcon(Application.ICON_LOGO_SMALL).getImage());
+        mFrame.setIconImage(createImageIcon(BuildInfo.ICON_LOGO_SMALL).getImage());
         mFrame.setPreferredSize(new Dimension(696, 480));
         mFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
