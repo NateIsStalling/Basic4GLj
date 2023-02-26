@@ -7,16 +7,12 @@ import java.io.InputStreamReader;
 public class DebugServerFactory {
     public static void startDebugServer(String debugServerJarPath, String port) {
         try {
-            final String[] debugServerArgs = new String[] {
-                    port
+            final String[] commandArgs = new String[] {
+                "java", "-jar", debugServerJarPath, port
             };
 
-            final String execCommand = "java "
-                    + " -jar " + debugServerJarPath
-                    + " " + String.join(" ", debugServerArgs);
-
             // Start output window
-            final Process process = Runtime.getRuntime().exec(execCommand);
+            final Process process = new ProcessBuilder(commandArgs).start();
 
             // Automatically stop debug server when editor closes
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {

@@ -18,9 +18,12 @@ application {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
+    // TODO figure out a clean way to depend on the JAR output of these projects;
+    //  need to launch these projects as separate Java processes at runtime
     runtimeOnly project(':library')
     runtimeOnly project(':debugServer')
 
+    // TODO cleanup project dependencies; would prefer to treat these projects as plugins
     implementation project(":runtime")
     implementation project(":compiler")
     implementation project(":library")
@@ -68,35 +71,18 @@ task copyTask() {
         into 'build/LICENSES'
     }
 }
-//run {
-//////    args project(":library").task("jar").archiveFile.get()
-////    dependsOn (":library:jar") {
-//////        println(project(":library").task("jar").archiveFile.get())
-////
-//////        args rootProject.ext.get("libraryJarPath")
-////    }
-//
-//    dependsOn (":debugServer:jar")
-//    dependsOn (":library:jar") {
-//        println(rootProject.ext.get("libraryJarPath"))
-//        println(rootProject.ext.get("debugServerJarPath"))
-////        run {
-//            args rootProject.ext.get("libraryJarPath"),
-//                    rootProject.ext.get("debugServerJarPath")
-////        }
-//    }
-//}
-//task start {
-//    dependsOn (":debugServer:jar")
-//    dependsOn (":library:jar") {
-//        println(rootProject.ext.get("libraryJarPath"))
-//        println(rootProject.ext.get("debugServerJarPath"))
-//        run {
-//        args rootProject.ext.get("libraryJarPath"),
-//            rootProject.ext.get("debugServerJarPath")
-//        }
-//    }
-//}
+
+task debugAll {
+    dependsOn (":debugServer:jar")
+    dependsOn (":library:jar") {
+        println(rootProject.ext.get("libraryJarPath"))
+        println(rootProject.ext.get("debugServerJarPath"))
+        run {
+        args rootProject.ext.get("libraryJarPath"),
+            rootProject.ext.get("debugServerJarPath")
+        }
+    }
+}
 
 repositories {
     mavenCentral()

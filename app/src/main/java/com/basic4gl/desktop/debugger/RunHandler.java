@@ -66,7 +66,9 @@ public class RunHandler {
                     "server=y," +
                     "suspend=" + jvmDebugSuspend;
 
-            final String jvmAdditionalArgs ="-XstartOnFirstThread"; // needed for GLFW
+            final String[] jvmAdditionalArgs = {
+                "-XstartOnFirstThread" // needed for GLFW
+            };
 
             final String[] runnerArgs = new String[] {
                 vm.getAbsolutePath(),
@@ -78,11 +80,26 @@ public class RunHandler {
 
             final String execCommand = "java " + jvmDebugArgs
                     + " " + jvmAdditionalArgs
-                    + " -jar " + libraryPath
+                    + " -jar \"" + libraryPath + "\""
                     + " " + String.join(" ", runnerArgs);
 
+            final String[] commandArgs = new String[] {
+                "java",
+                jvmDebugArgs,
+                //TODO make this configurable
+                "-XstartOnFirstThread", // needed for GLFW
+                "-jar",
+                libraryPath,
+                //Runner args:
+                vm.getAbsolutePath(),
+                config.getAbsolutePath(),
+                lineMapping.getAbsolutePath(),
+                currentDirectory,
+                DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT
+            };
+
             // Start output window
-            final Process process = Runtime.getRuntime().exec(execCommand);
+            final Process process = new ProcessBuilder(commandArgs).start();
 
             // Automatically close GL window when editor closes
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
