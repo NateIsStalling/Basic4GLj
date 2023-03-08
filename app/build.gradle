@@ -7,12 +7,18 @@ ext {
     javaMainClass = "com.basic4gl.desktop.MainWindow"
 }
 
+
 repositories {
     mavenCentral()
 }
 
 application {
     mainClassName = javaMainClass
+//    applicationDefaultJvmArgs = ['-Djava.library.path=native/']
+    startScripts {
+        def template = "${rootProject.projectDir}/gradle/unixStartScript.txt"
+        unixStartScriptGenerator.template = resources.text.fromFile(template)
+    }
 }
 
 dependencies {

@@ -169,8 +169,8 @@ public class MainWindow implements
             debugServerJarPath = args[1];
         } else {
             // TODO these should NOT be hardcoded; figure out how to generate some appconfig.json with builds to include these as config settings
-            libraryJarPath = "library-1.0-SNAPSHOT.jar";
-            debugServerJarPath = "debugServer-1.0-SNAPSHOT.jar";
+            libraryJarPath = "lib/library-1.0-SNAPSHOT.jar";
+            debugServerJarPath = "lib/debugServer-1.0-SNAPSHOT.jar";
         }
 
         System.setProperty("apple.laf.useScreenMenuBar", "true");
