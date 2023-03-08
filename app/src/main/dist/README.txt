@@ -12,14 +12,10 @@
 ================================================
 	Usage Notes
 ================================================
-	
+
+	The bin folder contains scripts to launch Basic4GLj on Windows and MacOS/Linux systems.
+
 	Example programs are included from the original Basic4GL. They may work, they may not, or they might work unexpectedly. Have fun.
-	
-	Basic4GLj.bat is provided to launch the application with the necessary command line arguments on a Windows system.
-	Console output is saved to output.log when Basic4GLj is ran from the batch script, please include the contents of this file when submitting error reports.
-	
-	To run Basic4GLj and exported applications on other systems, add the following argument when opening the jar from the terminal: 
-	-Djava.library.path=native/
 	
 	Exporting applications generates a launcher batch script.
 	
