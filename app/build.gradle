@@ -16,6 +16,8 @@ application {
     mainClassName = javaMainClass
 //    applicationDefaultJvmArgs = ['-Djava.library.path=native/']
     startScripts {
+        applicationName = "Basic4GLj"
+
         def template = "${rootProject.projectDir}/gradle/unixStartScript.txt"
         unixStartScriptGenerator.template = resources.text.fromFile(template)
     }
