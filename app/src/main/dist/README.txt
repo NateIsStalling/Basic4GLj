@@ -1,5 +1,5 @@
 	Basic4GLj alpha 0.4.0
-	Build Date: February 25, 2023
+	Build Date: March 2023
 ================================================
 	Basic4GLj	by Nathaniel Nielsen	(c) 2023
 	Basic4GL 	by Tom Mulgrew			(c) 2010
