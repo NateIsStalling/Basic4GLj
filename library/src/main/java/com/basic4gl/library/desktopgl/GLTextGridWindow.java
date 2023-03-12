@@ -116,11 +116,17 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	public static void main(String[] args) {
 
 		//Load VM's state from file
-		String stateFile = args[0];// "/" + STATE_FILE
-		String configFile = args[1];//"/" + CONFIG_FILE;
-		String mappingFile = args[2];
-		String currentDirectory = args[3];
+		String stateFile = "/" + STATE_FILE;
+		String configFile = "/" + CONFIG_FILE;
+		String mappingFile = null;
+		String currentDirectory = null;
 
+		if (args.length > 3) {
+			stateFile = args[0];// "/" + STATE_FILE
+			configFile = args[1];//"/" + CONFIG_FILE;
+			mappingFile = args[2];
+			currentDirectory = args[3];
+		}
 		//TODO determine better way to handle optional params
 		String debugServerPort = args.length > 4
 			? args[4]
@@ -130,13 +136,15 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		instance = new GLTextGridWindow();
 
 		LineNumberMapping lineNumberMapping = null;
-		try (
-				FileInputStream streamIn = new FileInputStream(mappingFile);
-				ObjectInputStream objectinputstream = new ObjectInputStream(streamIn)
-		) {
-			lineNumberMapping = (LineNumberMapping) objectinputstream.readObject();
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (mappingFile != null) {
+			try (
+					FileInputStream streamIn = new FileInputStream(mappingFile);
+					ObjectInputStream objectinputstream = new ObjectInputStream(streamIn)
+			) {
+				lineNumberMapping = (LineNumberMapping) objectinputstream.readObject();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 		Debugger debugger = new Debugger(lineNumberMapping);
@@ -179,8 +187,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 		try {
 			System.out.println(stateFile);
-			instance.loadState(new DataInputStream(new FileInputStream(stateFile)));
-//			instance.loadState(instance.getClass().getResourceAsStream(stateFile));
+//			instance.loadState(new DataInputStream(new FileInputStream(stateFile)));
+			instance.loadState(instance.getClass().getResourceAsStream(stateFile));
 		} catch (Exception ex){
 			ex.printStackTrace();
 			System.err.println("VM state could not be loaded");
@@ -188,8 +196,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		//Load window configuration
 		try {
 		System.out.println(configFile);
-			instance.loadConfiguration(new FileInputStream(configFile));
-//			instance.loadConfiguration(instance.getClass().getResourceAsStream(configFile));
+//			instance.loadConfiguration(new FileInputStream(configFile));
+			instance.loadConfiguration(instance.getClass().getResourceAsStream(configFile));
 		} catch (Exception ex){
 			ex.printStackTrace();
 			System.err.println("Configuration file could not be loaded");
@@ -512,18 +520,25 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	@Override
 	public List<String> getClassPathObjects(){
 		return Arrays.asList(
-		        "jar/lwjgl.jar",
-                "jar/lwjgl-opengl.jar",
-                "jar/lwjgl-stb.jar",
-                "jar/lwjgl-openal.jar",
-                "jar/lwjgl-glfw.jar",
-                "jar/lwjgl-assimp.jar",
+		        "lwjgl.jar",
+                "lwjgl-opengl.jar",
+                "lwjgl-stb.jar",
+                "lwjgl-openal.jar",
+                "lwjgl-glfw.jar",
+                "lwjgl-assimp.jar",
+				//Natives
+				"lwjgl-natives-macos.jar",
+				"lwjgl-opengl-natives-macos.jar",
+				"lwjgl-stb-natives-macos.jar",
+				"lwjgl-openal-natives-macos.jar",
+				"lwjgl-glfw-natives-macos.jar",
+				"lwjgl-assimp-natives-macos.jar",
                 //Sound engine
-                "jar/SoundSystem.jar",
-                "jar/LibraryLWJGL3OpenAL.jar",
-                "jar/CodecIBXM.jar",
-                "jar/CodecJOrbis.jar",
-                "jar/CodecWav.jar");
+                "SoundSystem.jar",
+                "LibraryLWJGL3OpenAL.jar",
+                "CodecIBXM.jar",
+                "CodecJOrbis.jar",
+                "CodecWav.jar");
 	}
 	@Override
 	public List<String> getDependencies() {

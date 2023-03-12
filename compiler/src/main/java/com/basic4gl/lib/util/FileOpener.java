@@ -27,7 +27,10 @@ public class FileOpener extends HasErrorState {
         try {
             // TODO keep cache of temp filenames
             URL resource = mEmbeddedFiles.getResource(filename);
-            file = File.createTempFile("temp", new File(filename).getName(), new File(mParent));
+            File tempDirectory = mParent != null
+                ? new File(mParent)
+                : null;
+            file = File.createTempFile("temp", new File(filename).getName(), tempDirectory);
             System.out.println("file: " + filename);
             System.out.println("fn: " +  new File(filename).getName());
             System.out.println("Created temp file: " + file.getAbsolutePath());
@@ -67,7 +70,10 @@ public class FileOpener extends HasErrorState {
             return "";
         }
         // Return new filename
-        return new File(mParent).toURI().relativize(file.toURI()).getPath();
+        File workingDirectory = mParent != null
+            ? new File(mParent)
+            : Paths.get("").toFile();
+        return workingDirectory.toURI().relativize(file.toURI()).getPath();
     }
     /*
     void DeleteTempFile(String filename){
@@ -239,6 +245,7 @@ public class FileOpener extends HasErrorState {
 
     public void setParentDirectory(String parent){
         String path = separatorsToSystem(parent);
+
         mParent = path;
         mEmbeddedFiles.setParentDirectory(path);
     }

@@ -9,9 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-// EmbeddedFiles
-//
-// A set of embedded files, keyed by relative filename
+/**
+ * A set of embedded files, keyed by relative filename
+ */
 public class EmbeddedFiles {
     private String mParent; //Parent directory
 //    private Map<String,EmbeddedFile> m_files = new HashMap<>();
@@ -189,16 +189,15 @@ public class EmbeddedFiles {
         return mParent;
     }
 
-
     String separatorsToSystem(String res) {
-        if (res==null) {
+        if (res == null) {
             return null;
         }
         if (File.separatorChar=='\\') {
-            // From Windows to Linux/Mac
+            // From Linux/Mac to Windows
             return res.replace('/', File.separatorChar);
         } else {
-            // From Linux/Mac to Windows
+            // From Windows to Linux/Mac
             return res.replace('\\', File.separatorChar);
         }
     }

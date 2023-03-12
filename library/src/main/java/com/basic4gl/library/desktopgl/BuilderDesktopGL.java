@@ -25,16 +25,21 @@ public class BuilderDesktopGL extends Builder {
     private GLTextGridWindow mTarget;
     private FileOpener mFiles;
 
-    public static Library getInstance(TomBasicCompiler compiler){
+    public static Library getInstance(TomBasicCompiler compiler) {
         BuilderDesktopGL instance = new BuilderDesktopGL();
         instance.mTarget = (GLTextGridWindow) GLTextGridWindow.getInstance(compiler);
         return instance;
     }
-    @Override
-    public String getFileDescription() { return "Java Application (*.zip)";}
 
     @Override
-    public String getFileExtension() { return "zip";}
+    public String getFileDescription() {
+        return "Java Application (*.zip)";
+    }
+
+    @Override
+    public String getFileExtension() {
+        return "zip";
+    }
 
     @Override
     public Configuration getSettings() {
@@ -53,7 +58,7 @@ public class BuilderDesktopGL extends Builder {
 
 
     @Override
-    public boolean export(String filename, OutputStream stream, TaskCallback callback) throws Exception{
+    public boolean export(String filename, OutputStream stream, TaskCallback callback) throws Exception {
         int i;
         File file = new File(filename);
         File jar = new File(file.getName().replaceFirst("[.][^.]+$", "") + ".jar");
@@ -73,7 +78,7 @@ public class BuilderDesktopGL extends Builder {
         dependencies = mTarget.getClassPathObjects();
         i = 0;
         if (dependencies != null) {
-            for (String dependency: dependencies) {
+            for (String dependency : dependencies) {
                 classpath += " " + dependency;
                 i++;
             }
@@ -82,12 +87,30 @@ public class BuilderDesktopGL extends Builder {
         //Add external dependencies
         dependencies = mTarget.getDependencies();
         if (dependencies != null) {
+            // pre-validate
             for (String dependency : dependencies) {
                 File source = new File(dependency);
-                if (!source.exists()) {
+
+                if (!source.exists()
+                        || ClassLoader.getSystemClassLoader().getResource(dependency) == null) {
+
+                    System.out.println("Dependency not found: " + dependency);
                     continue;       //TODO throw build error
                 }
-                FileInputStream input = new FileInputStream(source);
+            }
+            // add
+            for (String dependency : dependencies) {
+                File source = new File(dependency);
+                InputStream input;
+                if (source.exists()) {
+                    input = new FileInputStream(source);
+                } else if (ClassLoader.getSystemClassLoader().getResource(dependency) != null) {
+                    input = ClassLoader.getSystemClassLoader().getResourceAsStream(dependency);
+                } else {
+                    continue;
+                    //TODO throw build error
+                    //throw new Exception("Cannot find dependency: " + dependency);
+                }
 
                 zipEntry = new ZipEntry(dependency);
                 zipEntry.setTime(source.lastModified());
@@ -107,22 +130,21 @@ public class BuilderDesktopGL extends Builder {
         output.putNextEntry(zipEntry);
         output.write(String.format(
                 "::Run %1$s; requires Java be installed and in your system path\n" +
-                        "::-Djava.library.path=native/ is needed for window to display\n" +
                         "::Log console output for debugging\n" +
                         ">output.log (\n" +
-                        "\tjava -jar -Djava.library.path=native/ %1$s\n" +
+                        "\tjava -jar %1$s\n" +
                         ")",
                 jar.getName()).getBytes(StandardCharsets.UTF_8));
         output.closeEntry();
 
         //TODO update script for better logging
-        zipEntry = new ZipEntry("launcher.sh");
+        zipEntry = new ZipEntry("launcher-macos.sh");
         zipEntry.setTime(System.currentTimeMillis());
         output.putNextEntry(zipEntry);
         output.write(String.format(
                 "# Run %1$s; requires Java be installed and in your system path\n" +
-                    "# -Djava.library.path=native/ is needed for window to display\n" +
-                    "java -jar -Djava.library.path=native/ %1$s\n",
+                        "# -XstartOnFirstThread is required by LWJGL for window to display\n" +
+                        "java -XstartOnFirstThread -jar %1$s\n",
                 jar.getName()).getBytes(StandardCharsets.UTF_8));
         output.closeEntry();
 
@@ -131,57 +153,63 @@ public class BuilderDesktopGL extends Builder {
         output.putNextEntry(zipEntry);
         output.write(String.format(
                 "Execute launcher.bat to run %1$s, or open the jar from the terminal with the following argument: \n" +
-                        "-Djava.library.path=native/",
+                        "-XstartOnFirstThread",
                 jar.getName()).getBytes(StandardCharsets.UTF_8));
         output.closeEntry();
         try {
-        //Create application's manifest
-        Manifest manifest = new Manifest();
-        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+            //Create application's manifest
+            Manifest manifest = new Manifest();
+            manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
 
-        manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, classpath);
-        manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mTarget.getClass().getName());
+            manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, classpath);
+            manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mTarget.getClass().getName());
 
-        zipEntry = new ZipEntry(jar.getName());
-                zipEntry.setTime(System.currentTimeMillis());
-        output.putNextEntry(zipEntry);
+            zipEntry = new ZipEntry(jar.getName());
+            zipEntry.setTime(System.currentTimeMillis());
+            output.putNextEntry(zipEntry);
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
-        target = new JarOutputStream(bytes, manifest);
+            target = new JarOutputStream(bytes, manifest);
 
-        //Add Basic4GLj classes to new Jar
-        System.out.println("Adding source files");
-        List<String> files = new ArrayList<String>();
-        //TODO Only add required classes
-        files.add("com/basic4gl/compiler");
-            files.add("com/basic4gl/lib");
+            //Add Basic4GLj classes to new Jar
+            System.out.println("Adding source files");
+            List<String> files = new ArrayList<String>();
+            //TODO Only add required classes
+            files.add("com/basic4gl");
+            files.add("com/basic4gl/library");
             files.add("com/basic4gl/util");
             files.add("com/basic4gl/runtime/vm");
             files.add("paulscode");
+            files.add("org/lwjgl");
+            //TODO this should only be added if target OS
+            files.add("macos"); // lwjgl natives
 
-            Exporter.addSource(files, target);
+            // exclude any html/javadoc to save on file size
+            String excludeRegex = ".*html$";
 
-        //Save VM's initial state to Jar
-        mTarget.reset();
-        jarEntry = new JarEntry(GLTextGridWindow.STATE_FILE);
+            Exporter.addSource(files, excludeRegex, target);
+
+            //Save VM's initial state to Jar
+            mTarget.reset();
+            jarEntry = new JarEntry(GLTextGridWindow.STATE_FILE);
             target.putNextEntry(jarEntry);
             mTarget.saveState(target);
-        target.closeEntry();
+            target.closeEntry();
 
-        //Serialize the build configuration and add to Jar
-        jarEntry = new JarEntry(GLTextGridWindow.CONFIG_FILE);
+            //Serialize the build configuration and add to Jar
+            jarEntry = new JarEntry(GLTextGridWindow.CONFIG_FILE);
             target.putNextEntry(jarEntry);
             mTarget.saveConfiguration(target);
-        target.closeEntry();
+            target.closeEntry();
 
-        //TODO Implement embedding resources
-target.close();
+            //TODO Implement embedding resources
+            target.close();
             bytes.writeTo(output);
-        //Writing Jar to archive complete
-        output.closeEntry();
+            //Writing Jar to archive complete
+            output.closeEntry();
 
 
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         /*if (singleJar){
@@ -212,36 +240,50 @@ target.close();
     public Target getTarget() {
         return mTarget;
     }
+
     @Override
     public IVMDriver getVMDriver() {
         return mTarget;
     }
 
     @Override
-    public String name() { return "Desktop Application";}
+    public String name() {
+        return "Desktop Application";
+    }
 
     @Override
-    public String version() { return "1";}
+    public String version() {
+        return "1";
+    }
 
     @Override
-    public String description() { return "Desktop application with OpenGL capabilities.";}
+    public String description() {
+        return "Desktop application with OpenGL capabilities.";
+    }
 
     @Override
-    public String author() { return "Nathaniel Nielsen";}
+    public String author() {
+        return "Nathaniel Nielsen";
+    }
 
     @Override
-    public String contact() { return "https://github.com/NateIsStalling/Basic4GLj/issues";}
+    public String contact() {
+        return "https://github.com/NateIsStalling/Basic4GLj/issues";
+    }
 
     @Override
-    public String id() { return "desktopgl";}
+    public String id() {
+        return "desktopgl";
+    }
 
 
     @Override
     public void init(TomVM vm) {
 
     }
+
     @Override
-    public void init(TomBasicCompiler comp){
+    public void init(TomBasicCompiler comp) {
     }
 
     @Override
@@ -250,7 +292,7 @@ target.close();
     }
 
     @Override
-    public void init(FileOpener files){
+    public void init(FileOpener files) {
         mFiles = files;
         mTarget.init(files);
     }

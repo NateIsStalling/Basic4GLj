@@ -444,20 +444,38 @@ public class ExportDialog {
         protected Object doInBackground() throws Exception {
             mMessage = new CallbackMessage(CallbackMessage.WORKING, "");
 
-            if (!Compile()) {
+            if (!compile()) {
+                mMessage.setMessage(CallbackMessage.FAILED, mComp.getError());
                 return null; //TODO Throw error
             }
             //Export to file
             FileOutputStream stream = new FileOutputStream(mDest);
-            mBuilder.export(mDest.getName(), stream, mCallback);
-            mMessage.setMessage(
-                CallbackMessage.SUCCESS,
-        "Exported successful");
+
+            try {
+                boolean success = mBuilder.export(mDest.getName(), stream, mCallback);
+
+                if (success) {
+                    mMessage.setMessage(
+                            CallbackMessage.SUCCESS,
+                            "Exported successful");
+                } else {
+                    mMessage.setMessage(
+                            CallbackMessage.FAILED,
+                            "Export failed");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                mMessage.setMessage(
+                        CallbackMessage.FAILED,
+                        e.getMessage());
+            }
+
             return null;
         }
 
         // Program control
-        private boolean Compile() {
+        private boolean compile() {
 
             if (mFileEditors.isEmpty()) {
                 mMessage.setMessage(
@@ -470,7 +488,7 @@ public class ExportDialog {
             mComp.Parser().getSourceCode().clear();
 
             // Load code into preprocessor; may be unnecessary
-            if (!LoadProgramIntoCompiler()) {
+            if (!loadProgramIntoCompiler()) {
                 mMessage.setMessage(
                         CallbackMessage.FAILED,
                         mPreprocessor.getError());
@@ -498,13 +516,13 @@ public class ExportDialog {
             return true;
         }
         // Compilation and execution routines
-        private boolean LoadProgramIntoCompiler (){
+        private boolean loadProgramIntoCompiler(){
             //TODO Get editor assigned as main file
             return mPreprocessor.preprocess(
                     new EditorSourceFile(mFileEditors.get(0).editorPane, mFileEditors.get(0).getFilePath()),
                     mComp.Parser());
         }
-        private void LoadParser(RSyntaxTextArea editorPane) // Load editor text into parser
+        private void loadParser(RSyntaxTextArea editorPane) // Load editor text into parser
         {
             int start, stop; // line offsets
             String line; // line to add
@@ -554,7 +572,5 @@ public class ExportDialog {
             enableComponents(mTabs, true);
             mExportButton.setEnabled(true);
         }
-
-
     }
 }
