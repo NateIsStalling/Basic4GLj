@@ -175,11 +175,12 @@ public class BuilderDesktopGL extends Builder {
             System.out.println("Adding source files");
             List<String> files = new ArrayList<String>();
             //TODO Only add required classes
-            files.add("com/basic4gl");
+            files.add("com/basic4gl/compiler");
+            files.add("com/basic4gl/lib"); //TODO this namespace should be renamed..
             files.add("com/basic4gl/library");
             files.add("com/basic4gl/util");
-            files.add("com/basic4gl/runtime/vm");
-            files.add("paulscode");
+            files.add("com/basic4gl/runtime");
+            files.add("paulscode"); // sound library
             files.add("org/lwjgl");
             //TODO this should only be added if target OS
             files.add("macos"); // lwjgl natives
