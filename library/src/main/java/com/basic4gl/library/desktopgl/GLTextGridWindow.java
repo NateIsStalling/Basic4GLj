@@ -187,17 +187,28 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 		try {
 			System.out.println(stateFile);
-//			instance.loadState(new DataInputStream(new FileInputStream(stateFile)));
-			instance.loadState(instance.getClass().getResourceAsStream(stateFile));
+			if (instance.getClass().getResource(stateFile) != null) {
+				// use bundled VM state file if running as an exported project
+				instance.loadState(instance.getClass().getResourceAsStream(stateFile));
+			} else {
+				// external VM state file path was provided by commandline - ie: from the IDE
+				instance.loadState(new DataInputStream(new FileInputStream(stateFile)));
+			}
 		} catch (Exception ex){
 			ex.printStackTrace();
 			System.err.println("VM state could not be loaded");
 		}
 		//Load window configuration
 		try {
-		System.out.println(configFile);
-//			instance.loadConfiguration(new FileInputStream(configFile));
-			instance.loadConfiguration(instance.getClass().getResourceAsStream(configFile));
+			System.out.println(configFile);
+			if (instance.getClass().getResource(configFile) != null) {
+				// use bundled config file if running as an exported project
+				instance.loadConfiguration(instance.getClass().getResourceAsStream(configFile));
+			} else {
+				// external config file path was provided by commandline - ie: from the IDE
+				instance.loadConfiguration(new FileInputStream(configFile));
+			}
+
 		} catch (Exception ex){
 			ex.printStackTrace();
 			System.err.println("Configuration file could not be loaded");
