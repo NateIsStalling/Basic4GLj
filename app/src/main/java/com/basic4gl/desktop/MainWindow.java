@@ -241,11 +241,13 @@ public class MainWindow implements
         mHelpMenu.add(new JSeparator());
         mHelpMenu.add(mAboutMenuItem);
 
-        mNewMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK));
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+
+        mNewMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, toolkit.getMenuShortcutKeyMask()));
         mNewMenuItem.addActionListener(e -> actionNew());
-        mOpenMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+        mOpenMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, toolkit.getMenuShortcutKeyMask()));
         mOpenMenuItem.addActionListener(e -> actionOpen());
-        mSaveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+        mSaveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMask()));
         mSaveMenuItem.addActionListener(e -> actionSave());
         mSaveAsMenuItem.addActionListener(e -> actionSaveAs());
         mExportMenuItem.addActionListener(e -> {
@@ -268,32 +270,32 @@ public class MainWindow implements
             dialog.setVisible(true);
             mEditor.mCurrentBuilder = dialog.getCurrentBuilder();
         });
-        mUndoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_MASK));
+        mUndoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, toolkit.getMenuShortcutKeyMask()));
         mUndoMenuItem.addActionListener(e -> {
             int i = mTabControl.getSelectedIndex();
             mFileManager.undo(i);
         });
-        mRedoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_MASK));
+        mRedoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, toolkit.getMenuShortcutKeyMask()));
         mRedoMenuItem.addActionListener(e -> {
             int i = mTabControl.getSelectedIndex();
             mFileManager.redo(i);
         });
-        mCutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK));
+        mCutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, toolkit.getMenuShortcutKeyMask()));
         mCutMenuItem.addActionListener(e -> {
             int i = mTabControl.getSelectedIndex();
             mFileManager.cut(i);
         });
-        mCopyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK));
+        mCopyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, toolkit.getMenuShortcutKeyMask()));
         mCopyMenuItem.addActionListener(e -> {
             int i = mTabControl.getSelectedIndex();
             mFileManager.copy(i);
         });
-        mPasteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK));
+        mPasteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, toolkit.getMenuShortcutKeyMask()));
         mPasteMenuItem.addActionListener(e -> {
             int i = mTabControl.getSelectedIndex();
             mFileManager.Paste(i);
         });
-        mSelectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK));
+        mSelectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, toolkit.getMenuShortcutKeyMask()));
         mSelectAllMenuItem.addActionListener(e -> {
             int i = mTabControl.getSelectedIndex();
             mFileManager.SelectAll(i);
@@ -328,7 +330,7 @@ public class MainWindow implements
             mEditor.actionStepOutOf();
         });
 
-        mToggleBookmarkMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_MASK));
+        mToggleBookmarkMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, toolkit.getMenuShortcutKeyMask()));
         mToggleBookmarkMenuItem.addActionListener(e -> {
             int i = mTabControl.getSelectedIndex();
             mFileManager.ToggleBookmark(i);
@@ -343,7 +345,7 @@ public class MainWindow implements
             int i = mTabControl.getSelectedIndex();
             mFileManager.SelectPreviousBreakpoint(i);
         });
-        mToggleBreakpointMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.CTRL_MASK));
+        mToggleBreakpointMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, toolkit.getMenuShortcutKeyMask()));
         mToggleBreakpointMenuItem.addActionListener(e -> {
             int i = mTabControl.getSelectedIndex();
             mFileManager.toggleBreakpoint(i);
@@ -360,11 +362,11 @@ public class MainWindow implements
         });
         mAboutMenuItem.addActionListener(e -> showAboutDialog());
 
-        if( SystemInfo.isMacOS ) {
+        if (SystemInfo.isMacOS) {
             // hide menu items that are in macOS application menu
             mAboutMenuItem.setVisible(false);
-            mSettingsMenuItem.setVisible( false );
-            //TODO mExitMenuItem.setVisible( false );
+            mSettingsMenuItem.setVisible(false);
+            //TODO mExitMenuItem.setVisible(false);
         }
 
         //Debugger
