@@ -278,7 +278,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
         // Defaults
         m_fov = 60.0;
-        m_nearClip = -1000.0;
+        m_nearClip = 1.0;
         m_farClip = 1000.0;
         m_painting = false;
         m_dontPaint = false;
