@@ -12,6 +12,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 
+import com.basic4gl.desktop.util.EditorUtil;
 import com.basic4gl.desktop.util.IFileManager;
 import com.basic4gl.desktop.util.SwingIconUtil;
 import org.fife.ui.rsyntaxtextarea.*;
@@ -60,6 +61,7 @@ public class FileEditor {
         editorPane.setSyntaxEditingStyle("text/basic4gl");
         if (linkGenerator != null) {
             editorPane.setHyperlinksEnabled(true);
+            editorPane.setLinkScanningMask(EditorUtil.getLinkScanningMask());
             editorPane.setLinkGenerator(linkGenerator);
         }
 
