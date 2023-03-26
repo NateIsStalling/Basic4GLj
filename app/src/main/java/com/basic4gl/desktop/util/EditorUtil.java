@@ -1,5 +1,9 @@
 package com.basic4gl.desktop.util;
 
+import com.formdev.flatlaf.util.SystemInfo;
+
+import java.awt.event.InputEvent;
+
 public class EditorUtil {
     public static String getVariableAt(String line, int x) {
         char[] l = line.toCharArray();
@@ -67,5 +71,13 @@ public class EditorUtil {
         } else {
             return "";
         }
+    }
+
+    public static int getLinkScanningMask() {
+        if (SystemInfo.isMacOS) {
+            return InputEvent.META_DOWN_MASK;
+        }
+
+        return InputEvent.CTRL_DOWN_MASK;
     }
 }

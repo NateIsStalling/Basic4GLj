@@ -1,10 +1,7 @@
 package com.basic4gl.desktop.editor;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -15,6 +12,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
 
+import com.basic4gl.desktop.util.EditorUtil;
 import com.basic4gl.desktop.util.IFileManager;
 import com.basic4gl.desktop.util.SwingIconUtil;
 import org.fife.ui.rsyntaxtextarea.*;
@@ -63,25 +61,29 @@ public class FileEditor {
         editorPane.setSyntaxEditingStyle("text/basic4gl");
         if (linkGenerator != null) {
             editorPane.setHyperlinksEnabled(true);
+            editorPane.setLinkScanningMask(EditorUtil.getLinkScanningMask());
             editorPane.setLinkGenerator(linkGenerator);
         }
 
         pane = new RMultiHeaderScrollPane(editorPane);
 
+
         //Add shortcut keys for breakpoints
+
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
         InputMap inputMap = editorPane.getInputMap();
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0),
                 RTextAreaEditorKit.rtaNextBookmarkAction);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, ActionEvent.SHIFT_MASK),
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK),
                 RTextAreaEditorKit.rtaPrevBookmarkAction);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, ActionEvent.CTRL_MASK),
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, toolkit.getMenuShortcutKeyMask()),
                 RTextAreaEditorKit.rtaToggleBookmarkAction);
 
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0),
                 "RTA.NextBreakpointAction");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, ActionEvent.SHIFT_MASK),
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK),
                 "RTA.PrevBreakpointAction");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, ActionEvent.CTRL_MASK),
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, toolkit.getMenuShortcutKeyMask()),
                 "RTA.ToggleBreakpointAction");
 
         //Update action map for use with the multi-header scroll pane
