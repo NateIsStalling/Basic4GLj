@@ -132,7 +132,7 @@ public class BuilderDesktopGL extends Builder {
                 "::Run %1$s; requires Java be installed and in your system path\n" +
                         "::Log console output for debugging\n" +
                         ">output.log (\n" +
-                        "\tjava -jar %1$s\n" +
+                        "\tjava -jar \"%1$s\"\n" +
                         ")",
                 jar.getName()).getBytes(StandardCharsets.UTF_8));
         output.closeEntry();
@@ -144,7 +144,7 @@ public class BuilderDesktopGL extends Builder {
         output.write(String.format(
                 "# Run %1$s; requires Java be installed and in your system path\n" +
                         "# -XstartOnFirstThread is required by LWJGL for window to display\n" +
-                        "java -XstartOnFirstThread -jar %1$s\n",
+                        "java -XstartOnFirstThread -jar \"%1$s\"\n",
                 jar.getName()).getBytes(StandardCharsets.UTF_8));
         output.closeEntry();
 
