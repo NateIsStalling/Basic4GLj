@@ -531,19 +531,67 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	@Override
 	public List<String> getClassPathObjects(){
 		return Arrays.asList(
-		        "lwjgl.jar",
-                "lwjgl-opengl.jar",
-                "lwjgl-stb.jar",
-                "lwjgl-openal.jar",
-                "lwjgl-glfw.jar",
-                "lwjgl-assimp.jar",
-				//Natives
-				"lwjgl-natives-macos.jar",
-				"lwjgl-opengl-natives-macos.jar",
-				"lwjgl-stb-natives-macos.jar",
-				"lwjgl-openal-natives-macos.jar",
-				"lwjgl-glfw-natives-macos.jar",
+				"lwjgl.jar",
+
+				"lwjgl-assimp.jar",
+				"lwjgl-assimp-natives-linux.jar",
+				"lwjgl-assimp-natives-linux-arm32.jar",
+				"lwjgl-assimp-natives-linux-arm64.jar",
 				"lwjgl-assimp-natives-macos.jar",
+				"lwjgl-assimp-natives-macos-arm64.jar",
+				"lwjgl-assimp-natives-windows.jar",
+				"lwjgl-assimp-natives-windows-arm64.jar",
+				"lwjgl-assimp-natives-windows-x86.jar",
+
+				"lwjgl-glfw.jar",
+				"lwjgl-glfw-natives-linux.jar",
+				"lwjgl-glfw-natives-linux-arm32.jar",
+				"lwjgl-glfw-natives-linux-arm64.jar",
+				"lwjgl-glfw-natives-macos.jar",
+				"lwjgl-glfw-natives-macos-arm64.jar",
+				"lwjgl-glfw-natives-windows.jar",
+				"lwjgl-glfw-natives-windows-arm64.jar",
+				"lwjgl-glfw-natives-windows-x86.jar",
+
+				"lwjgl-natives-linux.jar",
+				"lwjgl-natives-linux-arm32.jar",
+				"lwjgl-natives-linux-arm64.jar",
+				"lwjgl-natives-macos.jar",
+				"lwjgl-natives-macos-arm64.jar",
+				"lwjgl-natives-windows.jar",
+				"lwjgl-natives-windows-arm64.jar",
+				"lwjgl-natives-windows-x86.jar",
+				"lwjgl-openal.jar",
+
+				"lwjgl-openal-natives-linux.jar",
+				"lwjgl-openal-natives-linux-arm32.jar",
+				"lwjgl-openal-natives-linux-arm64.jar",
+				"lwjgl-openal-natives-macos.jar",
+				"lwjgl-openal-natives-macos-arm64.jar",
+				"lwjgl-openal-natives-windows.jar",
+				"lwjgl-openal-natives-windows-arm64.jar",
+				"lwjgl-openal-natives-windows-x86.jar",
+
+				"lwjgl-opengl.jar",
+
+				"lwjgl-opengl-natives-linux.jar",
+				"lwjgl-opengl-natives-linux-arm32.jar",
+				"lwjgl-opengl-natives-linux-arm64.jar",
+				"lwjgl-opengl-natives-macos.jar",
+				"lwjgl-opengl-natives-macos-arm64.jar",
+				"lwjgl-opengl-natives-windows.jar",
+				"lwjgl-opengl-natives-windows-arm64.jar",
+				"lwjgl-opengl-natives-windows-x86.jar",
+				"lwjgl-stb.jar",
+				"lwjgl-stb-natives-linux.jar",
+				"lwjgl-stb-natives-linux-arm32.jar",
+				"lwjgl-stb-natives-linux-arm64.jar",
+				"lwjgl-stb-natives-macos.jar",
+				"lwjgl-stb-natives-macos-arm64.jar",
+				"lwjgl-stb-natives-windows.jar",
+				"lwjgl-stb-natives-windows-arm64.jar",
+				"lwjgl-stb-natives-windows-x86.jar",
+
                 //Sound engine
                 "SoundSystem.jar",
                 "LibraryLWJGL3OpenAL.jar",
@@ -566,27 +614,30 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 		//Common
 		list.add("charset.png");
-//		list.add("jar/lwjgl.jar");
 
-        list.add("jar/lwjgl-assimp-natives-macos.jar");
-        list.add("jar/lwjgl-assimp.jar");
-        list.add("jar/lwjgl-glfw-natives-macos.jar");
-        list.add("jar/lwjgl-glfw.jar");
-        list.add("jar/lwjgl-natives-macos.jar");
-        list.add("jar/lwjgl-openal-natives-macos.jar");
-        list.add("jar/lwjgl-openal.jar");
-        list.add("jar/lwjgl-opengl-natives-macos.jar");
-        list.add("jar/lwjgl-opengl.jar");
-        list.add("jar/lwjgl-stb-natives-macos.jar");
-        list.add("jar/lwjgl-stb.jar");
-        list.add("jar/lwjgl.jar");
+		// TODO reevaluate these dependencies - these may no longer be valid after switching project structure to gradle
+		// TODO need to remember/document why this list is needed.. I think it has to do with external libs, but the current export creates a fat JAR
+//		list.add("jar/lwjgl.jar");
+//
+//        list.add("jar/lwjgl-assimp-natives-macos.jar");
+//        list.add("jar/lwjgl-assimp.jar");
+//        list.add("jar/lwjgl-glfw-natives-macos.jar");
+//        list.add("jar/lwjgl-glfw.jar");
+//        list.add("jar/lwjgl-natives-macos.jar");
+//        list.add("jar/lwjgl-openal-natives-macos.jar");
+//        list.add("jar/lwjgl-openal.jar");
+//        list.add("jar/lwjgl-opengl-natives-macos.jar");
+//        list.add("jar/lwjgl-opengl.jar");
+//        list.add("jar/lwjgl-stb-natives-macos.jar");
+//        list.add("jar/lwjgl-stb.jar");
+//        list.add("jar/lwjgl.jar");
 
 		//Sound engine
-		list.add("jar/SoundSystem.jar");
-		list.add("jar/LibraryLWJGLOpenAL.jar");
-		list.add("jar/CodecIBXM.jar");
-		list.add("jar/CodecJOrbis.jar");
-		list.add("jar/CodecWav.jar");
+//		list.add("jar/SoundSystem.jar");
+//		list.add("jar/LibraryLWJGLOpenAL.jar");
+//		list.add("jar/CodecIBXM.jar");
+//		list.add("jar/CodecJOrbis.jar");
+//		list.add("jar/CodecWav.jar");
 
 		//Windows
 //		if (windows == GLTextGridWindow.SUPPORT_WINDOWS_32_64 || windows == GLTextGridWindow.SUPPORT_WINDOWS_64) {
