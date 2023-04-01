@@ -19,7 +19,7 @@ import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.*;
 
 public class FileEditor {
-    public static final String DEFAULT_NAME = "[Unnamed]";
+    public static final String DEFAULT_NAME = "Untitled";
 
     private static final int HEADER_BOOKMARK = 0;
     private static final int HEADER_BREAK_PT = 1;
@@ -220,7 +220,7 @@ public class FileEditor {
 
     public String getTitle() {
         String result;
-        result  = (mFilename.equals("") ? DEFAULT_NAME : mFilename).toLowerCase();
+        result  = (mFilename.equals("") ? DEFAULT_NAME : mFilename);
 
         // Append asterisk if modified
         if (mIsModified) {
@@ -241,7 +241,7 @@ public class FileEditor {
     public String getShortFilename() {
         return !mFilename.equals("")
                 ? new File(mFilename).getName()
-                : DEFAULT_NAME.toLowerCase();
+                : DEFAULT_NAME;
     }
 
     public boolean isModified() {
