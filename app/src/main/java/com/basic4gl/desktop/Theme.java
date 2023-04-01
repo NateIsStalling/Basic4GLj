@@ -15,4 +15,6 @@ public class Theme {
     public static final String ICON_STEP_OVER = THEME_DIRECTORY + "icon_step_over.png";
     public static final String ICON_STEP_IN = THEME_DIRECTORY + "icon_step_in.png";
     public static final String ICON_STEP_OUT = THEME_DIRECTORY + "icon_step_out.png";
+    public static final String ICON_EXPORT = THEME_DIRECTORY + "icon_export.png";
+    public static final String ICON_SETTINGS = THEME_DIRECTORY + "icon_settings.png";
 }

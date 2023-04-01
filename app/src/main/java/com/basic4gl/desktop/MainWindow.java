@@ -126,6 +126,8 @@ public class MainWindow implements
     JButton mStepOverButton = new JButton(createImageIcon(ICON_STEP_OVER));
     JButton mStepInButton = new JButton(createImageIcon(ICON_STEP_IN));
     JButton mStepOutButton = new JButton(createImageIcon(ICON_STEP_OUT));
+    JButton mExportButton = new JButton(createImageIcon(ICON_EXPORT));
+    JButton mSettingsButton = new JButton(createImageIcon(ICON_SETTINGS));
 
     // Labels
     JLabel mCompStatusLabel = new JLabel("");    // Compiler/VM Status
@@ -141,6 +143,9 @@ public class MainWindow implements
     JScrollPane mGosubListScrollPane = new JScrollPane(mGosubListBox);
     JPanel mGosubFrame = new JPanel();
 
+    // Style
+    Color primaryFontColor = new Color(0xFF383838, true);
+    Color secondaryFontColor = new Color(0xE6646464, true);
 
     // Editors
     BasicEditor mEditor;
@@ -192,6 +197,10 @@ public class MainWindow implements
         mFrame.setIconImage(createImageIcon(BuildInfo.ICON_LOGO_SMALL).getImage());
         mFrame.setPreferredSize(new Dimension(696, 480));
         mFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        if(SystemInfo.isMacFullWindowContentSupported) {
+            mFrame.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
+        }
 
         mMenuBar.add(mFileMenu);
         mMenuBar.add(mEditMenu);
@@ -250,26 +259,7 @@ public class MainWindow implements
         mSaveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMask()));
         mSaveMenuItem.addActionListener(e -> actionSave());
         mSaveAsMenuItem.addActionListener(e -> actionSaveAs());
-        mExportMenuItem.addActionListener(e -> {
-            mEditor.SetMode(ApMode.AP_STOPPED, null);
-            if (mFileManager.editorCount() == 0) {
-                JOptionPane.showMessageDialog(mFrame, "Nothing to export", "Cannot export",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            // Clear source code from parser
-            mEditor.mComp.Parser().getSourceCode().clear();
-
-            if (!mEditor.LoadProgramIntoCompiler()) {
-                mCompStatusLabel.setText(mEditor.mPreprocessor.getError());
-                return;
-            }
-            ExportDialog dialog = new ExportDialog(MainWindow.this, mEditor.mComp, mEditor.mPreprocessor, mFileManager.mFileEditors);
-            dialog.setLibraries(mEditor.mLibraries, mEditor.mCurrentBuilder);
-            dialog.setVisible(true);
-            mEditor.mCurrentBuilder = dialog.getCurrentBuilder();
-        });
+        mExportMenuItem.addActionListener(e -> showExportDialog());
         mUndoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, toolkit.getMenuShortcutKeyMask()));
         mUndoMenuItem.addActionListener(e -> {
             int i = mTabControl.getSelectedIndex();
@@ -369,10 +359,16 @@ public class MainWindow implements
             //TODO mExitMenuItem.setVisible(false);
         }
 
+        // Misc Labels
+        mCompStatusLabel.setForeground(primaryFontColor);
+        mCursorPosLabel.setForeground(primaryFontColor);
+
         //Debugger
         mWatchListFrame.setLayout(new BorderLayout());
         JLabel watchlistLabel = new JLabel("Watchlist");
+        watchlistLabel.setForeground(primaryFontColor);
         watchlistLabel.setBorder(new EmptyBorder(4, 8, 4, 8));
+
         mWatchListFrame.add(watchlistLabel, BorderLayout.NORTH);
         mWatchListFrame.add(mWatchListScrollPane, BorderLayout.CENTER);
 
@@ -414,7 +410,9 @@ public class MainWindow implements
 
         mGosubFrame.setLayout(new BorderLayout());
         JLabel callstackLabel = new JLabel("Callstack");
+        callstackLabel.setForeground(primaryFontColor);
         callstackLabel.setBorder(new EmptyBorder(4, 8, 4, 8));
+
         mGosubFrame.add(callstackLabel, BorderLayout.NORTH);
         mGosubFrame.add(mGosubListScrollPane, BorderLayout.CENTER);
 
@@ -422,18 +420,113 @@ public class MainWindow implements
         mDebugPane.setRightComponent(mGosubFrame);
 
         //Toolbar
+        Font toolbarFont = new Font("Arial", Font.PLAIN, 10);
+
+        Dimension toolbarButtonDimension = new Dimension(60, 60);
+        Insets toolbarButtonInsets = new Insets(5,10,5,10);
+        mNewButton.setText("New");
+        mNewButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mNewButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mNewButton.setFont(toolbarFont);
+        mNewButton.setForeground(secondaryFontColor);
+        mNewButton.setMaximumSize(toolbarButtonDimension);
+        mNewButton.setMargin(toolbarButtonInsets);
+
+        mOpenButton.setText("Open");
+        mOpenButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mOpenButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mOpenButton.setFont(toolbarFont);
+        mOpenButton.setForeground(secondaryFontColor);
+        mOpenButton.setMaximumSize(toolbarButtonDimension);
+        mOpenButton.setMargin(toolbarButtonInsets);
+
+        mSaveButton.setText("Save");
+        mSaveButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mSaveButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mSaveButton.setFont(toolbarFont);
+        mSaveButton.setForeground(secondaryFontColor);
+        mSaveButton.setMaximumSize(toolbarButtonDimension);
+        mSaveButton.setMargin(toolbarButtonInsets);
+
+        mRunButton.setText("Run");
+        mRunButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mRunButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mRunButton.setFont(toolbarFont);
+        mRunButton.setForeground(secondaryFontColor);
+        mRunButton.setMaximumSize(toolbarButtonDimension);
+        mRunButton.setMargin(toolbarButtonInsets);
+
+        mPlayButton.setText("Play");
+        mPlayButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mPlayButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mPlayButton.setFont(toolbarFont);
+        mPlayButton.setForeground(secondaryFontColor);
+        mPlayButton.setMaximumSize(toolbarButtonDimension);
+        mPlayButton.setMargin(toolbarButtonInsets);
+
+        mDebugButton.setText("Debug");
+        mDebugButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mDebugButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mDebugButton.setFont(toolbarFont);
+        mDebugButton.setForeground(secondaryFontColor);
+        mDebugButton.setMaximumSize(toolbarButtonDimension);
+        mDebugButton.setMargin(toolbarButtonInsets);
+
+        mStepOverButton.setText("Step Over");
+        mStepOverButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mStepOverButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mStepOverButton.setFont(toolbarFont);
+        mStepOverButton.setForeground(secondaryFontColor);
+        mStepOverButton.setMaximumSize(toolbarButtonDimension);
+        mStepOverButton.setMargin(toolbarButtonInsets);
+
+        mStepInButton.setText("Step In");
+        mStepInButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mStepInButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mStepInButton.setFont(toolbarFont);
+        mStepInButton.setForeground(secondaryFontColor);
+        mStepInButton.setMaximumSize(toolbarButtonDimension);
+        mStepInButton.setMargin(toolbarButtonInsets);
+
+        mStepOutButton.setText("Step Out");
+        mStepOutButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mStepOutButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mStepOutButton.setFont(toolbarFont);
+        mStepOutButton.setForeground(secondaryFontColor);
+        mStepOutButton.setMaximumSize(toolbarButtonDimension);
+        mStepOutButton.setMargin(toolbarButtonInsets);
+
+        mExportButton.setText("Export");
+        mExportButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mExportButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mExportButton.setFont(toolbarFont);
+        mExportButton.setForeground(secondaryFontColor);
+        mExportButton.setMaximumSize(toolbarButtonDimension);
+        mExportButton.setMargin(toolbarButtonInsets);
+
+        mSettingsButton.setText("Settings");
+        mSettingsButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mSettingsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mSettingsButton.setFont(toolbarFont);
+        mSettingsButton.setForeground(secondaryFontColor);
+        mSettingsButton.setMaximumSize(toolbarButtonDimension);
+        mSettingsButton.setMargin(toolbarButtonInsets);
+
         mToolBar.add(mNewButton);
         mToolBar.add(mOpenButton);
         mToolBar.add(mSaveButton);
         mToolBar.addSeparator();
         mToolBar.add(mRunButton);
-        mToolBar.addSeparator();
         mToolBar.add(mDebugButton);
         mToolBar.addSeparator();
         mToolBar.add(mPlayButton);
         mToolBar.add(mStepOverButton);
         mToolBar.add(mStepInButton);
         mToolBar.add(mStepOutButton);
+        mToolBar.add(Box.createHorizontalGlue());
+        mToolBar.add(mExportButton);
+        mToolBar.add(mSettingsButton);
+
 
         mNewButton.addActionListener(e -> actionNew());
         mOpenButton.addActionListener(e -> actionOpen());
@@ -445,6 +538,10 @@ public class MainWindow implements
         mStepOverButton.addActionListener(e -> mEditor.actionStep());
         mStepInButton.addActionListener(e -> mEditor.actionStepInto());
         mStepOutButton.addActionListener(e -> mEditor.actionStepOutOf());
+
+        mExportButton.addActionListener(e -> showExportDialog());
+        mSettingsButton.addActionListener(e -> showSettings());
+
         mRunButton.setToolTipText("Run the program!");
 
         mToolBar.setAlignmentY(1);
@@ -600,6 +697,27 @@ public class MainWindow implements
         mFrame.pack();
         mFrame.setLocationRelativeTo(null);
         mFrame.setVisible(true);
+    }
+
+    private void showExportDialog() {
+        mEditor.SetMode(ApMode.AP_STOPPED, null);
+        if (mFileManager.editorCount() == 0) {
+            JOptionPane.showMessageDialog(mFrame, "Nothing to export", "Cannot export",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Clear source code from parser
+        mEditor.mComp.Parser().getSourceCode().clear();
+
+        if (!mEditor.LoadProgramIntoCompiler()) {
+            mCompStatusLabel.setText(mEditor.mPreprocessor.getError());
+            return;
+        }
+        ExportDialog dialog = new ExportDialog(MainWindow.this, mEditor.mComp, mEditor.mPreprocessor, mFileManager.mFileEditors);
+        dialog.setLibraries(mEditor.mLibraries, mEditor.mCurrentBuilder);
+        dialog.setVisible(true);
+        mEditor.mCurrentBuilder = dialog.getCurrentBuilder();
     }
 
     private void showAboutDialog() {
@@ -1079,7 +1197,9 @@ public class MainWindow implements
         switch (mode) {
             case AP_CLOSED:
                 mSettingsMenuItem.setEnabled(false);
+                mSettingsButton.setEnabled(false);
                 mExportMenuItem.setEnabled(false);
+                mExportButton.setEnabled(false);
 
                 mOpenMenuItem.setEnabled(true);
                 mOpenButton.setEnabled(true);
@@ -1091,6 +1211,7 @@ public class MainWindow implements
 
                 mRunMenuItem.setText("Run Program");
                 mRunButton.setIcon(createImageIcon(ICON_RUN_APP));
+                mRunButton.setText("Run");
 
                 mCopyMenuItem.setEnabled(false);
                 mSelectAllMenuItem.setEnabled(false);
@@ -1098,9 +1219,11 @@ public class MainWindow implements
                 mStepOverButton.setEnabled(false);
                 mStepInButton.setEnabled(false);
                 mStepOutButton.setEnabled(false);
+
                 mStepOverMenuItem.setEnabled(false);
                 mStepIntoMenuItem.setEnabled(false);
                 mStepOutOfMenuItem.setEnabled(false);
+
                 mPlayButton.setEnabled(false);
                 mPlayPauseMenuItem.setEnabled(false);
                 mRunMenuItem.setEnabled(false);
@@ -1119,7 +1242,9 @@ public class MainWindow implements
                 setClosingTabsEnabled(true);
 
                 mSettingsMenuItem.setEnabled(true);
+                mSettingsButton.setEnabled(true);
                 mExportMenuItem.setEnabled(true);
+                mExportButton.setEnabled(true);
 
                 mNewMenuItem.setEnabled(true);
                 mOpenMenuItem.setEnabled(true);
@@ -1134,6 +1259,7 @@ public class MainWindow implements
                 mFileManager.SetReadOnly(false);
                 mRunMenuItem.setText("Run Program");
                 mRunButton.setIcon(createImageIcon(ICON_RUN_APP));
+                mRunButton.setText("Run");
                 break;
 
             case AP_RUNNING:
@@ -1141,7 +1267,9 @@ public class MainWindow implements
                 setClosingTabsEnabled(false);
 
                 mSettingsMenuItem.setEnabled(false);
+                mSettingsButton.setEnabled(false);
                 mExportMenuItem.setEnabled(false);
+                mExportButton.setEnabled(false);
 
                 mNewMenuItem.setEnabled(false);
                 mOpenMenuItem.setEnabled(false);
@@ -1156,6 +1284,7 @@ public class MainWindow implements
                 mFileManager.SetReadOnly(true);
                 mRunMenuItem.setText("Stop Program");
                 mRunButton.setIcon(createImageIcon(ICON_STOP_APP));
+                mRunButton.setText("Stop");
                 break;
 
         }
@@ -1185,9 +1314,10 @@ public class MainWindow implements
 
         if (mode != ApMode.AP_CLOSED) {
             mPlayButton.setIcon(mode == ApMode.AP_RUNNING ? createImageIcon(ICON_PAUSE) : createImageIcon(ICON_PLAY));
-            mPlayButton.setEnabled(true);
-            mStepOverButton.setEnabled(mode != ApMode.AP_RUNNING);
-            mStepInButton.setEnabled(mode != ApMode.AP_RUNNING);
+            mPlayButton.setText(mode == ApMode.AP_RUNNING ? "Pause" : "Play");
+            mPlayButton.setEnabled(mode != ApMode.AP_STOPPED);
+            mStepOverButton.setEnabled(mode == ApMode.AP_PAUSED);
+            mStepInButton.setEnabled(mode == ApMode.AP_PAUSED);
 
             //TODO 12/2022 determine appropriate state for mStepOutButton;
             // does the editor even need to care about UserCallStack size with remote debugger protocol setup?
