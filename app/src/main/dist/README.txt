@@ -1,5 +1,5 @@
-	Basic4GLj alpha 0.4.0
-	Build Date: March 2023
+	Basic4GLj alpha 0.4.1
+	Build Date: April 2023
 ================================================
 	Basic4GLj	by Nathaniel Nielsen	(c) 2023
 	Basic4GL 	by Tom Mulgrew			(c) 2010
@@ -27,6 +27,11 @@
 ================================================
 	Change Log
 ================================================
+0.4.1   - Updated LWJGL to stable version 3.3.1
+        - Added LWJGL natives for macOS arm64, Linux arm32, Linux arm64, Windows x86, and Windows arm64
+        - Added Mac shortcut keys
+        - Misc bug fixes
+
 0.4.0   - Revived project (Hooray!)
         - Added Mac OS support
         - Java 8 now required
