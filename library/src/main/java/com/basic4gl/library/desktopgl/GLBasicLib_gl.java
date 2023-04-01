@@ -473,7 +473,6 @@ public class GLBasicLib_gl implements FunctionLibrary {
         c.put("GL_DECR", new Constant(GL_DECR));
         c.put("GL_VENDOR", new Constant(GL_VENDOR));
         c.put("GL_RENDERER", new Constant(GL_RENDERER));
-        c.put("GL_VERSION", new Constant(GL_VERSION));
         c.put("GL_EXTENSIONS", new Constant(GL_EXTENSIONS));
         c.put("GL_S", new Constant(GL_S));
         c.put("GL_T", new Constant(GL_T));
