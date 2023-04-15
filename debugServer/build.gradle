@@ -50,7 +50,9 @@ jar {
         )
     }
 
-    exclude 'META-INF/.RSA', 'META-INF/.SF','META-INF/*.DSA'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    exclude 'META-INF/.RSA', 'META-INF/.SF', 'META-INF/*.DSA'
 
     rootProject.ext.set("debugServerJarPath", jar.archiveFile.get())
 

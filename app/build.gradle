@@ -48,7 +48,7 @@ dependencies {
     implementation ('javax.websocket:javax.websocket-api:1.0')
     implementation ('org.eclipse.jetty.websocket:javax-websocket-client-impl:9.4.49.v20220914')
 
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
 
 jar {
@@ -62,7 +62,10 @@ jar {
             'Class-Path': configurations.default.files.collect { it.name }.join(' ')
         )
     }
-    exclude 'META-INF/.RSA', 'META-INF/.SF','META-INF/*.DSA'
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    exclude 'META-INF/.RSA', 'META-INF/.SF', 'META-INF/*.DSA'
 }
 //
 //task withRuntime(type: "jar"){
