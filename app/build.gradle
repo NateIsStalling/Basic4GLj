@@ -52,8 +52,8 @@ dependencies {
 }
 
 jar {
-//    dependsOn (":debugServer:jar")
-//    dependsOn (":library:jar")
+    dependsOn (":debugServer:jar")
+    dependsOn (":library:jar")
     from { configurations.default.collect { it.isDirectory() ? it : zipTree(it) } }
     from sourceSets.test.output
     manifest {
@@ -67,11 +67,7 @@ jar {
 
     exclude 'META-INF/.RSA', 'META-INF/.SF', 'META-INF/*.DSA'
 }
-//
-//task withRuntime(type: "jar"){
-//    from sourceSets.all
-//
-//}
+
 task copyTask() {
     copy {
         from '../samples'
