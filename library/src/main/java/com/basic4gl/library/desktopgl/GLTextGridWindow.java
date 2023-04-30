@@ -303,7 +303,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	}
 
 	@Override
-	public void start(DebuggerCallbacks _) {
+	public void start(DebuggerCallbacks callbacks) {
 		mThread = new Thread(new VMThread(mDebugger));
 		// TODO thread.start() has issues with initializing GL stuff off the main thread
 		mThread.run();
