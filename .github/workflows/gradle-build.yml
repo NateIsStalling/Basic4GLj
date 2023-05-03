@@ -8,7 +8,10 @@
 name: Gradle Build
 
 on:
-  push
+  push:
+    branches:
+      - main
+      - 'releases/**'
 
 jobs:
   build:
