@@ -1,0 +1,17 @@
+<component name="ArtifactManager">
+  <artifact type="jpackage" name="unnamed">
+    <output-path>$PROJECT_DIR$/out/artifacts/unnamed</output-path>
+    <properties id="jpackage-properties">
+      <options>
+        <option name="version" value="" />
+        <option name="copyright" value="Nathaniel Nielsen 2023" />
+        <option name="description" value="" />
+        <option name="vendor" value="" />
+        <option name="mainClass" value="com.basic4gl.desktop.MainWindow" />
+      </options>
+    </properties>
+    <root id="root">
+      <element id="module-output" name="Basic4GL.app.main" />
+    </root>
+  </artifact>
+</component>
