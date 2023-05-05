@@ -3709,7 +3709,7 @@ public class TomBasicCompiler extends HasErrorState {
 						}
 
 						// Constructor not recognized
-						System.out.println(constructor.toString());
+						System.out.println("Function constructor not supported: " + constructor.toString());
 					}
 				} catch (Exception e1) {
 					e1.printStackTrace();
