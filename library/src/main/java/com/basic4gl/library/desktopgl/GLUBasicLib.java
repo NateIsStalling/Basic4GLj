@@ -190,7 +190,7 @@ public class GLUBasicLib implements FunctionLibrary {
     }
 
 
-    public final class WrapgluOrtho2D implements Function
+    public static final class WrapgluOrtho2D implements Function
 
     {
         public void run(TomVM vm) {
@@ -203,7 +203,7 @@ public class GLUBasicLib implements FunctionLibrary {
         }
     }
 
-    public final class WrapgluPerspective implements Function
+    public static final class WrapgluPerspective implements Function
 
     {
         public void run(TomVM vm) {
@@ -222,7 +222,7 @@ public class GLUBasicLib implements FunctionLibrary {
         }
     }
 
-    public final class WrapgluLookAt implements Function
+    public static final class WrapgluLookAt implements Function
 
     {
         public void run(TomVM vm) {

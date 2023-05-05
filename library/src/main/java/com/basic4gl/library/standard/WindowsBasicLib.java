@@ -91,7 +91,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
     /**
      * Represents a loaded windows .wav file.
      */
-    class WindowsWav {
+    static class WindowsWav {
         ByteBuffer sound;
         int len;
 /*
@@ -147,14 +147,14 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
         }
     }
 
-    public final class WrapBeep implements Function {
+    public static final class WrapBeep implements Function {
         public void run(TomVM vm) {
             // TODO without AWT!
 //            java.awt.Toolkit.getDefaultToolkit().beep();
         }
     }
 
-    public final class WrapSleep implements Function {
+    public static final class WrapSleep implements Function {
         public void run(TomVM vm)          {
         int msec = vm.getIntParam(1);
         if (msec > 5000) {
@@ -168,7 +168,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
         }
     }
     }
-    public final class  WrapTickCount implements Function {
+    public static final class  WrapTickCount implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal((int)(System.currentTimeMillis() % Integer.MAX_VALUE));
         }

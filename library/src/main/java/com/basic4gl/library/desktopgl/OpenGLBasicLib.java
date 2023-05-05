@@ -338,7 +338,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     /**
      * Stores OpenGL texture handles
      */
-    public class TextureResourceStore extends IntHandleResources {
+    public static class TextureResourceStore extends IntHandleResources {
         protected void deleteHandle(int handle) {
             int texture = handle;//(GLuint) handle;
             ByteBuffer buffer = BufferUtils.createByteBuffer(Integer.SIZE / Byte.SIZE);
@@ -351,7 +351,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     /**
      * Stores OpenGL display lists handles
      */
-    public class DisplayListResourceStore extends IntHandleResources {
+    public static class DisplayListResourceStore extends IntHandleResources {
 
         private Map<Integer, Integer> m_countMap = new HashMap<Integer, Integer>();                 // Maps base to count
 
@@ -380,7 +380,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     /**
      * Interface for plugins
      */
-    class WindowAdapter implements IB4GLOpenGLWindow {
+    static class WindowAdapter implements IB4GLOpenGLWindow {
         public int getWidth() {
             return OpenGLBasicLib.appWindow.Width();
         }
@@ -916,7 +916,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     }
 
 
-    public final class WrapLoadTex implements Function {
+    public static final class WrapLoadTex implements Function {
         public void run(TomVM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
             int texture = OpenGLBasicLib.LoadTex(vm.getStringParam(1));
@@ -927,7 +927,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     }
 
-    public final class WrapLoadTexStrip implements Function {
+    public static final class WrapLoadTexStrip implements Function {
         public void run(TomVM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
             Vector<Integer> texs = OpenGLBasicLib.LoadTexStrip(vm.getStringParam(1));
@@ -950,7 +950,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     }
 
-    public final class WrapLoadTexStrip2 implements Function {
+    public static final class WrapLoadTexStrip2 implements Function {
         public void run(TomVM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
             Vector<Integer> texs = OpenGLBasicLib.LoadTexStrip(vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1));
@@ -973,28 +973,28 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     }
 
-    public final class WrapTexStripFrames implements Function {
+    public static final class WrapTexStripFrames implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(OpenGLBasicLib.TexStripFrames(vm.getStringParam(1)));
         }
 
     }
 
-    public final class WrapTexStripFrames2 implements Function {
+    public static final class WrapTexStripFrames2 implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(OpenGLBasicLib.TexStripFrames(vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
         }
 
     }
 
-    public final class WrapSetTexIgnoreBlankFrames implements Function {
+    public static final class WrapSetTexIgnoreBlankFrames implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.truncateBlankFrames = vm.getIntParam(1) != 0;
         }
 
     }
 
-    public final class WrapSetTexTransparentCol implements Function {
+    public static final class WrapSetTexTransparentCol implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.transparentCol = vm.getIntParam(1);
             OpenGLBasicLib.usingTransparentCol = true;
@@ -1002,7 +1002,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     }
 
-    public final class WrapSetTexTransparentCol2 implements Function {
+    public static final class WrapSetTexTransparentCol2 implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.transparentCol =
                     (vm.getIntParam(3) & 0xff) |
@@ -1013,28 +1013,28 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     }
 
-    public final class WrapSetTexNoTransparentCol implements Function {
+    public static final class WrapSetTexNoTransparentCol implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.usingTransparentCol = false;
         }
 
     }
 
-    public final class WrapSetTexMipmap implements Function {
+    public static final class WrapSetTexMipmap implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.doMipmap = vm.getIntParam(1) != 0;
         }
 
     }
 
-    public final class WrapSetTexLinearFilter implements Function {
+    public static final class WrapSetTexLinearFilter implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.doLinearFilter = vm.getIntParam(1) != 0;
         }
 
     }
 
-    public final class WrapglGenTexture implements Function {
+    public static final class WrapglGenTexture implements Function {
         public void run(TomVM vm) {
             int texture;
             ByteBuffer buffer = BufferUtils.createByteBuffer(Integer.SIZE / Byte.SIZE);
@@ -1045,7 +1045,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapglDeleteTexture implements Function {
+    public static final class WrapglDeleteTexture implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.textures.freeHandle(vm.getIntParam(1));
         }
@@ -1053,7 +1053,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     }
 
 
-    public final class WrapLoadTexture implements Function {
+    public static final class WrapLoadTexture implements Function {
         public void run(TomVM vm) {
 
             // Load and return non-mipmapped texture
@@ -1061,7 +1061,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapLoadMipmapTexture implements Function {
+    public static final class WrapLoadMipmapTexture implements Function {
         public void run(TomVM vm) {
 
             // Load and return mipmapped texture
@@ -1069,7 +1069,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapLoadImage implements Function {
+    public static final class WrapLoadImage implements Function {
         public void run(TomVM vm) {
 
             // Attempt to load image
@@ -1080,13 +1080,13 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapDeleteImage implements Function {
+    public static final class WrapDeleteImage implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.images.free(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglTexImage2D implements Function {
+    public static final class WrapglTexImage2D implements Function {
         public void run(TomVM vm) {
 
             // Find image data
@@ -1108,55 +1108,55 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapglTexImage2D_2 implements Function {
+    public static final class WrapglTexImage2D_2 implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_INT), 1, false);
         }
     }
 
-    public final class WrapglTexImage2D_3 implements Function {
+    public static final class WrapglTexImage2D_3 implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_REAL), 1, false);
         }
     }
 
-    public final class WrapglTexImage2D_4 implements Function {
+    public static final class WrapglTexImage2D_4 implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_INT), 2, false);
         }
     }
 
-    public final class WrapglTexImage2D_5 implements Function {
+    public static final class WrapglTexImage2D_5 implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_REAL), 2, false);
         }
     }
 
-    public final class WrapgluBuild2DMipmaps_2 implements Function {
+    public static final class WrapgluBuild2DMipmaps_2 implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_INT), 1, true);
         }
     }
 
-    public final class WrapgluBuild2DMipmaps_3 implements Function {
+    public static final class WrapgluBuild2DMipmaps_3 implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_REAL), 1, true);
         }
     }
 
-    public final class WrapgluBuild2DMipmaps_4 implements Function {
+    public static final class WrapgluBuild2DMipmaps_4 implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_INT), 2, true);
         }
     }
 
-    public final class WrapgluBuild2DMipmaps_5 implements Function {
+    public static final class WrapgluBuild2DMipmaps_5 implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.InternalWrapglTexImage2D(vm, new ValType (BasicValType.VTP_REAL), 2, true);
         }
     }
 
-    public final class WrapglTexSubImage2D implements Function {
+    public static final class WrapglTexSubImage2D implements Function {
         public void run(TomVM vm) {
 
             // Find image data
@@ -1178,34 +1178,34 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapImageWidth implements Function {
+    public static final class WrapImageWidth implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setIntVal(OpenGLBasicLib.images.isIndexStored(index) ? OpenGLBasicLib.images.getValueAt(index).getWidth() : 0);
         }
     }
 
-    public final class WrapImageHeight implements Function {
+    public static final class WrapImageHeight implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setIntVal(OpenGLBasicLib.images.isIndexStored(index) ? OpenGLBasicLib.images.getValueAt(index).getHeight() : 0);
         }
     }
 
-    public final class WrapImageFormat implements Function {
+    public static final class WrapImageFormat implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setIntVal(OpenGLBasicLib.images.isIndexStored(index) ? LoadImage.ImageFormat(OpenGLBasicLib.images.getValueAt(index)) : 0);
         }
     }
 
-    public final class WrapImageDataType implements Function {
+    public static final class WrapImageDataType implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(GL_UNSIGNED_BYTE);             // Images always stored as unsigned bytes
         }
     }
 
-    public final class WrapgluBuild2DMipmaps implements Function {
+    public static final class WrapgluBuild2DMipmaps implements Function {
         public void run(TomVM vm) {
 
             // Find image data
@@ -1237,37 +1237,37 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapglMultiTexCoord2f implements Function {
+    public static final class WrapglMultiTexCoord2f implements Function {
         public void run(TomVM vm) {
             glMultiTexCoord2f(vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglMultiTexCoord2d implements Function {
+    public static final class WrapglMultiTexCoord2d implements Function {
         public void run(TomVM vm) {
             glMultiTexCoord2d(vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglActiveTexture implements Function {
+    public static final class WrapglActiveTexture implements Function {
         public void run(TomVM vm) {
             glActiveTexture(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglGetString implements Function {
+    public static final class WrapglGetString implements Function {
         public void run(TomVM vm) {
             vm.setRegString(glGetString(vm.getIntParam(1)));
         }
     }
 
-    public final class WrapExtensionSupported implements Function {
+    public static final class WrapExtensionSupported implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(OpenGLBasicLib.appWindow.ExtensionSupported(vm.getStringParam(1)) ? 1 : 0);
         }
     }
 
-    public final class WrapMaxTextureUnits implements Function {
+    public static final class WrapMaxTextureUnits implements Function {
         public void run(TomVM vm) {
             IntBuffer units = BufferUtils.createIntBuffer(1);
             glGetIntegerv(ARBMultitexture.GL_MAX_TEXTURE_UNITS_ARB, units);
@@ -1275,19 +1275,19 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapWindowWidth implements Function {
+    public static final class WrapWindowWidth implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(OpenGLBasicLib.appWindow.Width());
         }
     }
 
-    public final class WrapWindowHeight implements Function {
+    public static final class WrapWindowHeight implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(OpenGLBasicLib.appWindow.Height());
         }
     }
 
-    public final class WrapglGenTextures implements Function {
+    public static final class WrapglGenTextures implements Function {
         public void run(TomVM vm) {
             int count = vm.getIntParam(2);
             if (count > 65536) {
@@ -1318,7 +1318,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapglDeleteTextures implements Function {
+    public static final class WrapglDeleteTextures implements Function {
         public void run(TomVM vm) {
             int count = vm.getIntParam(2);
             if (count > 65536) {
@@ -1400,7 +1400,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapglGetPolygonStipple implements Function {
+    public static final class WrapglGetPolygonStipple implements Function {
         public void run(TomVM vm) {
             ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
             glGetPolygonStipple(mask);
@@ -1408,7 +1408,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapglPolygonStipple implements Function {
+    public static final class WrapglPolygonStipple implements Function {
         public void run(TomVM vm) {
             ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
             Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
@@ -1416,7 +1416,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapglGenLists implements Function {
+    public static final class WrapglGenLists implements Function {
         public void run(TomVM vm) {
 
             // Validate params
@@ -1435,7 +1435,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapglDeleteLists implements Function {
+    public static final class WrapglDeleteLists implements Function {
         public void run(TomVM vm) {
 
             // Get params
@@ -1452,7 +1452,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapglCallLists implements Function {
+    public static final class WrapglCallLists implements Function {
         public void run(TomVM vm) {
             throw new RuntimeException("Not Implemented!");
 //
@@ -1478,7 +1478,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     }
 
-    public final class WrapglCallLists_2 implements Function {
+    public static final class WrapglCallLists_2 implements Function {
         public void run(TomVM vm) {
             throw new RuntimeException("Not Implemented!");
 //
@@ -1503,14 +1503,14 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapglBegin implements Function {
+    public static final class WrapglBegin implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.appWindow.SetDontPaint(true);             // Dont paint on WM_PAINT messages when between a glBegin() and a glEnd ()
             glBegin(vm.getIntParam(1));                // This doesn't effect running code, but helps when stepping through calls in the debugger
         }
     }
 
-    public final class WrapglEnd implements Function {
+    public static final class WrapglEnd implements Function {
         public void run(TomVM vm) {
             glEnd();
             OpenGLBasicLib.appWindow.SetDontPaint(false);
@@ -1575,19 +1575,19 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public final class WrapLoadImageStrip implements Function {
+    public static final class WrapLoadImageStrip implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.LoadImageStrip(vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1), false);
         }
     }
 
-    public final class WrapLoadMipmapImageStrip implements Function {
+    public static final class WrapLoadMipmapImageStrip implements Function {
         public void run(TomVM vm) {
             OpenGLBasicLib.LoadImageStrip(vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1), true);
         }
     }
 
-    public final class WrapImageStripFrames implements Function {
+    public static final class WrapImageStripFrames implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(OpenGLBasicLib.ImageStripFrames(vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
         }

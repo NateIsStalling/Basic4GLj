@@ -166,7 +166,7 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
         return (int) joyInfo.get(yPosIndex) - 0x8000;
     }
     
-    public final class InitLibFunction implements Function {
+    public static final class InitLibFunction implements Function {
         public void run(TomVM vm) {
             // This function is called everytime a Basic4GL program starts.
             // Reset joystick related state.
@@ -175,73 +175,73 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
             threshHold = DEFAULT_JOY_THRESHHOLD;
         }
     }
-    public final class WrapUpdateJoystick  implements Function {
+    public static final class WrapUpdateJoystick  implements Function {
         public void run(TomVM vm) {
             autoPoll = false;       // Explicitly polling the joystick disables automatic polling
             PollJoystick ();
         }
     }
-    public final class WrapJoyLeft  implements Function {
+    public static final class WrapJoyLeft  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
             vm.getReg().setIntVal ( JoyX () <= -threshHold ? -1 : 0);
         }
     }
-    public final class WrapJoyRight  implements Function {
+    public static final class WrapJoyRight  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
             vm.getReg().setIntVal ( JoyX () >= threshHold ? -1 : 0);
         }
     }
-    public final class WrapJoyUp  implements Function {
+    public static final class WrapJoyUp  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
             vm.getReg().setIntVal ( JoyY () <= -threshHold ? -1 : 0);
         }
     }
-    public final class WrapJoyDown  implements Function {
+    public static final class WrapJoyDown  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
             vm.getReg().setIntVal ( JoyY () >= threshHold ? -1 : 0);
         }
     }
-    public final class WrapJoyButton0  implements Function {
+    public static final class WrapJoyButton0  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
             vm.getReg().setIntVal ( buttons != null && buttons.get(0) != 0 ? -1 : 0);
         }
     }
-    public final class WrapJoyButton1  implements Function {
+    public static final class WrapJoyButton1  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
             vm.getReg().setIntVal ( buttons != null && buttons.get(1) != 0 ? -1 : 0);
         }
     }
-    public final class WrapJoyButton2  implements Function {
+    public static final class WrapJoyButton2  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
             vm.getReg().setIntVal ( buttons != null && buttons.get(2) != 0 ? -1 : 0);
         }
     }
-    public final class WrapJoyButton3  implements Function {
+    public static final class WrapJoyButton3  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
             vm.getReg().setIntVal ( buttons != null && buttons.get(3) != 0 ? -1 : 0);
         }
     }
-    public final class WrapJoyX  implements Function {
+    public static final class WrapJoyX  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
             vm.getReg().setIntVal ( JoyX ());
         }
     }
-    public final class WrapJoyY  implements Function {
+    public static final class WrapJoyY  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
             vm.getReg().setIntVal ( JoyY ());
         }
     }
-    public final class WrapJoyButton  implements Function {
+    public static final class WrapJoyButton  implements Function {
         public void run(TomVM vm) {
             AutoPoll ();
             int index = vm.getIntParam(1);
@@ -250,7 +250,7 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
             }
         }
     }
-    public final class WrapJoyKeys  implements Function {
+    public static final class WrapJoyKeys  implements Function {
         public void run(TomVM vm) {
             AutoPoll();
 
