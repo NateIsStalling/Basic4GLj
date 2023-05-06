@@ -117,7 +117,7 @@ public class Standard implements FunctionLibrary {
 	public static final class WrapExp implements Function {
 		public void run(TomVM vm) {
 			vm.getReg().setRealVal(
-					(float) Math.pow(2.7182818284590452353602874713526f,
+					(float) Math.pow(M_E,
 							vm.getRealParam(1)));
 		}
 	}
