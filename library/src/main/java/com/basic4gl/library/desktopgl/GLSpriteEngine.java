@@ -76,20 +76,20 @@ public class GLSpriteEngine extends GLTextGrid{
 //        System.out.println("width "+ m_width + ", " + m_height);
         // Scale in window dimensions
         glScalef (1.0f / width, 1.0f / height, 1);
-        TrigBasicLib.Scale(width, height, 1);
-        TrigBasicLib.CopyMatrix(m1, TrigBasicLib.getGlobalMatrix());
+        TrigBasicLib.scale(width, height, 1);
+        TrigBasicLib.copyMatrix(m1, TrigBasicLib.getGlobalMatrix());
 
         // Camera scale and rotation
         glTranslatef (width / 2, height / 2, 0);
-        TrigBasicLib.Translate(-width / 2, -height / 2, 0);
-        TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
+        TrigBasicLib.translate(-width / 2, -height / 2, 0);
+        TrigBasicLib.matrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
 
         glRotatef (-camAngle, 0, 0, 1);
-        TrigBasicLib.RotateZ(camAngle);
-        TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m2, m1);
+        TrigBasicLib.rotateZ(camAngle);
+        TrigBasicLib.matrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m2, m1);
 
         float[] camInv = new float[16];
-        TrigBasicLib.CopyMatrix(camInv, m1);
+        TrigBasicLib.copyMatrix(camInv, m1);
 
         // Parallax settings
         float dist = (float) (height / (2f * Math.tan (fov * Standard.M_PI / 360f)));         // Effective distance of screen
@@ -114,22 +114,22 @@ public class GLSpriteEngine extends GLTextGrid{
 
                     // Update camera matrix
                     glScalef (parallaxFactor, parallaxFactor, 1);
-                    TrigBasicLib.Scale(1.0f / parallaxFactor, 1.0f / parallaxFactor, 1);
-                    TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), camInv, m1);
+                    TrigBasicLib.scale(1.0f / parallaxFactor, 1.0f / parallaxFactor, 1);
+                    TrigBasicLib.matrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), camInv, m1);
 
                     glTranslatef (-width / 2, -height / 2, 1);
-                    TrigBasicLib.Translate(width / 2, height / 2, 1);
-                    TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
+                    TrigBasicLib.translate(width / 2, height / 2, 1);
+                    TrigBasicLib.matrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
                 }
                 else {
                     glTranslatef (-width / 2, -height / 2, 1);
-                    TrigBasicLib.Translate(width / 2, height / 2, 1);
-                    TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), camInv, m2);
+                    TrigBasicLib.translate(width / 2, height / 2, 1);
+                    TrigBasicLib.matrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), camInv, m2);
                 }
 
                 glTranslatef (-camX, -camY, 0);
-                TrigBasicLib.Translate(camX, camY, 0);
-                TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m2, m1);
+                TrigBasicLib.translate(camX, camY, 0);
+                TrigBasicLib.matrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m2, m1);
 
                 // Render sprite
                 if (cursor.solid) {
