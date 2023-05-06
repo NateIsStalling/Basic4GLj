@@ -106,7 +106,8 @@ public class BasicEditor implements MainEditor,
         mLibraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
         mLibraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
         mLibraries.add(new com.basic4gl.library.desktopgl.TomCompilerBasicLib());
-//        mLibraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
+        mLibraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
+        
         mLibraries.add(GLTextGridWindow.getInstance(mComp));
         mLibraries.add(BuilderDesktopGL.getInstance(mComp));
 
