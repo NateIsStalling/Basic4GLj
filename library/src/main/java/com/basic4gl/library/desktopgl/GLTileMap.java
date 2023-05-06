@@ -121,34 +121,34 @@ public class GLTileMap extends GLBasicSprite {
 
         // Translate to object position
         glTranslatef(positionX, positionY, 0);
-        TrigBasicLib.Translate(-positionX, -positionY, 0);
-        TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), camInv, m1);
+        TrigBasicLib.translate(-positionX, -positionY, 0);
+        TrigBasicLib.matrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), camInv, m1);
 
         // Rotate by angle
         if (angle != 0) {
             glRotatef(angle, 0, 0, 1);
-            TrigBasicLib.RotateZ(-angle);
-            TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
+            TrigBasicLib.rotateZ(-angle);
+            TrigBasicLib.matrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
         } else {
-            TrigBasicLib.CopyMatrix(m2, m1);
+            TrigBasicLib.copyMatrix(m2, m1);
         }
 
         // Scale to tile size
         glScalef(sizeX * scale,
                 sizeY * scale,
                 1);
-        TrigBasicLib.Scale(1.0f / (sizeX * scale),
+        TrigBasicLib.scale(1.0f / (sizeX * scale),
                 1.0f / (sizeY * scale),
                 1);
-        TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m2, m1);
+        TrigBasicLib.matrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m2, m1);
 
         // Centre offset
         if (centerX != 0 || centerY != 0) {
             glTranslatef(-centerX, -centerY, 0);
-            TrigBasicLib.Translate(centerX, centerY, 0);
-            TrigBasicLib.MatrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
+            TrigBasicLib.translate(centerX, centerY, 0);
+            TrigBasicLib.matrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m1, m2);
         } else {
-            TrigBasicLib.CopyMatrix(m2, m1);
+            TrigBasicLib.copyMatrix(m2, m1);
         }
 
         // Note: Flip not implemented yet!
@@ -160,7 +160,7 @@ public class GLTileMap extends GLBasicSprite {
         int maxX = -1000000, minX = 1000000, maxY = -1000000, minY = 1000000;
         for (int i = 0; i < 4; i++) {
             float[] tileSpaceCorner = new float[4];
-            TrigBasicLib.MatrixTimesVec(m2, camCorner[i], tileSpaceCorner);
+            TrigBasicLib.matrixTimesVec(m2, camCorner[i], tileSpaceCorner);
             int x = (int) tileSpaceCorner[0], y = (int) tileSpaceCorner[1];
             if (x < minX) {
                 minX = x;

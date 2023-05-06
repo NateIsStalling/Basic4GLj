@@ -3687,16 +3687,32 @@ public class TomBasicCompiler extends HasErrorState {
 			i = 0;
 			for (FunctionSpecification func : specs.get(name)) {
 				//Initialize function
-				Object instance;
+				Object instance = null;
 				//TODO Only initialize functions that are used
 				try {
-					Constructor<?> constructor = func.getFunctionClass().getConstructor(library.getClass());
-					instance = constructor.newInstance(library);
-				} catch (NoSuchMethodException e1) {
+					Constructor<?>[] constructors = func.getFunctionClass().getConstructors();
+					if (constructors.length == 0) {
+						throw new Exception("No constructors found for FunctionSpecification: " + name);
+					}
+					for (Constructor<?> constructor: constructors) {
+						// static class with default constructor
+						if (constructor.getParameterCount() == 0) {
+							instance = constructor.newInstance();
+							break;
+						}
+						// inner class with default constructor
+						// OR static class that injects the library
+						if (constructor.getParameterCount() == 1
+						&& constructor.getParameters()[0].getType().equals(library.getClass())) {
+							instance = constructor.newInstance(library);
+							break;
+						}
+
+						// Constructor not recognized
+						System.out.println("Function constructor not supported: " + constructor.toString());
+					}
+				} catch (Exception e1) {
 					e1.printStackTrace();
-					return;
-				} catch (Exception e2) {
-					e2.printStackTrace();
 					return;
 				}
 

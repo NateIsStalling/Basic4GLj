@@ -234,7 +234,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     /**
      * Init function
      */
-    public class InitFunc implements Function {
+    public static class InitFunc implements Function {
         public void run(TomVM vm) {
             runtimeRoutines.clear();
             runtimeRoutines.add(0);
@@ -598,19 +598,19 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         }
     }
 
-    public final class WrapCompilerError implements Function {
+    public static final class WrapCompilerError implements Function {
         public void run(TomVM vm) {
             vm.setRegString(error);
         }
     }
 
-    public final class WrapCompilerErrorLine implements Function {
+    public static final class WrapCompilerErrorLine implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(errorLine);
         }
     }
 
-    public final class WrapCompilerErrorCol implements Function {
+    public static final class WrapCompilerErrorCol implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(errorCol);
         }
