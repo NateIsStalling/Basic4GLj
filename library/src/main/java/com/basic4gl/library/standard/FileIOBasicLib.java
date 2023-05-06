@@ -54,7 +54,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
 
         // Clear error state
         lastError = "";
-        CloseFind();
+        closeFind();
     }
 
     @Override
@@ -140,18 +140,18 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         return null;
     }
 
-    static boolean IsSandboxMode() {
+    static boolean isSandboxMode() {
         //TODO implement sandbox mode option
         return true;//GetAppSettings()->IsSandboxMode();
     }
 
-    void CloseFind() {
+    void closeFind() {
         if (findFileCollection != null && findFileHandle != -1) {
             findFileCollection.clear();
             findFileHandle = -1;
         }
     }
-    boolean GetStream (int index) {
+    boolean getStream(int index) {
 
         // Get file stream and store in stream variable
         if (index > 0 && fileStreams.isIndexStored(index)) {
@@ -166,8 +166,8 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         }
     }
 
-    boolean GetIStream (int index) {
-        if (!GetStream (index)) {
+    boolean getInputStream(int index) {
+        if (!getStream(index)) {
             return false;
         }
         if (stream.in == null ) {
@@ -177,8 +177,8 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         return true;
     }
 
-    boolean GetOStream (int index) {
-        if (!GetStream (index)) {
+    boolean getOutputStream(int index) {
+        if (!getStream(index)) {
             return false;
         }
         if (stream.out == null ) {
@@ -188,7 +188,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         return true;
     }
 
-    boolean UpdateError (String operation, Exception exception) {
+    boolean updateError(String operation, Exception exception) {
         if (  exception != null &&  stream != null   && ( stream.in	!= null ||	stream.out != null )) {
             lastError = operation + " failed";
             return false;
@@ -199,11 +199,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         }
     }
 
-    int InternalOpenFileRead (String filename) {
+    int internalOpenFileRead(String filename) {
 
         // Attempt to open file
-        System.out.println("sandbox mode: " + IsSandboxMode());
-        FileInputStream file = files.OpenRead (filename, IsSandboxMode());
+        System.out.println("sandbox mode: " + isSandboxMode());
+        FileInputStream file = files.OpenRead (filename, isSandboxMode());
         if (file == null ) {
             lastError = files.getError();
             return 0;
@@ -214,10 +214,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         }
     }
 
-    int InternalOpenFileWrite (String filename) {
+    int internalOpenFileWrite(String filename) {
 
         // Attempt to open file
-        FileOutputStream file = files.OpenWrite (filename, IsSandboxMode());
+        FileOutputStream file = files.OpenWrite (filename, isSandboxMode());
         if (file == null ) {
             lastError = files.getError();
             return 0;
@@ -234,16 +234,16 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
 
             // Clear error state
             lastError = "";
-            CloseFind();
+            closeFind();
         }
     }
 
     public final class WrapOpenFileRead  implements Function { public void run(TomVM vm) {
-        vm.getReg().setIntVal (InternalOpenFileRead (vm.getStringParam(1)));
+        vm.getReg().setIntVal (internalOpenFileRead(vm.getStringParam(1)));
     }
     }
     public final class WrapOpenFileWrite  implements Function { public void run(TomVM vm) {
-        vm.getReg().setIntVal(InternalOpenFileWrite(vm.getStringParam(1)));
+        vm.getReg().setIntVal(internalOpenFileWrite(vm.getStringParam(1)));
     }
     }
     public final class WrapCloseFile  implements Function { public void run(TomVM vm) {
@@ -258,7 +258,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     }
     public final class WrapWriteChar  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.getIntParam(2))) {
+        if (!getOutputStream(vm.getIntParam(2))) {
             return;
         }
 
@@ -272,11 +272,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        UpdateError ("Write", exception);
+        updateError("Write", exception);
     }
     }
     public final class WrapWriteString  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.getIntParam(2))) {
+        if (!getOutputStream(vm.getIntParam(2))) {
             return;
         }
 
@@ -290,12 +290,12 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
                 e.printStackTrace();
                 exception = e;
             }
-            UpdateError ("Write", exception);
+            updateError("Write", exception);
         }
     }
     }
     public final class WrapWriteLine  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.getIntParam(2))) {
+        if (!getOutputStream(vm.getIntParam(2))) {
             return;
         }
 
@@ -309,12 +309,12 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
                 e.printStackTrace();
                 exception = e;
             }
-            UpdateError ("Write", exception);
+            updateError("Write", exception);
         }
     }
     }
     public final class WrapWriteByte  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.getIntParam(2))) {
+        if (!getOutputStream(vm.getIntParam(2))) {
             return;
         }
 
@@ -326,11 +326,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        UpdateError ("Write", exception);
+        updateError("Write", exception);
     }
     }
     public final class WrapWriteWord  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.getIntParam(2))) {
+        if (!getOutputStream(vm.getIntParam(2))) {
             return;
         }
 
@@ -342,11 +342,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        UpdateError ("Write", exception);
+        updateError("Write", exception);
     }
     }
     public final class WrapWriteInt  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.getIntParam(2))) {
+        if (!getOutputStream(vm.getIntParam(2))) {
             return;
         }
 
@@ -358,11 +358,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        UpdateError ("Write", exception);
+        updateError("Write", exception);
     }
     }
     public final class WrapWriteFloat  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.getIntParam(2))) {
+        if (!getOutputStream(vm.getIntParam(2))) {
             return;
         }
 
@@ -374,11 +374,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        UpdateError ("Write", exception);
+        updateError("Write", exception);
     }
     }
     public final class WrapWriteDouble  implements Function { public void run(TomVM vm) {
-        if (!GetOStream (vm.getIntParam(2))) {
+        if (!getOutputStream(vm.getIntParam(2))) {
             return;
         }
 
@@ -390,15 +390,15 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        UpdateError ("Write", exception);
+        updateError("Write", exception);
     }
     }
     public final class WrapReadLine  implements Function { public void run(TomVM vm) {
         vm.setRegString ( "");
-        if (!GetIStream (vm.getIntParam(1))) {
+        if (!getInputStream(vm.getIntParam(1))) {
             return;
         }
-        if (!UpdateError ("Read", null)) {
+        if (!updateError("Read", null)) {
             return;
         }
 
@@ -422,7 +422,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         }
         // Don't treat eof as an error
         if (exception != null) {
-            UpdateError ("Read", exception);
+            updateError("Read", exception);
         } else {
             lastError = "";
         }
@@ -430,7 +430,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     public final class WrapReadChar  implements Function { public void run(TomVM vm) {
         vm.setRegString ("");
-        if (!GetIStream (vm.getIntParam(1))) {
+        if (!getInputStream(vm.getIntParam(1))) {
             return;
         }
 
@@ -443,14 +443,14 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception)) {
+        if (updateError("Read", exception)) {
             vm.setRegString(String.valueOf(c));
         }
     }
     }
     public final class WrapReadByte  implements Function { public void run(TomVM vm) {
         vm.getReg().setIntVal ( 0);
-        if (!GetIStream (vm.getIntParam(1))) {
+        if (!getInputStream(vm.getIntParam(1))) {
             return;
         }
 
@@ -463,14 +463,14 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception)) {
+        if (updateError("Read", exception)) {
             vm.getReg().setIntVal ( (int) element);
         }
     }
     }
     public final class WrapReadWord  implements Function { public void run(TomVM vm) {
         vm.getReg().setIntVal ( 0);
-        if (!GetIStream (vm.getIntParam(1))) {
+        if (!getInputStream(vm.getIntParam(1))) {
             return;
         }
 
@@ -485,14 +485,14 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception)) {
+        if (updateError("Read", exception)) {
             vm.getReg().setIntVal ( (int)element);
         }
     }
     }
     public final class WrapReadInt  implements Function { public void run(TomVM vm) {
         vm.getReg().setIntVal ( 0);
-        if (!GetIStream (vm.getIntParam(1))) {
+        if (!getInputStream(vm.getIntParam(1))) {
             return;
         }
 
@@ -507,14 +507,14 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception)) {
+        if (updateError("Read", exception)) {
             vm.getReg().setIntVal ( element);
         }
     }
     }
     public final class WrapReadFloat  implements Function { public void run(TomVM vm) {
         vm.getReg().setIntVal ( 0);
-        if (!GetIStream (vm.getIntParam(1))) {
+        if (!getInputStream(vm.getIntParam(1))) {
             return;
         }
 
@@ -529,14 +529,14 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception)) {
+        if (updateError("Read", exception)) {
             vm.getReg().setRealVal(element);
         }
     }
     }
     public final class WrapReadDouble  implements Function { public void run(TomVM vm) {
         vm.getReg().setIntVal ( 0);
-        if (!GetIStream (vm.getIntParam(1))) {
+        if (!getInputStream(vm.getIntParam(1))) {
             return;
         }
 
@@ -551,13 +551,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (UpdateError ("Read", exception)) {
+        if (updateError("Read", exception)) {
             vm.getReg().setRealVal ((float) element);
         }
     }
     }
     public final class WrapSeek  implements Function { public void run(TomVM vm) {
-        if (!GetStream (vm.getIntParam(2))) {
+        if (!getStream(vm.getIntParam(2))) {
             return;
         }
         Exception exception = null;
@@ -574,16 +574,16 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        UpdateError ("Seek", exception);
+        updateError("Seek", exception);
     }
     }
     public final class WrapReadText  implements Function { public void run(TomVM vm) {
 
         // Read a string of non whitespace tokens
-        if (!GetIStream (vm.getIntParam(2))) {
+        if (!getInputStream(vm.getIntParam(2))) {
             return;
         }
-        if (!UpdateError ("Read", null)) {
+        if (!updateError("Read", null)) {
             return;
         }
         boolean skipNewLines = vm.getIntParam(1) != 0;
@@ -601,7 +601,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             e.printStackTrace();
             exception = e;
         }
-        if (!UpdateError ("Read", exception)) {
+        if (!updateError("Read", exception)) {
             return;
         }
 
@@ -620,7 +620,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             exception = e;
         }
 
-        if (!UpdateError ("Read", exception)) {
+        if (!updateError("Read", exception)) {
             return;
         }
     }
@@ -628,13 +628,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     public final class WrapFindFirstFile implements Function { public void run(TomVM vm) {
 
         // Close any previous find
-        CloseFind();
+        closeFind();
 
         // Get filename
         String filename = vm.getStringParam(1);
 
         // Check path is in files folder
-        if (IsSandboxMode() && !files.CheckFilesFolder(filename)) {
+        if (isSandboxMode() && !files.CheckFilesFolder(filename)) {
             lastError = files.getError();
             vm.setRegString( "");
             return;
@@ -701,12 +701,12 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
 
     public final class WrapFindClose implements Function { public void run(TomVM vm) {
-        CloseFind();
+        closeFind();
     }
     }
     public final class WrapDeleteFile implements Function { public void run(TomVM vm) {
         String filename = vm.getStringParam(1);
-        if (files.Delete(filename, IsSandboxMode())) {
+        if (files.Delete(filename, isSandboxMode())) {
             lastError = "";
             vm.getReg().setIntVal( -1);
         }
@@ -722,7 +722,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     public final class WrapEndOfFile  implements Function { public void run(TomVM vm) {
         vm.getReg().setIntVal ( -1);
-        if (!GetStream (vm.getIntParam(1))) {
+        if (!getStream(vm.getIntParam(1))) {
             return;
         }
         try {
