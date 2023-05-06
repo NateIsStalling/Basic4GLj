@@ -115,7 +115,7 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
     }
 
 
-    static void ClearJoyInfo () {
+    static void clearJoyInfo() {
         if (joyInfo == null) {
             joyInfo = BufferUtils.createFloatBuffer(2);
         }
@@ -140,29 +140,29 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
         joyInfo.put(yPosIndex, 0x8000);
     }
 
-    static void PollJoystick () {
+    static void pollJoystick() {
 
         // Read joystick position
         joyInfo = glfwGetJoystickAxes(GLFW_JOYSTICK_1);
         buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1);
         if (joyInfo == null || joyInfo.capacity() < 2 ||
                 buttons == null || buttons.capacity() < JOY_BUTTONS) {
-            ClearJoyInfo();
+            clearJoyInfo();
         }
     }
 
-    static void AutoPoll () {
+    static void autoPoll() {
         if (autoPoll) {
-            PollJoystick ();
+            pollJoystick();
         }
     }
 
 
 
-    static int JoyX () {
+    static int getJoyX() {
         return (int) joyInfo.get(xPosIndex) - 0x8000;
     }
-    static int JoyY () {
+    static int getJoyY() {
         return (int) joyInfo.get(yPosIndex) - 0x8000;
     }
     
@@ -171,79 +171,79 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
             // This function is called everytime a Basic4GL program starts.
             // Reset joystick related state.
             autoPoll = true;		// Automatically Poll joystick whenever it is accessed
-            ClearJoyInfo ();
+            clearJoyInfo();
             threshHold = DEFAULT_JOY_THRESHHOLD;
         }
     }
     public static final class WrapUpdateJoystick  implements Function {
         public void run(TomVM vm) {
             autoPoll = false;       // Explicitly polling the joystick disables automatic polling
-            PollJoystick ();
+            pollJoystick();
         }
     }
     public static final class WrapJoyLeft  implements Function {
         public void run(TomVM vm) {
-            AutoPoll ();
-            vm.getReg().setIntVal ( JoyX () <= -threshHold ? -1 : 0);
+            autoPoll();
+            vm.getReg().setIntVal ( getJoyX() <= -threshHold ? -1 : 0);
         }
     }
     public static final class WrapJoyRight  implements Function {
         public void run(TomVM vm) {
-            AutoPoll ();
-            vm.getReg().setIntVal ( JoyX () >= threshHold ? -1 : 0);
+            autoPoll();
+            vm.getReg().setIntVal ( getJoyX() >= threshHold ? -1 : 0);
         }
     }
     public static final class WrapJoyUp  implements Function {
         public void run(TomVM vm) {
-            AutoPoll ();
-            vm.getReg().setIntVal ( JoyY () <= -threshHold ? -1 : 0);
+            autoPoll();
+            vm.getReg().setIntVal ( getJoyY() <= -threshHold ? -1 : 0);
         }
     }
     public static final class WrapJoyDown  implements Function {
         public void run(TomVM vm) {
-            AutoPoll ();
-            vm.getReg().setIntVal ( JoyY () >= threshHold ? -1 : 0);
+            autoPoll();
+            vm.getReg().setIntVal ( getJoyY() >= threshHold ? -1 : 0);
         }
     }
     public static final class WrapJoyButton0  implements Function {
         public void run(TomVM vm) {
-            AutoPoll ();
+            autoPoll();
             vm.getReg().setIntVal ( buttons != null && buttons.get(0) != 0 ? -1 : 0);
         }
     }
     public static final class WrapJoyButton1  implements Function {
         public void run(TomVM vm) {
-            AutoPoll ();
+            autoPoll();
             vm.getReg().setIntVal ( buttons != null && buttons.get(1) != 0 ? -1 : 0);
         }
     }
     public static final class WrapJoyButton2  implements Function {
         public void run(TomVM vm) {
-            AutoPoll ();
+            autoPoll();
             vm.getReg().setIntVal ( buttons != null && buttons.get(2) != 0 ? -1 : 0);
         }
     }
     public static final class WrapJoyButton3  implements Function {
         public void run(TomVM vm) {
-            AutoPoll ();
+            autoPoll();
             vm.getReg().setIntVal ( buttons != null && buttons.get(3) != 0 ? -1 : 0);
         }
     }
     public static final class WrapJoyX  implements Function {
         public void run(TomVM vm) {
-            AutoPoll ();
-            vm.getReg().setIntVal ( JoyX ());
+            autoPoll();
+            vm.getReg().setIntVal ( getJoyX());
         }
     }
     public static final class WrapJoyY  implements Function {
         public void run(TomVM vm) {
-            AutoPoll ();
-            vm.getReg().setIntVal ( JoyY ());
+            autoPoll();
+            vm.getReg().setIntVal ( getJoyY());
         }
     }
     public static final class WrapJoyButton  implements Function {
         public void run(TomVM vm) {
-            AutoPoll ();
+            autoPoll();
             int index = vm.getIntParam(1);
             if (index >= 0 && index < JOY_BUTTONS) {
                 vm.getReg().setIntVal ( buttons != null && buttons.get(index) != 0 ? -1 : 0);
@@ -252,16 +252,16 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
     }
     public static final class WrapJoyKeys  implements Function {
         public void run(TomVM vm) {
-            AutoPoll();
+            autoPoll();
 
             // Create fake keypresses based on the joystick state
             // Axis movement translates to cursor keys
             // Fire button 1 translates to space bar
             // Fire button 2 translates to control key (Ctrl)
-            appWindow.fakeScanKey(GLFW_KEY_LEFT, 2, JoyX() < -threshHold);
-            appWindow.fakeScanKey(GLFW_KEY_RIGHT, 2, JoyX() > threshHold);
-            appWindow.fakeScanKey(GLFW_KEY_UP, 2, JoyY() < -threshHold);
-            appWindow.fakeScanKey(GLFW_KEY_DOWN, 2, JoyY() > threshHold);
+            appWindow.fakeScanKey(GLFW_KEY_LEFT, 2, getJoyX() < -threshHold);
+            appWindow.fakeScanKey(GLFW_KEY_RIGHT, 2, getJoyX() > threshHold);
+            appWindow.fakeScanKey(GLFW_KEY_UP, 2, getJoyY() < -threshHold);
+            appWindow.fakeScanKey(GLFW_KEY_DOWN, 2, getJoyY() > threshHold);
             appWindow.fakeScanKey(GLFW_KEY_SPACE, 2, buttons != null && buttons.get(0) != 0);
             //TODO Original source used VK_CONTROL
             appWindow.fakeScanKey(GLFW_KEY_LEFT_CONTROL, 2, buttons != null && buttons.get(1) != 0);
