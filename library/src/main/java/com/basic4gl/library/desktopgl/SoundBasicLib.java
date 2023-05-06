@@ -13,11 +13,9 @@ import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.HasErrorState;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
-import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.ResourceStore;
 import org.lwjgl.openal.AL10;
-import org.lwjgl.openal.ALC10;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +45,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             SndReset();
         }
     }
-    static boolean CheckSoundEngine() {
+    static boolean checkSoundEngine() {
         if (!triedToLoad) {
 
             // Try to load sound engine
@@ -107,16 +105,16 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     public void init(TomBasicCompiler comp) {
 
         // Register sound resources
-        comp.VM().AddResources(sounds);
+        comp.VM().addResources(sounds);
 
         // Register initialisation function
-        comp.VM().AddInitFunc (new InitLibFunction());
+        comp.VM().addInitFunction(new InitLibFunction());
     }
 
     @Override
     public void cleanup() {
         engine.dispose();
-        sounds.Clear();
+        sounds.clear();
     }
 
     @Override
@@ -129,10 +127,20 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
         return null;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
-//  SoundStore
-//
-/// Stores sound objects as returned from the DLL.
+    static boolean checkError(HasErrorState obj) {
+        if (obj.hasError()) {
+            error = obj.getError();
+            return false;
+        }
+        else {
+            error = "";
+            return true;
+        }
+    }
+
+    /**
+     *  Stores sound objects as returned from the sound engine.
+     */
     public class SoundStore extends ResourceStore<Sound> {
         protected void deleteElement(int index) {
             //if (dll != null)
@@ -144,130 +152,144 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
     SoundStore sounds = new SoundStore();
 
-    ////////////////////////////////////////////////////////////////////////////////
-//  Runtime function wrappers
+    //region Runtime function wrappers
     public class WrapLoadSound implements Function {
         public void run(TomVM vm) {
-            if (CheckSoundEngine()) {
+            if (checkSoundEngine()) {
 
                 // Load sound file
-                String filename = files.FilenameForRead(vm.GetStringParam(1), false);
+                String filename = files.FilenameForRead(vm.getStringParam(1), false);
                 Sound sound = SndLoadSound(filename);
-                if (sound != null)
-                    vm.Reg().setIntVal( sounds.Alloc(sound));
-                else
-                    vm.Reg().setIntVal(0);
+                if (sound != null) {
+                    vm.getReg().setIntVal( sounds.alloc(sound));
+                } else {
+                    vm.getReg().setIntVal(0);
+                }
             }
-            else
-                vm.Reg().setIntVal(0);
+            else {
+                vm.getReg().setIntVal(0);
+            }
         }
     }
     public class WrapDeleteSound implements Function {
         public void run(TomVM vm) {
-            if (CheckSoundEngine()) {
-                int handle = vm.GetIntParam(1);
-                if (handle > 0 && sounds.IndexStored(handle))
-                    sounds.Free(handle);
+            if (checkSoundEngine()) {
+                int handle = vm.getIntParam(1);
+                if (handle > 0 && sounds.isIndexStored(handle)) {
+                    sounds.free(handle);
+                }
             }
         }
     }
     public class WrapPlaySound implements Function {
         public void run(TomVM vm) {
-            if (CheckSoundEngine()) {
-                int handle = vm.GetIntParam(1);
-                if (handle > 0 && sounds.IndexStored(handle))
-                    vm.Reg().setIntVal( SndDoPlaySound(sounds.Value(handle), 1, false));
-                else
-                    vm.Reg().setIntVal(-1);
+            if (checkSoundEngine()) {
+                int handle = vm.getIntParam(1);
+                if (handle > 0 && sounds.isIndexStored(handle)) {
+                    vm.getReg().setIntVal( SndDoPlaySound(sounds.getValueAt(handle), 1, false));
+                } else {
+                    vm.getReg().setIntVal(-1);
+                }
             }
-            else
-                vm.Reg().setIntVal(-1);
+            else {
+                vm.getReg().setIntVal(-1);
+            }
         }
     }
     public class WrapPlaySound2 implements Function {
         public void run(TomVM vm) {
-            if (CheckSoundEngine()) {
-                int handle = vm.GetIntParam(3);
-                if (handle > 0 && sounds.IndexStored(handle))
-                    vm.Reg().setIntVal( SndDoPlaySound(sounds.Value(handle), vm.GetRealParam(2), vm.GetIntParam(1) != 0));
-                else
-                    vm.Reg().setIntVal(-1);
+            if (checkSoundEngine()) {
+                int handle = vm.getIntParam(3);
+                if (handle > 0 && sounds.isIndexStored(handle)) {
+                    vm.getReg().setIntVal( SndDoPlaySound(sounds.getValueAt(handle), vm.getRealParam(2), vm.getIntParam(1) != 0));
+                } else {
+                    vm.getReg().setIntVal(-1);
+                }
             }
-            else
-                vm.Reg().setIntVal(-1);
+            else {
+                vm.getReg().setIntVal(-1);
+            }
         }
     }
     public class WrapStopSounds implements Function {
         public void run(TomVM vm) {
-            if (CheckSoundEngine())
+            if (checkSoundEngine()) {
                 SndStopSounds();
+            }
         }
     }
     public class WrapPlayMusic implements Function {
         public void run(TomVM vm) {
-            if (CheckSoundEngine()) {
-                String filename = files.FilenameForRead(vm.GetStringParam(1), false);
+            if (checkSoundEngine()) {
+                String filename = files.FilenameForRead(vm.getStringParam(1), false);
                 SndPlayMusic(filename, 1, false);
             }
         }
     }
     public class WrapPlayMusic2 implements Function {
         public void run(TomVM vm) {
-            if (CheckSoundEngine()) {
-                String filename = files.FilenameForRead(vm.GetStringParam(3), false);
-                SndPlayMusic(filename, vm.GetRealParam(2), vm.GetIntParam(1) != 0);
+            if (checkSoundEngine()) {
+                String filename = files.FilenameForRead(vm.getStringParam(3), false);
+                SndPlayMusic(filename, vm.getRealParam(2), vm.getIntParam(1) != 0);
             }
         }
     }
     public class WrapStopMusic implements Function {
         public void run(TomVM vm) {
-            if (CheckSoundEngine())
+            if (checkSoundEngine()) {
                 SndStopMusic();
+            }
         }
     }
     public class WrapMusicPlaying implements Function {
         public void run(TomVM vm) {
-            vm.Reg().setIntVal( CheckSoundEngine() && SndMusicPlaying() ? -1 : 0);
+            vm.getReg().setIntVal( checkSoundEngine() && SndMusicPlaying() ? -1 : 0);
         }
     }
     public class WrapSetMusicVolume implements Function {
         public void run(TomVM vm) {
-            if (CheckSoundEngine())
-                SndSetMusicVolume(vm.GetRealParam(1));
+            if (checkSoundEngine()) {
+                SndSetMusicVolume(vm.getRealParam(1));
+            }
         }
     }
     public class WrapSoundError implements Function {
         public void run(TomVM vm) {
-            if (CheckSoundEngine()) {
+            if (checkSoundEngine()) {
                 StringBuilder buffer = new StringBuilder();
                 SndGetError(buffer);
                 vm.setRegString( buffer.toString());
-            }
-            else
+            } else {
                 //TODO update error message; Basic4GLj does not use the mentioned dll's
                 vm.setRegString( "Sound playback requires Audiere.dll and B4GLSound.dll to be placed in the same folder");
+            }
         }
     }
     public class WrapStopSoundVoice implements Function {
         public void run(TomVM vm) {
-            if (CheckSoundEngine())
-                SndStopSoundVoice(vm.GetIntParam(1));
+            if (checkSoundEngine()) {
+                SndStopSoundVoice(vm.getIntParam(1));
+            }
         }
     }
 
+    //endregion
 
 
-    //DLL functions; may be moved to different class
+
+    //region Sound Engine functions; may be moved to different class
     private void SndReset(){
-        if (engine != null)
-            engine.StopAll();
-        if (music != null)
-            music.CloseFile();
+        if (engine != null) {
+            engine.stopAll();
+        }
+        if (music != null) {
+            music.closeFile();
+        }
     }
     private Sound SndLoadSound(String filename){
         //Todo load sound file
         Sound s = new Sound(filename);
-        if (CheckError(s)){
+        if (checkError(s)){
             return s;
         }
         else {
@@ -276,51 +298,44 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
         }
     }
     private void SndDeleteSound(Sound sound){
-        if (sound != null)
+        if (sound != null) {
             sound.dispose();
+        }
 
     }
     private int SndDoPlaySound(Sound sound, float volume, boolean looped){
         if (sound != null) {
-            int voice = engine.PlaySound( sound, volume, looped);
-            CheckError(sound);
+            int voice = engine.playSound(sound, volume, looped);
+            checkError(sound);
             return voice;
         }
-        else
+        else {
             return -1;
+        }
     }
     private void SndStopSounds(){
-        engine.StopAll();
+        engine.stopAll();
     }
     private void SndPlayMusic(String filename, float volume, boolean looped){
-        music.OpenFile(filename, volume, looped);
-        music.UpdateErrorState();
-        CheckError(music);
+        music.openFile(filename, volume, looped);
+        music.updateErrorState();
+        checkError(music);
     }
     private void SndStopMusic(){
-        music.CloseFile();
+        music.closeFile();
     }
     private boolean SndMusicPlaying(){
-        return music.Playing();
+        return music.isPlaying();
     }
     private void SndSetMusicVolume(float volume){
-        music.SetGain(volume);
+        music.setGain(volume);
     }
     private void SndStopSoundVoice(int voice){
-        engine.StopVoice(voice);
+        engine.stopVoice(voice);
     }
     private void SndGetError(StringBuilder message){
         message.append(AL10.alGetError());
     }
 
-    static boolean CheckError(HasErrorState obj) {
-        if (obj.hasError()) {
-            error = obj.getError();
-            return false;
-        }
-        else {
-            error = "";
-            return true;
-        }
-    }
+    //endregion
 }

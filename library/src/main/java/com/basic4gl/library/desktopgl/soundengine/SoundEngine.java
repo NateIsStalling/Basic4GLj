@@ -1,9 +1,8 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
-import com.basic4gl.runtime.vm.HasErrorState;
+import com.basic4gl.runtime.HasErrorState;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.*;
-import org.lwjgl.stb.STBVorbis;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -11,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.stb.STBVorbis.*;
 
 /**
@@ -44,7 +44,7 @@ public class SoundEngine extends HasErrorState {
 
         int error;
         if ((error = AL10.alGetError()) != AL10.AL_NO_ERROR) {
-            setError(SoundEngine.GetALErrorString(error));
+            setError(SoundEngine.getALErrorString(error));
             voices = null;
             initialised = false;
             return;
@@ -59,14 +59,14 @@ public class SoundEngine extends HasErrorState {
         AL10.alGenSources(this.voiceCount, voices);
         error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
-            setError(GetALErrorString(error));
+            setError(getALErrorString(error));
             voices.clear();
             voices = null;
             return;
         }
 
         // Setup voice queue
-        RebuildQueue();
+        rebuildQueue();
 
         initialised = true;
     }
@@ -76,7 +76,7 @@ public class SoundEngine extends HasErrorState {
         device.destroy();
             // Stop voices playing
             if (initialised) {
-                StopAll();
+                stopAll();
 
                 // Delete voices
                 AL10.alDeleteSources(voiceCount, voices);
@@ -89,15 +89,16 @@ public class SoundEngine extends HasErrorState {
 
     }
 
-    private void RebuildQueue() {
+    private void rebuildQueue() {
 
         // Rebuild queue of voices
         queue.clear();
-        for (int i = 0; i < voiceCount; i++)
+        for (int i = 0; i < voiceCount; i++) {
             queue.add(i);
+        }
     }
 
-    private int FindFreeVoice() {
+    private int findFreeVoice() {
         int index = -1;
         boolean found = false;
 
@@ -127,8 +128,9 @@ public class SoundEngine extends HasErrorState {
         }
         queue.addAll(temp);
         temp.clear();
-        if (found)
+        if (found) {
             return index;
+        }
 
         // No non-playing source found.
         // Now we look for the oldest playing source that isn't looping
@@ -158,8 +160,9 @@ public class SoundEngine extends HasErrorState {
         }
         queue.addAll(temp);
         temp.clear();
-        if (found)
+        if (found) {
             return index;
+        }
 
         // All sounds are playing and looping.
         // Just use oldest voice
@@ -176,9 +179,10 @@ public class SoundEngine extends HasErrorState {
         return index;
     }
 
-    public int PlaySound(Sound sound, float gain, boolean looped) {
-        if (!initialised)
+    public int playSound(Sound sound, float gain, boolean looped) {
+        if (!initialised) {
             return -1;
+        }
 
         if (sound.hasError()) {
             setError("Error opening sound: " + sound.getError());
@@ -186,7 +190,7 @@ public class SoundEngine extends HasErrorState {
         }
 
         // Find a suitable voice
-        int index = FindFreeVoice();
+        int index = findFreeVoice();
         int source = voices.asIntBuffer().get(index);
 
         // Set looping state
@@ -205,26 +209,31 @@ public class SoundEngine extends HasErrorState {
         return index;
     }
 
-    public void StopVoice(int index) {
-        if (!initialised)
+    public void stopVoice(int index) {
+        if (!initialised) {
             return;
+        }
 
-        if (index >= 0 && index < voiceCount)
+        if (index >= 0 && index < voiceCount) {
             AL10.alSourceStop(voices.asIntBuffer().get(index));
+        }
     }
 
-    public void StopAll() {
-        if (!initialised)
+    public void stopAll() {
+        if (!initialised) {
             return;
+        }
 
-        for (int i = 0; i < voiceCount; i++)
+        for (int i = 0; i < voiceCount; i++) {
             AL10.alSourceStop(voices.asIntBuffer().get(i));
-        RebuildQueue();
+        }
+        rebuildQueue();
     }
 
-    boolean VoiceIsPlaying(int index) {
-        if (!initialised)
+    boolean isVoicePlaying(int index) {
+        if (!initialised) {
             return false;
+        }
 
         if (index >= 0 && index < voiceCount) {
             int source = voices.asIntBuffer().get(index);
@@ -232,13 +241,14 @@ public class SoundEngine extends HasErrorState {
             AL10.alGetSourcei(source, AL10.AL_SOURCE_STATE, state);
             return state.get(0) == AL10.AL_PLAYING;
         }
-        else
+        else {
             return false;
+        }
     }
 
     //	Helper functions
 
-    static String GetALErrorString(int error) {
+    static String getALErrorString(int error) {
         switch (error) {
             case AL10.AL_INVALID_NAME:       return "AL_INVALID_NAME: Invalid name";
             case AL10.AL_INVALID_ENUM:       return "AL_INVALID_ENUM: Invalid enumeration";
@@ -250,7 +260,7 @@ public class SoundEngine extends HasErrorState {
     }
 
 
-    static String GetVorbisFileErrorString(int error) {
+    static String getVorbisFileErrorString(int error) {
         switch (error) {
             case VORBIS__no_error: return "STBVorbis: No error";
 

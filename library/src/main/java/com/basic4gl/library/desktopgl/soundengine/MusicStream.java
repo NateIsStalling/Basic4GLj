@@ -12,7 +12,7 @@ import java.util.concurrent.locks.Lock;
  * Automatically creates its own service thread to ensure the
  * music keeps playing.
  */
-public class startMusicStream extends HasErrorState implements Runnable {
+public class MusicStream extends HasErrorState implements Runnable {
 
     @Override
     public void run() {
@@ -60,15 +60,15 @@ public class startMusicStream extends HasErrorState implements Runnable {
                                 break;
 
                             case MSC_OpenFile:
-                                stream.OpenFile(cmd.filename, cmd.gain, cmd.looping);
+                                stream.openFile(cmd.filename, cmd.gain, cmd.looping);
                                 break;
 
                             case MSC_CloseFile:
-                                stream.CloseFile();
+                                stream.closeFile();
                                 break;
 
                             case MSC_SetGain:
-                                stream.SetGain(cmd.gain);
+                                stream.setGain(cmd.gain);
                                 break;
                         }
                         stateLock.unlock();
@@ -77,7 +77,7 @@ public class startMusicStream extends HasErrorState implements Runnable {
 
                 // Update music stream, to ensure music keeps playing
                 stateLock.lock();
-                stream.Update();
+                stream.update();
                 stateLock.unlock();
 
                 // Sleep until woken.
@@ -85,7 +85,7 @@ public class startMusicStream extends HasErrorState implements Runnable {
                 // can update the stream and keep the music playing.
                 // Otherwise we wait indefinitely.
                 if (!shuttingDown) {
-                    if (stream.Playing()) {
+                    if (stream.isPlaying()) {
                         wakeEvent.WaitFor(100);
                     } else {
                         wakeEvent.WaitFor();
@@ -98,15 +98,6 @@ public class startMusicStream extends HasErrorState implements Runnable {
             stream = null;
         }
     }
-
-    enum MusicStreamCmdCode {
-        MSC_Shutdown,
-        MSC_OpenFile,
-        MSC_CloseFile,
-        MSC_SetGain
-    }
-
-    ;
 
     // Internal polled music stream
     private MusicStreamPolled stream;
@@ -124,19 +115,39 @@ public class startMusicStream extends HasErrorState implements Runnable {
     private Lock commandQueueLock, stateLock;
     private ThreadEvent wakeEvent, readyEvent;
 
-    private void sendCommand(MusicStreamCmdCode code) {
+    public MusicStream() {
+        playing = false;
+        stream = null;
+        readyEvent = new ThreadEvent(true);
+        // Start service thread
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    public void dispose() {
+
+        // Stop service thread
+        sendCommand(MusicStreamCommandCode.MSC_Shutdown);
+        try {
+            thread.wait();
+        } catch (InterruptedException consumed) {
+            //Do nothing
+        }
+    }
+
+    private void sendCommand(MusicStreamCommandCode code) {
         sendCommand(code, "", 1f, false);
     }
 
-    private void sendCommand(MusicStreamCmdCode code, String filename) {
+    private void sendCommand(MusicStreamCommandCode code, String filename) {
         sendCommand(code, filename, 1f, false);
     }
 
-    private void sendCommand(MusicStreamCmdCode code, String filename, float gain) {
+    private void sendCommand(MusicStreamCommandCode code, String filename, float gain) {
         sendCommand(code, filename, gain, false);
     }
 
-    private void sendCommand(MusicStreamCmdCode code, String filename, float gain, boolean looping) {
+    private void sendCommand(MusicStreamCommandCode code, String filename, float gain, boolean looping) {
 
         // Build command
         MusicStreamCommand cmd = new MusicStreamCommand();
@@ -158,29 +169,6 @@ public class startMusicStream extends HasErrorState implements Runnable {
         wakeEvent.Set();
     }
 
-
-
-
-    public startMusicStream() {
-        playing = false;
-        stream = null;
-        readyEvent = new ThreadEvent(true);
-        // Start service thread
-        thread = new Thread(this);
-        thread.start();
-    }
-
-    public void dispose() {
-
-        // Stop service thread
-        sendCommand(MusicStreamCmdCode.MSC_Shutdown);
-        try {
-            thread.wait();
-        } catch (InterruptedException consumed) {
-            //Do nothing
-        }
-    }
-
     // Control interface
     public void openFile(String filename) {
         openFile(filename, 1f, false);
@@ -192,21 +180,21 @@ public class startMusicStream extends HasErrorState implements Runnable {
 
     public void openFile(String filename, float gain, boolean looping)    // Open file and start playing
     {
-        sendCommand(MusicStreamCmdCode.MSC_OpenFile, filename, gain, looping);
+        sendCommand(MusicStreamCommandCode.MSC_OpenFile, filename, gain, looping);
     }
 
     public void closeFile() {
-        sendCommand(MusicStreamCmdCode.MSC_CloseFile);
+        sendCommand(MusicStreamCommandCode.MSC_CloseFile);
     }
 
     public void setGain(float gain) {
-        sendCommand(MusicStreamCmdCode.MSC_SetGain, "", gain);
+        sendCommand(MusicStreamCommandCode.MSC_SetGain, "", gain);
     }
 
     public boolean isPlaying() {
         readyEvent.WaitFor();
         stateLock.lock();
-        boolean result = stream.Playing();
+        boolean result = stream.isPlaying();
         stateLock.unlock();
         return result;
     }

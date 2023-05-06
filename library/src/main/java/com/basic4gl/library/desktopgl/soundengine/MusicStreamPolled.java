@@ -1,6 +1,6 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
-import com.basic4gl.runtime.vm.HasErrorState;
+import com.basic4gl.runtime.HasErrorState;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
@@ -10,6 +10,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
+import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.stb.STBVorbis.*;
 
 /**
@@ -54,12 +55,12 @@ public class MusicStreamPolled extends HasErrorState {
     // Temporary buffer
     ByteBuffer data;
 
-    void FillBuffer(int buffer) {
-        int size = ReadData();
+    void fillBuffer(int buffer) {
+        int size = readData();
         AL10.alBufferData(buffer, format, data, size, freq);
     }
 
-    int ReadData() {
+    int readData() {
         int offset = 0;
         boolean justLooped = false;
 
@@ -100,10 +101,10 @@ public class MusicStreamPolled extends HasErrorState {
         //return offset;
     }
 
-    void DoClose() {
+    void doClose() {
 
         // Cleanup and close file
-        // Note: Unlike the public CloseFile() method, we don't stop the music
+        // Note: Unlike the public closeFile() method, we don't stop the music
         // playing. We simply close the file.
         if (file != null) {
             stb_vorbis_close( ogg);
@@ -124,7 +125,7 @@ public class MusicStreamPolled extends HasErrorState {
         AL10.alGenSources(1, source);
         int error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
-            setError(SoundEngine.GetALErrorString(error));
+            setError(SoundEngine.getALErrorString(error));
             return;
         }
 
@@ -133,7 +134,7 @@ public class MusicStreamPolled extends HasErrorState {
         AL10.alGenBuffers(MUSICSTREAMBUFFERS, buffers);
         error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
-            setError(SoundEngine.GetALErrorString(error));
+            setError(SoundEngine.getALErrorString(error));
             return;
         }
 
@@ -146,7 +147,7 @@ public class MusicStreamPolled extends HasErrorState {
     public void dispose() {
 
         // Close any open file
-        CloseFile();
+        closeFile();
 
         // Free buffers
         if (buffers != null) {
@@ -158,28 +159,30 @@ public class MusicStreamPolled extends HasErrorState {
         AL10.alDeleteSources(1, source);
 
         // Free data
-        if (data != null)
+        if (data != null) {
             data = null;
+        }
     }
 
     // Control interface
-    public void OpenFile(String filename) {
-        OpenFile(filename, 1f, false);
+    public void openFile(String filename) {
+        openFile(filename, 1f, false);
     }
 
-    public void OpenFile(String filename, float gain) {
-        OpenFile(filename, gain, false);
+    public void openFile(String filename, float gain) {
+        openFile(filename, gain, false);
     }
 
-    public void OpenFile(String filename, float gain, boolean looping)    // Open file and start playing
+    public void openFile(String filename, float gain, boolean looping)    // Open file and start playing
     {
-        if (!initialised)
+        if (!initialised) {
             return;
+        }
 
         this.looping = looping;
 
         // Close any existing open file
-        CloseFile();
+        closeFile();
 
         // Open file
         file = new File(filename);
@@ -198,7 +201,7 @@ public class MusicStreamPolled extends HasErrorState {
         IntBuffer error = BufferUtils.createIntBuffer(1);
         ogg = stb_vorbis_open_filename(file.getAbsolutePath(), error, null);
         if (error.get(0) != 0) {
-            setError(SoundEngine.GetVorbisFileErrorString(error.get(0)));
+            setError(SoundEngine.getVorbisFileErrorString(error.get(0)));
             return;
         }
 
@@ -207,19 +210,20 @@ public class MusicStreamPolled extends HasErrorState {
         stb_vorbis_get_info(ogg, info);
         if (info == null) {
             setError("Unable to extract audio info from file");
-            DoClose();
+            doClose();
             return;
         }
         freq = info.sample_rate();
         channels = info.channels();
-        if (channels == 1)
+        if (channels == 1) {
             format = AL10.AL_FORMAT_MONO16;
-        else
+        } else {
             format = AL10.AL_FORMAT_STEREO16;
+        }
 
         // Fill sound buffers
         while (file != null && usedBufCount < MUSICSTREAMBUFFERS) {
-            FillBuffer(buffers.asIntBuffer().get(usedBufCount));
+            fillBuffer(buffers.asIntBuffer().get(usedBufCount));
             usedBufCount++;
         }
 
@@ -236,43 +240,46 @@ public class MusicStreamPolled extends HasErrorState {
         // Check for OpenAL errors
         error.put(0, AL10.alGetError());
         if (error.get(0) != AL10.AL_NO_ERROR) {
-            setError(SoundEngine.GetALErrorString(error.get(0)));
-            DoClose();
+            setError(SoundEngine.getALErrorString(error.get(0)));
+            doClose();
             return;
         }
 
         clearError();
     }
 
-    public void CloseFile() {
-        if (!initialised)
+    public void closeFile() {
+        if (!initialised) {
             return;
+        }
 
         // Stop playing
-        if (Playing())
+        if (isPlaying()) {
             AL10.alSourceStop(source.asIntBuffer().get(0));
+        }
 
         // Close file
-        DoClose();
+        doClose();
 
         // Clear error status
         clearError();
     }
 
-    public void SetGain(float gain) {
-        if (!initialised)
+    public void setGain(float gain) {
+        if (!initialised) {
             return;
+        }
 
         // Set the gain
         AL10.alSourcef(source.asIntBuffer().get(0), AL10.AL_GAIN, gain);
     }
 
-    public boolean Playing() {
+    public boolean isPlaying() {
 
         // If file is still being played, return true
-        if (file != null)
+        if (file != null) {
             return true;
-        else {
+        } else {
 
             // Otherwise, it's possible the file has run out, but the
             // last buffers are still being played, so we must check
@@ -285,15 +292,17 @@ public class MusicStreamPolled extends HasErrorState {
 
 
     // Must be called periodically to keep stream playing
-    public void Update() {
-        if (!initialised)
+    public void update() {
+        if (!initialised) {
             return;
+        }
 
         // Check state is streaming state
         IntBuffer sourceType = BufferUtils.createIntBuffer(1);
         AL10.alGetSourcei(source.asIntBuffer().get(0), AL10.AL_SOURCE_TYPE,  sourceType);
-        if (sourceType.get(0) != AL11.AL_STREAMING)
+        if (sourceType.get(0) != AL11.AL_STREAMING) {
             return;
+        }
 
         // Look for processed buffers
         IntBuffer processed = BufferUtils.createIntBuffer(1);
@@ -308,7 +317,7 @@ public class MusicStreamPolled extends HasErrorState {
             // Refill
             int count = 0;
             while (count < processed.get(0) && file != null) {
-                FillBuffer(processedBuffers.asIntBuffer().get(count));
+                fillBuffer(processedBuffers.asIntBuffer().get(count));
                 count++;
             }
 
@@ -323,13 +332,14 @@ public class MusicStreamPolled extends HasErrorState {
                 // Otherwise the source could stop if the buffers run out.)
                 IntBuffer state = BufferUtils.createIntBuffer(1);
                 AL10.alGetSourcei(source.asIntBuffer().get(0), AL10.AL_SOURCE_STATE, state);
-                if (state.get(0) != AL10.AL_PLAYING)
+                if (state.get(0) != AL10.AL_PLAYING) {
                     AL10.alSourcePlay(source.asIntBuffer().get(0));
+                }
 
                 // Check for OpenAL error
                 int error = AL10.alGetError();
                 if (error != AL10.AL_NO_ERROR) {
-                    setError(SoundEngine.GetALErrorString(error));
+                    setError(SoundEngine.getALErrorString(error));
                     return;
                 }
             }

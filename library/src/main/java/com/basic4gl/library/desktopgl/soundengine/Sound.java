@@ -1,6 +1,6 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
-import com.basic4gl.runtime.vm.HasErrorState;
+import com.basic4gl.runtime.HasErrorState;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 
@@ -102,7 +102,7 @@ public class Sound extends HasErrorState {
         // Check for errors
         int error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR)
-            setError(SoundEngine.GetALErrorString(error));
+            setError(SoundEngine.getALErrorString(error));
         else
             clearError();
     }
