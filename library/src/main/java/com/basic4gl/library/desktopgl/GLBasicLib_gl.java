@@ -1935,7 +1935,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglAreTexturesResident implements Function {
 
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 3)) {
+            if (!Routines.validateSizeParam(vm, 3)) {
                 return;
             }
 
@@ -2775,7 +2775,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglDrawArrays implements Function {
 
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 1)) {
+            if (!Routines.validateSizeParam(vm, 1)) {
                 return;
             }
             glDrawArrays(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
@@ -3037,7 +3037,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglFeedbackBuffer implements Function {
 
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 3)) {
+            if (!Routines.validateSizeParam(vm, 3)) {
                 return;
             }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
@@ -4553,7 +4553,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglPrioritizeTextures implements Function {
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 3)) {
+            if (!Routines.validateSizeParam(vm, 3)) {
                 return;
             }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
@@ -5460,7 +5460,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglSelectBuffer implements Function {
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 2)) {
+            if (!Routines.validateSizeParam(vm, 2)) {
                 return;
             }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());

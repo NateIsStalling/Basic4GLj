@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
  * Created by Nate on 4/19/2015.
  */
 public class Routines {
-    public static boolean ValidateSizeParam (TomVM vm, int paramIndex) {
+    public static boolean validateSizeParam(TomVM vm, int paramIndex) {
         int size = vm.getIntParam(paramIndex);
         if (size <= 0)                      // If size is 0, do nothing.
         {
@@ -27,12 +27,12 @@ public class Routines {
         return true;
     }
 
-    public static int ReadArrayDynamic (   TomVM vm,
-                                    int paramIndex,
-                                    ValType type,
-                                    int cType,
-                                    ByteBuffer array,
-                                    int maxSize) {
+    public static int readArrayDynamic(TomVM vm,
+                                       int paramIndex,
+                                       ValType type,
+                                       int cType,
+                                       ByteBuffer array,
+                                       int maxSize) {
 
         // Use the appropriate template function for the given type
         switch (cType) {
@@ -55,7 +55,7 @@ public class Routines {
         }
     }
 
-    public static int WriteArrayDynamic (   TomVM vm,
+    public static int writeArrayDynamic (   TomVM vm,
                                      int paramIndex,
                                      ValType type,
                                      int cType,

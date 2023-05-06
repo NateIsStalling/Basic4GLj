@@ -877,7 +877,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         // Read data, converted requested type
         int type = vm.getIntParam(2);
         ByteBuffer data = BufferUtils.createByteBuffer(maxSize * 4);
-        Routines.ReadArrayDynamic(vm, 1, new ValType(elementType.basicType, (byte) dimensions, (byte) 1, true), type, data, maxSize);
+        Routines.readArrayDynamic(vm, 1, new ValType(elementType.basicType, (byte) dimensions, (byte) 1, true), type, data, maxSize);
 
         data.rewind();
         // Generate image
