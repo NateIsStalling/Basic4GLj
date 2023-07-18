@@ -44,8 +44,8 @@ public class MusicStreamPolled extends HasErrorState {
     int channels;
 
     // OpenAL objects
-    ByteBuffer source;                // OpenAL source. Music is streamed through this source
-    ByteBuffer buffers;            // OpenAL buffers. Filled with music data and streamed into the source
+    IntBuffer source;                // OpenAL source. Music is streamed through this source
+    IntBuffer buffers;            // OpenAL buffers. Filled with music data and streamed into the source
     int usedBufCount;        // # used buffers from buffers array
 
     // State
@@ -56,15 +56,15 @@ public class MusicStreamPolled extends HasErrorState {
     ByteBuffer data;
 
     void fillBuffer(int buffer) {
-        int size = readData();
-        AL10.alBufferData(buffer, format, data, size, freq);
+        AL10.alBufferData(buffer, format, data, freq);
     }
 
+    // TODO check git history for usage
     int readData() {
         int offset = 0;
         boolean justLooped = false;
 
-        stb_vorbis_get_frame_short(ogg, channels, data, STREAMBLOCKSIZE);
+//        stb_vorbis_get_frame_short(ogg, channels, data, STREAMBLOCKSIZE);
         return stb_vorbis_get_file_offset(ogg);
         // Request data from Vorbisfile.
         // Vorbisfile doesn't always return as many bytes as we ask for, so we simply keep asking
@@ -122,7 +122,8 @@ public class MusicStreamPolled extends HasErrorState {
         data = null;
         // Allocate source
         AL10.alGetError();
-        AL10.alGenSources(1, source);
+        source.rewind();
+        AL10.alGenSources(source);
         int error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
             setError(SoundEngine.getALErrorString(error));
@@ -130,8 +131,8 @@ public class MusicStreamPolled extends HasErrorState {
         }
 
         // Allocate buffers
-        buffers = BufferUtils.createByteBuffer(MUSICSTREAMBUFFERS * Integer.SIZE / Byte.SIZE);
-        AL10.alGenBuffers(MUSICSTREAMBUFFERS, buffers);
+        buffers = BufferUtils.createIntBuffer(MUSICSTREAMBUFFERS);
+        AL10.alGenBuffers(buffers);
         error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
             setError(SoundEngine.getALErrorString(error));
@@ -151,12 +152,13 @@ public class MusicStreamPolled extends HasErrorState {
 
         // Free buffers
         if (buffers != null) {
-            AL10.alDeleteBuffers(MUSICSTREAMBUFFERS, buffers);
+            AL10.alDeleteBuffers(buffers);
             buffers.clear();
         }
 
         // Close source
-        AL10.alDeleteSources(1, source);
+        source.rewind();
+        AL10.alDeleteSources(source);
 
         // Free data
         if (data != null) {
@@ -223,19 +225,19 @@ public class MusicStreamPolled extends HasErrorState {
 
         // Fill sound buffers
         while (file != null && usedBufCount < MUSICSTREAMBUFFERS) {
-            fillBuffer(buffers.asIntBuffer().get(usedBufCount));
+            fillBuffer(buffers.get(usedBufCount));
             usedBufCount++;
         }
 
         // Queue them into source
         AL10.alGetError();
-        AL10.alSourceQueueBuffers(source.asIntBuffer().get(0), usedBufCount, buffers);
+        AL10.alSourceQueueBuffers(source.get(0), buffers);//usedBufCount, buffers);
 
         // Set the gain
-        AL10.alSourcef(source.asIntBuffer().get(0), AL10.AL_GAIN, gain);
+        AL10.alSourcef(source.get(0), AL10.AL_GAIN, gain);
 
         // Play the source
-        AL10.alSourcePlay(source.asIntBuffer().get(0));
+        AL10.alSourcePlay(source.get(0));
 
         // Check for OpenAL errors
         error.put(0, AL10.alGetError());
@@ -255,7 +257,7 @@ public class MusicStreamPolled extends HasErrorState {
 
         // Stop playing
         if (isPlaying()) {
-            AL10.alSourceStop(source.asIntBuffer().get(0));
+            AL10.alSourceStop(source.get(0));
         }
 
         // Close file
@@ -271,7 +273,7 @@ public class MusicStreamPolled extends HasErrorState {
         }
 
         // Set the gain
-        AL10.alSourcef(source.asIntBuffer().get(0), AL10.AL_GAIN, gain);
+        AL10.alSourcef(source.get(0), AL10.AL_GAIN, gain);
     }
 
     public boolean isPlaying() {
@@ -285,7 +287,7 @@ public class MusicStreamPolled extends HasErrorState {
             // last buffers are still being played, so we must check
             // for this also
             IntBuffer state = BufferUtils.createIntBuffer(1);
-            AL10.alGetSourcei(source.asIntBuffer().get(0), AL10.AL_SOURCE_STATE, state);
+            AL10.alGetSourcei(source.get(0), AL10.AL_SOURCE_STATE, state);
             return state.get(0) == AL10.AL_PLAYING;
         }
     }
@@ -299,25 +301,25 @@ public class MusicStreamPolled extends HasErrorState {
 
         // Check state is streaming state
         IntBuffer sourceType = BufferUtils.createIntBuffer(1);
-        AL10.alGetSourcei(source.asIntBuffer().get(0), AL10.AL_SOURCE_TYPE,  sourceType);
+        AL10.alGetSourcei(source.get(0), AL10.AL_SOURCE_TYPE,  sourceType);
         if (sourceType.get(0) != AL11.AL_STREAMING) {
             return;
         }
 
         // Look for processed buffers
         IntBuffer processed = BufferUtils.createIntBuffer(1);
-        AL10.alGetSourcei(source.asIntBuffer().get(0), AL10.AL_BUFFERS_PROCESSED,  processed);
+        AL10.alGetSourcei(source.get(0), AL10.AL_BUFFERS_PROCESSED,  processed);
 
         // Remove them
         if (processed.get(0) > 0) {
             assertTrue(processed.get(0) <= MUSICSTREAMBUFFERS);
-            ByteBuffer processedBuffers = BufferUtils.createByteBuffer(MUSICSTREAMBUFFERS * Integer.SIZE / Byte.SIZE);
-            AL10.alSourceUnqueueBuffers(source.asIntBuffer().get(0), processed.get(0), processedBuffers);
+            IntBuffer processedBuffers = BufferUtils.createIntBuffer(MUSICSTREAMBUFFERS);
+            AL10.alSourceUnqueueBuffers(source.get(0), processedBuffers);
 
             // Refill
             int count = 0;
             while (count < processed.get(0) && file != null) {
-                fillBuffer(processedBuffers.asIntBuffer().get(count));
+                fillBuffer(processedBuffers.get(count));
                 count++;
             }
 
@@ -325,15 +327,15 @@ public class MusicStreamPolled extends HasErrorState {
             if (count > 0) {
                 AL10.alGetError();
                 processedBuffers.rewind();
-                AL10.alSourceQueueBuffers(source.asIntBuffer().get(0), count, processedBuffers);
+                AL10.alSourceQueueBuffers(source.get(0), processedBuffers);
 
                 // Make sure the source keeps playing.
                 // (This prevents lag hicups from stopping the music.
                 // Otherwise the source could stop if the buffers run out.)
                 IntBuffer state = BufferUtils.createIntBuffer(1);
-                AL10.alGetSourcei(source.asIntBuffer().get(0), AL10.AL_SOURCE_STATE, state);
+                AL10.alGetSourcei(source.get(0), AL10.AL_SOURCE_STATE, state);
                 if (state.get(0) != AL10.AL_PLAYING) {
-                    AL10.alSourcePlay(source.asIntBuffer().get(0));
+                    AL10.alSourcePlay(source.get(0));
                 }
 
                 // Check for OpenAL error

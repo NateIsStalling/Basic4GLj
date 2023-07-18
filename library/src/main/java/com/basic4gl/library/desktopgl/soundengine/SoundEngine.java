@@ -11,7 +11,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static org.lwjgl.openal.ALC10.*;
+import static org.lwjgl.openal.EXTThreadLocalContext.alcSetThreadContext;
 import static org.lwjgl.stb.STBVorbis.*;
+import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 /**
  * Main interface to the sound engine.
@@ -21,14 +25,16 @@ public class SoundEngine extends HasErrorState {
 
     static long device = -1;
     static long contextAL = -1;
-    static ALContext context;
 
+    static ALCCapabilities deviceCaps;
+    static ALCapabilities caps;
     private boolean			initialised;		        // True if OpenAL successfully initialised.
     // (If false, we won't try to shut it down when we are destroyed!)
 
     private int				voiceCount;
-    private ByteBuffer      voices;			            // OpenAL voices.
+    private IntBuffer      voices;			            // OpenAL voices.
     private List<Integer>   queue = new ArrayList<>();	// Queued voices. Each entry indexes into voices array.
+    private boolean useTLC;
 
     public SoundEngine(int voiceCount) {
         this.voiceCount = voiceCount;
@@ -36,10 +42,22 @@ public class SoundEngine extends HasErrorState {
         assertTrue(this.voiceCount <= 1000);
 
         // Initialise OpenAL
-        context = ALContext.create();
+// Can call "alc" functions at any time
+        device = alcOpenDevice((ByteBuffer)null);
+        deviceCaps = ALC.createCapabilities(device);
 
-       // ALC10.alcMakeContextCurrent(contextAL);
-        //AL10.alGetError();
+        contextAL = alcCreateContext(device, (IntBuffer) null);
+        alcMakeContextCurrent(contextAL);
+
+        useTLC = deviceCaps.ALC_EXT_thread_local_context && alcSetThreadContext(contextAL);
+        if (!useTLC) {
+            if (!alcMakeContextCurrent(contextAL)) {
+                throw new IllegalStateException();
+            }
+        }
+
+        caps = AL.createCapabilities(deviceCaps);
+        AL10.alGetError();
 
 
         int error;
@@ -54,9 +72,9 @@ public class SoundEngine extends HasErrorState {
         Sound.init();
 
         // Allocate voices
-        voices = BufferUtils.createByteBuffer(this.voiceCount * Integer.SIZE/Byte.SIZE);
+        voices = BufferUtils.createIntBuffer(this.voiceCount);
         AL10.alGetError();
-        AL10.alGenSources(this.voiceCount, voices);
+        AL10.alGenSources(voices);
         error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
             setError(getALErrorString(error));
@@ -71,15 +89,26 @@ public class SoundEngine extends HasErrorState {
         initialised = true;
     }
     public void dispose() {
-        ALDevice device = context.getDevice();
-        context.destroy();
-        device.destroy();
+
+        alcDestroyContext(contextAL);
+        alcMakeContextCurrent(NULL);
+        if (useTLC) {
+            AL.setCurrentThread(null);
+        } else {
+            AL.setCurrentProcess(null);
+        }
+        memFree(caps.getAddressBuffer());
+
+        alcDestroyContext(contextAL);
+        alcCloseDevice(device);
+
             // Stop voices playing
             if (initialised) {
                 stopAll();
 
                 // Delete voices
-                AL10.alDeleteSources(voiceCount, voices);
+                voices.rewind();
+                AL10.alDeleteSources(voices);
                 voices.clear();
 
                 // Shut down OpenAL
@@ -110,7 +139,7 @@ public class SoundEngine extends HasErrorState {
         while (i.hasNext()) {
             // Find source
             index = i.next();
-            int source = voices.asIntBuffer().get(index);
+            int source = voices.get(index);
 
             // Check if it's playing
             IntBuffer state = BufferUtils.createIntBuffer(1);
@@ -139,7 +168,7 @@ public class SoundEngine extends HasErrorState {
 
             // Find source
             index = i.next();
-            int source = voices.asIntBuffer().get(index);
+            int source = voices.get(index);
 
             // Check if it's looping
             IntBuffer looping = BufferUtils.createIntBuffer(1);
@@ -167,7 +196,7 @@ public class SoundEngine extends HasErrorState {
         // All sounds are playing and looping.
         // Just use oldest voice
         index = queue.get(0);
-        int source = voices.asIntBuffer().get(index);
+        int source = voices.get(index);
 
         // Stop old sound
         AL10.alSourceStop(source);
@@ -191,7 +220,7 @@ public class SoundEngine extends HasErrorState {
 
         // Find a suitable voice
         int index = findFreeVoice();
-        int source = voices.asIntBuffer().get(index);
+        int source = voices.get(index);
 
         // Set looping state
         AL10.alSourcei(source, AL10.AL_LOOPING, looped ? AL10.AL_TRUE : AL10.AL_FALSE);
@@ -200,7 +229,7 @@ public class SoundEngine extends HasErrorState {
         AL10.alSourcef(source, AL10.AL_GAIN, gain);
 
         // Connect the sound buffer
-        AL10.alSourcei(source, AL10.AL_BUFFER, sound.Buffer());
+        AL10.alSourcei(source, AL10.AL_BUFFER, sound.getBuffer());
 
         // Play it
         AL10.alSourcePlay(source);
@@ -215,7 +244,7 @@ public class SoundEngine extends HasErrorState {
         }
 
         if (index >= 0 && index < voiceCount) {
-            AL10.alSourceStop(voices.asIntBuffer().get(index));
+            AL10.alSourceStop(voices.get(index));
         }
     }
 
@@ -225,7 +254,7 @@ public class SoundEngine extends HasErrorState {
         }
 
         for (int i = 0; i < voiceCount; i++) {
-            AL10.alSourceStop(voices.asIntBuffer().get(i));
+            AL10.alSourceStop(voices.get(i));
         }
         rebuildQueue();
     }
@@ -236,7 +265,7 @@ public class SoundEngine extends HasErrorState {
         }
 
         if (index >= 0 && index < voiceCount) {
-            int source = voices.asIntBuffer().get(index);
+            int source = voices.get(index);
             IntBuffer state = BufferUtils.createIntBuffer(1);
             AL10.alGetSourcei(source, AL10.AL_SOURCE_STATE, state);
             return state.get(0) == AL10.AL_PLAYING;

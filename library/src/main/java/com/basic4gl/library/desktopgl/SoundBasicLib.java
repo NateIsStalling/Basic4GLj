@@ -113,8 +113,12 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
     @Override
     public void cleanup() {
-        engine.dispose();
-        sounds.clear();
+        if (engine != null) {
+            engine.dispose();
+        }
+        if (sounds != null) {
+            sounds.clear();
+        }
     }
 
     @Override
