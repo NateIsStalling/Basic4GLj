@@ -177,8 +177,13 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 		// Register library functions
 		for (Library lib : instance.mLibraries) {
-			//instance.mComp.AddConstants(lib.constants());
+			lib.init(instance.mComp); //Allow libraries to register function overloads
+			if (lib instanceof IFileAccess) {
+				//Allows libraries to read from directories
+				((IFileAccess) lib).init(instance.mFiles);
+			}
 			if (lib instanceof FunctionLibrary) {
+				instance.mComp.AddConstants(((FunctionLibrary) lib).constants());
 				instance.mComp.AddFunctions(lib, ((FunctionLibrary) lib).specs());
 			}
 		}
