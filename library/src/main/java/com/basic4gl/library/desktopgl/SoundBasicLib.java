@@ -17,6 +17,7 @@ import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.ResourceStore;
 import org.lwjgl.openal.AL10;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +99,6 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
     @Override
     public void init(TomVM vm) {
-
     }
 
     @Override
@@ -163,6 +163,12 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
                 // Load sound file
                 String filename = files.FilenameForRead(vm.getStringParam(1), false);
+                //TODO this is copied from the FileOpener implementation to include the project's base path; evaluate consolidating
+                File file;
+                if (filename != null && !filename.equals("") && files.getError().equals("") &&
+                        (file = new File(files.getParentDirectory(), filename)).exists() && !file.isDirectory()) {
+                    filename = file.getAbsolutePath();
+                }
                 Sound sound = SndLoadSound(filename);
                 if (sound != null) {
                     vm.getReg().setIntVal( sounds.alloc(sound));
