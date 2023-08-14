@@ -209,7 +209,7 @@ public class MusicStreamPolled extends HasErrorState {
 
         // Extract file parameters
         STBVorbisInfo info = null;
-        stb_vorbis_get_info(ogg, info);
+        info = stb_vorbis_get_info(ogg, info);
         if (info == null) {
             setError("Unable to extract audio info from file");
             doClose();
