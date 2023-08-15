@@ -12,6 +12,7 @@ import java.util.List;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.openal.ALC10.*;
+import static org.lwjgl.openal.ALC11.ALC_ALL_DEVICES_SPECIFIER;
 import static org.lwjgl.openal.EXTThreadLocalContext.alcSetThreadContext;
 import static org.lwjgl.stb.STBVorbis.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -23,8 +24,8 @@ import static org.lwjgl.system.MemoryUtil.memFree;
  */
 public class SoundEngine extends HasErrorState {
 
-    static long device = -1;
-    static long contextAL = -1;
+    public static long device = -1;
+    public static long contextAL = -1;
 
     static ALCCapabilities deviceCaps;
     static ALCapabilities caps;
@@ -43,6 +44,9 @@ public class SoundEngine extends HasErrorState {
 
         // Initialise OpenAL
 // Can call "alc" functions at any time
+        List<String> devices = ALUtil.getStringList(NULL, ALC_ALL_DEVICES_SPECIFIER);
+
+        System.out.println(String.join(", ", devices));
         device = alcOpenDevice((ByteBuffer)null);
         deviceCaps = ALC.createCapabilities(device);
 
@@ -222,6 +226,10 @@ public class SoundEngine extends HasErrorState {
         int index = findFreeVoice();
         int source = voices.get(index);
 
+        if (!alcMakeContextCurrent(contextAL)) {
+            throw new IllegalStateException();
+        }
+
         // Set looping state
         AL10.alSourcei(source, AL10.AL_LOOPING, looped ? AL10.AL_TRUE : AL10.AL_FALSE);
 
@@ -232,7 +240,12 @@ public class SoundEngine extends HasErrorState {
         AL10.alSourcei(source, AL10.AL_BUFFER, sound.getBuffer());
 
         // Play it
-        AL10.alSourcePlay(source);
+        //AL10.alSourcePlay(source);
+
+        //TODO placeholder, but it works; this is using the paulscode soundsystem internally
+        //TODO needing to figure out how to load sounds with the codecs separate from the soundsystem if I want to stick with alSourcePlay directly
+        //TODO or determine if I can scrap the AL calls here and just create a wrapper for paulscode if the soundsystem supports everything Basic4GL needs
+        sound.play();
 
         clearError();
         return index;
