@@ -89,7 +89,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
     @Override
     public String name() {
-        return null;
+        return SoundBasicLib.class.getSimpleName();
     }
 
     @Override
@@ -297,7 +297,6 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
         }
     }
     private Sound SndLoadSound(String filename){
-        //Todo load sound file
         Sound s = new Sound(filename);
         if (checkError(s)){
             return s;

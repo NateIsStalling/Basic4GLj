@@ -1,14 +1,11 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
 import com.basic4gl.runtime.HasErrorState;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 import paulscode.sound.SoundSystem;
 import paulscode.sound.SoundSystemException;
@@ -16,22 +13,18 @@ import paulscode.sound.SoundSystemConfig;
 import paulscode.sound.codecs.CodecWav;
 import paulscode.sound.codecs.CodecJOrbis;
 import paulscode.sound.codecs.CodecIBXM;
-import paulscode.sound.libraries.LibraryLWJGLOpenAL;
-//import paulscode.sound.libraries.LibraryLWJGLOpenAL;
-//import paulscode.sound.libraries.LibraryJavaSound;
 
 
 /**
- * Represents a sound effect. Wrapper for OpenAL buffer
+ * Represents a sound effect. Wrapper for paulscode Source
  * Original source: SoundEngine.h
  */
 public class Sound extends HasErrorState {
 
-    // The OpenAL buffer
-    IntBuffer buffer = BufferUtils.createIntBuffer(1);
-    private static SoundSystem system;
+    public static SoundSystem system;
 
     private String sourceName;
+    private boolean toLoop;
 
     public static void init(){
         // Load some library and codec pluggins:
@@ -54,7 +47,6 @@ public class Sound extends HasErrorState {
         try
         {
             system = new SoundSystem( LibraryLWJGL3OpenAL.class);
-//            mySoundSystem = new SoundSystem( LibraryLWJGL3OpenAL.class );
         }
         catch( SoundSystemException e )
         {
@@ -73,19 +65,16 @@ public class Sound extends HasErrorState {
     }
 
     public Sound(String filename){
-
         // Open file
-        //buffer = alutCreateBufferFromFile(filename);
-        AL10.alGenBuffers(buffer);
-
         this.sourceName = filename;
 
         File file = new File(filename);
-        if (file.exists()) {
-            System.out.println(filename + " exists!");
-        } else {
-            System.out.println(filename + " missing!");
-        }
+        // debugging..
+//        if (file.exists()) {
+//            System.out.println(filename + " exists!");
+//        } else {
+//            System.out.println(filename + " missing!");
+//        }
         URL url;
 
         try {
@@ -95,19 +84,10 @@ public class Sound extends HasErrorState {
                     false, 0, 0, 0,
                     SoundSystemConfig.ATTENUATION_NONE,
                     0);
-//            system.
-            //system.play(url.toString());
-                    /*.newStreamingSource( true, "Music", url, "jingle1.mid",
-                    true, 0, 0, 0,
-                    SoundSystemConfig.ATTENUATION_NONE,
-                    0 );*/
         } catch (MalformedURLException e) {
             e.printStackTrace();
+            setError(e.getMessage());
         }
-
-        //WaveData waveFile = WaveData.create("FancyPants.wav");
-        //AL10.alBufferData(buffer.get(0), waveFile.format, waveFile.data, waveFile.samplerate);
-        //waveFile.dispose();
 
         // Check for errors
         int error = AL10.alGetError();
@@ -117,82 +97,31 @@ public class Sound extends HasErrorState {
             clearError();
         }
     }
-    public Sound() {
-        IntBuffer b = IntBuffer.allocate(1);
-        b.put(buffer).rewind();
-        AL10.alDeleteBuffers(b);
-        buffer.put(0, b.get(0));
-    }
 
     public void dispose(){
-        if (buffer.get(0) != AL10.AL_NONE) {
-            buffer.rewind();
-            AL10.alDeleteBuffers(buffer);
-        }
+        //        system.stop(sourceName);
     }
     // Member access
-    public int getBuffer() { return buffer.get(0);
+    public void setGain(float gain) {
+        system.setVolume(sourceName, gain);
+    }
+    public void setLooping(boolean looping) {
+        this.toLoop = looping;
+        system.setLooping(sourceName, looping);
     }
 
+    public boolean isLooping() {
+        return this.toLoop;
+    }
+
+    public boolean isPlaying() {
+        return system.playing(sourceName);
+    }
     public void play() {
-        System.out.println("play " + sourceName);
         system.play(sourceName);
     }
-    // Sound properties
-    public int getFreq() {
-        IntBuffer freq = BufferUtils.createIntBuffer(1);
-        AL10.alGetBufferi(buffer.get(0), AL10.AL_FREQUENCY, freq);
-        return freq.get(0);
-    }
-    public int getBits() {
-        IntBuffer bits = BufferUtils.createIntBuffer(1);
-        AL10.alGetBufferi(buffer.get(0), AL10.AL_BITS, bits);
-        return bits.get(0);
-    }
 
-//    public static class VorbisSound {
-//        private final ByteBuffer encodedAudio;
-//
-//        private final long handle;
-//
-//        private final int channels;
-//        private final int sampleRate;
-//
-//        final int   samplesLength;
-//        final float samplesSec;
-//
-//        private final AtomicInteger sampleIndex;
-//     public VorbisSound(String filePath, AtomicInteger sampleIndex) {
-//         try {
-//             encodedAudio = ioResourceToByteBuffer(filePath, 256 * 1024);
-//         } catch (IOException e) {
-//             throw new RuntimeException(e);
-//         }
-//
-//         try (MemoryStack stack = MemoryStack.stackPush()) {
-//             IntBuffer error = stack.mallocInt(1);
-//             handle = stb_vorbis_open_memory(encodedAudio, error, null);
-//             if (handle == NULL) {
-//                 throw new RuntimeException("Failed to open Ogg Vorbis file. Error: " + error.get(0));
-//             }
-//
-//             STBVorbisInfo info = STBVorbisInfo.malloc(stack);
-////             print(info);
-//             this.channels = info.channels();
-//             this.sampleRate = info.sample_rate();
-//         }
-//
-//         this.samplesLength = stb_vorbis_stream_length_in_samples(handle);
-//         this.samplesSec = stb_vorbis_stream_length_in_seconds(handle);
-//
-//         this.sampleIndex = sampleIndex;
-//         sampleIndex.set(0);
-//     }
-//    }
-//    public class Mp3Sound {
-//        public Mp3Sound() {
-//            AudioInputStream inputStream = AudioSystem.getAudioInputStream();//new AudioInputStream();
-//            AudioSystem.getAudioInputStream(AudioFormat.Encoding, inputStream);
-//        }
-//    }
+    public void stop() {
+        system.stop(sourceName);
+    }
 }
