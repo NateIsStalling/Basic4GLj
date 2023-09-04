@@ -99,8 +99,8 @@ public class Sound extends HasErrorState {
     }
 
     public void dispose(){
-        //        system.stop(sourceName);
     }
+
     // Member access
     public void setGain(float gain) {
         system.setVolume(sourceName, gain);

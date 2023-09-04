@@ -998,7 +998,7 @@ public class LibraryLWJGL3OpenAL extends Library
                 errorMessage( "Invalid enumerated parameter value." );
                 return true;
             case AL10.AL_INVALID_OPERATION:
-                errorMessage( "Illegal bear." );
+                errorMessage( "Illegal operation." );
                 return true;
             case AL10.AL_OUT_OF_MEMORY:
                 errorMessage( "Unable to allocate memory." );

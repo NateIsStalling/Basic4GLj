@@ -47,7 +47,7 @@ public class MusicStream extends HasErrorState implements Runnable {
                         // (This means that the object has been updated, and is ready
                         // to be examined. Note that we do this while in the command
                         // queue lock.)
-                        readyEvent.Set();
+                        readyEvent.set();
                     }
                     commandQueueLock.unlock();
 
@@ -86,9 +86,9 @@ public class MusicStream extends HasErrorState implements Runnable {
                 // Otherwise we wait indefinitely.
                 if (!shuttingDown) {
                     if (stream.isPlaying()) {
-                        wakeEvent.WaitFor(100);
+                        wakeEvent.waitFor(100);
                     } else {
-                        wakeEvent.WaitFor();
+                        wakeEvent.waitFor();
                     }
                 }
             }
@@ -162,11 +162,11 @@ public class MusicStream extends HasErrorState implements Runnable {
 
         // Clear the ready event. This indicates that the object has not finished
         // processing commands yet, and is not ready to be examined.
-        readyEvent.Reset();
+        readyEvent.reset();
         commandQueueLock.unlock();
 
         // Wake up service thread
-        wakeEvent.Set();
+        wakeEvent.set();
     }
 
     // Control interface
@@ -192,7 +192,7 @@ public class MusicStream extends HasErrorState implements Runnable {
     }
 
     public boolean isPlaying() {
-        readyEvent.WaitFor();
+        readyEvent.waitFor();
         stateLock.lock();
         boolean result = stream.isPlaying();
         stateLock.unlock();
@@ -202,7 +202,7 @@ public class MusicStream extends HasErrorState implements Runnable {
 
     // Error status
     public void updateErrorState() {
-        readyEvent.WaitFor();
+        readyEvent.waitFor();
         stateLock.lock();
         if (stream.hasError()) {
             setError(stream.getError());

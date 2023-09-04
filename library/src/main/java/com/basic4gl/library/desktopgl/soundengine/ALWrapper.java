@@ -7,24 +7,15 @@ package com.basic4gl.library.desktopgl.soundengine;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.openal.ALC10;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
 import paulscode.sound.libraries.LWJGLException;
 
 import static org.lwjgl.openal.ALC10.*;
 
-
-import com.basic4gl.runtime.HasErrorState;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.*;
 
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.lwjgl.openal.ALC10.*;
@@ -36,8 +27,9 @@ import static org.lwjgl.system.MemoryUtil.memFree;
 
 public class ALWrapper {
 
-    public static long device = -1;
-    public static long contextAL = -1;
+    static long device = -1;
+    // TODO cleanup; duplicates or replaces alContext below
+    static long contextAL = -1;
 
 
     static ALCCapabilities deviceCaps;
@@ -54,7 +46,7 @@ public class ALWrapper {
 
     public static void create() throws LWJGLException {
         // Initialise OpenAL
-// Can call "alc" functions at any time
+        // Can call "alc" functions at any time
         List<String> devices = ALUtil.getStringList(NULL, ALC_ALL_DEVICES_SPECIFIER);
 
         System.out.println(String.join(", ", devices));
