@@ -7,6 +7,8 @@ package com.basic4gl.library.desktopgl.soundengine;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
@@ -16,86 +18,49 @@ import static org.lwjgl.openal.ALC10.*;
 
 import org.lwjgl.openal.*;
 
-import java.util.List;
-
-import static org.lwjgl.openal.ALC10.*;
-import static org.lwjgl.openal.ALC11.ALC_ALL_DEVICES_SPECIFIER;
 import static org.lwjgl.openal.EXTThreadLocalContext.alcSetThreadContext;
-import static org.lwjgl.stb.STBVorbis.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memFree;
 
 public class ALWrapper {
 
-    static long device = -1;
-    // TODO cleanup; duplicates or replaces alContext below
-    static long contextAL = -1;
-
-
-    static ALCCapabilities deviceCaps;
-    static ALCapabilities caps;
-
-    private static boolean useTLC;
-
-    static long alContext = -1;
-    static ALCdevice alcDevice;
     private static boolean created = false;
-
-    public ALWrapper() {
-    }
+    private static long device = -1;
+    private static long contextAL = -1;
+    private static boolean useTLC;
+    private static ALCapabilities caps;
 
     public static void create() throws LWJGLException {
         // Initialise OpenAL
-        // Can call "alc" functions at any time
-        List<String> devices = ALUtil.getStringList(NULL, ALC_ALL_DEVICES_SPECIFIER);
+        if (contextAL == -1) {
 
-        System.out.println(String.join(", ", devices));
-        device = alcOpenDevice((ByteBuffer)null);
-        deviceCaps = ALC.createCapabilities(device);
+            device = alcOpenDevice((ByteBuffer)null);
+            ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
-        contextAL = alcCreateContext(device, (IntBuffer) null);
-        alcMakeContextCurrent(contextAL);
+            IntBuffer attribs = BufferUtils.createIntBuffer(16);
+            attribs.put(ALC10.ALC_FREQUENCY);
+            attribs.put(44100);
+            attribs.put(ALC10.ALC_REFRESH);
+            attribs.put(60);
+            attribs.put(ALC10.ALC_SYNC);
+            attribs.put(0);
+            attribs.put(0);
+            attribs.flip();
 
-        useTLC = deviceCaps.ALC_EXT_thread_local_context && alcSetThreadContext(contextAL);
-        if (!useTLC) {
-            if (!alcMakeContextCurrent(contextAL)) {
-                throw new IllegalStateException();
+            contextAL = alcCreateContext(device, attribs);
+            alcMakeContextCurrent(contextAL);
+
+            useTLC = deviceCaps.ALC_EXT_thread_local_context && alcSetThreadContext(contextAL);
+            if (!useTLC) {
+                if (!alcMakeContextCurrent(contextAL)) {
+                    throw new IllegalStateException();
+                }
             }
-        }
 
-        caps = AL.createCapabilities(deviceCaps);
+            caps = AL.createCapabilities(deviceCaps);
 
-        // TODO consolidate code below with above - originally separate OpenAL init functions
-
-        if (alContext == -1) {
-//
-//            long device = -1;
-//            long contextAL = -1;
-//
-//            ALCCapabilities deviceCaps;
-//            ALCapabilities caps;
-//
-//
-//            device = alcOpenDevice((ByteBuffer)null);
-//            System.out.println("device: " + device);
-////            ALDevice alDevice = ALDevice.create();
-//            IntBuffer attribs = BufferUtils.createIntBuffer(16);
-//            attribs.put(4103);
-//            attribs.put(44100);
-//            attribs.put(4104);
-//            attribs.put(60);
-//            attribs.put(4105);
-//            attribs.put(0);
-//            attribs.put(0);
-//            attribs.flip();
-
-//            long contextHandle = ALC10.alcCreateContext(device, attribs);
-//            System.out.println("contextHandle: " + contextHandle);
-            alContext = contextAL;//alcCreateContext(device, (IntBuffer) attribs);
-            alcDevice = new ALCdevice(alContext);
             created = true;
         }
-
     }
 
     public static boolean isCreated() {
@@ -115,21 +80,8 @@ public class ALWrapper {
         alcDestroyContext(contextAL);
         alcCloseDevice(device);
 
-        // TODO consolidate cleanup above and below.. above is from previous SoundEngine implementation, below was initial ALWrapper implementation
-
-        alcDestroyContext(alContext);
-        alContext = -1;
-        alcDevice = null;
+        contextAL = -1;
+        device = -1;
         created = false;
-    }
-
-    public static ALCdevice getDevice() {
-        return alcDevice;
-    }
-
-    static {
-        if (!GLFW.glfwInit()) {
-            throw new IllegalStateException("Unable to initialize glfw");
-        }
     }
 }
