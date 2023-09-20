@@ -13,6 +13,7 @@ import paulscode.sound.SoundSystemConfig;
 import paulscode.sound.codecs.CodecWav;
 import paulscode.sound.codecs.CodecJOrbis;
 import paulscode.sound.codecs.CodecIBXM;
+import paulscode.sound.libraries.LibraryLWJGLOpenAL;
 
 
 /**
@@ -27,11 +28,11 @@ public class Sound extends HasErrorState {
     private boolean toLoop;
 
     public static void init(){
-        // Load some library and codec pluggins:
+        // Load some library and codec plugins:
         try
         {
             SoundSystemConfig.setSoundFilesPackage("");
-            SoundSystemConfig.addLibrary(LibraryLWJGL3OpenAL.class);
+            SoundSystemConfig.addLibrary(LibraryLWJGLOpenAL.class);
             SoundSystemConfig.setCodec( "wav", CodecWav.class );
             SoundSystemConfig.setCodec("ogg", CodecJOrbis.class);
             SoundSystemConfig.setCodec("xm",CodecIBXM.class);
@@ -46,7 +47,7 @@ public class Sound extends HasErrorState {
         // Instantiate the SoundSystem:
         try
         {
-            system = new SoundSystem( LibraryLWJGL3OpenAL.class);
+            system = new SoundSystem( LibraryLWJGLOpenAL.class);
         }
         catch( SoundSystemException e )
         {
