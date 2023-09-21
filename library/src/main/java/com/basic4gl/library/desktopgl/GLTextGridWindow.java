@@ -598,11 +598,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				"lwjgl-stb-natives-windows-x86.jar",
 
                 //Sound engine
-                "SoundSystem.jar",
-                "LibraryLWJGL3OpenAL.jar",
-                "CodecIBXM.jar",
-                "CodecJOrbis.jar",
-                "CodecWav.jar");
+                "paulscode-soundsystem-lwjgl3.jar");
 	}
 	@Override
 	public List<String> getDependencies() {
