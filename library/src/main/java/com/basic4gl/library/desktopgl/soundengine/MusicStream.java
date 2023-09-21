@@ -118,7 +118,7 @@ public class MusicStream extends HasErrorState implements Runnable {
     public MusicStream() {
         playing = false;
         stream = null;
-        readyEvent = new ThreadEvent(true);
+        readyEvent = new ThreadEvent();
         // Start service thread
         thread = new Thread(this);
         thread.start();
