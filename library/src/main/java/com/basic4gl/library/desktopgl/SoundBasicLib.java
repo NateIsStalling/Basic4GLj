@@ -162,13 +162,8 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             if (checkSoundEngine()) {
 
                 // Load sound file
-                String filename = files.FilenameForRead(vm.getStringParam(1), false);
-                //TODO this is copied from the FileOpener implementation to include the project's base path; evaluate consolidating
-                File file;
-                if (filename != null && !filename.equals("") && files.getError().equals("") &&
-                        (file = new File(files.getParentDirectory(), filename)).exists() && !file.isDirectory()) {
-                    filename = file.getAbsolutePath();
-                }
+                String filename = files.getFileAbsolutePath(vm.getStringParam(1));
+
                 Sound sound = SndLoadSound(filename);
                 if (sound != null) {
                     vm.getReg().setIntVal( sounds.alloc(sound));
@@ -231,7 +226,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     public class WrapPlayMusic implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
-                String filename = files.FilenameForRead(vm.getStringParam(1), false);
+                String filename = files.getFileAbsolutePath(vm.getStringParam(1));
                 SndPlayMusic(filename, 1, false);
             }
         }
@@ -239,7 +234,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     public class WrapPlayMusic2 implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
-                String filename = files.FilenameForRead(vm.getStringParam(3), false);
+                String filename = files.getFileAbsolutePath(vm.getStringParam(3));
                 SndPlayMusic(filename, vm.getRealParam(2), vm.getIntParam(1) != 0);
             }
         }

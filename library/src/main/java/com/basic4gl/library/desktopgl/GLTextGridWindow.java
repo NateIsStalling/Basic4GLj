@@ -358,7 +358,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				if (mDebugger != null) {
 					mDebugger.onPreLoad();
 				}
-				mCharset = mFiles.FilenameForRead("charset.png", false);
+				mCharset = mFiles.getFilenameForRead("charset.png", false);
 				if (mDebugger != null) {
 					mDebugger.onPostLoad();
 				}
