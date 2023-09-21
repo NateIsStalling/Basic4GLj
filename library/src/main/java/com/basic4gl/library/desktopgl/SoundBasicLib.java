@@ -17,7 +17,6 @@ import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.ResourceStore;
 import org.lwjgl.openal.AL10;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +25,8 @@ import java.util.Map;
  * Created by Nate on 1/19/2016.
  */
 public class SoundBasicLib implements FunctionLibrary, IFileAccess {
+
+    static final String DEFAULT_SOUND_ENGINE_ERROR = "Sound playback is not available; the sound engine failed to initialize.";
 
     // Error state
     static String error = "";
@@ -50,13 +51,17 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
         if (!triedToLoad) {
 
             // Try to load sound engine
-
-            // Initialise sound library
-            engine = new SoundEngine(10);
             triedToLoad = true;
+            try {
+                // Initialise sound library
+                engine = new SoundEngine(10);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
         }
 
-        return true;//dll != null;
+        return engine != null;
     }
 
     @Override
@@ -166,7 +171,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
                 Sound sound = SndLoadSound(filename);
                 if (sound != null) {
-                    vm.getReg().setIntVal( sounds.alloc(sound));
+                    vm.getReg().setIntVal(sounds.alloc(sound));
                 } else {
                     vm.getReg().setIntVal(0);
                 }
@@ -265,8 +270,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
                 SndGetError(buffer);
                 vm.setRegString( buffer.toString());
             } else {
-                //TODO update error message; Basic4GLj does not use the mentioned dll's
-                vm.setRegString( "Sound playback requires Audiere.dll and B4GLSound.dll to be placed in the same folder");
+                vm.setRegString(DEFAULT_SOUND_ENGINE_ERROR);
             }
         }
     }
