@@ -3,19 +3,17 @@ package com.basic4gl.library.desktopgl;
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.library.desktopgl.soundengine.MusicStream;
+import com.basic4gl.library.desktopgl.soundengine.Basic4GLSoundLibrary;
 import com.basic4gl.library.desktopgl.soundengine.Sound;
-import com.basic4gl.library.desktopgl.soundengine.SoundEngine;
 import com.basic4gl.lib.util.FileOpener;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IFileAccess;
 import com.basic4gl.compiler.util.FunctionSpecification;
-import com.basic4gl.runtime.HasErrorState;
+import com.basic4gl.library.desktopgl.soundengine.SoundLibrary;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.ResourceStore;
-import org.lwjgl.openal.AL10;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,23 +26,22 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
     static final String DEFAULT_SOUND_ENGINE_ERROR = "Sound playback is not available; the sound engine failed to initialize.";
 
-    // Error state
-    static String error = "";
     static boolean triedToLoad = false;
+    static SoundLibrary library = null;
 
-    static FileOpener files            = null;
-    static SoundEngine engine = null;
-    static MusicStream music = null;
+    static FileOpener files = null;
     @Override
     public void init(FileOpener files) {
-        this.files = files;
+        SoundBasicLib.files = files;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
 //  Init function
     public final class InitLibFunction implements Function {
         public void run(TomVM vm) {
-            SndReset();
+            if (library != null) {
+                library.reset();
+            }
         }
     }
     static boolean checkSoundEngine() {
@@ -54,14 +51,15 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             triedToLoad = true;
             try {
                 // Initialise sound library
-                engine = new SoundEngine(10);
+                library = new Basic4GLSoundLibrary();
+                library.init(10);
             } catch (Exception e) {
                 e.printStackTrace();
                 return false;
             }
         }
 
-        return engine != null;
+        return library != null;
     }
 
     @Override
@@ -118,8 +116,8 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
     @Override
     public void cleanup() {
-        if (engine != null) {
-            engine.dispose();
+        if (library != null) {
+            library.dispose();
         }
         if (sounds != null) {
             sounds.clear();
@@ -136,24 +134,16 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
         return null;
     }
 
-    static boolean checkError(HasErrorState obj) {
-        if (obj.hasError()) {
-            error = obj.getError();
-            return false;
-        }
-        else {
-            error = "";
-            return true;
-        }
-    }
+
 
     /**
      *  Stores sound objects as returned from the sound engine.
      */
     public class SoundStore extends ResourceStore<Sound> {
         protected void deleteElement(int index) {
-            //if (dll != null)
-                SndDeleteSound(getValueAt(index));
+            if (library != null) {
+                library.deleteSound(getValueAt(index));
+            }
         }
         public SoundStore(){ super(null) ;}
     }
@@ -169,7 +159,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
                 // Load sound file
                 String filename = files.getFileAbsolutePath(vm.getStringParam(1));
 
-                Sound sound = SndLoadSound(filename);
+                Sound sound = library.loadSound(filename);
                 if (sound != null) {
                     vm.getReg().setIntVal(sounds.alloc(sound));
                 } else {
@@ -196,7 +186,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             if (checkSoundEngine()) {
                 int handle = vm.getIntParam(1);
                 if (handle > 0 && sounds.isIndexStored(handle)) {
-                    vm.getReg().setIntVal( SndDoPlaySound(sounds.getValueAt(handle), 1, false));
+                    vm.getReg().setIntVal( library.playSound(sounds.getValueAt(handle), 1, false));
                 } else {
                     vm.getReg().setIntVal(-1);
                 }
@@ -211,7 +201,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             if (checkSoundEngine()) {
                 int handle = vm.getIntParam(3);
                 if (handle > 0 && sounds.isIndexStored(handle)) {
-                    vm.getReg().setIntVal( SndDoPlaySound(sounds.getValueAt(handle), vm.getRealParam(2), vm.getIntParam(1) != 0));
+                    vm.getReg().setIntVal( library.playSound(sounds.getValueAt(handle), vm.getRealParam(2), vm.getIntParam(1) != 0));
                 } else {
                     vm.getReg().setIntVal(-1);
                 }
@@ -224,7 +214,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     public class WrapStopSounds implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
-                SndStopSounds();
+                library.stopSounds();
             }
         }
     }
@@ -232,7 +222,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
                 String filename = files.getFileAbsolutePath(vm.getStringParam(1));
-                SndPlayMusic(filename, 1, false);
+                library.playMusic(filename, 1, false);
             }
         }
     }
@@ -240,26 +230,26 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
                 String filename = files.getFileAbsolutePath(vm.getStringParam(3));
-                SndPlayMusic(filename, vm.getRealParam(2), vm.getIntParam(1) != 0);
+                library.playMusic(filename, vm.getRealParam(2), vm.getIntParam(1) != 0);
             }
         }
     }
     public class WrapStopMusic implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
-                SndStopMusic();
+                library.stopMusic();
             }
         }
     }
     public class WrapMusicPlaying implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal( checkSoundEngine() && SndMusicPlaying() ? -1 : 0);
+            vm.getReg().setIntVal( checkSoundEngine() && library.isMusicPlaying() ? -1 : 0);
         }
     }
     public class WrapSetMusicVolume implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
-                SndSetMusicVolume(vm.getRealParam(1));
+                library.setMusicVolume(vm.getRealParam(1));
             }
         }
     }
@@ -267,7 +257,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
                 StringBuilder buffer = new StringBuilder();
-                SndGetError(buffer);
+                library.getError(buffer);
                 vm.setRegString( buffer.toString());
             } else {
                 vm.setRegString(DEFAULT_SOUND_ENGINE_ERROR);
@@ -277,72 +267,9 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     public class WrapStopSoundVoice implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
-                SndStopSoundVoice(vm.getIntParam(1));
+                library.stopSoundVoice(vm.getIntParam(1));
             }
         }
-    }
-
-    //endregion
-
-
-
-    //region Sound Engine functions; may be moved to different class
-    private void SndReset(){
-        if (engine != null) {
-            engine.stopAll();
-        }
-        if (music != null) {
-            music.closeFile();
-        }
-    }
-    private Sound SndLoadSound(String filename){
-        Sound s = new Sound(filename);
-        if (checkError(s)){
-            return s;
-        }
-        else {
-            s.dispose();
-            return null;
-        }
-    }
-    private void SndDeleteSound(Sound sound){
-        if (sound != null) {
-            sound.dispose();
-        }
-
-    }
-    private int SndDoPlaySound(Sound sound, float volume, boolean looped){
-        if (sound != null) {
-            int voice = engine.playSound(sound, volume, looped);
-            checkError(sound);
-            return voice;
-        }
-        else {
-            return -1;
-        }
-    }
-    private void SndStopSounds(){
-        engine.stopAll();
-    }
-    private void SndPlayMusic(String filename, float volume, boolean looped){
-        music.openFile(filename, volume, looped);
-        music.updateErrorState();
-        checkError(music);
-    }
-    private void SndStopMusic(){
-        music.closeFile();
-    }
-    private boolean SndMusicPlaying(){
-        return music.isPlaying();
-    }
-    private void SndSetMusicVolume(float volume){
-        music.setGain(volume);
-    }
-    private void SndStopSoundVoice(int voice){
-        engine.stopVoice(voice);
-    }
-    private void SndGetError(StringBuilder message){
-        message.append(AL10.alGetError());
     }
 
     //endregion
