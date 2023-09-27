@@ -1,5 +1,6 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
+import com.basic4gl.library.desktopgl.soundengine.util.ALUtil;
 import com.basic4gl.runtime.HasErrorState;
 import org.lwjgl.openal.AL10;
 
@@ -51,13 +52,8 @@ public class Sound extends HasErrorState {
         }
         catch( SoundSystemException e )
         {
-            // TODO update this message
-            System.out.println( "JavaSound library is not compatible on " +
-                    "this computer" );
-//            System.out.println( "LWJGL OpenAL library is not compatible on " +
-//                                "this computer" );
+            System.out.println("SoundSystem failed to load");
             e.printStackTrace();
-            return;
         }
     }
 
@@ -94,7 +90,7 @@ public class Sound extends HasErrorState {
         // Check for errors
         int error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
-            setError(SoundEngine.getALErrorString(error));
+            setError(ALUtil.getALErrorString(error));
         } else {
             clearError();
         }

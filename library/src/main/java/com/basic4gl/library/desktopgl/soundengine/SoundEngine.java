@@ -1,5 +1,6 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
+import com.basic4gl.library.desktopgl.soundengine.util.ALUtil;
 import com.basic4gl.runtime.HasErrorState;
 import org.lwjgl.openal.*;
 
@@ -8,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
-import static org.lwjgl.stb.STBVorbis.*;
 
 /**
  * Main interface to the sound engine.
@@ -42,7 +42,7 @@ public class SoundEngine extends HasErrorState {
 
         int error;
         if ((error = AL10.alGetError()) != AL10.AL_NO_ERROR) {
-            setError(SoundEngine.getALErrorString(error));
+            setError(ALUtil.getALErrorString(error));
             hasError = true;
         }
 
@@ -203,47 +203,5 @@ public class SoundEngine extends HasErrorState {
             source.stop();
         }
         rebuildQueue();
-    }
-
-    //	Helper functions
-    static String getALErrorString(int error) {
-        switch (error) {
-            case AL10.AL_INVALID_NAME:       return "AL_INVALID_NAME: Invalid name";
-            case AL10.AL_INVALID_ENUM:       return "AL_INVALID_ENUM: Invalid enumeration";
-            case AL10.AL_INVALID_VALUE:		return "AL_INVALID_VALUE: Invalid parameter value";
-            case AL10.AL_INVALID_OPERATION:	return "AL_INVALID_OPERATION: Invalid operation";
-            case AL10.AL_OUT_OF_MEMORY:		return "AL_OUT_OF_MEMORY: Out of memory";
-            default:					return "OpenAL error";
-        }
-    }
-
-    static String getVorbisFileErrorString(int error) {
-        switch (error) {
-            case VORBIS__no_error: return "STBVorbis: No error";
-
-            case VORBIS_bad_packet_type: return "STBVorbis: Bad packet type";
-
-            case VORBIS_cant_find_last_page: return "STBVorbis: Can't find last page";
-
-            case VORBIS_continued_packet_flag_invalid: return "STBVorbis: Continued packet flag invalid";
-
-            case VORBIS_feature_not_supported: return "STBVorbis: Feature not supported";
-            case VORBIS_file_open_failure: return "STBVorbis: File open failure";
-            case VORBIS_incorrect_stream_serial_number: return "STBVorbis: Incorrect stream serial number";
-            case VORBIS_invalid_api_mixing: return "STBVorbis: Invalid api mixing";
-            case VORBIS_invalid_first_page: return "STBVorbis: Invalid first page";
-            case VORBIS_invalid_setup: return "STBVorbis: Invalid setup";
-            case VORBIS_invalid_stream: return "STBVorbis: Invalid stream";
-            case VORBIS_invalid_stream_structure_version: return "STBVorbis: Invalid stream structure version";
-            case VORBIS_missing_capture_pattern: return "STBVorbis: Missing capture pattern";
-            case VORBIS_need_more_data: return "STBVorbis: Need more data";
-            case VORBIS_outofmem: return "STBVorbis: Out of memory";
-            case VORBIS_seek_failed: return "STBVorbis: Seek failed";
-            case VORBIS_seek_invalid: return "STBVorbis: Seek invalid";
-            case VORBIS_seek_without_length: return "STBVorbis: Seek without length";
-            case VORBIS_too_many_channels: return "STBVorbis: Too many channels";
-            case VORBIS_unexpected_eof: return "STBVorbis: Unexpected eof";
-            default:                    return "STBVorbis error";
-        }
     }
 }

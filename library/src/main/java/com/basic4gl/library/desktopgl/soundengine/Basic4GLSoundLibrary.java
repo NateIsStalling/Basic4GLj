@@ -27,6 +27,9 @@ public class Basic4GLSoundLibrary implements SoundLibrary {
     @Override
     public void init(int voiceCount) {
         if (engine == null) {
+            // NOTE: the ALC device context for OpenAL is initialized by
+            // the SoundEngine constructor initializing the SoundSystem library
+            // which configures OpenAL internally.
             engine = new SoundEngine(voiceCount);
             music = new MusicStream();
         }

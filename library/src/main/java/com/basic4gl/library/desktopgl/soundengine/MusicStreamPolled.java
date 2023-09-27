@@ -1,5 +1,6 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
+import com.basic4gl.library.desktopgl.soundengine.util.ALUtil;
 import com.basic4gl.runtime.HasErrorState;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
@@ -7,11 +8,10 @@ import org.lwjgl.openal.AL11;
 import org.lwjgl.stb.STBVorbisInfo;
 
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
-import static com.basic4gl.library.desktopgl.soundengine.SoundEngine.getVorbisFileErrorString;
+import static com.basic4gl.library.desktopgl.soundengine.util.STBVorbisUtil.getVorbisFileErrorString;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.stb.STBVorbis.*;
 
@@ -26,70 +26,67 @@ import static org.lwjgl.stb.STBVorbis.*;
  * "MusicStreamPolled internally, but automates polling itself.)
  */
 public class MusicStreamPolled extends HasErrorState {
-    static final int MUSICSTREAMBUFFERS = 64;
-    static final int STREAMBLOCKSIZE = 4096;
+
     // Note: This is about enough space for 1 second of
     // stereo 44KHz 16bit music.
     // Our update frequency is 10 times per second, which
     // should be plenty enough to ensure that the stream
     // won't be interrupted.
+    static final int MUSIC_STREAM_BUFFERS = 64;
+    static final int STREAM_BLOCK_SIZE = 4096;
+
 
     // File access
-    File file;
-    long ogg;
-    //ov_callbacks	callbacks;
+    private File file;
+    // File handle
+    private long ogg;
+
     // Used by VorbisFile to access the file data.
 
     // File info
-    int freq;
-    int format;
-    int channels;
+    private int freq;
+    private int format;
+    private int channels;
 
     // OpenAL objects
-    IntBuffer source;                // OpenAL source. Music is streamed through this source
-    IntBuffer buffers;            // OpenAL buffers. Filled with music data and streamed into the source
-    int usedBufCount;        // # used buffers from buffers array
+
+    // OpenAL source. Music is streamed through this source
+    private IntBuffer source;
+    // OpenAL buffers. Filled with music data and streamed into the source
+    private IntBuffer buffers;
+    // # used buffers from buffers array
+    private int usedBufCount;
 
     // State
-    boolean initialised;
-    boolean looping;
+    private boolean initialised;
+    private boolean looping;
 
     // Temporary buffer
-    ShortBuffer data;
+    private ShortBuffer data;
 
     void fillBuffer(int buffer) {
-        readData();
+        int size = readData();
+        data.position(0);
+        data.limit(size);
         AL10.alBufferData(buffer, format, data, freq);
     }
 
-    // TODO check git history for usage
-    void readData() {
+    /**
+     * Read ogg data into buffer and return size of buffer
+     * @return number of bytes read
+     */
+    private int readData() {
         data.rewind();
-        data.limit(STREAMBLOCKSIZE);
+        data.limit(STREAM_BLOCK_SIZE);
         int offset = 0;
         boolean justLooped = false;
 
-//        stb_vorbis_get_frame_short(ogg, channels, data, STREAMBLOCKSIZE);
-//        stb_vorbis_
-//        return stb_vorbis_get_file_offset(ogg);
         // Request data from Vorbisfile.
         // Vorbisfile doesn't always return as many bytes as we ask for, so we simply keep asking
         // until our data block is full, or the end of the file is reached.
 
-        int lengthSamples = stb_vorbis_stream_length_in_samples(ogg);
-
-        while (offset < STREAMBLOCKSIZE && file != null) {
-
-//            long ov_read(OggVorbis_File *vf, char *buffer, int length, int bigendianp, int word, int sgned, int *bitstream);
-
-            int bigendianp = 0;
-            int word = 2;
-            int signed = 1;
-            //ov_read( & ogg,&data[offset], STREAMBLOCKSIZE - offset, bigendianp, word, signed);
-//            int read = stb(ogg, data, channels, )
-
+        while (offset < STREAM_BLOCK_SIZE && file != null) {
             data.position(offset);
-//            data.limit(STREAMBLOCKSIZE - offset);
             int read = stb_vorbis_get_samples_short_interleaved(ogg, channels, data) * channels;
             if (read <= 0) {
                 // Error or end of file.
@@ -116,19 +113,13 @@ public class MusicStreamPolled extends HasErrorState {
                     doClose();
                 }
             } else {
-//                System.out.println("data.position " + data.position());
-//                System.out.println("data.read " + read);
                 offset += read;
                 justLooped = false;
             }
         }
 
         // Return number of bytes read
-        //return offset;
-
-//        System.out.println("data.limit " + offset);
-        data.position(0);
-        data.limit(offset);
+        return offset;
     }
 
     void doClose() {
@@ -159,21 +150,21 @@ public class MusicStreamPolled extends HasErrorState {
         AL10.alGenSources(source);
         int error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
-            setError(SoundEngine.getALErrorString(error));
+            setError(ALUtil.getALErrorString(error));
             return;
         }
 
         // Allocate buffers
-        buffers = BufferUtils.createIntBuffer(MUSICSTREAMBUFFERS);
+        buffers = BufferUtils.createIntBuffer(MUSIC_STREAM_BUFFERS);
         AL10.alGenBuffers(buffers);
         error = AL10.alGetError();
         if (error != AL10.AL_NO_ERROR) {
-            setError(SoundEngine.getALErrorString(error));
+            setError(ALUtil.getALErrorString(error));
             return;
         }
 
         // Allocate temp data block
-        data = BufferUtils.createShortBuffer(STREAMBLOCKSIZE);
+        data = BufferUtils.createShortBuffer(STREAM_BLOCK_SIZE);
 
         initialised = true;
     }
@@ -227,12 +218,6 @@ public class MusicStreamPolled extends HasErrorState {
             return;
         }
 
-        // Build callbacks structure
-        //callbacks.read_func = ovCB_read;
-        //callbacks.close_func = ovCB_close;
-        //callbacks.seek_func = ovCB_seek;
-        //callbacks.tell_func = ovCB_tell;
-
         // Open vorbis
         IntBuffer error = BufferUtils.createIntBuffer(1);
         ogg = stb_vorbis_open_filename(file.getAbsolutePath(), error, null);
@@ -243,7 +228,6 @@ public class MusicStreamPolled extends HasErrorState {
         }
 
         // Extract file parameters
-//        STBVorbisInfo info = STBVorbisInfo.malloc();
         try (STBVorbisInfo info = STBVorbisInfo.malloc()) {
             stb_vorbis_get_info(ogg, info);
             freq = info.sample_rate();
@@ -262,7 +246,7 @@ public class MusicStreamPolled extends HasErrorState {
 
         // Fill sound buffers
         data.rewind();
-        while (file != null && usedBufCount < MUSICSTREAMBUFFERS) {
+        while (file != null && usedBufCount < MUSIC_STREAM_BUFFERS) {
             fillBuffer(buffers.get(usedBufCount));
             usedBufCount++;
         }
@@ -271,10 +255,9 @@ public class MusicStreamPolled extends HasErrorState {
         AL10.alGetError();
         buffers.rewind();
         buffers.limit(usedBufCount);
-        AL10.alSourceQueueBuffers(source.get(0), buffers);//usedBufCount, buffers);
+        AL10.alSourceQueueBuffers(source.get(0), buffers);
 
         // Set the gain
-        System.out.println("gain " + gain);
         AL10.alSourcef(source.get(0), AL10.AL_GAIN, gain);
 
         // Play the source
@@ -283,7 +266,7 @@ public class MusicStreamPolled extends HasErrorState {
         // Check for OpenAL errors
         error.put(0, AL10.alGetError());
         if (error.get(0) != AL10.AL_NO_ERROR) {
-            setError(SoundEngine.getALErrorString(error.get(0)));
+            setError(ALUtil.getALErrorString(error.get(0)));
             doClose();
             return;
         }
@@ -354,8 +337,8 @@ public class MusicStreamPolled extends HasErrorState {
 
         // Remove them
         if (processed > 0) {
-            assertTrue(processed <= MUSICSTREAMBUFFERS, source.get(0) + ", "+ processed + " exceeds limit");
-            IntBuffer processedBuffers = BufferUtils.createIntBuffer(MUSICSTREAMBUFFERS);
+            assertTrue(processed <= MUSIC_STREAM_BUFFERS);
+            IntBuffer processedBuffers = BufferUtils.createIntBuffer(MUSIC_STREAM_BUFFERS);
             processedBuffers.limit(processed);
             AL10.alSourceUnqueueBuffers(source.get(0), processedBuffers);
 
@@ -363,7 +346,6 @@ public class MusicStreamPolled extends HasErrorState {
             int count = 0;
             data.rewind();
             while (count < processed && file != null) {
-                System.out.println("processed "+ source.get(0) + ", "+ processed);
                 fillBuffer(processedBuffers.get(count));
                 count++;
             }
@@ -387,10 +369,12 @@ public class MusicStreamPolled extends HasErrorState {
                 // Check for OpenAL error
                 int error = AL10.alGetError();
                 if (error != AL10.AL_NO_ERROR) {
-                    setError(SoundEngine.getALErrorString(error));
+                    setError(ALUtil.getALErrorString(error));
                     return;
                 }
             }
         }
     }
+
+
 }

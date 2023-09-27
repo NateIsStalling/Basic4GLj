@@ -5,7 +5,6 @@ import com.basic4gl.runtime.HasErrorState;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -110,10 +109,8 @@ public class MusicStream extends HasErrorState implements Runnable {
     private final Thread thread;
 
     // Command queue
-    private List<MusicStreamCommand> commandQueue;
+    private final List<MusicStreamCommand> commandQueue;
 
-    // State
-    private boolean playing;
 
     // Thread synchronisation
     private final ReentrantLock commandQueueLock, stateLock;
@@ -121,7 +118,6 @@ public class MusicStream extends HasErrorState implements Runnable {
 
     public MusicStream() {
         commandQueue = new ArrayList<>();
-        playing = false;
         stream = null;
         commandQueueLock = new ReentrantLock();
         stateLock = new ReentrantLock();
