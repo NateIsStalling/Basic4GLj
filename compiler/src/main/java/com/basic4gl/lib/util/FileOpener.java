@@ -13,11 +13,11 @@ import java.util.Set;
  * Created by Nate on 11/1/2015.
  */
 public class FileOpener extends HasErrorState {
-    private String mParent; //Parent directory
-    private EmbeddedFiles mEmbeddedFiles;
+    private String parentDirectory;
+    private EmbeddedFiles embeddedFiles;
     Set<String> tempFiles;
 
-    String ExtractStoredFile(String filename){
+    String extractStoredFile(String filename){
         filename = separatorsToSystem(filename);
         Exception exception = null;
         File file = null;
@@ -26,9 +26,9 @@ public class FileOpener extends HasErrorState {
         OutputStream out = null;
         try {
             // TODO keep cache of temp filenames
-            URL resource = mEmbeddedFiles.getResource(filename);
-            File tempDirectory = mParent != null
-                ? new File(mParent)
+            URL resource = embeddedFiles.getResource(filename);
+            File tempDirectory = parentDirectory != null
+                ? new File(parentDirectory)
                 : null;
             file = File.createTempFile("temp", new File(filename).getName(), tempDirectory);
             System.out.println("file: " + filename);
@@ -70,8 +70,8 @@ public class FileOpener extends HasErrorState {
             return "";
         }
         // Return new filename
-        File workingDirectory = mParent != null
-            ? new File(mParent)
+        File workingDirectory = parentDirectory != null
+            ? new File(parentDirectory)
             : Paths.get("").toFile();
         return workingDirectory.toURI().relativize(file.toURI()).getPath();
     }
@@ -86,9 +86,9 @@ public class FileOpener extends HasErrorState {
 */
     public FileOpener (String parent){
         parent = separatorsToSystem(parent);
-        mParent = parent;
-        mEmbeddedFiles = new EmbeddedFiles();
-        mEmbeddedFiles.setParentDirectory(parent);
+        parentDirectory = parent;
+        embeddedFiles = new EmbeddedFiles();
+        embeddedFiles.setParentDirectory(parent);
     }
 
     private static boolean isChild(Path child, String parentText) {
@@ -97,26 +97,26 @@ public class FileOpener extends HasErrorState {
     }
 
     // Returns true if file is in the current directory
-    public boolean CheckFilesFolder (String filename)
+    public boolean checkFilesFolder(String filename)
     {
         filename = separatorsToSystem(filename);
 
         File file = new File(filename);
         if (file.isAbsolute()) {
             Path path = Paths.get(file.getAbsolutePath()).normalize();
-            if (!isChild(path, mParent)) {
+            if (!isChild(path, parentDirectory)) {
                 setError("You can only open files in the current directory or below.");
                 return false;
             }
         } else {
-            file = new File(mParent, filename);
+            file = new File(parentDirectory, filename);
         }
 
         if (file.exists()){
             System.out.println("file found! " + filename);
             return true;
         } else {
-            System.out.println("parent " + mParent);
+            System.out.println("parent " + parentDirectory);
             setError("You can only open files in the current directory or below.");
             return false;
         }
@@ -124,32 +124,32 @@ public class FileOpener extends HasErrorState {
 
     // Both functions return a newly allocated stream if successful, or NULL if not (use the Error() and GetError() methods to find what the problem was)
     // If files folder is true then the file will only be opened if it is in the "files\" subfolder in the current directory.
-    public FileInputStream OpenRead(String filename) { return OpenRead(filename, true);}
-    public FileInputStream OpenRead(String filename, boolean filesFolder){
+    public FileInputStream openRead(String filename) { return openRead(filename, true);}
+    public FileInputStream openRead(String filename, boolean filesFolder){
         filename = separatorsToSystem(filename);
 
         clearError();
-        if (filesFolder && !CheckFilesFolder (filename)) {
+        if (filesFolder && !checkFilesFolder(filename)) {
             return null;
         } else {
             System.out.println("file embedded! " + filename + " : " + filesFolder);
-            FileInputStream result = mEmbeddedFiles.OpenOrLoad (filename);
+            FileInputStream result = embeddedFiles.OpenOrLoad (filename);
             if (result == null) {
                 setError("Failed to open " + filename);
             }
             return result;
         }
     }
-    public FileOutputStream OpenWrite(String filename) { return OpenWrite(filename, true);}
-    public FileOutputStream OpenWrite(String filename, boolean filesFolder){
+    public FileOutputStream openWrite(String filename) { return openWrite(filename, true);}
+    public FileOutputStream openWrite(String filename, boolean filesFolder){
         filename = separatorsToSystem(filename);
 
         clearError();
 
-        if (filesFolder && !CheckFilesFolder (filename)) {
+        if (filesFolder && !checkFilesFolder(filename)) {
             return null;
         } else {
-            File file = new File(mParent, filename);
+            File file = new File(parentDirectory, filename);
             FileOutputStream stream = null;
             Exception exception = null;
 
@@ -173,18 +173,18 @@ public class FileOpener extends HasErrorState {
         }
     }
 
-    public FileInputStream OpenRead(String filename, boolean filesFolder, IntBuffer length)
+    public FileInputStream openRead(String filename, boolean filesFolder, IntBuffer length)
     {
         filename = separatorsToSystem(filename);
 
         clearError();
 
-        if (filesFolder && !CheckFilesFolder (filename)) {
+        if (filesFolder && !checkFilesFolder(filename)) {
             length.put(0, 0);
             return null;
         }
         else {
-            FileInputStream result = mEmbeddedFiles.OpenOrLoad(filename);
+            FileInputStream result = embeddedFiles.OpenOrLoad(filename);
             if (result == null) {
                 setError("Failed to open " + filename);
             }
@@ -198,22 +198,22 @@ public class FileOpener extends HasErrorState {
     // (Use this when the file opening code expects to see a real disk file and
     // cannot be rewritten to work from a memory stream.)
     // Returns a blank string if not successful (use Error() and GetError() to retrieve the error description.)
-    public String FilenameForRead(String filename){
-        return FilenameForRead(filename, true);
+    public String getFilenameForRead(String filename){
+        return getFilenameForRead(filename, true);
     }
-    public String FilenameForRead(String filename, boolean filesFolder){
+    public String getFilenameForRead(String filename, boolean filesFolder){
         filename = separatorsToSystem(filename);
 
         clearError();
 
-        if (filesFolder && !CheckFilesFolder (filename)) {
+        if (filesFolder && !checkFilesFolder(filename)) {
             return "";
         } else {
 
             // Stored in embedded file?
-            if (mEmbeddedFiles.IsStored(filename))
+            if (embeddedFiles.IsStored(filename))
             {
-                return ExtractStoredFile(filename);
+                return extractStoredFile(filename);
             }
             else {
 
@@ -223,8 +223,20 @@ public class FileOpener extends HasErrorState {
         }
     }
 
+    public String getFileAbsolutePath(String filename) {
+        filename = getFilenameForRead(filename, false);
+
+        File file;
+        if (filename != null && !filename.equals("") && getError().equals("") &&
+                (file = new File(getParentDirectory(), filename)).exists() && !file.isDirectory()) {
+            filename = file.getAbsolutePath();
+        }
+
+        return filename;
+    }
+
     // Delete a disk file
-    public boolean Delete(String filename, boolean isSandboxMode) {
+    public boolean delete(String filename, boolean isSandboxMode) {
 
         filename = separatorsToSystem(filename);
 
@@ -235,7 +247,7 @@ public class FileOpener extends HasErrorState {
             return false;
         }
 
-        if (new File(mParent, filename).delete()) {
+        if (new File(parentDirectory, filename).delete()) {
             return true;
         } else {
             setError("Delete failed");
@@ -246,10 +258,10 @@ public class FileOpener extends HasErrorState {
     public void setParentDirectory(String parent){
         String path = separatorsToSystem(parent);
 
-        mParent = path;
-        mEmbeddedFiles.setParentDirectory(path);
+        parentDirectory = path;
+        embeddedFiles.setParentDirectory(path);
     }
-    public String getParentDirectory(){return mParent;}
+    public String getParentDirectory(){return parentDirectory;}
 
     String separatorsToSystem(String res) {
         if (res == null) {

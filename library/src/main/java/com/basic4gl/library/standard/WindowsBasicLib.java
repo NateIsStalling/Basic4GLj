@@ -10,7 +10,6 @@ import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
-import com.basic4gl.runtime.util.ResourceStore;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -20,7 +19,14 @@ import java.util.Map;
 /**
  * Created by Nate on 11/19/2015.
  */
-public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
+public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
+
+    // Globals
+    static FileOpener files = null;
+    static long performanceFreq;
+
+    WindowsWavStore wavFiles;
+
     @Override
     public String name() {
         return "WindowsBasicLib";
@@ -78,65 +84,15 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
         return null;
     }
 
-
-    // Globals
-    static FileOpener files = null;
-    static long performanceFreq;
-
     @Override
     public void init(FileOpener files) {
         WindowsBasicLib.files = files;
     }
 
     /**
-     * Represents a loaded windows .wav file.
-     */
-    class WindowsWav {
-        ByteBuffer sound;
-        int len;
-/*
-        public WindowsWav (String filename) {
-            sound   = null;
-            len     = 0;
-
-            // Attempt to load sound file
-            GenericIStream file = files.OpenRead(filename, false, len);
-
-            if (file != null && !file.fail ()) {
-                if (!file.fail () && len > 0 && len < 0xa00000) {       // File must be 10meg or less in size
-
-                    // Allocate data storage
-                    sound = new char [len];
-
-                    // Read in data
-                    file.read (sound, len);
-                }
-            }
-            if (file != null)
-                delete file;
-        }
-        public boolean Loaded ()  { return sound != null; }
-        public void Play ()    { PlaySound (sound, null, SND_MEMORY | SND_ASYNC | SND_NODEFAULT); }
-        */
-    }
-
-    /**
-     * Used to track WindowsWavObjects
-     */
-    class WindowsWavStore extends ResourceStore<WindowsWav> {
-        protected void deleteElement(int index){
-            setValue(index, null);
-        }
-        public WindowsWavStore (){ super(null); }
-    }
-
-
-    WindowsWavStore wavFiles;
-
-    /**
      * Performance counter
      */
-    long PerformanceCounter() {
+    long getPerformanceCounter() {
         if (performanceFreq == 0)       // No performance counter?
         {
             return System.currentTimeMillis();      // Degrade to tick counter
@@ -147,14 +103,14 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
         }
     }
 
-    public final class WrapBeep implements Function {
+    public static final class WrapBeep implements Function {
         public void run(TomVM vm) {
             // TODO without AWT!
 //            java.awt.Toolkit.getDefaultToolkit().beep();
         }
     }
 
-    public final class WrapSleep implements Function {
+    public static final class WrapSleep implements Function {
         public void run(TomVM vm)          {
         int msec = vm.getIntParam(1);
         if (msec > 5000) {
@@ -168,15 +124,14 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess{
         }
     }
     }
-    public final class  WrapTickCount implements Function {
+    public static final class  WrapTickCount implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal((int)(System.currentTimeMillis() % Integer.MAX_VALUE));
         }
     }
     public final class WrapPerformanceCounter implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal((int)(PerformanceCounter() % Integer.MAX_VALUE));
+            vm.getReg().setIntVal((int)(getPerformanceCounter() % Integer.MAX_VALUE));
         }
     }
-
 }

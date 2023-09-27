@@ -1920,22 +1920,22 @@ public class GLBasicLib_gl implements FunctionLibrary {
         return null;
     }
 
-    public final class WrapglAccum implements Function {
+    public static final class WrapglAccum implements Function {
         public void run(TomVM vm) {
             glAccum(vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglAlphaFunc implements Function {
+    public static final class WrapglAlphaFunc implements Function {
         public void run(TomVM vm) {
             glAlphaFunc(vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglAreTexturesResident implements Function {
+    public static final class WrapglAreTexturesResident implements Function {
 
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 3)) {
+            if (!Routines.validateSizeParam(vm, 3)) {
                 return;
             }
 
@@ -1954,21 +1954,21 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglArrayElement implements Function {
+    public static final class WrapglArrayElement implements Function {
 
         public void run(TomVM vm) {
             glArrayElement(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglBindTexture implements Function {
+    public static final class WrapglBindTexture implements Function {
 
         public void run(TomVM vm) {
             glBindTexture(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglBlendFunc implements Function {
+    public static final class WrapglBlendFunc implements Function {
 
         public void run(TomVM vm) {
 
@@ -1976,49 +1976,49 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglCallList implements Function {
+    public static final class WrapglCallList implements Function {
 
         public void run(TomVM vm) {
             glCallList(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglClear implements Function {
+    public static final class WrapglClear implements Function {
 
         public void run(TomVM vm) {
             glClear(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglClearAccum implements Function {
+    public static final class WrapglClearAccum implements Function {
 
         public void run(TomVM vm) {
             glClearAccum(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglClearColor implements Function {
+    public static final class WrapglClearColor implements Function {
 
         public void run(TomVM vm) {
             glClearColor(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglClearDepth implements Function {
+    public static final class WrapglClearDepth implements Function {
 
         public void run(TomVM vm) {
             glClearDepth(vm.getRealParam(1));
         }
     }
 
-    public final class WrapglClearIndex implements Function {
+    public static final class WrapglClearIndex implements Function {
 
         public void run(TomVM vm) {
             glClearIndex(vm.getRealParam(1));
         }
     }
 
-    public final class WrapglClearStencil implements Function {
+    public static final class WrapglClearStencil implements Function {
 
         public void run(TomVM vm) {
             glClearStencil(vm.getIntParam(1));
@@ -2057,7 +2057,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor3b implements Function {
+    public static final class WrapglColor3b implements Function {
 
         public void run(TomVM vm) {
             glColor3b(vm.getIntParam(3).byteValue(), vm.getIntParam(2).byteValue(), vm.getIntParam(1).byteValue());
@@ -2096,7 +2096,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor3d implements Function {
+    public static final class WrapglColor3d implements Function {
 
         public void run(TomVM vm) {
             glColor3d(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
@@ -2135,7 +2135,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor3f implements Function {
+    public static final class WrapglColor3f implements Function {
 
         public void run(TomVM vm) {
             glColor3f(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
@@ -2174,7 +2174,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor3i implements Function {
+    public static final class WrapglColor3i implements Function {
 
         public void run(TomVM vm) {
             glColor3i(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
@@ -2213,7 +2213,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor3s implements Function {
+    public static final class WrapglColor3s implements Function {
 
         public void run(TomVM vm) {
             glColor3s(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
@@ -2252,7 +2252,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor3ub implements Function {
+    public static final class WrapglColor3ub implements Function {
 
         public void run(TomVM vm) {
             glColor3ub(vm.getIntParam(3).byteValue(), vm.getIntParam(2).byteValue(), vm.getIntParam(1).byteValue());
@@ -2291,7 +2291,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor3ui implements Function {
+    public static final class WrapglColor3ui implements Function {
 
         public void run(TomVM vm) {
             glColor3ui(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
@@ -2330,7 +2330,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor3us implements Function {
+    public static final class WrapglColor3us implements Function {
 
         public void run(TomVM vm) {
             glColor3us(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
@@ -2369,7 +2369,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor4b implements Function {
+    public static final class WrapglColor4b implements Function {
 
         public void run(TomVM vm) {
             glColor4b(vm.getIntParam(4).byteValue(), vm.getIntParam(3).byteValue(), vm.getIntParam(2).byteValue(), vm.getIntParam(1).byteValue());
@@ -2408,7 +2408,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor4d implements Function {
+    public static final class WrapglColor4d implements Function {
 
         public void run(TomVM vm) {
             glColor4d(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
@@ -2447,7 +2447,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor4f implements Function {
+    public static final class WrapglColor4f implements Function {
 
         public void run(TomVM vm) {
             glColor4f(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
@@ -2486,7 +2486,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor4i implements Function {
+    public static final class WrapglColor4i implements Function {
 
         public void run(TomVM vm) {
             glColor4i(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
@@ -2525,7 +2525,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor4s implements Function {
+    public static final class WrapglColor4s implements Function {
 
         public void run(TomVM vm) {
             glColor4s(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
@@ -2564,7 +2564,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor4ub implements Function {
+    public static final class WrapglColor4ub implements Function {
 
         public void run(TomVM vm) {
             glColor4ub(vm.getIntParam(4).byteValue(), vm.getIntParam(3).byteValue(), vm.getIntParam(2).byteValue(), vm.getIntParam(1).byteValue());
@@ -2603,7 +2603,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor4ui implements Function {
+    public static final class WrapglColor4ui implements Function {
 
         public void run(TomVM vm) {
             glColor4ui(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
@@ -2642,7 +2642,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColor4us implements Function {
+    public static final class WrapglColor4us implements Function {
 
         public void run(TomVM vm) {
             glColor4us(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
@@ -2681,108 +2681,108 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglColorMask implements Function {
+    public static final class WrapglColorMask implements Function {
 
         public void run(TomVM vm) {
             glColorMask(vm.getIntParam(4) == 1, vm.getIntParam(3) == 1, vm.getIntParam(2) == 1, vm.getIntParam(1) == 1);
         }
     }
 
-    public final class WrapglColorMaterial implements Function {
+    public static final class WrapglColorMaterial implements Function {
 
         public void run(TomVM vm) {
             glColorMaterial(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglCopyPixels implements Function {
+    public static final class WrapglCopyPixels implements Function {
 
         public void run(TomVM vm) {
             glCopyPixels(vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglCopyTexImage1D implements Function {
+    public static final class WrapglCopyTexImage1D implements Function {
 
         public void run(TomVM vm) {
             glCopyTexImage1D(vm.getIntParam(7), vm.getIntParam(6), vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglCopyTexImage2D implements Function {
+    public static final class WrapglCopyTexImage2D implements Function {
 
         public void run(TomVM vm) {
             glCopyTexImage2D(vm.getIntParam(8), vm.getIntParam(7), vm.getIntParam(6), vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglCopyTexSubImage1D implements Function {
+    public static final class WrapglCopyTexSubImage1D implements Function {
 
         public void run(TomVM vm) {
             glCopyTexSubImage1D(vm.getIntParam(6), vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglCopyTexSubImage2D implements Function {
+    public static final class WrapglCopyTexSubImage2D implements Function {
 
         public void run(TomVM vm) {
             glCopyTexSubImage2D(vm.getIntParam(8), vm.getIntParam(7), vm.getIntParam(6), vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglCullFace implements Function {
+    public static final class WrapglCullFace implements Function {
 
         public void run(TomVM vm) {
             glCullFace(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglDepthFunc implements Function {
+    public static final class WrapglDepthFunc implements Function {
 
         public void run(TomVM vm) {
             glDepthFunc(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglDepthMask implements Function {
+    public static final class WrapglDepthMask implements Function {
 
         public void run(TomVM vm) {
             glDepthMask(vm.getIntParam(1) == 1);
         }
     }
 
-    public final class WrapglDepthRange implements Function {
+    public static final class WrapglDepthRange implements Function {
 
         public void run(TomVM vm) {
             glDepthRange(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglDisable implements Function {
+    public static final class WrapglDisable implements Function {
 
         public void run(TomVM vm) {
             glDisable(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglDisableClientState implements Function {
+    public static final class WrapglDisableClientState implements Function {
 
         public void run(TomVM vm) {
             glDisableClientState(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglDrawArrays implements Function {
+    public static final class WrapglDrawArrays implements Function {
 
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 1)) {
+            if (!Routines.validateSizeParam(vm, 1)) {
                 return;
             }
             glDrawArrays(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglDrawBuffer implements Function {
+    public static final class WrapglDrawBuffer implements Function {
 
         public void run(TomVM vm) {
 
@@ -2790,7 +2790,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglEdgeFlag implements Function {
+    public static final class WrapglEdgeFlag implements Function {
 
         public void run(TomVM vm) {
             glEdgeFlag(vm.getIntParam(1) == 1);
@@ -2829,28 +2829,28 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglEnable implements Function {
+    public static final class WrapglEnable implements Function {
 
         public void run(TomVM vm) {
             glEnable(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglEnableClientState implements Function {
+    public static final class WrapglEnableClientState implements Function {
 
         public void run(TomVM vm) {
             glEnableClientState(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglEndList implements Function {
+    public static final class WrapglEndList implements Function {
 
         public void run(TomVM vm) {
             glEndList();
         }
     }
 
-    public final class WrapglEvalCoord1d implements Function {
+    public static final class WrapglEvalCoord1d implements Function {
 
         public void run(TomVM vm) {
             glEvalCoord1d(vm.getRealParam(1));
@@ -2889,7 +2889,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglEvalCoord1f implements Function {
+    public static final class WrapglEvalCoord1f implements Function {
 
         public void run(TomVM vm) {
             glEvalCoord1f(vm.getRealParam(1));
@@ -2928,7 +2928,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglEvalCoord2d implements Function {
+    public static final class WrapglEvalCoord2d implements Function {
 
         public void run(TomVM vm) {
             glEvalCoord2d(vm.getRealParam(2), vm.getRealParam(1));
@@ -2967,7 +2967,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglEvalCoord2f implements Function {
+    public static final class WrapglEvalCoord2f implements Function {
 
         public void run(TomVM vm) {
             glEvalCoord2f(vm.getRealParam(2), vm.getRealParam(1));
@@ -3006,38 +3006,38 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglEvalMesh1 implements Function {
+    public static final class WrapglEvalMesh1 implements Function {
 
         public void run(TomVM vm) {
             glEvalMesh1(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglEvalMesh2 implements Function {
+    public static final class WrapglEvalMesh2 implements Function {
 
         public void run(TomVM vm) {
             glEvalMesh2(vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglEvalPoint1 implements Function {
+    public static final class WrapglEvalPoint1 implements Function {
 
         public void run(TomVM vm) {
             glEvalPoint1(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglEvalPoint2 implements Function {
+    public static final class WrapglEvalPoint2 implements Function {
 
         public void run(TomVM vm) {
             glEvalPoint2(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglFeedbackBuffer implements Function {
+    public static final class WrapglFeedbackBuffer implements Function {
 
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 3)) {
+            if (!Routines.validateSizeParam(vm, 3)) {
                 return;
             }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
@@ -3052,21 +3052,21 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglFinish implements Function {
+    public static final class WrapglFinish implements Function {
 
         public void run(TomVM vm) {
             glFinish();
         }
     }
 
-    public final class WrapglFlush implements Function {
+    public static final class WrapglFlush implements Function {
 
         public void run(TomVM vm) {
             glFlush();
         }
     }
 
-    public final class WrapglFogf implements Function {
+    public static final class WrapglFogf implements Function {
 
         public void run(TomVM vm) {
             glFogf(vm.getIntParam(2), vm.getRealParam(1));
@@ -3105,7 +3105,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglFogi implements Function {
+    public static final class WrapglFogi implements Function {
 
         public void run(TomVM vm) {
             glFogi(vm.getIntParam(2), vm.getIntParam(1));
@@ -3144,14 +3144,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglFrontFace implements Function {
+    public static final class WrapglFrontFace implements Function {
 
         public void run(TomVM vm) {
             glFrontFace(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglFrustum implements Function {
+    public static final class WrapglFrustum implements Function {
         public void run(TomVM vm) {
             glFrustum(vm.getRealParam(6), vm.getRealParam(5), vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -3252,7 +3252,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglGetError implements Function {
+    public static final class WrapglGetError implements Function {
 
         public void run(TomVM vm) {
             vm.getReg().setIntVal(glGetError());
@@ -3749,20 +3749,20 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglHint implements Function {
+    public static final class WrapglHint implements Function {
 
         public void run(TomVM vm) {
             glHint(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglIndexMask implements Function {
+    public static final class WrapglIndexMask implements Function {
         public void run(TomVM vm) {
             glIndexMask(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglIndexd implements Function {
+    public static final class WrapglIndexd implements Function {
         public void run(TomVM vm) {
             glIndexd(vm.getRealParam(1));
         }
@@ -3798,7 +3798,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglIndexf implements Function {
+    public static final class WrapglIndexf implements Function {
         public void run(TomVM vm) {
             glIndexf(vm.getRealParam(1));
         }
@@ -3834,7 +3834,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglIndexi implements Function {
+    public static final class WrapglIndexi implements Function {
         public void run(TomVM vm) {
             glIndexi(vm.getIntParam(1));
         }
@@ -3872,7 +3872,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglIndexs implements Function {
+    public static final class WrapglIndexs implements Function {
         public void run(TomVM vm) {
             glIndexs(vm.getIntParam(1).shortValue());
         }
@@ -3909,7 +3909,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglIndexub implements Function {
+    public static final class WrapglIndexub implements Function {
         public void run(TomVM vm) {
             glIndexub(vm.getIntParam(1).byteValue());
         }
@@ -3947,7 +3947,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglInitNames implements Function {
+    public static final class WrapglInitNames implements Function {
 
         public void run(TomVM vm) {
             glInitNames();
@@ -3955,26 +3955,26 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglIsEnabled implements Function {
+    public static final class WrapglIsEnabled implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(glIsEnabled(vm.getIntParam(1)) ? 1 : 0);
         }
 
     }
 
-    public final class WrapglIsList implements Function {
+    public static final class WrapglIsList implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(glIsList(vm.getIntParam(1)) ? 1 : 0);
         }
     }
 
-    public final class WrapglIsTexture implements Function {
+    public static final class WrapglIsTexture implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(glIsTexture(vm.getIntParam(1)) ? 1 : 0);
         }
     }
 
-    public final class WrapglLightModelf implements Function {
+    public static final class WrapglLightModelf implements Function {
         public void run(TomVM vm) {
             glLightModelf(vm.getIntParam(2), vm.getRealParam(1));
         }
@@ -4010,7 +4010,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglLightModeli implements Function {
+    public static final class WrapglLightModeli implements Function {
         public void run(TomVM vm) {
             glLightModeli(vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -4046,7 +4046,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglLightf implements Function {
+    public static final class WrapglLightf implements Function {
         public void run(TomVM vm) {
             glLightf(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
         }
@@ -4082,7 +4082,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglLighti implements Function {
+    public static final class WrapglLighti implements Function {
         public void run(TomVM vm) {
             glLighti(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -4119,75 +4119,75 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglLineStipple implements Function {
+    public static final class WrapglLineStipple implements Function {
 
         public void run(TomVM vm) {
             glLineStipple(vm.getIntParam(2), vm.getIntParam(1).shortValue());
         }
     }
 
-    public final class WrapglLineWidth implements Function {
+    public static final class WrapglLineWidth implements Function {
 
         public void run(TomVM vm) {
             glLineWidth(vm.getRealParam(1));
         }
     }
 
-    public final class WrapglListBase implements Function {
+    public static final class WrapglListBase implements Function {
 
         public void run(TomVM vm) {
             glListBase(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglLoadIdentity implements Function {
+    public static final class WrapglLoadIdentity implements Function {
         public void run(TomVM vm) {
             glLoadIdentity();
         }
     }
 
-    public final class WrapglLoadName implements Function {
+    public static final class WrapglLoadName implements Function {
         public void run(TomVM vm) {
             glLoadName(vm.getIntParam(1));
         }
 
     }
 
-    public final class WrapglLogicOp implements Function {
+    public static final class WrapglLogicOp implements Function {
 
         public void run(TomVM vm) {
             glLogicOp(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglMapGrid1d implements Function {
+    public static final class WrapglMapGrid1d implements Function {
 
         public void run(TomVM vm) {
             glMapGrid1d(vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglMapGrid1f implements Function {
+    public static final class WrapglMapGrid1f implements Function {
         public void run(TomVM vm) {
             glMapGrid1f(vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglMapGrid2d implements Function {
+    public static final class WrapglMapGrid2d implements Function {
 
         public void run(TomVM vm) {
             glMapGrid2d(vm.getIntParam(6), vm.getRealParam(5), vm.getRealParam(4), vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglMapGrid2f implements Function {
+    public static final class WrapglMapGrid2f implements Function {
 
         public void run(TomVM vm) {
             glMapGrid2f(vm.getIntParam(6), vm.getRealParam(5), vm.getRealParam(4), vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglMaterialf implements Function {
+    public static final class WrapglMaterialf implements Function {
 
         public void run(TomVM vm) {
             glMaterialf(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
@@ -4226,7 +4226,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglMateriali implements Function {
+    public static final class WrapglMateriali implements Function {
 
         public void run(TomVM vm) {
             glMateriali(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
@@ -4264,19 +4264,19 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglMatrixMode implements Function {
+    public static final class WrapglMatrixMode implements Function {
         public void run(TomVM vm) {
             glMatrixMode(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglNewList implements Function {
+    public static final class WrapglNewList implements Function {
         public void run(TomVM vm) {
             glNewList(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglNormal3b implements Function {
+    public static final class WrapglNormal3b implements Function {
         public void run(TomVM vm) {
             glNormal3b(vm.getIntParam(3).byteValue(), vm.getIntParam(2).byteValue(), vm.getIntParam(1).byteValue());
         }
@@ -4312,7 +4312,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglNormal3d implements Function {
+    public static final class WrapglNormal3d implements Function {
         public void run(TomVM vm) {
             glNormal3d(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -4348,7 +4348,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglNormal3f implements Function {
+    public static final class WrapglNormal3f implements Function {
         public void run(TomVM vm) {
             glNormal3f(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -4384,7 +4384,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglNormal3i implements Function {
+    public static final class WrapglNormal3i implements Function {
         public void run(TomVM vm) {
             glNormal3i(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -4420,7 +4420,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglNormal3s implements Function {
+    public static final class WrapglNormal3s implements Function {
         public void run(TomVM vm) {
             glNormal3s(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
@@ -4457,19 +4457,19 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglOrtho implements Function {
+    public static final class WrapglOrtho implements Function {
         public void run(TomVM vm) {
             glOrtho(vm.getRealParam(6), vm.getRealParam(5), vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglPassThrough implements Function {
+    public static final class WrapglPassThrough implements Function {
         public void run(TomVM vm) {
             glPassThrough(vm.getRealParam(1));
         }
     }
 
-    public final class WrapglPixelStoref implements Function {
+    public static final class WrapglPixelStoref implements Function {
 
         public void run(TomVM vm) {
             glPixelStoref(vm.getIntParam(2), vm.getIntParam(1));
@@ -4478,82 +4478,82 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglPixelStorei implements Function {
+    public static final class WrapglPixelStorei implements Function {
 
         public void run(TomVM vm) {
             glPixelStorei(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglPixelTransferf implements Function {
+    public static final class WrapglPixelTransferf implements Function {
 
         public void run(TomVM vm) {
             glPixelTransferf(vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglPixelTransferi implements Function {
+    public static final class WrapglPixelTransferi implements Function {
 
         public void run(TomVM vm) {
             glPixelTransferi(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglPixelZoom implements Function {
+    public static final class WrapglPixelZoom implements Function {
         public void run(TomVM vm) {
             glPixelZoom(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglPointSize implements Function {
+    public static final class WrapglPointSize implements Function {
 
         public void run(TomVM vm) {
             glPointSize(vm.getRealParam(1));
         }
     }
 
-    public final class WrapglPolygonMode implements Function {
+    public static final class WrapglPolygonMode implements Function {
         public void run(TomVM vm) {
             glPolygonMode(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglPolygonOffset implements Function {
+    public static final class WrapglPolygonOffset implements Function {
 
         public void run(TomVM vm) {
             glPolygonOffset(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglPopAttrib implements Function {
+    public static final class WrapglPopAttrib implements Function {
 
         public void run(TomVM vm) {
             glPopAttrib();
         }
     }
 
-    public final class WrapglPopClientAttrib implements Function {
+    public static final class WrapglPopClientAttrib implements Function {
 
         public void run(TomVM vm) {
             glPopClientAttrib();
         }
     }
 
-    public final class WrapglPopMatrix implements Function {
+    public static final class WrapglPopMatrix implements Function {
         public void run(TomVM vm) {
             glPopMatrix();
         }
     }
 
-    public final class WrapglPopName implements Function {
+    public static final class WrapglPopName implements Function {
         public void run(TomVM vm) {
             glPopName();
         }
     }
 
-    public final class WrapglPrioritizeTextures implements Function {
+    public static final class WrapglPrioritizeTextures implements Function {
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 3)) {
+            if (!Routines.validateSizeParam(vm, 3)) {
                 return;
             }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
@@ -4572,32 +4572,32 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglPushAttrib implements Function {
+    public static final class WrapglPushAttrib implements Function {
         public void run(TomVM vm) {
             glPushAttrib(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglPushClientAttrib implements Function {
+    public static final class WrapglPushClientAttrib implements Function {
 
         public void run(TomVM vm) {
             glPushClientAttrib(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglPushMatrix implements Function {
+    public static final class WrapglPushMatrix implements Function {
         public void run(TomVM vm) {
             glPushMatrix();
         }
     }
 
-    public final class WrapglPushName implements Function {
+    public static final class WrapglPushName implements Function {
         public void run(TomVM vm) {
             glPushName(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglRasterPos2d implements Function {
+    public static final class WrapglRasterPos2d implements Function {
         public void run(TomVM vm) {
             glRasterPos2d(vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -4634,7 +4634,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRasterPos2f implements Function {
+    public static final class WrapglRasterPos2f implements Function {
 
         public void run(TomVM vm) {
             glRasterPos2f(vm.getRealParam(2), vm.getRealParam(1));
@@ -4671,7 +4671,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRasterPos2i implements Function {
+    public static final class WrapglRasterPos2i implements Function {
         public void run(TomVM vm) {
             glRasterPos2i(vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -4707,7 +4707,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRasterPos2s implements Function {
+    public static final class WrapglRasterPos2s implements Function {
 
         public void run(TomVM vm) {
             glRasterPos2s(vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
@@ -4746,7 +4746,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRasterPos3d implements Function {
+    public static final class WrapglRasterPos3d implements Function {
 
         public void run(TomVM vm) {
             glRasterPos3d(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
@@ -4783,7 +4783,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRasterPos3f implements Function {
+    public static final class WrapglRasterPos3f implements Function {
         public void run(TomVM vm) {
             glRasterPos3f(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -4819,7 +4819,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRasterPos3i implements Function {
+    public static final class WrapglRasterPos3i implements Function {
         public void run(TomVM vm) {
             glRasterPos3i(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -4855,7 +4855,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRasterPos3s implements Function {
+    public static final class WrapglRasterPos3s implements Function {
         public void run(TomVM vm) {
             glRasterPos3s(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
@@ -4891,7 +4891,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRasterPos4d implements Function {
+    public static final class WrapglRasterPos4d implements Function {
         public void run(TomVM vm) {
             glRasterPos4d(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -4929,7 +4929,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRasterPos4f implements Function {
+    public static final class WrapglRasterPos4f implements Function {
 
         public void run(TomVM vm) {
             glRasterPos4f(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
@@ -4968,7 +4968,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRasterPos4i implements Function {
+    public static final class WrapglRasterPos4i implements Function {
         public void run(TomVM vm) {
             glRasterPos4i(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -5006,7 +5006,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRasterPos4s implements Function {
+    public static final class WrapglRasterPos4s implements Function {
 
         public void run(TomVM vm) {
             glRasterPos4s(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
@@ -5044,13 +5044,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglReadBuffer implements Function {
+    public static final class WrapglReadBuffer implements Function {
         public void run(TomVM vm) {
             glReadBuffer(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglRectd implements Function {
+    public static final class WrapglRectd implements Function {
 
         public void run(TomVM vm) {
             glRectd(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
@@ -5139,7 +5139,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRectf implements Function {
+    public static final class WrapglRectf implements Function {
 
         public void run(TomVM vm) {
             glRectf(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
@@ -5230,7 +5230,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRecti implements Function {
+    public static final class WrapglRecti implements Function {
         public void run(TomVM vm) {
             glRecti(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -5328,7 +5328,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRects implements Function {
+    public static final class WrapglRects implements Function {
         public void run(TomVM vm) {
             glRects(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
@@ -5422,45 +5422,45 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglRenderMode implements Function {
+    public static final class WrapglRenderMode implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(glRenderMode(vm.getIntParam(1)));
         }
     }
 
-    public final class WrapglRotated implements Function {
+    public static final class WrapglRotated implements Function {
         public void run(TomVM vm) {
             glRotated(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglRotatef implements Function {
+    public static final class WrapglRotatef implements Function {
         public void run(TomVM vm) {
             glRotatef(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglScaled implements Function {
+    public static final class WrapglScaled implements Function {
         public void run(TomVM vm) {
             glScaled(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglScalef implements Function {
+    public static final class WrapglScalef implements Function {
         public void run(TomVM vm) {
             glScalef(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglScissor implements Function {
+    public static final class WrapglScissor implements Function {
         public void run(TomVM vm) {
             glScissor(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglSelectBuffer implements Function {
+    public static final class WrapglSelectBuffer implements Function {
         public void run(TomVM vm) {
-            if (!Routines.ValidateSizeParam(vm, 2)) {
+            if (!Routines.validateSizeParam(vm, 2)) {
                 return;
             }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
@@ -5472,32 +5472,32 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglShadeModel implements Function {
+    public static final class WrapglShadeModel implements Function {
         public void run(TomVM vm) {
             glShadeModel(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglStencilFunc implements Function {
+    public static final class WrapglStencilFunc implements Function {
         public void run(TomVM vm) {
             glStencilFunc(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglStencilMask implements Function {
+    public static final class WrapglStencilMask implements Function {
 
         public void run(TomVM vm) {
             glStencilMask(vm.getIntParam(1));
         }
     }
 
-    public final class WrapglStencilOp implements Function {
+    public static final class WrapglStencilOp implements Function {
         public void run(TomVM vm) {
             glStencilOp(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public final class WrapglTexCoord1d implements Function {
+    public static final class WrapglTexCoord1d implements Function {
         public void run(TomVM vm) {
             glTexCoord1d(vm.getRealParam(1));
         }
@@ -5533,7 +5533,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord1f implements Function {
+    public static final class WrapglTexCoord1f implements Function {
         public void run(TomVM vm) {
             glTexCoord1f(vm.getRealParam(1));
         }
@@ -5571,7 +5571,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord1i implements Function {
+    public static final class WrapglTexCoord1i implements Function {
 
         public void run(TomVM vm) {
             glTexCoord1i(vm.getIntParam(1));
@@ -5610,7 +5610,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord1s implements Function {
+    public static final class WrapglTexCoord1s implements Function {
 
         public void run(TomVM vm) {
             glTexCoord1s(vm.getIntParam(1).shortValue());
@@ -5647,7 +5647,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord2d implements Function {
+    public static final class WrapglTexCoord2d implements Function {
         public void run(TomVM vm) {
             glTexCoord2d(vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -5683,7 +5683,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord2f implements Function {
+    public static final class WrapglTexCoord2f implements Function {
         public void run(TomVM vm) {
             glTexCoord2f(vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -5719,7 +5719,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord2i implements Function {
+    public static final class WrapglTexCoord2i implements Function {
         public void run(TomVM vm) {
             glTexCoord2i(vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -5755,7 +5755,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord2s implements Function {
+    public static final class WrapglTexCoord2s implements Function {
         public void run(TomVM vm) {
             glTexCoord2s(vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
@@ -5791,7 +5791,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord3d implements Function {
+    public static final class WrapglTexCoord3d implements Function {
         public void run(TomVM vm) {
             glTexCoord3d(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -5827,7 +5827,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord3f implements Function {
+    public static final class WrapglTexCoord3f implements Function {
         public void run(TomVM vm) {
             glTexCoord3f(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -5863,7 +5863,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord3i implements Function {
+    public static final class WrapglTexCoord3i implements Function {
         public void run(TomVM vm) {
             glTexCoord3i(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -5899,7 +5899,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord3s implements Function {
+    public static final class WrapglTexCoord3s implements Function {
         public void run(TomVM vm) {
             glTexCoord3s(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
@@ -5935,7 +5935,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord4d implements Function {
+    public static final class WrapglTexCoord4d implements Function {
         public void run(TomVM vm) {
             glTexCoord4d(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -5971,7 +5971,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord4f implements Function {
+    public static final class WrapglTexCoord4f implements Function {
         public void run(TomVM vm) {
             glTexCoord4f(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -6007,7 +6007,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord4i implements Function {
+    public static final class WrapglTexCoord4i implements Function {
         public void run(TomVM vm) {
             glTexCoord4i(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -6043,7 +6043,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexCoord4s implements Function {
+    public static final class WrapglTexCoord4s implements Function {
         public void run(TomVM vm) {
             glTexCoord4s(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
@@ -6079,7 +6079,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexEnvf implements Function {
+    public static final class WrapglTexEnvf implements Function {
         public void run(TomVM vm) {
             glTexEnvf(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
         }
@@ -6115,7 +6115,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexEnvi implements Function {
+    public static final class WrapglTexEnvi implements Function {
         public void run(TomVM vm) {
             glTexEnvi(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -6151,7 +6151,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexGend implements Function {
+    public static final class WrapglTexGend implements Function {
         public void run(TomVM vm) {
             glTexGend(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
         }
@@ -6187,7 +6187,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexGenf implements Function {
+    public static final class WrapglTexGenf implements Function {
         public void run(TomVM vm) {
             glTexGenf(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
         }
@@ -6223,7 +6223,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexGeni implements Function {
+    public static final class WrapglTexGeni implements Function {
         public void run(TomVM vm) {
             glTexGeni(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -6259,7 +6259,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexParameterf implements Function {
+    public static final class WrapglTexParameterf implements Function {
         public void run(TomVM vm) {
             glTexParameterf(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
         }
@@ -6295,7 +6295,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTexParameteri implements Function {
+    public static final class WrapglTexParameteri implements Function {
         public void run(TomVM vm) {
             glTexParameteri(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -6331,19 +6331,19 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglTranslated implements Function {
+    public static final class WrapglTranslated implements Function {
         public void run(TomVM vm) {
             glTranslated(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglTranslatef implements Function {
+    public static final class WrapglTranslatef implements Function {
         public void run(TomVM vm) {
             glTranslatef(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
-    public final class WrapglVertex2d implements Function {
+    public static final class WrapglVertex2d implements Function {
         public void run(TomVM vm) {
             glVertex2d(vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -6379,7 +6379,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglVertex2f implements Function {
+    public static final class WrapglVertex2f implements Function {
         public void run(TomVM vm) {
             glVertex2f(vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -6415,7 +6415,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglVertex2i implements Function {
+    public static final class WrapglVertex2i implements Function {
         public void run(TomVM vm) {
             glVertex2i(vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -6451,7 +6451,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglVertex2s implements Function {
+    public static final class WrapglVertex2s implements Function {
         public void run(TomVM vm) {
             glVertex2s(vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
@@ -6487,7 +6487,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglVertex3d implements Function {
+    public static final class WrapglVertex3d implements Function {
         public void run(TomVM vm) {
             glVertex3d(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -6523,7 +6523,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglVertex3f implements Function {
+    public static final class WrapglVertex3f implements Function {
         public void run(TomVM vm) {
             glVertex3f(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -6561,7 +6561,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglVertex3i implements Function {
+    public static final class WrapglVertex3i implements Function {
         public void run(TomVM vm) {
             glVertex3i(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -6597,7 +6597,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglVertex3s implements Function {
+    public static final class WrapglVertex3s implements Function {
         public void run(TomVM vm) {
             glVertex3s(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
@@ -6633,7 +6633,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglVertex4d implements Function {
+    public static final class WrapglVertex4d implements Function {
         public void run(TomVM vm) {
             glVertex4d(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -6669,7 +6669,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglVertex4f implements Function {
+    public static final class WrapglVertex4f implements Function {
         public void run(TomVM vm) {
             glVertex4f(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
@@ -6705,7 +6705,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglVertex4i implements Function {
+    public static final class WrapglVertex4i implements Function {
         public void run(TomVM vm) {
             glVertex4i(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -6741,7 +6741,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglVertex4s implements Function {
+    public static final class WrapglVertex4s implements Function {
         public void run(TomVM vm) {
             glVertex4s(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
@@ -6777,7 +6777,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public final class WrapglViewport implements Function {
+    public static final class WrapglViewport implements Function {
         public WrapglViewport() {
         }
 
