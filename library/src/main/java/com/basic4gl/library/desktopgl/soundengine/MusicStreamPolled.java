@@ -90,7 +90,7 @@ public class MusicStreamPolled extends HasErrorState {
 
             data.position(offset);
 //            data.limit(STREAMBLOCKSIZE - offset);
-            int read = stb_vorbis_get_frame_short_interleaved(ogg, channels, data) * channels;
+            int read = stb_vorbis_get_samples_short_interleaved(ogg, channels, data) * channels;
             if (read <= 0) {
                 // Error or end of file.
 
@@ -126,6 +126,7 @@ public class MusicStreamPolled extends HasErrorState {
         //return offset;
 
 //        System.out.println("data.limit " + offset);
+        data.position(0);
         data.limit(offset);
     }
 
