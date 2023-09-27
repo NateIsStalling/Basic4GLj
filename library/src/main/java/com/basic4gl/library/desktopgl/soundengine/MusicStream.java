@@ -3,8 +3,10 @@ package com.basic4gl.library.desktopgl.soundengine;
 import com.basic4gl.library.desktopgl.soundengine.util.ThreadEvent;
 import com.basic4gl.runtime.HasErrorState;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A polled implementation of a streaming music file.
@@ -47,7 +49,9 @@ public class MusicStream extends HasErrorState implements Runnable {
                         // (This means that the object has been updated, and is ready
                         // to be examined. Note that we do this while in the command
                         // queue lock.)
-                        readyEvent.set();
+                        synchronized (readyEvent) {
+                            readyEvent.set();
+                        }
                     }
                     commandQueueLock.unlock();
 
@@ -103,7 +107,7 @@ public class MusicStream extends HasErrorState implements Runnable {
     private MusicStreamPolled stream;
 
     // Service thread
-    private Thread thread;
+    private final Thread thread;
 
     // Command queue
     private List<MusicStreamCommand> commandQueue;
@@ -112,12 +116,16 @@ public class MusicStream extends HasErrorState implements Runnable {
     private boolean playing;
 
     // Thread synchronisation
-    private Lock commandQueueLock, stateLock;
-    private ThreadEvent wakeEvent, readyEvent;
+    private final ReentrantLock commandQueueLock, stateLock;
+    private final ThreadEvent wakeEvent, readyEvent;
 
     public MusicStream() {
+        commandQueue = new ArrayList<>();
         playing = false;
         stream = null;
+        commandQueueLock = new ReentrantLock();
+        stateLock = new ReentrantLock();
+        wakeEvent = new ThreadEvent();
         readyEvent = new ThreadEvent();
         // Start service thread
         thread = new Thread(this);
@@ -128,8 +136,12 @@ public class MusicStream extends HasErrorState implements Runnable {
 
         // Stop service thread
         sendCommand(MusicStreamCommandCode.MSC_Shutdown);
+        readyEvent.dispose();
+        wakeEvent.dispose();
         try {
-            thread.wait();
+            synchronized (thread) {
+                thread.wait();
+            }
         } catch (InterruptedException consumed) {
             //Do nothing
         }

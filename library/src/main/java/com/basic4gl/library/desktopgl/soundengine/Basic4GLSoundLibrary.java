@@ -33,7 +33,13 @@ public class Basic4GLSoundLibrary implements SoundLibrary {
     }
     @Override
     public void dispose() {
+        if (engine != null) {
+            engine.dispose();
+        }
 
+        if (music != null) {
+            music.dispose();
+        }
     }
     @Override
     public void reset(){

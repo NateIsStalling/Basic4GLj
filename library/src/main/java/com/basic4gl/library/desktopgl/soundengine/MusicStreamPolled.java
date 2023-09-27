@@ -9,7 +9,9 @@ import org.lwjgl.stb.STBVorbisInfo;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 
+import static com.basic4gl.library.desktopgl.soundengine.SoundEngine.getVorbisFileErrorString;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.stb.STBVorbis.*;
 
@@ -53,52 +55,78 @@ public class MusicStreamPolled extends HasErrorState {
     boolean looping;
 
     // Temporary buffer
-    ByteBuffer data;
+    ShortBuffer data;
 
     void fillBuffer(int buffer) {
+        readData();
         AL10.alBufferData(buffer, format, data, freq);
     }
 
     // TODO check git history for usage
-    int readData() {
+    void readData() {
+        data.rewind();
+        data.limit(STREAMBLOCKSIZE);
         int offset = 0;
         boolean justLooped = false;
 
 //        stb_vorbis_get_frame_short(ogg, channels, data, STREAMBLOCKSIZE);
-        return stb_vorbis_get_file_offset(ogg);
+//        stb_vorbis_
+//        return stb_vorbis_get_file_offset(ogg);
         // Request data from Vorbisfile.
         // Vorbisfile doesn't always return as many bytes as we ask for, so we simply keep asking
         // until our data block is full, or the end of the file is reached.
-        /*
+
+        int lengthSamples = stb_vorbis_stream_length_in_samples(ogg);
+
         while (offset < STREAMBLOCKSIZE && file != null) {
-            int read = ov_read( & ogg,&data[offset], STREAMBLOCKSIZE - offset, 0, 2, 1);
+
+//            long ov_read(OggVorbis_File *vf, char *buffer, int length, int bigendianp, int word, int sgned, int *bitstream);
+
+            int bigendianp = 0;
+            int word = 2;
+            int signed = 1;
+            //ov_read( & ogg,&data[offset], STREAMBLOCKSIZE - offset, bigendianp, word, signed);
+//            int read = stb(ogg, data, channels, )
+
+            data.position(offset);
+//            data.limit(STREAMBLOCKSIZE - offset);
+            int read = stb_vorbis_get_frame_short_interleaved(ogg, channels, data) * channels;
             if (read <= 0) {
                 // Error or end of file.
 
                 // Set error status (if any)
-                if (read < 0)
-                    setError(GetVorbisFileErrorString(read));
-                else
+                if (read < 0) {
+                    setError(getVorbisFileErrorString(read));
+                } else {
                     clearError();
-
+                }
                 // If EOF and we are looping, then loop
                 if (read == 0 && looping && !justLooped) {
-                    int error = ov_raw_seek( & ogg, 0);
+                    int error = nstb_vorbis_seek(ogg, 0); //ov_raw_seek( & ogg, 0);
                     if (error != 0) {
-                        setError(GetVorbisFileErrorString(error));
-                        DoClose();
-                    } else
-                        justLooped = true;  // This detects 0 length files. Otherwise we would end up with an infinite loop here!
-                } else
-                    DoClose();              // Error or EOF (and not looping)
+                        setError(getVorbisFileErrorString(error));
+                        doClose();
+                    } else {
+                        // This detects 0 length files. Otherwise we would end up with an infinite loop here!
+                        justLooped = true;
+                    }
+                } else {
+                    // Error or EOF (and not looping)
+                    doClose();
+                }
             } else {
+//                System.out.println("data.position " + data.position());
+//                System.out.println("data.read " + read);
                 offset += read;
                 justLooped = false;
             }
-        }*/
+        }
 
         // Return number of bytes read
         //return offset;
+
+//        System.out.println("data.limit " + offset);
+        data.limit(offset);
     }
 
     void doClose() {
@@ -107,7 +135,9 @@ public class MusicStreamPolled extends HasErrorState {
         // Note: Unlike the public closeFile() method, we don't stop the music
         // playing. We simply close the file.
         if (file != null) {
-            stb_vorbis_close( ogg);
+            if (ogg != 0) {
+                stb_vorbis_close(ogg);
+            }
             file = null;
             usedBufCount = 0;
         }
@@ -122,6 +152,7 @@ public class MusicStreamPolled extends HasErrorState {
         data = null;
         // Allocate source
         AL10.alGetError();
+        source = BufferUtils.createIntBuffer(1);
         source.rewind();
         AL10.alGenSources(source);
         int error = AL10.alGetError();
@@ -140,7 +171,7 @@ public class MusicStreamPolled extends HasErrorState {
         }
 
         // Allocate temp data block
-        data = BufferUtils.createByteBuffer(STREAMBLOCKSIZE * Integer.SIZE / Byte.SIZE);
+        data = BufferUtils.createShortBuffer(STREAMBLOCKSIZE);
 
         initialised = true;
     }
@@ -152,6 +183,7 @@ public class MusicStreamPolled extends HasErrorState {
 
         // Free buffers
         if (buffers != null) {
+            buffers.rewind();
             AL10.alDeleteBuffers(buffers);
             buffers.clear();
         }
@@ -203,27 +235,31 @@ public class MusicStreamPolled extends HasErrorState {
         IntBuffer error = BufferUtils.createIntBuffer(1);
         ogg = stb_vorbis_open_filename(file.getAbsolutePath(), error, null);
         if (error.get(0) != 0) {
-            setError(SoundEngine.getVorbisFileErrorString(error.get(0)));
+            String errorMessage = getVorbisFileErrorString(error.get(0));
+            setError(errorMessage);
             return;
         }
 
         // Extract file parameters
-        STBVorbisInfo info = null;
-        info = stb_vorbis_get_info(ogg, info);
-        if (info == null) {
+//        STBVorbisInfo info = STBVorbisInfo.malloc();
+        try (STBVorbisInfo info = STBVorbisInfo.malloc()) {
+            stb_vorbis_get_info(ogg, info);
+            freq = info.sample_rate();
+            channels = info.channels();
+            if (channels == 1) {
+                format = AL10.AL_FORMAT_MONO16;
+            } else {
+                format = AL10.AL_FORMAT_STEREO16;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
             setError("Unable to extract audio info from file");
             doClose();
             return;
         }
-        freq = info.sample_rate();
-        channels = info.channels();
-        if (channels == 1) {
-            format = AL10.AL_FORMAT_MONO16;
-        } else {
-            format = AL10.AL_FORMAT_STEREO16;
-        }
 
         // Fill sound buffers
+        data.rewind();
         while (file != null && usedBufCount < MUSICSTREAMBUFFERS) {
             fillBuffer(buffers.get(usedBufCount));
             usedBufCount++;
@@ -231,9 +267,12 @@ public class MusicStreamPolled extends HasErrorState {
 
         // Queue them into source
         AL10.alGetError();
+        buffers.rewind();
+        buffers.limit(usedBufCount);
         AL10.alSourceQueueBuffers(source.get(0), buffers);//usedBufCount, buffers);
 
         // Set the gain
+        System.out.println("gain " + gain);
         AL10.alSourcef(source.get(0), AL10.AL_GAIN, gain);
 
         // Play the source
@@ -307,18 +346,22 @@ public class MusicStreamPolled extends HasErrorState {
         }
 
         // Look for processed buffers
-        IntBuffer processed = BufferUtils.createIntBuffer(1);
-        AL10.alGetSourcei(source.get(0), AL10.AL_BUFFERS_PROCESSED,  processed);
+        IntBuffer processedBuffer = BufferUtils.createIntBuffer(1);
+        AL10.alGetSourcei(source.get(0), AL10.AL_BUFFERS_PROCESSED,  processedBuffer);
+        int processed = processedBuffer.get(0);
 
         // Remove them
-        if (processed.get(0) > 0) {
-            assertTrue(processed.get(0) <= MUSICSTREAMBUFFERS);
+        if (processed > 0) {
+            assertTrue(processed <= MUSICSTREAMBUFFERS, source.get(0) + ", "+ processed + " exceeds limit");
             IntBuffer processedBuffers = BufferUtils.createIntBuffer(MUSICSTREAMBUFFERS);
+            processedBuffers.limit(processed);
             AL10.alSourceUnqueueBuffers(source.get(0), processedBuffers);
 
             // Refill
             int count = 0;
-            while (count < processed.get(0) && file != null) {
+            data.rewind();
+            while (count < processed && file != null) {
+                System.out.println("processed "+ source.get(0) + ", "+ processed);
                 fillBuffer(processedBuffers.get(count));
                 count++;
             }
@@ -327,6 +370,7 @@ public class MusicStreamPolled extends HasErrorState {
             if (count > 0) {
                 AL10.alGetError();
                 processedBuffers.rewind();
+                processedBuffers.limit(count);
                 AL10.alSourceQueueBuffers(source.get(0), processedBuffers);
 
                 // Make sure the source keeps playing.

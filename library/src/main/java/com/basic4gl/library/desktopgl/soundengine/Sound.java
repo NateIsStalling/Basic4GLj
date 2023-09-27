@@ -51,6 +51,7 @@ public class Sound extends HasErrorState {
         }
         catch( SoundSystemException e )
         {
+            // TODO update this message
             System.out.println( "JavaSound library is not compatible on " +
                     "this computer" );
 //            System.out.println( "LWJGL OpenAL library is not compatible on " +

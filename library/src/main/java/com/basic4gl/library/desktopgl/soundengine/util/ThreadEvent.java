@@ -4,13 +4,15 @@ package com.basic4gl.library.desktopgl.soundengine.util;
  * Created by Nate on 1/21/2016.
  */
 public class ThreadEvent {
-    Thread event;
+    final Thread event;
     public ThreadEvent() {
         event = new Thread();
     }
 
     public void dispose() {
-        event.notify();
+        synchronized (event) {
+            event.notify();
+        }
     }
 
     // Member access
@@ -20,16 +22,22 @@ public class ThreadEvent {
 
     // Methods
     public void set() {
-        event.notify();
+        synchronized (event) {
+            event.notify();
+        }
     }
 
     public void reset() {
-        event.notify();
+        synchronized (event) {
+            event.notify();
+        }
     }
 
     public void waitFor(long timeout) {
         try {
-            event.wait(timeout);
+            synchronized (event) {
+                event.wait(timeout);
+            }
         } catch (InterruptedException consumed) {
             //Do nothing
         }
@@ -37,7 +45,9 @@ public class ThreadEvent {
 
     public void waitFor() {
         try {
-            event.wait();
+            synchronized (event) {
+                event.wait();
+            }
         } catch (InterruptedException e) {
             //Do nothing
         }
