@@ -102,7 +102,8 @@ public class MusicStreamPolled extends HasErrorState {
                 }
                 // If EOF and we are looping, then loop
                 if (read == 0 && looping && !justLooped) {
-                    int error = nstb_vorbis_seek(ogg, 0); //ov_raw_seek( & ogg, 0);
+                    stb_vorbis_seek_start(ogg);
+                    int error = stb_vorbis_get_error(ogg);
                     if (error != 0) {
                         setError(getVorbisFileErrorString(error));
                         doClose();
