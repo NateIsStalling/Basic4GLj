@@ -47,11 +47,11 @@ public class LoadImage {
 
         // Load image
         Image image = null;
-        filename = mFiles.FilenameForRead (filename, false);
+        filename = mFiles.getFileAbsolutePath(filename);
         File file;
         if (filename != null && !filename.equals("") && mFiles.getError().equals("") &&
-                (file = new File(mFiles.getParentDirectory(), filename)).exists() && !file.isDirectory()) {
-            image = new Image(file.getAbsolutePath());//files.FilenameForRead (filename, false));
+                (file = new File(filename)).exists() && !file.isDirectory()) {
+            image = new Image(file.getAbsolutePath());
         }
 
         if (image != null && image.getPixels() == null) {

@@ -20,6 +20,8 @@ public class HasErrorState {
 	}
 
 	public void setError(String message) {
+		System.err.println(message);
+
 		hasErrorOccurred = true;
 		errorMessage = message;
 	}

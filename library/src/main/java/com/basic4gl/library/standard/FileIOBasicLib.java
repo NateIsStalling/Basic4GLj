@@ -203,7 +203,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
 
         // Attempt to open file
         System.out.println("sandbox mode: " + isSandboxMode());
-        FileInputStream file = files.OpenRead (filename, isSandboxMode());
+        FileInputStream file = files.openRead(filename, isSandboxMode());
         if (file == null ) {
             lastError = files.getError();
             return 0;
@@ -217,7 +217,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     int internalOpenFileWrite(String filename) {
 
         // Attempt to open file
-        FileOutputStream file = files.OpenWrite (filename, isSandboxMode());
+        FileOutputStream file = files.openWrite(filename, isSandboxMode());
         if (file == null ) {
             lastError = files.getError();
             return 0;
@@ -634,7 +634,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         String filename = vm.getStringParam(1);
 
         // Check path is in files folder
-        if (isSandboxMode() && !files.CheckFilesFolder(filename)) {
+        if (isSandboxMode() && !files.checkFilesFolder(filename)) {
             lastError = files.getError();
             vm.setRegString( "");
             return;
@@ -706,7 +706,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     public final class WrapDeleteFile implements Function { public void run(TomVM vm) {
         String filename = vm.getStringParam(1);
-        if (files.Delete(filename, isSandboxMode())) {
+        if (files.delete(filename, isSandboxMode())) {
             lastError = "";
             vm.getReg().setIntVal( -1);
         }

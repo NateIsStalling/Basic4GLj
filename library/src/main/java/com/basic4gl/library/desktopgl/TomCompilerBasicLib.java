@@ -401,7 +401,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         // Attempt to open file
         IntBuffer length = IntBuffer.allocate(1);
 
-        FileInputStream file = files.OpenRead(filename, false, length);
+        FileInputStream file = files.openRead(filename, false, length);
 
         if (file == null) {
             error = files.getError();

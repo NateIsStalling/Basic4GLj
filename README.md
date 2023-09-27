@@ -83,6 +83,32 @@ OpenGL GLU constants are unavailable, they are unsupported by the current versio
 - `gluPerspective` uses `glFrustrum` implementation
 - `gluLookAt` will currently throw an `UnsupportedOperationException` if called
 
+## Sound System
+
+Basic4GLj depends on a fork of Paulscode-SoundSystem to support sound codecs for LWJGL 3 which can be found here:
+
+https://github.com/NateIsStalling/Paulscode-SoundSystem/tree/lwjgl3
+
+### Playing Sound Effects
+
+The following file formats are currently supported for playing sound effects using the `loadsound` and `playsound` functions: 
+
+| File Extension | Codec | 
+|----------------| ------- |
+| wav            | CodecWav |
+| ogg            | CodecJOrbis |
+| xm             | CodecIBXM |
+| s3m            | CodecIBXM |
+| mod            | CodecIBXM |
+
+### Playing Music
+
+Ogg Vorbis files are supported for playing music continuously using the `playmusic` function.
+
+### Sound System Licenses
+
+Licenses for Paulscode-SoundSystem and related sound Codecs can be found in the app module's `dist` directory or in release packages under `/LICENSES/sound system` 
+
 ## Basic4GL for Windows
 
 Source of the original Basic4GL can be found here:

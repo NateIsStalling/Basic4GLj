@@ -1,10 +1,11 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
 import com.basic4gl.library.desktopgl.soundengine.util.ThreadEvent;
-import com.basic4gl.runtime.vm.HasErrorState;
+import com.basic4gl.runtime.HasErrorState;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A polled implementation of a streaming music file.
@@ -31,7 +32,7 @@ public class MusicStream extends HasErrorState implements Runnable {
                 boolean foundCmd;
                 do {
                     // Look for command
-                    MusicStreamCmd cmd = new MusicStreamCmd();
+                    MusicStreamCommand cmd = new MusicStreamCommand();
                     commandQueueLock.lock();
                     if (commandQueue.size() > 0) {
 
@@ -47,7 +48,9 @@ public class MusicStream extends HasErrorState implements Runnable {
                         // (This means that the object has been updated, and is ready
                         // to be examined. Note that we do this while in the command
                         // queue lock.)
-                        readyEvent.Set();
+                        synchronized (readyEvent) {
+                            readyEvent.set();
+                        }
                     }
                     commandQueueLock.unlock();
 
@@ -60,15 +63,15 @@ public class MusicStream extends HasErrorState implements Runnable {
                                 break;
 
                             case MSC_OpenFile:
-                                stream.OpenFile(cmd.filename, cmd.gain, cmd.looping);
+                                stream.openFile(cmd.filename, cmd.gain, cmd.looping);
                                 break;
 
                             case MSC_CloseFile:
-                                stream.CloseFile();
+                                stream.closeFile();
                                 break;
 
                             case MSC_SetGain:
-                                stream.SetGain(cmd.gain);
+                                stream.setGain(cmd.gain);
                                 break;
                         }
                         stateLock.unlock();
@@ -77,7 +80,7 @@ public class MusicStream extends HasErrorState implements Runnable {
 
                 // Update music stream, to ensure music keeps playing
                 stateLock.lock();
-                stream.Update();
+                stream.update();
                 stateLock.unlock();
 
                 // Sleep until woken.
@@ -85,10 +88,11 @@ public class MusicStream extends HasErrorState implements Runnable {
                 // can update the stream and keep the music playing.
                 // Otherwise we wait indefinitely.
                 if (!shuttingDown) {
-                    if (stream.Playing())
-                        wakeEvent.WaitFor(100);
-                    else
-                        wakeEvent.WaitFor();
+                    if (stream.isPlaying()) {
+                        wakeEvent.waitFor(100);
+                    } else {
+                        wakeEvent.waitFor();
+                    }
                 }
             }
 
@@ -98,54 +102,63 @@ public class MusicStream extends HasErrorState implements Runnable {
         }
     }
 
-    enum MusicStreamCmdCode {
-        MSC_Shutdown,
-        MSC_OpenFile,
-        MSC_CloseFile,
-        MSC_SetGain
-    }
-
-    ;
-
-    class MusicStreamCmd {
-        MusicStreamCmdCode code;
-        String filename;
-        float gain;
-        boolean looping;
-    }
-
     // Internal polled music stream
     private MusicStreamPolled stream;
 
     // Service thread
-    private Thread thread;
+    private final Thread thread;
 
     // Command queue
-    private List<MusicStreamCmd> commandQueue;
+    private final List<MusicStreamCommand> commandQueue;
 
-    // State
-    private boolean playing;
 
     // Thread synchronisation
-    private Lock commandQueueLock, stateLock;
-    private ThreadEvent wakeEvent, readyEvent;
+    private final ReentrantLock commandQueueLock, stateLock;
+    private final ThreadEvent wakeEvent, readyEvent;
 
-    private void SendCmd(MusicStreamCmdCode code) {
-        SendCmd(code, "", 1f, false);
+    public MusicStream() {
+        commandQueue = new ArrayList<>();
+        stream = null;
+        commandQueueLock = new ReentrantLock();
+        stateLock = new ReentrantLock();
+        wakeEvent = new ThreadEvent();
+        readyEvent = new ThreadEvent();
+        // Start service thread
+        thread = new Thread(this);
+        thread.start();
     }
 
-    private void SendCmd(MusicStreamCmdCode code, String filename) {
-        SendCmd(code, filename, 1f, false);
+    public void dispose() {
+
+        // Stop service thread
+        sendCommand(MusicStreamCommandCode.MSC_Shutdown);
+        readyEvent.dispose();
+        wakeEvent.dispose();
+        try {
+            synchronized (thread) {
+                thread.wait();
+            }
+        } catch (InterruptedException consumed) {
+            //Do nothing
+        }
     }
 
-    private void SendCmd(MusicStreamCmdCode code, String filename, float gain) {
-        SendCmd(code, filename, gain, false);
+    private void sendCommand(MusicStreamCommandCode code) {
+        sendCommand(code, "", 1f, false);
     }
 
-    private void SendCmd(MusicStreamCmdCode code, String filename, float gain, boolean looping) {
+    private void sendCommand(MusicStreamCommandCode code, String filename) {
+        sendCommand(code, filename, 1f, false);
+    }
+
+    private void sendCommand(MusicStreamCommandCode code, String filename, float gain) {
+        sendCommand(code, filename, gain, false);
+    }
+
+    private void sendCommand(MusicStreamCommandCode code, String filename, float gain, boolean looping) {
 
         // Build command
-        MusicStreamCmd cmd = new MusicStreamCmd();
+        MusicStreamCommand cmd = new MusicStreamCommand();
         cmd.code = code;
         cmd.filename = filename;
         cmd.gain = gain;
@@ -157,75 +170,53 @@ public class MusicStream extends HasErrorState implements Runnable {
 
         // Clear the ready event. This indicates that the object has not finished
         // processing commands yet, and is not ready to be examined.
-        readyEvent.Reset();
+        readyEvent.reset();
         commandQueueLock.unlock();
 
         // Wake up service thread
-        wakeEvent.Set();
-    }
-
-
-
-
-    public MusicStream() {
-        playing = false;
-        stream = null;
-        readyEvent = new ThreadEvent(true);
-        // Start service thread
-        thread = new Thread(this);
-        thread.start();
-    }
-
-    public void dispose() {
-
-        // Stop service thread
-        SendCmd(MusicStreamCmdCode.MSC_Shutdown);
-        try {
-            thread.wait();
-        } catch (InterruptedException consumed) {
-            //Do nothing
-        }
+        wakeEvent.set();
     }
 
     // Control interface
-    public void OpenFile(String filename) {
-        OpenFile(filename, 1f, false);
+    public void openFile(String filename) {
+        openFile(filename, 1f, false);
     }
 
-    public void OpenFile(String filename, float gain) {
-        OpenFile(filename, gain, false);
+    public void openFile(String filename, float gain) {
+        openFile(filename, gain, false);
     }
 
-    public void OpenFile(String filename, float gain, boolean looping)    // Open file and start playing
+    public void openFile(String filename, float gain, boolean looping)    // Open file and start playing
     {
-        SendCmd(MusicStreamCmdCode.MSC_OpenFile, filename, gain, looping);
+        sendCommand(MusicStreamCommandCode.MSC_OpenFile, filename, gain, looping);
     }
 
-    public void CloseFile() {
-        SendCmd(MusicStreamCmdCode.MSC_CloseFile);
+    public void closeFile() {
+        sendCommand(MusicStreamCommandCode.MSC_CloseFile);
     }
 
-    public void SetGain(float gain) {
-        SendCmd(MusicStreamCmdCode.MSC_SetGain, "", gain);
+    public void setGain(float gain) {
+        sendCommand(MusicStreamCommandCode.MSC_SetGain, "", gain);
     }
 
-    public boolean Playing() {
-        readyEvent.WaitFor();
+    public boolean isPlaying() {
+        readyEvent.waitFor();
         stateLock.lock();
-        boolean result = stream.Playing();
+        boolean result = stream.isPlaying();
         stateLock.unlock();
         return result;
     }
 
 
     // Error status
-    public void UpdateErrorState() {
-        readyEvent.WaitFor();
+    public void updateErrorState() {
+        readyEvent.waitFor();
         stateLock.lock();
-        if (stream.hasError())
+        if (stream.hasError()) {
             setError(stream.getError());
-        else
+        } else {
             clearError();
+        }
         stateLock.unlock();
     }
 }
