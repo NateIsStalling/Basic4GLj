@@ -1,0 +1,107 @@
+name: Build Installers
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-linux-installer:
+    name: Build Installer on Linux
+    runs-on: ubuntu-latest
+    steps:
+
+      # SETUP BUILD ENVIRONMENT
+      - id: checkout-code
+        name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: main
+      - id: setup-jdk
+        name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      # BUILD FOR DISTRIBUTION
+      - id: build
+        name: Build distribution
+        run: |
+          gradle -v
+          gradle build
+          jpackage --verbose "@jpackage.cfg" "@jpackage-linux.cfg"
+
+      # SAVE INSTALLER
+      - id: upload-installer
+        name: Upload installer
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./app/build/distributions/Basic4GLj_1.0.0-1_amd64.deb
+          name: linux-installer
+          retention-days: 1
+
+
+  build-windows-installer:
+    name: Build Installer on Windows
+    runs-on: windows-latest
+    steps:
+
+      # SETUP BUILD ENVIRONMENT
+      - id: checkout-code
+        name: Checkout code
+        uses: actions/checkout@v3
+      - id: setup-jdk
+        name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      # BUILD FOR DISTRIBUTION
+      - id: build
+        name: Build distribution
+        run: |
+          gradle -v
+          gradle build
+          jpackage --verbose "@jpackage.cfg" "@jpackage-windows.cfg"
+
+      # SAVE INSTALLER
+      - id: upload-installer
+        name: Upload installer
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./app/build/distributions/Basic4GLj-1.0.0.msi
+          name: windows-installer
+          retention-days: 1
+
+  build-macos-installer:
+    name: Build Installer on MacOS
+    runs-on: macos-latest
+    steps:
+
+      # SETUP BUILD ENVIRONMENT
+      - id: checkout-code
+        name: Checkout code
+        uses: actions/checkout@v3
+      - id: setup-jdk
+        name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      # BUILD FOR DISTRIBUTION
+      - id: build
+        name: Build distribution
+        run: |
+          gradle -v
+          gradle build
+          jpackage --verbose "@jpackage.cfg" "@jpackage-mac.cfg"
+
+      # SAVE INSTALLER
+      - id: upload-installer
+        name: Upload installer
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./app/build/distributions/Basic4GLj-1.0.0.dmg
+          name: macos-installer
+          retention-days: 1
