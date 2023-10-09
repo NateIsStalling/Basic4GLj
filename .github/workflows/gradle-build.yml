@@ -12,6 +12,8 @@ on:
     branches:
       - main
       - 'releases/**'
+  pull_request:
+    types: [ opened, reopened ]
 
 jobs:
   build:
