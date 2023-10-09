@@ -4,7 +4,7 @@
 	Basic4GLj	by Nathaniel Nielsen	(c) 2023
 	Basic4GL 	by Tom Mulgrew			(c) 2010
 	License:	New BSD; see LICENSES folder
-	Requires:	Java 8
+	Requires:	Java 17
 	
 	Site:		https://github.com/NateIsStalling/Basic4GLj
 	Twitter:	@NateIsStalling
@@ -19,7 +19,7 @@
 	
 	Exporting applications generates a launcher batch script.
 	
-	Java 8 must be installed and in your system path.
+	Java 17 must be installed and in your system path.
 	
 	Paths of images resources and files loaded in user-made applications are relative to the current directory of the jar; this is a compatibility issue currently since earlier versions of Basic4GL find resources relative to the source code file
 	Resources will need to be manually added to exported applications at this time; simply copy the files to the directory where the output jar is located, maintaining their path relative to the jar.
@@ -27,6 +27,9 @@
 ================================================
 	Change Log
 ================================================
+0.5.0   - Implemented sound library
+        - Java 17 now embedded
+
 0.4.1   - Updated LWJGL to stable version 3.3.1
         - Added LWJGL natives for macOS arm64, Linux arm32, Linux arm64, Windows x86, and Windows arm64
         - Added Mac shortcut keys
