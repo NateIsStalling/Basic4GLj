@@ -32,7 +32,7 @@ public class RunHandler {
         }
 
         try {
-            Path tempFolder = Files.createDirectories(Paths.get("temp"));
+            Path tempFolder = Paths.get(System.getProperty("java.io.tmpdir"));//Files.createDirectories(Paths.get("temp"));
             File vm = File.createTempFile("basicvm-", "", tempFolder.toFile());
             File config = File.createTempFile("basicconfig-", "", tempFolder.toFile());
             File lineMapping = File.createTempFile("basiclinemapping-", "", tempFolder.toFile());
