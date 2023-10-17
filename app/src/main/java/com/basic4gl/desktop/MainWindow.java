@@ -161,8 +161,14 @@ public class MainWindow implements
     static String debugServerJarPath;
     static String libraryJarPath;
 
+    static String applicationStoragePath;
 
     public static void main(String[] args) {
+        // Location to store logs
+        applicationStoragePath = System.getProperty("user.home") +
+            System.getProperty("file.separator") +
+            BuildInfo.APPLICATION_NAME;
+
         if (args.length >= 2) {
             // for debugging; set by
             libraryJarPath = args[0];
@@ -177,8 +183,24 @@ public class MainWindow implements
         System.setProperty("apple.awt.application.name", "Basic4GLj" );
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Basic4GLj");
 
-
         FlatLightLaf.setup();
+
+        PrintStream out = null;
+        try {
+            String logFilePath = new File(applicationStoragePath, "Basic4GLj.log").getAbsolutePath();
+
+            File file = new File(logFilePath);
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+            out = new PrintStream(new FileOutputStream(file.getAbsolutePath(), true), true);
+            System.setOut(out);
+            System.setErr(out);
+        } catch (IOException e) {
+            System.err.println("Unable to log to file");
+            e.printStackTrace();
+        }
 
         new MainWindow();
     }
