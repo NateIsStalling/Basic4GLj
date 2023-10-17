@@ -18,3 +18,17 @@ repositories {
 dependencies {
     testImplementation 'junit:junit:4.12'
 }
+
+// prepare input directory for jpackage distribution builds
+tasks.register('copyJarsForJPackage', Copy) {
+    dependsOn 'build'
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from project(":app").layout.buildDirectory.dir("libs")
+    into layout.buildDir.dir("libs")
+    from project(":library").layout.buildDirectory.dir("libs")
+    into layout.buildDir.dir("libs")
+    from project(":debugServer").layout.buildDirectory.dir("libs")
+    into layout.buildDir.dir("libs")
+}
