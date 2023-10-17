@@ -158,9 +158,8 @@ public class MainWindow implements
     private boolean mDelayScreenSwitch = false;
 
     // TODO create config file
-    static String debugServerJarPath;
-    static String libraryJarPath;
-
+    static String debugServerBinPath;
+    static String outputBinPath;
     static String applicationStoragePath;
 
     public static void main(String[] args) {
@@ -170,13 +169,20 @@ public class MainWindow implements
             BuildInfo.APPLICATION_NAME;
 
         if (args.length >= 2) {
-            // for debugging; set by
-            libraryJarPath = args[0];
-            debugServerJarPath = args[1];
+            // for debugging; set by gradle debugAll
+            outputBinPath = args[0];
+            debugServerBinPath = args[1];
+        } else if (System.getProperty("jpackage.app-path") != null) {
+            // app was built with jpackage; the output window and debug server binaries should be bundled with it
+            String appPath = System.getProperty("jpackage.app-path");
+            File appDirectory = new File(appPath).getParentFile();
+            // TODO these should NOT be hardcoded; figure out how to generate some appconfig.json with builds to include these as config settings
+            outputBinPath = new File(appDirectory, "Basic4GLj-Output").getAbsolutePath();
+            debugServerBinPath = new File(appDirectory, "Basic4GLj-DebugServer").getAbsolutePath();
         } else {
             // TODO these should NOT be hardcoded; figure out how to generate some appconfig.json with builds to include these as config settings
-            libraryJarPath = "lib/library-1.0-SNAPSHOT.jar";
-            debugServerJarPath = "lib/debugServer-1.0-SNAPSHOT.jar";
+            outputBinPath = "lib/library-1.0-SNAPSHOT.jar";
+            debugServerBinPath = "lib/debugServer-1.0-SNAPSHOT.jar";
         }
 
         System.setProperty("apple.laf.useScreenMenuBar", "true");
@@ -590,7 +596,7 @@ public class MainWindow implements
         Debugger debugger = new Debugger(preprocessor.getLineNumberMap());
         TomVM vm = new TomVM(debugger);
         TomBasicCompiler comp = new TomBasicCompiler(vm);
-        mEditor = new BasicEditor(libraryJarPath, mFileManager, this, preprocessor, debugger, comp);
+        mEditor = new BasicEditor(outputBinPath, mFileManager, this, preprocessor, debugger, comp);
 
 
         //TODO Confirm this doesn't break if app is ever signed
@@ -615,7 +621,7 @@ public class MainWindow implements
 
         // Warm up the debug server
         DebugServerFactory.startDebugServer(
-            debugServerJarPath,
+            debugServerBinPath,
             DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
 
         // Display the window.

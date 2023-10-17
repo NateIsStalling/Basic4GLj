@@ -6,7 +6,6 @@ import com.basic4gl.lib.util.Library;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -22,7 +21,7 @@ public class RunHandler {
         mPreprocessor = preprocessor;
     }
 
-    public void launchRemote(Library builder, String currentDirectory, String libraryPath) {
+    public void launchRemote(Library builder, String currentDirectory, String libraryBinPath) {
 
         //TODO 12/2020 replacing Continue();
 
@@ -58,45 +57,12 @@ public class RunHandler {
                 e.printStackTrace();
             }
 
-            // TODO not sure how to cancel any suspended java apps that fail to connect to a debugger yet
-            final String jvmDebugSuspend = "n";//"y"; // y/n whether the JVM should suspend and wait for a debugger to attach or not
-            final String jvmDebugPort = "8080";
-            final String jvmDebugArgs = "-agentlib:jdwp=transport=dt_socket," +
-                    "address=" + jvmDebugPort + "," +
-                    "server=y," +
-                    "suspend=" + jvmDebugSuspend;
-
-            final String[] jvmAdditionalArgs = {
-                "-XstartOnFirstThread" // needed for GLFW
-            };
-
-            final String[] runnerArgs = new String[] {
-                vm.getAbsolutePath(),
-                config.getAbsolutePath(),
-                lineMapping.getAbsolutePath(),
-                currentDirectory,
-                DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT
-            };
-
-            final String execCommand = "java " + jvmDebugArgs
-                    + " " + jvmAdditionalArgs
-                    + " -jar \"" + libraryPath + "\""
-                    + " " + String.join(" ", runnerArgs);
-
-            final String[] commandArgs = new String[] {
-                "java",
-                jvmDebugArgs,
-                //TODO make this configurable
-                "-XstartOnFirstThread", // needed for GLFW
-                "-jar",
-                libraryPath,
-                //Runner args:
-                vm.getAbsolutePath(),
-                config.getAbsolutePath(),
-                lineMapping.getAbsolutePath(),
-                currentDirectory,
-                DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT
-            };
+            String[] commandArgs = buildCommandArgs(
+                    currentDirectory,
+                    libraryBinPath,
+                    vm.getAbsolutePath(),
+                    config.getAbsolutePath(),
+                    lineMapping.getAbsolutePath());
 
             // Start output window
             final Process process = new ProcessBuilder(commandArgs).start();
@@ -146,5 +112,50 @@ public class RunHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String[] buildCommandArgs(
+            String currentDirectory,
+            String libraryBinPath,
+            String vmPath,
+            String configPath,
+            String lineMappingPath) {
+
+        // TODO not sure how to cancel any suspended java apps that fail to connect to a debugger yet
+        final String jvmDebugSuspend = "n";//"y"; // y/n whether the JVM should suspend and wait for a debugger to attach or not
+        final String jvmDebugPort = "8080";
+        final String jvmDebugArgs = "-agentlib:jdwp=transport=dt_socket," +
+                "address=" + jvmDebugPort + "," +
+                "server=y," +
+                "suspend=" + jvmDebugSuspend;
+
+        // Output window is being run as a java jar file
+        if (libraryBinPath.endsWith(".jar")) {
+            String[] commandArgs = new String[] {
+                    "java",
+                    jvmDebugArgs,
+                    //TODO make this configurable
+                    "-XstartOnFirstThread", // needed for GLFW
+                    "-jar",
+                    libraryBinPath,
+                    //Runner args:
+                    vmPath,
+                    configPath,
+                    lineMappingPath,
+                    currentDirectory,
+                    DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT
+            };
+        }
+
+        // Output window is an executable binary; java parameters are not required
+        return new String[] {
+                libraryBinPath,
+                //Runner args:
+                vmPath,
+                configPath,
+                lineMappingPath,
+                currentDirectory,
+                DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT
+        };
     }
 }
