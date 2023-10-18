@@ -28,9 +28,9 @@ jobs:
         run: |
           gradle -v
           gradle build copyJarsForJPackage
-          # Create app-image to allow modifying app package contents before creating installer
+          echo "Create app-image"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-app-image.cfg" --icon "icons/icon.png"
-          # Create native installer
+          echo "Create native installer"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-linux.cfg"
 
       # SAVE INSTALLER
@@ -65,9 +65,9 @@ jobs:
         run: |
           gradle -v
           gradle build copyJarsForJPackage
-          # Create app-image to allow modifying app package contents before creating installer
+          echo "Create app-image"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-app-image.cfg" --icon "icons/icon.ico"
-          # Create native installer
+          echo "Create native installer"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-windows.cfg"
 
       # SAVE INSTALLER
@@ -101,9 +101,9 @@ jobs:
         run: |
           gradle -v
           gradle build copyJarsForJPackage
-          # Create app-image to allow modifying app package contents before creating installer
+          echo "Create app-image"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-app-image.cfg" --icon "icons/icon.icns"
-          # Create native installer
+          echo "Create native installer"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-mac.cfg"
 
       # SAVE INSTALLER
