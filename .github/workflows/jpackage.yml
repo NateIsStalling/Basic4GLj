@@ -8,7 +8,6 @@ jobs:
     name: Build Installer on Linux
     runs-on: ubuntu-latest
     steps:
-
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
@@ -19,7 +18,7 @@ jobs:
         name: Setup JDK
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: "temurin"
           java-version: 17
 
       # BUILD FOR DISTRIBUTION
@@ -28,9 +27,9 @@ jobs:
         run: |
           gradle -v
           gradle build copyJarsForJPackage
-          # Create app-image to allow modifying app package contents before creating installer
+          echo "Create app-image"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-app-image.cfg" --icon "icons/icon.png"
-          # Create native installer
+          echo "Create native installer"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-linux.cfg"
 
       # SAVE INSTALLER
@@ -42,12 +41,10 @@ jobs:
           name: linux-installer
           retention-days: 1
 
-
   build-windows-installer:
     name: Build Installer on Windows
     runs-on: windows-latest
     steps:
-
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
@@ -56,7 +53,7 @@ jobs:
         name: Setup JDK
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: "temurin"
           java-version: 17
 
       # BUILD FOR DISTRIBUTION
@@ -65,9 +62,9 @@ jobs:
         run: |
           gradle -v
           gradle build copyJarsForJPackage
-          # Create app-image to allow modifying app package contents before creating installer
+          echo "Create app-image"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-app-image.cfg" --icon "icons/icon.ico"
-          # Create native installer
+          echo "Create native installer"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-windows.cfg"
 
       # SAVE INSTALLER
@@ -83,7 +80,6 @@ jobs:
     name: Build Installer on MacOS
     runs-on: macos-latest
     steps:
-
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
@@ -92,7 +88,7 @@ jobs:
         name: Setup JDK
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: "temurin"
           java-version: 17
 
       # BUILD FOR DISTRIBUTION
@@ -101,9 +97,9 @@ jobs:
         run: |
           gradle -v
           gradle build copyJarsForJPackage
-          # Create app-image to allow modifying app package contents before creating installer
+          echo "Create app-image"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-app-image.cfg" --icon "icons/icon.icns"
-          # Create native installer
+          echo "Create native installer"
           jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-mac.cfg"
 
       # SAVE INSTALLER
