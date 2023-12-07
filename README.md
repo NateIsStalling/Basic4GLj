@@ -1,6 +1,8 @@
 # Basic4GLj
 
-Basic4GL for Java - BASIC language compiler and IDE
+_Basic4GL for Java - BASIC language compiler and IDE_
+
+![heightmap-demo](https://github.com/NateIsStalling/Basic4GLj/assets/14190443/a9a0a90b-152d-4395-80f8-3f35690f100d)
 
 ---
 
