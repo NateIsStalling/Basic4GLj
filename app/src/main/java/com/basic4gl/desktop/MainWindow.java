@@ -177,8 +177,8 @@ public class MainWindow implements
             String appPath = System.getProperty("jpackage.app-path");
             File appDirectory = new File(appPath).getParentFile();
             // TODO these should NOT be hardcoded; figure out how to generate some appconfig.json with builds to include these as config settings
-            outputBinPath = new File(appDirectory, "Basic4GLj-Output").getAbsolutePath();
-            debugServerBinPath = new File(appDirectory, "Basic4GLj-DebugServer").getAbsolutePath();
+            outputBinPath = new File(appDirectory, "Basic4GLjOutput").getAbsolutePath();
+            debugServerBinPath = new File(appDirectory, "Basic4GLjDebugServer").getAbsolutePath();
         } else {
             // TODO these should NOT be hardcoded; figure out how to generate some appconfig.json with builds to include these as config settings
             outputBinPath = "lib/library-1.0-SNAPSHOT.jar";
