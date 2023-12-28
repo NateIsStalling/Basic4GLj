@@ -19,18 +19,13 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: 17
+          java-version: 21
 
       # BUILD FOR DISTRIBUTION
       - id: build
         name: Build distribution
         run: |
-          gradle -v
-          gradle build copyJarsForJPackage
-          echo "Create app-image"
-          jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-app-image.cfg" --icon "icons/icon.png"
-          echo "Create native installer"
-          jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-linux.cfg"
+          sh build-linux-release.sh
 
       # SAVE INSTALLER
       - id: upload-installer
@@ -54,18 +49,13 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: 17
+          java-version: 21
 
       # BUILD FOR DISTRIBUTION
       - id: build
         name: Build distribution
         run: |
-          gradle -v
-          gradle build copyJarsForJPackage
-          echo "Create app-image"
-          jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-app-image.cfg" --icon "icons/icon.ico"
-          echo "Create native installer"
-          jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-windows.cfg"
+          sh build-windows-release.sh
 
       # SAVE INSTALLER
       - id: upload-installer
@@ -89,18 +79,13 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: 17
+          java-version: 21
 
       # BUILD FOR DISTRIBUTION
       - id: build
         name: Build distribution
         run: |
-          gradle -v
-          gradle build copyJarsForJPackage
-          echo "Create app-image"
-          jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-app-image.cfg" --icon "icons/icon.icns"
-          echo "Create native installer"
-          jpackage --verbose "@jpackage/jpackage.cfg" "@jpackage/jpackage-mac.cfg"
+          sh build-mac-release.sh
 
       # SAVE INSTALLER
       - id: upload-installer

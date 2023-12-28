@@ -33,10 +33,17 @@ fi
 ./gradlew -v
 ./gradlew clean build copyJarsForJPackage
 
-echo "Create app-image"
 # TODO having trouble with signing..
+echo "Create app-image"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-app-image-mac.cfg" \
+  --icon "icons/icon.icns" \
+  --app-content embedded.provisionprofile \
+  --mac-sign \
+  --mac-app-store \
+  --mac-package-signing-prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" \
+  --mac-signing-key-user-name "$MAC_SIGNING_KEY_USER_NAME" \
+  --mac-entitlements sandbox.plist \
   --verbose
 
 echo "Create native installer"
