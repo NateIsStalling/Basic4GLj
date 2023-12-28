@@ -3,6 +3,9 @@ name: Build Installers
 on:
   workflow_dispatch:
 
+env:
+  APP_RELEASE_VERSION: ${{ vars.APP_RELEASE_VERSION }}
+
 jobs:
   build-linux-installer:
     name: Build Installer on Linux
