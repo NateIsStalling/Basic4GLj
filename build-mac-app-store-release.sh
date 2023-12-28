@@ -37,8 +37,9 @@ fi
 echo "Create app-image"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-app-image-mac.cfg" \
-  --icon "icons/icon.icns" \
+  --app-version "$APP_RELEASE_VERSION" \
   --app-content embedded.provisionprofile \
+  --icon "icons/icon.icns" \
   --mac-sign \
   --mac-app-store \
   --mac-package-signing-prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" \

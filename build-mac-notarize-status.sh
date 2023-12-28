@@ -20,6 +20,6 @@ else
   echo 'Local .env file not found'
 fi
 
- xcrun altool --notarization-info "$MAC_SIGNING_NOTARIZATION_USER_NAME" \
+ xcrun altool --notarization-info "$MAC_SIGNING_NOTARIZATION_UUID" \
   --username "$MAC_SIGNING_NOTARIZATION_USER_NAME" \
   --password "$MAC_SIGNING_NOTARIZATION_PASSWORD"

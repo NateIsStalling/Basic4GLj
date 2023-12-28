@@ -20,6 +20,7 @@ fi
 echo "Create app-image"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-app-image.cfg" \
+  --app-version "$APP_RELEASE_VERSION" \
   --icon "icons/icon.png" \
   --verbose
 
