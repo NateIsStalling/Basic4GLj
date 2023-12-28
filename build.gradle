@@ -22,6 +22,7 @@ dependencies {
 // prepare input directory for jpackage distribution builds
 tasks.register('copyJarsForJPackage', Copy) {
     dependsOn 'build'
+    dependsOn ':app:jar'
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
