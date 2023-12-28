@@ -3,6 +3,10 @@ plugins {
 }
 apply plugin: "java"
 
+configurations {
+    release.extendsFrom configurations.default
+}
+
 ext {
     javaMainClass = "com.basic4gl.desktop.MainWindow"
 }
@@ -54,12 +58,12 @@ dependencies {
 jar {
     dependsOn (":debugServer:jar")
     dependsOn (":library:jar")
-    from { configurations.default.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.release.collect { it.isDirectory() ? it : zipTree(it) } }
     from sourceSets.test.output
     manifest {
         attributes (
             'Main-Class': javaMainClass,
-            'Class-Path': configurations.default.files.collect { it.name }.join(' ')
+            'Class-Path': configurations.release.files.collect { it.name }.join(' ')
         )
     }
 

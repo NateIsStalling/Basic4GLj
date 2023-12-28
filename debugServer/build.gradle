@@ -9,6 +9,10 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    release.extendsFrom configurations.default
+}
+
 dependencies {
     implementation project(":compiler")
     implementation project(":debugProtocol")
@@ -29,16 +33,16 @@ dependencies {
 
 task copyToLib( type: Copy ) {
     into "$buildDir/libs/lib"
-    from configurations.default
+    from configurations.release
 }
 
 jar {
     dependsOn copyToLib
 
-    def classPath = configurations.default.files.collect { it.name }.join(' ')
+    def classPath = configurations.release.files.collect { it.name }.join(' ')
 
     from {
-        (configurations.default).collect {
+        (configurations.release).collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }
