@@ -5,11 +5,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class DebugServerFactory {
-    public static void startDebugServer(String debugServerJarPath, String port) {
+    public static void startDebugServer(String debugServerBinPath, String port) {
         try {
-            final String[] commandArgs = new String[] {
-                "java", "-jar", debugServerJarPath, port
-            };
+            System.out.println(debugServerBinPath);
+            String[] commandArgs = buildCommandArgs(debugServerBinPath, port);
 
             // Start output window
             final Process process = new ProcessBuilder(commandArgs).start();
@@ -59,5 +58,20 @@ public class DebugServerFactory {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String[] buildCommandArgs(String debugServerBinPath, String port) {
+        // Run debug server with java if path is a jar file
+        if (debugServerBinPath.endsWith(".jar")) {
+            return new String[] {
+                "java", "-jar", debugServerBinPath, port
+            };
+        }
+
+        // Debug server is a binary executable; java parameters are not required
+        return new String[] {
+            debugServerBinPath, port
+        };
+
     }
 }
