@@ -17,7 +17,7 @@ fi
 ./gradlew -v
 ./gradlew clean build copyJarsForJPackage
 
-echo "Create app-image"
+echo "Create app-image Version '$APP_RELEASE_VERSION'"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-app-image.cfg" \
   --app-version "$APP_RELEASE_VERSION" \

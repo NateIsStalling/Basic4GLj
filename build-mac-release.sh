@@ -22,7 +22,7 @@ fi
 ./gradlew clean build copyJarsForJPackage
 
 # TODO having trouble with signing..
-echo "Create app-image"
+echo "Create app-image Version '$APP_RELEASE_VERSION'"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-app-image-mac.cfg" \
   --icon "icons/icon.icns" \
