@@ -27,4 +27,5 @@ jpackage "@jpackage/jpackage.cfg" \
 echo "Create native installer"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-linux.cfg" \
+  --app-version "$APP_RELEASE_VERSION" \
   --verbose

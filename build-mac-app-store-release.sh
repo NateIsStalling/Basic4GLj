@@ -50,6 +50,7 @@ jpackage "@jpackage/jpackage.cfg" \
 echo "Create native installer"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-mac-app-store.cfg" \
+  --app-version "$APP_RELEASE_VERSION" \
   --mac-sign \
   --mac-app-store \
   --mac-package-signing-prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" \
