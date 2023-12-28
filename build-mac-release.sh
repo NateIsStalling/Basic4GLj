@@ -25,10 +25,12 @@ fi
 echo "Create app-image Version '$APP_RELEASE_VERSION'"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-app-image-mac.cfg" \
+  --app-version "$APP_RELEASE_VERSION" \
   --icon "icons/icon.icns" \
   --verbose
 
 echo "Create native installer"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-mac.cfg" \
+  --app-version "$APP_RELEASE_VERSION" \
   --verbose
