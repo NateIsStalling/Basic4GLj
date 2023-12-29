@@ -132,6 +132,30 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 			? args[4]
 			: null;
 
+		// TODO add optional parameter for Location to store logs; using debugServerPort as a debug mode flag
+		if (debugServerPort != null) {
+			String applicationStoragePath = System.getProperty("user.home") +
+					System.getProperty("file.separator") +
+					"Basic4GLj";
+
+			PrintStream out = null;
+			try {
+				String logFilePath = new File(applicationStoragePath, "output.log").getAbsolutePath();
+
+				File file = new File(logFilePath);
+				if (!file.exists()) {
+					file.getParentFile().mkdirs();
+					file.createNewFile();
+				}
+				out = new PrintStream(new FileOutputStream(file.getAbsolutePath(), true), true);
+				System.setOut(out);
+				System.setErr(out);
+			} catch (IOException e) {
+				System.err.println("Unable to log to file");
+				e.printStackTrace();
+			}
+		}
+
 		//JOptionPane.showMessageDialog(null, "Waiting...");
 		instance = new GLTextGridWindow();
 
