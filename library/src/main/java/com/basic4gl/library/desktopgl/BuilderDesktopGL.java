@@ -143,7 +143,7 @@ public class BuilderDesktopGL extends Builder {
         output.putNextEntry(zipEntry);
         output.write(String.format(
                 "# Run %1$s; requires Java be installed and in your system path\n" +
-                        "# -XstartOnFirstThread is required by LWJGL for window to display\n" +
+                        "# -XstartOnFirstThread is required by LWJGL for window to display on Mac OS\n" +
                         "java -XstartOnFirstThread -jar \"%1$s\"\n",
                 jar.getName()).getBytes(StandardCharsets.UTF_8));
         output.closeEntry();
@@ -152,8 +152,9 @@ public class BuilderDesktopGL extends Builder {
         zipEntry.setTime(System.currentTimeMillis());
         output.putNextEntry(zipEntry);
         output.write(String.format(
-                "Execute launcher.bat to run %1$s, or open the jar from the terminal with the following argument: \n" +
-                        "-XstartOnFirstThread",
+                "Execute launcher.bat to run %1$s on Windows.\n" +
+                    "To run %1$s on Mac OS, execute launcher-macos.sh or run the jar with the following additional Java option from the terminal: \n" +
+                    "-XstartOnFirstThread",
                 jar.getName()).getBytes(StandardCharsets.UTF_8));
         output.closeEntry();
         try {

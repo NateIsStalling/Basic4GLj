@@ -4,10 +4,13 @@ import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class RunHandler {
 
@@ -123,32 +126,13 @@ public class RunHandler {
 
         // TODO not sure how to cancel any suspended java apps that fail to connect to a debugger yet
         final String jvmDebugSuspend = "n";//"y"; // y/n whether the JVM should suspend and wait for a debugger to attach or not
-        final String jvmDebugPort = "8080";
+        final String jvmDebugPort = "8080"; //TODO make this configurable
         final String jvmDebugArgs = "-agentlib:jdwp=transport=dt_socket," +
                 "address=" + jvmDebugPort + "," +
                 "server=y," +
                 "suspend=" + jvmDebugSuspend;
 
-        // Output window is being run as a java jar file
-        if (libraryBinPath.endsWith(".jar")) {
-            String[] commandArgs = new String[] {
-                    "java",
-                    jvmDebugArgs,
-                    //TODO make this configurable
-                    "-XstartOnFirstThread", // needed for GLFW
-                    "-jar",
-                    libraryBinPath,
-                    //Runner args:
-                    vmPath,
-                    configPath,
-                    lineMappingPath,
-                    currentDirectory,
-                    DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT
-            };
-        }
-
-        // Output window is an executable binary; java parameters are not required
-        return new String[] {
+        final String[] runnerArgs = new String[] {
                 libraryBinPath,
                 //Runner args:
                 vmPath,
@@ -157,5 +141,26 @@ public class RunHandler {
                 currentDirectory,
                 DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT
         };
+
+        // Output window is being run as a java jar file
+        if (libraryBinPath.endsWith(".jar")) {
+            ArrayList<String> jvmArgs = new ArrayList<String> (Arrays.asList(
+                    "java",
+                    jvmDebugArgs //TODO make this configurable
+            ));
+
+            if (SystemUtils.IS_OS_MAC) {
+                jvmArgs.add("-XstartOnFirstThread"); // needed for GLFW
+            }
+
+            // libraryBinPath included in runnerArgs is expected to be a .jar file as the first value
+            jvmArgs.add("-jar");
+            jvmArgs.addAll(Arrays.asList(runnerArgs));
+
+            return jvmArgs.toArray(new String[0]);
+        }
+
+        // Output window is an executable binary; java parameters are not required
+        return runnerArgs;
     }
 }

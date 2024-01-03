@@ -47,6 +47,9 @@ dependencies {
     // for FlatDesktop Java 8 backports
     implementation 'com.formdev:flatlaf-extras:3.0'
 
+    // for IS_OS_MAC flag for OS specific behavior
+    implementation("org.apache.commons:commons-lang3:3.14.0")
+
     // for debugger
     implementation ('com.google.code.gson:gson:2.10')
     implementation ('javax.websocket:javax.websocket-api:1.0')
