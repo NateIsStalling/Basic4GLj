@@ -432,7 +432,8 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         } catch (Exception e) {
             e.printStackTrace();
         }
-        for (i = 0; i < GL11.GL_MAX_CLIP_PLANES; i++) {
+        int glMaxClipPlanes = GL11.glGetInteger(GL11.GL_MAX_CLIP_PLANES);
+        for (i = 0; i < glMaxClipPlanes; i++) {
             try {
                 GL11.glDisable(GL11.GL_CLIP_PLANE0 + i);
             } catch (Exception e) {
