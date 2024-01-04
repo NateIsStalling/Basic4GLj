@@ -150,8 +150,28 @@ public class GLTextGrid extends HasErrorState {
         // Create perspective transform
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        //gluOrtho2D(0, 0, 1, 1); //Replaced with glOrtho
-        glOrtho(0, 0, 1, 1, -1, 1);
+
+        // PORTING NOTES: Basic4GL 2.5 source uses gluOrtho2D(0, 0, 1, 1) here when creating the perspective transform.
+        // gluOrtho2D would normally be replaced by glOrtho(0, 0, 1, 1, -1, 1) here for LWJGL 3
+        // based on the C specifications below,
+        // but this appears to cause text display issues on Windows 10/11 with a GL_INVALID_VALUE error.
+        // Additionally, running the original Basic4GL 2.6 exe on Windows 10/11 appears to replicate this error.
+        // For this port, the error appears to be corrected by excluding glOrtho here,
+        // but this change may require additional testing for any unexpected behavior -
+        // no issues are anticipated since glLoadIdentity() and saveGLState()
+        // are called beforehand here and in the original source.
+        // C specifications:
+        // - GL_INVALID_VALUE is generated if left = right, or bottom = top, or near = far.
+        // - void gluOrtho2D(GLdouble left,
+        // 	GLdouble right,
+        // 	GLdouble bottom,
+        // 	GLdouble top);
+        // - void glOrtho(GLdouble left,
+        // 	GLdouble right,
+        // 	GLdouble bottom,
+        // 	GLdouble top,
+        // 	GLdouble nearVal,
+        // 	GLdouble farVal);
 
         // Clear model view matrix (to identity)
         glMatrixMode(GL_MODELVIEW);
