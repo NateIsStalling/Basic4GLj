@@ -28,4 +28,5 @@ echo "Create native installer"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-windows.cfg" \
   --app-version "$APP_RELEASE_VERSION" \
+  --win-upgrade-uuid "$WIN_UPGRADE_UUID" \
   --verbose
