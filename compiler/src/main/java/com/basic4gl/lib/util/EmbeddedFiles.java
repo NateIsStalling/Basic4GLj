@@ -139,7 +139,16 @@ public class EmbeddedFiles {
         try {
             // TODO keep cache of temp filenames
             URL resource = getResource(filename);
-            file = File.createTempFile("temp", new File(filename).getName(), new File(mParent));
+            File tempDirectory = mParent != null
+                    ? new File(mParent)
+                    : null;
+
+            if (tempDirectory == null || !tempDirectory.canWrite()) {
+                // default to system temp dir; installation dir may be read-only
+                tempDirectory = new File(System.getProperty("java.io.tmpdir"));
+            }
+
+            file = File.createTempFile("temp", new File(filename).getName(), tempDirectory);
             System.out.println("file: " + filename);
             System.out.println("fn: " +  new File(filename).getName());
             System.out.println("Created temp file: " + file.getAbsolutePath());
