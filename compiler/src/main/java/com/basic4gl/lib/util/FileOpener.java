@@ -33,7 +33,8 @@ public class FileOpener extends HasErrorState {
 
             if (tempDirectory == null || !tempDirectory.canWrite()) {
                 // default to system temp dir; installation dir may be read-only
-                tempDirectory = new File(System.getProperty("java.io.tmpdir"));
+                Path tempFolderPath = Paths.get(System.getProperty("java.io.tmpdir"));
+                tempDirectory = tempFolderPath.toFile();
             }
 
             file = File.createTempFile("temp", new File(filename).getName(), tempDirectory);
