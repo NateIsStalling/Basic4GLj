@@ -35,7 +35,7 @@ jobs:
         name: Upload installer
         uses: actions/upload-artifact@v3
         with:
-          path: ./build/distributions/basic4glj_${{ vars.APP_RELEASE_VERSION }}_amd64.deb
+          path: ./build/distributions/basic4glj_${{ vars.APP_RELEASE_VERSION }}-1_amd64.deb
           name: linux-installer
           retention-days: 1
 
