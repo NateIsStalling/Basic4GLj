@@ -22,7 +22,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: 21
+          java-version: 17
 
       # BUILD FOR DISTRIBUTION
       - id: build
@@ -54,7 +54,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: 21
+          java-version: 17
 
       # BUILD FOR DISTRIBUTION
       - id: build
@@ -84,7 +84,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: 21
+          java-version: 17
 
       # BUILD FOR DISTRIBUTION
       - id: build
