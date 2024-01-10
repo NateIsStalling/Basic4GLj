@@ -8,7 +8,7 @@ _Basic4GL for Java - BASIC language compiler and IDE_
 
 This repository contains the Java port of Basic4GL, a BASIC programming language that features OpenGL functionality.
 
-Basic4GLj features Windows and Mac OS support, requiring Java 17, and uses LWJGL to provide support for OpenGL functions.
+Basic4GLj features Windows and Mac OS support, requiring Java 19, and uses LWJGL to provide support for OpenGL functions.
 
 Basic4GLj is licensed under a New BSD license - please see the LICENSES folder for more details and licenses for third-party libraries used.
 
@@ -22,7 +22,7 @@ A `/samples` folder with example programs is included with each release that can
 
 ### Building the Application
 
-This project requires Java 17 and uses Gradle for its builds.
+This project requires Java 19 and uses Gradle for its builds.
 
 > ./gradlew :app:build
 
