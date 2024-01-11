@@ -9,6 +9,7 @@ import org.lwjgl.BufferUtils;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.glGetError;
 
 import org.lwjgl.opengl.*;
 
@@ -117,22 +118,32 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     boolean m_showingCursor;
     ResetGLModeType m_resetGLMode;
 
-    void IncStart() {
+    void incrementKeyBufferStart() {
         m_bufStart = (++m_bufStart) % GLWINDOWKEYBUFFER;
     }
 
-    void IncEnd() {
+    void incrementKeyBufferEnd() {
         m_bufEnd = (++m_bufEnd) % GLWINDOWKEYBUFFER;
     }
 
-    void IncScanStart() {
+    void incrementScanBufferStart() {
         m_scanBufStart = (++m_scanBufStart) % GLWINDOWKEYBUFFER;
     }
 
-    void IncScanEnd() {
+    void incrementScanBufferEnd() {
         m_scanBufEnd = (++m_scanBufEnd) % GLWINDOWKEYBUFFER;
     }
 
+    void addToCharBuffer(char key) {
+        int end = m_bufEnd;
+        incrementKeyBufferEnd();                    // Check for room in buffer
+
+        if (m_bufEnd != m_bufStart) {
+            m_keyBuffer[end] = key;
+        } else {
+            m_bufEnd = end;           // No room. Restore buffer pointers
+        }
+    }
     void PositionMouse(){
         //TODO without AWT!
 //        try {
@@ -142,9 +153,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 //        }
     }
 
-    void BufferScanKey(int key){
+    void bufferScanKey(int key){
         int end = m_scanBufEnd;
-        IncScanEnd ();
+        incrementScanBufferEnd();
         if (m_scanBufEnd != m_scanBufStart) {
             m_scanKeyBuffer [end] = key;
         } else {
@@ -262,7 +273,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         m_resetGLMode = resetGLMode;
 
         // Null default values
-        // If constructor is aborted, then destructor wont try to deallocate garbage handles.
+        // If constructor is aborted, then destructor won't try to deallocate garbage handles.
         m_active = false;
         m_focused = false;
         m_visible = false;
@@ -274,7 +285,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         m_showingCursor = true;
 
         // Clear key buffers
-        ClearKeyBuffers();
+        clearKeyBuffers();
 
         // Defaults
         m_fov = 60.0;
@@ -1455,7 +1466,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
         // Extract and return it
         int result = m_keyBuffer [m_bufStart];
-        IncStart ();
+        incrementKeyBufferStart();
         return result;
     }
     public int getScanKey()
@@ -1471,10 +1482,10 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
         // Extract and return it
         int result = m_scanKeyBuffer [m_scanBufStart];
-        IncScanStart ();
+        incrementScanBufferStart();
         return result;
     }
-    public void ClearKeyBuffers() {
+    public void clearKeyBuffers() {
 
         // Clear key states
         for (int i = 0; i < m_keyDown.length; i++)
@@ -1504,7 +1515,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
         // Add a keypress to buffer (if necessary)
         if (down && !wasDown) {
-            BufferScanKey (scanCode);
+            bufferScanKey(scanCode);
         }
 
         // Toggle key bitmask

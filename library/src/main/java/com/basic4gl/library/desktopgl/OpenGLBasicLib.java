@@ -71,7 +71,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     @Override
     public void init(TomVM vm) {
 
-        appWindow.ClearKeyBuffers();
+        appWindow.clearKeyBuffers();
 
 
         if (textures == null) {

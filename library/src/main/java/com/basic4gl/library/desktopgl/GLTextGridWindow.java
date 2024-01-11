@@ -886,7 +886,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 			System.out.println("destroy callbacks");
 			keyCallback.free();
 			charCallback.free();
-			ClearKeyBuffers();
+			clearKeyBuffers();
 
 			// Terminate GLFW and release the GLFWerrorfun
 			System.out.println("glfwTerminate");
@@ -1028,7 +1028,14 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 							m_pausePressed = true;
 						} else {
 							m_keyDown [key] |= 1;
-							BufferScanKey ((char) key );
+							bufferScanKey((char) key );
+						}
+
+						// handle special keys for character buffer
+						if (key == GLFW_KEY_ENTER) {
+							addToCharBuffer((char) 0x0d);
+						} else if (key == GLFW_KEY_TAB) {
+							addToCharBuffer((char) 0x09);
 						}
 					} else if (action == GLFW_RELEASE){
 						m_keyDown [key] &= ~1;
@@ -1045,15 +1052,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 						m_closing = true;
 					}
 
-					int end = m_bufEnd;
-					IncEnd();                    // Check for room in buffer
-					if (m_bufEnd != m_bufStart) {
-						m_keyBuffer[end] = (char)codepoint;
-					} else {
-						m_bufEnd = end;           // No room. Restore buffer pointers
-					}
-
-
+					addToCharBuffer((char) codepoint);
 				}
 			});
 

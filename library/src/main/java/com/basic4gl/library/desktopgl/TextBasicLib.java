@@ -788,7 +788,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
         vm.getReg().setIntVal( Character.getNumericValue(TextBasicLib.appWindow.getScanKey ()));
     }}
     public static final class WrapClearKeys implements Function { public void run(TomVM vm) {
-        appWindow.ClearKeyBuffers ();
+        appWindow.clearKeyBuffers();
     }}
     public static final class WrapShowCursor implements Function { public void run(TomVM vm) { appText.ShowCursor (); redraw(); }}
     public static final class WrapHideCursor implements Function { public void run(TomVM vm) { appText.HideCursor (); redraw(); }}
