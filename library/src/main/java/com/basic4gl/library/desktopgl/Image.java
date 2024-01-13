@@ -1,11 +1,17 @@
 package com.basic4gl.library.desktopgl;
 
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.formats.pcx.PcxImageParser;
+import org.apache.commons.imaging.formats.pcx.PcxImagingParameters;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
+import java.awt.image.*;
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.List;
 
 import static org.lwjgl.stb.STBImage.stbi_failure_reason;
 import static org.lwjgl.stb.STBImage.stbi_load;
@@ -15,6 +21,8 @@ import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
  * Created by Nate on 11/4/2015.
  */
 public class Image {
+    private static final int PCX_BYTES_PER_PIXEL = 3; // PCX image parser does not support transparency; see PCXImageParser.getImageInfo()
+
     private ByteBuffer mData;
     private int mWidth, mHeight;
     private int mFormat;
@@ -24,20 +32,45 @@ public class Image {
         IntBuffer w = BufferUtils.createIntBuffer(1);
         IntBuffer h = BufferUtils.createIntBuffer(1);
         IntBuffer comp = BufferUtils.createIntBuffer(1);
-        File file = new File(filename);
-        if (file.exists()) {
-            mData = stbi_load(filename, w, h, comp, 0);
+        String errorMessage = "";
 
-            mWidth = w.get(0);
-            mHeight = h.get(0);
-            mBPP = comp.get(0);
+        File file = new File(filename);
+
+        if (file.exists()) {
+            // special handling for image formats not supported by STB
+            if (filename.endsWith(".pcx")) {
+                try {
+                    List<BufferedImage> imageList = new PcxImageParser().getAllBufferedImages(file);
+                    if (!imageList.isEmpty()) {
+                        BufferedImage image = imageList.get(0);
+
+                        loadFromBufferedImage(image, PCX_BYTES_PER_PIXEL);
+                    } else {
+                        errorMessage = "Unknown error";
+                    }
+                } catch (ImageReadException e) {
+                    errorMessage = e.getMessage();
+                } catch (IOException e) {
+                    errorMessage = e.getMessage();
+                }
+            } else {
+                mData = stbi_load(filename, w, h, comp, 0);
+
+                mWidth = w.get(0);
+                mHeight = h.get(0);
+                mBPP = comp.get(0);
+                if (mData == null) {
+                    errorMessage = stbi_failure_reason();
+                }
+            }
+
             mFormat = mBPP == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
 
             if (mData == null) {
                 System.out.println("Failed to load image: " + filename);
-                System.out.println(stbi_failure_reason());
+                System.out.println(errorMessage);
             } else {
-                //There's an issue with stbi_load loading images upside down
+                //There's an issue with loading images upside down
                 //So here we change the order of the bytes to flip the image that we just loaded
                 ByteBuffer temp = ByteBuffer.allocateDirect(mData.capacity());
                 mData.rewind();//copy from the beginning
@@ -112,5 +145,36 @@ public class Image {
         original.rewind();
         clone.flip();
         return clone;
+    }
+
+    /**
+     * @param image
+     * @param bpp Bytes per pixel - 4 for RGBA, 3 for RGB
+     */
+    private void loadFromBufferedImage(BufferedImage image, int bpp) {
+
+        int[] pixels = new int[image.getWidth() * image.getHeight()];
+        image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
+
+        mData = ByteBuffer.allocateDirect(image.getWidth() * image.getHeight() * bpp);
+
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int pixel = pixels[y * image.getWidth() + x];
+                mData.put((byte) ((pixel >> 16) & 0xFF));     // Red component
+                mData.put((byte) ((pixel >> 8) & 0xFF));      // Green component
+                mData.put((byte) (pixel & 0xFF));               // Blue component
+
+                if (bpp == 4) {
+                    mData.put((byte) ((pixel >> 24) & 0xFF));    // Alpha component. Only for RGBA
+                }
+            }
+        }
+
+        mData.flip();
+
+        mWidth = image.getWidth();
+        mHeight = image.getHeight();
+        mBPP = bpp;
     }
 }

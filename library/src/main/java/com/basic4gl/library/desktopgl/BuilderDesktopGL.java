@@ -182,6 +182,7 @@ public class BuilderDesktopGL extends Builder {
             files.add("com/basic4gl/util");
             files.add("com/basic4gl/runtime");
             files.add("paulscode"); // sound library
+            files.add("org/apache/commons/imaging"); // MD2 support
             files.add("org/lwjgl");
             //TODO this should only be added if target OS
             files.add("macos"); // lwjgl natives

@@ -27,6 +27,9 @@ dependencies {
     implementation ('org.eclipse.jetty.websocket:javax-websocket-client-impl:9.4.49.v20220914')
 
 
+    // for PCX image support
+    implementation("org.apache.commons:commons-imaging:1.0-alpha3")
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
