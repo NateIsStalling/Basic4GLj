@@ -519,7 +519,7 @@ public class ExportDialog {
         private boolean loadProgramIntoCompiler(){
             //TODO Get editor assigned as main file
             return mPreprocessor.preprocess(
-                    new EditorSourceFile(mFileEditors.get(0).editorPane, mFileEditors.get(0).getFilePath()),
+                    new EditorSourceFile(mFileEditors.get(0).getEditorPane(), mFileEditors.get(0).getFilePath()),
                     mComp.Parser());
         }
         private void loadParser(RSyntaxTextArea editorPane) // Load editor text into parser

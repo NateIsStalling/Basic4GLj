@@ -136,27 +136,27 @@ public class BasicEditor implements MainEditor,
 
         //Initialize highlighting
         //mKeywords = new HashMap<String,Color>();
-        BasicTokenMaker.mReservedWords.clear();
-        BasicTokenMaker.mFunctions.clear();
-        BasicTokenMaker.mConstants.clear();
-        BasicTokenMaker.mOperators.clear();
+        BasicTokenMaker.reservedWords.clear();
+        BasicTokenMaker.functions.clear();
+        BasicTokenMaker.constants.clear();
+        BasicTokenMaker.operators.clear();
         for (String s : mComp.getReservedWords()) {
-            BasicTokenMaker.mReservedWords.add(s);
+            BasicTokenMaker.reservedWords.add(s);
         }
 
         for (String s : mComp.getConstants().keySet()) {
-            BasicTokenMaker.mConstants.add(s);
+            BasicTokenMaker.constants.add(s);
         }
 
         for (String s : mComp.getFunctionIndex().keySet()) {
-            BasicTokenMaker.mFunctions.add(s);
+            BasicTokenMaker.functions.add(s);
         }
 
         for (String s : mComp.getBinaryOperators()) {
-            BasicTokenMaker.mOperators.add(s);
+            BasicTokenMaker.operators.add(s);
         }
         for (String s : mComp.getUnaryOperators()) {
-            BasicTokenMaker.mOperators.add(s);
+            BasicTokenMaker.operators.add(s);
         }
 
     }
@@ -519,8 +519,8 @@ public class BasicEditor implements MainEditor,
             // TODO handle setting breakpoints in onDebuggerInitialized callback
 
             // TODO separate breakpoints from file editor interfaces
-            for (int i = 0; i < mFileManager.mFileEditors.size(); i++) {
-                FileEditor editor = mFileManager.mFileEditors.get(i);
+            for (int i = 0; i < mFileManager.getFileEditors().size(); i++) {
+                FileEditor editor = mFileManager.getFileEditors().get(i);
                 mWorker.setBreakpoints(
                         editor.getFilePath(),
                         editor.getBreakpoints());

@@ -39,9 +39,9 @@ public class FileEditor implements SearchListener {
     private final ReplaceToolBar replaceToolBar;
     private final CollapsibleSectionPanel csp;
     private final RMultiHeaderScrollPane scrollPane;
-    public final RSyntaxTextArea editorPane;
+    private final RSyntaxTextArea editorPane;
 
-    //private Map<Integer, Object> mLineHighlights; //Highlight lines with breakpoints
+    //private Map<Integer, Object> lineHighlights; //Highlight lines with breakpoints
 
     private String fileName;    //Filename without path
     private String filePath;    //Full path including name
@@ -175,9 +175,9 @@ public class FileEditor implements SearchListener {
                             //TODO toggle highlighting breakpoints
                             /*
                             if (highlight)
-                                mLineHighlights.put(offs, editorPane.addLineHighlight(ble, new Color(255,0,0,128)));
+                                lineHighlights.put(offs, editorPane.addLineHighlight(ble, new Color(255,0,0,128)));
                             else
-                                editorPane.removeLineHighlight(mLineHighlights.get(ble));
+                                editorPane.removeLineHighlight(lineHighlights.get(ble));
                             */
                         } catch (BadLocationException var3) {
                             var3.printStackTrace();
@@ -634,12 +634,12 @@ public class FileEditor implements SearchListener {
             /*
             highlight = pane.getGutter().toggleBookmark(HEADER_BREAK_PT, line);
             if (highlight) {
-                mLineHighlights.put(line,
+                lineHighlights.put(line,
                         editorPane.addLineHighlight(line, new Color(255, 0, 0, 128)));
             }
             else {
-                editorPane.removeLineHighlight(mLineHighlights.get(line));
-                mLineHighlights.remove(line);
+                editorPane.removeLineHighlight(lineHighlights.get(line));
+                lineHighlights.remove(line);
             }
             */
             toggleBreakpointListener.onToggleBreakpoint(getFilePath(), line);
@@ -670,11 +670,31 @@ public class FileEditor implements SearchListener {
         return points;
     }
 
+    public JTextArea getEditorPane() {
+        return editorPane;
+    }
+
+    public boolean canRedo() {
+        return editorPane.canRedo();
+    }
+
+    public boolean canUndo() {
+        return editorPane.canUndo();
+    }
+
+    public void redoLastAction() {
+        editorPane.redoLastAction();
+    }
+
+    public void undoLastAction() {
+        editorPane.undoLastAction();
+    }
+
     /**
      * Toggles whether the current line has a bookmark.
      */
     public static class MultiHeaderToggleBreakPointAction extends RecordableTextAction {
-        private FileEditor fileEditor;
+        private final FileEditor fileEditor;
         public MultiHeaderToggleBreakPointAction(String name, FileEditor fileEditor) {
             super(name);
             this.fileEditor = fileEditor;
