@@ -139,7 +139,7 @@ public class FileManager implements IFileManager {
         }
     }
 
-    public void SetReadOnly(boolean readOnly) {
+    public void setReadOnly(boolean readOnly) {
         for (int i = 0; i < mFileEditors.size(); i++) {
             mFileEditors.get(i).editorPane.setEditable(!readOnly);
         }
