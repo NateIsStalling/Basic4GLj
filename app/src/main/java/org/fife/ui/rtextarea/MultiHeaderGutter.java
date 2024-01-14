@@ -229,12 +229,13 @@ public class MultiHeaderGutter extends JPanel {
         super.setComponentOrientation(o);
     }
 
-    public void setFoldIcons(Icon collapsedIcon, Icon expandedIcon) {
-        if(this.foldIndicator != null) {
-            this.foldIndicator.setFoldIcons(collapsedIcon, expandedIcon);
-        }
-
-    }
+//    public void setFoldIcons(Icon collapsedIcon, Icon expandedIcon) {
+//        if(this.foldIndicator != null) {
+//            FoldIndicatorIcon collapsedFoldIndicatorIcon = new FoldIndicatorIcon();
+//            this.foldIndicator.setFoldIcons(collapsedIcon, expandedIcon);
+//        }
+//
+//    }
 
     public void setFoldIndicatorEnabled(boolean enabled) {
         if(this.foldIndicator != null) {
