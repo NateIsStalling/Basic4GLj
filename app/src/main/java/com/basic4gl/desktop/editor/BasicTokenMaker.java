@@ -13,12 +13,12 @@ import java.util.List;
  * Created by Nate on 1/10/2015.
  */
 public class BasicTokenMaker extends AbstractTokenMaker {
-    static final String INCLUDE = "include ";
-    static final char CHAR_COMMENT = '\'';
-    public static List<String> mReservedWords = new ArrayList<String>();
-    public static List<String> mFunctions = new ArrayList<String>();
-    public static List<String> mConstants = new ArrayList<String>();
-    public static List<String> mOperators = new ArrayList<String>();
+    private static final String INCLUDE = "include ";
+    private static final char CHAR_COMMENT = '\'';
+    public static final List<String> reservedWords = new ArrayList<String>();
+    public static final List<String> functions = new ArrayList<String>();
+    public static final List<String> constants = new ArrayList<String>();
+    public static final List<String> operators = new ArrayList<String>();
 
     @Override
     public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {
@@ -36,19 +36,19 @@ public class BasicTokenMaker extends AbstractTokenMaker {
     public TokenMap getWordsToHighlight() {
         TokenMap tokenMap = new TokenMap(true);
 
-        for (String token : mReservedWords) {
+        for (String token : reservedWords) {
             tokenMap.put(token, Token.RESERVED_WORD);
         }
 
-        for (String token : mFunctions) {
+        for (String token : functions) {
             tokenMap.put(token, Token.FUNCTION);
         }
 
-        for (String token : mConstants) {
+        for (String token : constants) {
             tokenMap.put(token, Token.RESERVED_WORD_2);
         }
 
-        for (String token : mOperators) {
+        for (String token : operators) {
             tokenMap.put(token, Token.OPERATOR);
         }
 

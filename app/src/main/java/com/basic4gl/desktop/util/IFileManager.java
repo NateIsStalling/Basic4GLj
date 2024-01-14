@@ -5,10 +5,10 @@ import javax.swing.*;
 public interface IFileManager {
 
     // Child editor access
-    public abstract int editorCount();
-    public abstract JTextArea getEditor(int index);
-    public abstract String getFilename(int index);
-    public abstract String getCurrentDirectory();
+    int editorCount();
+    JTextArea getEditor(int index);
+    String getFilename(int index);
+    String getCurrentDirectory();
 
     String getAppDirectory();
 }

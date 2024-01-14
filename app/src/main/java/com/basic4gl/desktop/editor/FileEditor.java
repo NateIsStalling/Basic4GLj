@@ -15,10 +15,12 @@ import javax.swing.text.BadLocationException;
 import com.basic4gl.desktop.util.EditorUtil;
 import com.basic4gl.desktop.util.IFileManager;
 import com.basic4gl.desktop.util.SwingIconUtil;
+import org.fife.rsta.ui.CollapsibleSectionPanel;
+import org.fife.rsta.ui.search.*;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.*;
 
-public class FileEditor {
+public class FileEditor implements SearchListener {
     public static final String DEFAULT_NAME = "[Unnamed]";
 
     private static final int HEADER_BOOKMARK = 0;
@@ -29,33 +31,42 @@ public class FileEditor {
     private static final String ICON_BOOKMARK = THEME_DIRECTORY + "bookmark.png";
     private static final String ICON_BREAK_PT = THEME_DIRECTORY + "BreakPt.png";
 
-    private final IFileManager mFileManager;
-    private final IToggleBreakpointListener mToggleBreakpointListener;
+    private final IFileManager fileManager;
+    private final IToggleBreakpointListener toggleBreakpointListener;
 
-    public RSyntaxTextArea editorPane;
-    public RMultiHeaderScrollPane pane;
+    private final IFileEditorActionListener actionListener;
+    private final FindToolBar findToolBar;
+    private final ReplaceToolBar replaceToolBar;
+    private final CollapsibleSectionPanel csp;
+    private final RMultiHeaderScrollPane scrollPane;
+    private final RSyntaxTextArea editorPane;
 
-    //private Map<Integer, Object> mLineHighlights; //Highlight lines with breakpoints
+    //private Map<Integer, Object> lineHighlights; //Highlight lines with breakpoints
 
-    private String mFilename;    //Filename without path
-    private String mFilePath;    //Full path including name
-    private boolean mIsModified;
-    private boolean mSaved;      //File exists on system
+    private String fileName;    //Filename without path
+    private String filePath;    //Full path including name
+    private boolean isModified;
+    private boolean isSaved;      //File exists on system
+
 
     public FileEditor(
+            IFileEditorActionListener actionListener,
             IFileManager fileManager,
             IToggleBreakpointListener toggleBreakpointListener,
-            LinkGenerator linkGenerator) {
-        mFileManager = fileManager;
-        mToggleBreakpointListener = toggleBreakpointListener;
+            LinkGenerator linkGenerator,
+            SearchContext searchContext) {
 
-        int i, t;
         SyntaxScheme scheme;
 
-        mFilename = "";
-        mFilePath = "";
-        mIsModified = false;
-        mSaved      = false;
+        this.actionListener = actionListener;
+        this.fileManager = fileManager;
+        this.toggleBreakpointListener = toggleBreakpointListener;
+
+
+        fileName = "";
+        filePath = "";
+        isModified = false;
+        isSaved = false;
 
         editorPane = new RSyntaxTextArea(20, 60);
         editorPane.setSyntaxEditingStyle("text/basic4gl");
@@ -65,7 +76,7 @@ public class FileEditor {
             editorPane.setLinkGenerator(linkGenerator);
         }
 
-        pane = new RMultiHeaderScrollPane(editorPane);
+        scrollPane = new RMultiHeaderScrollPane(editorPane);
 
 
         //Add shortcut keys for breakpoints
@@ -109,7 +120,7 @@ public class FileEditor {
                         ("RTA.ToggleBreakpointAction",this));
 
         //Enable bookmarks
-        final MultiHeaderGutter gutter = pane.getGutter();
+        final MultiHeaderGutter gutter = scrollPane.getGutter();
         gutter.addIconRowHeader();
         gutter.addIconRowHeader();
 
@@ -129,7 +140,7 @@ public class FileEditor {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (gutter.getBookmarks(HEADER_BOOKMARK).length == 0) {
-                    pane.setIconRowHeaderEnabled(HEADER_BOOKMARK, false);
+                    scrollPane.setIconRowHeaderEnabled(HEADER_BOOKMARK, false);
                 }
             }
 
@@ -158,15 +169,15 @@ public class FileEditor {
                             int offs = editorPane.viewToModel(e.getPoint());
                             int ble = offs > -1 ? editorPane.getLineOfOffset(offs):-1;
                             if(ble > -1) {
-                                mToggleBreakpointListener.onToggleBreakpoint(getFilePath(), ble);
+                                FileEditor.this.toggleBreakpointListener.onToggleBreakpoint(getFilePath(), ble);
                                 //highlight = mMainEditor.toggleBreakpt(getFilename(), ble);
                             }
                             //TODO toggle highlighting breakpoints
                             /*
                             if (highlight)
-                                mLineHighlights.put(offs, editorPane.addLineHighlight(ble, new Color(255,0,0,128)));
+                                lineHighlights.put(offs, editorPane.addLineHighlight(ble, new Color(255,0,0,128)));
                             else
-                                editorPane.removeLineHighlight(mLineHighlights.get(ble));
+                                editorPane.removeLineHighlight(lineHighlights.get(ble));
                             */
                         } catch (BadLocationException var3) {
                             var3.printStackTrace();
@@ -195,10 +206,22 @@ public class FileEditor {
         gutter.setBookmarkingEnabled(HEADER_BOOKMARK, true);
         gutter.setBookmarkingEnabled(HEADER_BREAK_PT, true);
 
-        pane.setIconRowHeaderEnabled(HEADER_BOOKMARK, false);
-        pane.setIconRowHeaderEnabled(HEADER_BREAK_PT, true);
+        scrollPane.setIconRowHeaderEnabled(HEADER_BOOKMARK, false);
+        scrollPane.setIconRowHeaderEnabled(HEADER_BREAK_PT, true);
 
-        pane.setFoldIndicatorEnabled(false);
+        scrollPane.setFoldIndicatorEnabled(false);
+
+        // Create toolbars and tie their search contexts together also.
+        findToolBar = new FindToolBar(this);
+        findToolBar.setSearchContext(searchContext);
+        replaceToolBar = new ReplaceToolBar(this);
+        replaceToolBar.setSearchContext(searchContext);
+
+        csp = new CollapsibleSectionPanel();
+        csp.add(scrollPane);
+
+        csp.addBottomComponent(findToolBar);
+        csp.addBottomComponent(replaceToolBar);
 
         // Configure popup context menu
         JPopupMenu popup = editorPane.getPopupMenu();
@@ -218,12 +241,87 @@ public class FileEditor {
         scheme.setStyle(TokenTypes.OPERATOR, new Style(new Color(128, 0, 128))); //Operator
     }
 
+    public JPanel getContentPane() {
+        return csp;
+    }
+
+    @Override
+    public String getSelectedText() {
+        return editorPane.getSelectedText();
+    }
+
+    /**
+     * Listens for events from our search dialogs and actually does the dirty
+     * work.
+     */
+    @Override
+    public void searchEvent(SearchEvent e) {
+        RTextArea textArea = editorPane;
+        SearchContext context = e.getSearchContext();
+        SearchEvent.Type type = e.getType();
+        SearchResult result = null;
+        String text = "";
+
+        try {
+            switch (type) {
+                default: // Prevent FindBugs warning later
+                case MARK_ALL:
+                    result = SearchEngine.markAll(textArea, context);
+                    break;
+                case FIND:
+                    result = SearchEngine.find(textArea, context);
+                    if (!result.wasFound() || result.isWrapped()) {
+                        UIManager.getLookAndFeel().provideErrorFeedback(textArea);
+                    }
+                    break;
+                case REPLACE:
+                    if (textArea.isEditable()) {
+                        result = SearchEngine.replace(textArea, context);
+                        if (!result.wasFound() || result.isWrapped()) {
+                            UIManager.getLookAndFeel().provideErrorFeedback(textArea);
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "File is read-only.");
+                    }
+                    break;
+                case REPLACE_ALL:
+                    if (textArea.isEditable()) {
+                        result = SearchEngine.replaceAll(textArea, context);
+                        JOptionPane.showMessageDialog(null, result.getCount() +
+                                " occurrences replaced.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "File is read-only.");
+                    }
+                    break;
+            }
+
+            if (result != null) {
+                if (result.wasFound()) {
+                    text = "Text found; occurrences marked: " + result.getMarkedCount();
+                } else if (type == SearchEvent.Type.MARK_ALL) {
+                    if (result.getMarkedCount() > 0) {
+                        text = "Occurrences marked: " + result.getMarkedCount();
+                    } else {
+                        text = "";
+                    }
+                } else {
+                    text = "Text not found";
+                }
+            }
+            actionListener.onSearchResult(text);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+
+    }
+
     public String getTitle() {
         String result;
-        result  = (mFilename.equals("") ? DEFAULT_NAME : mFilename).toLowerCase();
+        result  = (fileName.equals("") ? DEFAULT_NAME : fileName).toLowerCase();
 
         // Append asterisk if modified
-        if (mIsModified) {
+        if (isModified) {
             result = result + " *";
         }
 
@@ -231,38 +329,38 @@ public class FileEditor {
     }
 
     public void setFileName(String filename) {
-        mFilename = filename;
+        this.fileName = filename;
     }
 
     public String getFilePath() {
-        return mFilePath;
+        return filePath;
     }
 
     public String getShortFilename() {
-        return !mFilename.equals("")
-                ? new File(mFilename).getName()
+        return !fileName.equals("")
+                ? new File(fileName).getName()
                 : DEFAULT_NAME.toLowerCase();
     }
 
     public boolean isModified() {
-        return mIsModified;
+        return isModified;
     }
 
     public void setModified() {
-        mIsModified = true;
+        isModified = true;
     }
 
     public boolean save(boolean saveAs, String parentDirectory) {
         boolean save = true;
-        if (saveAs || !mSaved || mFilePath.equals("")) {
+        if (saveAs || !isSaved || filePath.equals("")) {
             JFileChooser dialog = new JFileChooser();
             dialog.setAcceptAllFileFilterUsed(false);
             dialog.addChoosableFileFilter(new FileNameExtensionFilter("GLBasic Program (*.gb)", "gb"));
             dialog.addChoosableFileFilter(new FileNameExtensionFilter("Text File (*.txt)", "txt"));
             dialog.setAcceptAllFileFilterUsed(true);    //Move "All Files" to bottom of filter list
-            dialog.setCurrentDirectory(new File(mFileManager.getCurrentDirectory()));
-            dialog.setSelectedFile(new File(mFilename));
-            int result = dialog.showSaveDialog(pane);
+            dialog.setCurrentDirectory(new File(fileManager.getCurrentDirectory()));
+            dialog.setSelectedFile(new File(fileName));
+            int result = dialog.showSaveDialog(scrollPane);
 
             if (result == JFileChooser.APPROVE_OPTION) {
                 String path = dialog.getSelectedFile().getAbsolutePath();
@@ -275,19 +373,19 @@ public class FileEditor {
                         }
                     }
                 }
-                mFilePath = path;
-                mFilename = new File(path).getName();
+                filePath = path;
+                fileName = new File(path).getName();
             } else {
                 save = false;
             }
         }
         if (save) {
             try {
-                FileWriter fw = new FileWriter(mFilePath, false);
+                FileWriter fw = new FileWriter(filePath, false);
                 editorPane.write(fw);
                 fw.close();
-                mIsModified = false;
-                mSaved = true;
+                isModified = false;
+                isSaved = true;
                 return true;
             } catch (IOException e) {
                 // TODO Auto-generated catch block
@@ -299,7 +397,14 @@ public class FileEditor {
         return false;
     }
 
-    public static FileEditor open(Frame parent, IFileManager fileManager, IToggleBreakpointListener listener, LinkGenerator linkGenerator) {
+    public static FileEditor open(
+        Frame parent,
+        IFileEditorActionListener actionListener,
+        IFileManager fileManager,
+        IToggleBreakpointListener listener,
+        LinkGenerator linkGenerator,
+        SearchContext searchContext) {
+
         FileEditor editor = null;
         JFileChooser dialog = new JFileChooser();
         dialog.setAcceptAllFileFilterUsed(false);
@@ -310,14 +415,14 @@ public class FileEditor {
         int result = dialog.showOpenDialog(parent);
 
         if (result == JFileChooser.APPROVE_OPTION) {
-            editor = new FileEditor(fileManager, listener, linkGenerator);
+            editor = new FileEditor(actionListener, fileManager, listener, linkGenerator, searchContext);
             try {
                 FileReader fr = new FileReader(dialog.getSelectedFile().getAbsolutePath());
-                editor.mFilePath = dialog.getSelectedFile().getAbsolutePath();
-                editor.mFilename = dialog.getSelectedFile().getName();
+                editor.filePath = dialog.getSelectedFile().getAbsolutePath();
+                editor.fileName = dialog.getSelectedFile().getName();
                 editor.editorPane.read(fr, null);
                 fr.close();
-                editor.mSaved = true;
+                editor.isSaved = true;
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -327,26 +432,33 @@ public class FileEditor {
 
         return editor;
     }
-    public static FileEditor open(File file, IFileManager fileManager, IToggleBreakpointListener listener, LinkGenerator linkGenerator) {
+    public static FileEditor open(
+        File file,
+        IFileEditorActionListener actionListener,
+        IFileManager fileManager,
+        IToggleBreakpointListener listener,
+        LinkGenerator linkGenerator,
+        SearchContext searchContext) {
+
         FileEditor editor = null;
-        editor = new FileEditor(fileManager, listener, linkGenerator);
+        editor = new FileEditor(actionListener, fileManager, listener, linkGenerator, searchContext);
         if (file.exists()) {
             try {
                 FileReader fr = new FileReader(file);
-                editor.mFilePath = file.getAbsolutePath();
-                editor.mFilename = file.getName();
+                editor.filePath = file.getAbsolutePath();
+                editor.fileName = file.getName();
                 editor.editorPane.read(fr, null);
                 fr.close();
-                editor.mSaved = true;
+                editor.isSaved = true;
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
         else {
-            editor.mFilePath = file.getAbsolutePath();
-            editor.mFilename = file.getName();
-            editor.mSaved = false;
+            editor.filePath = file.getAbsolutePath();
+            editor.fileName = file.getName();
+            editor.isSaved = false;
         }
         editor.editorPane.discardAllEdits();    //Otherwise 'undo' will clear the text area after loading
 
@@ -355,7 +467,7 @@ public class FileEditor {
 
     public void gotoNextBookmark(boolean forward) {
         //Copied from org.fife.ui.rtextarea.RTextAreaEditorKit.NextBookmarkAction
-        MultiHeaderGutter gutter = pane.getGutter();
+        MultiHeaderGutter gutter = scrollPane.getGutter();
         if (gutter != null) {
 
             try {
@@ -418,11 +530,24 @@ public class FileEditor {
         }
 
     }
+    public void toggleFindToolBar(boolean replace) {
+        FindToolBar findToolBar = this.findToolBar;
+        if (replace) {
+            findToolBar = this.replaceToolBar;
+        }
+
+        // Toggle search toolbar
+        if (csp.getDisplayedBottomComponent() == findToolBar) {
+            csp.hideBottomComponent();
+        } else {
+            csp.showBottomComponent(findToolBar);
+        }
+    }
     public void toggleBookmark(){
         int line;
         try {
             line = editorPane.getLineOfOffset(editorPane.getCaretPosition());
-            pane.getGutter().toggleBookmark(HEADER_BOOKMARK, line);
+            scrollPane.getGutter().toggleBookmark(HEADER_BOOKMARK, line);
 
         } catch (BadLocationException ex) {
             line = -1;
@@ -433,7 +558,7 @@ public class FileEditor {
 
     public void gotoNextBreakpoint(boolean forward) {
         //Copied from org.fife.ui.rtextarea.RTextAreaEditorKit.NextBookmarkAction
-        MultiHeaderGutter gutter = pane.getGutter();
+        MultiHeaderGutter gutter = scrollPane.getGutter();
         if (gutter != null) {
 
             try {
@@ -503,21 +628,21 @@ public class FileEditor {
         try {
             line = editorPane.getLineOfOffset(editorPane.getCaretPosition());
 
-            pane.getGutter().toggleBookmark(HEADER_BREAK_PT, line);
+            scrollPane.getGutter().toggleBookmark(HEADER_BREAK_PT, line);
 
             //TODO toggle highlighting row of breakpoint
             /*
             highlight = pane.getGutter().toggleBookmark(HEADER_BREAK_PT, line);
             if (highlight) {
-                mLineHighlights.put(line,
+                lineHighlights.put(line,
                         editorPane.addLineHighlight(line, new Color(255, 0, 0, 128)));
             }
             else {
-                editorPane.removeLineHighlight(mLineHighlights.get(line));
-                mLineHighlights.remove(line);
+                editorPane.removeLineHighlight(lineHighlights.get(line));
+                lineHighlights.remove(line);
             }
             */
-            mToggleBreakpointListener.onToggleBreakpoint(getFilePath(), line);
+            toggleBreakpointListener.onToggleBreakpoint(getFilePath(), line);
         } catch (BadLocationException ex) {
             line = -1;
             ex.printStackTrace();
@@ -529,7 +654,7 @@ public class FileEditor {
     {
         ArrayList<Integer> points = new ArrayList<Integer>();
 
-        MultiHeaderGutter gutter = pane.getGutter();
+        MultiHeaderGutter gutter = scrollPane.getGutter();
         if (gutter != null) {
             GutterIconInfo[] bookmarks = gutter.getBookmarks(HEADER_BREAK_PT);
             for (GutterIconInfo info: bookmarks) {
@@ -545,19 +670,39 @@ public class FileEditor {
         return points;
     }
 
+    public JTextArea getEditorPane() {
+        return editorPane;
+    }
+
+    public boolean canRedo() {
+        return editorPane.canRedo();
+    }
+
+    public boolean canUndo() {
+        return editorPane.canUndo();
+    }
+
+    public void redoLastAction() {
+        editorPane.redoLastAction();
+    }
+
+    public void undoLastAction() {
+        editorPane.undoLastAction();
+    }
+
     /**
      * Toggles whether the current line has a bookmark.
      */
     public static class MultiHeaderToggleBreakPointAction extends RecordableTextAction {
-        private FileEditor mFileEditor;
+        private final FileEditor fileEditor;
         public MultiHeaderToggleBreakPointAction(String name, FileEditor fileEditor) {
             super(name);
-            mFileEditor = fileEditor;
+            this.fileEditor = fileEditor;
         }
 
         @Override
         public void actionPerformedImpl(ActionEvent e, RTextArea textArea) {
-            mFileEditor.toggleBreakpoint();
+            fileEditor.toggleBreakpoint();
         }
 
         @Override

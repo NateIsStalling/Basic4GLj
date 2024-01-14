@@ -10,52 +10,52 @@ import java.util.Vector;
 
 public class FileManager implements IFileManager {
 
-    public String mCurrentDirectory;   //Current working directory
+    private final Vector<FileEditor> fileEditors = new Vector<FileEditor>();
 
+    private String currentDirectory;   //Current working directory
 
-    public String mAppDirectory,  // Application directory (where basic4gl.exe is)
-            mFileDirectory, // File I/O in this directory
-            mRunDirectory;  // Basic4GL program are run in this directory
+    private String appDirectory;  // Application directory (where the basic4glj executable is)
+    private String fileDirectory; // File I/O in this directory
+    private String runDirectory;  // Basic4GL programs are run in this directory
 
-    public Vector<FileEditor> mFileEditors = new Vector<FileEditor>();
 
     @Override
     public int editorCount() {
-        return mFileEditors.size();
+        return fileEditors.size();
     }
 
     @Override
     public JTextArea getEditor(int index) {
-        return mFileEditors.get(index).editorPane;
+        return fileEditors.get(index).getEditorPane();
     }
 
     public String getFilename(int index) {
-        return mFileEditors.get(index).getFilePath();
+        return fileEditors.get(index).getFilePath();
     }
 
     public void setCurrentDirectory(String path) {
-        mCurrentDirectory = path;
+        currentDirectory = path;
     }
 
     public String getCurrentDirectory() {
-        return mCurrentDirectory;
+        return currentDirectory;
     }
 
     @Override
     public String getAppDirectory() {
-        return mAppDirectory;
+        return appDirectory;
     }
 
     public int getFileTabIndex(String filename) {
-        File file = new File(mCurrentDirectory, filename);
+        File file = new File(getCurrentDirectory(), filename);
         return getTabIndex(file.getAbsolutePath());
     }
 
     public int getTabIndex(String path) {
         int i = 0;
         boolean found = false;
-        for (; i < mFileEditors.size(); i++) {
-            if (mFileEditors.get(i).getFilePath().equals(path)) {
+        for (; i < fileEditors.size(); i++) {
+            if (fileEditors.get(i).getFilePath().equals(path)) {
                 found = true;
                 break;
             }
@@ -63,104 +63,128 @@ public class FileManager implements IFileManager {
         return found ? i : -1;
     }
 
-    public void SelectPreviousBreakpoint(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            mFileEditors.get(i).gotoNextBreakpoint(false);
+    public void selectPreviousBreakpoint(int i) {
+        if (i > -1 && i < fileEditors.size()) {
+            fileEditors.get(i).gotoNextBreakpoint(false);
         }
     }
 
-    public void SelectNextBreakpoint(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            mFileEditors.get(i).gotoNextBreakpoint(true);
+    public void selectNextBreakpoint(int i) {
+        if (i > -1 && i < fileEditors.size()) {
+            fileEditors.get(i).gotoNextBreakpoint(true);
         }
     }
 
-    public void ToggleBookmark(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            mFileEditors.get(i).toggleBookmark();
+    public void toggleBookmark(int i) {
+        if (i > -1 && i < fileEditors.size()) {
+            fileEditors.get(i).toggleBookmark();
         }
     }
 
-    public void SelectPreviousBookmark(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            mFileEditors.get(i).gotoNextBookmark(false);
+    public void selectPreviousBookmark(int i) {
+        if (i > -1 && i < fileEditors.size()) {
+            fileEditors.get(i).gotoNextBookmark(false);
         }
     }
 
-    public void SelectNextBookmark(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            mFileEditors.get(i).gotoNextBookmark(true);
+    public void selectNextBookmark(int i) {
+        if (i > -1 && i < fileEditors.size()) {
+            fileEditors.get(i).gotoNextBookmark(true);
         }
     }
 
-    public void SelectAll(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            mFileEditors.get(i).editorPane.selectAll();
+    public void selectAll(int i) {
+        if (i > -1 && i < fileEditors.size()) {
+            fileEditors.get(i).getEditorPane().selectAll();
         }
     }
 
-    public void Paste(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            mFileEditors.get(i).editorPane.paste();
+    public void paste(int i) {
+        if (i > -1 && i < fileEditors.size()) {
+            fileEditors.get(i).getEditorPane().paste();
         }
     }
 
     public void copy(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            mFileEditors.get(i).editorPane.copy();
+        if (i > -1 && i < fileEditors.size()) {
+            fileEditors.get(i).getEditorPane().copy();
         }
     }
 
     public void cut(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            mFileEditors.get(i).editorPane.cut();
+        if (i > -1 && i < fileEditors.size()) {
+            fileEditors.get(i).getEditorPane().cut();
         }
     }
 
     public void redo(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            if (mFileEditors.get(i).editorPane.canRedo()) {
-                mFileEditors.get(i).editorPane.redoLastAction();
+        if (i > -1 && i < fileEditors.size()) {
+            if (fileEditors.get(i).canRedo()) {
+                fileEditors.get(i).redoLastAction();
             }
         }
     }
 
     public void undo(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            if (mFileEditors.get(i).editorPane.canUndo()) {
-                mFileEditors.get(i).editorPane.undoLastAction();
+        if (i > -1 && i < fileEditors.size()) {
+            if (fileEditors.get(i).canUndo()) {
+                fileEditors.get(i).undoLastAction();
             }
         }
     }
 
     public void toggleBreakpoint(int i) {
-        if (mFileEditors != null && i > -1 && i < mFileEditors.size()) {
-            mFileEditors.get(i).toggleBreakpoint();
+        if (i > -1 && i < fileEditors.size()) {
+            fileEditors.get(i).toggleBreakpoint();
         }
     }
 
-    public void SetReadOnly(boolean readOnly) {
-        for (int i = 0; i < mFileEditors.size(); i++) {
-            mFileEditors.get(i).editorPane.setEditable(!readOnly);
+    public void setReadOnly(boolean readOnly) {
+        for (int i = 0; i < fileEditors.size(); i++) {
+            fileEditors.get(i).getEditorPane().setEditable(!readOnly);
         }
     }
 
-    public boolean MultifileModified(Mutable<String> description) {
+    public boolean isMultifileModified(Mutable<String> description) {
         boolean result = false;
         String desc = "";
 
-        for (int i = 0; i < mFileEditors.size(); i++) {
-            if (mFileEditors.get(i).isModified()) {
+        for (int i = 0; i < fileEditors.size(); i++) {
+            if (fileEditors.get(i).isModified()) {
                 result = true;
                 if (!desc.equals("")) {
                     desc += ", ";
                 }
-                String filename = mFileEditors.get(i).getShortFilename();
+                String filename = fileEditors.get(i).getShortFilename();
 
                 desc += filename;
             }
         }
         description.set(desc);
         return result;
+    }
+
+    public void setAppDirectory(String appDirectory) {
+        this.appDirectory = appDirectory;
+    }
+
+    public String getFileDirectory() {
+        return fileDirectory;
+    }
+
+    public void setFileDirectory(String fileDirectory) {
+        this.fileDirectory = fileDirectory;
+    }
+
+    public String getRunDirectory() {
+        return runDirectory;
+    }
+
+    public void setRunDirectory(String runDirectory) {
+        this.runDirectory = runDirectory;
+    }
+
+    public Vector<FileEditor> getFileEditors() {
+        return fileEditors;
     }
 }

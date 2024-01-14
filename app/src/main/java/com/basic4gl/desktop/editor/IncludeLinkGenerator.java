@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.Arrays;
 
 public class IncludeLinkGenerator implements LinkGenerator {
-    static final String INCLUDE = "include ";
+    private static final String INCLUDE = "include ";
 
     /**
      * Separators used to determine words in text.
@@ -19,10 +19,10 @@ public class IncludeLinkGenerator implements LinkGenerator {
             Arrays.asList("\n");
     //Arrays.asList(",", ";", "\n", "|", "{", "}", "[", "]", "=", "\"", "'", "*", "%", "&", "?");
 
-    private final ITabProvider mTabProvider;
+    private final ITabProvider tabProvider;
 
     public IncludeLinkGenerator(ITabProvider tabProvider) {
-        mTabProvider = tabProvider;
+        this.tabProvider = tabProvider;
     }
 
     @Override
@@ -51,12 +51,12 @@ public class IncludeLinkGenerator implements LinkGenerator {
 
                     int index;
 
-                    index = mTabProvider.getTabIndex(filename);
+                    index = tabProvider.getTabIndex(filename);
 
                     if (index != -1) {
-                        mTabProvider.setSelectedTabIndex(index);
+                        tabProvider.setSelectedTabIndex(index);
                     } else {
-                        mTabProvider.openTab(filename);
+                        tabProvider.openTab(filename);
                     }
 
                     return new HyperlinkEvent(this, HyperlinkEvent.EventType.EXITED, null);
