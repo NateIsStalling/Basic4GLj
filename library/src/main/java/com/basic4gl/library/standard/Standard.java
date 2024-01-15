@@ -48,6 +48,11 @@ public class Standard implements FunctionLibrary {
 		lastTickCount = 0;
 		maxCatchupTime = DEF_MAX_CATCHUP_TIME;
 		catchupTime = maxCatchupTime - 1;
+
+		mArguments = new Vector<String>();
+		if (args != null) {
+			mArguments.addAll(Arrays.asList(args));
+		}
 	}
 	@Override
 	public void init(TomBasicCompiler comp){
