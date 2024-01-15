@@ -12,7 +12,7 @@ import java.io.OutputStream;
  * Libraries should know nothing about the Builder interface,
  * but a class that implements Builder can know about any library
  */
-public abstract class Builder implements Library, IFileAccess{
+public abstract class Builder implements Library, IFileAccess, ITargetCommandLineOptions {
 
 
     public abstract String version();

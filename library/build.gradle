@@ -26,6 +26,8 @@ dependencies {
     implementation ('javax.websocket:javax.websocket-api:1.0')
     implementation ('org.eclipse.jetty.websocket:javax-websocket-client-impl:9.4.49.v20220914')
 
+    // for program arguments
+    implementation("commons-cli:commons-cli:1.6.0")
 
     // for PCX image support
     implementation("org.apache.commons:commons-imaging:1.0-alpha3")

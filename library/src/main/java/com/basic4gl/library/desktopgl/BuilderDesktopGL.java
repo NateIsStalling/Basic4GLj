@@ -182,6 +182,7 @@ public class BuilderDesktopGL extends Builder {
             files.add("com/basic4gl/util");
             files.add("com/basic4gl/runtime");
             files.add("paulscode"); // sound library
+            files.add("org/apache/commons/cli"); // args support
             files.add("org/apache/commons/imaging"); // MD2 support
             files.add("org/lwjgl");
             //TODO this should only be added if target OS
@@ -310,4 +311,33 @@ public class BuilderDesktopGL extends Builder {
         return null;
     }
 
+    @Override
+    public String getConfigFilePathCommandLineOption() {
+        return mTarget.getConfigFilePathCommandLineOption();
+    }
+
+    @Override
+    public String getLineMappingFilePathCommandLineOption() {
+        return mTarget.getLineMappingFilePathCommandLineOption();
+    }
+
+    @Override
+    public String getLogFilePathCommandLineOption() {
+        return mTarget.getLogFilePathCommandLineOption();
+    }
+
+    @Override
+    public String getParentDirectoryCommandLineOption() {
+        return mTarget.getParentDirectoryCommandLineOption();
+    }
+
+    @Override
+    public String getProgramFilePathCommandLineOption() {
+        return mTarget.getProgramFilePathCommandLineOption();
+    }
+
+    @Override
+    public String getDebuggerPortCommandLineOption() {
+        return mTarget.getDebuggerPortCommandLineOption();
+    }
 }
