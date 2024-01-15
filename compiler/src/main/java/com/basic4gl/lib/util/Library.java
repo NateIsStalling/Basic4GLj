@@ -20,14 +20,15 @@ public interface Library {
 	/**
 	 * Initialize miscellaneous values used in the library
 	 * before the virtual machine is started.
-	 * @param vm
+	 * @param vm Virtual Machine instance
+	 * @param args Arguments provided to the application's main function
 	 */
-	void init(TomVM vm);
+	void init(TomVM vm, String[] args);
 
 	/**
 	 * Initialize miscellaneous values used in the library
 	 * before the compiler is started.
-	 * @param comp
+	 * @param comp Compiler instance
 	 */
 	void init(TomBasicCompiler comp);
 

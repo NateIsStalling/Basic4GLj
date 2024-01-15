@@ -56,7 +56,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     public abstract String description();
 
     @Override
-    public abstract void init(TomVM vm);
+    public abstract void init(TomVM vm, String[] args);
 
     @Override
     public abstract List<String> getDependencies();

@@ -69,7 +69,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     }
 
     @Override
-    public void init(TomVM vm) {
+    public void init(TomVM vm, String[] args) {
 
         appWindow.ClearKeyBuffers();
 

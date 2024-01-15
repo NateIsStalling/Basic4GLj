@@ -1,10 +1,6 @@
 package com.basic4gl.library.standard;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Vector;
+import java.util.*;
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
@@ -44,7 +40,7 @@ public class Standard implements FunctionLibrary {
 	// //////////////////////////////////////////////////////////////////////////////
 	// Pre-run initialisation
 	@Override
-	public void init(TomVM vm) {
+	public void init(TomVM vm, String[] args) {
 		/////////////////////
 		// Initialise state
 		rnd = new Random();

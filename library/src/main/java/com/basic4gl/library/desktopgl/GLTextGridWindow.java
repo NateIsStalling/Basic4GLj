@@ -34,8 +34,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	private TomBasicCompiler mComp;
 	private TomVM mVM;
-	private Thread mThread;	//Standalone
-
+	private String[] programArgs;
 	private DebuggerCallbacks mDebugger;
 	private DebuggerCommandAdapter debuggerAdapter;
 
@@ -159,6 +158,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		//JOptionPane.showMessageDialog(null, "Waiting...");
 		instance = new GLTextGridWindow();
 
+		instance.programArgs = args;
+
 		LineNumberMapping lineNumberMapping = null;
 		if (mappingFile != null) {
 			try (
@@ -277,7 +278,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				}
 			};
 		}
-		instance.start(null);
+		instance.start();
 	}
 
 	@Override
@@ -287,7 +288,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	public String description() { return "Desktop application with OpenGL capabilities.";}
 
 	@Override
-	public void init(TomVM vm) {
+	public void init(TomVM vm, String[] args) {
 		// TODO Auto-generated method stub
 
 	}
@@ -332,10 +333,140 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	}
 
 	@Override
-	public void start(DebuggerCallbacks callbacks) {
-		mThread = new Thread(new VMThread(mDebugger));
-		// TODO thread.start() has issues with initializing GL stuff off the main thread
-		mThread.run();
+	public void start() {
+		System.out.println("Running...");
+		if (mVM == null) {
+			return;    //TODO Throw exception
+		}
+		try {
+			if (mDebugger != null) {
+				mDebugger.onPreLoad();
+			}
+			mCharset = mFiles.getFilenameForRead("charset.png", false);
+			if (mDebugger != null) {
+				mDebugger.onPostLoad();
+			}
+			onPreExecute();
+			//Initialize libraries
+			for (Library lib : mComp.getLibraries()) {
+				initLibrary(lib);
+			}
+			//Debugger is not attached
+			if (mDebugger == null) {
+				while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
+					//Continue to next OpCode
+					driveVM(TomVM.VM_STEPS);
+
+					// Poll for window events. The key callback above will only be
+					// invoked during this call.
+					handleEvents();
+				}   //Program completed
+			}
+			else	//Debugger is attached
+			{
+				while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
+					// Run the virtual machine for a certain number of steps
+					mVM.patchIn();
+
+					if (mVM.isPaused()) {
+						//Breakpoint reached or paused by debugger
+						System.out.println("VM paused");
+
+						mDebugger.pause("Reached breakpoint");
+
+						//Resume running
+						if (mDebugger.getMessage().getStatus() == CallbackMessage.WORKING) {
+							// Kick the virtual machine over the next op-code before patching in the breakpoints.
+							// otherwise we would never get past a breakpoint once we hit it, because we would
+							// keep on hitting it immediately and returning.
+							mDebugger.message(driveVM(1));
+
+							// Run the virtual machine for a certain number of steps
+							mVM.patchIn();
+						}
+						//Check if program was stopped while paused
+						if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.isDone() || isClosing()) {
+							break;
+						}
+					}
+
+					//Continue to next OpCode
+					mDebugger.message(driveVM(TomVM.VM_STEPS));
+
+					// Poll for window events. The key callback above will only be
+					// invoked during this call.
+					handleEvents();
+				}   //Program completed
+			}
+
+
+			//Perform debugger callbacks
+			int success;
+			if (mDebugger != null) {
+				success = !mVM.hasError()
+						? CallbackMessage.SUCCESS
+						: CallbackMessage.FAILED;
+
+				VMStatus vmStatus = new VMStatus(
+						mVM.isDone(),
+						mVM.hasError(),
+						mVM.getError());
+
+				DebuggerCallbackMessage message = new DebuggerCallbackMessage(success, success == CallbackMessage.SUCCESS
+						? "Program completed"
+						: mVM.getError(),
+						vmStatus);
+
+				// Set instruction position for editor to place cursor at error
+				if (mVM.hasError()) {
+					InstructionPosition ip = mVM.getIPInSourceCode();
+					message.setInstructionPosition(ip);
+				}
+
+				mDebugger.message(message);
+			}
+//
+//				glMatrixMode(GL_MODELVIEW);
+//				glLoadIdentity();
+//
+//				//Calculate the aspect ratio of the window
+//				perspectiveGL(90.0f,(float)m_width/(float)m_height,0.1f,100.0f);
+//
+//				glShadeModel(GL_SMOOTH);
+//				glClearDepth(1.0f);                         // Depth Buffer Setup
+//				glEnable(GL_DEPTH_TEST);                        // Enables Depth Testing
+//				glDepthFunc(GL_LEQUAL);                         // The Type Of Depth Test To Do
+			//Keep window responsive until closed
+			while (!Thread.currentThread().isInterrupted() && m_window != 0 && !isClosing()) {
+				//System.out.println("idle");
+				try {
+					//Go easy on the processor
+					Thread.sleep(10);
+
+
+//						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+//
+//						glLoadIdentity();//							' Reset The View
+//
+//						glColor3f(0.5f,0.5f,1.0f);//						' Set The Color To Blue One Time Only
+//						glBegin(GL_QUADS);//							' Draw A Quad
+//						glVertex3f(-1.0f, 1.0f, 0.0f);//					' Top Left
+//						glVertex3f( 1.0f, 1.0f, 0.0f)	;//				' Top Right
+//						glVertex3f( 1.0f,-1.0f, 0.0f);//					' Bottom Right
+//						glVertex3f(-0.5f,-1.0f, 0.0f);//					' Bottom Left
+//						glEnd();
+//						glfwSwapBuffers(m_window);
+
+					// Poll for window events. The key callback above will only be
+					// invoked during this call.
+					handleEvents();
+				} catch (InterruptedException consumed){ break;}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			onFinally();
+		}
 	}
 
 	@Override
@@ -364,153 +495,6 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
-
-
-	private class VMThread implements Runnable {
-		private final DebuggerCallbacks mDebugger;
-		VMThread(DebuggerCallbacks debugger){
-			mDebugger = debugger;
-		}
-		@Override
-		public void run() {
-			System.out.println("Running...");
-			if (mVM == null) {
-				return;    //TODO Throw exception
-			}
-			try {
-				if (mDebugger != null) {
-					mDebugger.onPreLoad();
-				}
-				mCharset = mFiles.getFilenameForRead("charset.png", false);
-				if (mDebugger != null) {
-					mDebugger.onPostLoad();
-				}
-				onPreExecute();
-				//Initialize libraries
-				for (Library lib : mComp.getLibraries()) {
-					initLibrary(lib);
-				}
-					//Debugger is not attached
-				if (mDebugger == null) {
-					while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
-						//Continue to next OpCode
-						driveVM(TomVM.VM_STEPS);
-
-						// Poll for window events. The key callback above will only be
-						// invoked during this call.
-						handleEvents();
-					}   //Program completed
-				}
-				else	//Debugger is attached
-				{
-					while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
-						// Run the virtual machine for a certain number of steps
-						mVM.patchIn();
-
-						if (mVM.isPaused()) {
-							//Breakpoint reached or paused by debugger
-							System.out.println("VM paused");
-
-							mDebugger.pause("Reached breakpoint");
-
-							//Resume running
-							if (mDebugger.getMessage().getStatus() == CallbackMessage.WORKING) {
-								// Kick the virtual machine over the next op-code before patching in the breakpoints.
-								// otherwise we would never get past a breakpoint once we hit it, because we would
-								// keep on hitting it immediately and returning.
-								mDebugger.message(driveVM(1));
-
-								// Run the virtual machine for a certain number of steps
-								mVM.patchIn();
-							}
-							//Check if program was stopped while paused
-							if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.isDone() || isClosing()) {
-								break;
-							}
-						}
-
-						//Continue to next OpCode
-						mDebugger.message(driveVM(TomVM.VM_STEPS));
-
-						// Poll for window events. The key callback above will only be
-						// invoked during this call.
-						handleEvents();
-					}   //Program completed
-				}
-
-
-				//Perform debugger callbacks
-				int success;
-				if (mDebugger != null) {
-					success = !mVM.hasError()
-							? CallbackMessage.SUCCESS
-							: CallbackMessage.FAILED;
-
-					VMStatus vmStatus = new VMStatus(
-							mVM.isDone(),
-							mVM.hasError(),
-							mVM.getError());
-
-					DebuggerCallbackMessage message = new DebuggerCallbackMessage(success, success == CallbackMessage.SUCCESS
-							? "Program completed"
-							: mVM.getError(),
-							vmStatus);
-
-					// Set instruction position for editor to place cursor at error
-					if (mVM.hasError()) {
-						InstructionPosition ip = mVM.getIPInSourceCode();
-						message.setInstructionPosition(ip);
-					}
-
-					mDebugger.message(message);
-				}
-//
-//				glMatrixMode(GL_MODELVIEW);
-//				glLoadIdentity();
-//
-//				//Calculate the aspect ratio of the window
-//				perspectiveGL(90.0f,(float)m_width/(float)m_height,0.1f,100.0f);
-//
-//				glShadeModel(GL_SMOOTH);
-//				glClearDepth(1.0f);                         // Depth Buffer Setup
-//				glEnable(GL_DEPTH_TEST);                        // Enables Depth Testing
-//				glDepthFunc(GL_LEQUAL);                         // The Type Of Depth Test To Do
-				//Keep window responsive until closed
-				while (!Thread.currentThread().isInterrupted() && m_window != 0 && !isClosing()) {
-					//System.out.println("idle");
-					try {
-						//Go easy on the processor
-						Thread.sleep(10);
-
-
-//						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-//
-//						glLoadIdentity();//							' Reset The View
-//
-//						glColor3f(0.5f,0.5f,1.0f);//						' Set The Color To Blue One Time Only
-//						glBegin(GL_QUADS);//							' Draw A Quad
-//						glVertex3f(-1.0f, 1.0f, 0.0f);//					' Top Left
-//						glVertex3f( 1.0f, 1.0f, 0.0f)	;//				' Top Right
-//						glVertex3f( 1.0f,-1.0f, 0.0f);//					' Bottom Right
-//						glVertex3f(-0.5f,-1.0f, 0.0f);//					' Bottom Left
-//						glEnd();
-//						glfwSwapBuffers(m_window);
-
-						// Poll for window events. The key callback above will only be
-						// invoked during this call.
-						handleEvents();
-					} catch (InterruptedException consumed){ break;}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				onFinally();
-			}
-		}
-
-	}
-
 
 	@Override
 	public Configuration getSettings() {
@@ -795,6 +779,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		}
 		return null;
 	}
+
+	@Override
 	public void initLibrary(Library lib){
 		if (lib instanceof IVMDriverAccess){
 			//Allows libraries to access VM driver/keep it responsive
@@ -808,7 +794,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 			((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
 		}
 
-		lib.init(mVM);
+		lib.init(mVM, programArgs);
 	}
 	public boolean handleEvents(){
 

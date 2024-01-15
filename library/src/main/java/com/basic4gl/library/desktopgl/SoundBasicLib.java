@@ -101,7 +101,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     @Override
-    public void init(TomVM vm) {
+    public void init(TomVM vm, String[] args) {
     }
 
     @Override

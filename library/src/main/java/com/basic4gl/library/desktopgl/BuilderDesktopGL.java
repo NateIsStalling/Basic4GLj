@@ -281,7 +281,7 @@ public class BuilderDesktopGL extends Builder {
 
 
     @Override
-    public void init(TomVM vm) {
+    public void init(TomVM vm, String[] args) {
 
     }
 

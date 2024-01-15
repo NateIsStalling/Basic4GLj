@@ -45,7 +45,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     public String description() { return "File IO functions; reads and writes files with little-endian byte order.";}
 
     @Override
-    public void init(TomVM vm) {
+    public void init(TomVM vm, String[] args) {
         if (fileStreams == null) {
             fileStreams = new PointerResourceStore<FileStream>();
         }
