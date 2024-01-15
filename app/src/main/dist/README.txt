@@ -28,6 +28,8 @@
 	Change Log
 ================================================
 0.5.0   - Implemented sound library
+        - Added support for commandline arguments
+        - Added "Program Version" project configuration option for commandline programs
         - Java 17 now embedded
 
 0.4.1   - Updated LWJGL to stable version 3.3.1
