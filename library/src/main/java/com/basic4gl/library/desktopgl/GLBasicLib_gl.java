@@ -44,7 +44,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm) {
+    public void init(TomVM vm, String[] args) {
         byteBuffer16 = BufferUtils.createByteBuffer(16);
         shortBuffer16 = BufferUtils.createShortBuffer(16);
         intBuffer16 = BufferUtils.createIntBuffer(16);

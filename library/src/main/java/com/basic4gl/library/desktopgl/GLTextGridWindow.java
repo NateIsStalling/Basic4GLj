@@ -13,6 +13,7 @@ import com.basic4gl.library.debug.DebuggerCommandAdapter;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.InstructionPosition;
 import com.basic4gl.runtime.TomVM;
+import org.apache.commons.cli.*;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -24,7 +25,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 
-public class GLTextGridWindow extends GLWindow implements IFileAccess {
+public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCommandLineOptions {
 
 	//Libraries
 	private java.util.List<Library> mLibraries;
@@ -34,8 +35,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	private TomBasicCompiler mComp;
 	private TomVM mVM;
-	private Thread mThread;	//Standalone
-
+	private String[] programArgs;
 	private DebuggerCallbacks mDebugger;
 	private DebuggerCommandAdapter debuggerAdapter;
 
@@ -57,13 +57,14 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	private Configuration mConfiguration;
 
 	static final int SETTING_TITLE 				= 1; //Index of window title setting in config
-	static final int SETTING_WIDTH 				= 2; //Index of window width setting in config
-	static final int SETTING_HEIGHT 			= 3; //Index of window height setting in config
-	static final int SETTING_RESIZABLE 			= 4; //Index of window resizable setting in config
-	static final int SETTING_SCREEN_MODE		= 5; //Index of screen mode setting in config
-	static final int SETTING_SUPPORT_WINDOWS	= 8; //Index of Windows support setting in config
-	static final int SETTING_SUPPORT_MAC		= 9; //Index of Mac support setting in config
-	static final int SETTING_SUPPORT_LINUX		= 10; //Index of Linux support setting in config
+	static final int SETTING_VERSION 			= 2; //Index of version string setting in config
+	static final int SETTING_WIDTH 				= 3; //Index of window width setting in config
+	static final int SETTING_HEIGHT 			= 4; //Index of window height setting in config
+	static final int SETTING_RESIZABLE 			= 5; //Index of window resizable setting in config
+	static final int SETTING_SCREEN_MODE		= 6; //Index of screen mode setting in config
+	static final int SETTING_SUPPORT_WINDOWS	= 9; //Index of Windows support setting in config
+	static final int SETTING_SUPPORT_MAC		= 10; //Index of Mac support setting in config
+	static final int SETTING_SUPPORT_LINUX		= 11; //Index of Linux support setting in config
 
 	static final int SUPPORT_WINDOWS_32_64		= 0;
 	static final int SUPPORT_WINDOWS_32			= 1;
@@ -80,6 +81,16 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	static final String CONFIG_FILE			= "config.ser";	//Filename for configuration file
 	static final String STATE_FILE			= "state.bin";	//Filename for stored VM state
+
+	static final String DEFAULT_VERSION			= "1.0";	//Default version name for compiled programs
+
+	// Predefined CLI options used by Basic4GLj debugger
+	static final String CONFIG_FILE_PATH_OPTION = "c";
+	static final String PROGRAM_FILE_PATH_OPTION = "p";
+	static final String LINE_MAPPING_FILE_PATH_OPTION = "m";
+	static final String LOG_FILE_PATH_OPTION = "logfile";
+	static final String PARENT_DIRECTORY_OPTION = "parent";
+	static final String DEBUGGER_PORT_OPTION = "d";
 
 	private String mCharset = "charset.png"; //Default charset texture
 
@@ -115,33 +126,116 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 	public static void main(String[] args) {
 
-		//Load VM's state from file
+		// Load VM's state from file
 		String stateFile = "/" + STATE_FILE;
 		String configFile = "/" + CONFIG_FILE;
 		String mappingFile = null;
 		String currentDirectory = null;
+		String debugServerPort = null;
+		String logFilePath = null;
 
-		if (args.length > 3) {
-			stateFile = args[0];// "/" + STATE_FILE
-			configFile = args[1];//"/" + CONFIG_FILE;
-			mappingFile = args[2];
-			currentDirectory = args[3];
+		// Program should display help
+		boolean displayHelp = false;
+
+		// Program should display version and exit
+		boolean displayVersion = false;
+
+		// Program args used to initialize function libraries
+		String[] programArgs = new String[0];
+
+		// create the CLI parser
+		CommandLineParser parser = new DefaultParser();
+		Options options = new Options();
+
+		try {
+			Option help = Option.builder("h")
+					.longOpt("help")
+					.desc("print this message")
+					.build();
+
+			Option version = Option.builder("v")
+					.longOpt("version")
+					.desc("print the version information and exit")
+					.build();
+
+			Option logFileOption = Option.builder(LOG_FILE_PATH_OPTION)
+					.argName("file")
+					.hasArg()
+					.desc("use given file path for log output")
+					.build();
+
+			Option configFileOption = Option.builder(CONFIG_FILE_PATH_OPTION)
+					.longOpt("config-path")
+					.argName("file")
+					.hasArg()
+					.desc("use given file for program config")
+					.build();
+
+			Option stateFileOption = Option.builder(PROGRAM_FILE_PATH_OPTION)
+					.longOpt("program-path")
+					.argName("file")
+					.hasArg()
+					.desc("use given file path to load compiled program code")
+					.build();
+
+			Option mappingFileOption = Option.builder(LINE_MAPPING_FILE_PATH_OPTION)
+					.longOpt("line-mapping-path")
+					.argName("file")
+					.hasArg()
+					.desc("use given file path for program line mapping")
+					.build();
+
+			Option parentPathOption = Option.builder(PARENT_DIRECTORY_OPTION)
+					.argName("directory")
+					.hasArg()
+					.desc("use given directory path for program parent directory")
+					.build();
+
+			Option debugPortOption = Option.builder(DEBUGGER_PORT_OPTION)
+					.longOpt("debugger-port")
+					.argName("port")
+					.hasArg()
+					.desc("use given port to connect to the debugger")
+					.build();
+
+			options.addOption(help);
+			options.addOption(version);
+			options.addOption(stateFileOption);
+			options.addOption(configFileOption);
+			options.addOption(mappingFileOption);
+			options.addOption(logFileOption);
+			options.addOption(parentPathOption);
+			options.addOption(debugPortOption);
+
+			// parse the command line arguments
+			CommandLine cmd = parser.parse(options, args, false);
+
+			stateFile = cmd.getOptionValue(stateFileOption, "/" + STATE_FILE);
+			configFile = cmd.getOptionValue(configFileOption, "/" + CONFIG_FILE);
+			mappingFile = cmd.getOptionValue(mappingFileOption, null);
+			logFilePath = cmd.getOptionValue(logFileOption, null);
+			currentDirectory = cmd.getOptionValue(parentPathOption, null);
+			debugServerPort = cmd.getOptionValue(debugPortOption, null);
+
+			displayHelp = cmd.hasOption(help);
+			displayVersion = cmd.hasOption(version);
+
+			// Args not recognized may be accessed by function libraries; eg: Standard Library args(), argcount()
+			programArgs = cmd.getArgs();
 		}
-		//TODO determine better way to handle optional params
-		String debugServerPort = args.length > 4
-			? args[4]
-			: null;
+		catch (ParseException exp) {
+			// oops, something went wrong
+			System.err.println("Parsing failed.  Reason: " + exp.getMessage());
 
-		// TODO add optional parameter for Location to store logs; using debugServerPort as a debug mode flag
-		if (debugServerPort != null) {
-			String applicationStoragePath = System.getProperty("user.home") +
-					System.getProperty("file.separator") +
-					"Basic4GLj";
+			// attempt to allow program to continue normally - assumes program is compiled as a standalone application
+			programArgs = args;
+		}
 
+		// Log standard output to file if requested
+		if (logFilePath != null) {
 			PrintStream out = null;
 			try {
-				String logFilePath = new File(applicationStoragePath, "output.log").getAbsolutePath();
-
+				System.out.println("Logging program output to: " + logFilePath);
 				File file = new File(logFilePath);
 				if (!file.exists()) {
 					file.getParentFile().mkdirs();
@@ -158,6 +252,56 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 
 		//JOptionPane.showMessageDialog(null, "Waiting...");
 		instance = new GLTextGridWindow();
+
+		//Load window configuration
+		try {
+			if (instance.getClass().getResource(configFile) != null) {
+				// use bundled config file if running as an exported project
+				instance.loadConfiguration(instance.getClass().getResourceAsStream(configFile));
+			} else {
+				// external config file path was provided by commandline - ie: from the IDE
+				instance.loadConfiguration(new FileInputStream(configFile));
+			}
+
+		} catch (Exception ex){
+			ex.printStackTrace();
+			System.err.println("Configuration file could not be loaded");
+		}
+
+		// Log CLI help documentation
+		if (displayHelp) {
+			// generate the CLI help statement
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp("basic4gl-app [options] [args...]",
+					"""
+                            Arguments following options are passed as user-defined arguments to the program.
+
+                            where options include:""",
+					options,
+					"");
+		}
+
+		// display program version info and exit if requested by CLI args
+		if (displayVersion) {
+			String versionName = "";
+			String title = instance.mConfiguration.getValue(SETTING_TITLE);
+			String version = instance.mConfiguration.getValue(SETTING_VERSION);
+			if (version == null || version.trim().isEmpty()) {
+				version = DEFAULT_VERSION;
+			}
+
+			if (title != null && !title.trim().isEmpty()) {
+				versionName = title + " " + version;
+			} else {
+				versionName = version;
+			}
+
+			System.out.println(versionName);
+			return;
+		}
+
+		// provide program args for function libraries
+		instance.programArgs = programArgs;
 
 		LineNumberMapping lineNumberMapping = null;
 		if (mappingFile != null) {
@@ -227,21 +371,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 			ex.printStackTrace();
 			System.err.println("VM state could not be loaded");
 		}
-		//Load window configuration
-		try {
-			System.out.println(configFile);
-			if (instance.getClass().getResource(configFile) != null) {
-				// use bundled config file if running as an exported project
-				instance.loadConfiguration(instance.getClass().getResourceAsStream(configFile));
-			} else {
-				// external config file path was provided by commandline - ie: from the IDE
-				instance.loadConfiguration(new FileInputStream(configFile));
-			}
 
-		} catch (Exception ex){
-			ex.printStackTrace();
-			System.err.println("Configuration file could not be loaded");
-		}
 
 		//Initialize window and setup VM
 		instance.mVM.pause();
@@ -277,7 +407,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 				}
 			};
 		}
-		instance.start(null);
+		instance.start();
 	}
 
 	@Override
@@ -287,7 +417,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	public String description() { return "Desktop application with OpenGL capabilities.";}
 
 	@Override
-	public void init(TomVM vm) {
+	public void init(TomVM vm, String[] args) {
 		// TODO Auto-generated method stub
 
 	}
@@ -332,10 +462,140 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 	}
 
 	@Override
-	public void start(DebuggerCallbacks callbacks) {
-		mThread = new Thread(new VMThread(mDebugger));
-		// TODO thread.start() has issues with initializing GL stuff off the main thread
-		mThread.run();
+	public void start() {
+		System.out.println("Running...");
+		if (mVM == null) {
+			return;    //TODO Throw exception
+		}
+		try {
+			if (mDebugger != null) {
+				mDebugger.onPreLoad();
+			}
+			mCharset = mFiles.getFilenameForRead("charset.png", false);
+			if (mDebugger != null) {
+				mDebugger.onPostLoad();
+			}
+			onPreExecute();
+			//Initialize libraries
+			for (Library lib : mComp.getLibraries()) {
+				initLibrary(lib);
+			}
+			//Debugger is not attached
+			if (mDebugger == null) {
+				while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
+					//Continue to next OpCode
+					driveVM(TomVM.VM_STEPS);
+
+					// Poll for window events. The key callback above will only be
+					// invoked during this call.
+					handleEvents();
+				}   //Program completed
+			}
+			else	//Debugger is attached
+			{
+				while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
+					// Run the virtual machine for a certain number of steps
+					mVM.patchIn();
+
+					if (mVM.isPaused()) {
+						//Breakpoint reached or paused by debugger
+						System.out.println("VM paused");
+
+						mDebugger.pause("Reached breakpoint");
+
+						//Resume running
+						if (mDebugger.getMessage().getStatus() == CallbackMessage.WORKING) {
+							// Kick the virtual machine over the next op-code before patching in the breakpoints.
+							// otherwise we would never get past a breakpoint once we hit it, because we would
+							// keep on hitting it immediately and returning.
+							mDebugger.message(driveVM(1));
+
+							// Run the virtual machine for a certain number of steps
+							mVM.patchIn();
+						}
+						//Check if program was stopped while paused
+						if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.isDone() || isClosing()) {
+							break;
+						}
+					}
+
+					//Continue to next OpCode
+					mDebugger.message(driveVM(TomVM.VM_STEPS));
+
+					// Poll for window events. The key callback above will only be
+					// invoked during this call.
+					handleEvents();
+				}   //Program completed
+			}
+
+
+			//Perform debugger callbacks
+			int success;
+			if (mDebugger != null) {
+				success = !mVM.hasError()
+						? CallbackMessage.SUCCESS
+						: CallbackMessage.FAILED;
+
+				VMStatus vmStatus = new VMStatus(
+						mVM.isDone(),
+						mVM.hasError(),
+						mVM.getError());
+
+				DebuggerCallbackMessage message = new DebuggerCallbackMessage(success, success == CallbackMessage.SUCCESS
+						? "Program completed"
+						: mVM.getError(),
+						vmStatus);
+
+				// Set instruction position for editor to place cursor at error
+				if (mVM.hasError()) {
+					InstructionPosition ip = mVM.getIPInSourceCode();
+					message.setInstructionPosition(ip);
+				}
+
+				mDebugger.message(message);
+			}
+//
+//				glMatrixMode(GL_MODELVIEW);
+//				glLoadIdentity();
+//
+//				//Calculate the aspect ratio of the window
+//				perspectiveGL(90.0f,(float)m_width/(float)m_height,0.1f,100.0f);
+//
+//				glShadeModel(GL_SMOOTH);
+//				glClearDepth(1.0f);                         // Depth Buffer Setup
+//				glEnable(GL_DEPTH_TEST);                        // Enables Depth Testing
+//				glDepthFunc(GL_LEQUAL);                         // The Type Of Depth Test To Do
+			//Keep window responsive until closed
+			while (!Thread.currentThread().isInterrupted() && m_window != 0 && !isClosing()) {
+				//System.out.println("idle");
+				try {
+					//Go easy on the processor
+					Thread.sleep(10);
+
+
+//						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+//
+//						glLoadIdentity();//							' Reset The View
+//
+//						glColor3f(0.5f,0.5f,1.0f);//						' Set The Color To Blue One Time Only
+//						glBegin(GL_QUADS);//							' Draw A Quad
+//						glVertex3f(-1.0f, 1.0f, 0.0f);//					' Top Left
+//						glVertex3f( 1.0f, 1.0f, 0.0f)	;//				' Top Right
+//						glVertex3f( 1.0f,-1.0f, 0.0f);//					' Bottom Right
+//						glVertex3f(-0.5f,-1.0f, 0.0f);//					' Bottom Left
+//						glEnd();
+//						glfwSwapBuffers(m_window);
+
+					// Poll for window events. The key callback above will only be
+					// invoked during this call.
+					handleEvents();
+				} catch (InterruptedException consumed){ break;}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			onFinally();
+		}
 	}
 
 	@Override
@@ -365,158 +625,12 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		return false;
 	}
 
-
-
-	private class VMThread implements Runnable {
-		private final DebuggerCallbacks mDebugger;
-		VMThread(DebuggerCallbacks debugger){
-			mDebugger = debugger;
-		}
-		@Override
-		public void run() {
-			System.out.println("Running...");
-			if (mVM == null) {
-				return;    //TODO Throw exception
-			}
-			try {
-				if (mDebugger != null) {
-					mDebugger.onPreLoad();
-				}
-				mCharset = mFiles.getFilenameForRead("charset.png", false);
-				if (mDebugger != null) {
-					mDebugger.onPostLoad();
-				}
-				onPreExecute();
-				//Initialize libraries
-				for (Library lib : mComp.getLibraries()) {
-					initLibrary(lib);
-				}
-					//Debugger is not attached
-				if (mDebugger == null) {
-					while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
-						//Continue to next OpCode
-						driveVM(TomVM.VM_STEPS);
-
-						// Poll for window events. The key callback above will only be
-						// invoked during this call.
-						handleEvents();
-					}   //Program completed
-				}
-				else	//Debugger is attached
-				{
-					while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
-						// Run the virtual machine for a certain number of steps
-						mVM.patchIn();
-
-						if (mVM.isPaused()) {
-							//Breakpoint reached or paused by debugger
-							System.out.println("VM paused");
-
-							mDebugger.pause("Reached breakpoint");
-
-							//Resume running
-							if (mDebugger.getMessage().getStatus() == CallbackMessage.WORKING) {
-								// Kick the virtual machine over the next op-code before patching in the breakpoints.
-								// otherwise we would never get past a breakpoint once we hit it, because we would
-								// keep on hitting it immediately and returning.
-								mDebugger.message(driveVM(1));
-
-								// Run the virtual machine for a certain number of steps
-								mVM.patchIn();
-							}
-							//Check if program was stopped while paused
-							if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.isDone() || isClosing()) {
-								break;
-							}
-						}
-
-						//Continue to next OpCode
-						mDebugger.message(driveVM(TomVM.VM_STEPS));
-
-						// Poll for window events. The key callback above will only be
-						// invoked during this call.
-						handleEvents();
-					}   //Program completed
-				}
-
-
-				//Perform debugger callbacks
-				int success;
-				if (mDebugger != null) {
-					success = !mVM.hasError()
-							? CallbackMessage.SUCCESS
-							: CallbackMessage.FAILED;
-
-					VMStatus vmStatus = new VMStatus(
-							mVM.isDone(),
-							mVM.hasError(),
-							mVM.getError());
-
-					DebuggerCallbackMessage message = new DebuggerCallbackMessage(success, success == CallbackMessage.SUCCESS
-							? "Program completed"
-							: mVM.getError(),
-							vmStatus);
-
-					// Set instruction position for editor to place cursor at error
-					if (mVM.hasError()) {
-						InstructionPosition ip = mVM.getIPInSourceCode();
-						message.setInstructionPosition(ip);
-					}
-
-					mDebugger.message(message);
-				}
-//
-//				glMatrixMode(GL_MODELVIEW);
-//				glLoadIdentity();
-//
-//				//Calculate the aspect ratio of the window
-//				perspectiveGL(90.0f,(float)m_width/(float)m_height,0.1f,100.0f);
-//
-//				glShadeModel(GL_SMOOTH);
-//				glClearDepth(1.0f);                         // Depth Buffer Setup
-//				glEnable(GL_DEPTH_TEST);                        // Enables Depth Testing
-//				glDepthFunc(GL_LEQUAL);                         // The Type Of Depth Test To Do
-				//Keep window responsive until closed
-				while (!Thread.currentThread().isInterrupted() && m_window != 0 && !isClosing()) {
-					//System.out.println("idle");
-					try {
-						//Go easy on the processor
-						Thread.sleep(10);
-
-
-//						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-//
-//						glLoadIdentity();//							' Reset The View
-//
-//						glColor3f(0.5f,0.5f,1.0f);//						' Set The Color To Blue One Time Only
-//						glBegin(GL_QUADS);//							' Draw A Quad
-//						glVertex3f(-1.0f, 1.0f, 0.0f);//					' Top Left
-//						glVertex3f( 1.0f, 1.0f, 0.0f)	;//				' Top Right
-//						glVertex3f( 1.0f,-1.0f, 0.0f);//					' Bottom Right
-//						glVertex3f(-0.5f,-1.0f, 0.0f);//					' Bottom Left
-//						glEnd();
-//						glfwSwapBuffers(m_window);
-
-						// Poll for window events. The key callback above will only be
-						// invoked during this call.
-						handleEvents();
-					} catch (InterruptedException consumed){ break;}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				onFinally();
-			}
-		}
-
-	}
-
-
 	@Override
 	public Configuration getSettings() {
 		Configuration settings = new Configuration();
 		settings.addSetting(new String[]{"Window Config"}, Configuration.PARAM_HEADING, "");
 		settings.addSetting(new String[]{"Window Title"}, Configuration.PARAM_STRING, "My Application");
+		settings.addSetting(new String[]{"Program Version"}, Configuration.PARAM_STRING, "1.0");
 		settings.addSetting(new String[]{"Window Width"}, Configuration.PARAM_INT, "640");
 		settings.addSetting(new String[]{"Window Height"}, Configuration.PARAM_INT, "480");
 		settings.addSetting(new String[]{"Resizable Window"}, Configuration.PARAM_BOOL, "false");
@@ -795,6 +909,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		}
 		return null;
 	}
+
+	@Override
 	public void initLibrary(Library lib){
 		if (lib instanceof IVMDriverAccess){
 			//Allows libraries to access VM driver/keep it responsive
@@ -808,7 +924,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 			((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
 		}
 
-		lib.init(mVM);
+		lib.init(mVM, programArgs);
 	}
 	public boolean handleEvents(){
 
@@ -1097,4 +1213,33 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess {
 		}
 	}
 
+	@Override
+	public String getConfigFilePathCommandLineOption() {
+		return CONFIG_FILE_PATH_OPTION;
+	}
+
+	@Override
+	public String getLineMappingFilePathCommandLineOption() {
+		return LINE_MAPPING_FILE_PATH_OPTION;
+	}
+
+	@Override
+	public String getLogFilePathCommandLineOption() {
+		return LOG_FILE_PATH_OPTION;
+	}
+
+	@Override
+	public String getParentDirectoryCommandLineOption() {
+		return PARENT_DIRECTORY_OPTION;
+	}
+
+	@Override
+	public String getProgramFilePathCommandLineOption() {
+		return PROGRAM_FILE_PATH_OPTION;
+	}
+
+	@Override
+	public String getDebuggerPortCommandLineOption() {
+		return DEBUGGER_PORT_OPTION;
+	}
 }

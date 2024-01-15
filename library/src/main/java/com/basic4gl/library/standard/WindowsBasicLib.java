@@ -38,7 +38,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     @Override
-    public void init(TomVM vm) {
+    public void init(TomVM vm, String[] args) {
         performanceFreq = System.nanoTime();
     }
 

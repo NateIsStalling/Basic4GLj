@@ -51,7 +51,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm) {
+    public void init(TomVM vm, String[] args) {
         //////////////////////////////////
         // Register overloaded operators
         scaleVec            = vm.addOperatorFunction(new OpScaleVec());

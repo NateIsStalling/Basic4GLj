@@ -53,7 +53,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer{
     }
 
     @Override
-    public void init(TomVM vm) {
+    public void init(TomVM vm, String[] args) {
         // Text rendering defaults
         textMode = TextMode.TEXT_SIMPLE;
         appText.Resize (25, 40);

@@ -59,7 +59,7 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer{
     }
 
     @Override
-    public void init(TomVM vm) {
+    public void init(TomVM vm, String[] args) {
 
     }
 

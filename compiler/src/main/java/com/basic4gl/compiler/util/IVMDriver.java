@@ -20,10 +20,9 @@ public interface IVMDriver {
 	void reset();
 
 	/**
-	 * Begin thread and show window
-	 * @param debugger
+	 * Begin program and show window
 	 */
-	void start(DebuggerCallbacks debugger);
+	void start();
 
 	/**
 	 * Close or minimize window

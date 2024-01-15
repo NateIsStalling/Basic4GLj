@@ -31,7 +31,7 @@ public class GLUBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm) {
+    public void init(TomVM vm, String[] args) {
 
     }
     @Override

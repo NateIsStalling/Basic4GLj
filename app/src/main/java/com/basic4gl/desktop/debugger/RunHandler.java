@@ -2,7 +2,9 @@ package com.basic4gl.desktop.debugger;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.lib.util.ITargetCommandLineOptions;
 import com.basic4gl.lib.util.Library;
+import com.basic4gl.lib.util.Target;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -61,6 +63,7 @@ public class RunHandler {
             }
 
             String[] commandArgs = buildCommandArgs(
+                    builder,
                     currentDirectory,
                     libraryBinPath,
                     vm.getAbsolutePath(),
@@ -118,6 +121,7 @@ public class RunHandler {
     }
 
     private static String[] buildCommandArgs(
+            Library library,
             String currentDirectory,
             String libraryBinPath,
             String vmPath,
@@ -132,15 +136,28 @@ public class RunHandler {
                 "server=y," +
                 "suspend=" + jvmDebugSuspend;
 
-        final String[] runnerArgs = new String[] {
-                libraryBinPath,
-                //Runner args:
-                vmPath,
-                configPath,
-                lineMappingPath,
-                currentDirectory,
-                DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT
-        };
+        String applicationStoragePath = System.getProperty("user.home") +
+                System.getProperty("file.separator") +
+                "Basic4GLj";
+
+        String logFilePath = new File(applicationStoragePath, "output.log").getAbsolutePath();
+
+        final ArrayList<String> runnerArgs = new ArrayList<>();
+
+        runnerArgs.add(libraryBinPath);
+
+        if (library instanceof ITargetCommandLineOptions target) {
+            addTargetOption(runnerArgs, target.getProgramFilePathCommandLineOption(), vmPath);
+            addTargetOption(runnerArgs, target.getConfigFilePathCommandLineOption(), configPath);
+            addTargetOption(runnerArgs, target.getLineMappingFilePathCommandLineOption(), lineMappingPath);
+            addTargetOption(runnerArgs, target.getLogFilePathCommandLineOption(), logFilePath);
+            addTargetOption(runnerArgs, target.getParentDirectoryCommandLineOption(), currentDirectory);
+            addTargetOption(runnerArgs, target.getDebuggerPortCommandLineOption(), DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
+        } else {
+            System.out.println("Target Library does not implement " +
+                    ITargetCommandLineOptions.class.getName() +
+                    ", program may not support debugging.");
+        }
 
         // Output window is being run as a java jar file
         if (libraryBinPath.endsWith(".jar")) {
@@ -155,12 +172,19 @@ public class RunHandler {
 
             // libraryBinPath included in runnerArgs is expected to be a .jar file as the first value
             jvmArgs.add("-jar");
-            jvmArgs.addAll(Arrays.asList(runnerArgs));
+            jvmArgs.addAll(runnerArgs);
 
             return jvmArgs.toArray(new String[0]);
         }
 
         // Output window is an executable binary; java parameters are not required
-        return runnerArgs;
+        return runnerArgs.toArray(new String[0]);
+    }
+
+    private static void addTargetOption(ArrayList<String> args, String option, String value) {
+        if (option != null) {
+            args.add("-" + option);
+            args.add(value);
+        }
     }
 }
