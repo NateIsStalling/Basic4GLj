@@ -13,22 +13,19 @@ import java.util.ArrayList;
 /**
  * Created by Nate on 2/5/2015.
  */
-public class ProjectSettingsDialog {
+public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigurationChangeListener {
 
-    JDialog dialog;
+    private final JDialog dialog;
 
-    JComboBox builderComboBox;
-    JLabel builderDescriptionLabel;
+    private final JComboBox builderComboBox;
 
-    JTextPane infoTextPane;
-    JPanel configPane;
+    private final JTextPane infoTextPane;
     //Libraries
     private java.util.List<Library> libraries;
     private java.util.List<Integer> builders;        //Indexes of libraries that can be launch targets
     private int currentBuilder;            //Index value of target
 
-    private final java.util.List<JComponent> settingComponents = new ArrayList<JComponent>();
-    private Configuration currentConfig;
+    private ConfigurationFormPanel configPane;
 
     public ProjectSettingsDialog(Frame parent) {
         dialog = new JDialog(parent);
@@ -45,18 +42,6 @@ public class ProjectSettingsDialog {
         JButton applyButton = new JButton("Apply");
         JButton acceptButton = new JButton("Accept");
         JButton cancelButton = new JButton("Cancel");
-        applyButton.addActionListener(e -> {
-            if (currentBuilder != -1) {
-                applyConfig();
-            }
-        });
-        acceptButton.addActionListener(e -> {
-            if (currentBuilder != -1) {
-                applyConfig();
-            }
-            ProjectSettingsDialog.this.setVisible(false);
-        });
-        cancelButton.addActionListener(e -> ProjectSettingsDialog.this.setVisible(false));
 
         buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
         buttonPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -122,7 +107,9 @@ public class ProjectSettingsDialog {
         JLabel propertiesLabel = new JLabel("Configuration:");
         propertiesLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         propertiesPanel.add(propertiesLabel, BorderLayout.PAGE_START);
-        configPane = new JPanel();
+
+
+        configPane = new ConfigurationFormPanel(this);
         //mConfigPane.setBackground(Color.LIGHT_GRAY);
 
         configPane.setBorder(new EmptyBorder(4, 4, 4, 4));
@@ -132,21 +119,19 @@ public class ProjectSettingsDialog {
         configPane.setLayout(new BoxLayout(configPane, BoxLayout.Y_AXIS));
         configPane.setAlignmentX(0f);
 
-/*
-        JPanel descriptionPanel = new JPanel();
-        infoPanel.add(descriptionPanel);
-        BoxLayout descriptionLayout = new BoxLayout(descriptionPanel, BoxLayout.Y_AXIS);
 
-        descriptionPanel.setLayout(descriptionLayout);
-        descriptionPanel.setBorder(new EmptyBorder(10, 5, 10, 5));
-
-        mBuilderDescriptionLabel = new JLabel(MainWindow.APPLICATION_DESCRIPTION);
-        mBuilderDescriptionLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        mBuilderDescriptionLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
-        descriptionPanel.add(mBuilderDescriptionLabel);
-
-        descriptionPanel.add(Box.createVerticalGlue());
-*/
+        applyButton.addActionListener(e -> {
+            if (currentBuilder != -1) {
+                configPane.applyConfig();
+            }
+        });
+        acceptButton.addActionListener(e -> {
+            if (currentBuilder != -1) {
+                configPane.applyConfig();
+            }
+            ProjectSettingsDialog.this.setVisible(false);
+        });
+        cancelButton.addActionListener(e -> ProjectSettingsDialog.this.setVisible(false));
 
         builderComboBox.addActionListener(e -> {
             JComboBox cb = (JComboBox) e.getSource();
@@ -165,125 +150,14 @@ public class ProjectSettingsDialog {
 
     private void selectBuilder(int builderIndex) {
         currentBuilder = builderIndex;
-        Library builder = libraries.get(builders.get(currentBuilder));
+        Library target = libraries.get(builders.get(currentBuilder));
 
         //TODO Display target info
-        infoTextPane.setText(builder.description());
-        //Load settings
-        settingComponents.clear();
-        configPane.removeAll();
-        currentConfig = new Configuration(((Builder) builder).getConfiguration());
-        String[] field;
-        int paramType;
-        String configValue;
-
-        // Create form input for configuration
-        for (int i = 0; i < currentConfig.getSettingCount(); i++) {
-            field = currentConfig.getField(i);
-            paramType = currentConfig.getParamType(i);
-            configValue = currentConfig.getValue(i);
-
-            addConfigurationField(field, paramType, configValue);
-        }
+        infoTextPane.setText(target.description());
+        configPane.setConfiguration(new Configuration(((Builder) target).getConfiguration()));
     }
 
-    private void addConfigurationField(String[] field, int paramType, String value) {
-        JLabel label;
 
-        //Override parameter type if field contains multiple values
-        if (field.length > 1) {
-            paramType = Configuration.PARAM_CHOICE;
-        }
-
-        switch (paramType) {
-            case Configuration.PARAM_HEADING:
-                label = new JLabel(field[0]);
-                Font font = label.getFont();
-                label.setFont(new Font(font.getName(), Font.BOLD, font.getSize() + 2));
-                label.setBorder(new EmptyBorder(6, 6, 6, 6));
-                configPane.add(label);
-                settingComponents.add(null);
-                break;
-            case Configuration.PARAM_DIVIDER:
-                configPane.add(Box.createVerticalStrut(16));
-                configPane.add(new JSeparator(JSeparator.HORIZONTAL));
-                configPane.add(Box.createVerticalStrut(2));
-                settingComponents.add(null);
-                break;
-            case Configuration.PARAM_STRING:
-                label = new JLabel(field[0]);
-                label.setAlignmentX(0f);
-                label.setBorder(new EmptyBorder(4, 4, 4, 4));
-                configPane.add(label);
-                JTextField textField = new JTextField(value);
-                textField.setBorder(new EmptyBorder(4, 4, 4, 4));
-                settingComponents.add(textField);
-                configPane.add(textField);
-                break;
-            case Configuration.PARAM_BOOL:
-                JCheckBox checkBox = new JCheckBox(field[0]);
-                checkBox.setAlignmentX(0f);
-                checkBox.setSelected(Boolean.valueOf(value));
-                checkBox.setBorder(new EmptyBorder(4, 4, 4, 4));
-                settingComponents.add(checkBox);
-                configPane.add(checkBox);
-                break;
-            case Configuration.PARAM_INT:
-                label = new JLabel(field[0]);
-                label.setAlignmentX(0f);
-                configPane.add(label);
-                JSpinner spinner = new JSpinner(new SpinnerNumberModel(Integer.valueOf(value).intValue(), 0, Short.MAX_VALUE, 1));
-                settingComponents.add(spinner);
-                configPane.add(spinner);
-                break;
-            case Configuration.PARAM_CHOICE:
-                label = new JLabel(field[0]);
-                label.setAlignmentX(0f);
-                label.setBorder(new EmptyBorder(4, 4, 4, 4));
-                configPane.add(label);
-                label.setHorizontalAlignment(SwingConstants.LEFT);
-                JComboBox comboBox = new JComboBox();
-                for (int j = 1; j < field.length; j++) {
-                    comboBox.addItem(field[j]);
-                }
-                comboBox.setSelectedIndex(Integer.valueOf(value));
-                settingComponents.add(comboBox);
-                configPane.add(comboBox);
-                break;
-        }
-    }
-
-    private void applyConfig(){
-        String val;
-        if (currentConfig == null) {
-            return;
-        }
-        Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
-        int param;
-        for (int i = 0; i < currentConfig.getSettingCount(); i++) {
-            param = currentConfig.getParamType(i);
-            val = "0";
-            if (settingComponents.get(i) == null) {
-                continue;
-            }
-            switch (param) {
-                case Configuration.PARAM_STRING:
-                    val = ((JTextField) settingComponents.get(i)).getText();
-                    break;
-                case Configuration.PARAM_INT:
-                    val = String.valueOf(((JSpinner) settingComponents.get(i)).getValue());
-                    break;
-                case Configuration.PARAM_BOOL:
-                    val = String.valueOf(((JCheckBox) settingComponents.get(i)).isSelected());
-                    break;
-                case Configuration.PARAM_CHOICE:
-                    val = String.valueOf(((JComboBox) settingComponents.get(i)).getSelectedIndex());
-                    break;
-            }
-            currentConfig.setValue(i, val);
-        }
-        builder.setConfiguration(currentConfig);
-    }
     public void setVisible(boolean visible){
         dialog.setVisible(visible);
     }
@@ -310,4 +184,10 @@ public class ProjectSettingsDialog {
     }
 
 
+    @Override
+    public void OnConfigurationChanged(Configuration configuration) {
+        Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
+
+        builder.setConfiguration(configuration);
+    }
 }

@@ -304,7 +304,7 @@ public class MainWindow implements
                 compilerStatusLabel.setText(basicEditor.mPreprocessor.getError());
                 return;
             }
-            ExportDialog dialog = new ExportDialog(MainWindow.this, basicEditor.mComp, basicEditor.mPreprocessor, fileManager.getFileEditors());
+            ExportDialog dialog = new ExportDialog(frame, basicEditor.mComp, basicEditor.mPreprocessor, fileManager.getFileEditors());
             dialog.setLibraries(basicEditor.mLibraries, basicEditor.mCurrentBuilder);
             dialog.setVisible(true);
             basicEditor.mCurrentBuilder = dialog.getCurrentBuilder();
