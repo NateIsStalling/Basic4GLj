@@ -340,4 +340,9 @@ public class BuilderDesktopGL extends Builder {
     public String getDebuggerPortCommandLineOption() {
         return mTarget.getDebuggerPortCommandLineOption();
     }
+
+    @Override
+    public String getSandboxModeEnabledOption() {
+        return mTarget.getSandboxModeEnabledOption();
+    }
 }

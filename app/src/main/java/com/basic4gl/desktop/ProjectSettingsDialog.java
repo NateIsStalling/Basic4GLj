@@ -1,8 +1,6 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.lib.util.Builder;
-import com.basic4gl.lib.util.Configuration;
-import com.basic4gl.lib.util.Library;
+import com.basic4gl.lib.util.*;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 
 import javax.swing.*;
@@ -29,7 +27,11 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
 
     private ConfigurationFormPanel configPane;
 
-    public ProjectSettingsDialog(Frame parent) {
+    private final IConfigurableAppSettings appSettings;
+
+    public ProjectSettingsDialog(Frame parent, IConfigurableAppSettings appSettings) {
+
+        this.appSettings = appSettings;
 
         Locale locale = new Locale("en", "US");
         ResourceBundle resources = ResourceBundle.getBundle("labels", locale);
@@ -148,6 +150,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         safeModeInfoPane.add(safeModeSettingsScrollPane, BorderLayout.CENTER);
 
         JCheckBox safeModeCheckbox = new JCheckBox(resources.getString("safeModeCheckbox"));
+        safeModeCheckbox.setSelected(appSettings.isSandboxModeEnabled());
         safeModeCheckbox.setBorder(new EmptyBorder(10, 10, 10, 10));
         safeModeSettingsTab.add(safeModeCheckbox, BorderLayout.SOUTH);
 
@@ -156,11 +159,15 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
             if (currentBuilder != -1) {
                 configPane.applyConfig();
             }
+
+            appSettings.setSandboxModeEnabled(safeModeCheckbox.isSelected());
         });
         acceptButton.addActionListener(e -> {
             if (currentBuilder != -1) {
                 configPane.applyConfig();
             }
+
+            appSettings.setSandboxModeEnabled(safeModeCheckbox.isSelected());
             ProjectSettingsDialog.this.setVisible(false);
         });
         cancelButton.addActionListener(e -> ProjectSettingsDialog.this.setVisible(false));

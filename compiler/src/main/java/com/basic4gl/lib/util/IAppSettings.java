@@ -17,5 +17,5 @@ public interface IAppSettings {
     /**
      * Returns the selected language dialect.
      */
-    int getSyntax();
+    int getSyntax(); // TODO evaluate usage, see TomBasicCompiler.LanguageSyntax.LS_BASIC4GL
 }

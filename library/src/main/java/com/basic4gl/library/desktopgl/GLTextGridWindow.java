@@ -1266,4 +1266,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 	public String getDebuggerPortCommandLineOption() {
 		return DEBUGGER_PORT_OPTION;
 	}
+
+	@Override
+	public String getSandboxModeEnabledOption() {
+		return SAFE_MODE_OPTION;
+	}
 }

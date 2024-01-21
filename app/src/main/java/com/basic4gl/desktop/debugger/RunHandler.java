@@ -2,9 +2,9 @@ package com.basic4gl.desktop.debugger;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.ITargetCommandLineOptions;
 import com.basic4gl.lib.util.Library;
-import com.basic4gl.lib.util.Target;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -16,14 +16,16 @@ import java.util.Arrays;
 
 public class RunHandler {
 
-    private final IApplicationHost mHost;
-    private final TomBasicCompiler mComp;
-    private final Preprocessor mPreprocessor;
+    private final IApplicationHost host;
+    private final TomBasicCompiler compiler;
+    private final Preprocessor preprocessor;
+    private final IAppSettings appSettings;
 
-    public RunHandler(IApplicationHost host, TomBasicCompiler comp, Preprocessor preprocessor) {
-        mHost = host;
-        mComp = comp;
-        mPreprocessor = preprocessor;
+    public RunHandler(IApplicationHost host, IAppSettings appSettings, TomBasicCompiler compiler, Preprocessor preprocessor) {
+        this.host = host;
+        this.appSettings = appSettings;
+        this.compiler = compiler;
+        this.preprocessor = preprocessor;
     }
 
     public void launchRemote(Library builder, String currentDirectory, String libraryBinPath) {
@@ -31,7 +33,7 @@ public class RunHandler {
         //TODO 12/2020 replacing Continue();
 
         // Compile and run program from start
-        if (!mHost.Compile()) {
+        if (!host.compile()) {
             return;
         }
 
@@ -42,7 +44,7 @@ public class RunHandler {
             File lineMapping = File.createTempFile("basiclinemapping-", "", tempFolder.toFile());
 
             try (DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(vm))) {
-                mComp.streamOut(outputStream);
+                compiler.streamOut(outputStream);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -57,13 +59,14 @@ public class RunHandler {
                 FileOutputStream outputStream = new FileOutputStream(lineMapping);
                 ObjectOutputStream oos = new ObjectOutputStream(outputStream)
             ) {
-                oos.writeObject(mPreprocessor.getLineNumberMap());
+                oos.writeObject(preprocessor.getLineNumberMap());
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             String[] commandArgs = buildCommandArgs(
                     builder,
+                    appSettings,
                     currentDirectory,
                     libraryBinPath,
                     vm.getAbsolutePath(),
@@ -122,6 +125,7 @@ public class RunHandler {
 
     private static String[] buildCommandArgs(
             Library library,
+            IAppSettings appSettings,
             String currentDirectory,
             String libraryBinPath,
             String vmPath,
@@ -153,6 +157,10 @@ public class RunHandler {
             addTargetOption(runnerArgs, target.getLogFilePathCommandLineOption(), logFilePath);
             addTargetOption(runnerArgs, target.getParentDirectoryCommandLineOption(), currentDirectory);
             addTargetOption(runnerArgs, target.getDebuggerPortCommandLineOption(), DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
+            
+            if (appSettings.isSandboxModeEnabled()) {
+                addTargetOption(runnerArgs, target.getSandboxModeEnabledOption());
+            }
         } else {
             System.out.println("Target Library does not implement " +
                     ITargetCommandLineOptions.class.getName() +
@@ -181,6 +189,11 @@ public class RunHandler {
         return runnerArgs.toArray(new String[0]);
     }
 
+    private static void addTargetOption(ArrayList<String> args, String option) {
+        if (option != null) {
+            args.add("-" + option);
+        }
+    }
     private static void addTargetOption(ArrayList<String> args, String option, String value) {
         if (option != null) {
             args.add("-" + option);
