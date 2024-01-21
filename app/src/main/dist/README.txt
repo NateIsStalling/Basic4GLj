@@ -28,9 +28,10 @@
 	Change Log
 ================================================
 0.5.0   - Implemented sound library
+        - Added support for "Sandbox Mode" runtime setting
         - Added support for commandline arguments
         - Added "Program Version" project configuration option for commandline programs
-        - Java 17 now embedded
+        - Java 17 now embedded for installer distributions of Basic4GLj
 
 0.4.1   - Updated LWJGL to stable version 3.3.1
         - Added LWJGL natives for macOS arm64, Linux arm32, Linux arm64, Windows x86, and Windows arm64

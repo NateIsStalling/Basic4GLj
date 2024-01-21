@@ -129,7 +129,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
 	public static void main(String[] args) {
 		boolean isStandalone = true;
-		boolean isSafeModeEnabled = true; // default safe mode to true
+		boolean isSafeModeEnabled = true; // default safe mode to true (only applied if isStandalone=false)
 
 		// Load VM's state from file
 		String stateFile = "/" + STATE_FILE;
