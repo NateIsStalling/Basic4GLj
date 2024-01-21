@@ -26,57 +26,61 @@ public class BasicEditor implements MainEditor,
         IApplicationHost,
         IFileProvider {
 
-    private IEditorPresenter mPresenter;
-    private Map<Integer, String> mEvaluateRequests = new HashMap<>();
+    private final IEditorPresenter presenter;
+    private final Map<Integer, String> evaluateRequests = new HashMap<>();
+    
+    // Runtime settings
+    private final IConfigurableAppSettings appSettings;
 
     // Virtual machine and compiler
-    private VmWorker mWorker;       // Debugging
-    public TomBasicCompiler mComp; // Compiler
-    private FileOpener mFiles;
-    private final DebuggerCallbackMessage mMessage = new DebuggerCallbackMessage();
+    private VmWorker vmWorker;       // Debugging
+    public TomBasicCompiler compiler; // Compiler
+    private FileOpener fileOpener;
+    private final DebuggerCallbackMessage callbackMessage = new DebuggerCallbackMessage();
 
 
     // Preprocessor
-    public Preprocessor mPreprocessor;
+    public Preprocessor preprocessor;
 
     // Debugger
-    public Debugger mDebugger;
+    public Debugger debugger;
 
     // State
-    TomBasicCompiler.LanguageSyntax mLanguageSyntax = TomBasicCompiler.LanguageSyntax.LS_BASIC4GL;
+    // TODO this may need to be moved into appSettings
+    TomBasicCompiler.LanguageSyntax languageSyntax = TomBasicCompiler.LanguageSyntax.LS_BASIC4GL;
 
 
 
     //Libraries
-    public List<Library> mLibraries = new ArrayList<Library>();
-    private List<Integer> mBuilders = new ArrayList<Integer>();   //Indexes of libraries that can be launch targets
-    public int mCurrentBuilder = -1;                  //Index of mTarget in mTargets
-    private Builder mBuilder;                          //Build target for user's code
-
+    public List<Library> libraries = new ArrayList<Library>();
+    private List<Integer> builders = new ArrayList<Integer>();   //Indexes of libraries that can be launch targets
+    public int currentBuilder = -1;                  //Index of mTarget in mTargets
 
     // Editor state
-    ApMode mMode = ApMode.AP_STOPPED;
+    ApMode mode = ApMode.AP_STOPPED;
 
-    List<String> mWatches = new ArrayList<String>();
+    List<String> watchList = new ArrayList<String>();
 
-    FileManager mFileManager;
+    FileManager fileManager;
 
-    String mLibraryPath;
+    String libraryPath;
 
 
     public BasicEditor(
             String libraryPath,
             FileManager fileManager,
             IEditorPresenter presenter,
+            IConfigurableAppSettings appSettings,
             Preprocessor preprocessor,
             Debugger debugger,
-            TomBasicCompiler comp) {
-        mLibraryPath = libraryPath;
-        mFileManager = fileManager;
-        mPresenter = presenter;
-        mPreprocessor = preprocessor;
-        mDebugger = debugger;
-        mComp = comp;
+            TomBasicCompiler compiler) {
+        this.libraryPath = libraryPath;
+        this.fileManager = fileManager;
+        this.presenter = presenter;
+        this.appSettings = appSettings;
+        this.preprocessor = preprocessor;
+        this.debugger = debugger;
+        this.compiler = compiler;
     }
 
 
@@ -96,42 +100,42 @@ public class BasicEditor implements MainEditor,
          */
 
         //TODO Load libraries dynamically
-        mLibraries.add(new com.basic4gl.library.standard.Standard());
-        mLibraries.add(new com.basic4gl.library.standard.TrigBasicLib());
-        mLibraries.add(new com.basic4gl.library.standard.FileIOBasicLib());
-        mLibraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
-        mLibraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
-        mLibraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
-        mLibraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
-        mLibraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
-        mLibraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
-        mLibraries.add(new com.basic4gl.library.desktopgl.TomCompilerBasicLib());
-        mLibraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
+        libraries.add(new com.basic4gl.library.standard.Standard());
+        libraries.add(new com.basic4gl.library.standard.TrigBasicLib());
+        libraries.add(new com.basic4gl.library.standard.FileIOBasicLib());
+        libraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
+        libraries.add(new com.basic4gl.library.desktopgl.TomCompilerBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
         
-        mLibraries.add(GLTextGridWindow.getInstance(mComp));
-        mLibraries.add(BuilderDesktopGL.getInstance(mComp));
+        libraries.add(GLTextGridWindow.getInstance(compiler));
+        libraries.add(BuilderDesktopGL.getInstance(compiler));
 
-        mFiles = new FileOpener(mFileManager.getCurrentDirectory());
+        fileOpener = new FileOpener(fileManager.getCurrentDirectory());
         //TODO Add more libraries
         int i = 0;
-        for (Library lib : mLibraries) {
-            lib.init(mComp); //Allow libraries to register function overloads
+        for (Library lib : libraries) {
+            lib.init(compiler); //Allow libraries to register function overloads
             if (lib instanceof IFileAccess) {
                 //Allows libraries to read from directories
-                ((IFileAccess) lib).init(mFiles);
+                ((IFileAccess) lib).init(fileOpener);
             }
             if (lib instanceof FunctionLibrary) {
-                mComp.AddConstants(((FunctionLibrary) lib).constants());
-                mComp.AddFunctions(lib, ((FunctionLibrary) lib).specs());
+                compiler.AddConstants(((FunctionLibrary) lib).constants());
+                compiler.AddFunctions(lib, ((FunctionLibrary) lib).specs());
             }
             if (lib instanceof Builder) {
-                mBuilders.add(i);
+                builders.add(i);
             }
             i++;
         }
         //Set default target
-        if (mBuilders.size() > 0) {
-            mCurrentBuilder = 0;
+        if (builders.size() > 0) {
+            currentBuilder = 0;
         }
 
         //Initialize highlighting
@@ -140,22 +144,22 @@ public class BasicEditor implements MainEditor,
         BasicTokenMaker.functions.clear();
         BasicTokenMaker.constants.clear();
         BasicTokenMaker.operators.clear();
-        for (String s : mComp.getReservedWords()) {
+        for (String s : compiler.getReservedWords()) {
             BasicTokenMaker.reservedWords.add(s);
         }
 
-        for (String s : mComp.getConstants().keySet()) {
+        for (String s : compiler.getConstants().keySet()) {
             BasicTokenMaker.constants.add(s);
         }
 
-        for (String s : mComp.getFunctionIndex().keySet()) {
+        for (String s : compiler.getFunctionIndex().keySet()) {
             BasicTokenMaker.functions.add(s);
         }
 
-        for (String s : mComp.getBinaryOperators()) {
+        for (String s : compiler.getBinaryOperators()) {
             BasicTokenMaker.operators.add(s);
         }
-        for (String s : mComp.getUnaryOperators()) {
+        for (String s : compiler.getUnaryOperators()) {
             BasicTokenMaker.operators.add(s);
         }
 
@@ -166,94 +170,94 @@ public class BasicEditor implements MainEditor,
 //                libraryPath
         //TODO fix run
 
-        if (mMode == ApMode.AP_STOPPED) {
+        if (mode == ApMode.AP_STOPPED) {
             // Compile and run program from start
             reset();
             show(new DebugCallback());
-            Library builder = mLibraries.get(mBuilders.get(mCurrentBuilder));
-            RunHandler handler = new RunHandler(this, mComp, mPreprocessor);
-            handler.launchRemote(builder, mFileManager.getCurrentDirectory(), mLibraryPath); //12/2020 testing new continue()
+            Library builder = libraries.get(builders.get(currentBuilder));
+            RunHandler handler = new RunHandler(this, appSettings, compiler, preprocessor);
+            handler.launchRemote(builder, fileManager.getCurrentDirectory(), libraryPath); //12/2020 testing new continue()
 
         } else {
             // Stop program completely.
-            mWorker.stopApplication();
+            vmWorker.stopApplication();
         }
     }
 
     public void actionPlayPause() {
-        switch (mMode) {
+        switch (mode) {
             case AP_RUNNING:
                 // Pause program
-                mWorker.pauseApplication();
+                vmWorker.pauseApplication();
                 break;
 
             case AP_STOPPED:
                 // When stopped, Play is exactly the same as Run
                 reset();
                 show(new DebugCallback());
-                Library builder = mLibraries.get(mBuilders.get(mCurrentBuilder));
-                RunHandler handler = new RunHandler(this, mComp, mPreprocessor);
-                handler.launchRemote(builder, mFileManager.getCurrentDirectory(), mLibraryPath); //12/2020 testing new continue()
+                Library builder = libraries.get(builders.get(currentBuilder));
+                RunHandler handler = new RunHandler(this, appSettings, compiler, preprocessor);
+                handler.launchRemote(builder, fileManager.getCurrentDirectory(), libraryPath); //12/2020 testing new continue()
 
                 break;
 
             case AP_PAUSED:
                 // When paused, play continues from where program was halted.
-                mWorker.resumeApplication();
+                vmWorker.resumeApplication();
 
                 break;
         }
     }
 
     public void actionStep() {
-        mWorker.step(1);
+        vmWorker.step(1);
     }
 
     public void actionStepInto() {
-        mWorker.step(2);
+        vmWorker.step(2);
     }
 
     public void actionStepOutOf() {
-        mWorker.step(3);
+        vmWorker.step(3);
     }
 
     @Override
     public void useAppDirectory() {
-        mFiles.setParentDirectory(mFileManager.getAppDirectory());
+        fileOpener.setParentDirectory(fileManager.getAppDirectory());
     }
 
     @Override
     public void useCurrentDirectory() {
-        mFiles.setParentDirectory(mFileManager.getCurrentDirectory());
+        fileOpener.setParentDirectory(fileManager.getCurrentDirectory());
     }
 
 
     @Override
     public boolean isVMRunning() {
-        return mMode == ApMode.AP_RUNNING;
+        return mode == ApMode.AP_RUNNING;
     }
 
     @Override
     public int getVMRow(String filename, InstructionPosition instructionPosition) {
-        if (mMode == ApMode.AP_RUNNING || instructionPosition == null) {
+        if (mode == ApMode.AP_RUNNING || instructionPosition == null) {
             return -1;
         }
 
         // Convert to corresponding position in source file
-        return mPreprocessor.getLineNumberMap().getSourceFromMain(filename, instructionPosition.getSourceLine());
+        return preprocessor.getLineNumberMap().getSourceFromMain(filename, instructionPosition.getSourceLine());
 
     }
 
     @Override
     public int isBreakpt(String filename, int line) {
-        return mDebugger.IsUserBreakPt(filename, line)
+        return debugger.IsUserBreakPt(filename, line)
                 ? 1
                 : 0;
     }
 
     @Override
     public boolean toggleBreakpt(String filename, int line) {
-        return mWorker.toggleBreakpoint(filename, line);
+        return vmWorker.toggleBreakpoint(filename, line);
     }
 
     @Override
@@ -263,8 +267,8 @@ public class BasicEditor implements MainEditor,
 
     @Override
     public String evaluateVariable(String variable) {
-        int requestId = mWorker.evaluateWatch(variable, false);
-        mEvaluateRequests.put(requestId, variable);
+        int requestId = vmWorker.evaluateWatch(variable, false);
+        evaluateRequests.put(requestId, variable);
 
         // result will be handled by callback
         return "???";
@@ -272,7 +276,7 @@ public class BasicEditor implements MainEditor,
 
     @Override
     public void insertDeleteLines(String filename, int fileLineNo, int delta) {
-        mDebugger.InsertDeleteLines(filename, fileLineNo, delta);
+        debugger.InsertDeleteLines(filename, fileLineNo, delta);
     }
 
     @Override
@@ -282,49 +286,49 @@ public class BasicEditor implements MainEditor,
 
     @Override
     public void refreshUI() {
-        mPresenter.RefreshActions(mMode);
+        presenter.RefreshActions(mode);
     }
 
 
     // Compilation and execution routines
-    public boolean LoadProgramIntoCompiler() {
+    public boolean loadProgramIntoCompiler() {
         //TODO Get editor assigned as main file
         int mainFiledIndex = 0;
 
-        return mPreprocessor.preprocess(
-                new EditorSourceFile(mFileManager.getEditor(mainFiledIndex), mFileManager.getFilename(mainFiledIndex)),
-                mComp.Parser());
+        return preprocessor.preprocess(
+                new EditorSourceFile(fileManager.getEditor(mainFiledIndex), fileManager.getFilename(mainFiledIndex)),
+                compiler.Parser());
     }
 
     @Override
-    public boolean Compile() {
+    public boolean compile() {
         // Compile the program, and reset the IP to the start.
         // Returns true if program compiled successfully. False if compiler error occurred.
-        if (mFileManager.editorCount() == 0) {
-            mPresenter.setCompilerStatus("No files are open");
+        if (fileManager.editorCount() == 0) {
+            presenter.setCompilerStatus("No files are open");
             return false;
         }
 
         // VM is not running
         final VMStatus vmStatus = null;
-        SetMode(ApMode.AP_STOPPED, vmStatus);
+        setMode(ApMode.AP_STOPPED, vmStatus);
 
         // Compile
-        if (!LoadProgramIntoCompiler()) {
-            mPresenter.PlaceCursorAtProcessed(mComp.Parser().getSourceCode().size() - 1, 0);
-            mPresenter.setCompilerStatus(mPreprocessor.getError());
+        if (!loadProgramIntoCompiler()) {
+            presenter.PlaceCursorAtProcessed(compiler.Parser().getSourceCode().size() - 1, 0);
+            presenter.setCompilerStatus(preprocessor.getError());
             return false;
         }
-        mComp.clearError();
-        mComp.compile();
+        compiler.clearError();
+        compiler.compile();
 
         // Inform virtual machine view that code has changed
         //TODO add VM viewer
         //VMView().RefreshVMView();
 
-        if (mComp.hasError()) {
-            mPresenter.PlaceCursorAtProcessed((int) mComp.getTokenLine(), (int) mComp.getTokenColumn());
-            mPresenter.setCompilerStatus(mComp.getError());
+        if (compiler.hasError()) {
+            presenter.PlaceCursorAtProcessed((int) compiler.getTokenLine(), (int) compiler.getTokenColumn());
+            presenter.setCompilerStatus(compiler.getError());
 
             return false;
         }
@@ -346,7 +350,7 @@ public class BasicEditor implements MainEditor,
 
 
     // TODO IVMViewInterface
-    void ExecuteSingleOpCode() {
+    void executeSingleOpCode() {
 //        if (mVM.InstructionCount() > 0) {
 //            //TODO Continue
 //            //DoContinue(1);
@@ -361,17 +365,17 @@ public class BasicEditor implements MainEditor,
 //        }
     }
 
-    public void SetMode(ApMode mode, VMStatus vmStatus) {
+    public void setMode(ApMode mode, VMStatus vmStatus) {
 
         // Set the mMode parameter.
         // Handles sending the appropriate notifications to the plugin DLLs,
         // updating the UI and status messages.
-        if (mMode != mode) {
+        if (this.mode != mode) {
             String statusMsg = "";
 
             // Send appropriate notifications to libraries and plugin DLLs
             if (mode == ApMode.AP_RUNNING) {
-                if (mMode == ApMode.AP_STOPPED) {
+                if (this.mode == ApMode.AP_STOPPED) {
                     //if (!mDLLs.ProgramStart()) {
                     //    MessageDlg(mDLLs.Error().c_str(), mtError, TMsgDlgButtons() << mbOK, 0);
                     //    return;
@@ -381,8 +385,8 @@ public class BasicEditor implements MainEditor,
                 //mDLLs.ProgramResume();
                 statusMsg = "Running...";
             } else if (mode == ApMode.AP_STOPPED
-                    && mMode != ApMode.AP_STOPPED
-                    && mMode != ApMode.AP_CLOSED) {
+                    && this.mode != ApMode.AP_STOPPED
+                    && this.mode != ApMode.AP_CLOSED) {
                 if (vmStatus != null && vmStatus.isDone() && !vmStatus.hasError()) {
                     statusMsg = "Program completed";
                 } else if (vmStatus != null && vmStatus.hasError()) {
@@ -390,100 +394,100 @@ public class BasicEditor implements MainEditor,
                 } else {
                     statusMsg = "Program stopped";
                 }
-            } else if (mode == ApMode.AP_PAUSED && mMode == ApMode.AP_RUNNING) {
+            } else if (mode == ApMode.AP_PAUSED && this.mode == ApMode.AP_RUNNING) {
                 statusMsg = "Program paused. Click play button to resume.";
                 //mDLLs.ProgramPause();
             }
 
             // Set mode
-            mMode = mode;
+            this.mode = mode;
 
-            mPresenter.onModeChanged(mode, statusMsg);
+            presenter.onModeChanged(mode, statusMsg);
         }
     }
 
     public void reset() {
-        mComp.VM().pause();
-        if (mWorker != null) {
+        compiler.VM().pause();
+        if (vmWorker != null) {
             // TODO 1/2023 need to restart the existing app to free up the JVM port used for debugging
-            mWorker.terminateApplication();
+            vmWorker.terminateApplication();
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            mWorker.cancel(true);
+            vmWorker.cancel(true);
             //TODO confirm there is no overlap with this thread stopping and starting a new one to avoid GL errors
             try {
-                mWorker.getCompletionLatch().await();
+                vmWorker.getCompletionLatch().await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
 
-        mWorker = new VmWorker(this);
+        vmWorker = new VmWorker(this);
 
-        mWorker.setCompletionLatch(new CountDownLatch(1));
+        vmWorker.setCompletionLatch(new CountDownLatch(1));
 
-        mMessage.setMessage(new CallbackMessage(), null);
+        callbackMessage.setMessage(new CallbackMessage(), null);
     }
 
     public void show(DebuggerTaskCallback callbacks) {
-        mWorker.setCallbacks(callbacks);
-        mWorker.execute();
+        vmWorker.setCallbacks(callbacks);
+        vmWorker.execute();
     }
 
-    public void hide() {
-        mBuilder.getVMDriver().hide();
-        mWorker.cancel(true);
-    }
-
-    public void stop() {
-        mBuilder.getVMDriver().stop();
-        mWorker.cancel(true);
-    }
+//    public void hide() {
+//        mBuilder.getVMDriver().hide();
+//        vmWorker.cancel(true);
+//    }
+//
+//    public void stop() {
+//        mBuilder.getVMDriver().stop();
+//        vmWorker.cancel(true);
+//    }
 
     public String evaluateWatch(String watch, boolean canCallFunc) {
-        int requestId = mWorker.evaluateWatch(watch, canCallFunc);
-        mEvaluateRequests.put(requestId, watch);
+        int requestId = vmWorker.evaluateWatch(watch, canCallFunc);
+        evaluateRequests.put(requestId, watch);
 
         // result will be handled by callback
         return "???";
     }
 
     public void refreshCallStack() {
-        mWorker.refreshCallStack();
+        vmWorker.refreshCallStack();
     }
 
     public void refreshWatchList() {
-        mPresenter.refreshWatchList();
+        presenter.refreshWatchList();
 
-        if (mMode == ApMode.AP_PAUSED) {
-            for (String watch : mWatches) {
+        if (mode == ApMode.AP_PAUSED) {
+            for (String watch : watchList) {
                 evaluateWatch(watch, true);
             }
         }
     }
 
     public List<String> getWatches() {
-        return mWatches;
+        return watchList;
     }
 
     public int getWatchListSize() {
-        return mWatches.size();
+        return watchList.size();
     }
 
     public String getWatchOrDefault(int index) {
-        if (index > -1 && index < mWatches.size()) {
-            return mWatches.get(index);
+        if (index > -1 && index < watchList.size()) {
+            return watchList.get(index);
         } else {
             return "";
         }
     }
 
     public void removeWatchAt(int index) {
-        if (index > -1 && index < mWatches.size()) {
-            mWatches.remove(index);
+        if (index > -1 && index < watchList.size()) {
+            watchList.remove(index);
         }
         refreshWatchList();
     }
@@ -494,14 +498,14 @@ public class BasicEditor implements MainEditor,
             watch = watch.trim();
             if (watch.equals("")) {
                 //User entered an empty value
-                if (index > -1 && index < mWatches.size()) {
-                    mWatches.remove(index);
+                if (index > -1 && index < watchList.size()) {
+                    watchList.remove(index);
                 }
             } else {
-                if (index > -1 && index < mWatches.size()) {
-                    mWatches.set(index, watch);
+                if (index > -1 && index < watchList.size()) {
+                    watchList.set(index, watch);
                 } else {
-                    mWatches.add(watch);
+                    watchList.add(watch);
                 }
             }
         }
@@ -514,19 +518,19 @@ public class BasicEditor implements MainEditor,
         @Override
         public void onDebuggerConnected() {
 
-            mWorker.beginSessionConfiguration();
+            vmWorker.beginSessionConfiguration();
 
             // TODO handle setting breakpoints in onDebuggerInitialized callback
 
             // TODO separate breakpoints from file editor interfaces
-            for (int i = 0; i < mFileManager.getFileEditors().size(); i++) {
-                FileEditor editor = mFileManager.getFileEditors().get(i);
-                mWorker.setBreakpoints(
+            for (int i = 0; i < fileManager.getFileEditors().size(); i++) {
+                FileEditor editor = fileManager.getFileEditors().get(i);
+                vmWorker.setBreakpoints(
                         editor.getFilePath(),
                         editor.getBreakpoints());
             }
 
-            mWorker.commitSessionConfiguration();
+            vmWorker.commitSessionConfiguration();
         }
 
         @Override
@@ -534,7 +538,7 @@ public class BasicEditor implements MainEditor,
             if (message == null) {
                 return;
             }
-            boolean updated = mMessage.setMessage(message);
+            boolean updated = callbackMessage.setMessage(message);
             if (!updated) {
                 return;
             }
@@ -543,36 +547,36 @@ public class BasicEditor implements MainEditor,
 
             InstructionPosition instructionPosition = message.getInstructionPosition();
             if (instructionPosition != null) {
-                mPresenter.PlaceCursorAtProcessed(instructionPosition.getSourceLine(), instructionPosition.getSourceColumn());
+                presenter.PlaceCursorAtProcessed(instructionPosition.getSourceLine(), instructionPosition.getSourceColumn());
             }
 
             if (message.getStatus() == CallbackMessage.WORKING) {
-                SetMode(ApMode.AP_RUNNING, vmStatus);
+                setMode(ApMode.AP_RUNNING, vmStatus);
             }
             //TODO Pause
             if (message.getStatus() == CallbackMessage.PAUSED) {
-                mPresenter.onPause();
+                presenter.onPause();
                 refreshCallStack();
                 refreshWatchList();
             }
 
             switch (message.getStatus()) {
                 case CallbackMessage.PAUSED:
-                    mPresenter.onPause();
+                    presenter.onPause();
                     break;
                 case CallbackMessage.FAILED:
                 case CallbackMessage.STOPPED:
                 case CallbackMessage.SUCCESS:
                     //Program completed
-                    SetMode(ApMode.AP_STOPPED, vmStatus);
+                    setMode(ApMode.AP_STOPPED, vmStatus);
                     break;
                 case CallbackMessage.WORKING:
                     // do nothing;
                     break;
             }
 
-            mPresenter.RefreshActions(mMode);
-            mPresenter.RefreshDebugDisplays(mMode);
+            presenter.RefreshActions(mode);
+            presenter.RefreshDebugDisplays(mode);
 
             // TODO 12/2022 move ClearTempBreakPts
             //mVM.ClearTempBreakPts();
@@ -586,37 +590,37 @@ public class BasicEditor implements MainEditor,
             if (message == null) {
                 return;
             }
-            boolean updated = mMessage.setMessage(message, mMessage.getVMStatus());
+            boolean updated = callbackMessage.setMessage(message, callbackMessage.getVMStatus());
             if (message.getStatus() == CallbackMessage.WORKING) {
                 // ignore WORKING if no status change
                 if (!updated) {
                     return;
                 } else {
-                    SetMode(ApMode.AP_RUNNING, mMessage.getVMStatus());
+                    setMode(ApMode.AP_RUNNING, callbackMessage.getVMStatus());
                 }
             }
             //TODO Pause
             if (message.getStatus() == CallbackMessage.PAUSED) {
-                mPresenter.onPause();
+                presenter.onPause();
             }
 
             switch (message.getStatus()) {
                 case CallbackMessage.PAUSED:
-                    mPresenter.onPause();
+                    presenter.onPause();
                     break;
                 case CallbackMessage.FAILED:
                 case CallbackMessage.STOPPED:
                 case CallbackMessage.SUCCESS:
                     //Program completed
-                    SetMode(ApMode.AP_STOPPED, mMessage.getVMStatus());
+                    setMode(ApMode.AP_STOPPED, callbackMessage.getVMStatus());
                     break;
                 case CallbackMessage.WORKING:
                     // do nothing;
                     break;
             }
 
-            mPresenter.RefreshActions(mMode);
-            mPresenter.RefreshDebugDisplays(mMode);
+            presenter.RefreshActions(mode);
+            presenter.RefreshDebugDisplays(mode);
 
             // TODO 12/2022 move ClearTempBreakPts
             //mVM.ClearTempBreakPts();
@@ -629,20 +633,20 @@ public class BasicEditor implements MainEditor,
         public void messageObject(Object message) {
             // TODO 12/2022 improve type safety of interface/map callback DTO to domain model
             if (message instanceof StackTraceCallback) {
-                mPresenter.updateCallStack((StackTraceCallback) message);
+                presenter.updateCallStack((StackTraceCallback) message);
             }
 
             if (message instanceof EvaluateWatchCallback) {
                 EvaluateWatchCallback callback = (EvaluateWatchCallback) message;
                 int requestId = callback.getRequestId();
-                String watch = mEvaluateRequests.get(requestId);
-                mPresenter.updateEvaluateWatch(watch, callback.getResult());
+                String watch = evaluateRequests.get(requestId);
+                presenter.updateEvaluateWatch(watch, callback.getResult());
             }
         }
 
         @Override
         public void onDebuggerDisconnected() {
-            SetMode(ApMode.AP_STOPPED, mMessage.getVMStatus());
+            setMode(ApMode.AP_STOPPED, callbackMessage.getVMStatus());
         }
 
         // TODO 12/2022 migrate handleGLWindow to closing callback handling

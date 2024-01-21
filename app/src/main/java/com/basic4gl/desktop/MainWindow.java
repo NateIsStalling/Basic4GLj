@@ -8,6 +8,8 @@ import com.basic4gl.desktop.editor.*;
 import com.basic4gl.desktop.util.*;
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.lib.util.EditorAppSettings;
+import com.basic4gl.lib.util.IConfigurableAppSettings;
 import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
@@ -119,6 +121,7 @@ public class MainWindow implements
     private final DefaultListModel<String> gosubListModel = new DefaultListModel<>();
 
     // Editors
+    final IConfigurableAppSettings appSettings = new EditorAppSettings();
     BasicEditor basicEditor;
     FileManager fileManager;
 
@@ -290,7 +293,7 @@ public class MainWindow implements
         saveMenuItem.addActionListener(e -> actionSave());
         saveAsMenuItem.addActionListener(e -> actionSaveAs());
         exportMenuItem.addActionListener(e -> {
-            basicEditor.SetMode(ApMode.AP_STOPPED, null);
+            basicEditor.setMode(ApMode.AP_STOPPED, null);
             if (fileManager.editorCount() == 0) {
                 JOptionPane.showMessageDialog(frame, "Nothing to export", "Cannot export",
                         JOptionPane.WARNING_MESSAGE);
@@ -298,16 +301,16 @@ public class MainWindow implements
             }
 
             // Clear source code from parser
-            basicEditor.mComp.Parser().getSourceCode().clear();
+            basicEditor.compiler.Parser().getSourceCode().clear();
 
-            if (!basicEditor.LoadProgramIntoCompiler()) {
-                compilerStatusLabel.setText(basicEditor.mPreprocessor.getError());
+            if (!basicEditor.loadProgramIntoCompiler()) {
+                compilerStatusLabel.setText(basicEditor.preprocessor.getError());
                 return;
             }
-            ExportDialog dialog = new ExportDialog(MainWindow.this, basicEditor.mComp, basicEditor.mPreprocessor, fileManager.getFileEditors());
-            dialog.setLibraries(basicEditor.mLibraries, basicEditor.mCurrentBuilder);
+            ExportDialog dialog = new ExportDialog(frame, basicEditor.compiler, basicEditor.preprocessor, fileManager.getFileEditors());
+            dialog.setLibraries(basicEditor.libraries, basicEditor.currentBuilder);
             dialog.setVisible(true);
-            basicEditor.mCurrentBuilder = dialog.getCurrentBuilder();
+            basicEditor.currentBuilder = dialog.getCurrentBuilder();
         });
         undoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, toolkit.getMenuShortcutKeyMask()));
         undoMenuItem.addActionListener(e -> {
@@ -404,7 +407,7 @@ public class MainWindow implements
         });
         functionListMenuItem.addActionListener(e -> {
             ReferenceWindow window = new ReferenceWindow(frame);
-            window.populate(basicEditor.mComp);
+            window.populate(basicEditor.compiler);
             window.setVisible(true);
         });
         aboutMenuItem.addActionListener(e -> showAboutDialog());
@@ -565,7 +568,7 @@ public class MainWindow implements
 
                             //Refresh controls if no files open
                             if (fileManager.editorCount() == 0) {
-                                basicEditor.SetMode(ApMode.AP_CLOSED, null);
+                                basicEditor.setMode(ApMode.AP_CLOSED, null);
                             }
                         }
                     }
@@ -622,7 +625,7 @@ public class MainWindow implements
         Debugger debugger = new Debugger(preprocessor.getLineNumberMap());
         TomVM vm = new TomVM(debugger);
         TomBasicCompiler comp = new TomBasicCompiler(vm);
-        basicEditor = new BasicEditor(outputBinPath, fileManager, this, preprocessor, debugger, comp);
+        basicEditor = new BasicEditor(outputBinPath, fileManager, this, appSettings, preprocessor, debugger, comp);
 
 
         //TODO Confirm this doesn't break if app is ever signed
@@ -638,8 +641,8 @@ public class MainWindow implements
         fileManager.setCurrentDirectory(fileManager.getFileDirectory());
 
         // TODO this should be done as a callback
-        RefreshActions(basicEditor.mMode);
-        RefreshDebugDisplays(basicEditor.mMode);
+        RefreshActions(basicEditor.mode);
+        RefreshDebugDisplays(basicEditor.mode);
 
         basicEditor.InitLibraries();
         ResetProject();
@@ -661,10 +664,10 @@ public class MainWindow implements
     }
 
     private void showSettings() {
-        ProjectSettingsDialog dialog = new ProjectSettingsDialog(frame);
-        dialog.setLibraries(basicEditor.mLibraries, basicEditor.mCurrentBuilder);
+        ProjectSettingsDialog dialog = new ProjectSettingsDialog(frame, appSettings);
+        dialog.setLibraries(basicEditor.libraries, basicEditor.currentBuilder);
         dialog.setVisible(true);
-        basicEditor.mCurrentBuilder = dialog.getCurrentBuilder();
+        basicEditor.currentBuilder = dialog.getCurrentBuilder();
     }
 
     public JFrame getFrame() {
@@ -673,8 +676,8 @@ public class MainWindow implements
 
     private void tryCloseWindow() {
         // Stop program running
-        if (basicEditor.mMode == ApMode.AP_RUNNING || basicEditor.mMode == ApMode.AP_PAUSED) {
-            basicEditor.SetMode(ApMode.AP_STOPPED, null);
+        if (basicEditor.mode == ApMode.AP_RUNNING || basicEditor.mode == ApMode.AP_PAUSED) {
+            basicEditor.setMode(ApMode.AP_STOPPED, null);
             return;
         }
 
@@ -925,7 +928,7 @@ public class MainWindow implements
         debugMenuItem.setSelected(isDebugMode);
         debugButton.setSelected(isDebugMode);
 
-        RefreshDebugDisplays(basicEditor.mMode);
+        RefreshDebugDisplays(basicEditor.mode);
     }
 
     public void closeAll() {
@@ -938,10 +941,10 @@ public class MainWindow implements
 
         // Clear DLLs, breakpoints, bookmarks etc
         //m_dlls.Clear();
-        basicEditor.mDebugger.ClearUserBreakPts();
+        basicEditor.debugger.ClearUserBreakPts();
 
         // Refresh UI
-        RefreshActions(basicEditor.mMode);
+        RefreshActions(basicEditor.mode);
     }
 
     public void closeTab(int index) {
@@ -989,14 +992,14 @@ public class MainWindow implements
         cursorPositionLabel.setText(0 + ":" + 0); //Reset label
 
         //Set tab as read-only if App is running or paused
-        boolean readOnly = basicEditor.mMode != ApMode.AP_STOPPED;
+        boolean readOnly = basicEditor.mode != ApMode.AP_STOPPED;
         editor.getEditorPane().setEditable(!readOnly);
 
         //TODO set syntax highlight colors
 
         //Refresh interface if there was previously no tabs open
         if (count == 0) {
-            basicEditor.SetMode(ApMode.AP_STOPPED, null);
+            basicEditor.setMode(ApMode.AP_STOPPED, null);
         }
     }
 
@@ -1007,7 +1010,7 @@ public class MainWindow implements
         // Find corresponding source position
         Mutable<String> filename = new Mutable<String>("");
         Mutable<Integer> fileRow = new Mutable<Integer>(0);
-        basicEditor.mPreprocessor.getLineNumberMap().getSourceFromMain(filename, fileRow, row);
+        basicEditor.preprocessor.getLineNumberMap().getSourceFromMain(filename, fileRow, row);
 
         final String file = filename.get();
         final int r = fileRow.get();
@@ -1060,14 +1063,14 @@ public class MainWindow implements
     public void onPause() {
 
         // Place editor into paused mode
-        basicEditor.SetMode(ApMode.AP_PAUSED, null);
-        RefreshActions(basicEditor.mMode);
+        basicEditor.setMode(ApMode.AP_PAUSED, null);
+        RefreshActions(basicEditor.mode);
 
         // Place editor into debug mode
         isDebugMode = true;
         debugMenuItem.setSelected(true);
         debugButton.setSelected(true);
-        RefreshDebugDisplays(basicEditor.mMode);
+        RefreshDebugDisplays(basicEditor.mode);
 
         //TODO Add VMViewer
         //VMView().SetVMIsRunning(false);
@@ -1117,8 +1120,8 @@ public class MainWindow implements
         }
 
         // Update UI
-        RefreshActions(basicEditor.mMode);
-        RefreshDebugDisplays(basicEditor.mMode);
+        RefreshActions(basicEditor.mode);
+        RefreshDebugDisplays(basicEditor.mode);
         compilerStatusLabel.setText(statusMsg);
 
         // Notify virtual machine view
@@ -1281,7 +1284,7 @@ public class MainWindow implements
                 if (userFuncIndex >= 0) {
                     // TODO 12/2022 migrate GetUserFunctionName to LineNumberMapping and handle in the DebugCommandAdapter;
                     //  would like to rely on frame.name to align with Microsoft's DAP specification
-                    gosubListModel.addElement(basicEditor.mComp.getUserFunctionName(userFuncIndex) + "()");
+                    gosubListModel.addElement(basicEditor.compiler.getUserFunctionName(userFuncIndex) + "()");
 
                     // Otherwise must be a gosub
                 } else {
@@ -1289,7 +1292,7 @@ public class MainWindow implements
                     //  would like to rely on frame.name to align with Microsoft's DAP specification
                     Integer returnAddr = NumberUtil.parseIntOrNull(frame.instructionPointer);
                     String gosubLabel = returnAddr != null
-                        ? basicEditor.mComp.DescribeStackCall(returnAddr)
+                        ? basicEditor.compiler.DescribeStackCall(returnAddr)
                         : "???";
                     gosubListModel.addElement("gosub " + gosubLabel);
                 }

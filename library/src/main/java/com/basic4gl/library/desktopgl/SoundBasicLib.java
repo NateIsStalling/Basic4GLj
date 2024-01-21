@@ -3,6 +3,7 @@ package com.basic4gl.library.desktopgl;
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.library.desktopgl.soundengine.Basic4GLSoundLibrary;
 import com.basic4gl.library.desktopgl.soundengine.Sound;
 import com.basic4gl.lib.util.FileOpener;
@@ -101,7 +102,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     @Override
-    public void init(TomVM vm, String[] args) {
+    public void init(TomVM vm, IAppSettings settings, String[] args) {
     }
 
     @Override

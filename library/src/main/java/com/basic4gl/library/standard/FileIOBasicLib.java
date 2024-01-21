@@ -30,7 +30,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
 
 
     // State variables
+    static IAppSettings appSettings;
     static FileOpener files;
+
     //FileAccessorAdapter pluginAdapter;
     PointerResourceStore<FileStream> fileStreams;
     String lastError = "";
@@ -45,7 +47,9 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     public String description() { return "File IO functions; reads and writes files with little-endian byte order.";}
 
     @Override
-    public void init(TomVM vm, String[] args) {
+    public void init(TomVM vm, IAppSettings settings, String[] args) {
+        appSettings = settings;
+
         if (fileStreams == null) {
             fileStreams = new PointerResourceStore<FileStream>();
         }
@@ -141,8 +145,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
 
     static boolean isSandboxMode() {
-        //TODO implement sandbox mode option
-        return true;//GetAppSettings()->IsSandboxMode();
+        return appSettings.isSandboxModeEnabled();
     }
 
     void closeFind() {

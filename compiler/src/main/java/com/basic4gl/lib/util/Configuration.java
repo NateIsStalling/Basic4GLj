@@ -15,38 +15,38 @@ public class Configuration implements Serializable {
     public static final int PARAM_BOOL = 3;
     public static final int PARAM_CHOICE = 4;
 
-    private List<String[]> mFields = new ArrayList<String[]>();
-    private List<Integer> mParameters = new ArrayList<Integer>();
-    private List<String> mValues = new ArrayList<String>();
+    private List<String[]> fieldNames = new ArrayList<String[]>();
+    private List<Integer> parameterTypes = new ArrayList<Integer>();
+    private List<String> values = new ArrayList<String>();
 
     public Configuration(){}
     public Configuration(Configuration config){
-        mFields = new ArrayList<String[]>(config.mFields.size());
-        for(String[] item: config.mFields) {
-            mFields.add(item.clone());
+        fieldNames = new ArrayList<String[]>(config.fieldNames.size());
+        for(String[] item: config.fieldNames) {
+            fieldNames.add(item.clone());
         }
-        mParameters = new ArrayList<Integer>(config.mParameters.size());
-        for(Integer item: config.mParameters) {
-            mParameters.add(item);
+        parameterTypes = new ArrayList<Integer>(config.parameterTypes.size());
+        for(Integer item: config.parameterTypes) {
+            parameterTypes.add(item);
         }
-        mValues = new ArrayList<String>(config.mValues.size());
-        for(String item: config.mValues) {
-            mValues.add(item);
+        values = new ArrayList<String>(config.values.size());
+        for(String item: config.values) {
+            values.add(item);
         }
 
     }
-    public int getSettingCount(){return mFields.size();}
+    public int getSettingCount(){return fieldNames.size();}
     public void addSetting(String[] field, int param, String val){
-        mFields.add(field);
-        mParameters.add(param);
-        mValues.add(val);
+        fieldNames.add(field);
+        parameterTypes.add(param);
+        values.add(val);
     }
 
-    public String[] getField(int index){return mFields.get(index);}
-    public int getParamType(int index){return mParameters.get(index);}
-    public String getValue(int index){ return mValues.get(index);}
+    public String[] getField(int index){return fieldNames.get(index);}
+    public int getParamType(int index){return parameterTypes.get(index);}
+    public String getValue(int index){ return values.get(index);}
 
     public void setValue(int index, String val){
-        mValues.set(index, val);
+        values.set(index, val);
     }
 }

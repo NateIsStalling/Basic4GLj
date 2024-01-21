@@ -282,7 +282,7 @@ public class BuilderDesktopGL extends Builder {
 
 
     @Override
-    public void init(TomVM vm, String[] args) {
+    public void init(TomVM vm, IAppSettings settings, String[] args) {
 
     }
 
@@ -339,5 +339,10 @@ public class BuilderDesktopGL extends Builder {
     @Override
     public String getDebuggerPortCommandLineOption() {
         return mTarget.getDebuggerPortCommandLineOption();
+    }
+
+    @Override
+    public String getSandboxModeEnabledOption() {
+        return mTarget.getSandboxModeEnabledOption();
     }
 }
