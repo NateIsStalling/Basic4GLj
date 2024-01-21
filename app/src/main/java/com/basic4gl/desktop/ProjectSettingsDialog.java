@@ -9,6 +9,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Created by Nate on 2/5/2015.
@@ -28,6 +30,10 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
     private ConfigurationFormPanel configPane;
 
     public ProjectSettingsDialog(Frame parent) {
+
+        Locale locale = new Locale("en", "US");
+        ResourceBundle resources = ResourceBundle.getBundle("labels", locale);
+
         dialog = new JDialog(parent);
 
         dialog.setTitle("Project Settings");
@@ -65,12 +71,19 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         // The following line enables to use scrolling tabs.
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-        JPanel buildPane = new JPanel();
-        buildPane.setLayout(new BorderLayout());
-        tabbedPane.addTab("Build", buildPane);
+        // Build settings tab
+        JPanel buildSettingsTab = new JPanel();
+        buildSettingsTab.setLayout(new BorderLayout());
+        tabbedPane.addTab("Build", buildSettingsTab);
 
+        //Safe Mode settings tab
+        JPanel safeModeSettingsTab = new JPanel();
+        safeModeSettingsTab.setLayout(new BorderLayout());
+        tabbedPane.addTab("Safe Mode", safeModeSettingsTab);
+
+        // Build settings layout
         JPanel targetSelectionPane = new JPanel();
-        buildPane.add(targetSelectionPane, BorderLayout.NORTH);
+        buildSettingsTab.add(targetSelectionPane, BorderLayout.NORTH);
         targetSelectionPane.setLayout(new BoxLayout(targetSelectionPane, BoxLayout.LINE_AXIS));
         targetSelectionPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -80,7 +93,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         targetSelectionPane.add(builderComboBox);
 
         JPanel buildInfoPane = new JPanel();
-        buildPane.add(buildInfoPane, BorderLayout.CENTER);
+        buildSettingsTab.add(buildInfoPane, BorderLayout.CENTER);
         GridLayout buildInfoPaneLayout = new GridLayout(1, 2);
         buildInfoPane.setLayout(buildInfoPaneLayout);
 
@@ -108,9 +121,8 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         propertiesLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         propertiesPanel.add(propertiesLabel, BorderLayout.PAGE_START);
 
-
         configPane = new ConfigurationFormPanel(this);
-        //mConfigPane.setBackground(Color.LIGHT_GRAY);
+        //configPane.setBackground(Color.LIGHT_GRAY);
 
         configPane.setBorder(new EmptyBorder(4, 4, 4, 4));
         JScrollPane targetPropertiesScrollPane = new JScrollPane(configPane);
@@ -119,7 +131,27 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         configPane.setLayout(new BoxLayout(configPane, BoxLayout.Y_AXIS));
         configPane.setAlignmentX(0f);
 
+        // Safe mode settings layout
 
+        JPanel safeModeInfoPane = new JPanel();
+        safeModeInfoPane.setLayout(new BorderLayout());
+        safeModeSettingsTab.add(safeModeInfoPane, BorderLayout.CENTER);
+
+        JTextPane safeModeDescriptionTextPane = new JTextPane();
+        safeModeDescriptionTextPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+        //mInfoTextPane.setBackground(Color.LIGHT_GRAY);
+        safeModeDescriptionTextPane.setEditable(false);
+        safeModeDescriptionTextPane.setText(resources.getString("safeModeDescription"));
+
+        JScrollPane safeModeSettingsScrollPane = new JScrollPane(safeModeDescriptionTextPane);
+        safeModeSettingsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        safeModeInfoPane.add(safeModeSettingsScrollPane, BorderLayout.CENTER);
+
+        JCheckBox safeModeCheckbox = new JCheckBox(resources.getString("safeModeCheckbox"));
+        safeModeCheckbox.setBorder(new EmptyBorder(10, 10, 10, 10));
+        safeModeSettingsTab.add(safeModeCheckbox, BorderLayout.SOUTH);
+
+        // Action listeners
         applyButton.addActionListener(e -> {
             if (currentBuilder != -1) {
                 configPane.applyConfig();
@@ -144,7 +176,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
 
         //JScrollPane scrollPane = new ScrollPane(textLicenses);
         dialog.pack();
-        dialog.setSize(new Dimension(464, 346));
+        dialog.setSize(new Dimension(520, 360));
         dialog.setLocationRelativeTo(parent);
     }
 
