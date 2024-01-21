@@ -95,7 +95,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     @Override
-    public void init(TomVM vm, String[] args) {
+    public void init(TomVM vm, IAppSettings settings, String[] args) {
 
     }
 

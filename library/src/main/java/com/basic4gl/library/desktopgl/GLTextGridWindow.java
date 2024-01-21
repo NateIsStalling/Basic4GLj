@@ -54,7 +54,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
 	GLTextGrid  mTextGrid;
 
-	private Configuration mConfiguration;
+	private IAppSettings appSettings; // common settings for all libraries
+	private Configuration configuration; // runtime configuration for this library
 
 	static final int SETTING_TITLE 				= 1; //Index of window title setting in config
 	static final int SETTING_VERSION 			= 2; //Index of version string setting in config
@@ -84,6 +85,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
 	static final String DEFAULT_VERSION			= "1.0";	//Default version name for compiled programs
 
+
 	// Predefined CLI options used by Basic4GLj debugger
 	static final String CONFIG_FILE_PATH_OPTION = "c";
 	static final String PROGRAM_FILE_PATH_OPTION = "p";
@@ -91,6 +93,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 	static final String LOG_FILE_PATH_OPTION = "logfile";
 	static final String PARENT_DIRECTORY_OPTION = "parent";
 	static final String DEBUGGER_PORT_OPTION = "d";
+	static final String SAFE_MODE_OPTION = "s";
 
 	private String mCharset = "charset.png"; //Default charset texture
 
@@ -125,6 +128,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 						ResetGLModeType resetGLMode);*/
 
 	public static void main(String[] args) {
+		boolean isStandalone = true;
+		boolean isSafeModeEnabled = true; // default safe mode to true
 
 		// Load VM's state from file
 		String stateFile = "/" + STATE_FILE;
@@ -156,6 +161,11 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 			Option version = Option.builder("v")
 					.longOpt("version")
 					.desc("print the version information and exit")
+					.build();
+
+			Option safeModeOption = Option.builder("s")
+					.longOpt("safe-mode-enabled")
+					.desc("run the program in safe mode")
 					.build();
 
 			Option logFileOption = Option.builder(LOG_FILE_PATH_OPTION)
@@ -200,6 +210,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
 			options.addOption(help);
 			options.addOption(version);
+			options.addOption(safeModeOption);
 			options.addOption(stateFileOption);
 			options.addOption(configFileOption);
 			options.addOption(mappingFileOption);
@@ -216,6 +227,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 			logFilePath = cmd.getOptionValue(logFileOption, null);
 			currentDirectory = cmd.getOptionValue(parentPathOption, null);
 			debugServerPort = cmd.getOptionValue(debugPortOption, null);
+
+			isSafeModeEnabled = cmd.hasOption(safeModeOption);
 
 			displayHelp = cmd.hasOption(help);
 			displayVersion = cmd.hasOption(version);
@@ -261,6 +274,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 			} else {
 				// external config file path was provided by commandline - ie: from the IDE
 				instance.loadConfiguration(new FileInputStream(configFile));
+
+				// program is not standalone
+				isStandalone = false;
 			}
 
 		} catch (Exception ex){
@@ -284,8 +300,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 		// display program version info and exit if requested by CLI args
 		if (displayVersion) {
 			String versionName = "";
-			String title = instance.mConfiguration.getValue(SETTING_TITLE);
-			String version = instance.mConfiguration.getValue(SETTING_VERSION);
+			String title = instance.configuration.getValue(SETTING_TITLE);
+			String version = instance.configuration.getValue(SETTING_VERSION);
 			if (version == null || version.trim().isEmpty()) {
 				version = DEFAULT_VERSION;
 			}
@@ -302,6 +318,14 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
 		// provide program args for function libraries
 		instance.programArgs = programArgs;
+
+		instance.appSettings = isStandalone
+			? new StandaloneAppSettings()
+			: new EditorAppSettings();
+
+		if (instance.appSettings instanceof IConfigurableAppSettings appSettings) {
+			appSettings.setSandboxModeEnabled(isSafeModeEnabled);
+		}
 
 		LineNumberMapping lineNumberMapping = null;
 		if (mappingFile != null) {
@@ -417,7 +441,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 	public String description() { return "Desktop application with OpenGL capabilities.";}
 
 	@Override
-	public void init(TomVM vm, String[] args) {
+	public void init(TomVM vm, IAppSettings settings, String[] args) {
 		// TODO Auto-generated method stub
 
 	}
@@ -454,8 +478,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 		mClosing = false;
 
 		//Get settings
-		if (mConfiguration == null) {
-			mConfiguration = getSettings();
+		if (configuration == null) {
+			configuration = getSettings();
 		}
 
 
@@ -660,15 +684,15 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
 	@Override
 	public Configuration getConfiguration() {
-		if (mConfiguration == null) {
+		if (configuration == null) {
 			return getSettings();
 		}
-		return mConfiguration;
+		return configuration;
 	}
 
 	@Override
 	public void setConfiguration(Configuration config) {
-		mConfiguration = config;
+		configuration = config;
 	}
 
 	@Override
@@ -817,7 +841,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 	public void loadConfiguration(InputStream stream) throws Exception{
 		InputStream buffer = new BufferedInputStream(stream);
 		ObjectInput input = new ObjectInputStream (buffer);
-		mConfiguration = (Configuration)input.readObject();
+		configuration = (Configuration)input.readObject();
 		input.close();
 		buffer.close();
 	}
@@ -826,7 +850,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 	public void saveConfiguration(OutputStream stream) throws Exception{
 		//Serialize configuration
 		ObjectOutput output = new ObjectOutputStream(stream);
-		output.writeObject(mConfiguration);
+		output.writeObject(configuration);
 	}
 
 	@Override
@@ -924,7 +948,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 			((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
 		}
 
-		lib.init(mVM, programArgs);
+		lib.init(mVM, appSettings, programArgs);
 	}
 	public boolean handleEvents(){
 
@@ -1087,12 +1111,12 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 		 		TMsgDlgButtons() << mbOK, 0); Application.Terminate (); return; }
 		 		m_glWin.SetTextGrid (m_glText);
 		 		*/
-			String title = mConfiguration.getValue(SETTING_TITLE);
-			m_width = Integer.valueOf(mConfiguration.getValue(SETTING_WIDTH));
-			m_height = Integer.valueOf(mConfiguration.getValue(SETTING_HEIGHT));
+			String title = configuration.getValue(SETTING_TITLE);
+			m_width = Integer.valueOf(configuration.getValue(SETTING_WIDTH));
+			m_height = Integer.valueOf(configuration.getValue(SETTING_HEIGHT));
 
-			boolean resizable = Boolean.valueOf(mConfiguration.getValue(SETTING_RESIZABLE));
-			int mode = Integer.valueOf(mConfiguration.getValue(SETTING_SCREEN_MODE));
+			boolean resizable = Boolean.valueOf(configuration.getValue(SETTING_RESIZABLE));
+			int mode = Integer.valueOf(configuration.getValue(SETTING_SCREEN_MODE));
 
 
 			// Setup an error callback. The default implementation

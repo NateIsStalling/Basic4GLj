@@ -5,6 +5,7 @@ import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.FileOpener;
 import com.basic4gl.lib.util.FunctionLibrary;
+import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IFileAccess;
 import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.TomVM;
@@ -38,7 +39,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     @Override
-    public void init(TomVM vm, String[] args) {
+    public void init(TomVM vm, IAppSettings settings, String[] args) {
         performanceFreq = System.nanoTime();
     }
 

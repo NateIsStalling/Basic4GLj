@@ -21,9 +21,10 @@ public interface Library {
 	 * Initialize miscellaneous values used in the library
 	 * before the virtual machine is started.
 	 * @param vm Virtual Machine instance
+	 * @param settings Application runtime settings
 	 * @param args Arguments provided to the application's main function
 	 */
-	void init(TomVM vm, String[] args);
+	void init(TomVM vm, IAppSettings settings, String[] args);
 
 	/**
 	 * Initialize miscellaneous values used in the library

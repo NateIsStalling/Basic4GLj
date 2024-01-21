@@ -1,6 +1,7 @@
 package com.basic4gl.library.desktopgl;
 
 import com.basic4gl.lib.util.Configuration;
+import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.Target;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.runtime.HasErrorState;
@@ -56,7 +57,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     public abstract String description();
 
     @Override
-    public abstract void init(TomVM vm, String[] args);
+    public abstract void init(TomVM vm, IAppSettings settings, String[] args);
 
     @Override
     public abstract List<String> getDependencies();
