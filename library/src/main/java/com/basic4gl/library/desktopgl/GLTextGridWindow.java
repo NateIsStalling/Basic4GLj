@@ -1132,7 +1132,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 			glfwDefaultWindowHints(); // optional, the current window hints are already the default
 			glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
 			glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE); // the window will be resizable
-
+			glfwWindowHint(GLFW_SCALE_TO_MONITOR, GL_TRUE); // handle monitor resolution scaling
 
 			// Create the window
 			m_window = glfwCreateWindow(m_width, m_height, title, NULL, NULL);
