@@ -22,4 +22,21 @@ public class FileStream {
     }
 
     boolean equals(FileStream s){ return this.in.equals(s.in) && this.out.equals(s.out);}
+
+    public void close() {
+        if (in != null) {
+            try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (out != null) {
+            try {
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

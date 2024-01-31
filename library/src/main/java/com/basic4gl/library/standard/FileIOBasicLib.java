@@ -34,7 +34,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     static FileOpener files;
 
     //FileAccessorAdapter pluginAdapter;
-    PointerResourceStore<FileStream> fileStreams;
+    FileStreamResourceStore fileStreams;
     String lastError = "";
     FileStream stream;
 
@@ -51,7 +51,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         appSettings = settings;
 
         if (fileStreams == null) {
-            fileStreams = new PointerResourceStore<FileStream>();
+            fileStreams = new FileStreamResourceStore();
         }
 
         fileStreams.clear();
@@ -64,7 +64,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     @Override
     public void init(TomBasicCompiler comp) {
         if (fileStreams == null) {
-            fileStreams = new PointerResourceStore<FileStream>();
+            fileStreams = new FileStreamResourceStore();
         }
 
         // Register resources
@@ -78,7 +78,12 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
 
     @Override
     public void cleanup() {
-        //Do nothing
+        if (fileStreams != null) {
+            fileStreams.clear();
+        }
+        if (stream != null) {
+            stream.close();
+        }
     }
 
     @Override
