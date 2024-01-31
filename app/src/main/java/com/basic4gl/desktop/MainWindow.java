@@ -160,8 +160,27 @@ public class MainWindow implements
             debugServerBinPath = new File(appDirectory, "Basic4GLjDebugServer").getAbsolutePath();
         } else {
             // TODO these should NOT be hardcoded; figure out how to generate some appconfig.json with builds to include these as config settings
-            outputBinPath = "lib/library-1.0-SNAPSHOT.jar";
-            debugServerBinPath = "lib/debugServer-1.0-SNAPSHOT.jar";
+            String appHome = System.getenv("APP_HOME"); // APP_HOME is defined in scripts distributed with build
+            if (appHome != null && !appHome.trim().isEmpty()) {
+                File appDirectory = new File(appHome);
+                File outputBin = new File(appDirectory, "lib/library-1.0-SNAPSHOT.jar");
+                File debugServerBin = new File(appDirectory, "lib/debugServer-1.0-SNAPSHOT.jar");
+
+                if (outputBin.exists()) {
+                    outputBinPath = outputBin.getAbsolutePath();
+                } else {
+                    outputBinPath = "lib/library-1.0-SNAPSHOT.jar";
+                }
+
+                if (debugServerBin.exists()) {
+                    debugServerBinPath = debugServerBin.getAbsolutePath();
+                } else {
+                    debugServerBinPath = "lib/debugServer-1.0-SNAPSHOT.jar";
+                }
+            } else {
+                outputBinPath = "lib/library-1.0-SNAPSHOT.jar";
+                debugServerBinPath = "lib/debugServer-1.0-SNAPSHOT.jar";
+            }
         }
 
         System.setProperty("apple.laf.useScreenMenuBar", "true");
