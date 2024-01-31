@@ -98,6 +98,11 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         targetPane.setLayout(new BorderLayout());
         tabs.addTab("Settings", targetPane);
 
+        //Embedded Files tab
+        JPanel embeddedFilesPane = new JPanel();
+        embeddedFilesPane.setLayout(new BorderLayout());
+        tabs.addTab("Embedded Files", embeddedFilesPane);
+
         //Configure File tab
         filePane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         filePathTextField = new JTextField();
@@ -201,7 +206,6 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         configPane.setLayout(new BoxLayout(configPane, BoxLayout.Y_AXIS));
         configPane.setAlignmentX(0f);
 
-
         builderComboBox.addActionListener(e -> {
             JComboBox cb = (JComboBox) e.getSource();
             if (cb == null) {
@@ -210,6 +214,18 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
             int builderIndex = cb.getSelectedIndex();
             selectBuilder(builderIndex);
         });
+
+        // Configure Embedded File tab
+        embeddedFilesPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // TODO this should not be done in the constructor
+        compiler.clearError();
+        compiler.compile();
+        String[] embeddedFiles = compiler.VM().getStringConstants().toArray(new String[0]);
+        // TODO filter to actual, unique files
+        JList<String> embeddedFileList = new JList<String>(embeddedFiles);
+
+        embeddedFilesPane.add(embeddedFileList, BorderLayout.CENTER);
+
         //JScrollPane scrollPane = new ScrollPane(textLicenses);
         dialog.pack();
         dialog.setSize(new Dimension(464, 346));
