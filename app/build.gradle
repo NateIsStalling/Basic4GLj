@@ -27,6 +27,38 @@ application {
     }
 }
 
+// Create a pathing Jar to provide classpath file for Windows distribution; requires JDK 9+
+task pathingJar(type: Jar) {
+
+    dependsOn (":debugServer:jar")
+    dependsOn (":library:jar")
+    archiveAppendix = 'pathing'
+    doFirst {
+        manifest {
+            attributes "Class-Path": configurations.release.files.collect { it.name }.join(' ')
+        }
+    }
+}
+
+// Include pathing Jar in distributions
+distributions {
+    main {
+        contents {
+            from(pathingJar) {
+                into "lib"
+            }
+        }
+    }
+}
+
+// Apply pathing Jar to classpath
+startScripts {
+    dependsOn(jar)
+    dependsOn(pathingJar)
+    classpath = ((Jar)jar).outputs.files + ((Jar)pathingJar).outputs.files
+}
+
+
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
@@ -60,14 +92,14 @@ dependencies {
 }
 
 jar {
-    dependsOn (":debugServer:jar")
-    dependsOn (":library:jar")
+    dependsOn(pathingJar)
+    from { ((Jar)pathingJar).outputs.files.collect { it.isDirectory() ? it : zipTree(it) }  }
     from { configurations.release.collect { it.isDirectory() ? it : zipTree(it) } }
     from sourceSets.test.output
     manifest {
         attributes (
             'Main-Class': javaMainClass,
-            'Class-Path': configurations.release.files.collect { it.name }.join(' ')
+            'Class-Path': files(((Jar)pathingJar).archiveFile)
         )
     }
 
@@ -75,6 +107,7 @@ jar {
 
     exclude 'META-INF/.RSA', 'META-INF/.SF', 'META-INF/*.DSA'
 }
+
 
 task copyTask() {
     copy {
