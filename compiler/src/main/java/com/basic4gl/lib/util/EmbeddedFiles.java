@@ -6,8 +6,6 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,24 +13,24 @@ import java.util.Map;
  * A set of embedded files, keyed by relative filename
  */
 public class EmbeddedFiles {
-    private String mParent; //Parent directory
+    private String parentDirectory; //Parent directory
 //    private Map<String,EmbeddedFile> m_files = new HashMap<>();
 
-    private Map<String, File> mTempFiles = new HashMap<>();
+    private Map<String, File> tempFiles = new HashMap<>();
 
     public URL getResource(String filename) {
         return this.getClass().getClassLoader().getResource(filename);
     }
 
-    public boolean IsStored(String filename) {
+    public boolean isStored(String filename) {
         return getResource(filename) != null;
     }
 
     // Find stream.
     // Caller must free
-    public FileInputStream Open(String filename)        // Opens file. Returns NULL if not present.
+    public FileInputStream open(String filename)        // Opens file. Returns NULL if not present.
     {
-        if (IsStored(filename)) {
+        if (isStored(filename)) {
             try {
                 File file = new File(getResource(filename).toURI());
                 return new FileInputStream(file);
@@ -43,20 +41,20 @@ public class EmbeddedFiles {
         return null;
     }
 
-    public FileInputStream OpenOrLoad(String filename)        // Opens file. Falls back to disk if not present. Returns NULL if not present OR on disk
+    public FileInputStream openOrLoad(String filename)        // Opens file. Falls back to disk if not present. Returns NULL if not present OR on disk
     {
 
         // Try embedded files first
-        FileInputStream result = Open(filename);
+        FileInputStream result = open(filename);
         if (result == null) {
 
             // Otherwise try to load from file
             FileInputStream diskFile = null;
             try {
-                diskFile = new FileInputStream(new File(mParent, filename));
+                diskFile = new FileInputStream(new File(parentDirectory, filename));
                 result = diskFile;
             } catch (FileNotFoundException e) {
-                System.out.println("missing parent: " + mParent);
+                System.out.println("missing parent: " + parentDirectory);
                 e.printStackTrace();
                 result = null;
             }
@@ -65,12 +63,12 @@ public class EmbeddedFiles {
     }
     // Routines
 
-    // Copy a GenericIStream into a GenericOStream
-    public static void CopyStream(InputStream src, OutputStream dst) {
-        CopyStream(src, dst, -1);
+    // Copy a InputStream into a OutputStream
+    public static void copyStream(InputStream src, OutputStream dst) {
+        copyStream(src, dst, -1);
     }
 
-    public static void CopyStream(InputStream src, OutputStream dst, long len) {
+    public static void copyStream(InputStream src, OutputStream dst, long len) {
 
         // Copy stream to stream
         ByteBuffer buffer = ByteBuffer.allocate(0x4000);
@@ -98,7 +96,7 @@ public class EmbeddedFiles {
     }
 
     // Create embedded representation of stream
-    static boolean EmbedFile(String parent, String filename, OutputStream stream) {
+    static boolean embedFile(String parent, String filename, OutputStream stream) {
 
         // Open file
         File file;
@@ -122,7 +120,7 @@ public class EmbeddedFiles {
             stream.write(ByteBuffer.allocate(4).putInt(nameLen).array());
             stream.write(relName.getBytes(StandardCharsets.UTF_8));
             stream.write(ByteBuffer.allocate(Long.SIZE / Byte.SIZE).putLong(fileLen.get()).array());
-            CopyStream(new FileInputStream(file), stream, fileLen.get());
+            copyStream(new FileInputStream(file), stream, fileLen.get());
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -131,8 +129,8 @@ public class EmbeddedFiles {
     }
 
 
-    String ExtractStoredFile(String filename, String mParent){
-        filename = separatorsToSystem(filename);
+    String extractStoredFile(String filename, String mParent){
+        filename = FileUtil.separatorsToSystem(filename);
         Exception exception = null;
         File file = null;
 
@@ -141,19 +139,10 @@ public class EmbeddedFiles {
         try {
             // TODO keep cache of temp filenames
             URL resource = getResource(filename);
-            File tempDirectory = mParent != null
-                    ? new File(mParent)
-                    : null;
-
-            if (tempDirectory == null || !tempDirectory.canWrite()) {
-                // default to system temp dir; installation dir may be read-only
-                Path tempFolderPath = Paths.get(System.getProperty("java.io.tmpdir"));
-                tempDirectory = tempFolderPath.toFile();
-            }
+            File tempDirectory = FileUtil.getTempDirectory(mParent);
 
             file = File.createTempFile("temp", new File(filename).getName(), tempDirectory);
             System.out.println("file: " + filename);
-            System.out.println("fn: " +  new File(filename).getName());
             System.out.println("Created temp file: " + file.getAbsolutePath());
             file.deleteOnExit();
 
@@ -194,23 +183,10 @@ public class EmbeddedFiles {
     }
 
     public void setParentDirectory(String parent) {
-        mParent = parent;
+        parentDirectory = parent;
     }
 
     public String getParentDirectory() {
-        return mParent;
-    }
-
-    String separatorsToSystem(String res) {
-        if (res == null) {
-            return null;
-        }
-        if (File.separatorChar=='\\') {
-            // From Linux/Mac to Windows
-            return res.replace('/', File.separatorChar);
-        } else {
-            // From Windows to Linux/Mac
-            return res.replace('\\', File.separatorChar);
-        }
+        return parentDirectory;
     }
 }
