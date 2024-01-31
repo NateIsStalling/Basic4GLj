@@ -6,6 +6,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Created by Nate on 1/12/2015.
@@ -14,6 +16,9 @@ public class AboutDialog {
     JDialog mDialog;
 
     public AboutDialog(Frame parent) {
+        Locale locale = new Locale("en", "US");
+        ResourceBundle resources = ResourceBundle.getBundle("build", locale);
+
         mDialog = new JDialog(parent);
 
         mDialog.setTitle("About");
@@ -44,8 +49,8 @@ public class AboutDialog {
         labelDescription.setFont(new Font(Font.MONOSPACED, Font.ITALIC, 12));
         labelDescription.setBorder(new EmptyBorder(5, 5, 5, 5));
         descriptionPanel.add(labelDescription);
-        descriptionPanel.add(new JLabel("Version: " + BuildInfo.APPLICATION_VERSION));
-        descriptionPanel.add(new JLabel("Build Date: " + BuildInfo.APPLICATION_BUILD_DATE));
+        descriptionPanel.add(new JLabel("Version: " + resources.getString(BuildInfo.APPLICATION_VERSION_RESOURCE)));
+        descriptionPanel.add(new JLabel("Build Date: " + resources.getString(BuildInfo.APPLICATION_BUILD_DATE_RESOURCE)));
         descriptionPanel.add(Box.createVerticalGlue());
         descriptionPanel.add(new JLabel(BuildInfo.APPLICATION_COPYRIGHT));
         descriptionPanel.add(new JLabel(BuildInfo.APPLICATION_WEBSITE));

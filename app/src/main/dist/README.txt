@@ -1,7 +1,7 @@
-	Basic4GLj alpha 0.4.1
-	Build Date: April 2023
+	Basic4GLj 0.5.0 alpha
+	Build Date: January 2024
 ================================================
-	Basic4GLj	by Nathaniel Nielsen	(c) 2023
+	Basic4GLj	by Nathaniel Nielsen	(c) 2024
 	Basic4GL 	by Tom Mulgrew			(c) 2010
 	License:	New BSD; see LICENSES folder
 	Requires:	Java 17
@@ -28,10 +28,11 @@
 	Change Log
 ================================================
 0.5.0   - Implemented sound library
+        - Java 17 now required
+        - OpenJDK 17 now embedded for installer distributions of Basic4GLj
         - Added support for "Sandbox Mode" runtime setting
         - Added support for commandline arguments
         - Added "Program Version" project configuration option for commandline programs
-        - Java 17 now embedded for installer distributions of Basic4GLj
 
 0.4.1   - Updated LWJGL to stable version 3.3.1
         - Added LWJGL natives for macOS arm64, Linux arm32, Linux arm64, Windows x86, and Windows arm64
