@@ -30,6 +30,7 @@
 0.5.0   - Implemented sound library
         - Java 17 now required
         - OpenJDK 17 now embedded for installer distributions of Basic4GLj
+        - Added Find/Replace editor options
         - Added support for "Sandbox Mode" runtime setting
         - Added support for commandline arguments
         - Added "Program Version" project configuration option for commandline programs
