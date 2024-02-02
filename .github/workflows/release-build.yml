@@ -172,9 +172,9 @@ jobs:
         name: Rename downloaded files
         run: |
           ls -alR
-          mv app.zip Basic4GLj.${{ vars.BUILD_RELEASE_TAG }}.zip
           # rename artifacts to match release tag for pre-release builds < 1.0 for now;
           # macos builds require versions start with 1.X, but alpha builds are currently tagged as 0.X
+          mv app.zip basic4glj_${{ vars.BUILD_RELEASE_TAG }}.zip
           mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.msi Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}.msi
           mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}.dmg
           mv basic4glj_${{ vars.APP_RELEASE_VERSION }}-1_amd64.deb basic4glj_${{ vars.BUILD_RELEASE_TAG }}.deb
@@ -208,8 +208,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: Basic4GLj.${{ vars.BUILD_RELEASE_TAG }}.zip
-          asset_name: JAR packages
+          asset_path: basic4glj_${{ vars.BUILD_RELEASE_TAG }}.zip
+          asset_name: basic4glj_${{ vars.BUILD_RELEASE_TAG }}.zip
           asset_content_type: application/x-binary
       - id: release-linux-installer
         name: Release Linux installer
