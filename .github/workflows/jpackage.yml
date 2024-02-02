@@ -7,6 +7,37 @@ env:
   APP_RELEASE_VERSION: ${{ vars.APP_RELEASE_VERSION }}
 
 jobs:
+  build-jar-release:
+    name: Build JAR Release on Linux
+    runs-on: ubuntu-latest
+    steps:
+      # SETUP BUILD ENVIRONMENT
+      - id: checkout-code
+        name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: main
+      - id: setup-jdk
+        name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      # BUILD FOR DISTRIBUTION
+      - id: build
+        name: Build distribution
+        run: |
+          sh build-jar-release.sh
+
+      # SAVE INSTALLER
+      - id: upload-installer
+        name: Upload installer
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./app/build/distributions/app.zip
+          name: jar-release
+          retention-days: 1
   build-linux-installer:
     name: Build Installer on Linux
     runs-on: ubuntu-latest
@@ -100,3 +131,94 @@ jobs:
           path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg
           name: macos-installer
           retention-days: 1
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build-linux-installer, build-windows-installer, build-mac-installer]
+    steps:
+
+      # DOWNLOAD INSTALLERS
+
+      - id: download-jar-release
+        name: Download JAR Release
+        uses: actions/download-artifact@v3
+        with:
+          name: jar-release
+
+      - id: download-linux-installer
+        name: Download Linux installer
+        uses: actions/download-artifact@v3
+        with:
+          name: linux-installer
+
+      - id: download-windows-installer
+        name: Download Windows installer
+        uses: actions/download-artifact@v3
+        with:
+          name: windows-installer
+
+      - id: download-mac-installer
+        name: Download Mac installer
+        uses: actions/download-artifact@v3
+        with:
+          name: mac-installer
+
+      - id: rename-downloaded-files
+        name: Rename downloaded files
+        run: |
+          ls -alR
+          mv app.zip Basic4GLj-alpha.${{ vars.APP_RELEASE_VERSION }}.zip
+          mv basic4glj_${{ vars.APP_RELEASE_VERSION }}-1_amd64.deb basic4glj_${{ vars.APP_RELEASE_VERSION }}.deb
+          ls -alR
+
+      # CREATE GITHUB RELEASE AND ADD ASSETS
+      - id: tag
+        name: Move release tag
+        shell: bash
+        if: false
+        run: |
+          # Move tag
+          git tag -d v${{ vars.APP_RELEASE_VERSION }}-alpha
+          git push --delete origin v${{ vars.APP_RELEASE_VERSION }}-alpha
+          git tag -a v${{ vars.APP_RELEASE_VERSION }}-alpha -m "v${{ vars.APP_RELEASE_VERSION }}-alpha"
+          git push --follow-tags
+      - id: create-release
+        name: Create GitHub release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ vars.APP_RELEASE_VERSION }}-alpha
+          release_name: v${{ vars.APP_RELEASE_VERSION }}-alpha
+          draft: true
+          prerelease: true
+      - id: release-linux-installer
+        name: Release Linux installer
+        uses: actions/upload-release-asset@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: basic4glj_${{ vars.APP_RELEASE_VERSION }}.deb
+          asset_name: basic4glj_${{ vars.APP_RELEASE_VERSION }}.deb
+          asset_content_type: application/x-binary
+      - id: release-windows-installer
+        name: Release Windows installer
+        uses: actions/upload-release-asset@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.msi
+          asset_name: Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.msi
+          asset_content_type: application/x-binary
+      - id: release-mac-installer
+        name: Release Mac DMG
+        uses: actions/upload-release-asset@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg
+          asset_name: Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg
+          asset_content_type: application/x-binary
