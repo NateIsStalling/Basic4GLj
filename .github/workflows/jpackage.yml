@@ -134,7 +134,8 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: [build-linux-installer, build-windows-installer, build-macos-installer]
+    environment: Production
+    needs: [build-jar-release, build-linux-installer, build-windows-installer, build-macos-installer]
     steps:
 
       # DOWNLOAD INSTALLERS
