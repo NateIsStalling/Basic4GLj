@@ -5,6 +5,7 @@ on:
 
 env:
   APP_RELEASE_VERSION: ${{ vars.APP_RELEASE_VERSION }}
+  BUILD_RELEASE_TAG: ${{ vars.BUILD_RELEASE_TAG }}
 
 jobs:
   build-jar-release:
@@ -135,6 +136,8 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     environment: Production
+    permissions:
+      deployments: write
     needs: [build-jar-release, build-linux-installer, build-windows-installer, build-macos-installer]
     steps:
 
@@ -168,7 +171,7 @@ jobs:
         name: Rename downloaded files
         run: |
           ls -alR
-          mv app.zip Basic4GLj-alpha.${{ vars.APP_RELEASE_VERSION }}.zip
+          mv app.zip Basic4GLj.${{ vars.BUILD_RELEASE_TAG }}.zip
           mv basic4glj_${{ vars.APP_RELEASE_VERSION }}-1_amd64.deb basic4glj_${{ vars.APP_RELEASE_VERSION }}.deb
           ls -alR
 
@@ -179,9 +182,9 @@ jobs:
         if: false
         run: |
           # Move tag
-          git tag -d v${{ vars.APP_RELEASE_VERSION }}-alpha
-          git push --delete origin v${{ vars.APP_RELEASE_VERSION }}-alpha
-          git tag -a v${{ vars.APP_RELEASE_VERSION }}-alpha -m "v${{ vars.APP_RELEASE_VERSION }}-alpha"
+          git tag -d ${{ vars.BUILD_RELEASE_TAG }}
+          git push --delete origin ${{ vars.BUILD_RELEASE_TAG }}
+          git tag -a ${{ vars.BUILD_RELEASE_TAG }} -m "${{ vars.BUILD_RELEASE_TAG }}"
           git push --follow-tags
       - id: create-release
         name: Create GitHub release
@@ -189,8 +192,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ vars.APP_RELEASE_VERSION }}-alpha
-          release_name: v${{ vars.APP_RELEASE_VERSION }}-alpha
+          tag_name: ${{ vars.BUILD_RELEASE_TAG }}
+          release_name: ${{ vars.BUILD_RELEASE_TAG }}
           draft: true
           prerelease: true
       - id: release-linux-installer
