@@ -134,7 +134,7 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
-    needs: [build-linux-installer, build-windows-installer, build-mac-installer]
+    needs: [build-linux-installer, build-windows-installer, build-macos-installer]
     steps:
 
       # DOWNLOAD INSTALLERS
@@ -157,11 +157,11 @@ jobs:
         with:
           name: windows-installer
 
-      - id: download-mac-installer
+      - id: download-macos-installer
         name: Download Mac installer
         uses: actions/download-artifact@v3
         with:
-          name: mac-installer
+          name: macos-installer
 
       - id: rename-downloaded-files
         name: Rename downloaded files
@@ -212,7 +212,7 @@ jobs:
           asset_path: Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.msi
           asset_name: Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.msi
           asset_content_type: application/x-binary
-      - id: release-mac-installer
+      - id: release-macos-installer
         name: Release Mac DMG
         uses: actions/upload-release-asset@latest
         env:
