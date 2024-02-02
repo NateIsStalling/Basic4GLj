@@ -1,4 +1,4 @@
-name: Build Installers
+name: Build Release Packages
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ env:
 
 jobs:
   build-jar-release:
-    name: Build JAR Release on Linux
+    name: Build JAR Package on Linux
     runs-on: ubuntu-latest
     steps:
       # SETUP BUILD ENVIRONMENT
@@ -137,6 +137,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: Production
     permissions:
+      contents: write
       deployments: write
     needs: [build-jar-release, build-linux-installer, build-windows-installer, build-macos-installer]
     steps:
