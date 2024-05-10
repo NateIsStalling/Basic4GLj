@@ -365,7 +365,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 		instance.mLibraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
 		instance.mLibraries.add(new com.basic4gl.library.desktopgl.TomCompilerBasicLib());
 		instance.mLibraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
-
+		instance.mLibraries.add(new com.basic4gl.library.net.NetBasicLib());
 
 		// Register library functions
 		for (Library lib : instance.mLibraries) {

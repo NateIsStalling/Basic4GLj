@@ -571,11 +571,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         Exception exception = null;
         try {
             if (stream.in != null) {
-                FileChannel ch = stream.in.getChannel();
+                FileChannel ch = ((FileInputStream)stream.in).getChannel();
                 ch.position(vm.getIntParam(1));
             }
             if (stream.out != null) {
-                FileChannel ch = stream.out.getChannel();
+                FileChannel ch = ((FileOutputStream)stream.out).getChannel();
                 ch.position(vm.getIntParam(1));
             }
         } catch (Exception e){
@@ -621,7 +621,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
             }
 
             // Backup one character, so that we don't skip the following whitespace
-            FileChannel ch = stream.in.getChannel ();
+            FileChannel ch = ((FileInputStream)stream.in).getChannel ();
             ch.position(ch.position() -1);
         } catch (Exception e){
             e.printStackTrace();
