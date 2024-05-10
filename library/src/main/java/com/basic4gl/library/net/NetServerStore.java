@@ -1,15 +1,11 @@
 package com.basic4gl.library.net;
 
-//import com.basic4gl.library.net2.NetServerWrapper;
-import com.basic4gl.lib.util.FileStream;
 import com.basic4gl.library.netlib4games.udp.NetListenLowUDP;
 import com.basic4gl.runtime.util.PointerResourceStore;
 
-////////////////////////////////////////////////////////////////////////////////
-//  NetServerStore
-//
-//  Stores NetListenLow network servers.
-//typedef vmPointerResourceStore<NetServerWrapper> NetServerStore;
+/**
+ * Stores NetListenLow network servers.
+ */
 public class NetServerStore extends PointerResourceStore<NetListenLowUDP> {
     @Override
     public void free(int index) {

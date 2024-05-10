@@ -66,11 +66,9 @@ public class NetBasicLib implements FunctionLibrary {
         s.put("MessagePending", new FunctionSpecification[]{new FunctionSpecification(WrapMessagePending.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
         s.put("ReceiveMessage", new FunctionSpecification[]{new FunctionSpecification(WrapReceiveMessage.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
         s.put("MessageChannel", new FunctionSpecification[]{new FunctionSpecification(WrapMessageChannel.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
-
         s.put("MessageReliable", new FunctionSpecification[]{new FunctionSpecification(WrapMessageReliable.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
         s.put("MessageSmoothed", new FunctionSpecification[]{new FunctionSpecification(WrapMessageSmoothed.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
         s.put("SendMessage", new FunctionSpecification[]{new FunctionSpecification(WrapSendMessage.class, new ParamTypeList(VTP_INT, VTP_INT, VTP_INT, VTP_INT), true, true, VTP_INT, false, false, null)});
-
         s.put("ConnectionAddress", new FunctionSpecification[]{new FunctionSpecification(WrapConnectionAddress.class, new ParamTypeList(VTP_INT), true, true, VTP_STRING, false, false, null)});
 
         // L1 settings

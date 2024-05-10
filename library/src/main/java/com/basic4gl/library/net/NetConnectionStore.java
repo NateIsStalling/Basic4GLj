@@ -1,7 +1,6 @@
 package com.basic4gl.library.net;
 
 import com.basic4gl.library.netlib4games.NetConL2;
-import com.basic4gl.library.netlib4games.udp.NetListenLowUDP;
 import com.basic4gl.runtime.util.PointerResourceStore;
 
 /**
