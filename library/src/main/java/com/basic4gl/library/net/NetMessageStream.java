@@ -66,13 +66,14 @@ public class NetMessageStream extends FileStream {
 
             String message = stream.toString(StandardCharsets.UTF_8);
 
-            if (channel >= 0 && channel < NETL2_MAXCHANNELS && message != null)
+            if (channel >= 0 && channel < NETL2_MAXCHANNELS && message != null) {
                 connection.Send(
                         stream.toByteArray(),
                         message.length(),
                     channel,
                     reliable,
                     smoothed);
+            }
         }
 
         parent = null;

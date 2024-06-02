@@ -67,8 +67,9 @@ public class NetRevolvingBitBuffer {
                 falsesRemoved = falsesRemoved || !value;
 
                 // Update low poiners
-                if (++m_lowRevolving >= m_size)
+                if (++m_lowRevolving >= m_size) {
                     m_lowRevolving = 0;
+                }
                 m_low++;
             }
         }
@@ -77,12 +78,14 @@ public class NetRevolvingBitBuffer {
         while (m_hi < index) {
 
             // Initialise data
-            if (m_hi >= m_low)
+            if (m_hi >= m_low) {
                 m_data [m_hiRevolving] = initialValue;
+            }
 
             // Update high pointers
-            if (++m_hiRevolving >= m_size)
+            if (++m_hiRevolving >= m_size) {
                 m_hiRevolving = 0;
+            }
             m_hi++;
         }
 

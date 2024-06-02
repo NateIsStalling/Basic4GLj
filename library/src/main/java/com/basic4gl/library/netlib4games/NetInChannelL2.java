@@ -51,8 +51,9 @@ public class NetInChannelL2 extends HasErrorState {
         assert packet != null;
 
         // Ordered channels can reject messages older than the last one promoted.
-        if (m_ordered && messageIndex < m_messageIndex)
+        if (m_ordered && messageIndex < m_messageIndex) {
             return;
+        }
 
         // Find corresponding message
         NetMessageL2 message = null;
@@ -89,8 +90,9 @@ public class NetInChannelL2 extends HasErrorState {
             // Disable smoothing if any part of the message was resent.
             // We don't want to include spikes from dropped packets in our timing
             // calculations.
-            if (resent)
+            if (resent) {
                 message.smoothed = false;
+            }
         } else {
 
             // Packet already received... or index is bad
@@ -175,8 +177,9 @@ public class NetInChannelL2 extends HasErrorState {
 
                     // Update message index and reliable index
                     m_messageIndex = msg.messageIndex;
-                    if (msg.reliable)
+                    if (msg.reliable) {
                         m_reliableIndex++;
+                    }
 
                     // Remove any older messages from queue
                     while (m_messages.size () > 0 && m_messages.get (0).messageIndex < m_messageIndex) {

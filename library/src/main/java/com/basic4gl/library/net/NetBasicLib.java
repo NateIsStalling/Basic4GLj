@@ -187,18 +187,20 @@ public class NetBasicLib implements FunctionLibrary {
                 serverCount--;
                 server.dispose();
                 vm.getReg().setIntVal(0);
-            } else
+            } else {
                 vm.getReg().setIntVal(servers.alloc(server));
+            }
         }
     }
 
     public final class WrapDeleteServer implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            if (index > 0 && servers.isIndexValid(index))
+            if (index > 0 && servers.isIndexValid(index)) {
                 servers.free(index);
-            else
+            } else {
                 lastError = "Invalid network server handle";
+            }
         }
     }
 
@@ -231,14 +233,16 @@ public class NetBasicLib implements FunctionLibrary {
                     if (!CheckError(connection)) {
                         connection.dispose();
                         vm.getReg().setIntVal(0);
-                    } else
-
+                    } else {
                         // Store connection
                         vm.getReg().setIntVal(connections.alloc(connection));
-                } else
+                    }
+                } else {
                     vm.getReg().setIntVal(0);
-            } else
+                }
+            } else {
                 lastError = "Invalid network server handle";
+            }
         }
     }
 
@@ -255,8 +259,9 @@ public class NetBasicLib implements FunctionLibrary {
                     server.RejectConnection();
                     CheckError(server);
                 }
-            } else
+            } else {
                 lastError = "Invalid network server handle";
+            }
         }
     }
 
@@ -275,17 +280,20 @@ public class NetBasicLib implements FunctionLibrary {
             } else
 
                 // Store connection
+            {
                 vm.getReg().setIntVal(connections.alloc(connection));
+            }
         }
     }
 
     public final class WrapDeleteConnection implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            if (index > 0 && connections.isIndexValid(index))
+            if (index > 0 && connections.isIndexValid(index)) {
                 connections.free(index);
-            else
+            } else {
                 lastError = "Invalid network connection handle";
+            }
         }
     }
 
@@ -370,8 +378,9 @@ public class NetBasicLib implements FunctionLibrary {
 
                     // Store it
                     vm.getReg().setIntVal(fileStreams.alloc(message));
-                } else
+                } else {
                     vm.getReg().setIntVal(0);
+                }
             } else {
                 vm.getReg().setIntVal(0);
                 lastError = "Invalid network connection handle";
@@ -386,10 +395,11 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
-                if (connection.DataPending())
+                if (connection.DataPending()) {
                     vm.getReg().setIntVal(connection.PendingChannel());
-                else
+                } else {
                     vm.getReg().setIntVal(0);
+                }
             } else {
                 vm.getReg().setIntVal(0);
                 lastError = "Invalid network connection handle";
@@ -404,10 +414,11 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
-                if (connection.DataPending())
+                if (connection.DataPending()) {
                     vm.getReg().setIntVal(connection.PendingReliable() ? 1 : 0);
-                else
+                } else {
                     vm.getReg().setIntVal(0);
+                }
             } else {
                 vm.getReg().setIntVal(0);
                 lastError = "Invalid network connection handle";
@@ -422,10 +433,11 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
-                if (connection.DataPending())
+                if (connection.DataPending()) {
                     vm.getReg().setIntVal(connection.PendingSmoothed() ? 1 : 0);
-                else
+                } else {
                     vm.getReg().setIntVal(0);
+                }
             } else {
                 vm.getReg().setIntVal(0);
                 lastError = "Invalid network connection handle";
@@ -477,8 +489,9 @@ public class NetBasicLib implements FunctionLibrary {
 
                 NetConL2 connection = connections.getValueAt(index);
                 vm.setRegString(connection.Address());
-            } else
+            } else {
                 vm.setRegString("");
+            }
         }
     }
 
@@ -492,8 +505,9 @@ public class NetBasicLib implements FunctionLibrary {
 
                 // Get value
                 int value = vm.getIntParam(1);
-                if (value < 1)
+                if (value < 1) {
                     value = 1;
+                }
 
                 // Update settings
                 NetSettingsL1 settings = connection.L1Settings();
@@ -513,8 +527,9 @@ public class NetBasicLib implements FunctionLibrary {
 
                 // Get value
                 int value = vm.getIntParam(1);
-                if (value < 1)
+                if (value < 1) {
                     value = 1;
+                }
 
                 // Update settings
                 NetSettingsL1 settings = connection.L1Settings();
@@ -534,8 +549,9 @@ public class NetBasicLib implements FunctionLibrary {
 
                 // Get value
                 int value = vm.getIntParam(1);
-                if (value < 1)
+                if (value < 1) {
                     value = 1;
+                }
 
                 // Update settings
                 NetSettingsL1 settings = connection.L1Settings();
@@ -555,10 +571,12 @@ public class NetBasicLib implements FunctionLibrary {
 
                 // Get value
                 int value = vm.getIntParam(1);
-                if (value < 1)
+                if (value < 1) {
                     value = 1;
-                if (value > 10000)
+                }
+                if (value > 10000) {
                     value = 10000;
+                }
 
                 // Update settings
                 NetSettingsL1 settings = connection.L1Settings();
@@ -578,10 +596,12 @@ public class NetBasicLib implements FunctionLibrary {
 
                 // Get value
                 int value = vm.getIntParam(1);
-                if (value < 1)
+                if (value < 1) {
                     value = 1;
-                if (value > 100)
+                }
+                if (value > 100) {
                     value = 100;
+                }
 
                 // Update settings
                 NetSettingsL1 settings = connection.L1Settings();
@@ -601,10 +621,12 @@ public class NetBasicLib implements FunctionLibrary {
 
                 // Get value
                 int value = vm.getIntParam(1);
-                if (value < 0)
+                if (value < 0) {
                     value = 0;
-                if (value > 100)
+                }
+                if (value > 100) {
                     value = 100;
+                }
 
                 // Update settings
                 NetSettingsL2 settings = connection.Settings();

@@ -76,8 +76,9 @@ public class NetMessageL2 {
             assert (offset <= dataSize);
 
             // Adjust size
-            if (offset + size > dataSize)
+            if (offset + size > dataSize) {
                 size = dataSize - offset;
+            }
 
             // Find start packet
             int packet = 0;

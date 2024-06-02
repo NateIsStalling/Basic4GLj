@@ -42,8 +42,9 @@ public class Thread {
     /// terminate
     void Terminate (boolean waitFor) {
         m_terminateEvent.set ();
-        if (waitFor)
+        if (waitFor) {
             WaitFor ();
+        }
     }
 
     /// Handle of the "terminating" event.
