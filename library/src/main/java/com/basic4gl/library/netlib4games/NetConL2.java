@@ -36,7 +36,8 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
     NetSettingsStaticL2			m_settingsStatic;
 
     // Thread handling
-    ThreadLock					m_inQueueLock = new ThreadLock();
+//    ThreadLock					m_inQueueLock = new ThreadLock();
+    private final Object inQueueLock = new Object();
 
     // Timing
     NetTimingBufferL2			m_timingBuffer = new NetTimingBufferL2();
@@ -128,6 +129,7 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
     public void dispose() {
         // Unhook from service thread callback
         m_connection.HookCallback (null);
+        m_connection.dispose();
 
         // Free channels
         for (int i = 0; i < NETL2_MAXCHANNELS; i++) {
@@ -215,9 +217,9 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
     /// connection request (NetListenLow::ConnectionPending() returns true at the server 
     /// end.)
     public boolean Connect (String address, String requestString) {
-        m_inQueueLock.Lock ();
-        m_timingBuffer.Clear ();
-        m_inQueueLock.Unlock ();
+        synchronized (inQueueLock) {
+            m_timingBuffer.Clear();
+        }
         boolean result = m_connection.Connect (address, requestString);
         CheckError ();
         return result;
@@ -249,9 +251,9 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
         return m_settings;
     }
     public void SetSettings (NetSettingsL2 settings) {
-        m_inQueueLock.Lock ();
-        m_settings = settings;
-        m_inQueueLock.Unlock ();
+        synchronized (inQueueLock) {
+            m_settings = settings;
+        }
     }
 
     // Network operations
@@ -309,7 +311,7 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
                 + size + " bytes, channel # " + channel
                 + (reliable ? ", reliable" : ", unreliable")
                 + (smoothed ? ", smoothed" : ", unsmoothed"));
-        m_outChannels [channel].Send (m_connection, data, size, reliable, smoothed, NetLayer1.GetTickCount ());
+        m_outChannels [channel].Send (m_connection, data, size, reliable, smoothed, NetLayer1.getTickCount());
         CheckObject (m_outChannels [channel]);
     }
 
@@ -326,9 +328,10 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
         //
         // Because connection status is volatile, and hence isDataPending() would also
         // be.
-        m_inQueueLock.Lock ();
-        boolean result = !m_messageQueue.isEmpty();
-        m_inQueueLock.Unlock ();
+        boolean result;
+        synchronized (inQueueLock) {
+            result = !m_messageQueue.isEmpty();
+        }
         return result;
     }
 
@@ -336,9 +339,10 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
     /// Call this ONLY if DataPending() returns true.
     public long PendingDataSize () {
         assert (DataPending ());
-        m_inQueueLock.Lock ();
-        long result = m_messageQueue.get (0).dataSize;
-        m_inQueueLock.Unlock ();
+        long result;
+        synchronized (inQueueLock) {
+            result = m_messageQueue.get(0).dataSize;
+        }
         return result;
     }
 
@@ -359,9 +363,9 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
         assert (DataPending ());
         assert (data != null);
         assert (offset <= PendingDataSize ());
-        m_inQueueLock.Lock ();
-        size = m_messageQueue.get (0).CopyData (data, offset, size);
-        m_inQueueLock.Unlock ();
+        synchronized (inQueueLock) {
+            size = m_messageQueue.get(0).CopyData(data, offset, size);
+        }
         return size;
     }
 
@@ -377,10 +381,10 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
     /// Receive automatically discards the network message after it has copied the
     /// data, so calling code MUST NOT CALL DonePendingData() itself.
     public int Receive (byte[] data, int size) {
-        m_inQueueLock.Lock ();
-        size = ReceivePart (data, 0, size);
-        DonePendingData ();
-        m_inQueueLock.Unlock ();
+        synchronized (inQueueLock) {
+            size = ReceivePart(data, 0, size);
+            DonePendingData();
+        }
         return size;
     }
 
@@ -391,10 +395,11 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
     /// read incoming messages (as Receive() does this automatically).
     public void DonePendingData () {
         assert (DataPending ());
-        m_inQueueLock.Lock ();
-        NetMessageL2 message = m_messageQueue.get (0);
-        m_messageQueue.remove (0);
-        m_inQueueLock.Unlock ();
+        NetMessageL2 message;
+        synchronized (inQueueLock) {
+            message = m_messageQueue.get(0);
+            m_messageQueue.remove(0);
+        }
         message.dispose();
     }
 
@@ -405,9 +410,10 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
     /// See Send() for more info.
     public int PendingChannel (){
         assert (DataPending ());
-        m_inQueueLock.Lock ();
-        int result = m_messageQueue.get (0).channel;
-        m_inQueueLock.Unlock ();
+        int result;
+        synchronized (inQueueLock) {
+            result = m_messageQueue.get(0).channel;
+        }
         return result;
     }
 
@@ -416,9 +422,10 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
     /// See Send() for more info.
     public boolean PendingReliable (){
         assert (DataPending ());
-        m_inQueueLock.Lock ();
-        boolean result = m_messageQueue.get (0).reliable;
-        m_inQueueLock.Unlock ();
+        boolean result;
+        synchronized (inQueueLock) {
+            result = m_messageQueue.get(0).reliable;
+        }
         return result;
     }
 
@@ -427,9 +434,10 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
     /// See Send() for more info.
     public boolean PendingSmoothed (){
         assert (DataPending ());
-        m_inQueueLock.Lock ();
-        boolean result = m_messageQueue.get (0).smoothed;
-        m_inQueueLock.Unlock ();
+        boolean result;
+        synchronized (inQueueLock) {
+            result = m_messageQueue.get(0).smoothed;
+        }
         return result;
     }
 
@@ -487,36 +495,37 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
 
         // Promote completed messages
         int i;
-        m_inQueueLock.Lock ();
 
-        // Calculate adjusted tick count, based on smoothing data.
-        long tickCount = NetLayer1.GetTickCount (),
-                adjustment = 0;
-        boolean doSmoothing = false;
+        synchronized (inQueueLock) {
 
-        // Timing buffer must be full
-        if (m_timingBuffer.BufferFull ()) {
+            // Calculate adjusted tick count, based on smoothing data.
+            long tickCount = NetLayer1.getTickCount(),
+                    adjustment = 0;
+            boolean doSmoothing = false;
 
-            // Can apply smoothing
-            doSmoothing = true;
+            // Timing buffer must be full
+            if (m_timingBuffer.BufferFull()) {
 
-            // Find sorted position
-            assert (m_settings.smoothingPercentage >= 0);
-            int index = (NET_L2TIMINGBUFFERSIZE * m_settings.smoothingPercentage) / 100;
-            if (index >= NET_L2TIMINGBUFFERSIZE) {
-                index = NET_L2TIMINGBUFFERSIZE - 1;
+                // Can apply smoothing
+                doSmoothing = true;
+
+                // Find sorted position
+                assert (m_settings.smoothingPercentage >= 0);
+                int index = (NET_L2TIMINGBUFFERSIZE * m_settings.smoothingPercentage) / 100;
+                if (index >= NET_L2TIMINGBUFFERSIZE) {
+                    index = NET_L2TIMINGBUFFERSIZE - 1;
+                }
+
+                // Adjust tick count by sorted difference
+                adjustment = m_timingBuffer.Difference(index);
             }
 
-            // Adjust tick count by sorted difference
-            adjustment = m_timingBuffer.Difference (index);
-        }
-
-        for (i = 0; i < NETL2_MAXCHANNELS; i++) {
-            if (m_inChannels [i] != null) {
-                m_inChannels [i].PromoteMessages (this, tickCount, adjustment, doSmoothing);
+            for (i = 0; i < NETL2_MAXCHANNELS; i++) {
+                if (m_inChannels[i] != null) {
+                    m_inChannels[i].PromoteMessages(this, tickCount, adjustment, doSmoothing);
+                }
             }
         }
-        m_inQueueLock.Unlock ();
 
         // Cull old messages to prevent buffer overflowing
         for (i = 0; i < NETL2_MAXCHANNELS; i++) {

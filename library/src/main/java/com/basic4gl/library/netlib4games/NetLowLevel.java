@@ -5,32 +5,32 @@ public class NetLowLevel {
     // globals
     // TODO inject singleton
     private static NetConReqValidator validator = null;
-    private static ThreadLock validatorLock = new ThreadLock();
+    private static final Object validatorLock = new Object();
 
     public static void setValidator(NetConReqValidator validator) {
 
-        NetLowLevel.validatorLock.Lock ();
-        NetLowLevel.validator = validator;
-        NetLowLevel.validatorLock.Unlock ();
+        synchronized (validatorLock) {
+            NetLowLevel.validator = validator;
+        }
     }
 
     public static void removeValidator(NetConReqValidator validator) {
-        NetLowLevel.validatorLock.Lock ();
-        if (NetLowLevel.validator == validator) {
-            NetLowLevel.validator = null;
+        synchronized (validatorLock) {
+            if (NetLowLevel.validator == validator) {
+                NetLowLevel.validator = null;
+            }
         }
-        NetLowLevel.validatorLock.Unlock ();
     }
 
     public static boolean isConnectionRequest(NetSimplePacket packet, String[] requestStringBuffer) {
-        validatorLock.Lock ();
         boolean result;
-        if (validator != null) {
-            result = validator.IsConnectionRequest (packet, requestStringBuffer);
-        } else {
-            result = false;
+        synchronized (validatorLock) {
+            if (validator != null) {
+                result = validator.IsConnectionRequest(packet, requestStringBuffer);
+            } else {
+                result = false;
+            }
         }
-        validatorLock.Unlock ();
         return result;
     }
 

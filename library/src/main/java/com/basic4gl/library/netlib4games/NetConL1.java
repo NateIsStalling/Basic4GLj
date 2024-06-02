@@ -64,22 +64,22 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     /**
      * Used to lock any operation that could clash with the processing thread.
      */
-    ThreadLock m_processLock = new ThreadLock(),
+    private final Object processLock = new Object(),
 
     /**
      * Locks the incoming packet queue
      */
-    m_inQueueLock = new ThreadLock(),
+    inQueueLock = new Object(),
 
     /**
      * Locks the outgoing packet queue
      */
-    m_outQueueLock = new ThreadLock(),
+    outQueueLock = new Object(),
 
     /**
      * Used to lock any state data
      */
-    m_stateLock = new ThreadLock();
+    stateLock = new Object();
 
     /**
      * Callback used to hook into the connection's processing thread.
@@ -138,9 +138,11 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
         for (int i = 0; i < dupFactor; i++) {
             m_connection.Send(header.getBuffer(), NetPacketHeaderL1.SIZE);
         }
-        m_stateLock.Lock();
-        m_lastSent = tickCount;
-        m_stateLock.Unlock();
+        NetLog("Lock State!");
+        synchronized (stateLock) {
+            m_lastSent = tickCount;
+        }
+        NetLog("UnLock State!");
     }
 
     boolean ProcessRecvPacket(long tickCount) {
@@ -167,7 +169,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
             int recvSize = NetPacketHeaderL1.SIZE;
             recvSize = m_connection.ReceivePart(header.getBuffer(), 0, recvSize);
 
-            NetLog("Incoming L1 packet. " + Desc(header));
+            NetLog("Incoming L1 packet. " + getDescription(header));
 
             // Decode header
             byte flags = header.getFlags();
@@ -209,9 +211,9 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
                         }
 
                         // Create and queue received packet
-                        m_inQueueLock.Lock();
-                        m_recvBuffer.add(packet);
-                        m_inQueueLock.Unlock();
+                        synchronized (inQueueLock) {
+                            m_recvBuffer.add(packet);
+                        }
 
                         // Mark ID as received
                         buffer.set(id, true);
@@ -236,20 +238,20 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
                 case l1Confirm: {
 
                     // Remove confirmed packet from send buffer
-                    m_outQueueLock.Lock();
-                    Iterator<NetOutPacketL1> sendIt = m_sendBuffer.iterator();
-                    while (sendIt.hasNext()) {
-                        NetOutPacketL1 packet = sendIt.next();
-                        if (packet.id == id) {
+                    synchronized (outQueueLock) {
+                        Iterator<NetOutPacketL1> sendIt = m_sendBuffer.iterator();
+                        while (sendIt.hasNext()) {
+                            NetOutPacketL1 packet = sendIt.next();
+                            if (packet.id == id) {
 
-                            // Delete packet
-                            packet.dispose();
+                                // Delete packet
+                                packet.dispose();
 
-                            // Remove entry from buffer
-                            sendIt.remove();
+                                // Remove entry from buffer
+                                sendIt.remove();
+                            }
                         }
                     }
-                    m_outQueueLock.Unlock();
                 }
                 break;
 
@@ -270,9 +272,9 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
                         BuildAndSend(false, l1Accept, 0, tickCount, false);
 
                         // Handshaking is now complete
-                        m_stateLock.Lock();
-                        m_handShaking = false;
-                        m_stateLock.Unlock();
+                        synchronized (stateLock) {
+                            m_handShaking = false;
+                        }
                     }
                 }
                 break;
@@ -281,9 +283,9 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
 
                     // Connection accepted
                     if (m_connection.Client()) {
-                        m_stateLock.Lock();
-                        m_handShaking = false;
-                        m_stateLock.Unlock();
+                        synchronized (stateLock) {
+                            m_handShaking = false;
+                        }
                     }
                 }
                 break;
@@ -313,55 +315,56 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
             // resending a reliable packet etc.		
 
             // Calculate when the next maintenance action is due
-            m_processLock.Lock();
-
             long wait;
-            if (m_connection.Connected()) {
+            synchronized (processLock) {
 
-                long nextEvent = m_wakeupTime;
 
-                // Timeout?
-                long event = m_lastReceived + (m_handShaking ? m_settings.handshakeTimeout : m_settings.timeout);
-                if (event < nextEvent) {
-                    nextEvent = event;
-                }
+                if (m_connection.Connected()) {
 
-                // Keepalive?
-                event = m_lastSent + (m_handShaking ? m_settings.reliableResend : m_settings.keepAlive);
-                if (event < nextEvent) {
-                    nextEvent = event;
-                }
+                    long nextEvent = m_wakeupTime;
 
-                // Reliable resend?
-                if (!m_handShaking) {
-                    m_outQueueLock.Lock();
+                    // Timeout?
+                    long event = m_lastReceived + (m_handShaking ? m_settings.handshakeTimeout : m_settings.timeout);
+                    if (event < nextEvent) {
+                        nextEvent = event;
+                    }
 
-                    Iterator<NetOutPacketL1> sendIt = m_sendBuffer.iterator();
-                    while (sendIt.hasNext()) {
-                        NetOutPacketL1 packet = sendIt.next();
-                        event = packet.due;
-                        if (event < nextEvent) {
-                            nextEvent = event;
+                    // Keepalive?
+                    event = m_lastSent + (m_handShaking ? m_settings.reliableResend : m_settings.keepAlive);
+                    if (event < nextEvent) {
+                        nextEvent = event;
+                    }
+
+                    // Reliable resend?
+                    if (!m_handShaking) {
+                        synchronized (outQueueLock) {
+
+                            Iterator<NetOutPacketL1> sendIt = m_sendBuffer.iterator();
+                            while (sendIt.hasNext()) {
+                                NetOutPacketL1 packet = sendIt.next();
+                                event = packet.due;
+                                if (event < nextEvent) {
+                                    nextEvent = event;
+                                }
+                            }
+
                         }
                     }
 
-                    m_outQueueLock.Unlock();
-                }
-
-                // Calculate duration to wait
-                nextEvent += WAITEXTENSION;
-                long tickCount = GetTickCount();
-                wait = nextEvent;
-                if (wait > tickCount) {
-                    wait -= tickCount;
+                    // Calculate duration to wait
+                    nextEvent += WAITEXTENSION;
+                    long tickCount = getTickCount();
+                    wait = nextEvent;
+                    if (wait > tickCount) {
+                        wait -= tickCount;
+                    } else {
+                        wait = 0;
+                    }
                 } else {
-                    wait = 0;
+                    wait = INFINITE;
                 }
-            } else {
-                wait = INFINITE;
-            }
 
-            m_processLock.Unlock();
+            }
 
             // Wait for data or next due event
             ThreadEvent[] events = new ThreadEvent[]{m_connection.Event(), m_processThread.TerminateEvent()};
@@ -370,91 +373,90 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
             }
             m_wakeupTime = INFINITE;
 
-            m_processLock.Lock();
-            if (!m_processThread.Terminating() && m_connection.Connected()) {
+            synchronized (processLock) {
+                if (!m_processThread.Terminating() && m_connection.Connected()) {
 
-                long tickCount = GetTickCount();
+                    long tickCount = getTickCount();
 
-                // Process incoming packets
-                m_inQueueLock.Lock();
-                while (ProcessRecvPacket(tickCount)) {
-                    ;
-                }
-                m_inQueueLock.Unlock();
-
-                // Process outgoing packets
-                m_outQueueLock.Lock();
-
-                Iterator<NetOutPacketL1> sendIt = m_sendBuffer.iterator();
-                while(sendIt.hasNext()) {
-                    NetOutPacketL1 i = sendIt.next();
-                    if (tickCount > i.due){
-
-                        // Send the packet
-                        NetLog("Send buffered outgoing L1 packet. " + Desc(i.packet));
-
-                        // Mark the packet as resent
-                        NetPacketHeaderL1 header = new NetPacketHeaderL1(i.packet.data);
-                        header.setFlags((byte) (header.getFlags() | (byte) NETL1_RESENT));
-
-                        m_connection.Send( i.packet.data,  i.packet.size);
-                        m_lastSent = tickCount;
-
-                        // If packet is reliable, leave it in the buffer
-                        if (i.reliable){
-
-                            // Update due date of next resend
-                            i.due = tickCount + m_settings.reliableResend;
-                        }
-							else{
-                            // Otherwise delete it, and remove from buffer.
-
-                            i.dispose();
-                            sendIt.remove();
+                    // Process incoming packets
+                    synchronized (inQueueLock) {
+                        while (ProcessRecvPacket(tickCount)) {
+                            ;
                         }
                     }
-                }
 
-                m_outQueueLock.Unlock();
+                    // Process outgoing packets
+                    synchronized (outQueueLock) {
+                        Iterator<NetOutPacketL1> sendIt = m_sendBuffer.iterator();
+                        while (sendIt.hasNext()) {
+                            NetOutPacketL1 i = sendIt.next();
+                            if (tickCount > i.due) {
 
-                ////////////////////////////
-                // Keepalives and timeouts
+                                // Send the packet
+                                NetLog("Send buffered outgoing L1 packet. " + getDescription(i.packet));
 
-                // Timeouts
-                long timeout = m_handShaking ? m_settings.handshakeTimeout : m_settings.timeout;
-                if (tickCount >= m_lastReceived + timeout) {
+                                // Mark the packet as resent
+                                NetPacketHeaderL1 header = new NetPacketHeaderL1(i.packet.data);
+                                header.setFlags((byte) (header.getFlags() | (byte) NETL1_RESENT));
 
-                    NetLog("L1 connection timed out");
-                    Disconnect(true);
-                }
+                                m_connection.Send(i.packet.data, i.packet.size);
+                                m_lastSent = tickCount;
 
-                // Keep alives
-                else if (m_connection.Connected() && m_handShaking) {
+                                // If packet is reliable, leave it in the buffer
+                                if (i.reliable) {
 
-                    // Keepalives are not sent during handshaking, but the client does keep
-                    // sending requests until accepted, disconnected or timed out
-                    if (m_connection.Client() && tickCount >= m_lastSent + m_settings.reliableResend) {
+                                    // Update due date of next resend
+                                    i.due = tickCount + m_settings.reliableResend;
+                                } else {
+                                    // Otherwise delete it, and remove from buffer.
 
-                        NetLog("Resend L1 connect request");
-                        BuildAndSend(false, l1Connect, 0, tickCount, false);
+                                    i.dispose();
+                                    sendIt.remove();
+                                }
+                            }
+                        }
                     }
-                } else {
 
-                    // Send keepalive
-                    if (tickCount > m_lastSent + m_settings.keepAlive) {
+                    ////////////////////////////
+                    // Keepalives and timeouts
 
-                        NetLog("Send L1 keepalive");
-                        BuildAndSend(false, l1KeepAlive, 0, tickCount, false);
+                    // Timeouts
+                    long timeout = m_handShaking ? m_settings.handshakeTimeout : m_settings.timeout;
+                    if (tickCount >= m_lastReceived + timeout) {
+                        NetLog("last received " + m_lastReceived);
+                        NetLog("tickcount " + tickCount);
+                        NetLog("timeout " + timeout);
+                        NetLog("L1 connection timed out");
+                        Disconnect(true);
+                    }
+
+                    // Keep alives
+                    else if (m_connection.Connected() && m_handShaking) {
+
+                        // Keepalives are not sent during handshaking, but the client does keep
+                        // sending requests until accepted, disconnected or timed out
+                        if (m_connection.Client() && tickCount >= m_lastSent + m_settings.reliableResend) {
+
+                            NetLog("Resend L1 connect request");
+                            BuildAndSend(false, l1Connect, 0, tickCount, false);
+                        }
+                    } else {
+
+                        // Send keepalive
+                        if (tickCount > m_lastSent + m_settings.keepAlive) {
+
+                            NetLog("Send L1 keepalive");
+                            BuildAndSend(false, l1KeepAlive, 0, tickCount, false);
+                        }
                     }
                 }
-            }
 
-            // Process thread callback
-            if (m_callback != null) {
-                m_callback.ProcessThreadCallback();
-            }
+                // Process thread callback
+                if (m_callback != null) {
+                    m_callback.ProcessThreadCallback();
+                }
 
-            m_processLock.Unlock();
+            }
         }
     }
 
@@ -471,7 +473,6 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
         m_sendIDUnreliable = (0);
         m_wakeupTime = (INFINITE);
 
-        m_processLock = new ThreadLock();
 
         assert (m_connection != null);
 
@@ -482,7 +483,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
 
         // Init timing
         m_lastSent =
-                m_lastReceived = GetTickCount();
+                m_lastReceived = getTickCount();
 
         // Validate
         Validate();
@@ -502,7 +503,6 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
         m_sendIDUnreliable = (0);
         m_wakeupTime = (INFINITE);
 
-        m_processLock = new ThreadLock();
 
         assert (m_connection != null);
 
@@ -512,7 +512,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
         m_handShaking = m_connection.Connected();
 
         // Init timing
-        long tickCount = GetTickCount();
+        long tickCount = getTickCount();
         m_lastSent = tickCount;
         m_lastReceived = tickCount;
 
@@ -565,18 +565,19 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     }
 
     public void SetSettings(NetSettingsL1 settings) {
-        m_processLock.Lock();
-        m_settings = settings;
-        m_processLock.Unlock();
+        synchronized (processLock) {
+            m_settings = settings;
+        }
     }
 
     /**
      * Return true if connection is a client connection, false if is a server connection.
      */
     public boolean HandShaking() {
-        m_stateLock.Lock();
-        boolean result = m_handShaking;
-        m_stateLock.Unlock();
+        boolean result;
+        synchronized (stateLock) {
+            result = m_handShaking;
+        }
         return result;
     }
 
@@ -586,56 +587,57 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
      * when the connection request is received (NetListenLow::ConnectionPending() == true)
      */
     public boolean Connect(String address, String connectionRequest) {
+        boolean result;
+        synchronized (processLock) {
+            if (m_connection.Client() && !Connected() && m_connection.Connect(address)) {
 
-        m_processLock.Lock();
-        if (m_connection.Client() && !Connected() && m_connection.Connect(address)) {
+                NetLog("Send L1 connection request");
 
-            NetLog("Send L1 connection request");
+                // Switch to handshaking mode
+                m_handShaking = true;
 
-            // Switch to handshaking mode
-            m_handShaking = true;
+                // Client connections must start the handshaking sequence
+                if (m_connection.Client()) {
 
-            // Client connections must start the handshaking sequence
-            if (m_connection.Client()) {
+                    // Build connection packet
+                    byte[] buf = new byte[NetPacketHeaderL1.SIZE + MAX_CON_REQ_SIZE];
+                    NetPacketHeaderL1 header = NetPacketHeaderL1.with(buf);
+                    // Setup header
+                    BuildHeader(header, false, l1Connect, 0);
 
-                // Build connection packet
-                byte[] buf = new byte[ NetPacketHeaderL1.SIZE + MAX_CON_REQ_SIZE];
-                NetPacketHeaderL1 header = NetPacketHeaderL1.with(buf);
-                // Setup header
-                BuildHeader(header, false, l1Connect, 0);
+                    // Add connection string
+                    // Calculate length
+                    int size = connectionRequest.length();
 
-                // Add connection string
-                // Calculate length
-                int size = connectionRequest.length();
+                    // May need to trim to fit buffer
+                    if (size >= MAX_CON_REQ_SIZE) {
+                        size = MAX_CON_REQ_SIZE - 1;
+                    }
 
-                // May need to trim to fit buffer
-                if (size >= MAX_CON_REQ_SIZE) {
-                    size = MAX_CON_REQ_SIZE - 1;
+                    // Or packet
+                    if (size >= m_connection.MaxPacketSize() - NetPacketHeaderL1.SIZE) {
+                        size = m_connection.MaxPacketSize() - NetPacketHeaderL1.SIZE - 1;
+                    }
+
+                    // Insert string
+                    if (size > 0) {
+                        System.arraycopy(connectionRequest.getBytes(StandardCharsets.UTF_8), 0, buf, NetPacketHeaderL1.SIZE, size);
+                    }
+
+                    // Send packet
+                    for (int i = 0; i < m_settings.dup; i++) {
+                        m_connection.Send(buf, NetPacketHeaderL1.SIZE + size);
+                    }
+
+                    synchronized (stateLock) {
+                        m_lastSent = getTickCount();
+                    }
                 }
 
-                // Or packet
-                if (size >= m_connection.MaxPacketSize() - NetPacketHeaderL1.SIZE) {
-                    size = m_connection.MaxPacketSize() - NetPacketHeaderL1.SIZE - 1;
-                }
-
-                // Insert string
-                if (size > 0) {
-                    System.arraycopy(connectionRequest.getBytes(StandardCharsets.UTF_8), 0, buf, NetPacketHeaderL1.SIZE, size);
-                }
-
-                // Send packet
-                for (int i = 0; i < m_settings.dup; i++) {
-                    m_connection.Send(buf, NetPacketHeaderL1.SIZE + size);
-                }
-                m_stateLock.Lock();
-                m_lastSent = GetTickCount();
-                m_stateLock.Unlock();
             }
 
+            result = Connected();
         }
-
-        boolean result = Connected();
-        m_processLock.Unlock();
         return result;
     }
 
@@ -656,28 +658,28 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
      * connection until it times out.
      */
     public void Disconnect(boolean clean) {
-        m_processLock.Lock();
-        if (Connected()) {
-            if (clean) {
+        synchronized (processLock) {
+            if (Connected()) {
+                if (clean) {
 
-                NetLog("Send clean disconnect");
+                    NetLog("Send clean disconnect");
 
-                // Send clean disconnect packet(s)
-                NetPacketHeaderL1 header = new NetPacketHeaderL1();
-                BuildHeader(header,
-                        false,
-                        l1Disconnect,
-                        0);
+                    // Send clean disconnect packet(s)
+                    NetPacketHeaderL1 header = new NetPacketHeaderL1();
+                    BuildHeader(header,
+                            false,
+                            l1Disconnect,
+                            0);
 
-                for (int i = 0; i < m_settings.dup; i++) {
-                    m_connection.Send(header.getBuffer(), NetPacketHeaderL1.SIZE);
+                    for (int i = 0; i < m_settings.dup; i++) {
+                        m_connection.Send(header.getBuffer(), NetPacketHeaderL1.SIZE);
+                    }
                 }
-            }
 
-            // Low level disconnect
-            m_connection.Disconnect();
+                // Low level disconnect
+                m_connection.Disconnect();
+            }
         }
-        m_processLock.Unlock();
     }
 
     /**
@@ -693,9 +695,10 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
      * True if a data packet is pending
      */
     public boolean DataPending() {
-        m_inQueueLock.Lock();
-        boolean result = !m_recvBuffer.isEmpty();
-        m_inQueueLock.Unlock();
+        boolean result;
+        synchronized (inQueueLock) {
+            result = !m_recvBuffer.isEmpty();
+        }
         return result;
 
     }
@@ -704,9 +707,10 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
      * Size of the pending data packet in bytes
      */
     public int PendingDataSize() {
-        m_inQueueLock.Lock();
-        int result = DataPending() ? m_recvBuffer.get(0).packet.size : 0;
-        m_inQueueLock.Unlock();
+        int result;
+        synchronized (inQueueLock) {
+            result = DataPending() ? m_recvBuffer.get(0).packet.size : 0;
+        }
         return result;
     }
 
@@ -715,9 +719,10 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
      * Call this ONLY if DataPending() returns true.
      */
     public boolean PendingIsResent() {
-        m_inQueueLock.Lock();
-        boolean result = DataPending() ? m_recvBuffer.get(0).resent : false;
-        m_inQueueLock.Unlock();
+        boolean result;
+        synchronized (inQueueLock) {
+            result = DataPending() ? m_recvBuffer.get(0).resent : false;
+        }
         return result;
     }
 
@@ -727,26 +732,26 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
      */
     public int ReceivePart(byte[] data, int offset, int size) {
         assert (data != null);
-        m_inQueueLock.Lock();
-        if (DataPending()) {
+        synchronized (inQueueLock) {
+            if (DataPending()) {
 
-            // Find topmost queued packet
-            NetSimplePacket packet = m_recvBuffer.get(0).packet;
+                // Find topmost queued packet
+                NetSimplePacket packet = m_recvBuffer.get(0).packet;
 
-            // Number of bytes to copy
-            int remainingBytes = offset >= packet.size ? 0 : packet.size - offset;
-            if (remainingBytes < size) {
-                size = remainingBytes;
+                // Number of bytes to copy
+                int remainingBytes = offset >= packet.size ? 0 : packet.size - offset;
+                if (remainingBytes < size) {
+                    size = remainingBytes;
+                }
+
+                // Copy data
+                if (size > 0) {
+                    System.arraycopy(packet.data, offset, data, 0, size);
+                }
+            } else {
+                size = 0;
             }
-
-            // Copy data
-            if (size > 0) {
-                System.arraycopy(packet.data, offset, data, 0, size);
-            }
-        } else {
-            size = 0;
         }
-        m_inQueueLock.Unlock();
         return size;
     }
 
@@ -754,10 +759,10 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
      * Receive a pending packet and signal we have finished with it
      */
     public int Receive(byte[] data, int size) {
-        m_inQueueLock.Lock();
-        size = ReceivePart(data, 0, size);
-        DonePendingData();
-        m_inQueueLock.Unlock();
+        synchronized (inQueueLock) {
+            size = ReceivePart(data, 0, size);
+            DonePendingData();
+        }
         return size;
     }
 
@@ -765,13 +770,13 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
      * Signal that we have finished with a pending data packet.
      */
     public void DonePendingData() {
-        m_inQueueLock.Lock();
-        if (DataPending()) {
-            NetInPacketL1 packet = m_recvBuffer.get(0);
-            m_recvBuffer.remove(0);
-            packet.dispose();
+        synchronized (inQueueLock) {
+            if (DataPending()) {
+                NetInPacketL1 packet = m_recvBuffer.get(0);
+                m_recvBuffer.remove(0);
+                packet.dispose();
+            }
         }
-        m_inQueueLock.Unlock();
     }
 
     /**
@@ -810,7 +815,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
             BuildHeader(packetHeader, false, l1User, m_sendIDUnreliable++);
         }
 
-        NetLog("Send L1 packet, " + Desc(packetHeader));
+        NetLog("Send L1 packet, " + getDescription(packetHeader));
 
         // Copy user data into the packet buffer after the header
         if (size > 0) {
@@ -820,37 +825,37 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
         // Send packet
         // Note: Packets are not sent during the handshaking stage, 
         // Instead they are queued, and flushed once the actual handshake succeeds.
-        m_stateLock.Lock();
-        if (!HandShaking()) {
-            for (int i = 0; i < m_settings.dup; i++) {
-                m_connection.Send(packet.data, packet.size);
+        synchronized (stateLock) {
+            if (!HandShaking()) {
+                for (int i = 0; i < m_settings.dup; i++) {
+                    m_connection.Send(packet.data, packet.size);
+                }
             }
-        }
 
-        // Queue packet if necessary
-        if (HandShaking() || reliable) {
+            // Queue packet if necessary
+            if (HandShaking() || reliable) {
 
-            NetLog("Queue outgoing L1 packet");
+                NetLog("Queue outgoing L1 packet");
 
-            // Calculate due time
-            // Packets queued while handshaking are sent as soon as possible
-            // Reliable packets are sent after a resend delay
-            long due;
-            if (HandShaking()) {
-                due = GetTickCount();
+                // Calculate due time
+                // Packets queued while handshaking are sent as soon as possible
+                // Reliable packets are sent after a resend delay
+                long due;
+                if (HandShaking()) {
+                    due = getTickCount();
+                } else {
+                    due = getTickCount() + m_settings.reliableResend;
+                }
+
+                // Create queued outgoing packet
+                synchronized (outQueueLock) {
+                    m_sendBuffer.add(new NetOutPacketL1(due, packet));
+                }
             } else {
-                due = GetTickCount() + m_settings.reliableResend;
+                // Packet not queued, delete it
+                packet.dispose();
             }
-
-            // Create queued outgoing packet
-            m_outQueueLock.Lock();
-            m_sendBuffer.add(new NetOutPacketL1(due, packet));
-            m_outQueueLock.Unlock();
-        } else {
-            // Packet not queued, delete it
-            packet.dispose();
         }
-        m_stateLock.Unlock();
     }
 
     public void StartThread() {
@@ -865,21 +870,9 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
      * later null out the callback before destruction.
      */
     public void HookCallback(NetProcessThreadCallback callback) {
-        m_processLock.Lock();
-        m_callback = callback;
-        m_processLock.Unlock();
-    }
-
-    /**
-     * Lock out the callback thread.
-     * Use to ensure the callback code (setup via HookCallback) is not running.
-     */
-    public void LockCallback() {
-        m_processLock.Lock();
-    }
-
-    public void UnlockCallback() {
-        m_processLock.Unlock();
+        synchronized (processLock) {
+            m_callback = callback;
+        }
     }
 
     /**

@@ -12,20 +12,23 @@ public class ThreadEvent {
     final java.lang.Thread event;
     private final List<BlockingQueue<Boolean>> queue;
 
+    private final String name;
     private boolean isSignalled;
 
-    public ThreadEvent() {
+    public ThreadEvent(String name) {
+        this.name = name;
         event = new java.lang.Thread();
         queue = new ArrayList<>();
         isSignalled = false;
     }
 
-    public ThreadEvent(boolean initialState) {
-        this();
+    public ThreadEvent(String name, boolean initialState) {
+        this(name);
         isSignalled = initialState;
     }
 
     public void dispose() {
+        isSignalled = true;
         synchronized (event) {
             event.notify();
         }
@@ -71,16 +74,21 @@ public class ThreadEvent {
 
     public boolean waitFor(long timeout) {
         try {
+            System.out.println(name + " waitFor A");
             synchronized (event) {
+                System.out.println(name + " waitFor 1");
                 if (isSignalled) {
                     return true;
                 }
+                System.out.println(name + " waitFor 2");
                 event.wait(timeout);
             }
         } catch (InterruptedException consumed) {
+            System.out.println(name + " waitFor B");
             return false;
         }
         synchronized (event) {
+            System.out.println(name + " waitFor C");
             return isSignalled;
         }
     }

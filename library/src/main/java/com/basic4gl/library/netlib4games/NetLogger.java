@@ -1,6 +1,6 @@
 package com.basic4gl.library.netlib4games;
 
-import static com.basic4gl.library.netlib4games.NetLayer1.GetTickCount;
+import static com.basic4gl.library.netlib4games.NetLayer1.getTickCount;
 
 public class NetLogger {
     public static interface NetLogCallback {
@@ -10,7 +10,7 @@ public class NetLogger {
 
         @Override
         public void NetLog(String text) {
-            System.out.println(("Net event (" + GetTickCount () + "): " + text + "\r\n"));
+            System.out.println(("Net event (" + getTickCount() + "): " + text + "\r\n"));
         }
     }
 

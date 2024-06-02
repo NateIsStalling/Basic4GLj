@@ -7,10 +7,6 @@ public class HasErrorStateThreadSafe extends HasErrorState {
     ThreadLock m_lock;			// Lock object.
     boolean		m_ownLock;		// True if we own it (and will free it on destruction)
 
-    public HasErrorStateThreadSafe (ThreadLock lock) {
-        m_lock = lock;
-        m_ownLock = false;
-    }
     public HasErrorStateThreadSafe () {
 
         // Create own threadlock

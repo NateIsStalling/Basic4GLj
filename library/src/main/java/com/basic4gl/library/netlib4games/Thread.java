@@ -9,7 +9,7 @@ public class Thread {
 
     public Thread () {
        m_thread = null;
-       m_terminateEvent = new ThreadEvent();
+       m_terminateEvent = new ThreadEvent("Thread.m_terminateEvent");
     }
 
     public void dispose() {
@@ -52,7 +52,7 @@ public class Thread {
     public ThreadEvent TerminateEvent () { return m_terminateEvent; }
 
     /// Returns true if Terminate() has been called.
-    public boolean Terminating () { return TerminateEvent ().waitFor (0); }
+    public boolean Terminating () { return TerminateEvent ().waitFor (1); }
 
     /// Wait for the thread to terminate
     public boolean WaitFor (long timeout) {
