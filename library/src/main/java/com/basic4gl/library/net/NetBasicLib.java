@@ -163,6 +163,7 @@ public class NetBasicLib implements FunctionLibrary {
 
         if (obj.error()) {
             lastError = obj.getError();
+            System.out.println(lastError);
             return false;
         } else {
             lastError = "";

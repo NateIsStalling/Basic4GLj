@@ -199,8 +199,8 @@ public class MainWindow implements
                 file.createNewFile();
             }
             out = new PrintStream(new FileOutputStream(file.getAbsolutePath(), true), true);
-            System.setOut(out);
-            System.setErr(out);
+//            System.setOut(out);
+//            System.setErr(out);
         } catch (IOException e) {
             System.err.println("Unable to log to file");
             e.printStackTrace();

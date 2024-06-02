@@ -21,7 +21,10 @@ public final class ThreadUtils {
 
         // Perform wait
         try {
+            System.out.println("so long!");
+
             Boolean result = queue.poll(timeoutMillis, TimeUnit.MILLISECONDS);
+            System.out.println("escapse!");
             return result != null ? result : false;
         } catch (InterruptedException e) {
             return false;
