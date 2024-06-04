@@ -18,9 +18,20 @@ Basic4GLj is licensed under a New BSD license - please see the LICENSES folder f
 
 Check out the [Releases Page](https://github.com/NateIsStalling/Basic4GLj/releases) of this repo for the latest build.
 
+### Documentation
+
+Check out the [wiki](https://github.com/NateIsStalling/Basic4GLj/wiki) of this repo for the Basic4GL language guide and sprite library guide for 2D game programming 
+(more documentation coming soon!).
+
+### Sample Programs
+
 A `/samples` folder with example programs is included with each release that can be run by opening the `.gb` file in the Basic4GL editor and clicking the Play button.
 
-### Building the Application
+Sample programs can also be found here in the repo:
+https://github.com/NateIsStalling/Basic4GLj/tree/main/app/src/main/dist/samples/Programs
+
+
+## Building the Editor
 
 This project requires Java 17 and uses Gradle for its builds.
 
@@ -28,7 +39,7 @@ This project requires Java 17 and uses Gradle for its builds.
 
 _build artifacts can be found in `/app/build/distributions`_
 
-### Debugging the Application
+### Debugging the Editor
 
 To debug the app IDE project along with its dependencies, use the following gradle task:
 > ./gradlew :app:debugAll
@@ -51,7 +62,7 @@ Basic4GL was originally developed for Windows with OpenGL 1.2, which is consider
 
 This Java port of Basic4GL attempts to support all functions provided by the original Windows version, but some functions have not been ported yet and some may not be possible with Basic4GLj's current OpenGL implementation
 
-Additionally, recent work on Basic4GLj (as of 2022!) has been done on a Mac with Intel - I can't guarantee everything works as expected on Windows, and support for Apple Silicon based Macs is not currently planned but pull requests are always welcome.
+Additionally, recent work on Basic4GLj (as of 2022!) has been done on a Mac with Intel - I can't guarantee everything works as expected on Windows, and support for Apple Silicon based Macs is experimental.
 
 Please report any compatibility or stability issues to the Issues page of this project.
 
