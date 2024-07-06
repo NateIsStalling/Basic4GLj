@@ -24,14 +24,13 @@ public class LoadImage {
     }
 
     // Return the image format as an OpenGL constant
-    static int ImageFormat (Image image) {
+    static int getImageFormat(Image image) {
         assertTrue(image != null);
         return (image.getBPP () & 0xffff) == 3 ? GL11.GL_RGB : GL11.GL_RGBA;//corona::PF_R8G8B8 ? GL_RGB : GL_RGBA;
     }
 
-    static Image LoadImage (String filename) {
-        //TODO implement file opener
-        //assertTrue(files != null);
+    static Image loadImage(String filename) {
+        assertTrue(mFiles != null);
 
         // Load and return an image.
         // Returns null if image fails to load.
@@ -258,7 +257,7 @@ public class LoadImage {
         return dst;
     }
 */
-    static Vector<Image> SplitUpImageStrip(
+    static Vector<Image> splitImageStrip(
             Image image,
             int frameWidth,
             int frameHeight) {
@@ -285,23 +284,25 @@ public class LoadImage {
         // Extract images
         Vector<Image> images = new Vector<Image>();
         int bpp = image.getBPP();
-        for (int y = image.getHeight() - frameHeight; y >= 0; y -= frameHeight) {
-            for (int x = 0; x + frameWidth <= image.getWidth(); x += frameWidth) {
+        if (bpp > 0) {
+            for (int y = image.getHeight() - frameHeight; y >= 0; y -= frameHeight) {
+                for (int x = 0; x + frameWidth <= image.getWidth(); x += frameWidth) {
 
-                // Create frame image
-                Image dst = new Image(frameWidth, frameHeight, image.getBPP());
-                images.add(dst);
+                    // Create frame image
+                    Image dst = new Image(frameWidth, frameHeight, image.getBPP());
+                    images.add(dst);
 
-                // Copy pixels row by row
-                ByteBuffer srcPixels = image.getPixels();
-                ByteBuffer dstPixels = dst.getPixels();
-                for (int dy = 0; dy < frameHeight; dy++){
-                    dstPixels.position(dy * frameWidth * bpp);
-                    srcPixels.position(((y + dy) * image.getWidth() + x) * bpp);
-                    for (int dx = 0; dx < frameWidth * bpp; dx++) {
-                        dstPixels.put(srcPixels.get());
+                    // Copy pixels row by row
+                    ByteBuffer srcPixels = image.getPixels();
+                    ByteBuffer dstPixels = dst.getPixels();
+                    for (int dy = 0; dy < frameHeight; dy++) {
+                        dstPixels.position(dy * frameWidth * bpp);
+                        srcPixels.position(((y + dy) * image.getWidth() + x) * bpp);
+                        for (int dx = 0; dx < frameWidth * bpp; dx++) {
+                            dstPixels.put(srcPixels.get());
+                        }
+
                     }
-
                 }
             }
         }
@@ -309,7 +310,7 @@ public class LoadImage {
         return images;
     }
 
-    static boolean ImageIsBlank(Image image) {
+    static boolean isImageBlank(Image image) {
         assertTrue(image != null);
 
         // Format must include an alpha channel
@@ -332,7 +333,7 @@ public class LoadImage {
         return true;
     }
 
-    static Image ApplyTransparentColour(Image image, long col) {
+    static Image applyTransparentColor(Image image, long col) {
         assertTrue(image != null);
 
         // Clone image and convert to RGBA
