@@ -17,8 +17,7 @@ import com.basic4gl.runtime.Value;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Function;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.IntBuffer;
 import java.util.*;
 
@@ -414,17 +413,10 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             byte[] buffer = new byte[4096];
             int remaining, read;
             //Read file in chunks
-
-            try {
-                while ((remaining = file.available()) > 4096) {
-                    file.read(buffer, 0, 4096);
-                    comp.Parser().getSourceCode().add(new String(buffer, "UTF-8"));
-                }
-                //Read remaining bytes
-                if (remaining > 0) {
-                    buffer = new byte[remaining];
-                    file.read(buffer, 0, remaining);
-                    comp.Parser().getSourceCode().add(new String(buffer, "UTF-8"));
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(file))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    comp.Parser().getSourceCode().add(line);
                 }
 
                 file.close();
