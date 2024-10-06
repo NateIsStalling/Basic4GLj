@@ -470,11 +470,13 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
                         vm.miscError("An exception occurred");
                 }
             }
-        } while (!vm.hasError()
+        } while (!Thread.currentThread().isInterrupted()
+                && !vm.hasError()
                 && !vm.isDone()
                 && (isCallback || !vm.isPaused())            // Note: User cannot pause inside a callback
                 && !(isCallback && vm.isEndCallback())
-                && host.handleEvents());
+                && host.handleEvents()
+                && !host.isClosing());
 
         // Restore IP
         vm.gotoInstruction(saveIP);
