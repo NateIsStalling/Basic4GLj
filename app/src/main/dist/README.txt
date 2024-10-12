@@ -1,4 +1,4 @@
-	Basic4GLj 0.5.0 alpha
+	Basic4GLj 0.5.1 alpha
 	Build Date: January 2024
 ================================================
 	Basic4GLj	by Nathaniel Nielsen	(c) 2024
@@ -27,6 +27,8 @@
 ================================================
 	Change Log
 ================================================
+0.5.1   - Fixed issues loading textures with TexStripFrames and LoadTexStrip
+
 0.5.0   - Implemented sound library
         - Java 17 now required
         - OpenJDK 17 now embedded for installer distributions of Basic4GLj

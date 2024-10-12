@@ -5347,7 +5347,7 @@ public class TomBasicCompiler extends HasErrorState {
 				// Implementation of runtime function
 				int index = runtimeFunctionIndex.get(name);
 				RuntimeFunction runtimeFunction = vm.CurrentCodeBlock()
-						.GetRuntimeFunction(index);
+						.getRuntimeFunction(index);
 
 				// Check if already implemented
 				if (runtimeFunction.functionIndex >= 0) {

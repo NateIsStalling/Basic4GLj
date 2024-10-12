@@ -1030,13 +1030,13 @@ public class TomVM extends HasErrorState implements Streamable {
                     if (mBoundCodeBlock > 0 && mBoundCodeBlock < mCodeBlocks.size()) {
                         CodeBlock codeBlock = mCodeBlocks.get(mBoundCodeBlock);
                         if (codeBlock.programOffset >= 0) {
-                            funcIndex = codeBlock.GetRuntimeFunction(runtimeIndex).functionIndex;
+                            funcIndex = codeBlock.getRuntimeFunction(runtimeIndex).functionIndex;
                         }
                     }
 
                     // If not found, look in main program
                     if (funcIndex < 0) {
-                        funcIndex = mCodeBlocks.get(0).GetRuntimeFunction(runtimeIndex).functionIndex;
+                        funcIndex = mCodeBlocks.get(0).getRuntimeFunction(runtimeIndex).functionIndex;
                     }
 
                     // No function => Runtime error

@@ -82,7 +82,7 @@ public class GLTextGrid extends HasErrorState {
         IntBuffer w = BufferUtils.createIntBuffer(1);
         IntBuffer h = BufferUtils.createIntBuffer(1);
         IntBuffer comp = BufferUtils.createIntBuffer(1);
-        m_image = LoadImage.LoadImage(texFile);
+        m_image = LoadImage.loadImage(texFile);
         if (m_image == null || m_image.getPixels() == null) {
             setError("Error loading bitmap: " + texFile);
             return;

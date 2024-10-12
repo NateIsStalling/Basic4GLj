@@ -377,11 +377,14 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             return 0;
         }
 
-        IntBuffer result = BufferUtils.createIntBuffer(0);
-        Image image = new Image(filename);
-        OpenGLBasicLib.calculateImageStripFrames(image, frameWidth, frameHeight, result, null, null);
+        Image image =  LoadImage.loadImage(filename);
+        if (image != null) {
+            IntBuffer result = BufferUtils.createIntBuffer(0);
+            OpenGLBasicLib.calculateImageStripFrames(image, frameWidth, frameHeight, result, null, null);
 
-        return result.get(0);
+            return result.get(0);
+        }
+        return 0;
     }
 
     static void loadImageStrip(
@@ -401,7 +404,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
 
         // Load image strip
-        Image image = LoadImage.LoadImage(filename);
+        Image image = LoadImage.loadImage(filename);
         if (image != null) {
             IntBuffer frameCount = BufferUtils.createIntBuffer(1),
                     width = BufferUtils.createIntBuffer(1), height = BufferUtils.createIntBuffer(1);
@@ -428,7 +431,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 int frame = 0;
                 ByteBuffer buffer = BufferUtils.createByteBuffer(frameWidth * frameHeight * 4);
                 int bytesPerPixel = image.getBPP();//corona.PF_R8G8B8 ? 3 : 4;
-                int format = LoadImage.ImageFormat(image);
+                int format = LoadImage.getImageFormat(image);
                 for (int y = 0; y < height.get(0) / frameHeight; y++) {
                     for (int x = 0; x < width.get(0) / frameWidth; x++) {
 
@@ -509,7 +512,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         int width = image.getWidth();
         int height = image.getHeight();
         int pixelSize = image.getBPP();//GetPixelSize(image.getFormat());
-        int format = LoadImage.ImageFormat(image);
+        int format = LoadImage.getImageFormat(image);
         ByteBuffer pixels = image.getPixels();
 
         if (doMipmap) {
@@ -566,12 +569,12 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     static int loadTex(String filename) {
 
         // Load image
-        Image image = LoadImage.LoadImage(filename);
+        Image image = LoadImage.loadImage(filename);
         if (image != null) {
 
             // Process image
             if (usingTransparentCol) {
-                image = LoadImage.ApplyTransparentColour(image, transparentCol);
+                image = LoadImage.applyTransparentColor(image, transparentCol);
             }
             //TODO Confirm texture dimensions are powers of 2
             //image = LoadImage.ResizeImageForOpenGL(image);
@@ -634,21 +637,22 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     static Vector<Image> loadTexStripImages(String filename, int frameXSize, int frameYSize) {
 
         // Load main image
-        Image image = new Image(filename);//LoadImage(filename);
+        Image image = LoadImage.loadImage(filename);
         if (image != null) {
 
             // Split into frames
-            Vector<Image> images = LoadImage.SplitUpImageStrip(image, frameXSize, frameYSize);
+            Vector<Image> images = LoadImage.splitImageStrip(image, frameXSize, frameYSize);
 
             // Process images
             if (usingTransparentCol) {
                 for (int i = 0; i < images.size(); i++) {
-                    images.set(i, LoadImage.ApplyTransparentColour(image, transparentCol));
+                    Image it = images.get(i);
+                    images.set(i, LoadImage.applyTransparentColor(it, transparentCol));
                 }
             }
 
             if (truncateBlankFrames) {
-                while (images.size() > 1 && LoadImage.ImageIsBlank(images.lastElement())) {
+                while (images.size() > 1 && LoadImage.isImageBlank(images.lastElement())) {
                     images.remove(images.lastElement());
                 }
             }
@@ -714,7 +718,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         glPushAttrib(GL_ALL_ATTRIB_BITS);
 
         // Generate and load image
-        Image image = LoadImage.LoadImage(filename);
+        Image image = LoadImage.loadImage(filename);
         if (image != null) {
             //TODO Confirm texture dimensions are powers of 2
             //image = ResizeImageForOpenGL (image);
@@ -741,7 +745,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                 GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0,
                         image.getFormat(),
                         image.getWidth(), image.getHeight(), 0,
-                        LoadImage.ImageFormat(image),
+                        LoadImage.getImageFormat(image),
                         GL11.GL_UNSIGNED_BYTE,
                         image.getPixels());
                 GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
@@ -753,7 +757,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                         image.getWidth(),
                         image.getHeight(),
                         0,
-                        LoadImage.ImageFormat(image),
+                        LoadImage.getImageFormat(image),
                         GL_UNSIGNED_BYTE,
                         image.getPixels());
             }
@@ -889,7 +893,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         IntBuffer result = BufferUtils.createIntBuffer(1),
                 width = BufferUtils.createIntBuffer(1), height = BufferUtils.createIntBuffer(1);
 
-        Image image = LoadImage.LoadImage(filename);
+        Image image = LoadImage.loadImage(filename);
         if (image != null) {
             calculateOldSquareImageStripFrames(image, frameSize, result, width, height);
         }
@@ -906,7 +910,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         }
 
         // Load image strip
-        Image image = LoadImage.LoadImage(filename);
+        Image image = LoadImage.loadImage(filename);
         if (image != null) {
             IntBuffer frameCount = BufferUtils.createIntBuffer(1), width = BufferUtils.createIntBuffer(1), height = BufferUtils.createIntBuffer(1);
             calculateOldSquareImageStripFrames(image, frameSize, frameCount, width, height);
@@ -1166,7 +1170,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
         public void run(TomVM vm) {
 
             // Attempt to load image
-            Image image = LoadImage.LoadImage(vm.getStringParam(1));
+            Image image = LoadImage.loadImage(vm.getStringParam(1));
 
             // If successful, store it and return handle
             vm.getReg().setIntVal((image != null) ? OpenGLBasicLib.images.alloc(image) : 0);
@@ -1288,7 +1292,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     public static final class WrapImageFormat implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setIntVal(OpenGLBasicLib.images.isIndexStored(index) ? LoadImage.ImageFormat(OpenGLBasicLib.images.getValueAt(index)) : 0);
+            vm.getReg().setIntVal(OpenGLBasicLib.images.isIndexStored(index) ? LoadImage.getImageFormat(OpenGLBasicLib.images.getValueAt(index)) : 0);
         }
     }
 

@@ -27,15 +27,19 @@ public class CodeBlock implements Streamable{
 		programOffset = -1;
 	}
 
-	public void SetLengthAtLeast(int length) {
-		if (runtimeFunctions.size() < length) {
+	public void setLengthAtLeast(int length) {
+		int size = runtimeFunctions.size();
+		if (size < length) {
             runtimeFunctions.setSize(length);
+			for (int i = size; i < length; i++) {
+				runtimeFunctions.set(i, new RuntimeFunction());
+			}
         }
 	}
 
-	public RuntimeFunction GetRuntimeFunction(int index) {
+	public RuntimeFunction getRuntimeFunction(int index) {
 		assertTrue(index >= 0);
-		SetLengthAtLeast(index + 1);
+		setLengthAtLeast(index + 1);
 		return runtimeFunctions.get(index);
 	}
 
