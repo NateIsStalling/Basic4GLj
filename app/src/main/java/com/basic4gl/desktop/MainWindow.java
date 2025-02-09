@@ -13,6 +13,7 @@ import com.basic4gl.lib.util.IConfigurableAppSettings;
 import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
+import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
@@ -44,7 +45,8 @@ public class MainWindow implements
         IEditorPresenter,
         ITabProvider,
         IToggleBreakpointListener,
-        IFileEditorActionListener {
+        IFileEditorActionListener,
+        EmptyTabPanel.IEmptyTabPanelListener {
 
     private final CaretListener TrackCaretPosition = new CaretListener() {
         @Override
@@ -70,6 +72,7 @@ public class MainWindow implements
     private final JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
     private final JSplitPane debugPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     private final JTabbedPane tabControl = new JTabbedPane();
+    private  JPanel emptyTabPanel;
 
     private final JMenu bookmarkSubMenu = new JMenu("Bookmarks");
     private final JMenu breakpointSubMenu = new JMenu("Breakpoints");
@@ -77,6 +80,8 @@ public class MainWindow implements
     // Menu Items
     private final JMenuItem newMenuItem = new JMenuItem("New Program");
     private final JMenuItem openMenuItem = new JMenuItem("Open Program...");
+    private final JMenuItem recentSubMenu = new JMenu("Open Recent");
+    private final JMenuItem clearRecentMenuItem = new JMenuItem("Clear Recently Opened...");
     private final JMenuItem saveMenuItem = new JMenuItem("Save");
     private final JMenuItem saveAsMenuItem = new JMenuItem("Save As...");
     private final JMenuItem exportMenuItem = new JMenuItem("Export...");
@@ -245,6 +250,8 @@ public class MainWindow implements
 
         fileMenu.add(newMenuItem);
         fileMenu.add(openMenuItem);
+        fileMenu.add(recentSubMenu);
+        fileMenu.add(new JSeparator());
         fileMenu.add(saveMenuItem);
         fileMenu.add(saveAsMenuItem);
         fileMenu.add(new JSeparator());
@@ -309,6 +316,7 @@ public class MainWindow implements
         openMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, toolkit.getMenuShortcutKeyMask()));
         openMenuItem.addActionListener(e -> actionOpen());
         saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMask()));
+        clearRecentMenuItem.addActionListener(e -> actionClearRecent());
         saveMenuItem.addActionListener(e -> actionSave());
         saveAsMenuItem.addActionListener(e -> actionSaveAs());
         exportMenuItem.addActionListener(e -> {
@@ -665,6 +673,7 @@ public class MainWindow implements
 
         basicEditor.InitLibraries();
         ResetProject();
+        basicEditor.loadSettings();
 
 
         // Warm up the debug server
@@ -676,6 +685,22 @@ public class MainWindow implements
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+    }
+
+    @Override
+    public void setRecentItems(List<File> files) {
+        recentSubMenu.removeAll();
+        for (File file: files) {
+
+            JMenuItem fileMenuItem = new JMenuItem(file.getName());
+            recentSubMenu.add(fileMenuItem);
+            fileMenuItem.addActionListener(e -> {
+                actionOpen(file);
+            });
+        }
+        recentSubMenu.add(new JSeparator());
+        recentSubMenu.add(clearRecentMenuItem);
+        clearRecentMenuItem.setEnabled(!files.isEmpty());
     }
 
     private void showAboutDialog() {
@@ -757,6 +782,15 @@ public class MainWindow implements
         tabControl.setSelectedIndex(tabControl.getTabCount() - 1);
     }
 
+    public void openTab(File file) {
+        System.out.println("Open tab: " + file.getName());
+        System.out.println("Path: " + file.getAbsolutePath());
+
+        MainWindow.this.addTab(FileEditor.open(file, this, fileManager, this, linkGenerator, searchContext));
+
+        tabControl.setSelectedIndex(tabControl.getTabCount() - 1);
+    }
+
 
 
     void actionNew() {
@@ -774,27 +808,54 @@ public class MainWindow implements
     }
 
     void actionOpen() {
+        actionOpen(null);
+    }
+
+    void actionOpen(File file) {
         if (MultifileCheckSaveChanges()) {
-            fileManager.setCurrentDirectory(fileManager.getFileDirectory());
-            FileEditor editor = FileEditor.open(frame, this, fileManager, this, linkGenerator, searchContext);
-            if (editor != null) {
-                //TODO Check if file should open as new tab or project
-                //For now just open as new project
-                //So... close all current tabs
-                closeAll();
-
-
-                // Set current directory to main file directory
-                // Must be done BEFORE setting the long filename, because the short
-                // filename will be calculated based on the current dir.
-                fileManager.setFileDirectory(new File(editor.getFilePath()).getParent());
-                fileManager.setRunDirectory(fileManager.getFileDirectory());
-
-                fileManager.setCurrentDirectory(fileManager.getRunDirectory());
-
-                //Display file
-                addTab(editor);
+            FileEditor editor = null;
+            if (file != null) {
+                fileManager.setCurrentDirectory(fileManager.getFileDirectory());
+                editor = FileEditor.open(file, this, fileManager, this, linkGenerator, searchContext);
+            } else {
+                fileManager.setCurrentDirectory(fileManager.getFileDirectory());
+                editor = FileEditor.open(frame, this, fileManager, this, linkGenerator, searchContext);
             }
+
+            openEditor(editor);
+        }
+    }
+
+    void openEditor(FileEditor editor) {
+        if (editor != null) {
+            //TODO Check if file should open as new tab or project
+            //For now just open as new project
+            //So... close all current tabs
+            closeAll();
+
+
+            // Set current directory to main file directory
+            // Must be done BEFORE setting the long filename, because the short
+            // filename will be calculated based on the current dir.
+            fileManager.setFileDirectory(new File(editor.getFilePath()).getParent());
+            fileManager.setRunDirectory(fileManager.getFileDirectory());
+
+            fileManager.setCurrentDirectory(fileManager.getRunDirectory());
+
+            //Display file
+            addTab(editor);
+        }
+    }
+
+    void actionClearRecent() {
+        int result = JOptionPane.showConfirmDialog(frame,
+                "Clear recently opened files?",
+                "Confirm",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (result == JOptionPane.YES_OPTION) {
+            basicEditor.clearRecentFiles();
         }
     }
 
@@ -977,11 +1038,21 @@ public class MainWindow implements
     }
 
     public void addTab(FileEditor editor) {
+
         int count = fileManager.editorCount();
         fileManager.getFileEditors().add(editor);
+
+        // replace emptyTabPanel if needed
+        mainPane.setTopComponent(tabControl);
+
         tabControl.addTab(editor.getTitle(), editor.getContentPane());
 
         final FileEditor edit = editor;
+        File file = edit.getFile();
+        if (file != null) {
+            basicEditor.notifyFileOpened(file);
+        }
+
         edit.getEditorPane().getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -1194,6 +1265,14 @@ public class MainWindow implements
                 bookmarkSubMenu.setEnabled(false);
 
                 compilerStatusLabel.setText("");
+
+                emptyTabPanel = new EmptyTabPanel(
+                        this,
+                        newMenuItem.getAccelerator(),
+                        openMenuItem.getAccelerator(),
+                        basicEditor.getRecentFiles()
+                );
+                mainPane.setTopComponent(emptyTabPanel);
                 break;
             case AP_STOPPED:
                 setClosingTabsEnabled(true);
@@ -1422,5 +1501,20 @@ public class MainWindow implements
     @Override
     public void onSearchResult(String message) {
         setCompilerStatus(message);
+    }
+
+    @Override
+    public void OnNewClick() {
+        actionNew();
+    }
+
+    @Override
+    public void OnOpenClick() {
+        actionOpen();
+    }
+
+    @Override
+    public void OnOpenClick(File file) {
+        actionOpen(file);
     }
 }

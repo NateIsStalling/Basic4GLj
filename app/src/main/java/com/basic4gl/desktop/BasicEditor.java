@@ -16,10 +16,9 @@ import com.basic4gl.library.desktopgl.GLTextGridWindow;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.InstructionPosition;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 public class BasicEditor implements MainEditor,
@@ -38,6 +37,7 @@ public class BasicEditor implements MainEditor,
     private FileOpener fileOpener;
     private final DebuggerCallbackMessage callbackMessage = new DebuggerCallbackMessage();
 
+    private EditorSettings settings = null;
 
     // Preprocessor
     public Preprocessor preprocessor;
@@ -674,5 +674,53 @@ public class BasicEditor implements MainEditor,
 //                mPresenter.PlaceCursorAtProcessed(line.get(), col.get());
 //            }
 //        }
+    }
+
+    public void saveSettings() {
+        String applicationStoragePath = System.getProperty("user.home") +
+                System.getProperty("file.separator") +
+                BuildInfo.APPLICATION_NAME;
+        try {
+            EditorSettingsFactory.save(settings, applicationStoragePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadSettings() {
+        String applicationStoragePath = System.getProperty("user.home") +
+                System.getProperty("file.separator") +
+                BuildInfo.APPLICATION_NAME;
+        try {
+            settings = EditorSettingsFactory.loadFrom(applicationStoragePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        presenter.setRecentItems(settings.recentFiles);
+    }
+
+    public void notifyFileOpened(File file) {
+        settings.recentFiles.add(0, file);
+        settings.recentFiles = new ArrayList<>(settings.recentFiles
+            .stream()
+            .distinct()
+            .toList());
+
+        saveSettings();
+
+        presenter.setRecentItems(settings.recentFiles);
+    }
+
+    public void clearRecentFiles() {
+        settings.recentFiles.clear();
+
+        saveSettings();
+
+        presenter.setRecentItems(settings.recentFiles);
+    }
+
+    public List<File> getRecentFiles() {
+        return settings.recentFiles;
     }
 }
