@@ -7,10 +7,7 @@ import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.lib.util.FileStreamResourceStore;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.library.netlib4games.NetConL2;
-import com.basic4gl.library.netlib4games.NetListenLow;
-import com.basic4gl.library.netlib4games.NetSettingsL1;
-import com.basic4gl.library.netlib4games.NetSettingsL2;
+import com.basic4gl.library.netlib4games.*;
 import com.basic4gl.library.netlib4games.udp.NetConLowUDP;
 import com.basic4gl.library.netlib4games.udp.NetListenLowUDP;
 import com.basic4gl.runtime.TomVM;
@@ -39,6 +36,8 @@ public class NetBasicLib implements FunctionLibrary {
     NetServerStore servers;
 
     NetConnectionStore connections;
+
+    NetConReqValidator netConReqValidator;
 
     @Override
     public Map<String, Constant> constants() {
@@ -137,11 +136,17 @@ public class NetBasicLib implements FunctionLibrary {
         comp.VM().addResources(servers);
         comp.VM().addResources(connections);
 
+        // Hook into validator
+        netConReqValidator = new NetConReqValidatorL1();
+        NetLowLevel.setValidator(netConReqValidator);
+
     }
 
     @Override
     public void cleanup() {
 
+        // Detach from validator
+        NetLowLevel.removeValidator(netConReqValidator);
     }
 
     @Override

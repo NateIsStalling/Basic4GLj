@@ -5,6 +5,7 @@ import com.basic4gl.library.netlib4games.Thread;
 
 import java.io.IOException;
 import java.net.*;
+import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -94,6 +95,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
     /// Used by NetListenLowUDP to register that it has been freed
     void FreeNotify(NetListenLowUDP connection) {
         synchronized (serviceLock) {
+            NetLog("enterFreeNotify");
             if (m_listen == connection) {
 
                 // We deliberately clear the listen pointer BEFORE disconnecting
@@ -101,6 +103,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                 m_listen = null;
                 Disconnect();
             }
+            NetLog("exitFreeNotify");
         }
     }
 
@@ -137,7 +140,9 @@ public class NetConLowUDP extends NetConLow implements Runnable {
 
             boolean connected = false;
             synchronized (serviceLock) {
+                NetLog("enterRun");
                 connected = m_connected;
+                NetLog("exitRun");
             }
             // If not connected, wait until we are
             if (!connected) {
@@ -153,53 +158,44 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                 NetLogger.NetLog("unstuck");
             } else {
 
+                NetLogger.NetLog("heyyy");
                 // Select and wait for data.
                 // Note: We can't block forever, as we need to periodically check
                 // whether the thread has been terminated.
-                try (Selector selector = Selector.open()) {
-                    DatagramChannel channel = m_socket;
-                    channel.register(selector, SelectionKey.OP_READ);
-
-                    selector.select(SOCKET_TIMEOUT_MILLIS);
-                    Set<SelectionKey> selectedKeys = selector.selectedKeys();
-                    Iterator<SelectionKey> iter = selectedKeys.iterator();
+                try  {
 
                     synchronized (serviceLock) {
-                        // Found one?
-                        while (iter.hasNext()) {
-                            SelectionKey key = iter.next();
-
-                            if (!key.isAcceptable()) {
-                                iter.remove();
-                                continue;
-                            }
-
-
-                            SocketChannel client = (SocketChannel) key.channel();
-
-
-                            // Get temp buffer for data
-                            if (m_buffer == null) {
-                                m_buffer = new byte[m_maxPacketSize];
-                            }
-
-                            // Read in packet
-                            try {
-                                int size = Math.min(client.socket().getSendBufferSize(), client.socket().getReceiveBufferSize());
-                                NetLog("Read and queue UDP packet, " + size + " bytes");
-
-                                // Add to end of queue
-                                synchronized (inQueueLock) {
-                                    m_pendingPackets.add(new NetSimplePacket(m_buffer, size));
-                                    m_dataEvent.set();
-                                }
-                            } catch (SocketException ex) {
-                                NetLog("Error reading UDP packet: " + ex.getMessage());
-                            }
+                        NetLog("enterRunConnected");
+                        // Get temp buffer for data
+                        if (m_buffer == null) {
+                            m_buffer = new byte[m_maxPacketSize];
                         }
+
+                        // Read in packet
+                        try {
+                            int size = Math.min(m_socket.socket().getSendBufferSize(), m_socket.socket().getReceiveBufferSize());
+
+                            ByteBuffer buffer = ByteBuffer.wrap(m_buffer);
+                            DatagramPacket receivePacket = new DatagramPacket(buffer.array(), size);
+                            m_socket.socket().receive(receivePacket);
+//                            buffer.flip();
+                            byte[] bytes = receivePacket.getData();
+                            size = bytes.length;
+
+                            NetLog("Read and queue UDP packet, " + size + " bytes");
+
+                            // Add to end of queue
+                            synchronized (inQueueLock) {
+                                m_pendingPackets.add(new NetSimplePacket(bytes, size));
+                                m_dataEvent.set();
+                            }
+                        } catch (SocketException ex) {
+                            NetLog("Error reading UDP packet: " + ex.getMessage());
+                        }
+                        NetLog("exitRunConnected");
                     }
 
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     NetLog("Error reading UDP channel: " + ex.getMessage());
                 }
 
@@ -261,6 +257,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
     public boolean Connect(String address) {
         boolean result = false;
         synchronized (serviceLock) {
+            NetLog("enterConnect");
             if (Client() && !Connected()) {
 
                 NetLog("Connect to: " + address);
@@ -285,6 +282,8 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                 // "localhost" is special
                 if (addressStr.toLowerCase(Locale.ENGLISH).equals("localhost")) {
                     addressStr = "127.0.0.1";
+                    //TODO sort this out
+                    addressStr = "0.0.0.0";
                 }
 
                 // Create socket address; porting note - original source had additional handling around resolving the hostname
@@ -296,9 +295,11 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                     m_socket = DatagramChannel
                             .open(StandardProtocolFamily.INET)
                             .setOption(StandardSocketOptions.SO_REUSEADDR, true);
-                    m_socket.configureBlocking(false);
+//                    m_socket.configureBlocking(false);
                     m_socket.bind(m_addr);
+                    NetLog(" to bind to port " + m_addr.toString());
                 } catch (IOException e) {
+                    NetLog("Unable to create UDP socket");
                     setError("Unable to create UDP socket");
                     return false;
                 }
@@ -307,6 +308,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                 try {
                     m_maxPacketSize = Math.min(m_socket.socket().getSendBufferSize(), m_socket.socket().getReceiveBufferSize());
                 } catch (SocketException e) {
+                    NetLog("Unable to determine maximum UDP packet size");
                     setError("Unable to determine maximum UDP packet size");
                     try {
 
@@ -327,6 +329,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                 m_dataEvent.set();
             }
             result = Connected();
+            NetLog("exitConnect");
         }
 
         return result;
@@ -337,7 +340,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         NetLog("Disconnect UDP connection");
 
         synchronized (serviceLock) {
-
+            NetLog("enterDisconnect");
             if (m_connected) {
 
                 // If we own the socket, then close it down
@@ -364,7 +367,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                 m_connectedEvent.reset();
                 m_dataEvent.set();
             }
-
+            NetLog("exitDisconnect");
         }
     }
 
@@ -396,33 +399,41 @@ public class NetConLowUDP extends NetConLow implements Runnable {
 
 
         try {
-            if (!m_socket.isConnected()) {
-                m_socket.connect(m_addr);
-            }
-            try (Selector selector = Selector.open()) {
+//            if (!m_socket.isConnected()) {
+//                m_socket.connect(m_addr);
+//            }
+//            try  {
                 DatagramChannel channel = m_socket;
-                channel.register(selector, SelectionKey.OP_WRITE);
+//                channel.register(selector, SelectionKey.OP_WRITE);
+//
+//                selector.select(SOCKET_TIMEOUT_MILLIS);
+//                Set<SelectionKey> selectedKeys = selector.selectedKeys();
+//                Iterator<SelectionKey> iter = selectedKeys.iterator();
 
-                selector.select(SOCKET_TIMEOUT_MILLIS);
-                Set<SelectionKey> selectedKeys = selector.selectedKeys();
-                Iterator<SelectionKey> iter = selectedKeys.iterator();
+            NetLog("Trying!");
 
-                synchronized (serviceLock) {
                     // Found one?
-                    while (iter.hasNext()) {
-                        SelectionKey key = iter.next();
+//                    channel.isConnected()
+//                    while (iter.hasNext()) {
+//                        SelectionKey key = iter.next();
+//
+//                        NetLog("Maybe!");
+//                        if (!key.isWritable()) {
+//                            iter.remove();
+//                            continue;
+//                        }
+//
+//                        NetLog("Maybe Actually!");
+//
+//                        DatagramChannel client = (DatagramChannel) key.channel();
+////                        client.configureBlocking(false);
+//                    }
 
-                        if (!key.isAcceptable()) {
-                            iter.remove();
-                            continue;
-                        }
-
-
-                        DatagramChannel client = (DatagramChannel) key.channel();
-                        client.socket().send(new DatagramPacket(data, size));
-                    }
-                }
-            }
+            NetLog(m_addr != null ? (m_addr.getClass().getName() + ":"+ m_addr.toString() ): "m_address is null");
+            DatagramPacket sendPacket = new DatagramPacket(data, size, m_addr);
+                    m_socket.socket().send(sendPacket);
+                    NetLog("Maybe Actually!");
+//            }
                         NetLog("Sent!");
         } catch (IOException e) {
             e.printStackTrace();

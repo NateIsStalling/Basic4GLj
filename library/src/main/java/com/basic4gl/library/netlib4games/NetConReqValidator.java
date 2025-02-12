@@ -9,14 +9,6 @@ package com.basic4gl.library.netlib4games;
  */
 public abstract class NetConReqValidator {
     public NetConReqValidator() {
-
-        // Hook into validator
-        NetLowLevel.setValidator(this);
-    }
-    public void dispose() {
-
-        // Detach from validator
-        NetLowLevel.removeValidator(this);
     }
 
     public abstract boolean IsConnectionRequest (NetSimplePacket packet, String[] requestStringBuffer);

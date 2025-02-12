@@ -7,10 +7,7 @@ import org.eclipse.jetty.util.InetAddressSet;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -85,7 +82,7 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
             m_channel = DatagramChannel
                     .open(StandardProtocolFamily.INET)
                     .setOption(StandardSocketOptions.SO_REUSEADDR, true);
-            m_channel.configureBlocking(false);
+//            m_channel.configureBlocking(false);
         } catch (IOException e) {
             setError("Unable to create UDP socket");
             m_channel = null;
@@ -95,9 +92,12 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
         // Bind to address
         try {
             m_addr = new InetSocketAddress(m_port);
-            m_channel.bind(m_addr);
+            m_channel.socket().bind(m_addr);
+
+            NetLog(" to bind to port " + m_addr.toString());
         } catch (IOException e) {
             e.printStackTrace();
+            NetLog("Unable to bind to port " + (m_port));
             setError("Unable to bind to port " + (m_port));
             try {
 
@@ -151,96 +151,91 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
     @Override
     public void run() {
 
+        NetLog("run!");
+        try  {
         while (!m_socketServiceThread.Terminating()) {
+            try {
+// Get temp buffer for data
+                if (m_buffer == null) {
+                    m_buffer = new byte[m_maxPacketSize];
+                }
 
+                NetLog("faster!");
+                // Read in packet
+                InetSocketAddress addr = null;
+                try {
+                    ByteBuffer buffer = ByteBuffer.wrap(m_buffer);
+                    m_channel.socket().setSoTimeout((int)1000);
 
-            try (Selector selector = Selector.open()) {
-                DatagramChannel channel = m_channel;
-                channel.register(selector, SelectionKey.OP_READ);
+                    DatagramPacket in = new DatagramPacket(buffer.array(), m_maxPacketSize);
+                    m_channel.socket().receive(in);
+                    addr = (InetSocketAddress) in.getSocketAddress();
 
-                selector.select(SOCKET_TIMEOUT_MILLIS);
-                Set<SelectionKey> selectedKeys = selector.selectedKeys();
-                Iterator<SelectionKey> iter = selectedKeys.iterator();
+//                    buffer.flip();
+                    byte[] bytes = in.getData();
+                    int size = bytes.length;
 
-                // Found one?
-                while (iter.hasNext()) {
-                    SelectionKey key = iter.next();
+                    NetLog("Read UDP packet, " + size + " bytes");
 
-                    if (!key.isAcceptable()) {
-                        iter.remove();
-                        continue;
+                    // Bundle packet
+                    NetSimplePacket packet = new NetSimplePacket(bytes, size);
+                    String[] requestStringBuffer = new String[1];
+
+                    // Find target connection (by matching against packet address)
+                    synchronized (connectionLock) {
+                        NetConLowUDP connection = FindConnection(addr);
+                        if (connection != null) {
+
+                            NetLog("Queue packet in UDP net connection");
+
+                            // Queue connection packet
+                            connection.QueuePendingPacket(packet);
+                        }
+                        // Check whether packet is a connection request
+                        else if (IsConnectionRequest(packet, requestStringBuffer)            // Is a connection request
+                                && !IsPending(addr)) {                                    // And connection is not already pending
+                            NetLog("Create pending UDP connection");
+
+                            // If there is no existing pending connection then create one
+                            m_pending.add(new NetPendConLowUDP(addr, requestStringBuffer[0], packet));
+                        } else {
+
+                            // Unknown packet. Ignore it
+                            NetLog("Discard stray UDP packet");
+                            packet.dispose();
+                        }
+
                     }
+                } catch (IOException ex) {
+                    NetLog("Error reading UDP packet: " + ex.getMessage());
 
-
-                    SocketChannel client = (SocketChannel) key.channel();
-
-                    // Get temp buffer for data
-                    if (m_buffer == null) {
-                        m_buffer = new byte[m_maxPacketSize];
-                    }
-
-                    // Read in packet
-                    InetSocketAddress addr = null;
-                    try {
-                        addr = (InetSocketAddress) client.getRemoteAddress();
-
-                        ByteBuffer buffer = ByteBuffer.wrap(m_buffer);
-                        int size = client.read(buffer);
-
-                        NetLog("Read UDP packet, " + size + " bytes");
-
-                        // Bundle packet
-                        NetSimplePacket packet = new NetSimplePacket(buffer.array(), size);
-                        String[] requestStringBuffer = new String[1];
-
-                        // Find target connection (by matching against packet address)
-                        synchronized (connectionLock) {
+                    synchronized (connectionLock) {
+                        if (addr != null) {
                             NetConLowUDP connection = FindConnection(addr);
                             if (connection != null) {
-
-                                NetLog("Queue packet in UDP net connection");
-
-                                // Queue connection packet
-                                connection.QueuePendingPacket(packet);
-                            }
-                            // Check whether packet is a connection request
-                            else if (IsConnectionRequest(packet, requestStringBuffer)            // Is a connection request
-                                    && !IsPending(addr)) {                                    // And connection is not already pending
-                                NetLog("Create pending UDP connection");
-
-                                // If there is no existing pending connection then create one
-                                m_pending.add(new NetPendConLowUDP(addr, requestStringBuffer[0], packet));
-                            } else {
-
-                                // Unknown packet. Ignore it
-                                NetLog("Discard stray UDP packet");
-                                packet.dispose();
-                            }
-
-                        }
-                    } catch (IOException ex) {
-                        NetLog("Error reading UDP packet: " + ex.getMessage());
-
-                        synchronized (connectionLock) {
-                            if (addr != null) {
-                                NetConLowUDP connection = FindConnection(addr);
-                                if (connection != null) {
-                                    connection.Disconnect();
-                                }
+                                connection.Disconnect();
                             }
                         }
                     }
-
-                    iter.remove();
                 }
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 NetLog("Error reading UDP channel: " + ex.getMessage());
             }
+        }
+        } catch (Exception ex) {
+            NetLog("Error reading UDP channel: " + ex.getMessage());
         }
 
         System.out.println("Hey listen!");
     }
 
+    private static void register(Selector selector, ServerSocketChannel serverSocket)
+            throws IOException {
+
+        SocketChannel client = serverSocket.accept();
+        client.configureBlocking(false);
+        client.register(selector, SelectionKey.OP_READ);
+    }
 
     /// Construct listener.
     /// Note: If HasErrorState::Error () returns true, the object should
