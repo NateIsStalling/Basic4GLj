@@ -115,7 +115,9 @@ public class MainWindow implements
     private final JButton stepOverButton = new JButton(createImageIcon(ICON_STEP_OVER));
     private final JButton stepInButton = new JButton(createImageIcon(ICON_STEP_IN));
     private final JButton stepOutButton = new JButton(createImageIcon(ICON_STEP_OUT));
-
+    private final JButton exportButton = new JButton(createImageIcon(ICON_EXPORT));
+    private final JButton settingsButton = new JButton(createImageIcon(ICON_SETTINGS));
+    private final JSeparator debugSeparator = new JSeparator(JSeparator.VERTICAL);
     // Labels
     private final JLabel compilerStatusLabel = new JLabel("");    // Compiler/VM Status
     private final JLabel cursorPositionLabel = new JLabel("0:0"); // Cursor Position
@@ -319,26 +321,7 @@ public class MainWindow implements
         clearRecentMenuItem.addActionListener(e -> actionClearRecent());
         saveMenuItem.addActionListener(e -> actionSave());
         saveAsMenuItem.addActionListener(e -> actionSaveAs());
-        exportMenuItem.addActionListener(e -> {
-            basicEditor.setMode(ApMode.AP_STOPPED, null);
-            if (fileManager.editorCount() == 0) {
-                JOptionPane.showMessageDialog(frame, "Nothing to export", "Cannot export",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            // Clear source code from parser
-            basicEditor.compiler.Parser().getSourceCode().clear();
-
-            if (!basicEditor.loadProgramIntoCompiler()) {
-                compilerStatusLabel.setText(basicEditor.preprocessor.getError());
-                return;
-            }
-            ExportDialog dialog = new ExportDialog(frame, basicEditor.compiler, basicEditor.preprocessor, fileManager.getFileEditors());
-            dialog.setLibraries(basicEditor.libraries, basicEditor.currentBuilder);
-            dialog.setVisible(true);
-            basicEditor.currentBuilder = dialog.getCurrentBuilder();
-        });
+        exportMenuItem.addActionListener(e -> actionExport());
         undoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, toolkit.getMenuShortcutKeyMask()));
         undoMenuItem.addActionListener(e -> {
             int i = tabControl.getSelectedIndex();
@@ -517,6 +500,10 @@ public class MainWindow implements
         toolBar.add(stepOverButton);
         toolBar.add(stepInButton);
         toolBar.add(stepOutButton);
+        toolBar.add(debugSeparator);
+        toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(exportButton);
+        toolBar.add(settingsButton);
 
         newButton.addActionListener(e -> actionNew());
         openButton.addActionListener(e -> actionOpen());
@@ -528,6 +515,8 @@ public class MainWindow implements
         stepOverButton.addActionListener(e -> basicEditor.actionStep());
         stepInButton.addActionListener(e -> basicEditor.actionStepInto());
         stepOutButton.addActionListener(e -> basicEditor.actionStepOutOf());
+        exportButton.addActionListener(e -> actionExport());
+        settingsButton.addActionListener(e -> showSettings());
         runButton.setToolTipText("Run the program!");
 
         toolBar.setAlignmentY(1);
@@ -685,6 +674,27 @@ public class MainWindow implements
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+    }
+
+    private void actionExport() {
+        basicEditor.setMode(ApMode.AP_STOPPED, null);
+        if (fileManager.editorCount() == 0) {
+            JOptionPane.showMessageDialog(frame, "Nothing to export", "Cannot export",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Clear source code from parser
+        basicEditor.compiler.Parser().getSourceCode().clear();
+
+        if (!basicEditor.loadProgramIntoCompiler()) {
+            compilerStatusLabel.setText(basicEditor.preprocessor.getError());
+            return;
+        }
+        ExportDialog dialog = new ExportDialog(frame, basicEditor.compiler, basicEditor.preprocessor, fileManager.getFileEditors());
+        dialog.setLibraries(basicEditor.libraries, basicEditor.currentBuilder);
+        dialog.setVisible(true);
+        basicEditor.currentBuilder = dialog.getCurrentBuilder();
     }
 
     @Override
@@ -1228,7 +1238,10 @@ public class MainWindow implements
         switch (mode) {
             case AP_CLOSED:
                 settingsMenuItem.setEnabled(false);
+                settingsButton.setEnabled(false);
+
                 exportMenuItem.setEnabled(false);
+                exportButton.setEnabled(false);
 
                 openMenuItem.setEnabled(true);
                 openButton.setEnabled(true);
@@ -1278,7 +1291,10 @@ public class MainWindow implements
                 setClosingTabsEnabled(true);
 
                 settingsMenuItem.setEnabled(true);
+                settingsButton.setEnabled(true);
+
                 exportMenuItem.setEnabled(true);
+                exportButton.setEnabled(true);
 
                 newMenuItem.setEnabled(true);
                 openMenuItem.setEnabled(true);
@@ -1300,7 +1316,10 @@ public class MainWindow implements
                 setClosingTabsEnabled(false);
 
                 settingsMenuItem.setEnabled(false);
+                settingsButton.setEnabled(false);
+
                 exportMenuItem.setEnabled(false);
+                exportButton.setEnabled(false);
 
                 newMenuItem.setEnabled(false);
                 openMenuItem.setEnabled(false);
@@ -1328,6 +1347,7 @@ public class MainWindow implements
         stepOverButton.setVisible(isDebugMode);
         stepInButton.setVisible(isDebugMode);
         stepOutButton.setVisible(isDebugMode);
+        debugSeparator.setVisible(isDebugMode);
 
         //TODO Show/hide debug pane
         if (isDebugMode) {
