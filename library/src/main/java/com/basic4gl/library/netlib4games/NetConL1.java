@@ -1,5 +1,7 @@
 package com.basic4gl.library.netlib4games;
 
+import com.basic4gl.library.netlib4games.udp.NetConLowUDP;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -783,7 +785,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
      * Maximum number of bytes that can be sent in a single packet.
      * (Not counting header data.)
      */
-    public long MaxPacketSize() {
+    public int MaxPacketSize() {
 
         // Allow room for our header
         return Math.min(m_settingsStatic.prefMaxPacketSize, m_connection.MaxPacketSize()) - NetPacketHeaderL1.SIZE;
@@ -859,7 +861,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     }
 
     public void StartThread() {
-        m_processThread = new Thread();
+        m_processThread = new Thread(NetConL1.class.getName());
         m_processThread.Start(this);
     }
 

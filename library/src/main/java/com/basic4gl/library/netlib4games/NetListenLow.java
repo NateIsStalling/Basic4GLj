@@ -19,6 +19,9 @@ package com.basic4gl.library.netlib4games;
 public abstract class NetListenLow extends HasErrorStateThreadSafe{
 
 
+    public NetListenLow() {
+        super();
+    }
 
     public void dispose() {
 

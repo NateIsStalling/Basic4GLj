@@ -125,4 +125,34 @@ public class NetPacketHeaderL2 {
     public long getTickCount() {
         return buffer.getLong(TICK_COUNT_POSITION);
     }
+
+    public void setChannelFlags(byte channelFlags) {
+        buffer.put(CHANNEL_FLAGS_POSITION, channelFlags);
+    }
+
+    public void setMessageIndex(int messageIndex) {
+        // original NetLib4Games spec defines Message Index as unsigned long,
+        // but we are limited to signed int for array usage.
+        // store the int index as the least significant bits of a long value for compatibility.
+        buffer.putInt(MESSAGE_INDEX_LEAST_SIGNIFICANT_POSITION, messageIndex);
+    }
+
+    public void setReliableIndex(int reliableIndex) {
+        // original NetLib4Games spec defines Message Index as unsigned long,
+        // but we are limited to signed int for array usage.
+        // store the int index as the least significant bits of a long value for compatibility.
+        buffer.putInt(RELIABLE_INDEX_LEAST_SIGNIFICANT_POSITION, reliableIndex);
+    }
+
+    public void setPacketCount(int packetCount) {
+        buffer.putInt(PACKET_COUNT_POSITION, packetCount);
+    }
+
+    public void setPacketIndex(int packetIndex) {
+        buffer.putInt(PACKET_INDEX_POSITION, packetIndex);
+    }
+
+    public void setTickCount(long tickCount) {
+        buffer.putLong(TICK_COUNT_POSITION, tickCount);
+    }
 }

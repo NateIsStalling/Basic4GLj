@@ -20,8 +20,8 @@ import static com.basic4gl.library.netlib4games.NetLogger.NetLog;
 public class NetConLowUDP extends NetConLow implements Runnable {
 
     private static final long TIMEOUTSECS = 0;
-    public static final long TIMEOUTUSECS = 500000; // microseconds NOT milliseconds
-    public static final long SOCKET_TIMEOUT_MILLIS = 500; // microseconds NOT milliseconds
+    public static final int TIMEOUTUSECS = 500000; // microseconds NOT milliseconds
+    public static final int SOCKET_TIMEOUT_MILLIS = TIMEOUTUSECS / 1000;
     // public NetConLow, public Threaded, public WinsockUser
 
     // The socket operates in either of two modes.
@@ -45,7 +45,8 @@ public class NetConLowUDP extends NetConLow implements Runnable {
     List<NetSimplePacket> m_pendingPackets = new ArrayList<>();
 
     // TODO is this the right buffer size type
-    byte[] m_buffer;
+//    byte[] m_buffer;
+    ByteBuffer socketBuffer;
 
     //	Thread handling
     com.basic4gl.library.netlib4games.Thread m_socketServiceThread;
@@ -66,6 +67,10 @@ public class NetConLowUDP extends NetConLow implements Runnable {
             InetSocketAddress addr,
             int maxPacketSize,
             NetListenLowUDP listen) {
+        super();
+
+        assert (listen != null);
+
         m_socket = (sharedSocket);
         m_addr = (addr);
         m_maxPacketSize = (maxPacketSize);
@@ -74,17 +79,60 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         m_ownSocket = (false);
         m_connectedEvent = new ThreadEvent("NetConLowUDP.m_connectedEvent", true);
         m_dataEvent = new ThreadEvent("m_dataEvent");
-        m_buffer = null;
+        socketBuffer = null;
+
 
         NetLog("Create UDP server connection");
 
-        assert (m_listen != null);
 
         // Note: Don't start the socket service thread.
         // The socket is owned and serviced by the m_listen object, which
         // shares it between multiple connections.
+        m_socketServiceThread = new Thread(NetConLowUDP.class.getName());
     }
 
+    /// Default constructor. Connection must then be connected with ::Connect
+    public NetConLowUDP() {
+        super();
+        m_connected = (false);
+        m_listen = null;
+        m_ownSocket = (true);
+        m_connectedEvent = new ThreadEvent("m_connectedEvent2", false);
+        m_dataEvent = new ThreadEvent("m_dataEvent2");
+        socketBuffer = null;
+
+        NetLog("Create UDP client connection");
+
+        // Start the socket service thread
+        m_socketServiceThread = new Thread(NetConLowUDP.class.getName());
+        m_socketServiceThread.Start(this);
+        // Thread can fail to start if OS refuses to create it
+        if (m_socketServiceThread.Running()) {
+            m_socketServiceThread.RaisePriority();
+        } else {
+            setError("Unable to create thread");
+        }
+    }
+
+    public void dispose() {
+
+        // Disconnect
+        Disconnect();
+
+        // Terminate thread
+        m_socketServiceThread.Terminate();
+
+        // Unhook from listener
+        UnhookFromListen();
+
+        // Clear queue
+        ClearQueue();
+
+        // Delete temp buffer
+        socketBuffer = null;
+
+        NetLog("Delete UDP connection");
+    }
     void QueuePendingPacket(NetSimplePacket packet) {
         synchronized (inQueueLock) {
             m_pendingPackets.add(packet);
@@ -167,19 +215,24 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                     synchronized (serviceLock) {
                         NetLog("enterRunConnected");
                         // Get temp buffer for data
-                        if (m_buffer == null) {
-                            m_buffer = new byte[m_maxPacketSize];
+                        if (socketBuffer == null) {
+                            socketBuffer = ByteBuffer.allocate(m_maxPacketSize);
                         }
 
                         // Read in packet
                         try {
-                            int size = Math.min(m_socket.socket().getSendBufferSize(), m_socket.socket().getReceiveBufferSize());
+                            int size =  Math.min(m_socket.socket().getSendBufferSize(), m_socket.socket().getReceiveBufferSize());
 
-                            ByteBuffer buffer = ByteBuffer.wrap(m_buffer);
-                            DatagramPacket receivePacket = new DatagramPacket(buffer.array(), size);
-                            m_socket.socket().receive(receivePacket);
-//                            buffer.flip();
-                            byte[] bytes = receivePacket.getData();
+//                            ByteBuffer buffer = ByteBuffer.wrap(m_buffer);
+//                            DatagramPacket receivePacket = new DatagramPacket(buffer.array(), size);
+
+                            socketBuffer.clear();
+                            m_socket.socket().setSoTimeout(SOCKET_TIMEOUT_MILLIS);
+//                            m_socket.receive(receivePacket);
+                            InetSocketAddress remoteAddress = (InetSocketAddress) m_socket.receive(socketBuffer);
+                            socketBuffer.flip();
+                            byte[] bytes  = new byte[socketBuffer.remaining()];
+                            socketBuffer.get(bytes);
                             size = bytes.length;
 
                             NetLog("Read and queue UDP packet, " + size + " bytes");
@@ -203,49 +256,6 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         }
     }
 
-    /// Default constructor. Connection must then be connected with ::Connect
-    public NetConLowUDP() {
-        m_connected = (false);
-        m_listen = null;
-        m_ownSocket = (true);
-        m_connectedEvent = new ThreadEvent("m_connectedEvent2", false);
-        m_dataEvent = new ThreadEvent("m_dataEvent2");
-        m_buffer = null;
-
-        NetLog("Create UDP client connection");
-
-        // Start the socket service thread
-        m_socketServiceThread = new Thread();
-        m_socketServiceThread.Start(this);
-        // Thread can fail to start if OS refuses to create it
-        if (m_socketServiceThread.Running()) {
-            m_socketServiceThread.RaisePriority();
-        } else {
-            setError("Unable to create thread");
-        }
-    }
-
-    public void dispose() {
-
-        // Disconnect
-        Disconnect();
-
-        // Terminate thread
-        m_socketServiceThread.Terminate();
-
-        // Unhook from listener
-        UnhookFromListen();
-
-        // Clear queue
-        ClearQueue();
-
-        // Delete temp buffer
-        if (m_buffer != null) {
-            m_buffer = null;
-        }
-
-        NetLog("Delete UDP connection");
-    }
 
     /// Connect to internet address.
     /// address format:
@@ -281,9 +291,10 @@ public class NetConLowUDP extends NetConLow implements Runnable {
 
                 // "localhost" is special
                 if (addressStr.toLowerCase(Locale.ENGLISH).equals("localhost")) {
-                    addressStr = "127.0.0.1";
+//                    addressStr = "127.0.0.1";
+//                    addressStr = "127.0.0.1";
                     //TODO sort this out
-                    addressStr = "0.0.0.0";
+//                    addressStr = "0.0.0.0";
                 }
 
                 // Create socket address; porting note - original source had additional handling around resolving the hostname
@@ -296,7 +307,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                             .open(StandardProtocolFamily.INET)
                             .setOption(StandardSocketOptions.SO_REUSEADDR, true);
 //                    m_socket.configureBlocking(false);
-                    m_socket.bind(m_addr);
+                    m_socket.bind(new InetSocketAddress(0));
                     NetLog(" to bind to port " + m_addr.toString());
                 } catch (IOException e) {
                     NetLog("Unable to create UDP socket");
@@ -394,6 +405,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
 
         NetLog("Send UDP packet, " + (size) + " bytes");
 
+        NetLog("Sending! " + new String(data));
         assert (data != null);
         assert (size <= m_maxPacketSize);
 

@@ -33,7 +33,7 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadCallback
 
     // Layer 2 settings
     NetSettingsL2				m_settings = new NetSettingsL2();
-    NetSettingsStaticL2			m_settingsStatic;
+    NetSettingsStaticL2			m_settingsStatic = new NetSettingsStaticL2();
 
     // Thread handling
 //    ThreadLock					m_inQueueLock = new ThreadLock();

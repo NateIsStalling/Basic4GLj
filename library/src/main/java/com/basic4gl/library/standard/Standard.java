@@ -9,6 +9,7 @@ import com.basic4gl.compiler.util.ParamValidationCallback;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.lib.util.IAppSettings;
+import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.ValType;
@@ -41,7 +42,7 @@ public class Standard implements FunctionLibrary {
 	// //////////////////////////////////////////////////////////////////////////////
 	// Pre-run initialisation
 	@Override
-	public void init(TomVM vm, IAppSettings settings, String[] args) {
+	public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
 		/////////////////////
 		// Initialise state
 		rnd = new Random();
@@ -56,7 +57,7 @@ public class Standard implements FunctionLibrary {
 		}
 	}
 	@Override
-	public void init(TomBasicCompiler comp){
+	public void init(TomBasicCompiler comp, IServiceCollection services){
 
 	}
 

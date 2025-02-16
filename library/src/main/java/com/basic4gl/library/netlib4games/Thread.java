@@ -1,13 +1,18 @@
 package com.basic4gl.library.netlib4games;
 
+import static com.basic4gl.library.netlib4games.NetLogger.NetLog;
 import static com.basic4gl.library.netlib4games.ThreadUtils.INFINITE;
 
 public class Thread {
-    java.lang.Thread		m_thread;
-    ThreadEvent	m_terminateEvent;
+    private final Object lock = new Object();
+
+    private String name;
+    private java.lang.Thread		m_thread;
+    private final ThreadEvent	m_terminateEvent;
 
 
-    public Thread () {
+    public Thread (String name) {
+        this.name = name;
        m_thread = null;
        m_terminateEvent = new ThreadEvent("Thread.m_terminateEvent");
     }
@@ -29,7 +34,7 @@ public class Thread {
     }
 
     public boolean Running () {
-        synchronized (m_thread) {
+        synchronized (lock) {
             return m_thread != null;
         }
     }
@@ -58,9 +63,10 @@ public class Thread {
     public boolean WaitFor (long timeout) {
 
         if (m_thread != null) {
-            synchronized (m_thread) {
+            synchronized (lock) {
                 boolean signalled = false;
                 try {
+                    NetLog(name + " now we wait..");
                     m_thread.wait(timeout);
                 } catch (InterruptedException e) {
                     return false;

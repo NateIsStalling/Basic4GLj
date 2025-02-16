@@ -32,6 +32,9 @@ public class NetMessageStream extends FileStream {
             InputStream _in) {
 
         super(_in);
+        if (parent == null) {
+            throw new IllegalArgumentException("NetConnectionStore required");
+        }
         this.parent = parent;
         this.connectionHandle = _connectionHandle;
         this.channel = _channel;
@@ -48,6 +51,10 @@ public class NetMessageStream extends FileStream {
             OutputStream _out) {
 
         super(_out);
+        if (parent == null) {
+            throw new IllegalArgumentException("NetConnectionStore required");
+        }
+        this.parent = parent;
         this.connectionHandle = _connectionHandle;
         this.channel = _channel;
         this.reliable = _reliable;
@@ -58,7 +65,7 @@ public class NetMessageStream extends FileStream {
 
     @Override
     public void close() {
-        if (out != null && parent.isIndexStored(connectionHandle)) {
+        if (out != null && parent != null && parent.isIndexStored(connectionHandle)) {
 
             // Send pending packet
             ByteArrayOutputStream stream = (ByteArrayOutputStream) out;                // (Net messages are always string streams)
@@ -66,6 +73,7 @@ public class NetMessageStream extends FileStream {
 
             String message = stream.toString(StandardCharsets.UTF_8);
 
+            System.out.println("sending.." + message);
             if (channel >= 0 && channel < NETL2_MAXCHANNELS && message != null) {
                 connection.Send(
                         stream.toByteArray(),
@@ -73,7 +81,13 @@ public class NetMessageStream extends FileStream {
                     channel,
                     reliable,
                     smoothed);
+            }else {
+
+                System.out.println("nah.." + channel + message );
             }
+        } else {
+
+            System.out.println("nah.." );
         }
 
         parent = null;

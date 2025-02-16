@@ -282,12 +282,12 @@ public class BuilderDesktopGL extends Builder {
 
 
     @Override
-    public void init(TomVM vm, IAppSettings settings, String[] args) {
+    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
 
     }
 
     @Override
-    public void init(TomBasicCompiler comp) {
+    public void init(TomBasicCompiler comp, IServiceCollection services) {
     }
 
     @Override

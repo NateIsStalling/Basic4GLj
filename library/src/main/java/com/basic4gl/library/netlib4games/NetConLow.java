@@ -1,5 +1,7 @@
 package com.basic4gl.library.netlib4games;
 
+import com.basic4gl.library.netlib4games.udp.NetConLowUDP;
+
 /**
  * Low level network connection.
  * All protocol specific logic is bundled into an object that descends from
@@ -40,6 +42,10 @@ package com.basic4gl.library.netlib4games;
  * 		3. The underlying networking object(s) (eg. the socket for UDP implementation)
  */
 public abstract class NetConLow extends HasErrorStateThreadSafe {
+
+    public NetConLow() {
+        super();
+    }
 
     public void dispose() {
 

@@ -47,11 +47,12 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     public String description() { return "File IO functions; reads and writes files with little-endian byte order.";}
 
     @Override
-    public void init(TomVM vm, IAppSettings settings, String[] args) {
+    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         appSettings = settings;
 
         if (fileStreams == null) {
             fileStreams = new FileStreamResourceStore();
+            services.registerService(FileStreamResourceStore.class, fileStreams);
         }
 
         fileStreams.clear();
@@ -62,9 +63,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
 
     @Override
-    public void init(TomBasicCompiler comp) {
+    public void init(TomBasicCompiler comp, IServiceCollection services) {
         if (fileStreams == null) {
             fileStreams = new FileStreamResourceStore();
+            services.registerService(FileStreamResourceStore.class, fileStreams);
         }
 
         // Register resources
@@ -72,8 +74,6 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
 
         // Register initialisation functions
         comp.VM().addInitFunction(new Init());
-
-
     }
 
     @Override

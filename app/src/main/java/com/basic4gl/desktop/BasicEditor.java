@@ -99,6 +99,8 @@ public class BasicEditor implements MainEditor,
          * InitTomNetBasicLib (mComp); // Networking
          */
 
+        IServiceCollection tempServices = new ServiceCollection();
+
         //TODO Load libraries dynamically
         libraries.add(new com.basic4gl.library.standard.Standard());
         libraries.add(new com.basic4gl.library.standard.TrigBasicLib());
@@ -120,7 +122,7 @@ public class BasicEditor implements MainEditor,
         //TODO Add more libraries
         int i = 0;
         for (Library lib : libraries) {
-            lib.init(compiler); //Allow libraries to register function overloads
+            lib.init(compiler, tempServices); //Allow libraries to register function overloads
             if (lib instanceof IFileAccess) {
                 //Allows libraries to read from directories
                 ((IFileAccess) lib).init(fileOpener);

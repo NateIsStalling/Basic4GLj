@@ -74,21 +74,21 @@ public class ThreadEvent {
 
     public boolean waitFor(long timeout) {
         try {
-            System.out.println(name + " waitFor A");
+//            System.out.println(name + " waitFor A");
             synchronized (event) {
-                System.out.println(name + " waitFor 1");
+//                System.out.println(name + " waitFor 1");
                 if (isSignalled) {
                     return true;
                 }
-                System.out.println(name + " waitFor 2");
+//                System.out.println(name + " waitFor 2");
                 event.wait(timeout);
             }
         } catch (InterruptedException consumed) {
-            System.out.println(name + " waitFor B");
+//            System.out.println(name + " waitFor B");
             return false;
         }
         synchronized (event) {
-            System.out.println(name + " waitFor C");
+//            System.out.println(name + " waitFor C");
             return isSignalled;
         }
     }

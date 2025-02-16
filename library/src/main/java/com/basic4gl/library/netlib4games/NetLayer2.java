@@ -2,10 +2,10 @@ package com.basic4gl.library.netlib4games;
 
 public class NetLayer2 {
 
-public static final int NETL2_RELIABLE	=	0x80;
-public static final int NETL2_SMOOTHED	=	0x40;
-public static final int NETL2_ORDERED	=	0x20;
-public static final int NETL2_CHANNELMASK=	0x1f;
+public static final byte NETL2_RELIABLE	=	(byte) 0x80;
+public static final byte NETL2_SMOOTHED	=	(byte) 0x40;
+public static final byte NETL2_ORDERED	=	(byte) 0x20;
+public static final byte NETL2_CHANNELMASK=	(byte) 0x1f;
 public static final int NETL2_MAXCHANNELS	=32;
     public static int getChannel(int x) {
         return x & NETL2_CHANNELMASK;

@@ -7,6 +7,7 @@ import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.lib.util.FileStreamResourceStore;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
+import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.library.netlib4games.*;
 import com.basic4gl.library.netlib4games.udp.NetConLowUDP;
 import com.basic4gl.library.netlib4games.udp.NetListenLowUDP;
@@ -18,6 +19,7 @@ import java.net.DatagramPacket;
 import java.util.*;
 
 import static com.basic4gl.library.netlib4games.NetLogger.DebugNetLogger;
+import static com.basic4gl.library.netlib4games.NetLogger.NetLog;
 import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
 import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
@@ -30,7 +32,16 @@ public class NetBasicLib implements FunctionLibrary {
 
     static byte[] buffer = new byte[65536];
 
-    static String lastError;
+    static String _lastError;
+
+    static void setLastError(String error) {
+        System.out.println(error);
+        _lastError = error;
+    }
+
+    static void clearError() {
+        _lastError = "";
+    }
 
     FileStreamResourceStore fileStreams;
     NetServerStore servers;
@@ -98,9 +109,9 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IAppSettings settings, String[] args) {
+    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         if (fileStreams == null) {
-            fileStreams = new FileStreamResourceStore();
+            fileStreams = services.getService(FileStreamResourceStore.class);
         }
         if (servers == null) {
             servers = new NetServerStore();
@@ -112,16 +123,16 @@ public class NetBasicLib implements FunctionLibrary {
         fileStreams.clear();
 
         // Clear error state
-        lastError = "";
+        clearError();
 
         // Configure NetLib4Games logger
         DebugNetLogger();
     }
 
     @Override
-    public void init(TomBasicCompiler comp) {
+    public void init(TomBasicCompiler comp, IServiceCollection services) {
         if (fileStreams == null) {
-            fileStreams = new FileStreamResourceStore();
+            fileStreams = services.getService(FileStreamResourceStore.class);
         }
         if (servers == null) {
             servers = new NetServerStore();
@@ -167,11 +178,10 @@ public class NetBasicLib implements FunctionLibrary {
         assertTrue(obj != null);
 
         if (obj.error()) {
-            lastError = obj.getError();
-            System.out.println(lastError);
+            setLastError(obj.getError());
             return false;
         } else {
-            lastError = "";
+            clearError();
             return true;
         }
     }
@@ -205,7 +215,7 @@ public class NetBasicLib implements FunctionLibrary {
             if (index > 0 && servers.isIndexValid(index)) {
                 servers.free(index);
             } else {
-                lastError = "Invalid network server handle";
+                setLastError("Invalid network server handle");
             }
         }
     }
@@ -220,7 +230,7 @@ public class NetBasicLib implements FunctionLibrary {
                 vm.getReg().setIntVal(server.ConnectionPending() ? -1 : 0);
             } else {
                 vm.getReg().setIntVal(0);
-                lastError = "Invalid network server handle";
+                setLastError("Invalid network server handle");
             }
         }
     }
@@ -247,7 +257,7 @@ public class NetBasicLib implements FunctionLibrary {
                     vm.getReg().setIntVal(0);
                 }
             } else {
-                lastError = "Invalid network server handle";
+                setLastError("Invalid network server handle");
             }
         }
     }
@@ -266,7 +276,7 @@ public class NetBasicLib implements FunctionLibrary {
                     CheckError(server);
                 }
             } else {
-                lastError = "Invalid network server handle";
+                setLastError("Invalid network server handle");
             }
         }
     }
@@ -298,7 +308,7 @@ public class NetBasicLib implements FunctionLibrary {
             if (index > 0 && connections.isIndexValid(index)) {
                 connections.free(index);
             } else {
-                lastError = "Invalid network connection handle";
+                setLastError("Invalid network connection handle");
             }
         }
     }
@@ -313,7 +323,7 @@ public class NetBasicLib implements FunctionLibrary {
                 vm.getReg().setIntVal(connection.HandShaking() ? 1 : 0);
             } else {
                 vm.getReg().setIntVal(0);
-                lastError = "Invalid network connection handle";
+                setLastError("Invalid network connection handle");
             }
         }
     }
@@ -328,7 +338,7 @@ public class NetBasicLib implements FunctionLibrary {
                 vm.getReg().setIntVal(connection.Connected() ? 1 : 0);
             } else {
                 vm.getReg().setIntVal(0);
-                lastError = "Invalid network connection handle";
+                setLastError("Invalid network connection handle");
             }
         }
     }
@@ -345,7 +355,7 @@ public class NetBasicLib implements FunctionLibrary {
                 vm.getReg().setIntVal(connection.DataPending() ? -1 : 0);
             } else {
                 vm.getReg().setIntVal(0);
-                lastError = "Invalid network connection handle";
+                setLastError("Invalid network connection handle");
             }
         }
     }
@@ -370,6 +380,7 @@ public class NetBasicLib implements FunctionLibrary {
                     DatagramPacket packet = new DatagramPacket(buffer, size);
                     size = connection.Receive(buffer, size);
 
+                    NetLog("blah bla bla " + new String(buffer));
                     // Copy into string stream
                     InputStream stream = new ByteArrayInputStream(Arrays.copyOf(buffer, size));
 
@@ -382,14 +393,16 @@ public class NetBasicLib implements FunctionLibrary {
                             smoothed,
                             stream);
 
+                    NetLog("Receiving!@#$#");
                     // Store it
                     vm.getReg().setIntVal(fileStreams.alloc(message));
+                    message.close();
                 } else {
                     vm.getReg().setIntVal(0);
                 }
             } else {
                 vm.getReg().setIntVal(0);
-                lastError = "Invalid network connection handle";
+                setLastError("Invalid network connection handle");
             }
         }
     }
@@ -408,7 +421,7 @@ public class NetBasicLib implements FunctionLibrary {
                 }
             } else {
                 vm.getReg().setIntVal(0);
-                lastError = "Invalid network connection handle";
+                setLastError("Invalid network connection handle");
             }
         }
     }
@@ -427,7 +440,7 @@ public class NetBasicLib implements FunctionLibrary {
                 }
             } else {
                 vm.getReg().setIntVal(0);
-                lastError = "Invalid network connection handle";
+                setLastError("Invalid network connection handle");
             }
         }
     }
@@ -446,7 +459,7 @@ public class NetBasicLib implements FunctionLibrary {
                 }
             } else {
                 vm.getReg().setIntVal(0);
-                lastError = "Invalid network connection handle";
+                setLastError("Invalid network connection handle");
             }
         }
     }
@@ -477,11 +490,11 @@ public class NetBasicLib implements FunctionLibrary {
                     vm.getReg().setIntVal(fileStreams.alloc(message));
                 } else {
                     vm.getReg().setIntVal(0);
-                    lastError = "Invalid channel index. Must be 0 - 31.";
+                    setLastError("Invalid channel index. Must be 0 - 31.");
                 }
             } else {
                 vm.getReg().setIntVal(0);
-                lastError = "Invalid network connection handle";
+                setLastError("Invalid network connection handle");
             }
         }
     }

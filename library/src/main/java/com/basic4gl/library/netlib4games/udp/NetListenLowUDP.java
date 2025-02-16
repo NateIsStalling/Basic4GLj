@@ -29,7 +29,8 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
     int m_maxPacketSize;
 
     // TODO verify this buffer is the right size type
-    byte[] m_buffer;
+//    byte[] m_buffer;
+    ByteBuffer socketBuffer;
 
     // Incoming connection requests
     List<NetPendConLowUDP> m_pending = new ArrayList<>();
@@ -43,7 +44,42 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
 
     private final Object connectionLock = new Object();
 
+    /// Construct listener.
+    /// Note: If HasErrorState::Error () returns true, the object should
+    /// be deleted immediately and not used.
+    public NetListenLowUDP(int port) {
+        super();
+        m_port = port;
+        socketBuffer = null;
+        m_channel = null;
+
+        NetLog("Create UDP listener, port " + port);
+
+        // Create socket
+        OpenSocket();
+
+        // Start service thread
+        m_socketServiceThread = new Thread(NetListenLowUDP.class.getName());
+        m_socketServiceThread.Start(this);
+        m_socketServiceThread.RaisePriority();
+    }
+
+    public void dispose() {
+        NetLog("Delete UDP listener");
+
+        // Close down the thread
+        m_socketServiceThread.Terminate();
+
+        // Close the socket
+        CloseSocket();
+
+        // Delete temp buffer
+        socketBuffer = null;
+    }
     NetConLowUDP FindConnection(InetSocketAddress addr) {
+        if (addr == null) {
+            return null;
+        }
         // Find connection whose address matches addr
         Iterator<NetConLowUDP> connectionIter = m_connections.iterator();
         while (connectionIter.hasNext()) {
@@ -52,7 +88,9 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
                     && (i).m_addr.getHostString().equals(addr.getHostString())) {
                 return i;
             }
+            NetLog("wrong! " + i.toString());
         }
+        NetLog("connection not found! " + addr.toString());
         // None found
         return null;
     }
@@ -156,23 +194,27 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
         while (!m_socketServiceThread.Terminating()) {
             try {
 // Get temp buffer for data
-                if (m_buffer == null) {
-                    m_buffer = new byte[m_maxPacketSize];
+                if (socketBuffer == null) {
+                    socketBuffer = ByteBuffer.allocate(m_maxPacketSize);
                 }
 
                 NetLog("faster!");
                 // Read in packet
-                InetSocketAddress addr = null;
+                InetSocketAddress clientAddress = null;
                 try {
-                    ByteBuffer buffer = ByteBuffer.wrap(m_buffer);
                     m_channel.socket().setSoTimeout((int)1000);
 
-                    DatagramPacket in = new DatagramPacket(buffer.array(), m_maxPacketSize);
-                    m_channel.socket().receive(in);
-                    addr = (InetSocketAddress) in.getSocketAddress();
+                    socketBuffer.clear();
+//                    DatagramPacket in = new DatagramPacket(buffer.array(), m_maxPacketSize);
+                    clientAddress = (InetSocketAddress) m_channel.receive(socketBuffer);
+                    socketBuffer.flip();
+
+//                    addr = (InetSocketAddress) in.getSocketAddress();
+
 
 //                    buffer.flip();
-                    byte[] bytes = in.getData();
+                    byte[] bytes  = new byte[socketBuffer.remaining()];
+                    socketBuffer.get(bytes);
                     int size = bytes.length;
 
                     NetLog("Read UDP packet, " + size + " bytes");
@@ -183,7 +225,7 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
 
                     // Find target connection (by matching against packet address)
                     synchronized (connectionLock) {
-                        NetConLowUDP connection = FindConnection(addr);
+                        NetConLowUDP connection = FindConnection(clientAddress);
                         if (connection != null) {
 
                             NetLog("Queue packet in UDP net connection");
@@ -193,11 +235,11 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
                         }
                         // Check whether packet is a connection request
                         else if (IsConnectionRequest(packet, requestStringBuffer)            // Is a connection request
-                                && !IsPending(addr)) {                                    // And connection is not already pending
+                                && !IsPending(clientAddress)) {                                    // And connection is not already pending
                             NetLog("Create pending UDP connection");
 
                             // If there is no existing pending connection then create one
-                            m_pending.add(new NetPendConLowUDP(addr, requestStringBuffer[0], packet));
+                            m_pending.add(new NetPendConLowUDP(clientAddress, requestStringBuffer[0], packet));
                         } else {
 
                             // Unknown packet. Ignore it
@@ -210,8 +252,8 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
                     NetLog("Error reading UDP packet: " + ex.getMessage());
 
                     synchronized (connectionLock) {
-                        if (addr != null) {
-                            NetConLowUDP connection = FindConnection(addr);
+                        if (clientAddress != null) {
+                            NetConLowUDP connection = FindConnection(clientAddress);
                             if (connection != null) {
                                 connection.Disconnect();
                             }
@@ -235,40 +277,6 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
         SocketChannel client = serverSocket.accept();
         client.configureBlocking(false);
         client.register(selector, SelectionKey.OP_READ);
-    }
-
-    /// Construct listener.
-    /// Note: If HasErrorState::Error () returns true, the object should
-    /// be deleted immediately and not used.
-    public NetListenLowUDP(int port) {
-        m_port = port;
-        m_buffer = null;
-        m_channel = null;
-
-        NetLog("Create UDP listener, port " + port);
-
-        // Create socket
-        OpenSocket();
-
-        // Start service thread
-        m_socketServiceThread = new Thread();
-        m_socketServiceThread.Start(this);
-        m_socketServiceThread.RaisePriority();
-    }
-
-    public void dispose() {
-        NetLog("Delete UDP listener");
-
-        // Close down the thread
-        m_socketServiceThread.Terminate();
-
-        // Close the socket
-        CloseSocket();
-
-        // Delete temp buffer
-        if (m_buffer != null) {
-            m_buffer = null;
-        }
     }
 
     /// Used by NetConLowUDP to notify listener of a deleted connection.

@@ -24,14 +24,14 @@ public interface Library {
 	 * @param settings Application runtime settings
 	 * @param args Arguments provided to the application's main function
 	 */
-	void init(TomVM vm, IAppSettings settings, String[] args);
+	void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args);
 
 	/**
 	 * Initialize miscellaneous values used in the library
 	 * before the compiler is started.
 	 * @param comp Compiler instance
 	 */
-	void init(TomBasicCompiler comp);
+	void init(TomBasicCompiler comp, IServiceCollection services);
 
 	/**
 	 * Do any necessary cleanup post-execution

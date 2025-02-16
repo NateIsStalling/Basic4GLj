@@ -21,7 +21,7 @@ public class NetSettingsStaticL1 {
 
     /// Prefered maximum packet size.
     /// Used to restrict packet sizes.
-    long prefMaxPacketSize;
+    int prefMaxPacketSize;
 
     /// Size of send buffer in packets. Used to queue reliable packets until
     /// delivery is confirmed.
