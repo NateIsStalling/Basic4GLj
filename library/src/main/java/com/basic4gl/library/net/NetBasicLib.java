@@ -19,7 +19,6 @@ import java.net.DatagramPacket;
 import java.util.*;
 
 import static com.basic4gl.library.netlib4games.NetLogger.DebugNetLogger;
-import static com.basic4gl.library.netlib4games.NetLogger.NetLog;
 import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
 import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
@@ -380,7 +379,6 @@ public class NetBasicLib implements FunctionLibrary {
                     DatagramPacket packet = new DatagramPacket(buffer, size);
                     size = connection.Receive(buffer, size);
 
-                    NetLog("blah bla bla " + new String(buffer));
                     // Copy into string stream
                     InputStream stream = new ByteArrayInputStream(Arrays.copyOf(buffer, size));
 
@@ -393,7 +391,6 @@ public class NetBasicLib implements FunctionLibrary {
                             smoothed,
                             stream);
 
-                    NetLog("Receiving!@#$#");
                     // Store it
                     vm.getReg().setIntVal(fileStreams.alloc(message));
                     message.close();
