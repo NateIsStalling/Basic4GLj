@@ -403,6 +403,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
     }
     public final class WrapReadLine  implements Function { public void run(TomVM vm) {
         vm.setRegString ( "");
+        StringBuilder regString = new StringBuilder();
         if (!getInputStream(vm.getIntParam(1))) {
             return;
         }
@@ -411,22 +412,25 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess{
         }
 
         // Skip returns and linefeeds
-        char c = 0;
+        int c = 0;
         Exception exception = null;
         try {
             c = (char)stream.in.read();
-            while ((stream.in.available() > 0) && (c == 10 || c == 13)) {
-                c = (char)stream.in.read();
+            while (c == 10 || c == 13) {
+                c = stream.in.read();
             }
 
             // Read printable characters
-            while ((stream.in.available() > 0) && c != 10 && c != 13) {
-                vm.setRegString(vm.getRegString() + c);
-                c = (char)stream.in.read();
+            while (c != -1 && c != 10 && c != 13) {
+                regString.append((char) c);
+                c = stream.in.read();
             }
         } catch (Exception e) {
             e.printStackTrace();
             exception = e;
+        } finally {
+            // porting note: original source read characters into the vm RegString until reading failed or completed
+            vm.setRegString(regString.toString());
         }
         // Don't treat eof as an error
         if (exception != null) {
