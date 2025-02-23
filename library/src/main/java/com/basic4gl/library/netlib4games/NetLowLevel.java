@@ -3,7 +3,6 @@ package com.basic4gl.library.netlib4games;
 public class NetLowLevel {
 
     // globals
-    // TODO inject singleton
     private static NetConReqValidator validator = null;
     private static final Object validatorLock = new Object();
 
@@ -26,7 +25,7 @@ public class NetLowLevel {
         boolean result;
         synchronized (validatorLock) {
             if (validator != null) {
-                result = validator.IsConnectionRequest(packet, requestStringBuffer);
+                result = validator.isConnectionRequest(packet, requestStringBuffer);
             } else {
                 result = false;
             }

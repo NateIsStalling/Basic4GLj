@@ -11,5 +11,5 @@ public abstract class NetConReqValidator {
     public NetConReqValidator() {
     }
 
-    public abstract boolean IsConnectionRequest (NetSimplePacket packet, String[] requestStringBuffer);
+    public abstract boolean isConnectionRequest(NetSimplePacket packet, String[] requestStringBuffer);
 }

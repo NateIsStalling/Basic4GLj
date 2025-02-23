@@ -1,29 +1,32 @@
 //TODO replace with synchronized blocks
-package com.basic4gl.library.netlib4games;
+package com.basic4gl.library.netlib4games.internal;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.basic4gl.library.netlib4games.ThreadUtils.INFINITE;
+import static com.basic4gl.library.netlib4games.internal.ThreadUtils.INFINITE;
 
 public class ThreadLock {
-    int		m_lockCount;
-    ReentrantLock m_lock;
+    private int m_lockCount;
+    private ReentrantLock m_lock;
 
-    public ThreadLock () {
+    public ThreadLock() {
         m_lockCount = (0);
-        m_lock = new ReentrantLock ();
+        m_lock = new ReentrantLock();
     }
-    public void dispose ()					{
+
+    public void dispose() {
         m_lock.notifyAll();
         m_lock.unlock();
     }
 
     // Member access
-    public ReentrantLock LockHandle ()			{ return m_lock; }
+    public ReentrantLock getLockHandle() {
+        return m_lock;
+    }
 
     // Methods
-    public boolean Lock (long timeout)		{
+    public boolean lock(long timeout) {
         boolean result = false;
         try {
             result = m_lock.tryLock(timeout, TimeUnit.MILLISECONDS);
@@ -35,10 +38,12 @@ public class ThreadLock {
         }
         return result;
     }
-    public boolean Lock ()					{
-        return Lock (INFINITE);
+
+    public boolean lock() {
+        return lock(INFINITE);
     }
-    public void Unlock ()					{
+
+    public void unlock() {
         m_lockCount--;
         m_lock.unlock();
     }

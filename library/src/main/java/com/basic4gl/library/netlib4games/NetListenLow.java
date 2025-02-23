@@ -27,33 +27,54 @@ public abstract class NetListenLow extends HasErrorStateThreadSafe{
 
     }
 
-    /// True if a client connection is pending.
-    /// That is, if a connection request has been received in response to a
-    /// client NetConL2::Connect call.
-    public abstract  boolean ConnectionPending () ;
 
-    /// Read the request string for the current pending connection.
-    /// (i.e. the second parameter of the client's NetConL2::Connect call.)
-    /// Call this ONLY if ConnectionPending() returns true.
-    public abstract String RequestString () ;
+    /**
+     * True if a client connection is pending.
+     * That is, if a connection request has been received in response to a
+     * client {@see com.basic4gl.library.netlib4games.NetConL2#connect()} call.
+     * @return True if a client connection is pending.
+     */
+    public abstract  boolean isConnectionPending() ;
 
-    /// Accept and return pending connection (see ::ConnectionPending).
-    /// Call this ONLY if ConnectionPending() returns true.
-    /// Returns a low level network protocol connection that can be passed to
-    /// the constructor of a NetConL2 connection. E.g.:\code
-    /// if (listener.ConnectionPending()) {
-    ///		NetConL2 *connection = new NetConL2(listener.AcceptConnection());
-    /// 	...
-    ///	}
-    /// \endcode
-    public abstract NetConLow AcceptConnection ();
+    /**
+     * Read the request string for the current pending connection.
+     * (i.e. the second parameter of the client's {@see com.basic4gl.library.netlib4games.NetConL2#connect()} call.)
+     * Call this ONLY if {@link #isConnectionPending()} returns true.
+     * @return the request string for the current pending connection
+     */
+    public abstract String getRequestString() ;
 
-    /// Reject the pending connection (see ConnectionPending())
-    /// Call this ONLY if ConnectionPending() returns true.
-    public abstract  void RejectConnection ();
+    /**
+     * Accept and return pending connection (see {@link #isConnectionPending()}).
+     * Call this ONLY if {@link #isConnectionPending()} returns true.
+     *
+     * eg:
+     * <pre>
+     * {@code
+     *  if (listener.isConnectionPending()) {
+     *      NetConL2 connection = new NetConL2(listener.acceptConnection());
+     *      //...
+     *  }
+     * }
+     * </pre>
+     * @return Returns a low level network protocol connection that can be passed to
+     * the constructor of a NetConL2 connection.
+     */
+    public abstract NetConLow acceptConnection();
 
-    /// [Used internally]
-    protected boolean IsConnectionRequest (NetSimplePacket packet, String[] requestStringBuffer) {
+    /**
+     * Reject the pending connection (see {@link #isConnectionPending()})
+     * Call this ONLY if {@link #isConnectionPending()} returns true.
+     */
+    public abstract  void rejectConnection();
+
+    /**
+     * Used internally
+     * @param packet
+     * @param requestStringBuffer
+     * @return
+     */
+    protected boolean isConnectionRequest(NetSimplePacket packet, String[] requestStringBuffer) {
         requestStringBuffer[0] = "";
         return NetLowLevel.isConnectionRequest(packet, requestStringBuffer);
     }

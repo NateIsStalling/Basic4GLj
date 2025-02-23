@@ -1,36 +1,42 @@
 package com.basic4gl.library.netlib4games;
 
+import com.basic4gl.library.netlib4games.internal.Assert;
+
+import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
+
 /**
  * Base class for very simple error handling mechanism.
  */
 public class HasErrorState extends AbstractHasErrorState {
     // Error status
-    boolean                        m_error;
-    String                 m_errorString;
+    boolean m_error;
+    String m_errorString;
 
     @Override
-    protected void setError (String text) {
+    protected void setError(String text) {
         m_error = true;
         m_errorString = text;
     }
 
-    public HasErrorState ()  {
+    public HasErrorState() {
         m_error = false;
-     }
+    }
 
-     @Override
-    public boolean error () {
+    @Override
+    public boolean hasError() {
         return m_error;
     }
+
     @Override
-    public String getError () {
-        // TODO suspicious assert
-        assert(error());
+    public String getError() {
+        // TODO review suspicious assert
+        Assert.assertTrue(hasError());
 
         return m_errorString;
     }
+
     @Override
-    public void clearError () {
+    public void clearError() {
         m_error = false;
     }
 }

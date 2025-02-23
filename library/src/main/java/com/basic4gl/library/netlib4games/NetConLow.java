@@ -1,6 +1,6 @@
 package com.basic4gl.library.netlib4games;
 
-import com.basic4gl.library.netlib4games.udp.NetConLowUDP;
+import com.basic4gl.library.netlib4games.internal.ThreadEvent;
 
 /**
  * Low level network connection.
@@ -10,13 +10,16 @@ import com.basic4gl.library.netlib4games.udp.NetConLowUDP;
  * <br/>
  * The NetConLow object is passed to the constructor of the NetConL2 (i.e.
  * the main connection object of NetLib4Games).
- * So a UDP/IP NetLib4Games connection would be created like so:\code
- * NetConL2 *connection = new NetConL2(new NetConLowUDP());
- * \endcode
+ * So a UDP/IP NetLib4Games connection would be created like so:
+ * <pre>
+ * {@code
+ * NetConL2 connection = new NetConL2(new NetConLowUDP());
+ * }
+ * </pre>
  * Other NetConLow descendants can support other low level network protocols.
  * (At the time of writing, only UDP/IP is supported.)
  * <br/>
- * NetConLow objects are also created by NetListenLow::AcceptConnection(), 
+ * NetConLow objects are also created by NetListenLow.acceptConnection(),
  * when a connection request is accepted by the server.
  * <br/>
  * Note: Typically applications don't use the NetConLow (descendant) directly.
@@ -25,21 +28,6 @@ import com.basic4gl.library.netlib4games.udp.NetConLowUDP;
  * messages, timing etc).
  * The NetConLow simply supports unreliable packet sending and receiving to/from
  * a set target address.
- * <br/>
- * For multithreaded support, the must object allow that the ::Refresh() method
- * (and anything that ::Refresh() itself calls) will likely be called from a
- * different thread than the other methods, particularly ::Send() and ::Receive().
- * In some low level implementations, server connections may be driven by the
- * NetListenLow object (such as with the UDP implementation), which would also
- * be in a different thread if multithreading is used.
- * <br/>
- *   A recommended approach for threadsafeness is to either:
- * 	* Lock the entire object around all method calls,
- *   OR
- * 	* Lock access to:
- * 		1. The send queue
- * 		2. The receive queue
- * 		3. The underlying networking object(s) (eg. the socket for UDP implementation)
  */
 public abstract class NetConLow extends HasErrorStateThreadSafe {
 
@@ -54,36 +42,37 @@ public abstract class NetConLow extends HasErrorStateThreadSafe {
     /**
      * @return true if connection is a client connection, or false if is a server connection.
      */
-    public abstract boolean Client ();
+    public abstract boolean isClient();
 
 
 
     /**
      * Connect to address.
-     *
+     * <p>
      * Note: Not all connections are connected this way. They are also created
      * in response to external connection requests.
+     * </p>
      * @param address address to connect to. Meaning depends on underlying communication protocol. Eg. for UDP (internet) this would be a DNS or IP address.
      * @return
      */
-    public abstract  boolean Connect (String address);
+    public abstract  boolean connect(String address);
 
     /**
      * Disconnect
      */
-    public abstract  void Disconnect ();
+    public abstract  void disconnect();
 
     /**
      * @return true if still connected.
      */
-    public abstract  boolean Connected ();
+    public abstract  boolean isConnected();
 
     /**
      * Maximum packet size.
      * Can only be called on connected connections
      * @return Maximum packet size.
      */
-    public abstract int MaxPacketSize ();
+    public abstract int getMaxPacketSize();
 
     /**
      * Send a packet to the destination address.
@@ -92,58 +81,58 @@ public abstract class NetConLow extends HasErrorStateThreadSafe {
      * @param data
      * @param size
      */
-    public abstract  void Send (byte[] data, int size);
+    public abstract  void send(byte[] data, int size);
 
 
     /**
      * @return True if a data is waiting to be received. If not connected, should simply return false.
      */
-    public abstract  boolean DataPending ();
+    public abstract  boolean isDataPending();
 
 
     /**
      * @return Size of pending data.
      */
-    public abstract int PendingDataSize ();
+    public abstract int getPendingDataSize();
 
     /**
      * Receive pending data.
-     * Can only be called on connected connections when {@link DataPending()} = true
+     * Can only be called on connected connections when {@link #isDataPending()} = true
      * Data will be truncated if it doesn't fit in buffer.
      * @param data buffer to receive data
      * @param size In = Amount of room in data, Out = # of bytes read.
      */
-    public void Receive (byte[] data, int size) {
-        ReceivePart (data, 0, size);
-        DonePendingData ();
+    public void receive(byte[] data, int size) {
+        receivePart(data, 0, size);
+        onDonePendingData();
     }
 
     /**
      * Receive part of a pending packet.
-     * Can only be called on connected connections when {@link #PacketPending()} = true
-     * The packet remains in the receive queue until {@link #NextPacket()} is called
+     * Can only be called on connected connections when {@link #isPacketPending()} = true
+     * The packet remains in the receive queue until {@link #nextPacket()} is called
      * @param data buffer to receive data
      * @param offset
      * @param size In = Amount of room in data, Out = # of bytes read.
      */
-    public abstract int ReceivePart (byte[] data, int offset, int size);
+    public abstract int receivePart(byte[] data, int offset, int size);
 
 
     /**
      * Discard the top-of-queue pending packet.
      */
-    public abstract  void DonePendingData ();
+    public abstract  void onDonePendingData();
 
     /**
      * Event is signalled whenever data is received, or a significant state
      * change occurs, such as a network error or disconnect.
      * @return Event object.
      */
-    public abstract  ThreadEvent Event ();
+    public abstract ThreadEvent getEvent();
 
     /**
      * Expose the destination address of a connection to the application.
      * @return destination address
      */
-    public abstract String Address();
+    public abstract String getAddress();
 }

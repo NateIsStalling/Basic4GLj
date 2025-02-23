@@ -1,4 +1,4 @@
-package com.basic4gl.library.netlib4games;
+package com.basic4gl.library.netlib4games.internal;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Simple event wrapper for thread synchronsiation event
+ * Simple event wrapper for thread synchronization event
  */
 public class ThreadEvent {
     final java.lang.Thread event;
@@ -74,21 +74,16 @@ public class ThreadEvent {
 
     public boolean waitFor(long timeout) {
         try {
-//            System.out.println(name + " waitFor A");
             synchronized (event) {
-//                System.out.println(name + " waitFor 1");
                 if (isSignalled) {
                     return true;
                 }
-//                System.out.println(name + " waitFor 2");
                 event.wait(timeout);
             }
         } catch (InterruptedException consumed) {
-//            System.out.println(name + " waitFor B");
             return false;
         }
         synchronized (event) {
-//            System.out.println(name + " waitFor C");
             return isSignalled;
         }
     }

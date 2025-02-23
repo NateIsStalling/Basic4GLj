@@ -6,9 +6,9 @@ package com.basic4gl.library.netlib4games;
 public class NetInPacketL1 {
     boolean           resent;     // True if packet was resent
     NetSimplePacket packet;     // Packet data
-    NetInPacketL1(int size, boolean _resent) {
+    NetInPacketL1(int size, boolean resent) {
         packet = new NetSimplePacket(size);
-        resent = _resent;
+        this.resent = resent;
     }
 
     public void dispose() {

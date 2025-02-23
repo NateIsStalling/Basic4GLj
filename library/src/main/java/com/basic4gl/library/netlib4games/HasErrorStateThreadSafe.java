@@ -1,17 +1,25 @@
 package com.basic4gl.library.netlib4games;
 
+import com.basic4gl.library.netlib4games.internal.ThreadLock;
+
 /**
  * Threadsafe version of HasErrorState
  */
 public class HasErrorStateThreadSafe extends HasErrorState {
-    ThreadLock m_lock;			// Lock object.
-    boolean		m_ownLock;		// True if we own it (and will free it on destruction)
+    /**
+     * Lock object
+     */
+    private final ThreadLock m_lock;
+    /**
+     * True if we own it (and will free it on destruction)
+     */
+    private final boolean m_ownLock;
 
-    public HasErrorStateThreadSafe () {
+    public HasErrorStateThreadSafe() {
 
         // Create own threadlock
-        m_lock		= new ThreadLock ();
-        m_ownLock	= true;
+        m_lock = new ThreadLock();
+        m_ownLock = true;
     }
 
     public void dispose() {
@@ -20,46 +28,55 @@ public class HasErrorStateThreadSafe extends HasErrorState {
         }
     }
 
-    // Note: Locking is automatic around the standard HasErrorState methods, however
-    // calling code may want to explicitly lock around a set of calls to make them
-    // transactional, e.g:
-    //
-    //		o.LockError ();
-    //			if (o.Error ()) {
-    //				DoSomethingWith (o.GetError ());
-    //				o.ClearError ();
-    //			}
-    //		o.UnlockError ();
-    //
-    // This would ensure that another thread didn't clear the error between the test
-    // and reading the string with ::GetError.
-    //
-    void LockError ()	{ m_lock.Lock (); }
-    void UnlockError () { m_lock.Unlock (); }
+    /**
+     * Note: Locking is automatic around the standard HasErrorState methods, however
+     * calling code may want to explicitly lock around a set of calls to make them
+     * transactional, e.g:
+     * <p>
+     * o.lockError ();
+     * if (o.hasError ()) {
+     * doSomethingWith (o.getError());
+     * o.clearError ();
+     * }
+     * o.unlockError ();
+     * <p>
+     * This would ensure that another thread didn't clear the error between the test
+     * and reading the string with getError.
+     */
+    void lockError() {
+        m_lock.lock();
+    }
+
+    void unlockError() {
+        m_lock.unlock();
+    }
 
     // HasErrorState methods
-    public void setError (String text) {
-        LockError();
+    public void setError(String text) {
+        lockError();
         super.setError(text);
-        UnlockError();
+        unlockError();
     }
-    public boolean error () {
+
+    public boolean hasError() {
         boolean result = false;
-        LockError();
-        result = super.error();
-        UnlockError();
+        lockError();
+        result = super.hasError();
+        unlockError();
         return result;
     }
-    public String getError () {
+
+    public String getError() {
         String result = null;
-        LockError();
+        lockError();
         result = super.getError();
-        UnlockError();
+        unlockError();
         return result;
     }
-    public void clearError () {
-        LockError();
+
+    public void clearError() {
+        lockError();
         super.clearError();
-        UnlockError();
+        unlockError();
     }
 }

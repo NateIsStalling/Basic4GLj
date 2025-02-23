@@ -18,7 +18,7 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.util.*;
 
-import static com.basic4gl.library.netlib4games.NetLogger.DebugNetLogger;
+import static com.basic4gl.library.netlib4games.NetLogger.initDebugNetLogger;
 import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
 import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
@@ -125,7 +125,7 @@ public class NetBasicLib implements FunctionLibrary {
         clearError();
 
         // Configure NetLib4Games logger
-        DebugNetLogger();
+        initDebugNetLogger();
     }
 
     @Override
@@ -172,11 +172,11 @@ public class NetBasicLib implements FunctionLibrary {
 
 
     ////////////////////////////////////////////////////////////////////////////////
-//  Helper functions
-    boolean CheckError(com.basic4gl.library.netlib4games.HasErrorState obj) {
+    //  Helper functions
+    boolean checkError(com.basic4gl.library.netlib4games.HasErrorState obj) {
         assertTrue(obj != null);
 
-        if (obj.error()) {
+        if (obj.hasError()) {
             setLastError(obj.getError());
             return false;
         } else {
@@ -198,7 +198,7 @@ public class NetBasicLib implements FunctionLibrary {
             serverCount++;
 
             // Store it
-            if (!CheckError(server)) {
+            if (!checkError(server)) {
                 serverCount--;
                 server.dispose();
                 vm.getReg().setIntVal(0);
@@ -226,7 +226,7 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && servers.isIndexValid(index)) {
                 NetListenLow server = servers.getValueAt(index);
-                vm.getReg().setIntVal(server.ConnectionPending() ? -1 : 0);
+                vm.getReg().setIntVal(server.isConnectionPending() ? -1 : 0);
             } else {
                 vm.getReg().setIntVal(0);
                 setLastError("Invalid network server handle");
@@ -243,9 +243,9 @@ public class NetBasicLib implements FunctionLibrary {
                 NetListenLow server = servers.getValueAt(index);
 
                 // Accept connection (if pending)
-                if (server.ConnectionPending()) {
-                    NetConL2 connection = new NetConL2(server.AcceptConnection());
-                    if (!CheckError(connection)) {
+                if (server.isConnectionPending()) {
+                    NetConL2 connection = new NetConL2(server.acceptConnection());
+                    if (!checkError(connection)) {
                         connection.dispose();
                         vm.getReg().setIntVal(0);
                     } else {
@@ -270,9 +270,9 @@ public class NetBasicLib implements FunctionLibrary {
                 NetListenLow server = servers.getValueAt(index);
 
                 // Reject connection
-                if (server.ConnectionPending()) {
-                    server.RejectConnection();
-                    CheckError(server);
+                if (server.isConnectionPending()) {
+                    server.rejectConnection();
+                    checkError(server);
                 }
             } else {
                 setLastError("Invalid network server handle");
@@ -288,14 +288,12 @@ public class NetBasicLib implements FunctionLibrary {
 
             // Create new connection
             NetConL2 connection = new NetConL2(new NetConLowUDP());
-            connection.Connect(addressString);
-            if (!CheckError(connection)) {
+            connection.connect(addressString);
+            if (!checkError(connection)) {
                 connection.dispose();
                 vm.getReg().setIntVal(0);
-            } else
-
+            } else {
                 // Store connection
-            {
                 vm.getReg().setIntVal(connections.alloc(connection));
             }
         }
@@ -319,7 +317,7 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
-                vm.getReg().setIntVal(connection.HandShaking() ? 1 : 0);
+                vm.getReg().setIntVal(connection.isHandShaking() ? 1 : 0);
             } else {
                 vm.getReg().setIntVal(0);
                 setLastError("Invalid network connection handle");
@@ -334,7 +332,7 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
-                vm.getReg().setIntVal(connection.Connected() ? 1 : 0);
+                vm.getReg().setIntVal(connection.isConnected() ? 1 : 0);
             } else {
                 vm.getReg().setIntVal(0);
                 setLastError("Invalid network connection handle");
@@ -351,7 +349,7 @@ public class NetBasicLib implements FunctionLibrary {
                 NetConL2 connection = connections.getValueAt(index);
 
                 // Check for data
-                vm.getReg().setIntVal(connection.DataPending() ? -1 : 0);
+                vm.getReg().setIntVal(connection.hasDataPending() ? -1 : 0);
             } else {
                 vm.getReg().setIntVal(0);
                 setLastError("Invalid network connection handle");
@@ -367,17 +365,17 @@ public class NetBasicLib implements FunctionLibrary {
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
 
-                if (connection.DataPending()) {
+                if (connection.hasDataPending()) {
 
                     // Get message properties
-                    int channel = connection.PendingChannel();
-                    boolean reliable = connection.PendingReliable(),
-                            smoothed = connection.PendingSmoothed();
+                    int channel = connection.getPendingChannel();
+                    boolean reliable = connection.isPendingReliable(),
+                            smoothed = connection.isPendingSmoothed();
 
                     // Get message data
                     int size = 65536;
                     DatagramPacket packet = new DatagramPacket(buffer, size);
-                    size = connection.Receive(buffer, size);
+                    size = connection.receive(buffer, size);
 
                     // Copy into string stream
                     InputStream stream = new ByteArrayInputStream(Arrays.copyOf(buffer, size));
@@ -411,8 +409,8 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
-                if (connection.DataPending()) {
-                    vm.getReg().setIntVal(connection.PendingChannel());
+                if (connection.hasDataPending()) {
+                    vm.getReg().setIntVal(connection.getPendingChannel());
                 } else {
                     vm.getReg().setIntVal(0);
                 }
@@ -430,8 +428,8 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
-                if (connection.DataPending()) {
-                    vm.getReg().setIntVal(connection.PendingReliable() ? 1 : 0);
+                if (connection.hasDataPending()) {
+                    vm.getReg().setIntVal(connection.isPendingReliable() ? 1 : 0);
                 } else {
                     vm.getReg().setIntVal(0);
                 }
@@ -449,8 +447,8 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
-                if (connection.DataPending()) {
-                    vm.getReg().setIntVal(connection.PendingSmoothed() ? 1 : 0);
+                if (connection.hasDataPending()) {
+                    vm.getReg().setIntVal(connection.isPendingSmoothed() ? 1 : 0);
                 } else {
                     vm.getReg().setIntVal(0);
                 }
@@ -504,7 +502,7 @@ public class NetBasicLib implements FunctionLibrary {
             if (index > 0 && connections.isIndexValid(index)) {
 
                 NetConL2 connection = connections.getValueAt(index);
-                vm.setRegString(connection.Address());
+                vm.setRegString(connection.getAddress());
             } else {
                 vm.setRegString("");
             }
@@ -526,9 +524,9 @@ public class NetBasicLib implements FunctionLibrary {
                 }
 
                 // Update settings
-                NetSettingsL1 settings = connection.L1Settings();
+                NetSettingsL1 settings = connection.getL1Settings();
                 settings.handshakeTimeout = value;
-                connection.SetL1Settings(settings);
+                connection.setL1Settings(settings);
             }
         }
     }
@@ -548,9 +546,9 @@ public class NetBasicLib implements FunctionLibrary {
                 }
 
                 // Update settings
-                NetSettingsL1 settings = connection.L1Settings();
+                NetSettingsL1 settings = connection.getL1Settings();
                 settings.timeout = value;
-                connection.SetL1Settings(settings);
+                connection.setL1Settings(settings);
             }
         }
     }
@@ -570,9 +568,9 @@ public class NetBasicLib implements FunctionLibrary {
                 }
 
                 // Update settings
-                NetSettingsL1 settings = connection.L1Settings();
+                NetSettingsL1 settings = connection.getL1Settings();
                 settings.keepAlive = value;
-                connection.SetL1Settings(settings);
+                connection.setL1Settings(settings);
             }
         }
     }
@@ -595,9 +593,9 @@ public class NetBasicLib implements FunctionLibrary {
                 }
 
                 // Update settings
-                NetSettingsL1 settings = connection.L1Settings();
+                NetSettingsL1 settings = connection.getL1Settings();
                 settings.reliableResend = value;
-                connection.SetL1Settings(settings);
+                connection.setL1Settings(settings);
             }
         }
     }
@@ -620,9 +618,9 @@ public class NetBasicLib implements FunctionLibrary {
                 }
 
                 // Update settings
-                NetSettingsL1 settings = connection.L1Settings();
+                NetSettingsL1 settings = connection.getL1Settings();
                 settings.dup = value;
-                connection.SetL1Settings(settings);
+                connection.setL1Settings(settings);
             }
         }
     }
@@ -645,9 +643,9 @@ public class NetBasicLib implements FunctionLibrary {
                 }
 
                 // Update settings
-                NetSettingsL2 settings = connection.Settings();
+                NetSettingsL2 settings = connection.getSettings();
                 settings.smoothingPercentage = value;
-                connection.SetSettings(settings);
+                connection.setSettings(settings);
             }
         }
     }

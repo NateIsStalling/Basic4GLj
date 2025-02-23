@@ -36,9 +36,6 @@ public class NetPacketHeaderL2 {
             + PACKET_INDEX_BYTES
             + TICK_COUNT_BYTES;
 
-
-    private ByteBuffer buffer;
-
     private static final int CHANNEL_FLAGS_POSITION = 0;
     private static final int MESSAGE_INDEX_POSITION = CHANNEL_FLAGS_POSITION + CHANNEL_FLAGS_BYTES;
     private static final int RELIABLE_INDEX_POSITION = MESSAGE_INDEX_POSITION + MESSAGE_INDEX_BYTES;
@@ -46,6 +43,7 @@ public class NetPacketHeaderL2 {
     private static final int PACKET_INDEX_POSITION = PACKET_COUNT_POSITION + PACKET_COUNT_BYTES;
     private static final int TICK_COUNT_POSITION = PACKET_INDEX_POSITION + PACKET_INDEX_BYTES;
 
+    private final ByteBuffer buffer;
     public NetPacketHeaderL2() {
         this.buffer = ByteBuffer.wrap(new byte[SIZE])
                 .order(BYTE_ORDER);

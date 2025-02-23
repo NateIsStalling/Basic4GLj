@@ -75,7 +75,7 @@ public class NetMessageStream extends FileStream {
 
             System.out.println("sending.." + message);
             if (channel >= 0 && channel < NETL2_MAXCHANNELS && message != null) {
-                connection.Send(
+                connection.send(
                         stream.toByteArray(),
                         message.length(),
                     channel,

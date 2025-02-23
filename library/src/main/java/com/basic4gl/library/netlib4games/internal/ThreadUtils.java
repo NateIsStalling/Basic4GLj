@@ -1,4 +1,4 @@
-package com.basic4gl.library.netlib4games;
+package com.basic4gl.library.netlib4games.internal;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -21,10 +21,7 @@ public final class ThreadUtils {
 
         // Perform wait
         try {
-            System.out.println("so long!");
-
             Boolean result = queue.poll(timeoutMillis, TimeUnit.MILLISECONDS);
-            System.out.println("escapse!");
             return result != null ? result : false;
         } catch (InterruptedException e) {
             return false;

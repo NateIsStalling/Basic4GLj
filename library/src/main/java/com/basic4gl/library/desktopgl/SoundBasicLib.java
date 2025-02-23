@@ -34,7 +34,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-//  Init function
+    //  Init function
     public final class InitLibFunction implements Function {
         public void run(TomVM vm) {
             if (library != null) {

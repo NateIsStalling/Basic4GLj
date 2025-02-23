@@ -1,5 +1,7 @@
 package com.basic4gl.library.netlib4games;
 
+import com.basic4gl.library.netlib4games.internal.Assert;
+
 /**
  * Very simple network packet.
  * This is just a helper object. The network implementation may choose to
@@ -18,7 +20,7 @@ public class NetSimplePacket {
         }
     }
     public NetSimplePacket (byte[] src, int size) {
-        assert (src == null && size == 0 || src != null);
+        Assert.assertTrue(src == null && size == 0 || src != null);
         this.size = size;
         if (this.size > 0) {
             data = new byte [this.size];

@@ -6,7 +6,7 @@ public abstract class AbstractHasErrorState {
     /**
      * @return True if object is in error state
      */
-    public abstract boolean error();
+    public abstract boolean hasError();
 
     /**
      * @return Return error text

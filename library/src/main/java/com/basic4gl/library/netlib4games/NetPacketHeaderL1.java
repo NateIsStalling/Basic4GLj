@@ -23,7 +23,7 @@ public class NetPacketHeaderL1 {
     private static final int FLAGS_POSITION = 0;
     private static final int ID_POSITION = FLAGS_POSITION + FLAGS_BYTES;
 
-    private ByteBuffer buffer;
+    private final ByteBuffer buffer;
 
     public NetPacketHeaderL1() {
         buffer = ByteBuffer.wrap(new byte[SIZE])

@@ -1,6 +1,10 @@
 package com.basic4gl.library.netlib4games;
 
 
+import com.basic4gl.library.netlib4games.internal.Assert;
+
+import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
+
 /**
  * Layer 2 network message
  */
@@ -18,30 +22,30 @@ public class NetMessageL2 {
     boolean tickCountRegistered;
     NetSimplePacket[] packets;
 
-    NetMessageL2(int _channel,
-                 boolean _reliable,
-                 boolean _smoothed,
-                 boolean _ordered,
-                 int _messageIndex,
-                 int _reliableIndex,
-                 int _packetCount,
-                 long _tickCount) {
-        channel = _channel;
-        reliable = _reliable;
-        smoothed = _smoothed;
-        ordered = _ordered;
-        messageIndex = _messageIndex;
-        reliableIndex = _reliableIndex;
-        packetCount = _packetCount;
-        tickCount = _tickCount;
+    NetMessageL2(int channel,
+                 boolean reliable,
+                 boolean smoothed,
+                 boolean ordered,
+                 int messageIndex,
+                 int reliableIndex,
+                 int packetCount,
+                 long tickCount) {
+        this.channel = channel;
+        this.reliable = reliable;
+        this.smoothed = smoothed;
+        this.ordered = ordered;
+        this.messageIndex = messageIndex;
+        this.reliableIndex = reliableIndex;
+        this.packetCount = packetCount;
+        this.tickCount = tickCount;
         tickCountRegistered = false;
         receivedCount = 0;
         dataSize = 0;
 
         // Allocate packet space
-        if (packetCount > 0) {
-            packets = new NetSimplePacket[packetCount];
-            for (int i = 0; i < packetCount; i++)
+        if (this.packetCount > 0) {
+            packets = new NetSimplePacket[this.packetCount];
+            for (int i = 0; i < this.packetCount; i++)
                 packets [i] = null;
         }
         else {
@@ -66,12 +70,12 @@ public class NetMessageL2 {
         }
     }
 
-    boolean Complete() {
+    boolean isComplete() {
         return receivedCount >= packetCount;
     }
 
-    boolean Buffer(NetSimplePacket packet, int packetIndex) {
-        assert (packet != null);
+    boolean buffer(NetSimplePacket packet, int packetIndex) {
+        Assert.assertTrue(packet != null);
 
         if (packetIndex >= 0 && packetIndex < packetCount && packets[packetIndex] == null) {
 
@@ -92,9 +96,9 @@ public class NetMessageL2 {
      * @param size
      * @return size
      */
-    int CopyData(byte[] data, int offset, int size) {
-        assert (data != null);
-        assert (offset <= dataSize);
+    int copyData(byte[] data, int offset, int size) {
+        Assert.assertTrue(data != null);
+        Assert.assertTrue(offset <= dataSize);
 
         // Adjust size
         if (offset + size > dataSize) {

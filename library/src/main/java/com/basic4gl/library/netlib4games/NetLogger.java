@@ -3,31 +3,30 @@ package com.basic4gl.library.netlib4games;
 import static com.basic4gl.library.netlib4games.NetLayer1.getTickCount;
 
 public class NetLogger {
-    public static interface NetLogCallback {
-        public void NetLog(String text);
+    public interface NetLogHandler {
+        void netLog(String text);
     }
-    public static class DebugLogger implements NetLogCallback {
-
+    public static class DebugLogger implements NetLogHandler {
         @Override
-        public void NetLog(String text) {
+        public void netLog(String text) {
             System.out.println(("Net event (" + getTickCount() + "): " + text + "\r\n"));
         }
     }
 
-    static NetLogCallback callback;
+    static NetLogHandler handler;
 
     private NetLogger() {
-        DebugNetLogger();
+        initDebugNetLogger();
     }
-    public static void NetLog(String text) {
-        callback.NetLog(text);
+    public static void netLog(String text) {
+        handler.netLog(text);
     }
 
-   public static void SetNetLogger(NetLogCallback callback) {
-        NetLogger.callback = callback;
+   public static void setNetLogger(NetLogHandler handler) {
+        NetLogger.handler = handler;
    }
 
-   public static void DebugNetLogger() {
-       NetLogger.callback = new DebugLogger();
+   public static void initDebugNetLogger() {
+       NetLogger.handler = new DebugLogger();
    }
 }

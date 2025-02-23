@@ -1,18 +1,19 @@
 package com.basic4gl.library.netlib4games.udp;
 
 import com.basic4gl.library.netlib4games.*;
-import com.basic4gl.library.netlib4games.Thread;
+import com.basic4gl.library.netlib4games.internal.Assert;
+import com.basic4gl.library.netlib4games.internal.Thread;
+import com.basic4gl.library.netlib4games.internal.ThreadEvent;
+import com.basic4gl.library.netlib4games.internal.ThreadUtils;
 
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
 import java.util.*;
 
-import static com.basic4gl.library.netlib4games.NetLogger.NetLog;
+import static com.basic4gl.library.netlib4games.NetLogger.netLog;
+import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
 
 /**
  * UDP/IP (ie internet) implementation of NetConLow
@@ -22,46 +23,53 @@ public class NetConLowUDP extends NetConLow implements Runnable {
     private static final long TIMEOUTSECS = 0;
     public static final int TIMEOUTUSECS = 500000; // microseconds NOT milliseconds
     public static final int SOCKET_TIMEOUT_MILLIS = TIMEOUTUSECS / 1000;
-    // public NetConLow, public Threaded, public WinsockUser
 
-    // The socket operates in either of two modes.
-    // It either owns the socket or shares the socket with a number of other connections.
-    // If the socket is owned:
-    //		m_socket is set to the socket owned by the connection
-    //		m_listen is null
-    //		::Refresh() automatically polls the socket and queues any incoming packets
-    // If the socket is shared:
-    //		m_socket is set to the shared socket stored in a NetListenLowUDP object
-    //		m_listen points to that net listener object
-    //		::Refresh() does nothing. Instead NetListenLowUDP::Refresh() will poll the
-    //		socket and pass any packets to this connection to be queued.
 
-    DatagramChannel m_socket;
-    InetSocketAddress m_addr;
-    boolean m_connected;
-    boolean m_ownSocket;
-    NetListenLowUDP m_listen;
-    int m_maxPacketSize;
-    List<NetSimplePacket> m_pendingPackets = new ArrayList<>();
+    /**
+     * The socket operates in either of two modes.
+     * It either owns the socket or shares the socket with a number of other connections.
+     * If the socket is owned:
+     * m_socket is set to the socket owned by the connection
+     * m_listen is null
+     * If the socket is shared:
+     * m_socket is set to the shared socket stored in a NetListenLowUDP object
+     * m_listen points to that net listener object socket and pass any packets to this connection to be queued.
+     */
+    protected DatagramChannel m_socket;
+    protected InetSocketAddress m_addr;
+    protected boolean m_connected;
+    private boolean m_ownSocket;
+    private NetListenLowUDP m_listen;
+    private int m_maxPacketSize;
+    private final List<NetSimplePacket> m_pendingPackets = new ArrayList<>();
 
-    // TODO is this the right buffer size type
-//    byte[] m_buffer;
-    ByteBuffer socketBuffer;
+    private ByteBuffer socketBuffer;
 
     //	Thread handling
-    com.basic4gl.library.netlib4games.Thread m_socketServiceThread;
-    ThreadEvent m_connectedEvent,        // Signalled when connection is connected
-            m_dataEvent;            // Signalled when data arrives
-//    ThreadLock m_serviceLock,
-//            m_inQueueLock;
-//            m_stateLock;
+    private final Thread m_socketServiceThread;
+    /**
+     * Signalled when connection is connected
+     */
+    private final ThreadEvent m_connectedEvent;
+    /**
+     * Signalled when data arrives
+     */
+    private final ThreadEvent m_dataEvent;
+
     private final Object serviceLock = new Object();
     private final Object inQueueLock = new Object();
     private final Object stateLock = new Object();
 
-    /// Alternative constructor for incoming connections.
-    /// Note: These connections don't store their own socket. Instead they
-    /// share the socket of the NetListenLowUDP.
+    /**
+     * Alternative constructor for incoming connections.
+     * Note: These connections don't store their own socket.
+     * Instead, they share the socket of the NetListenLowUDP.
+     *
+     * @param sharedSocket
+     * @param addr
+     * @param maxPacketSize
+     * @param listen
+     */
     NetConLowUDP(
             DatagramChannel sharedSocket,
             InetSocketAddress addr,
@@ -69,7 +77,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
             NetListenLowUDP listen) {
         super();
 
-        assert (listen != null);
+        Assert.assertTrue(listen != null);
 
         m_socket = (sharedSocket);
         m_addr = (addr);
@@ -77,12 +85,12 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         m_listen = (listen);
         m_connected = (true);
         m_ownSocket = (false);
-        m_connectedEvent = new ThreadEvent("NetConLowUDP.m_connectedEvent", true);
-        m_dataEvent = new ThreadEvent("m_dataEvent");
+        m_connectedEvent = new ThreadEvent("NetConLowUDP.m_connectedEvent#1", true);
+        m_dataEvent = new ThreadEvent("NetConLowUDP.m_dataEvent#1");
         socketBuffer = null;
 
 
-        NetLog("Create UDP server connection");
+        netLog("Create UDP server connection");
 
 
         // Note: Don't start the socket service thread.
@@ -91,24 +99,26 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         m_socketServiceThread = new Thread(NetConLowUDP.class.getName());
     }
 
-    /// Default constructor. Connection must then be connected with ::Connect
+    /**
+     * Default constructor. Connection must then be connected with {@link #connect}
+     */
     public NetConLowUDP() {
         super();
-        m_connected = (false);
+        m_connected = false;
         m_listen = null;
-        m_ownSocket = (true);
-        m_connectedEvent = new ThreadEvent("m_connectedEvent2", false);
-        m_dataEvent = new ThreadEvent("m_dataEvent2");
+        m_ownSocket = true;
+        m_connectedEvent = new ThreadEvent("NetConLowUDP.m_connectedEvent#2", false);
+        m_dataEvent = new ThreadEvent("NetConLowUDP.m_dataEvent#2");
         socketBuffer = null;
 
-        NetLog("Create UDP client connection");
+        netLog("Create UDP client connection");
 
         // Start the socket service thread
         m_socketServiceThread = new Thread(NetConLowUDP.class.getName());
-        m_socketServiceThread.Start(this);
+        m_socketServiceThread.start(this);
         // Thread can fail to start if OS refuses to create it
-        if (m_socketServiceThread.Running()) {
-            m_socketServiceThread.RaisePriority();
+        if (m_socketServiceThread.isRunning()) {
+            m_socketServiceThread.raisePriority();
         } else {
             setError("Unable to create thread");
         }
@@ -117,53 +127,55 @@ public class NetConLowUDP extends NetConLow implements Runnable {
     public void dispose() {
 
         // Disconnect
-        Disconnect();
+        disconnect();
 
         // Terminate thread
-        m_socketServiceThread.Terminate();
+        m_socketServiceThread.terminate();
 
         // Unhook from listener
-        UnhookFromListen();
+        unhookFromListen();
 
         // Clear queue
-        ClearQueue();
+        clearQueue();
 
         // Delete temp buffer
         socketBuffer = null;
 
-        NetLog("Delete UDP connection");
+        netLog("Delete UDP connection");
     }
-    void QueuePendingPacket(NetSimplePacket packet) {
+
+    void queuePendingPacket(NetSimplePacket packet) {
         synchronized (inQueueLock) {
             m_pendingPackets.add(packet);
             m_dataEvent.set();
         }
     }
 
-    /// Used by NetListenLowUDP to register that it has been freed
-    void FreeNotify(NetListenLowUDP connection) {
+    /**
+     * Used by NetListenLowUDP to register that it has been freed
+     *
+     * @param connection
+     */
+    void freeNotify(NetListenLowUDP connection) {
         synchronized (serviceLock) {
-            NetLog("enterFreeNotify");
             if (m_listen == connection) {
 
                 // We deliberately clear the listen pointer BEFORE disconnecting
                 // This prevents Disconnect() from trying to notify the listener (which is unneccesary and would cause problems)
                 m_listen = null;
-                Disconnect();
+                disconnect();
             }
-            NetLog("exitFreeNotify");
         }
     }
 
-    void UnhookFromListen() {
+    void unhookFromListen() {
         if (m_listen != null) {
-            m_listen.FreeNotify(this);
+            m_listen.freeNotify(this);
             m_listen = null;
         }
-        NetLog("Unhook from UDP listen socket");
     }
 
-    void ClearQueue() {
+    void clearQueue() {
 
         // Recycle any allocated pending packets
         Iterator<NetSimplePacket> it = m_pendingPackets.iterator();
@@ -184,36 +196,28 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         //
         // Note: 1 is true because UI thread always locks state for reading with m_stateLock
         // and for writing with m_serviceLock.
-        while (!m_socketServiceThread.Terminating()) {
+        while (!m_socketServiceThread.isTerminating()) {
 
             boolean connected = false;
             synchronized (serviceLock) {
-                NetLog("enterRun");
                 connected = m_connected;
-                NetLog("exitRun");
             }
             // If not connected, wait until we are
             if (!connected) {
 
                 ThreadEvent[] events = new ThreadEvent[]{
                         m_connectedEvent,
-                        m_socketServiceThread.TerminateEvent()
+                        m_socketServiceThread.getTerminateEvent()
                 };
 
-//                foobar check this is correct
-                NetLogger.NetLog("get stuck");
                 ThreadUtils.waitForEvents(events, 2);
-                NetLogger.NetLog("unstuck");
             } else {
-
-                NetLogger.NetLog("heyyy");
                 // Select and wait for data.
                 // Note: We can't block forever, as we need to periodically check
                 // whether the thread has been terminated.
-                try  {
+                try {
 
                     synchronized (serviceLock) {
-                        NetLog("enterRunConnected");
                         // Get temp buffer for data
                         if (socketBuffer == null) {
                             socketBuffer = ByteBuffer.allocate(m_maxPacketSize);
@@ -221,7 +225,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
 
                         // Read in packet
                         try {
-                            int size =  Math.min(m_socket.socket().getSendBufferSize(), m_socket.socket().getReceiveBufferSize());
+                            int size = Math.min(m_socket.socket().getSendBufferSize(), m_socket.socket().getReceiveBufferSize());
 
 //                            ByteBuffer buffer = ByteBuffer.wrap(m_buffer);
 //                            DatagramPacket receivePacket = new DatagramPacket(buffer.array(), size);
@@ -231,11 +235,11 @@ public class NetConLowUDP extends NetConLow implements Runnable {
 //                            m_socket.receive(receivePacket);
                             InetSocketAddress remoteAddress = (InetSocketAddress) m_socket.receive(socketBuffer);
                             socketBuffer.flip();
-                            byte[] bytes  = new byte[socketBuffer.remaining()];
+                            byte[] bytes = new byte[socketBuffer.remaining()];
                             socketBuffer.get(bytes);
                             size = bytes.length;
 
-                            NetLog("Read and queue UDP packet, " + size + " bytes");
+                            netLog("Read and queue UDP packet, " + size + " bytes");
 
                             // Add to end of queue
                             synchronized (inQueueLock) {
@@ -243,34 +247,32 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                                 m_dataEvent.set();
                             }
                         } catch (SocketException ex) {
-                            NetLog("Error reading UDP packet: " + ex.getMessage());
+                            netLog("Error reading UDP packet: " + ex.getMessage());
                         }
-                        NetLog("exitRunConnected");
                     }
 
                 } catch (Exception ex) {
-                    NetLog("Error reading UDP channel: " + ex.getMessage());
+                    netLog("Error reading UDP channel: " + ex.getMessage());
                 }
 
             }
         }
     }
 
-
-    /// Connect to internet address.
-    /// address format:
-    ///		ip:port
-    /// eg:
-    ///		192.168.0.1:8000
-    /// or:
-    ///		somedomain.com:9999
-    public boolean Connect(String address) {
+    /**
+     * Connect to internet address.
+     * address format: ip:port
+     * eg: 192.168.0.1:8000 or somedomain.com:9999
+     *
+     * @param address address to connect to. Meaning depends on underlying communication protocol. Eg. for UDP (internet) this would be a DNS or IP address.
+     * @return
+     */
+    public boolean connect(String address) {
         boolean result = false;
         synchronized (serviceLock) {
-            NetLog("enterConnect");
-            if (Client() && !Connected()) {
+            if (isClient() && !isConnected()) {
 
-                NetLog("Connect to: " + address);
+                netLog("Connect to: " + address);
 
                 // Porting Note - Original had additional handling to ensure winsock is running
 
@@ -280,7 +282,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                 // Separate address from port
                 String addressStr, portStr;
 
-                int pos = address.indexOf(':');            // Look for colon
+                int pos = address.indexOf(':'); // Look for colon
                 if (pos != -1) {
                     addressStr = address.substring(0, pos);
                     portStr = address.substring(pos + 1);
@@ -291,10 +293,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
 
                 // "localhost" is special
                 if (addressStr.toLowerCase(Locale.ENGLISH).equals("localhost")) {
-//                    addressStr = "127.0.0.1";
-//                    addressStr = "127.0.0.1";
-                    //TODO sort this out
-//                    addressStr = "0.0.0.0";
+                    addressStr = "127.0.0.1";
                 }
 
                 // Create socket address; porting note - original source had additional handling around resolving the hostname
@@ -308,9 +307,9 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                             .setOption(StandardSocketOptions.SO_REUSEADDR, true);
 //                    m_socket.configureBlocking(false);
                     m_socket.bind(new InetSocketAddress(0));
-                    NetLog(" to bind to port " + m_addr.toString());
+                    netLog(" to bind to port " + m_addr.toString());
                 } catch (IOException e) {
-                    NetLog("Unable to create UDP socket");
+                    netLog("Unable to create UDP socket");
                     setError("Unable to create UDP socket");
                     return false;
                 }
@@ -319,7 +318,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                 try {
                     m_maxPacketSize = Math.min(m_socket.socket().getSendBufferSize(), m_socket.socket().getReceiveBufferSize());
                 } catch (SocketException e) {
-                    NetLog("Unable to determine maximum UDP packet size");
+                    netLog("Unable to determine maximum UDP packet size");
                     setError("Unable to determine maximum UDP packet size");
                     try {
 
@@ -330,34 +329,32 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                     m_socket = null;
                     return false;
                 }
-                NetLog("Maximum UDP packet size: " + (m_maxPacketSize));
+                netLog("Maximum UDP packet size: " + (m_maxPacketSize));
 
                 // Note: At this point there in no real concept of connection,
                 // handshaking, keepalives, timeouts etc.
-                // Thus if the address resolved, we treat it as a successful connection.
+                // Thus, if the address resolved, we treat it as a successful connection.
                 m_connected = true;
                 m_connectedEvent.set();
                 m_dataEvent.set();
             }
-            result = Connected();
-            NetLog("exitConnect");
+            result = isConnected();
         }
 
         return result;
     }
 
-    public void Disconnect() {
+    public void disconnect() {
 
-        NetLog("Disconnect UDP connection");
+        netLog("Disconnect UDP connection");
 
         synchronized (serviceLock) {
-            NetLog("enterDisconnect");
             if (m_connected) {
 
                 // If we own the socket, then close it down
                 if (m_ownSocket) {
 
-                    NetLog("Close socket");
+                    netLog("Close socket");
                     try {
 
                         m_socket.close();
@@ -368,21 +365,20 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                 }
 
                 // Unhook from listener.
-                UnhookFromListen();
+                unhookFromListen();
 
                 // Clear packet queue
-                ClearQueue();
+                clearQueue();
 
                 // Disconnect from listen
                 m_connected = false;
                 m_connectedEvent.reset();
                 m_dataEvent.set();
             }
-            NetLog("exitDisconnect");
         }
     }
 
-    public boolean Connected() {
+    public boolean isConnected() {
         boolean result = false;
         synchronized (stateLock) {
             result = m_connected;
@@ -390,7 +386,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         return result;
     }
 
-    public int MaxPacketSize() {
+    public int getMaxPacketSize() {
         int result = 0;
         synchronized (stateLock) {
             result = m_maxPacketSize;
@@ -398,16 +394,15 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         return result;
     }
 
-    public void Send(byte[] data, int size) {
+    public void send(byte[] data, int size) {
         if (!m_connected) {
             return;
         }
 
-        NetLog("Send UDP packet, " + (size) + " bytes");
+        netLog("Send UDP packet, " + (size) + " bytes");
 
-        NetLog("Sending! " + new String(data));
-        assert (data != null);
-        assert (size <= m_maxPacketSize);
+        Assert.assertTrue(data != null);
+        Assert.assertTrue(size <= m_maxPacketSize);
 
 
         try {
@@ -415,45 +410,38 @@ public class NetConLowUDP extends NetConLow implements Runnable {
 //                m_socket.connect(m_addr);
 //            }
 //            try  {
-                DatagramChannel channel = m_socket;
+            DatagramChannel channel = m_socket;
 //                channel.register(selector, SelectionKey.OP_WRITE);
 //
 //                selector.select(SOCKET_TIMEOUT_MILLIS);
 //                Set<SelectionKey> selectedKeys = selector.selectedKeys();
 //                Iterator<SelectionKey> iter = selectedKeys.iterator();
 
-            NetLog("Trying!");
-
-                    // Found one?
+            // Found one?
 //                    channel.isConnected()
 //                    while (iter.hasNext()) {
 //                        SelectionKey key = iter.next();
 //
-//                        NetLog("Maybe!");
 //                        if (!key.isWritable()) {
 //                            iter.remove();
 //                            continue;
 //                        }
 //
-//                        NetLog("Maybe Actually!");
 //
 //                        DatagramChannel client = (DatagramChannel) key.channel();
 ////                        client.configureBlocking(false);
 //                    }
 
-            NetLog(m_addr != null ? (m_addr.getClass().getName() + ":"+ m_addr.toString() ): "m_address is null");
+            netLog(m_addr != null ? (m_addr.getClass().getName() + ":" + m_addr.toString()) : "m_address is null");
             DatagramPacket sendPacket = new DatagramPacket(data, size, m_addr);
-                    m_socket.socket().send(sendPacket);
-                    NetLog("Maybe Actually!");
-//            }
-                        NetLog("Sent!");
+            m_socket.socket().send(sendPacket);
         } catch (IOException e) {
             e.printStackTrace();
             setError("Error sending UDP packet, " + e.getMessage());
         }
     }
 
-    public boolean Client() {
+    public boolean isClient() {
 
         // Client connections own their own socket.
         // Server connections share the socket of the listener.
@@ -467,35 +455,37 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         return result;
     }
 
-    public boolean DataPending() {
+    public boolean isDataPending() {
         boolean result = false;
         synchronized (inQueueLock) {
             if (!m_connected) {
                 return false;
             }
 
-            // Note: Rather than performing the select in here,
-            // we perform the select in ::Refresh, add any received packets to
-            // the incoming queue and then return true if any packets are queued here.
+            // Porting Note: original source had the following comment here,
+            // but the original class did not appear to implement ::Refresh as commented:
+            // > Rather than performing the select in here,
+            // > we perform the select in ::Refresh, add any received packets to
+            // > the incoming queue and then return true if any packets are queued here.
             result = !m_pendingPackets.isEmpty();
         }
         return result;
     }
 
-    public int PendingDataSize() {
+    public int getPendingDataSize() {
         int result;
         synchronized (inQueueLock) {
-            result = DataPending() ? m_pendingPackets.get(0).size : 0;
+            result = isDataPending() ? m_pendingPackets.get(0).size : 0;
         }
         return result;
     }
 
     @Override
-    public int ReceivePart(byte[] data, int offset, int size) {
-        assert (data != null);
+    public int receivePart(byte[] data, int offset, int size) {
+        Assert.assertTrue(data != null);
 
         synchronized (inQueueLock) {
-            if (DataPending()) {
+            if (isDataPending()) {
 
                 // Find topmost queued packet
                 NetSimplePacket packet = m_pendingPackets.get(0);
@@ -518,9 +508,9 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         return size;
     }
 
-    public void DonePendingData() {
+    public void onDonePendingData() {
         synchronized (inQueueLock) {
-            if (DataPending()) {
+            if (isDataPending()) {
 
                 // Pop the topmost queued packet
                 NetSimplePacket packet = m_pendingPackets.get(0);
@@ -532,11 +522,11 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         }
     }
 
-    public ThreadEvent Event() {
+    public ThreadEvent getEvent() {
         return m_dataEvent;
     }
 
-    public String Address() {
+    public String getAddress() {
         // Porting note: original source return an IP address string
         // constructed from m_addr.sin_addr.S_un.S_un_b.s_b1 ... etc
         return m_addr.getHostString();

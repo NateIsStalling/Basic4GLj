@@ -15,25 +15,37 @@ public class NetSettingsStaticL1 {
     public static final int NET_RELIABLEBITBUFSIZE = 4096;
     public static final int NET_UNRELIABLEBITBUFSIZE = 1024;
 
-    /// Prefered minimum packet size.
-    /// Used by packet merging code (when its implemented).
+    /**
+     * Preferred minimum packet size.
+     * Used by packet merging code (when its implemented).
+     */
     long prefMinPacketSize;
 
-    /// Prefered maximum packet size.
-    /// Used to restrict packet sizes.
+    /**
+     * Preferred maximum packet size.
+     * Used to restrict packet sizes.
+     */
     int prefMaxPacketSize;
 
-    /// Size of send buffer in packets. Used to queue reliable packets until
-    /// delivery is confirmed.
+    /**
+     * Size of send buffer in packets. Used to queue reliable packets until
+     * delivery is confirmed.
+     */
     int maxSendBufSize;
 
-    /// Size of receive buffer in packets.
+    /**
+     * Size of receive buffer in packets.
+     */
     int maxRecvBufSize;
 
-    /// Size of reliable bit buffer. (Used to track reliable packets).
+    /**
+     * Size of reliable bit buffer. (Used to track reliable packets).
+     */
     int reliableBitBufSize;
 
-    /// Size of unreliable bit buffer. (Used to track unreliable packets).
+    /**
+     * Size of unreliable bit buffer. (Used to track unreliable packets).
+     */
     int unreliableBitBufSize;
 
     NetSettingsStaticL1 () {
