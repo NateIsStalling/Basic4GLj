@@ -357,17 +357,17 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 		//TODO Load libraries dynamically
 		//TODO Save/Load list of libraries in order they should be added
 		instance.mLibraries.add(new com.basic4gl.library.standard.Standard());
+		instance.mLibraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
+		instance.mLibraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
+		instance.mLibraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
+		instance.mLibraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
+		instance.mLibraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
+		instance.mLibraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
 		instance.mLibraries.add(new com.basic4gl.library.standard.TrigBasicLib());
 		instance.mLibraries.add(new com.basic4gl.library.standard.FileIOBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.TomCompilerBasicLib());
+		instance.mLibraries.add(new com.basic4gl.library.standard.NetBasicLib());
 		instance.mLibraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.net.NetBasicLib());
+		instance.mLibraries.add(new com.basic4gl.library.standard.TomCompilerBasicLib());
 
 		// Register library functions
 		for (Library lib : instance.mLibraries) {

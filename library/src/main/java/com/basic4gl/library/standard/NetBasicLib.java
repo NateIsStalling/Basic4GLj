@@ -1,4 +1,4 @@
-package com.basic4gl.library.net;
+package com.basic4gl.library.standard;
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
@@ -8,6 +8,9 @@ import com.basic4gl.lib.util.FileStreamResourceStore;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
+import com.basic4gl.library.standard.net.NetConnectionStore;
+import com.basic4gl.library.standard.net.NetMessageStream;
+import com.basic4gl.library.standard.net.NetServerStore;
 import com.basic4gl.library.netlib4games.*;
 import com.basic4gl.library.netlib4games.udp.NetConLowUDP;
 import com.basic4gl.library.netlib4games.udp.NetListenLowUDP;

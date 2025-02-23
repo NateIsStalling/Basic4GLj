@@ -103,17 +103,17 @@ public class BasicEditor implements MainEditor,
 
         //TODO Load libraries dynamically
         libraries.add(new com.basic4gl.library.standard.Standard());
+        libraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
+        libraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
         libraries.add(new com.basic4gl.library.standard.TrigBasicLib());
         libraries.add(new com.basic4gl.library.standard.FileIOBasicLib());
-        libraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
-        libraries.add(new com.basic4gl.library.desktopgl.TomCompilerBasicLib());
+        libraries.add(new com.basic4gl.library.standard.NetBasicLib());
         libraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
-        libraries.add(new com.basic4gl.library.net.NetBasicLib());
+        libraries.add(new com.basic4gl.library.standard.TomCompilerBasicLib());
 
         libraries.add(GLTextGridWindow.getInstance(compiler));
         libraries.add(BuilderDesktopGL.getInstance(compiler));

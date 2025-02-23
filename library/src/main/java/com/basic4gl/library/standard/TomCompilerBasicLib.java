@@ -1,7 +1,7 @@
 // Created 17-Apr-06: Thomas Mulgrew (tmulgrew@slingshot.co.nz)
 // Copyright (C) Thomas Mulgrew
 
-package com.basic4gl.library.desktopgl;
+package com.basic4gl.library.standard;
 
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
@@ -673,15 +673,4 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             comp.setSymbolPrefix(oldPrefix);
         }
     }
-
-    /**
-     * Initialisation
-     */
-    void InitTomCompilerBasicLib(
-            TomBasicCompiler comp,
-            VMHostApplication host,
-            FileOpener files) {
-
-    }
-
 }

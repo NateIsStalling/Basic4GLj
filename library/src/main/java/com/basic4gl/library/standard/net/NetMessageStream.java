@@ -1,4 +1,4 @@
-package com.basic4gl.library.net;
+package com.basic4gl.library.standard.net;
 
 import com.basic4gl.lib.util.FileStream;
 import com.basic4gl.library.netlib4games.NetConL2;
