@@ -1,13 +1,14 @@
-	Basic4GLj 0.5.1 alpha
-	Build Date: January 2024
+	Basic4GLj 0.6.0 alpha
+	Build Date: February 2025
 ================================================
-	Basic4GLj	by Nathaniel Nielsen	(c) 2024
+	Basic4GLj	by Nathaniel Nielsen	(c) 2025
 	Basic4GL 	by Tom Mulgrew			(c) 2010
 	License:	New BSD; see LICENSES folder
 	Requires:	Java 17
 	
 	Site:		https://github.com/NateIsStalling/Basic4GLj
 	Twitter:	@NateIsStalling
+	Bluesky:    @nateisstalling.bsky.social
 
 ================================================
 	Usage Notes
@@ -27,6 +28,9 @@
 ================================================
 	Change Log
 ================================================
+0.6.0   - Implemented net function library
+        - Added "Open Recent" to File menu and "Recent Files" to default tab
+
 0.5.1   - Fixed issues loading textures with TexStripFrames and LoadTexStrip
 
 0.5.0   - Implemented sound library
