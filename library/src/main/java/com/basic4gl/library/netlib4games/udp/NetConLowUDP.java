@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.util.*;
 
 import static com.basic4gl.library.netlib4games.NetLogger.netLog;
@@ -224,35 +226,51 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                         }
 
                         // Read in packet
-                        try {
-                            int size = Math.min(m_socket.socket().getSendBufferSize(), m_socket.socket().getReceiveBufferSize());
+                        try (Selector selector = Selector.open()) {
+                            DatagramChannel channel = m_socket;
+                            channel.register(selector, SelectionKey.OP_READ);
 
-//                            ByteBuffer buffer = ByteBuffer.wrap(m_buffer);
-//                            DatagramPacket receivePacket = new DatagramPacket(buffer.array(), size);
+                            selector.select(SOCKET_TIMEOUT_MILLIS);
+                            Set<SelectionKey> selectedKeys = selector.selectedKeys();
+                            Iterator<SelectionKey> iter = selectedKeys.iterator();
 
-                            socketBuffer.clear();
-                            m_socket.socket().setSoTimeout(SOCKET_TIMEOUT_MILLIS);
-//                            m_socket.receive(receivePacket);
-                            InetSocketAddress remoteAddress = (InetSocketAddress) m_socket.receive(socketBuffer);
-                            socketBuffer.flip();
-                            byte[] bytes = new byte[socketBuffer.remaining()];
-                            socketBuffer.get(bytes);
-                            size = bytes.length;
+                            // Found one?
+                            while (iter.hasNext()) {
+                                SelectionKey key = iter.next();
 
-                            netLog("Read and queue UDP packet, " + size + " bytes");
+                                if (!key.isReadable()) {
+                                    iter.remove();
+                                    continue;
+                                }
 
-                            // Add to end of queue
-                            synchronized (inQueueLock) {
-                                m_pendingPackets.add(new NetSimplePacket(bytes, size));
-                                m_dataEvent.set();
-                            }
+
+                                DatagramChannel client = (DatagramChannel) key.channel();
+                                    int size = Math.min(m_socket.socket().getSendBufferSize(), m_socket.socket().getReceiveBufferSize());
+
+                                    socketBuffer.clear();
+                                    InetSocketAddress remoteAddress = (InetSocketAddress) client.receive(socketBuffer);
+                                    socketBuffer.flip();
+                                    byte[] bytes = new byte[socketBuffer.remaining()];
+                                    socketBuffer.get(bytes);
+                                    size = bytes.length;
+
+                                    netLog("Read and queue UDP packet, " + size + " bytes");
+
+                                    // Add to end of queue
+                                    synchronized (inQueueLock) {
+                                        m_pendingPackets.add(new NetSimplePacket(bytes, size));
+                                        m_dataEvent.set();
+                                    }
+                                }
+
+
                         } catch (SocketException ex) {
                             netLog("Error reading UDP packet: " + ex.getMessage());
                         }
                     }
 
                 } catch (Exception ex) {
-                    netLog("Error reading UDP channel: " + ex.getMessage());
+                    netLog("Error reading UDP channel: "  + ex.getMessage());
                 }
 
             }
@@ -305,7 +323,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                     m_socket = DatagramChannel
                             .open(StandardProtocolFamily.INET)
                             .setOption(StandardSocketOptions.SO_REUSEADDR, true);
-//                    m_socket.configureBlocking(false);
+                    m_socket.configureBlocking(false);
                     m_socket.bind(new InetSocketAddress(0));
                     netLog(" to bind to port " + m_addr.toString());
                 } catch (IOException e) {
@@ -349,8 +367,8 @@ public class NetConLowUDP extends NetConLow implements Runnable {
         netLog("Disconnect UDP connection");
 
         synchronized (serviceLock) {
-            if (m_connected) {
 
+            if (m_connected) {
                 // If we own the socket, then close it down
                 if (m_ownSocket) {
 
@@ -433,8 +451,8 @@ public class NetConLowUDP extends NetConLow implements Runnable {
 //                    }
 
             netLog(m_addr != null ? (m_addr.getClass().getName() + ":" + m_addr.toString()) : "m_address is null");
-            DatagramPacket sendPacket = new DatagramPacket(data, size, m_addr);
-            m_socket.socket().send(sendPacket);
+            ByteBuffer buffer = ByteBuffer.wrap(data, 0, size);
+            m_socket.send(buffer, m_addr);
         } catch (IOException e) {
             e.printStackTrace();
             setError("Error sending UDP packet, " + e.getMessage());

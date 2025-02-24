@@ -21,12 +21,13 @@ public class NetOutPacketL1 {
     NetSimplePacket packet;
 
     NetOutPacketL1(long due, NetSimplePacket packet) {
+        Assert.assertTrue(packet != null);
+        Assert.assertTrue(packet.size >= NetPacketHeaderL1.SIZE);
+
         this.due = due;
         this.packet = packet;
-        Assert.assertTrue(this.packet != null);
 
         // Extract packet id
-        Assert.assertTrue(this.packet.size >= NetPacketHeaderL1.SIZE);
         NetPacketHeaderL1 header = new NetPacketHeaderL1(this.packet.data);
         byte flags = header.getFlags();
         id = header.getId();

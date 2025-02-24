@@ -3,8 +3,6 @@ package com.basic4gl.library.netlib4games.internal;
 import static com.basic4gl.library.netlib4games.internal.ThreadUtils.INFINITE;
 
 public class Thread {
-    private final Object lock = new Object();
-
     private String name;
     private java.lang.Thread m_thread;
     private final ThreadEvent m_terminateEvent;
@@ -36,7 +34,7 @@ public class Thread {
     }
 
     public boolean isRunning() {
-        synchronized (lock) {
+        synchronized (m_thread) {
             return m_thread != null;
         }
     }
@@ -84,14 +82,14 @@ public class Thread {
      */
     public boolean waitFor(long timeout) {
         if (m_thread != null) {
-            synchronized (lock) {
+            synchronized (m_thread) {
                 boolean signalled = false;
                 try {
-                    m_thread.wait(timeout);
+                    m_thread.join(timeout);
+                    m_thread = null;
                 } catch (InterruptedException e) {
                     return false;
                 }
-                m_thread = null;
             }
         }
         return true;
@@ -102,8 +100,10 @@ public class Thread {
     }
 
     public void raisePriority() {
-        Assert.assertTrue(m_thread != null);
-        // set thread priority above normal
-        m_thread.setPriority(java.lang.Thread.NORM_PRIORITY + 1);
+        synchronized (m_thread) {
+            Assert.assertTrue(m_thread != null);
+            // set thread priority above normal
+            m_thread.setPriority(java.lang.Thread.NORM_PRIORITY + 1);
+        }
     }
 }

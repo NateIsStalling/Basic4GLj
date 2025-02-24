@@ -10,53 +10,61 @@ import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
  * Could be replaced by a proper bit array as an optimisation.
  */
 public class NetRevolvingBitBuffer {
-    private int	m_size;
+    private int m_size;
     private boolean[] m_data;
 
     // Position pointers
-    private int	m_hi;
+    private int m_hi;
     private int m_hiRevolving;
     private int m_low;
     private int m_lowRevolving;
 
-    public NetRevolvingBitBuffer (int size, int initialTop) {
-        m_size = (size);
-                m_hi= (initialTop);
-                m_low= (initialTop);
-                m_hiRevolving= (0);
-                m_lowRevolving =(0);
+    public NetRevolvingBitBuffer(int size, int initialTop) {
+        m_size = size;
+        m_hi = initialTop;
+        m_low = initialTop;
+        m_hiRevolving = 0;
+        m_lowRevolving = 0;
 
-            Assert.assertTrue(m_size > 0);
-            m_data = new boolean [m_size];
+        Assert.assertTrue(m_size > 0);
+        m_data = new boolean[m_size];
     }
+
     public void dispose() {
 
     }
 
-    int getHiPosition()	{ return m_hi; }
-    int getLowPosition()	{ return m_low; }
+    int getHiPosition() {
+        return m_hi;
+    }
+
+    int getLowPosition() {
+        return m_low;
+    }
 
     boolean isInRange(long index) {
         return (index >= m_low && index < m_hi);
     }
+
     int getRevolvingIndex(int index) {
         Assert.assertTrue(isInRange(index));
         return (m_lowRevolving + index - m_low) % m_size;
     }
+
     boolean getValueAt(int index) {
-        return m_data [getRevolvingIndex(index)];
+        return m_data[getRevolvingIndex(index)];
     }
+
     void set(int index, boolean value) {
-        m_data [getRevolvingIndex(index)] = value;
+        m_data[getRevolvingIndex(index)] = value;
     }
 
     /**
-     *
      * @return true if falses removed
      */
     boolean setTop(int index, boolean initialValue) {
-        boolean truesRemoved	= false;
-        boolean falsesRemoved	= false;
+        boolean truesRemoved = false;
+        boolean falsesRemoved = false;
 
         // Remove low array elements
         if (index > m_size) {
@@ -64,10 +72,10 @@ public class NetRevolvingBitBuffer {
             while (m_low < lowIndex) {
 
                 // Calculate value removed.
-                boolean value = m_low < m_hi ? m_data [m_lowRevolving] : initialValue;
+                boolean value = m_low < m_hi ? m_data[m_lowRevolving] : initialValue;
 
                 // Update flags accordingly
-                truesRemoved  = truesRemoved  ||  value;
+                truesRemoved = truesRemoved || value;
                 falsesRemoved = falsesRemoved || !value;
 
                 // Update low poiners
@@ -83,7 +91,7 @@ public class NetRevolvingBitBuffer {
 
             // Initialise data
             if (m_hi >= m_low) {
-                m_data [m_hiRevolving] = initialValue;
+                m_data[m_hiRevolving] = initialValue;
             }
 
             // Update high pointers

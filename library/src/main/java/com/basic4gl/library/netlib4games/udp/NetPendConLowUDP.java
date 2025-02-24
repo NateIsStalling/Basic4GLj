@@ -30,7 +30,7 @@ public class NetPendConLowUDP {
             InetSocketAddress addr,
             String requestString,
             NetSimplePacket packet) {
-        Assert.assertTrue(this.packet != null);
+        Assert.assertTrue(packet != null);
         this.addr = addr;
         this.requestString = requestString;
         this.packet = packet;

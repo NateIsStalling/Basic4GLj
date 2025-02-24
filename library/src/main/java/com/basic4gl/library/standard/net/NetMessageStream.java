@@ -16,52 +16,55 @@ import static com.basic4gl.library.netlib4games.NetLayer2.NETL2_MAXCHANNELS;
  */
 public class NetMessageStream extends FileStream {
     private NetConnectionStore parent;
-    public int connectionHandle;   // Note: We use connection handles rather than
-    // references, so that we can fail gracefully
-    // if the connection is deleted before we
-    // have finalised the message.
+
+    /**
+     * Note: We use connection handles rather than
+     * references, so that we can fail gracefully
+     * if the connection is deleted before we
+     * have finalised the message.
+     */
+    public int connectionHandle;
     public int channel;
-    public boolean reliable, smoothed;
+    public boolean reliable;
+    public boolean smoothed;
 
     public NetMessageStream(
             NetConnectionStore parent,
-            int _connectionHandle,
-            int _channel,
-            boolean _reliable,
-            boolean _smoothed,
-            InputStream _in) {
-
-        super(_in);
+            int connectionHandle,
+            int channel,
+            boolean reliable,
+            boolean smoothed,
+            InputStream in) {
+        super(in);
         if (parent == null) {
             throw new IllegalArgumentException("NetConnectionStore required");
         }
         this.parent = parent;
-        this.connectionHandle = _connectionHandle;
-        this.channel = _channel;
-        this.reliable = _reliable;
-        this.smoothed = _smoothed;
+        this.connectionHandle = connectionHandle;
+        this.channel = channel;
+        this.reliable = reliable;
+        this.smoothed = smoothed;
     }
 
     public NetMessageStream(
             NetConnectionStore parent,
-            int _connectionHandle,
-            int _channel,
-            boolean _reliable,
-            boolean _smoothed,
-            OutputStream _out) {
+            int connectionHandle,
+            int channel,
+            boolean reliable,
+            boolean smoothed,
+            OutputStream out) {
 
-        super(_out);
+        super(out);
         if (parent == null) {
             throw new IllegalArgumentException("NetConnectionStore required");
         }
         this.parent = parent;
-        this.connectionHandle = _connectionHandle;
-        this.channel = _channel;
-        this.reliable = _reliable;
-        this.smoothed = _smoothed;
+        this.connectionHandle = connectionHandle;
+        this.channel = channel;
+        this.reliable = reliable;
+        this.smoothed = smoothed;
     }
 
-    //virtual ~NetMessageStream ();
 
     @Override
     public void close() {
@@ -73,21 +76,14 @@ public class NetMessageStream extends FileStream {
 
             String message = stream.toString(StandardCharsets.UTF_8);
 
-            System.out.println("sending.." + message);
             if (channel >= 0 && channel < NETL2_MAXCHANNELS && message != null) {
                 connection.send(
                         stream.toByteArray(),
                         message.length(),
-                    channel,
-                    reliable,
-                    smoothed);
-            }else {
-
-                System.out.println("nah.." + channel + message );
+                        channel,
+                        reliable,
+                        smoothed);
             }
-        } else {
-
-            System.out.println("nah.." );
         }
 
         parent = null;
