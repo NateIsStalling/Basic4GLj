@@ -129,7 +129,7 @@ jobs:
         name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}-arm64.dmg
+          path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg
           name: macos-arm64-installer
           retention-days: 1
 
@@ -159,7 +159,7 @@ jobs:
         name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}-intel.dmg
+          path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg
           name: macos-intel-installer
           retention-days: 1
 
@@ -199,22 +199,33 @@ jobs:
         with:
           name: macos-arm64-installer
 
+      - id: rename-downloaded-macos-arm64-files
+        name: Rename downloaded macOS (arm64) files
+        run: |
+          # rename artifacts to match release tag for pre-release builds < 1.0 for now;
+          # macos builds require versions start with 1.X, but alpha builds are currently tagged as 0.X
+          mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}-arm64.dmg
+
       - id: download-macos-intel-installer
         name: Download Mac installer (Intel)
         uses: actions/download-artifact@v4
         with:
           name: macos-intel-installer
 
+      - id: rename-downloaded-macos-intel-files
+        name: Rename downloaded macOS (Intel) files
+        run: |
+          # rename artifacts to match release tag for pre-release builds < 1.0 for now;
+          # macos builds require versions start with 1.X, but alpha builds are currently tagged as 0.X
+          mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}-intel.dmg
+
       - id: rename-downloaded-files
         name: Rename downloaded files
         run: |
           ls -alR
-          # rename artifacts to match release tag for pre-release builds < 1.0 for now;
-          # macos builds require versions start with 1.X, but alpha builds are currently tagged as 0.X
+          # rename artifacts to match release tag for pre-release builds < 1.0 for now - for consistency with macOS builds
           mv app.zip basic4glj_${{ vars.BUILD_RELEASE_TAG }}.zip
           mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.msi Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}.msi
-          mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}-arm64.dmg Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}-arm64.dmg
-          mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}-intel.dmg Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}-intel.dmg
           mv basic4glj_${{ vars.APP_RELEASE_VERSION }}-1_amd64.deb basic4glj_${{ vars.BUILD_RELEASE_TAG }}.deb
           ls -alR
 
