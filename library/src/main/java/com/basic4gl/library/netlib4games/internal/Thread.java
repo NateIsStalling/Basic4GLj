@@ -3,7 +3,7 @@ package com.basic4gl.library.netlib4games.internal;
 import static com.basic4gl.library.netlib4games.internal.ThreadUtils.INFINITE;
 
 public class Thread {
-    private String name;
+    private final String name;
     private java.lang.Thread m_thread;
     private final ThreadEvent m_terminateEvent;
 

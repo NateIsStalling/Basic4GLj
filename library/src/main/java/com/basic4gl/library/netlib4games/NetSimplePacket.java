@@ -11,7 +11,7 @@ public class NetSimplePacket {
     public byte[] data;
     public int size;
 
-    public NetSimplePacket (int size) {
+    public NetSimplePacket(int size) {
         this.size = size;
         if (this.size > 0) {
             data = new byte[this.size];
@@ -19,20 +19,20 @@ public class NetSimplePacket {
             data = null;
         }
     }
-    public NetSimplePacket (byte[] src, int size) {
-        Assert.assertTrue(src == null && size == 0 || src != null);
+
+    public NetSimplePacket(byte[] src, int size) {
+        Assert.assertTrue(src != null || size == 0);
         this.size = size;
         if (this.size > 0) {
-            data = new byte [this.size];
+            data = new byte[this.size];
             System.arraycopy(src, 0, data, 0, this.size);
-        }
-        else {
+        } else {
             data = null;
         }
     }
 
     @Deprecated()
-	public void dispose () {
+    public void dispose() {
         if (data != null) {
             data = null;
         }

@@ -2,16 +2,14 @@ package com.basic4gl.library.netlib4games;
 
 import com.basic4gl.library.netlib4games.internal.Assert;
 
-import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
-
 /**
  * Used to track which packets have already been received by their ID.
  * Current implementation as an array of booleans.
  * Could be replaced by a proper bit array as an optimisation.
  */
 public class NetRevolvingBitBuffer {
-    private int m_size;
-    private boolean[] m_data;
+    private final int m_size;
+    private final boolean[] m_data;
 
     // Position pointers
     private int m_hi;

@@ -12,7 +12,7 @@ public class NetPacketHeaderL1 {
 
     /**
      * ID size in bytes
-     *
+     * <p>
      * NetLib4Games specifies unsigned long (32-bit) value;
      * Java port only supports signed, positive values for array index usage.
      */
@@ -29,6 +29,7 @@ public class NetPacketHeaderL1 {
         buffer = ByteBuffer.wrap(new byte[SIZE])
                 .order(BYTE_ORDER);
     }
+
     public NetPacketHeaderL1(byte[] buffer) {
         if (buffer.length < SIZE) {
             throw new IllegalArgumentException("Buffer size too small");

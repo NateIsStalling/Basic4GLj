@@ -1,13 +1,17 @@
 package com.basic4gl.library.netlib4games.udp;
 
-import com.basic4gl.library.netlib4games.*;
+import com.basic4gl.library.netlib4games.NetConLow;
+import com.basic4gl.library.netlib4games.NetSimplePacket;
 import com.basic4gl.library.netlib4games.internal.Assert;
 import com.basic4gl.library.netlib4games.internal.Thread;
 import com.basic4gl.library.netlib4games.internal.ThreadEvent;
 import com.basic4gl.library.netlib4games.internal.ThreadUtils;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
+import java.net.StandardProtocolFamily;
+import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
@@ -15,7 +19,6 @@ import java.nio.channels.Selector;
 import java.util.*;
 
 import static com.basic4gl.library.netlib4games.NetLogger.netLog;
-import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
 
 /**
  * UDP/IP (ie internet) implementation of NetConLow
@@ -40,7 +43,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
     protected DatagramChannel m_socket;
     protected InetSocketAddress m_addr;
     protected boolean m_connected;
-    private boolean m_ownSocket;
+    private final boolean m_ownSocket;
     private NetListenLowUDP m_listen;
     private int m_maxPacketSize;
     private final List<NetSimplePacket> m_pendingPackets = new ArrayList<>();
@@ -245,23 +248,23 @@ public class NetConLowUDP extends NetConLow implements Runnable {
 
 
                                 DatagramChannel client = (DatagramChannel) key.channel();
-                                    int size = Math.min(m_socket.socket().getSendBufferSize(), m_socket.socket().getReceiveBufferSize());
+                                int size = Math.min(m_socket.socket().getSendBufferSize(), m_socket.socket().getReceiveBufferSize());
 
-                                    socketBuffer.clear();
-                                    InetSocketAddress remoteAddress = (InetSocketAddress) client.receive(socketBuffer);
-                                    socketBuffer.flip();
-                                    byte[] bytes = new byte[socketBuffer.remaining()];
-                                    socketBuffer.get(bytes);
-                                    size = bytes.length;
+                                socketBuffer.clear();
+                                InetSocketAddress remoteAddress = (InetSocketAddress) client.receive(socketBuffer);
+                                socketBuffer.flip();
+                                byte[] bytes = new byte[socketBuffer.remaining()];
+                                socketBuffer.get(bytes);
+                                size = bytes.length;
 
-                                    netLog("Read and queue UDP packet, " + size + " bytes");
+                                netLog("Read and queue UDP packet, " + size + " bytes");
 
-                                    // Add to end of queue
-                                    synchronized (inQueueLock) {
-                                        m_pendingPackets.add(new NetSimplePacket(bytes, size));
-                                        m_dataEvent.set();
-                                    }
+                                // Add to end of queue
+                                synchronized (inQueueLock) {
+                                    m_pendingPackets.add(new NetSimplePacket(bytes, size));
+                                    m_dataEvent.set();
                                 }
+                            }
 
 
                         } catch (SocketException ex) {
@@ -270,7 +273,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
                     }
 
                 } catch (Exception ex) {
-                    netLog("Error reading UDP channel: "  + ex.getMessage());
+                    netLog("Error reading UDP channel: " + ex.getMessage());
                 }
 
             }
@@ -424,33 +427,7 @@ public class NetConLowUDP extends NetConLow implements Runnable {
 
 
         try {
-//            if (!m_socket.isConnected()) {
-//                m_socket.connect(m_addr);
-//            }
-//            try  {
-            DatagramChannel channel = m_socket;
-//                channel.register(selector, SelectionKey.OP_WRITE);
-//
-//                selector.select(SOCKET_TIMEOUT_MILLIS);
-//                Set<SelectionKey> selectedKeys = selector.selectedKeys();
-//                Iterator<SelectionKey> iter = selectedKeys.iterator();
-
-            // Found one?
-//                    channel.isConnected()
-//                    while (iter.hasNext()) {
-//                        SelectionKey key = iter.next();
-//
-//                        if (!key.isWritable()) {
-//                            iter.remove();
-//                            continue;
-//                        }
-//
-//
-//                        DatagramChannel client = (DatagramChannel) key.channel();
-////                        client.configureBlocking(false);
-//                    }
-
-            netLog(m_addr != null ? (m_addr.getClass().getName() + ":" + m_addr.toString()) : "m_address is null");
+            netLog(m_addr != null ? (m_addr.getClass().getName() + ":" + m_addr) : "m_address is null");
             ByteBuffer buffer = ByteBuffer.wrap(data, 0, size);
             m_socket.send(buffer, m_addr);
         } catch (IOException e) {

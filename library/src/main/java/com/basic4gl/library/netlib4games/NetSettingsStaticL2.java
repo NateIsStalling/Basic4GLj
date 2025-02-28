@@ -15,22 +15,22 @@ public class NetSettingsStaticL2 {
      * then we have a network error.
      * Due to the nature of unreliable packets, we expect broken unreliable
      * packets to persist in the buffer until this mechanism deletes them.
-    */
+     */
     long maxBufferPackets;
 
     /**
      * Layer one settings. (Every NetConL2 contains an internal NetConL1.
      * these are the settings specific to that layer.)
-    */
+     */
     NetSettingsStaticL1 l1Settings;
 
-    NetSettingsStaticL2 () {
+    NetSettingsStaticL2() {
         // Use default settings
-        maxBufferPackets	= NET_L2BUFFERPACKETS;
+        maxBufferPackets = NET_L2BUFFERPACKETS;
     }
 
-    NetSettingsStaticL2 (NetSettingsStaticL2 s) {
-        maxBufferPackets	= s.maxBufferPackets;
-        l1Settings			= s.l1Settings;
+    NetSettingsStaticL2(NetSettingsStaticL2 s) {
+        maxBufferPackets = s.maxBufferPackets;
+        l1Settings = s.l1Settings;
     }
 }

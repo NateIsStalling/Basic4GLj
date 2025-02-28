@@ -3,8 +3,6 @@ package com.basic4gl.library.netlib4games;
 
 import com.basic4gl.library.netlib4games.internal.Assert;
 
-import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
-
 /**
  * Layer 2 network message
  */
@@ -45,10 +43,10 @@ public class NetMessageL2 {
         // Allocate packet space
         if (this.packetCount > 0) {
             packets = new NetSimplePacket[this.packetCount];
-            for (int i = 0; i < this.packetCount; i++)
-                packets [i] = null;
-        }
-        else {
+            for (int i = 0; i < this.packetCount; i++) {
+                packets[i] = null;
+            }
+        } else {
             packets = null;
         }
     }
@@ -127,4 +125,4 @@ public class NetMessageL2 {
         }
         return size;
     }
-};
+}

@@ -276,7 +276,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
             byte flags = header.getFlags();
             boolean reliable = (flags & NETL1_RELIABLE) != 0;
             boolean resent = (flags & NETL1_RESENT) != 0;
-            NetL1Type type = (NetL1Type) NetLayer1.getNetLayerType(flags);
+            NetL1Type type = NetLayer1.getNetLayerType(flags);
             int id = header.getId();
 
             // Process packet
@@ -482,7 +482,6 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
                     // Process incoming packets
                     synchronized (inQueueLock) {
                         while (processRecvPacket(tickCount)) {
-                            ;
                         }
                     }
 
@@ -730,7 +729,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     public boolean isPendingResent() {
         boolean result;
         synchronized (inQueueLock) {
-            result = isDataPending() ? m_recvBuffer.get(0).resent : false;
+            result = isDataPending() && m_recvBuffer.get(0).resent;
         }
         return result;
     }

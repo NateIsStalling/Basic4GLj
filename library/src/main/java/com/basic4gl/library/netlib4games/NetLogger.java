@@ -6,6 +6,7 @@ public class NetLogger {
     public interface NetLogHandler {
         void netLog(String text);
     }
+
     public static class DebugLogger implements NetLogHandler {
         @Override
         public void netLog(String text) {
@@ -18,15 +19,16 @@ public class NetLogger {
     private NetLogger() {
         initDebugNetLogger();
     }
+
     public static void netLog(String text) {
         handler.netLog(text);
     }
 
-   public static void setNetLogger(NetLogHandler handler) {
+    public static void setNetLogger(NetLogHandler handler) {
         NetLogger.handler = handler;
-   }
+    }
 
-   public static void initDebugNetLogger() {
-       NetLogger.handler = new DebugLogger();
-   }
+    public static void initDebugNetLogger() {
+        NetLogger.handler = new DebugLogger();
+    }
 }

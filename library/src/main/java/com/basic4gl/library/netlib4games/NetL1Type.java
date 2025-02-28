@@ -30,6 +30,7 @@ public enum NetL1Type {
     l1Disconnect(5);
 
     private final int type;
+
     NetL1Type(int type) {
         this.type = type;
     }
@@ -39,7 +40,7 @@ public enum NetL1Type {
     }
 
     public static NetL1Type fromInteger(int x) {
-        switch(x) {
+        switch (x) {
             case 0:
                 return l1User;
             case 1:

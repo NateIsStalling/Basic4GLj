@@ -48,23 +48,23 @@ public class NetSettingsStaticL1 {
      */
     int unreliableBitBufSize;
 
-    NetSettingsStaticL1 () {
+    NetSettingsStaticL1() {
 
         // Use default settings
-        prefMinPacketSize		= NET_PREFMINPACKETSIZE;
-        prefMaxPacketSize		= NET_PREFMAXPACKETSIZE;
-        maxSendBufSize			= NET_MAXSENDBUFSIZE;
-        maxRecvBufSize			= NET_MAXRECVBUFSIZE;
-        reliableBitBufSize		= NET_RELIABLEBITBUFSIZE;
-        unreliableBitBufSize	= NET_UNRELIABLEBITBUFSIZE;
+        prefMinPacketSize = NET_PREFMINPACKETSIZE;
+        prefMaxPacketSize = NET_PREFMAXPACKETSIZE;
+        maxSendBufSize = NET_MAXSENDBUFSIZE;
+        maxRecvBufSize = NET_MAXRECVBUFSIZE;
+        reliableBitBufSize = NET_RELIABLEBITBUFSIZE;
+        unreliableBitBufSize = NET_UNRELIABLEBITBUFSIZE;
     }
 
-    NetSettingsStaticL1 (NetSettingsStaticL1 s) {
-        prefMinPacketSize		= s.prefMinPacketSize;
-        prefMaxPacketSize		= s.prefMaxPacketSize;
-        maxSendBufSize			= s.maxSendBufSize;
-        maxRecvBufSize			= s.maxRecvBufSize;
-        reliableBitBufSize		= s.reliableBitBufSize;
-        unreliableBitBufSize	= s.unreliableBitBufSize;
+    NetSettingsStaticL1(NetSettingsStaticL1 s) {
+        prefMinPacketSize = s.prefMinPacketSize;
+        prefMaxPacketSize = s.prefMaxPacketSize;
+        maxSendBufSize = s.maxSendBufSize;
+        maxRecvBufSize = s.maxRecvBufSize;
+        reliableBitBufSize = s.reliableBitBufSize;
+        unreliableBitBufSize = s.unreliableBitBufSize;
     }
 }

@@ -16,7 +16,7 @@ public class NetConReqValidatorL1 extends NetConReqValidator {
             NetPacketHeaderL1 header = new NetPacketHeaderL1(packet.data);
 
             // Check type
-            if (NetL1Type.fromInteger (header.getFlags()) == l1Connect) {
+            if (NetL1Type.fromInteger(header.getFlags()) == l1Connect) {
 
                 // Extract request string
                 byte[] buf = new byte[MAX_CON_REQ_SIZE];
@@ -27,7 +27,7 @@ public class NetConReqValidatorL1 extends NetConReqValidator {
                 if (size > 0) {
                     System.arraycopy(packet.data, NetPacketHeaderL1.SIZE, buf, 0, size);
                 }
-                buf [size] = 0;
+                buf[size] = 0;
                 requestStringBuffer[0] = String.valueOf(buf);
 
                 return true;
@@ -35,5 +35,5 @@ public class NetConReqValidatorL1 extends NetConReqValidator {
         }
 
         return false;
-    };
+    }
 }

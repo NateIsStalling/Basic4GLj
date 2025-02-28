@@ -8,7 +8,7 @@ import static com.basic4gl.library.netlib4games.internal.ThreadUtils.INFINITE;
 
 public class ThreadLock {
     private int m_lockCount;
-    private ReentrantLock m_lock;
+    private final ReentrantLock m_lock;
 
     public ThreadLock() {
         m_lockCount = (0);

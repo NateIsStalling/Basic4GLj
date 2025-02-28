@@ -2,8 +2,6 @@ package com.basic4gl.library.netlib4games;
 
 import com.basic4gl.library.netlib4games.internal.Assert;
 
-import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
-
 /**
  * Sorts and stores timing differences on recent messages.
  * The timing difference =

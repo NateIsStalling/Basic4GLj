@@ -28,9 +28,9 @@ public class NetSettingsL1 {
     public static final int NET_DUP = 1;
 
     /**
-     *  Handshake timeout (ms).
-     *  Allows a different (generally shorter) timeout period to be specified
-     *  during the handshake sequence
+     * Handshake timeout (ms).
+     * Allows a different (generally shorter) timeout period to be specified
+     * during the handshake sequence
      */
     public long handshakeTimeout;
 
@@ -56,21 +56,21 @@ public class NetSettingsL1 {
      */
     public long dup;
 
-    public NetSettingsL1 () {
+    public NetSettingsL1() {
 
         // Use default settings
-        handshakeTimeout	= NET_HANDSHAKETIMEOUT_MILLIS;
-        timeout				= NET_TIMEOUT_MILLIS;
-        keepAlive			= NET_KEEPALIVE_MILLIS;
-        reliableResend		= NET_RELIABLERESEND_MILLIS;
-        dup					= NET_DUP;
+        handshakeTimeout = NET_HANDSHAKETIMEOUT_MILLIS;
+        timeout = NET_TIMEOUT_MILLIS;
+        keepAlive = NET_KEEPALIVE_MILLIS;
+        reliableResend = NET_RELIABLERESEND_MILLIS;
+        dup = NET_DUP;
     }
 
-    public NetSettingsL1 (final NetSettingsL1 s) {
-        handshakeTimeout	= s.handshakeTimeout;
-        timeout				= s.timeout;
-        keepAlive			= s.keepAlive;
-        reliableResend		= s.reliableResend;
-        dup					= s.dup;
+    public NetSettingsL1(final NetSettingsL1 s) {
+        handshakeTimeout = s.handshakeTimeout;
+        timeout = s.timeout;
+        keepAlive = s.keepAlive;
+        reliableResend = s.reliableResend;
+        dup = s.dup;
     }
 }

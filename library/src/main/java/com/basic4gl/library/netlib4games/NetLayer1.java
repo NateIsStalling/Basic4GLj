@@ -1,19 +1,16 @@
 package com.basic4gl.library.netlib4games;
 
-/**	NetLayer1.h
-
-	Created 7-Jan-2004: Thomas Mulgrew (tmulgrew@slingshot.co.nz)
-
-	NetLib4Games layer 1.
-
-	Introduces basic connection concepts, plus reliable packets. Specifically:
-		* Handshaking
-		* Clean disconnects
-		* Keep alives
-		* Timeouts
-		* Packet confirmation
-		* General timing
-*/
+/**
+ * NetLib4Games layer 1.
+ * Introduces basic connection concepts, plus reliable packets.
+ * Specifically:
+ * - Handshaking
+ * - Clean disconnects
+ * - Keep alives
+ * - Timeouts
+ * - Packet confirmation
+ * - General timing
+ */
 public class NetLayer1 {
 
     //	Constants/flags/bitmasks
@@ -40,7 +37,7 @@ public class NetLayer1 {
         byte flags = header.getFlags();
         boolean reliable = (flags & NETL1_RELIABLE) != 0;
         boolean resent = (flags & NETL1_RESENT) != 0;
-        NetL1Type type = (NetL1Type) getNetLayerType(flags);
+        NetL1Type type = getNetLayerType(flags);
         int id = header.getId();
         String typeStr;
         switch (type) {
@@ -65,7 +62,6 @@ public class NetLayer1 {
             default:
                 typeStr = "UNKNOWN!?!";
         }
-        ;
         return (reliable ? "Reliable, " : "Unreliable, ") +
                 (resent ? "Resent, " : "") +
                 typeStr + ", id: " + id;

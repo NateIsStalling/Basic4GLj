@@ -9,42 +9,41 @@ import java.util.List;
 import static com.basic4gl.library.netlib4games.NetLayer2.*;
 import static com.basic4gl.library.netlib4games.NetLogger.netLog;
 import static com.basic4gl.library.netlib4games.NetTimingBufferL2.NET_L2TIMINGBUFFERSIZE;
-import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
 
 /**
  * Layer 2 network connection implementation.
  * <br/>
- * This is the main network connection of NetLib4Games. 
+ * This is the main network connection of NetLib4Games.
  * For every network connection there will be one of these objects constructed
- * on the client, and another one on the server that is constructed when the 
+ * on the client, and another one on the server that is constructed when the
  * connection is accepted.
  * <br/>
- * (NetLib4Games was built up in layers, where each layer sits atop the previous 
+ * (NetLib4Games was built up in layers, where each layer sits atop the previous
  * one and introduces new functionality. It just happened that by layer 2 it
- * was functional enough to be useful. Therefore all connection objects are 
+ * was functional enough to be useful. Therefore all connection objects are
  * NetConL2!)
  */
-public class NetConL2  extends HasErrorState implements NetProcessThreadListener, NetInChannelL2Callback{
+public class NetConL2 extends HasErrorState implements NetProcessThreadListener, NetInChannelL2Callback {
 
     /**
      * Underlying layer 1 connection
      */
-    private final NetConL1					m_connection;
+    private final NetConL1 m_connection;
 
     // Channels
-    private final NetOutChannelL2[]				m_outChannels = new NetOutChannelL2[NETL2_MAXCHANNELS];
-    private final NetInChannelL2[]				m_inChannels = new NetInChannelL2 [NETL2_MAXCHANNELS];
+    private final NetOutChannelL2[] m_outChannels = new NetOutChannelL2[NETL2_MAXCHANNELS];
+    private final NetInChannelL2[] m_inChannels = new NetInChannelL2[NETL2_MAXCHANNELS];
     private final List<NetMessageL2> m_messageQueue = new ArrayList<>();
 
     // Layer 2 settings
-    private NetSettingsL2				m_settings = new NetSettingsL2();
-    private NetSettingsStaticL2			m_settingsStatic = new NetSettingsStaticL2();
+    private NetSettingsL2 m_settings = new NetSettingsL2();
+    private NetSettingsStaticL2 m_settingsStatic = new NetSettingsStaticL2();
 
     // Thread handling
     private final Object inQueueLock = new Object();
 
     // Timing
-    private final NetTimingBufferL2			m_timingBuffer = new NetTimingBufferL2();
+    private final NetTimingBufferL2 m_timingBuffer = new NetTimingBufferL2();
 
 
     /**
@@ -78,20 +77,21 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
      * This constructs a NetConL2 representing the newly accepted connection.
      * The NetConL2 is constructed as connected. You do not need to call {@link #connect}.
      * </p>
+     *
      * @param connection Is a low level NetConLow object
      *                   that handles the network protocol specific part of the network connection.
      *                   (The UDP/IP version is NetConLowUDP.)
-     * @param settings (optional) the static network settings.
-     *                 The static settings cannot be changed once the connection is
-     *                 constructed. (Unlike the L1Settings() and L2Settings() which can be.)
+     * @param settings   (optional) the static network settings.
+     *                   The static settings cannot be changed once the connection is
+     *                   constructed. (Unlike the L1Settings() and L2Settings() which can be.)
      */
-    public NetConL2 (NetConLow connection, NetSettingsStaticL2 settings) {
+    public NetConL2(NetConLow connection, NetSettingsStaticL2 settings) {
         m_settingsStatic = settings;
         m_connection = new NetConL1(connection, settings.l1Settings);
         init();
     }
 
-    public NetConL2 (NetConLow connection) {
+    public NetConL2(NetConLow connection) {
         m_connection = new NetConL1(connection);
         init();
     }
@@ -103,11 +103,11 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
 
         // Free channels
         for (int i = 0; i < NETL2_MAXCHANNELS; i++) {
-            if (m_outChannels [i] != null) {
+            if (m_outChannels[i] != null) {
                 m_outChannels[i].dispose();
                 m_outChannels[i] = null;
             }
-            if (m_inChannels [i] != null) {
+            if (m_inChannels[i] != null) {
                 m_inChannels[i].dispose();
                 m_inChannels[i] = null;
             }
@@ -122,50 +122,52 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
 
         netLog("Delete L2 connection");
     }
+
     private void init() {
         netLog("Create L2 connection");
 
         // Clear channel pointers
         for (int i = 0; i < NETL2_MAXCHANNELS; i++) {
-            m_outChannels [i] = null;
-            m_inChannels  [i] = null;
+            m_outChannels[i] = null;
+            m_inChannels[i] = null;
         }
 
         // Start the processing thread
         m_connection.setNetProcessThreadCallback(this);
         m_connection.startThread();
     }
+
     private void checkError() {
         m_connection.lockError();
         if (m_connection.hasError()) {
-            setError ("Layer 1: " + m_connection.getError ());
+            setError("Layer 1: " + m_connection.getError());
             m_connection.unlockError();
             if (isConnected()) {
                 disconnect(true);
             }
-        }
-        else {
+        } else {
             m_connection.unlockError();
         }
     }
+
     private void checkObject(HasErrorState obj) {
         if (obj.hasError()) {
-            setError (obj.getError ());
+            setError(obj.getError());
             if (isConnected()) {
                 disconnect(true);
             }
         }
     }
+
     private void checkObject(HasErrorStateThreadSafe obj) {
         obj.lockError();
         if (obj.hasError()) {
-            setError (obj.getError ());
+            setError(obj.getError());
             obj.unlockError();
             if (isConnected()) {
                 disconnect(true);
             }
-        }
-        else {
+        } else {
             obj.unlockError();
         }
     }
@@ -173,13 +175,13 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
     // Passed through to layer 1 connection
 
     /**
-    * 
-*/
+     *
+     */
     /**
      * Returns true if the connection is in handshaking stage
-     * 
+     *
      * <p>
-     * The handshaking stage applies to client connections only, and 
+     * The handshaking stage applies to client connections only, and
      * refers to the stage where the client is looking for the remote
      * server and waiting for a connection accepted/rejected response
      * (or a timeout).
@@ -189,24 +191,24 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
      * While handshaking:
      * </p>
      * <ul>
-     *	<li>{@link #isConnected()} returns true!</li>
-     *	<li>{@link #isHandShaking()} returns true</li>
+     * 	<li>{@link #isConnected()} returns true!</li>
+     * 	<li>{@link #isHandShaking()} returns true</li>
      * </ul>
      *
      * <p>
      * After a handshake failed:
      * </p>
      * <ul>
-     *	<li>{@link #isConnected()} returns false</li>
-     *	<li>{@link #isHandShaking()} is undefined</li>
+     * 	<li>{@link #isConnected()} returns false</li>
+     * 	<li>{@link #isHandShaking()} is undefined</li>
      * </ul>
      *
      * <p>
      * After a handshake succeeded:
      * </p>
      * <ul>
-     *	<li>{@link #isConnected()} returns true</li>
-     *	<li>{@link #isHandShaking()} returns false</li>
+     * 	<li>{@link #isConnected()} returns true</li>
+     * 	<li>{@link #isHandShaking()} returns false</li>
      * </ul>
      *
      * <p>
@@ -215,15 +217,15 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
      * <pre>
      * {@code
      * while (connection.isConnected() && connection.isHandShaking())
-     *		Thread.Sleep(50);
+     * 		Thread.Sleep(50);
      *
      * if (connection.isConnected()) {
-     *		// Connection accepted
-     *		...
+     * 		// Connection accepted
+     * 		...
      * }
      * else {
-     *		// Connection rejected
-     *		...
+     * 		// Connection rejected
+     * 		...
      * }
      * }
      * </pre>
@@ -285,6 +287,7 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
         checkError();
         return result;
     }
+
     public boolean connect(String address) {
         return connect(address, "");
     }
@@ -309,15 +312,19 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
     public boolean isConnected() {
         return m_connection.isConnected();
     }
+
     public NetSettingsL1 getL1Settings() {
         return m_connection.getSettings();
     }
+
     public void setL1Settings(NetSettingsL1 settings) {
         m_connection.setSettings(settings);
     }
+
     public NetSettingsL2 getSettings() {
         return m_settings;
     }
+
     public void setSettings(NetSettingsL2 settings) {
         synchronized (inQueueLock) {
             m_settings = settings;
@@ -349,21 +356,22 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
      * Or, often position updates do not need to be sent reliably because they supersede each other.
      * So if one update gets dropped, the game can simply continue and pick up the position from the
      * next update.
-     * @param data the message data.
-     * @param size the size of the data.
-     * @param channel is used to specify whether message order is important.
-     *                <br/>
-     *                Valid values are 0-31 inclusive:
-     *                <ul>
-     *                    <li>
-     *                        Channel 0 is the unordered channel, and NetLib4Games will NOT enforce that messages are received in the same order that they are sent.
-     *                    </li>
-     *                    <li>
-     *                        Channels 1-31 are ordered channels. NetLib4Games will ensure that messages within the SAME channel are received in the
-     *                        same order that they were sent, by either dropping out-of-order non-reliable messages, or by stalling the channel while it waits
-     *                        for an out-of-order reliable message to be received and slotted into it's correct position.
+     *
+     * @param data     the message data.
+     * @param size     the size of the data.
+     * @param channel  is used to specify whether message order is important.
+     *                 <br/>
+     *                 Valid values are 0-31 inclusive:
+     *                 <ul>
+     *                     <li>
+     *                         Channel 0 is the unordered channel, and NetLib4Games will NOT enforce that messages are received in the same order that they are sent.
      *                     </li>
-     *                  </ul>
+     *                     <li>
+     *                         Channels 1-31 are ordered channels. NetLib4Games will ensure that messages within the SAME channel are received in the
+     *                         same order that they were sent, by either dropping out-of-order non-reliable messages, or by stalling the channel while it waits
+     *                         for an out-of-order reliable message to be received and slotted into it's correct position.
+     *                      </li>
+     *                   </ul>
      * @param reliable true if the message MUST get through.
      *                 NetLib4Games will automatically keep sending reliable messages until they are confirmed by the remote connection.
      *                 <br/>
@@ -374,25 +382,25 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
      *                 Be careful when using this option, as it effectively works by ADDING EXTRA LAG to messages that
      *                 arrive quicker than average.
      */
-    public void send (byte [] data, int size, int channel, boolean reliable, boolean smoothed) {
+    public void send(byte[] data, int size, int channel, boolean reliable, boolean smoothed) {
         Assert.assertTrue(data != null);
         Assert.assertTrue(channel >= 0);
         Assert.assertTrue(channel < NETL2_MAXCHANNELS);
 
         // Create channel if necessary
         // By convention: Channel 0 is unordered, all other channels are ordered.
-        if (m_outChannels [channel] == null) {
+        if (m_outChannels[channel] == null) {
             netLog("Create outgoing channel #" + channel + (channel == 0 ? ", unordered" : ", ordered"));
-            m_outChannels [channel] = new NetOutChannelL2 (channel, channel != 0);
+            m_outChannels[channel] = new NetOutChannelL2(channel, channel != 0);
         }
 
         // Send data through channel
-        netLog(	"Send L2 message, "
+        netLog("Send L2 message, "
                 + size + " bytes, channel # " + channel
                 + (reliable ? ", reliable" : ", unreliable")
                 + (smoothed ? ", smoothed" : ", unsmoothed"));
-        m_outChannels [channel].send(m_connection, data, size, reliable, smoothed, NetLayer1.getTickCount());
-        checkObject(m_outChannels [channel]);
+        m_outChannels[channel].send(m_connection, data, size, reliable, smoothed, NetLayer1.getTickCount());
+        checkObject(m_outChannels[channel]);
     }
 
     /**
@@ -438,19 +446,20 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
      * Receive part of the pending network message.
      * Call this ONLY if {@link #hasDataPending()} returns true.
      * <p>
-     *     Calling code MUST ensure that offset and size refer to a valid range of
-     *     data inside the pending message.
-     *     Use {@link #getPendingDataSize()} to get the size of the pending message.
+     * Calling code MUST ensure that offset and size refer to a valid range of
+     * data inside the pending message.
+     * Use {@link #getPendingDataSize()} to get the size of the pending message.
      * </p>
      *
      * <p>
-     *     After calling {@link #receivePart}, the pending message will still be pending.
-     *     If/when you have finished with the pending message, you should call
-     *     {@link #onDonePendingData()} to inform NetLib4Games that you have finished with it.
+     * After calling {@link #receivePart}, the pending message will still be pending.
+     * If/when you have finished with the pending message, you should call
+     * {@link #onDonePendingData()} to inform NetLib4Games that you have finished with it.
      * </p>
-     * @param data The destination buffer.
+     *
+     * @param data   The destination buffer.
      * @param offset The offset in the pending network message to copy data from.
-     * @param size The number of bytes to copy.
+     * @param size   The number of bytes to copy.
      * @return
      */
     public int receivePart(byte[] data, int offset, int size) {
@@ -477,7 +486,7 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
      * @param size The number of bytes to copy from the pending network message.
      * @return size of data received
      */
-    public int receive (byte[] data, int size) {
+    public int receive(byte[] data, int size) {
         synchronized (inQueueLock) {
             size = receivePart(data, 0, size);
             onDonePendingData();
@@ -512,7 +521,7 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
      *
      * @return the channel # of the pending network message.
      */
-    public int getPendingChannel(){
+    public int getPendingChannel() {
         Assert.assertTrue(hasDataPending());
         int result;
         synchronized (inQueueLock) {
@@ -528,7 +537,7 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
      *
      * @return the reliable flag of the pending network message.
      */
-    public boolean isPendingReliable(){
+    public boolean isPendingReliable() {
         Assert.assertTrue(hasDataPending());
         boolean result;
         synchronized (inQueueLock) {
@@ -544,7 +553,7 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
      *
      * @return the smoothed flag of the pending network message.
      */
-    public boolean isPendingSmoothed(){
+    public boolean isPendingSmoothed() {
         Assert.assertTrue(hasDataPending());
         boolean result;
         synchronized (inQueueLock) {
@@ -556,7 +565,7 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
     /**
      * Thread callback
      */
-    public  void onProcessThread() {
+    public void onProcessThread() {
 
         // Handle incoming packets
         while (m_connection.isConnected() && m_connection.isDataPending()) {
@@ -576,31 +585,31 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
 
                 // Decode header
                 byte channelFlags = header.getChannelFlags();
-                int		channel		= NetLayer2.getChannel (channelFlags);
-                boolean	reliable	= (channelFlags & NETL2_RELIABLE) != 0,
-                        smoothed	= (channelFlags & NETL2_SMOOTHED) != 0,
-                        ordered		= (channelFlags & NETL2_ORDERED)	 != 0;
+                int channel = NetLayer2.getChannel(channelFlags);
+                boolean reliable = (channelFlags & NETL2_RELIABLE) != 0,
+                        smoothed = (channelFlags & NETL2_SMOOTHED) != 0,
+                        ordered = (channelFlags & NETL2_ORDERED) != 0;
 
                 // Get resent flag (from layer 1 header)
-                boolean    resent      = m_connection.isPendingResent();
+                boolean resent = m_connection.isPendingResent();
 
                 if (channel >= 0 && channel < NETL2_MAXCHANNELS) {
 
                     // If channel does not exist, create it
-                    if (m_inChannels [channel] == null) {
+                    if (m_inChannels[channel] == null) {
                         netLog("Create incoming channel #" + channel + (ordered ? ", ordered" : ", unordered"));
-                        m_inChannels [channel] = new NetInChannelL2 (channel, ordered, m_settingsStatic.maxBufferPackets);
+                        m_inChannels[channel] = new NetInChannelL2(channel, ordered, m_settingsStatic.maxBufferPackets);
                     }
 
                     // Read data
-                    NetSimplePacket packet = new NetSimplePacket (size - headerSize);
+                    NetSimplePacket packet = new NetSimplePacket(size - headerSize);
                     if (packet.size > 0) {
                         packet.size = m_connection.receivePart(packet.data, headerSize, packet.size);
                     }
 
                     // Buffer packet
-                    m_inChannels [channel].buffer(packet, reliable, smoothed, resent, header.getMessageIndex(), header.getReliableIndex(), header.getPacketIndex(), header.getPacketCount(), header.getTickCount());
-                    checkObject(m_inChannels [channel]);
+                    m_inChannels[channel].buffer(packet, reliable, smoothed, resent, header.getMessageIndex(), header.getReliableIndex(), header.getPacketIndex(), header.getPacketCount(), header.getTickCount());
+                    checkObject(m_inChannels[channel]);
                 }
             }
 
@@ -643,25 +652,29 @@ public class NetConL2  extends HasErrorState implements NetProcessThreadListener
 
         // Cull old messages to prevent buffer overflowing
         for (i = 0; i < NETL2_MAXCHANNELS; i++) {
-            if (m_inChannels [i] != null) {
-                m_inChannels [i].cullMessages();
+            if (m_inChannels[i] != null) {
+                m_inChannels[i].cullMessages();
             }
         }
     }
 
     // NetInChannelL2Callback
     @Override
-    public void queueMessage(NetMessageL2 msg){
-        m_messageQueue.add (msg);
+    public void queueMessage(NetMessageL2 msg) {
+        m_messageQueue.add(msg);
     }
+
     @Override
-    public void registerTickCountDifference(long difference){
+    public void registerTickCountDifference(long difference) {
         m_timingBuffer.logDifference(difference);
     }
+
     @Override
-    public void requestWakeup(long millis){
+    public void requestWakeup(long millis) {
         m_connection.requestWakeup(millis);
     }
 
-    public String getAddress() { return m_connection.getAddress(); }
+    public String getAddress() {
+        return m_connection.getAddress();
+    }
 }

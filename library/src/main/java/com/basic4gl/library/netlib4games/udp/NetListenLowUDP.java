@@ -1,11 +1,16 @@
 package com.basic4gl.library.netlib4games.udp;
 
-import com.basic4gl.library.netlib4games.*;
+import com.basic4gl.library.netlib4games.NetConLow;
+import com.basic4gl.library.netlib4games.NetListenLow;
+import com.basic4gl.library.netlib4games.NetSimplePacket;
 import com.basic4gl.library.netlib4games.internal.Assert;
 import com.basic4gl.library.netlib4games.internal.Thread;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
+import java.net.StandardProtocolFamily;
+import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.ArrayList;
@@ -43,6 +48,7 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
     /**
      * Construct listener.
      * Note: If HasErrorState.hasError() returns true, the object should be deleted immediately and not used.
+     *
      * @param port
      */
     public NetListenLowUDP(int port) {
@@ -74,6 +80,7 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
         // Delete temp buffer
         socketBuffer = null;
     }
+
     NetConLowUDP findConnection(InetSocketAddress addr) {
         if (addr == null) {
             return null;
@@ -184,7 +191,7 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
 
     @Override
     public void run() {
-        try  {
+        try {
             while (!m_socketServiceThread.isTerminating()) {
                 try {
                     // Get temp buffer for data
@@ -211,43 +218,43 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
                             }
 
                             DatagramChannel client = (DatagramChannel) key.channel();
-                                socketBuffer.clear();
-                                clientAddress = (InetSocketAddress) client.receive(socketBuffer);
-                                socketBuffer.flip();
+                            socketBuffer.clear();
+                            clientAddress = (InetSocketAddress) client.receive(socketBuffer);
+                            socketBuffer.flip();
 
-                                byte[] bytes = new byte[socketBuffer.remaining()];
-                                socketBuffer.get(bytes);
-                                int size = bytes.length;
+                            byte[] bytes = new byte[socketBuffer.remaining()];
+                            socketBuffer.get(bytes);
+                            int size = bytes.length;
 
-                                netLog("Read UDP packet, " + size + " bytes");
+                            netLog("Read UDP packet, " + size + " bytes");
 
-                                // Bundle packet
-                                NetSimplePacket packet = new NetSimplePacket(bytes, size);
-                                String[] requestStringBuffer = new String[1];
+                            // Bundle packet
+                            NetSimplePacket packet = new NetSimplePacket(bytes, size);
+                            String[] requestStringBuffer = new String[1];
 
-                                // Find target connection (by matching against packet address)
-                                synchronized (connectionLock) {
-                                    NetConLowUDP connection = findConnection(clientAddress);
-                                    if (connection != null) {
+                            // Find target connection (by matching against packet address)
+                            synchronized (connectionLock) {
+                                NetConLowUDP connection = findConnection(clientAddress);
+                                if (connection != null) {
 
-                                        netLog("Queue packet in UDP net connection");
+                                    netLog("Queue packet in UDP net connection");
 
-                                        // Queue connection packet
-                                        connection.queuePendingPacket(packet);
-                                    }
-                                    // Check whether packet is a connection request
-                                    else if (isConnectionRequest(packet, requestStringBuffer)            // Is a connection request
-                                            && !isPending(clientAddress)) {                                    // And connection is not already pending
-                                        netLog("Create pending UDP connection");
+                                    // Queue connection packet
+                                    connection.queuePendingPacket(packet);
+                                }
+                                // Check whether packet is a connection request
+                                else if (isConnectionRequest(packet, requestStringBuffer)            // Is a connection request
+                                        && !isPending(clientAddress)) {                                    // And connection is not already pending
+                                    netLog("Create pending UDP connection");
 
-                                        // If there is no existing pending connection then create one
-                                        m_pending.add(new NetPendConLowUDP(clientAddress, requestStringBuffer[0], packet));
-                                    } else {
+                                    // If there is no existing pending connection then create one
+                                    m_pending.add(new NetPendConLowUDP(clientAddress, requestStringBuffer[0], packet));
+                                } else {
 
-                                        // Unknown packet. Ignore it
-                                        netLog("Discard stray UDP packet");
-                                        packet.dispose();
-                                    }
+                                    // Unknown packet. Ignore it
+                                    netLog("Discard stray UDP packet");
+                                    packet.dispose();
+                                }
 
                             }
                         }
@@ -270,7 +277,7 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
                 }
             }
         } catch (Exception ex) {
-            netLog("Error reading UDP channel: " +  ex.getMessage());
+            netLog("Error reading UDP channel: " + ex.getMessage());
         }
     }
 
@@ -284,6 +291,7 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
 
     /**
      * Used by NetConLowUDP to notify listener of a deleted connection.
+     *
      * @param connection
      */
     public void freeNotify(NetConLowUDP connection) {

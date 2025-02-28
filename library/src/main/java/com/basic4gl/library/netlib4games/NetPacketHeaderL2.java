@@ -10,7 +10,7 @@ public class NetPacketHeaderL2 {
 
     /**
      * Message Index size in bytes
-     *
+     * <p>
      * NetLib4Games specifies unsigned long (32-bit) value
      * Java port only supports signed, positive values for array index usage.
      */
@@ -18,7 +18,7 @@ public class NetPacketHeaderL2 {
 
     /**
      * Reliable Index size in bytes
-     *
+     * <p>
      * NetLib4Games specifies unsigned long (32-bit) value
      * Java port only supports signed, positive values for array index usage.
      */
@@ -44,6 +44,7 @@ public class NetPacketHeaderL2 {
     private static final int TICK_COUNT_POSITION = PACKET_INDEX_POSITION + PACKET_INDEX_BYTES;
 
     private final ByteBuffer buffer;
+
     public NetPacketHeaderL2() {
         this.buffer = ByteBuffer.wrap(new byte[SIZE])
                 .order(BYTE_ORDER);

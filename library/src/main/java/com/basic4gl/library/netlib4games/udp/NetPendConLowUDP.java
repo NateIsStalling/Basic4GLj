@@ -5,8 +5,6 @@ import com.basic4gl.library.netlib4games.internal.Assert;
 
 import java.net.InetSocketAddress;
 
-import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
-
 /**
  * A pending NetConLowUDP connection.
  */
@@ -26,7 +24,7 @@ public class NetPendConLowUDP {
      */
     NetSimplePacket packet;
 
-    public NetPendConLowUDP (
+    public NetPendConLowUDP(
             InetSocketAddress addr,
             String requestString,
             NetSimplePacket packet) {
@@ -35,7 +33,8 @@ public class NetPendConLowUDP {
         this.requestString = requestString;
         this.packet = packet;
     }
-	public void dispose() {
+
+    public void dispose() {
         packet.dispose();
     }
 }

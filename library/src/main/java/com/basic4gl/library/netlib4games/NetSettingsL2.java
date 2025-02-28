@@ -9,18 +9,18 @@ public class NetSettingsL2 {
     static final int NET_L2SMOOTHINGPERCENTAGE = 80;
 
     /**
-    * Smoothing delay is adjusted so that this percentage of packets are
-    * considered to be on-time or early.
-    */
+     * Smoothing delay is adjusted so that this percentage of packets are
+     * considered to be on-time or early.
+     */
     public int smoothingPercentage;
 
-    NetSettingsL2 () {
+    NetSettingsL2() {
 
         // Use default settings
-        smoothingPercentage	= NET_L2SMOOTHINGPERCENTAGE;
+        smoothingPercentage = NET_L2SMOOTHINGPERCENTAGE;
     }
 
-    NetSettingsL2 (NetSettingsL2 s) {
+    NetSettingsL2(NetSettingsL2 s) {
         smoothingPercentage = s.smoothingPercentage;
     }
 }

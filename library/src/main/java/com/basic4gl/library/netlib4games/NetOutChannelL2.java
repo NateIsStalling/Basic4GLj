@@ -4,7 +4,6 @@ package com.basic4gl.library.netlib4games;
 import com.basic4gl.library.netlib4games.internal.Assert;
 
 import static com.basic4gl.library.netlib4games.NetLayer2.*;
-import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
 
 /**
  * Layer 2 outgoing network channel.

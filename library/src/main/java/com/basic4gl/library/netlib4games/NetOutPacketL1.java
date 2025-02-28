@@ -5,7 +5,6 @@ import com.basic4gl.library.netlib4games.internal.Assert;
 
 import static com.basic4gl.library.netlib4games.NetLayer1.NETL1_RELIABLE;
 import static com.basic4gl.library.netlib4games.NetLayer1.NETL1_RESENT;
-import static com.basic4gl.library.netlib4games.internal.Assert.assertTrue;
 
 /**
  * Outgoing layer 1 network packet
