@@ -15,12 +15,12 @@ jobs:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
       - id: setup-jdk
         name: Setup JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: 17
@@ -34,7 +34,7 @@ jobs:
       # SAVE INSTALLER
       - id: upload-installer
         name: Upload installer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./app/build/distributions/app.zip
           name: jar-release
@@ -46,12 +46,12 @@ jobs:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
       - id: setup-jdk
         name: Setup JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: 17
@@ -65,7 +65,7 @@ jobs:
       # SAVE INSTALLER
       - id: upload-installer
         name: Upload installer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./build/distributions/basic4glj_${{ vars.APP_RELEASE_VERSION }}-1_amd64.deb
           name: linux-installer
@@ -80,10 +80,10 @@ jobs:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - id: setup-jdk
         name: Setup JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: 17
@@ -97,7 +97,7 @@ jobs:
       # SAVE INSTALLER
       - id: upload-installer
         name: Upload installer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.msi
           name: windows-installer
@@ -110,10 +110,10 @@ jobs:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - id: setup-jdk
         name: Setup JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: 17
@@ -127,7 +127,7 @@ jobs:
       # SAVE INSTALLER
       - id: upload-installer
         name: Upload installer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg
           name: macos-installer
@@ -146,25 +146,25 @@ jobs:
 
       - id: download-jar-release
         name: Download JAR Release
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: jar-release
 
       - id: download-linux-installer
         name: Download Linux installer
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: linux-installer
 
       - id: download-windows-installer
         name: Download Windows installer
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: windows-installer
 
       - id: download-macos-installer
         name: Download Mac installer
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: macos-installer
 
