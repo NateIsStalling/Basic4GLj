@@ -103,8 +103,8 @@ jobs:
           name: windows-installer
           retention-days: 1
 
-  build-macos-installer:
-    name: Build Installer on MacOS
+  build-macos-arm64-installer:
+    name: Build Installer on MacOS (arm64)
     runs-on: macos-latest
     steps:
       # SETUP BUILD ENVIRONMENT
@@ -129,9 +129,40 @@ jobs:
         name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg
-          name: macos-installer
+          path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}-arm64.dmg
+          name: macos-arm64-installer
           retention-days: 1
+
+  build-macos-intel-installer:
+    name: Build Installer on MacOS (Intel)
+    runs-on: macos-13
+    steps:
+      # SETUP BUILD ENVIRONMENT
+      - id: checkout-code
+        name: Checkout code
+        uses: actions/checkout@v4
+      - id: setup-jdk
+        name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      # BUILD FOR DISTRIBUTION
+      - id: build
+        name: Build distribution
+        run: |
+          sh build-mac-release.sh
+
+      # SAVE INSTALLER
+      - id: upload-installer
+        name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}-intel.dmg
+          name: macos-intel-installer
+          retention-days: 1
+
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
@@ -139,7 +170,7 @@ jobs:
     permissions:
       contents: write
       deployments: write
-    needs: [build-jar-release, build-linux-installer, build-windows-installer, build-macos-installer]
+    needs: [build-jar-release, build-linux-installer, build-windows-installer, build-macos-arm64-installer, build-macos-intel-installer]
     steps:
 
       # DOWNLOAD INSTALLERS
@@ -162,11 +193,17 @@ jobs:
         with:
           name: windows-installer
 
-      - id: download-macos-installer
-        name: Download Mac installer
+      - id: download-macos-arm64-installer
+        name: Download Mac installer (arm64)
         uses: actions/download-artifact@v4
         with:
-          name: macos-installer
+          name: macos-arm64-installer
+
+      - id: download-macos-intel-installer
+        name: Download Mac installer (Intel)
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-intel-installer
 
       - id: rename-downloaded-files
         name: Rename downloaded files
@@ -176,7 +213,8 @@ jobs:
           # macos builds require versions start with 1.X, but alpha builds are currently tagged as 0.X
           mv app.zip basic4glj_${{ vars.BUILD_RELEASE_TAG }}.zip
           mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.msi Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}.msi
-          mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}.dmg
+          mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}-arm64.dmg Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}-arm64.dmg
+          mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}-intel.dmg Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}-intel.dmg
           mv basic4glj_${{ vars.APP_RELEASE_VERSION }}-1_amd64.deb basic4glj_${{ vars.BUILD_RELEASE_TAG }}.deb
           ls -alR
 
@@ -231,13 +269,23 @@ jobs:
           asset_path: Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}.msi
           asset_name: Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}.msi
           asset_content_type: application/x-binary
-      - id: release-macos-installer
-        name: Release Mac DMG
+      - id: release-macos-arm64-installer
+        name: Release Mac DMG (arm64)
         uses: actions/upload-release-asset@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}.dmg
-          asset_name: Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}.dmg
+          asset_path: Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}-arm64.dmg
+          asset_name: Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}-arm64.dmg
+          asset_content_type: application/x-binary
+      - id: release-macos-intel-installer
+        name: Release Mac DMG (Intel)
+        uses: actions/upload-release-asset@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}-intel.dmg
+          asset_name: Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}-intel.dmg
           asset_content_type: application/x-binary

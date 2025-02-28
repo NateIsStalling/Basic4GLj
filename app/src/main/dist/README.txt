@@ -30,6 +30,7 @@
 ================================================
 0.6.0   - Implemented net function library
         - Added "Open Recent" to File menu and "Recent Files" to default tab
+        - Added macOS arm64 builds to Releases
 
 0.5.1   - Fixed issues loading textures with TexStripFrames and LoadTexStrip
 
