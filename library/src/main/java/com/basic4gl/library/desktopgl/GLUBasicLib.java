@@ -6,6 +6,7 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.lib.util.IAppSettings;
+import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
@@ -32,11 +33,11 @@ public class GLUBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IAppSettings settings, String[] args) {
+    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
 
     }
     @Override
-    public void init(TomBasicCompiler comp){
+    public void init(TomBasicCompiler comp, IServiceCollection services){
 
     }
 

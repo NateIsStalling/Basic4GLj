@@ -3,10 +3,7 @@ package com.basic4gl.library.standard;
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.FileOpener;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IFileAccess;
+import com.basic4gl.lib.util.*;
 import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
@@ -39,12 +36,12 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     @Override
-    public void init(TomVM vm, IAppSettings settings, String[] args) {
+    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         performanceFreq = System.nanoTime();
     }
 
     @Override
-    public void init(TomBasicCompiler comp) {
+    public void init(TomBasicCompiler comp, IServiceCollection services) {
         wavFiles = new WindowsWavStore();
         // Register resources
         comp.VM().addResources(wavFiles);

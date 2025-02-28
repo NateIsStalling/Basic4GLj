@@ -76,9 +76,9 @@ dependencies {
     implementation 'com.fifesoft:rsyntaxtextarea:3.3.4'
     implementation 'com.fifesoft:rstaui:3.3.1'
 
-    implementation 'com.formdev:flatlaf:3.0'
+    implementation 'com.formdev:flatlaf:3.5.4'
     // for FlatDesktop Java 8 backports
-    implementation 'com.formdev:flatlaf-extras:3.0'
+    implementation 'com.formdev:flatlaf-extras:3.5.4'
 
     // for IS_OS_MAC flag for OS specific behavior
     implementation("org.apache.commons:commons-lang3:3.14.0")

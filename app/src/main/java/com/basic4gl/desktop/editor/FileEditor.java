@@ -329,11 +329,21 @@ public class FileEditor implements SearchListener {
     }
 
     public void setFileName(String filename) {
-        this.fileName = filename;
+        if (filename != null && !filename.isBlank()) {
+            this.fileName = filename;
+        } else {
+            this.fileName = "";
+        }
     }
 
     public String getFilePath() {
         return filePath;
+    }
+
+    public File getFile() {
+        return !filePath.isEmpty()
+                ? new File(filePath)
+                : null;
     }
 
     public String getShortFilename() {

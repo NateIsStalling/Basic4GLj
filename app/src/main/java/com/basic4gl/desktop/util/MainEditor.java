@@ -2,6 +2,7 @@ package com.basic4gl.desktop.util;
 
 import com.basic4gl.runtime.InstructionPosition;
 
+
 /**
  * Created by Nate on 3/23/2015.
  */
@@ -16,6 +17,7 @@ public interface MainEditor {
     public abstract String getVariableAt(String line, int x);
     public abstract String evaluateVariable(String variable);
     public abstract void insertDeleteLines(String filename, int fileLineNo, int delta);
+
     // Insert or delete one or more lines. delta is positive for inserts,
     // negative for deletes. Calling this function allows the editor to
     // update breakpoints etc.

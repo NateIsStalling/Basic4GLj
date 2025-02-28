@@ -28,6 +28,7 @@ public class ConfigurationFormPanel extends JPanel {
     }
 
     public void addConfigurationField(String[] field, int paramType, String value) {
+        JPanel wrapper;
         JLabel label;
 
         //Override parameter type if field contains multiple values
@@ -37,11 +38,15 @@ public class ConfigurationFormPanel extends JPanel {
 
         switch (paramType) {
             case Configuration.PARAM_HEADING:
+                wrapper = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 label = new JLabel(field[0]);
                 Font font = label.getFont();
                 label.setFont(new Font(font.getName(), Font.BOLD, font.getSize() + 2));
+                label.setForeground(new Color(66, 66, 66));
                 label.setBorder(new EmptyBorder(6, 6, 6, 6));
-                configPane.add(label);
+
+                wrapper.add(label);
+                configPane.add(wrapper);
                 settingComponents.add(null);
                 break;
             case Configuration.PARAM_DIVIDER:

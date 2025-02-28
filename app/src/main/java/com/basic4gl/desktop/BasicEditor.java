@@ -16,10 +16,9 @@ import com.basic4gl.library.desktopgl.GLTextGridWindow;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.InstructionPosition;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 public class BasicEditor implements MainEditor,
@@ -38,6 +37,7 @@ public class BasicEditor implements MainEditor,
     private FileOpener fileOpener;
     private final DebuggerCallbackMessage callbackMessage = new DebuggerCallbackMessage();
 
+    private EditorSettings settings = null;
 
     // Preprocessor
     public Preprocessor preprocessor;
@@ -99,19 +99,22 @@ public class BasicEditor implements MainEditor,
          * InitTomNetBasicLib (mComp); // Networking
          */
 
+        IServiceCollection tempServices = new ServiceCollection();
+
         //TODO Load libraries dynamically
         libraries.add(new com.basic4gl.library.standard.Standard());
+        libraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
+        libraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
+        libraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
         libraries.add(new com.basic4gl.library.standard.TrigBasicLib());
         libraries.add(new com.basic4gl.library.standard.FileIOBasicLib());
-        libraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
-        libraries.add(new com.basic4gl.library.desktopgl.TomCompilerBasicLib());
+        libraries.add(new com.basic4gl.library.standard.NetBasicLib());
         libraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
-        
+        libraries.add(new com.basic4gl.library.standard.TomCompilerBasicLib());
+
         libraries.add(GLTextGridWindow.getInstance(compiler));
         libraries.add(BuilderDesktopGL.getInstance(compiler));
 
@@ -119,7 +122,7 @@ public class BasicEditor implements MainEditor,
         //TODO Add more libraries
         int i = 0;
         for (Library lib : libraries) {
-            lib.init(compiler); //Allow libraries to register function overloads
+            lib.init(compiler, tempServices); //Allow libraries to register function overloads
             if (lib instanceof IFileAccess) {
                 //Allows libraries to read from directories
                 ((IFileAccess) lib).init(fileOpener);
@@ -673,5 +676,53 @@ public class BasicEditor implements MainEditor,
 //                mPresenter.PlaceCursorAtProcessed(line.get(), col.get());
 //            }
 //        }
+    }
+
+    public void saveSettings() {
+        String applicationStoragePath = System.getProperty("user.home") +
+                System.getProperty("file.separator") +
+                BuildInfo.APPLICATION_NAME;
+        try {
+            EditorSettingsFactory.save(settings, applicationStoragePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadSettings() {
+        String applicationStoragePath = System.getProperty("user.home") +
+                System.getProperty("file.separator") +
+                BuildInfo.APPLICATION_NAME;
+        try {
+            settings = EditorSettingsFactory.loadFrom(applicationStoragePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        presenter.setRecentItems(settings.recentFiles);
+    }
+
+    public void notifyFileOpened(File file) {
+        settings.recentFiles.add(0, file);
+        settings.recentFiles = new ArrayList<>(settings.recentFiles
+            .stream()
+            .distinct()
+            .toList());
+
+        saveSettings();
+
+        presenter.setRecentItems(settings.recentFiles);
+    }
+
+    public void clearRecentFiles() {
+        settings.recentFiles.clear();
+
+        saveSettings();
+
+        presenter.setRecentItems(settings.recentFiles);
+    }
+
+    public List<File> getRecentFiles() {
+        return settings.recentFiles;
     }
 }

@@ -29,6 +29,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
 	//Libraries
 	private java.util.List<Library> mLibraries;
+	private IServiceCollection mServices;
 	private static GLTextGridWindow instance;
 
 	private FileOpener mFiles;
@@ -350,26 +351,27 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
 		instance.mComp = new TomBasicCompiler(new TomVM(debugger));
 		instance.mVM = instance.mComp.VM();
+		instance.mServices = new ServiceCollection();
 		instance.mLibraries = new ArrayList<>();
 
 		//TODO Load libraries dynamically
 		//TODO Save/Load list of libraries in order they should be added
 		instance.mLibraries.add(new com.basic4gl.library.standard.Standard());
+		instance.mLibraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
+		instance.mLibraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
+		instance.mLibraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
+		instance.mLibraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
+		instance.mLibraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
+		instance.mLibraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
 		instance.mLibraries.add(new com.basic4gl.library.standard.TrigBasicLib());
 		instance.mLibraries.add(new com.basic4gl.library.standard.FileIOBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
-		instance.mLibraries.add(new com.basic4gl.library.desktopgl.TomCompilerBasicLib());
+		instance.mLibraries.add(new com.basic4gl.library.standard.NetBasicLib());
 		instance.mLibraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
-
+		instance.mLibraries.add(new com.basic4gl.library.standard.TomCompilerBasicLib());
 
 		// Register library functions
 		for (Library lib : instance.mLibraries) {
-			lib.init(instance.mComp); //Allow libraries to register function overloads
+			lib.init(instance.mComp, instance.mServices); //Allow libraries to register function overloads
 			if (lib instanceof IFileAccess) {
 				//Allows libraries to read from directories
 				((IFileAccess) lib).init(instance.mFiles);
@@ -441,12 +443,12 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 	public String description() { return "Desktop application with OpenGL capabilities.";}
 
 	@Override
-	public void init(TomVM vm, IAppSettings settings, String[] args) {
+	public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
 		// TODO Auto-generated method stub
 
 	}
 	@Override
-	public void init(TomBasicCompiler comp){
+	public void init(TomBasicCompiler comp, IServiceCollection services){
 
 	}
 
@@ -455,6 +457,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 		if (debuggerAdapter != null) {
 			debuggerAdapter.stop();
 		}
+		mServices.clear();
 	}
 
 	@Override
@@ -948,7 +951,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 			((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
 		}
 
-		lib.init(mVM, appSettings, programArgs);
+		lib.init(mVM, mServices, appSettings, programArgs);
 	}
 	public boolean handleEvents(){
 

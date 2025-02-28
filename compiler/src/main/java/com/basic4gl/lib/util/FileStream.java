@@ -6,17 +6,17 @@ import java.io.*;
  * Created by Nate on 11/17/2015.
  */
 public class FileStream {
-    public FileInputStream in;
-    public FileOutputStream  out;
+    public InputStream in;
+    public OutputStream  out;
     public FileStream () {
         this.in		= null;
         this.out	= null;
     }
-    public FileStream (FileInputStream in) {
+    public FileStream (InputStream in) {
         this.in	    = in;
         this.out    = null;
     }
-    public FileStream (FileOutputStream  out) {
+    public FileStream (OutputStream  out) {
         this.in	    = null;
         this.out	= out;
     }
