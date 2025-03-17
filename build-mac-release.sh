@@ -32,7 +32,7 @@ jpackage "@jpackage/jpackage.cfg" \
   --verbose
 
 echo "Sign app-image"
-cp embedded.provisionprofile ./build/distributions/Basic4GLj.app/Contents/embedded.provisionprofile
+cp "$MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH" ./build/distributions/Basic4GLj.app/Contents/embedded.provisionprofile
 if [[  -z "$MAC_SIGNING_KEYCHAIN_PATH" ]]; then
   sh ./build-mac-sign.sh --app-location "./build/distributions/Basic4GLj.app" \
      --signing-identity "$MAC_SIGNING_KEY_USER_NAME" \
