@@ -151,12 +151,9 @@ jobs:
         with:
           distribution: "temurin"
           java-version: 17
-
       - id: set-up-homebrew
         name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@master
-        run: |
-          brew install coreutils
 
       - id: keychain
         name: Install the Apple certificate and provisioning profile
@@ -205,6 +202,7 @@ jobs:
       - id: build
         name: Build distribution
         run: |
+          brew install coreutils
           sh build-mac-release.sh
           sh build-mac-notarize.sh
 
