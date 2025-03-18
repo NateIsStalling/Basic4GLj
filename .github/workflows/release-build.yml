@@ -142,14 +142,8 @@ jobs:
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output "$CERTIFICATE_PATH"
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode --output "$PP_PATH"
           
-#          echo "create temporary keychain"
-#          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-#          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-#          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          
           echo "import certificate to keychain"
-          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 
-#          -k "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12
           security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           
           # apply provisioning profile
@@ -167,7 +161,6 @@ jobs:
           echo MAC_SIGNING_NOTARIZATION_USER_NAME=\""${{ secrets.MAC_SIGNING_NOTARIZATION_USER_NAME }}"\" >> .env
           echo MAC_SIGNING_NOTARIZATION_PASSWORD=\""${{ secrets.MAC_SIGNING_NOTARIZATION_PASSWORD }}"\" >> .env
           echo MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH=\""${{ steps.keychain.outputs.PP_PATH }}"\" >> .env
-#          echo MAC_SIGNING_KEYCHAIN_PATH=\""${{ steps.keychain.outputs.KEYCHAIN_PATH }}"\" >> .env
 
       # BUILD FOR DISTRIBUTION
       - id: build
@@ -221,14 +214,9 @@ jobs:
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode > "$PP_PATH"
           
-#          echo "create temporary keychain"
-#          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-#          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-#          security unlock-keychain -p '$KEYCHAIN_PASSWORD' "$KEYCHAIN_PATH"
           
           echo "import certificate to keychain"
-          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 
-          # -k "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12
           security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           
           # apply provisioning profile
@@ -246,7 +234,6 @@ jobs:
           echo MAC_SIGNING_NOTARIZATION_USER_NAME=\""${{ secrets.MAC_SIGNING_NOTARIZATION_USER_NAME }}"\" >> .env
           echo MAC_SIGNING_NOTARIZATION_PASSWORD=\""${{ secrets.MAC_SIGNING_NOTARIZATION_PASSWORD }}"\" >> .env
           echo MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH=\""${{ steps.keychain.outputs.PP_PATH }}"\" >> .env
-#          echo MAC_SIGNING_KEYCHAIN_PATH=\""${{ steps.keychain.outputs.KEYCHAIN_PATH }}"\" >> .env
 
       # BUILD FOR DISTRIBUTION
       - id: build
