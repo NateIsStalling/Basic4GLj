@@ -149,7 +149,7 @@ jobs:
           
           # import certificate to keychain
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
-          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           
           # apply provisioning profile
           echo "PP_PATH=\"$PP_PATH\"" >> $GITHUB_OUTPUT
@@ -227,8 +227,7 @@ jobs:
           
           # import certificate to keychain
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
-          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security list-keychain -d user
+          security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           
           # apply provisioning profile
           echo "PP_PATH=\"$PP_PATH\"" >> $GITHUB_OUTPUT
