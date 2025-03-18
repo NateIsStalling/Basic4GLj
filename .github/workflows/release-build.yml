@@ -151,6 +151,7 @@ jobs:
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
           security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+          security find-certificate -a -p "$KEYCHAIN_PATH"
           
           # apply provisioning profile
           echo "PP_PATH=\"$PP_PATH\"" >> $GITHUB_OUTPUT
@@ -230,6 +231,7 @@ jobs:
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
           security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+          security find-certificate -a -p "$KEYCHAIN_PATH"
           
           # apply provisioning profile
           echo "PP_PATH=\"$PP_PATH\"" >> $GITHUB_OUTPUT
