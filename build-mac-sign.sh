@@ -62,6 +62,7 @@ sign_jar_dylib() {
             --timestamp \
             --options runtime \
             --sign "$SIGNING_IDENTITY" \
+            -vvvv \
             "$file"
       else
         /usr/bin/codesign --force \
@@ -69,6 +70,7 @@ sign_jar_dylib() {
             --options runtime \
             --sign "$SIGNING_IDENTITY" \
             --keychain "$SIGNING_KEYCHAIN" \
+            -vvvv \
             "$file"
       fi
 
@@ -87,6 +89,7 @@ sign_directory() {
             --sign "$SIGNING_IDENTITY" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
+            -vvvv \
             "$dir"
       else
         /usr/bin/codesign --force \
@@ -95,6 +98,7 @@ sign_directory() {
             --keychain "$SIGNING_KEYCHAIN" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
+            -vvvv \
             "$dir"
       fi
     fi
@@ -130,6 +134,7 @@ find "$APP_LOCATION" -type f \( -perm -u+x -o -name "*.dylib" -o -name "*.jar" \
             --sign "$SIGNING_IDENTITY" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
+            -vvvv \
             "$file"
       else
         /usr/bin/codesign --force --timestamp \
@@ -138,6 +143,7 @@ find "$APP_LOCATION" -type f \( -perm -u+x -o -name "*.dylib" -o -name "*.jar" \
             --keychain "$SIGNING_KEYCHAIN" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
+            -vvvv \
             "$file"
       fi
     else
@@ -147,6 +153,7 @@ find "$APP_LOCATION" -type f \( -perm -u+x -o -name "*.dylib" -o -name "*.jar" \
             --sign "$SIGNING_IDENTITY" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
+            -vvvv \
             "$file"
       else
         /usr/bin/codesign --force --timestamp \
@@ -155,6 +162,7 @@ find "$APP_LOCATION" -type f \( -perm -u+x -o -name "*.dylib" -o -name "*.jar" \
             --keychain "$SIGNING_KEYCHAIN" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
+            -vvvv \
             "$file"
       fi
     fi
@@ -173,6 +181,7 @@ if [[ -z "$SIGNING_KEYCHAIN" ]]; then
       --sign "$SIGNING_IDENTITY" \
       --entitlements "$ENTITLEMENTS" \
       --prefix "$IDENTIFIER_PREFIX" \
+      -vvvv \
       "$APP_LOCATION"
 else
   /usr/bin/codesign --force \
@@ -182,5 +191,6 @@ else
       --keychain "$SIGNING_KEYCHAIN" \
       --entitlements "$ENTITLEMENTS" \
       --prefix "$IDENTIFIER_PREFIX" \
+      -vvvv
       "$APP_LOCATION"
 fi
