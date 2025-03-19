@@ -162,8 +162,8 @@ jobs:
           security list-keychain -d user -s $KEYCHAIN_PATH
           
           # apply provisioning profile
-          echo "PP_PATH='$PP_PATH'" >> $GITHUB_OUTPUT
-          echo "KEYCHAIN_PATH='$KEYCHAIN_PATH'" >> $GITHUB_OUTPUT
+          echo "PP_PATH=$PP_PATH" >> $GITHUB_OUTPUT
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_OUTPUT
 
       # env file
       - id: env
@@ -254,8 +254,8 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:, -s -k $KEYCHAIN_PASSWORD -D "${BUILD_CERTIFICATE_COMMON_NAME}" -t private $KEYCHAIN_PATH
           
           # apply provisioning profile
-          echo "PP_PATH='$PP_PATH'" >> $GITHUB_OUTPUT
-          echo "KEYCHAIN_PATH='$KEYCHAIN_PATH'" >> $GITHUB_OUTPUT
+          echo "PP_PATH=$PP_PATH" >> $GITHUB_OUTPUT
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_OUTPUT
 
       # env file
       - id: env
