@@ -162,9 +162,9 @@ jobs:
           security list-keychain -d user -s $KEYCHAIN_PATH
   
           echo "Default Keychain:"
-          security find-identity -p codesigning -v | grep -o ".*valid identities found"
+          security find-identity -p codesigning | grep -o ".*valid identities found"
           echo "Keychain:"
-          security find-identity -p codesigning -v "$SIGNING_KEYCHAIN" | grep -o ".*valid identities found"
+          security find-identity -p codesigning "$SIGNING_KEYCHAIN" | grep -o ".*valid identities found"
   
           # apply provisioning profile
           echo "PP_PATH=$PP_PATH" >> $GITHUB_OUTPUT
@@ -259,9 +259,9 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:, -s -k $KEYCHAIN_PASSWORD -D "${BUILD_CERTIFICATE_COMMON_NAME}" -t private $KEYCHAIN_PATH
           
           echo "Default Keychain:"
-          security find-identity -p codesigning -v | grep -o ".*valid identities found"
+          security find-identity -p codesigning | grep -o ".*valid identities found"
           echo "Keychain:"
-          security find-identity -p codesigning -v "$SIGNING_KEYCHAIN" | grep -o ".*valid identities found"
+          security find-identity -p codesigning "$SIGNING_KEYCHAIN" | grep -o ".*valid identities found"
           
           # apply provisioning profile
           echo "PP_PATH=$PP_PATH" >> $GITHUB_OUTPUT
