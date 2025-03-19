@@ -10,13 +10,6 @@ usage() {
     exit 1
 }
 
-echo "Default Keychain:"
-security find-identity -p codesigning -v | grep -o ".*valid identities found"
-if [[ -n "$SIGNING_KEYCHAIN" ]]; then
-echo "Keychain:"
-security find-identity -p codesigning -v "$SIGNING_KEYCHAIN" | grep -o ".*valid identities found"
-fi
-
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -110,6 +103,13 @@ sign_directory() {
       fi
     fi
 }
+
+echo "Default Keychain:"
+security find-identity -p codesigning -v | grep -o ".*valid identities found"
+if [[ -n "$SIGNING_KEYCHAIN" ]]; then
+echo "Keychain:"
+security find-identity -p codesigning -v "$SIGNING_KEYCHAIN" | grep -o ".*valid identities found"
+fi
 
 # Walk through files and process them
 find "$APP_LOCATION" -type f \( -perm -u+x -o -name "*.dylib" -o -name "*.jar" \) ! -path "*/dylib.dSYM/Contents/*" ! -path "$APP_LOCATION/$APP_EXECUTABLE" | while read -r file; do
