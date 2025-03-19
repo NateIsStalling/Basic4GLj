@@ -10,6 +10,13 @@ usage() {
     exit 1
 }
 
+echo "Default Keychain:"
+security find-identity -p codesigning -v | grep -o ".*valid identities found"
+if [[ -n "$SIGNING_KEYCHAIN" ]]
+echo "Keychain:"
+security find-identity -p codesigning -v "$SIGNING_KEYCHAIN" | grep -o ".*valid identities found"
+fi
+
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -128,6 +135,7 @@ find "$APP_LOCATION" -type f \( -perm -u+x -o -name "*.dylib" -o -name "*.jar" \
 
     # Sign file
     elif [[ -x "$file" ]]; then
+      echo "Sign x $file"
       if [[ -z "$SIGNING_KEYCHAIN" ]]; then
         /usr/bin/codesign --force --timestamp \
             -vvvv \
@@ -147,6 +155,7 @@ find "$APP_LOCATION" -type f \( -perm -u+x -o -name "*.dylib" -o -name "*.jar" \
             "$file"
       fi
     else
+      echo "Sign $file"
       if [[ -z "$SIGNING_KEYCHAIN" ]]; then
         /usr/bin/codesign --force --timestamp \
             -vvvv \
