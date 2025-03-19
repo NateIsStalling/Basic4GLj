@@ -138,6 +138,7 @@ jobs:
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/embedded.provisionprofile
           INTERMEDIATE_CERTIFICATE_PATH=$RUNNER_TEMP/AppleWWDRCA.cer
+          INTERMEDIATE_PEM_PATH=$RUNNER_TEMP/AppleWWDRCA.pem
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           
           # import certificate and provisioning profile from secrets
@@ -145,8 +146,10 @@ jobs:
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode --output "$PP_PATH"
           echo -n "INTERMEDIATE_CERTIFICATE_BASE64" | base64 --decode --output "$INTERMEDIATE_CERTIFICATE_PATH"
           
+          openssl x509 -inform der -in "$INTERMEDIATE_CERTIFICATE_PATH" -out "$INTERMEDIATE_PEM_PATH" || cp "$INTERMEDIATE_CERTIFICATE_PATH" "$INTERMEDIATE_PEM_PATH"
+          
           echo "import certificate to keychain"
-          security import "$INTERMEDIATE_CERTIFICATE_PATH" -k "$KEYCHAIN_PATH" -t cert
+          security add-trusted-cert -d -r unspecified -k "$KEYCHAIN_PATH" "$INTERMEDIATE_PEM_PATH"
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12
           security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           
@@ -214,6 +217,7 @@ jobs:
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/embedded.provisionprofile
           INTERMEDIATE_CERTIFICATE_PATH=$RUNNER_TEMP/AppleWWDRCA.cer
+          INTERMEDIATE_PEM_PATH=$RUNNER_TEMP/AppleWWDRCA.pem
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           
           # import certificate and provisioning profile from secrets
@@ -221,9 +225,10 @@ jobs:
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode > "$PP_PATH"
           echo -n "INTERMEDIATE_CERTIFICATE_BASE64" | base64 --decode > "$INTERMEDIATE_CERTIFICATE_PATH"
           
+          openssl x509 -inform der -in "$INTERMEDIATE_CERTIFICATE_PATH" -out "$INTERMEDIATE_PEM_PATH" || cp "$INTERMEDIATE_CERTIFICATE_PATH" "$INTERMEDIATE_PEM_PATH"
           
           echo "import certificate to keychain"
-          security import "$INTERMEDIATE_CERTIFICATE_PATH" -k "$KEYCHAIN_PATH" -t cert
+          security add-trusted-cert -d -r unspecified -k "$KEYCHAIN_PATH" "$INTERMEDIATE_PEM_PATH"
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12
           security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           
