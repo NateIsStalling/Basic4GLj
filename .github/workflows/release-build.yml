@@ -146,7 +146,7 @@ jobs:
           echo -n "INTERMEDIATE_CERTIFICATE_BASE64" | base64 --decode --output "$INTERMEDIATE_CERTIFICATE_PATH"
           
           echo "import certificate to keychain"
-          security add-trusted-cert -d -r unspecified -k "$KEYCHAIN_PATH" "$INTERMEDIATE_CERTIFICATE_PATH"
+          security import "$INTERMEDIATE_CERTIFICATE_PATH" -k "$KEYCHAIN_PATH" -t cert
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12
           security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           
@@ -223,7 +223,7 @@ jobs:
           
           
           echo "import certificate to keychain"
-          security add-trusted-cert -d -r unspecified -k "$KEYCHAIN_PATH" "$INTERMEDIATE_CERTIFICATE_PATH"
+          security import "$INTERMEDIATE_CERTIFICATE_PATH" -k "$KEYCHAIN_PATH" -t cert
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12
           security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           
