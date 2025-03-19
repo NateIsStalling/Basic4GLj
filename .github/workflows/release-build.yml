@@ -131,18 +131,22 @@ jobs:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.MAC_SIGNING_BUILD_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.MAC_SIGNING_P12_PASSWORD }}
           BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_BASE64 }}
+          INTERMEDIATE_CERTIFICATE_BASE64: ${{ secrets.MAC_SIGNING_APPLE_INTERMEDIATE_CERTIFICATE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.MAC_SIGNING_KEYCHAIN_PASSWORD }}
         run: |
           # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/embedded.provisionprofile
+          INTERMEDIATE_CERTIFICATE_PATH=$RUNNER_TEMP/AppleWWDRCA.cer
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           
           # import certificate and provisioning profile from secrets
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output "$CERTIFICATE_PATH"
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode --output "$PP_PATH"
+          echo -n "INTERMEDIATE_CERTIFICATE_BASE64" | base64 --decode --output "$INTERMEDIATE_CERTIFICATE_PATH"
           
           echo "import certificate to keychain"
+          security add-trusted-cert -d -r unspecified -k "$KEYCHAIN_PATH" "$INTERMEDIATE_CERTIFICATE_PATH"
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12
           security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           
@@ -203,19 +207,23 @@ jobs:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.MAC_SIGNING_BUILD_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.MAC_SIGNING_P12_PASSWORD }}
           BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_BASE64 }}
+          INTERMEDIATE_CERTIFICATE_BASE64: ${{ secrets.MAC_SIGNING_APPLE_INTERMEDIATE_CERTIFICATE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.MAC_SIGNING_KEYCHAIN_PASSWORD }}
         run: |
           # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/embedded.provisionprofile
+          INTERMEDIATE_CERTIFICATE_PATH=$RUNNER_TEMP/AppleWWDRCA.cer
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           
           # import certificate and provisioning profile from secrets
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode > "$PP_PATH"
+          echo -n "INTERMEDIATE_CERTIFICATE_BASE64" | base64 --decode > "$INTERMEDIATE_CERTIFICATE_PATH"
           
           
           echo "import certificate to keychain"
+          security add-trusted-cert -d -r unspecified -k "$KEYCHAIN_PATH" "$INTERMEDIATE_CERTIFICATE_PATH"
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12
           security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
           
