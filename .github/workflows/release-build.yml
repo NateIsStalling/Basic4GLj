@@ -170,13 +170,13 @@ jobs:
         name: 'Create env file'
         run: |
           touch .env
-          echo APP_RELEASE_VERSION="${{ vars.APP_RELEASE_VERSION }}" >> .env
-          echo MAC_SIGNING_TEAM_ID=\'"${{ secrets.MAC_SIGNING_TEAM_ID }}"\' >> .env
-          echo MAC_SIGNING_KEY_USER_NAME=\'"${{ secrets.MAC_SIGNING_KEY_USER_NAME }}"\' >> .env
-          echo MAC_SIGNING_NOTARIZATION_USER_NAME=\'"${{ secrets.MAC_SIGNING_NOTARIZATION_USER_NAME }}"\' >> .env
-          echo MAC_SIGNING_NOTARIZATION_PASSWORD=\'"${{ secrets.MAC_SIGNING_NOTARIZATION_PASSWORD }}"\' >> .env
-          echo MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH=\'"${{ steps.keychain.outputs.PP_PATH }}"\' >> .env
-          echo MAC_SIGNING_KEYCHAIN_PATH=\'"${{ steps.keychain.outputs.KEYCHAIN_PATH }}"\' >> .env
+          echo APP_RELEASE_VERSION=\'${{ vars.APP_RELEASE_VERSION }}\' >> .env
+          echo MAC_SIGNING_TEAM_ID=\'${{ secrets.MAC_SIGNING_TEAM_ID }}\' >> .env
+          echo MAC_SIGNING_KEY_USER_NAME=\'${{ secrets.MAC_SIGNING_KEY_USER_NAME }}\' >> .env
+          echo MAC_SIGNING_NOTARIZATION_USER_NAME=\'${{ secrets.MAC_SIGNING_NOTARIZATION_USER_NAME }}\' >> .env
+          echo MAC_SIGNING_NOTARIZATION_PASSWORD=\'${{ secrets.MAC_SIGNING_NOTARIZATION_PASSWORD }}\' >> .env
+          echo MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH=\'${{ steps.keychain.outputs.PP_PATH }}\' >> .env
+          # echo MAC_SIGNING_KEYCHAIN_PATH=\'${{ steps.keychain.outputs.KEYCHAIN_PATH }}\' >> .env
 
       # BUILD FOR DISTRIBUTION
       - id: build
@@ -262,13 +262,13 @@ jobs:
         name: 'Create env file'
         run: |
           touch .env
-          echo APP_RELEASE_VERSION=\'"${{ vars.APP_RELEASE_VERSION }}"\' >> .env
-          echo MAC_SIGNING_TEAM_ID=\'"${{ secrets.MAC_SIGNING_TEAM_ID }}"\' >> .env
-          echo MAC_SIGNING_KEY_USER_NAME=\'"${{ secrets.MAC_SIGNING_KEY_USER_NAME }}"\' >> .env
-          echo MAC_SIGNING_NOTARIZATION_USER_NAME=\'"${{ secrets.MAC_SIGNING_NOTARIZATION_USER_NAME }}"\' >> .env
-          echo MAC_SIGNING_NOTARIZATION_PASSWORD=\'"${{ secrets.MAC_SIGNING_NOTARIZATION_PASSWORD }}"\' >> .env
-          echo MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH=\'"${{ steps.keychain.outputs.PP_PATH }}"\' >> .env
-          # echo MAC_SIGNING_KEYCHAIN_PATH=\'"${{ steps.keychain.outputs.KEYCHAIN_PATH }}"\' >> .env
+          echo APP_RELEASE_VERSION=\'${{ vars.APP_RELEASE_VERSION }}\' >> .env
+          echo MAC_SIGNING_TEAM_ID=\'${{ secrets.MAC_SIGNING_TEAM_ID }}\' >> .env
+          echo MAC_SIGNING_KEY_USER_NAME=\'${{ secrets.MAC_SIGNING_KEY_USER_NAME }}\' >> .env
+          echo MAC_SIGNING_NOTARIZATION_USER_NAME=\'${{ secrets.MAC_SIGNING_NOTARIZATION_USER_NAME }}\' >> .env
+          echo MAC_SIGNING_NOTARIZATION_PASSWORD=\'${{ secrets.MAC_SIGNING_NOTARIZATION_PASSWORD }}\' >> .env
+          echo MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH=\'${{ steps.keychain.outputs.PP_PATH }}\' >> .env
+          # echo MAC_SIGNING_KEYCHAIN_PATH=\'${{ steps.keychain.outputs.KEYCHAIN_PATH }}\' >> .env
 
       # BUILD FOR DISTRIBUTION
       - id: build
