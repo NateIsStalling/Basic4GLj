@@ -12,7 +12,7 @@ usage() {
 
 echo "Default Keychain:"
 security find-identity -p codesigning -v | grep -o ".*valid identities found"
-if [[ -n "$SIGNING_KEYCHAIN" ]]
+if [[ -n "$SIGNING_KEYCHAIN" ]]; then
 echo "Keychain:"
 security find-identity -p codesigning -v "$SIGNING_KEYCHAIN" | grep -o ".*valid identities found"
 fi
