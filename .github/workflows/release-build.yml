@@ -157,7 +157,8 @@ jobs:
           echo "import certificate to keychain"
           # security add-trusted-cert -d -r unspecified -k "$KEYCHAIN_PATH" "$INTERMEDIATE_PEM_PATH"
           security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
-          security list-keychains -d user -s $(security list-keychains -d user | sed -e s/\"//g) "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
           
           # apply provisioning profile
           echo "PP_PATH=\"$PP_PATH\"" >> $GITHUB_OUTPUT
@@ -174,7 +175,7 @@ jobs:
           echo MAC_SIGNING_NOTARIZATION_USER_NAME=\""${{ secrets.MAC_SIGNING_NOTARIZATION_USER_NAME }}"\" >> .env
           echo MAC_SIGNING_NOTARIZATION_PASSWORD=\""${{ secrets.MAC_SIGNING_NOTARIZATION_PASSWORD }}"\" >> .env
           echo MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH=\""${{ steps.keychain.outputs.PP_PATH }}"\" >> .env
-          # echo MAC_SIGNING_KEYCHAIN_PATH=\""${{ steps.keychain.outputs.KEYCHAIN_PATH }}"\" >> .env
+          echo MAC_SIGNING_KEYCHAIN_PATH=\""${{ steps.keychain.outputs.KEYCHAIN_PATH }}"\" >> .env
 
       # BUILD FOR DISTRIBUTION
       - id: build
