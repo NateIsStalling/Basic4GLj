@@ -59,18 +59,18 @@ sign_jar_dylib() {
       /usr/bin/codesign --remove-signature "$file"
       if [[ -z "$SIGNING_KEYCHAIN" ]]; then
         /usr/bin/codesign --force \
+            -vvvv \
             --timestamp \
             --options runtime \
             --sign "$SIGNING_IDENTITY" \
-            -vvvv \
             "$file"
       else
         /usr/bin/codesign --force \
+            -vvvv \
             --timestamp \
             --options runtime \
             --sign "$SIGNING_IDENTITY" \
             --keychain "$SIGNING_KEYCHAIN" \
-            -vvvv \
             "$file"
       fi
 
@@ -85,20 +85,20 @@ sign_directory() {
     if [[ -d "$dir" ]]; then
       if [[ -z "$SIGNING_KEYCHAIN" ]]; then
         /usr/bin/codesign --force \
+            -vvvv \
             --timestamp \
             --sign "$SIGNING_IDENTITY" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
-            -vvvv \
             "$dir"
       else
         /usr/bin/codesign --force \
+            -vvvv \
             --timestamp \
             --sign "$SIGNING_IDENTITY" \
             --keychain "$SIGNING_KEYCHAIN" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
-            -vvvv \
             "$dir"
       fi
     fi
@@ -130,39 +130,39 @@ find "$APP_LOCATION" -type f \( -perm -u+x -o -name "*.dylib" -o -name "*.jar" \
     elif [[ -x "$file" ]]; then
       if [[ -z "$SIGNING_KEYCHAIN" ]]; then
         /usr/bin/codesign --force --timestamp \
+            -vvvv \
             --options runtime \
             --sign "$SIGNING_IDENTITY" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
-            -vvvv \
             "$file"
       else
         /usr/bin/codesign --force --timestamp \
+            -vvvv \
             --options runtime \
             --sign "$SIGNING_IDENTITY" \
             --keychain "$SIGNING_KEYCHAIN" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
-            -vvvv \
             "$file"
       fi
     else
       if [[ -z "$SIGNING_KEYCHAIN" ]]; then
         /usr/bin/codesign --force --timestamp \
+            -vvvv \
             --options runtime \
             --sign "$SIGNING_IDENTITY" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
-            -vvvv \
             "$file"
       else
         /usr/bin/codesign --force --timestamp \
+            -vvvv \
             --options runtime \
             --sign "$SIGNING_IDENTITY" \
             --keychain "$SIGNING_KEYCHAIN" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
-            -vvvv \
             "$file"
       fi
     fi
@@ -177,20 +177,20 @@ sign_directory "$APP_LOCATION/Contents/Frameworks"
 if [[ -z "$SIGNING_KEYCHAIN" ]]; then
   /usr/bin/codesign --force \
       --timestamp \
+      -vvvv \
       --options runtime \
       --sign "$SIGNING_IDENTITY" \
       --entitlements "$ENTITLEMENTS" \
       --prefix "$IDENTIFIER_PREFIX" \
-      -vvvv \
       "$APP_LOCATION"
 else
   /usr/bin/codesign --force \
       --timestamp \
+      -vvvv \
       --options runtime \
       --sign "$SIGNING_IDENTITY" \
       --keychain "$SIGNING_KEYCHAIN" \
       --entitlements "$ENTITLEMENTS" \
       --prefix "$IDENTIFIER_PREFIX" \
-      -vvvv
       "$APP_LOCATION"
 fi
