@@ -1,0 +1,20 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="FieldNamingConvention" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="NewMethodNamingConvention" enabled="true" level="WARNING" enabled_by_default="true">
+      <extension name="InstanceMethodNamingConvention" enabled="true">
+        <option name="m_regex" value="[a-z][A-Za-z\d]*" />
+        <option name="m_minLength" value="1" />
+        <option name="m_maxLength" value="32" />
+      </extension>
+      <extension name="StaticMethodNamingConvention" enabled="true">
+        <option name="m_regex" value="[a-z][A-Za-z\d]*" />
+        <option name="m_minLength" value="1" />
+        <option name="m_maxLength" value="32" />
+      </extension>
+    </inspection_tool>
+    <inspection_tool class="PackageVisibleField" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="UpperCaseFieldNameNotConstant" enabled="true" level="WARNING" enabled_by_default="true" />
+  </profile>
+</component>
