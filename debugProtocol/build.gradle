@@ -33,6 +33,9 @@ spotless {
         googleJavaFormat().reflowLongStrings().skipJavadocFormatting()
         // fix formatting of type annotations
         formatAnnotations()
+
+        trimTrailingWhitespace()
+        leadingSpacesToTabs()
     }
 }
 

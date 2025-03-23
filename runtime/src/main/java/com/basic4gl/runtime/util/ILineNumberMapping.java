@@ -8,20 +8,20 @@ package com.basic4gl.runtime.util;
  */
 public abstract class ILineNumberMapping {
 
-  /**
-   * Return the filename and line number corresponding to a main line number.
-   */
-  public abstract void getSourceFromMain(
-      Mutable<String> filename, Mutable<Integer> fileLineNo, int lineNo);
+/**
+* Return the filename and line number corresponding to a main line number.
+*/
+public abstract void getSourceFromMain(
+	Mutable<String> filename, Mutable<Integer> fileLineNo, int lineNo);
 
-  /**
-   * Return line number within a specific file that corresponds to a main line number.
-   * Returns -1 if line number does not correspond to the file specified.
-   */
-  public abstract int getSourceFromMain(String filename, int lineNo);
+/**
+* Return line number within a specific file that corresponds to a main line number.
+* Returns -1 if line number does not correspond to the file specified.
+*/
+public abstract int getSourceFromMain(String filename, int lineNo);
 
-  /**
-   * Returns main line number from file and line number
-   */
-  public abstract int getMainFromSource(String filename, int fileLineNo);
+/**
+* Returns main line number from file and line number
+*/
+public abstract int getMainFromSource(String filename, int fileLineNo);
 }

@@ -14,9 +14,9 @@ package com.basic4gl.runtime.types;
  * Other types (arrays and structures) are loaded as pointers.
  */
 public class BasicValType {
-  public static final int VTP_INT = -5;
-  public static final int VTP_REAL = -4;
-  public static final int VTP_STRING = -3;
-  public static final int VTP_NULL = -2;
-  public static final int VTP_UNDEFINED = -1;
+public static final int VTP_INT = -5;
+public static final int VTP_REAL = -4;
+public static final int VTP_STRING = -3;
+public static final int VTP_NULL = -2;
+public static final int VTP_UNDEFINED = -1;
 }

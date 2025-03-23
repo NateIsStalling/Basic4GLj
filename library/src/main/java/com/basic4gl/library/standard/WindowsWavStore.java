@@ -6,11 +6,11 @@ import com.basic4gl.runtime.util.ResourceStore;
  * Used to track WindowsWavObjects
  */
 class WindowsWavStore extends ResourceStore<WindowsWav> {
-  protected void deleteElement(int index) {
-    setValue(index, null);
-  }
+protected void deleteElement(int index) {
+	setValue(index, null);
+}
 
-  public WindowsWavStore() {
-    super(null);
-  }
+public WindowsWavStore() {
+	super(null);
+}
 }

@@ -9,21 +9,21 @@ package com.basic4gl.compiler.util;
  */
 public class ExtendedFunctionSpecification {
 
-  /**
-   * Pointer to main specification
-   */
-  public FunctionSpecification spec;
+/**
+* Pointer to main specification
+*/
+public FunctionSpecification spec;
 
-  // Function details
+// Function details
 
-  /**
-   * True = builtin, false = plugin DLL function
-   */
-  public boolean builtin;
+/**
+* True = builtin, false = plugin DLL function
+*/
+public boolean builtin;
 
-  /**
-   * Index of DLL (if applicable).
-   * Note spec.index holds index of function WITHIN the DLL.
-   */
-  public int pluginIndex;
+/**
+* Index of DLL (if applicable).
+* Note spec.index holds index of function WITHIN the DLL.
+*/
+public int pluginIndex;
 }

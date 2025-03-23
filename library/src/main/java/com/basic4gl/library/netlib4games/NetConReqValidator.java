@@ -7,7 +7,7 @@ package com.basic4gl.library.netlib4games;
  * received a valid connection request (rather than just a stray packet).
  */
 public abstract class NetConReqValidator {
-  public NetConReqValidator() {}
+public NetConReqValidator() {}
 
-  public abstract boolean isConnectionRequest(NetSimplePacket packet, String[] requestStringBuffer);
+public abstract boolean isConnectionRequest(NetSimplePacket packet, String[] requestStringBuffer);
 }
