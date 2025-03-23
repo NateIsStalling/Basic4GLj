@@ -8,7 +8,7 @@ import java.io.IOException;
  * Created by Nate on 2/18/2015.
  */
 public interface Streamable {
-boolean streamIn(DataInputStream stream) throws IOException;
+	boolean streamIn(DataInputStream stream) throws IOException;
 
-void streamOut(DataOutputStream stream) throws IOException;
+	void streamOut(DataOutputStream stream) throws IOException;
 }

@@ -7,80 +7,80 @@ import com.basic4gl.runtime.Store;
  */
 public abstract class ResourceStore<T> extends Resources {
 
-protected Store<T> store;
+	protected Store<T> store;
 
-protected abstract void deleteElement(int index);
+	protected abstract void deleteElement(int index);
 
-@SuppressWarnings("unchecked")
-public ResourceStore(T blankElement) {
-	store = new Store<>(blankElement);
-}
-
-public void clear() {
-
-	// Delete each individual element
-	for (int i = 0; i < store.getArray().size(); i++) {
-	if (store.getValAllocated().get(i)) {
-		deleteElement(i);
-	}
+	@SuppressWarnings("unchecked")
+	public ResourceStore(T blankElement) {
+		store = new Store<>(blankElement);
 	}
 
-	// Clear store
-	store.clear();
-}
+	public void clear() {
 
-// Pass calls through to internal store
-public boolean isIndexValid(int index) {
-	return store.isIndexValid(index);
-}
+		// Delete each individual element
+		for (int i = 0; i < store.getArray().size(); i++) {
+			if (store.getValAllocated().get(i)) {
+				deleteElement(i);
+			}
+		}
 
-public boolean isIndexStored(int index) {
-	return store.isIndexStored(index);
-}
-
-public T getValueAt(int index) {
-	return store.getValueAt(index);
-}
-
-public void setValue(int index, T value) {
-	store.setValue(index, value);
-}
-
-public int alloc() {
-	return store.alloc();
-}
-
-public int alloc(T element) {
-	if (element.equals(store.getBlankElement())) {
-	return -1;
-	} else {
-	int index = alloc();
-	setValue(index, element);
-	return index;
+		// Clear store
+		store.clear();
 	}
-}
 
-/**
-* Remove an element without freeing it.
-* Calling code is responsible for freeing the resource.
-* @param index
-*/
-public void remove(int index) {
-	store.freeAtIndex(index);
-}
-
-/**
-* Remove and free element.
-* @param index
-*/
-public void free(int index) {
-	if (isIndexValid(index)) {
-	deleteElement(index);
-	remove(index);
+	// Pass calls through to internal store
+	public boolean isIndexValid(int index) {
+		return store.isIndexValid(index);
 	}
-}
 
-public Store<T> getStore() {
-	return store;
-}
+	public boolean isIndexStored(int index) {
+		return store.isIndexStored(index);
+	}
+
+	public T getValueAt(int index) {
+		return store.getValueAt(index);
+	}
+
+	public void setValue(int index, T value) {
+		store.setValue(index, value);
+	}
+
+	public int alloc() {
+		return store.alloc();
+	}
+
+	public int alloc(T element) {
+		if (element.equals(store.getBlankElement())) {
+			return -1;
+		} else {
+			int index = alloc();
+			setValue(index, element);
+			return index;
+		}
+	}
+
+	/**
+	 * Remove an element without freeing it.
+	 * Calling code is responsible for freeing the resource.
+	 * @param index
+	 */
+	public void remove(int index) {
+		store.freeAtIndex(index);
+	}
+
+	/**
+	 * Remove and free element.
+	 * @param index
+	 */
+	public void free(int index) {
+		if (isIndexValid(index)) {
+			deleteElement(index);
+			remove(index);
+		}
+	}
+
+	public Store<T> getStore() {
+		return store;
+	}
 }

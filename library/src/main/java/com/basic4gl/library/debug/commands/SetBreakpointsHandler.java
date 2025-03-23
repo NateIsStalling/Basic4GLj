@@ -7,42 +7,42 @@ import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
 
 public class SetBreakpointsHandler {
-private final Debugger mDebugger;
-private final TomVM mVM;
+	private final Debugger mDebugger;
+	private final TomVM mVM;
 
-public SetBreakpointsHandler(Debugger debugger, TomVM vm) {
-	mDebugger = debugger;
-	mVM = vm;
-}
-
-public void handle(SetBreakpointsCommand command) {
-	if (command.isSourceModified()) {
-	// TODO determine how to handle isSourceModified;
-	//  unable to verify breakpoints of modified code without recompiling
-	return;
+	public SetBreakpointsHandler(Debugger debugger, TomVM vm) {
+		mDebugger = debugger;
+		mVM = vm;
 	}
 
-	String filename = command.getSource().path;
+	public void handle(SetBreakpointsCommand command) {
+		if (command.isSourceModified()) {
+			// TODO determine how to handle isSourceModified;
+			//  unable to verify breakpoints of modified code without recompiling
+			return;
+		}
 
-	mDebugger.clearUserBreakPoints(filename);
+		String filename = command.getSource().path;
 
-	for (SourceBreakpoint breakpoint : command.getBreakpoints()) {
-	int line = breakpoint.line;
-	Breakpoint verifiedBreakpoint = new Breakpoint();
-	mDebugger.addUserBreakPoint(filename, line);
+		mDebugger.clearUserBreakPoints(filename);
 
-	verifiedBreakpoint.source = command.getSource();
-	verifiedBreakpoint.line = breakpoint.line;
+		for (SourceBreakpoint breakpoint : command.getBreakpoints()) {
+			int line = breakpoint.line;
+			Breakpoint verifiedBreakpoint = new Breakpoint();
+			mDebugger.addUserBreakPoint(filename, line);
 
-	// TODO decide how to handle breakpoint column;
-	// currently can only handle breakpoints on the first instruction of a line
-	// verifiedBreakpoint.column = breakpoint.column;
+			verifiedBreakpoint.source = command.getSource();
+			verifiedBreakpoint.line = breakpoint.line;
 
-	verifiedBreakpoint.verified = mDebugger.isUserBreakPoint(filename, line);
+			// TODO decide how to handle breakpoint column;
+			// currently can only handle breakpoints on the first instruction of a line
+			// verifiedBreakpoint.column = breakpoint.column;
 
-	// TODO send verifiedBreakpoint in response
+			verifiedBreakpoint.verified = mDebugger.isUserBreakPoint(filename, line);
+
+			// TODO send verifiedBreakpoint in response
+		}
+
+		mVM.repatchBreakpoints();
 	}
-
-	mVM.repatchBreakpoints();
-}
 }

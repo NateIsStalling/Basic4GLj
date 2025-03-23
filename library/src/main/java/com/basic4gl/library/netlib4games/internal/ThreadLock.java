@@ -7,44 +7,44 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ThreadLock {
-private int m_lockCount;
-private final ReentrantLock m_lock;
+	private int m_lockCount;
+	private final ReentrantLock m_lock;
 
-public ThreadLock() {
-	m_lockCount = (0);
-	m_lock = new ReentrantLock();
-}
-
-public void dispose() {
-	m_lock.notifyAll();
-	m_lock.unlock();
-}
-
-// Member access
-public ReentrantLock getLockHandle() {
-	return m_lock;
-}
-
-// Methods
-public boolean lock(long timeout) {
-	boolean result = false;
-	try {
-	result = m_lock.tryLock(timeout, TimeUnit.MILLISECONDS);
-	} catch (InterruptedException e) {
-	return false;
+	public ThreadLock() {
+		m_lockCount = (0);
+		m_lock = new ReentrantLock();
 	}
-	if (result) {
-	m_lockCount++;
+
+	public void dispose() {
+		m_lock.notifyAll();
+		m_lock.unlock();
 	}
-	return result;
-}
 
-public boolean lock() {
-	return lock(INFINITE);
-}
+	// Member access
+	public ReentrantLock getLockHandle() {
+		return m_lock;
+	}
 
-public void unlock() {
-	m_lockCount--;
-	m_lock.unlock();
-}
+	// Methods
+	public boolean lock(long timeout) {
+		boolean result = false;
+		try {
+			result = m_lock.tryLock(timeout, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			return false;
+		}
+		if (result) {
+			m_lockCount++;
+		}
+		return result;
+	}
+
+	public boolean lock() {
+		return lock(INFINITE);
+	}
+
+	public void unlock() {
+		m_lockCount--;
+		m_lock.unlock();
+	}
 }

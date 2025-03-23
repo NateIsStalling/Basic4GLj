@@ -4,29 +4,29 @@ import com.basic4gl.lib.util.Library;
 import java.util.List;
 
 public interface IDebugger {
-void beginSessionConfiguration();
+	void beginSessionConfiguration();
 
-void commitSessionConfiguration();
+	void commitSessionConfiguration();
 
-void continueApplication();
+	void continueApplication();
 
-void pauseApplication();
+	void pauseApplication();
 
-void resumeApplication();
+	void resumeApplication();
 
-void runApplication(Library builder, String currentDirectory, String libraryPath);
+	void runApplication(Library builder, String currentDirectory, String libraryPath);
 
-void stopApplication();
+	void stopApplication();
 
-void step(int type);
+	void step(int type);
 
-void terminateApplication();
+	void terminateApplication();
 
-boolean setBreakpoints(String filename, List<Integer> breakpoints);
+	boolean setBreakpoints(String filename, List<Integer> breakpoints);
 
-boolean toggleBreakpoint(String filename, int line);
+	boolean toggleBreakpoint(String filename, int line);
 
-int evaluateWatch(String watch, boolean canCallFunc);
+	int evaluateWatch(String watch, boolean canCallFunc);
 
-void refreshCallStack();
+	void refreshCallStack();
 }

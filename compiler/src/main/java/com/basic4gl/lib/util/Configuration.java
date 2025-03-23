@@ -8,57 +8,57 @@ import java.util.List;
  * Created by Nate on 2/15/2015.
  */
 public class Configuration implements Serializable {
-public static final int PARAM_HEADING = -1;
-public static final int PARAM_DIVIDER = 0;
-public static final int PARAM_STRING = 1;
-public static final int PARAM_INT = 2;
-public static final int PARAM_BOOL = 3;
-public static final int PARAM_CHOICE = 4;
+	public static final int PARAM_HEADING = -1;
+	public static final int PARAM_DIVIDER = 0;
+	public static final int PARAM_STRING = 1;
+	public static final int PARAM_INT = 2;
+	public static final int PARAM_BOOL = 3;
+	public static final int PARAM_CHOICE = 4;
 
-private List<String[]> fieldNames = new ArrayList<>();
-private List<Integer> parameterTypes = new ArrayList<>();
-private List<String> values = new ArrayList<>();
+	private List<String[]> fieldNames = new ArrayList<>();
+	private List<Integer> parameterTypes = new ArrayList<>();
+	private List<String> values = new ArrayList<>();
 
-public Configuration() {}
+	public Configuration() {}
 
-public Configuration(Configuration config) {
-	fieldNames = new ArrayList<>(config.fieldNames.size());
-	for (String[] item : config.fieldNames) {
-	fieldNames.add(item.clone());
+	public Configuration(Configuration config) {
+		fieldNames = new ArrayList<>(config.fieldNames.size());
+		for (String[] item : config.fieldNames) {
+			fieldNames.add(item.clone());
+		}
+		parameterTypes = new ArrayList<>(config.parameterTypes.size());
+		for (Integer item : config.parameterTypes) {
+			parameterTypes.add(item);
+		}
+		values = new ArrayList<>(config.values.size());
+		for (String item : config.values) {
+			values.add(item);
+		}
 	}
-	parameterTypes = new ArrayList<>(config.parameterTypes.size());
-	for (Integer item : config.parameterTypes) {
-	parameterTypes.add(item);
+
+	public int getSettingCount() {
+		return fieldNames.size();
 	}
-	values = new ArrayList<>(config.values.size());
-	for (String item : config.values) {
-	values.add(item);
+
+	public void addSetting(String[] field, int param, String val) {
+		fieldNames.add(field);
+		parameterTypes.add(param);
+		values.add(val);
 	}
-}
 
-public int getSettingCount() {
-	return fieldNames.size();
-}
+	public String[] getField(int index) {
+		return fieldNames.get(index);
+	}
 
-public void addSetting(String[] field, int param, String val) {
-	fieldNames.add(field);
-	parameterTypes.add(param);
-	values.add(val);
-}
+	public int getParamType(int index) {
+		return parameterTypes.get(index);
+	}
 
-public String[] getField(int index) {
-	return fieldNames.get(index);
-}
+	public String getValue(int index) {
+		return values.get(index);
+	}
 
-public int getParamType(int index) {
-	return parameterTypes.get(index);
-}
-
-public String getValue(int index) {
-	return values.get(index);
-}
-
-public void setValue(int index, String val) {
-	values.set(index, val);
-}
+	public void setValue(int index, String val) {
+		values.set(index, val);
+	}
 }

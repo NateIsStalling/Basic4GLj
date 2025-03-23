@@ -1,38 +1,38 @@
 package com.basic4gl.debug.protocol.types;
 
 public class VMStatus {
-// TODO replace with exited event
-public boolean done;
+	// TODO replace with exited event
+	public boolean done;
 
-public boolean hasError;
+	public boolean hasError;
 
-public String error;
+	public String error;
 
-public VMStatus() {}
+	public VMStatus() {}
 
-public VMStatus(boolean done, boolean hasError, String error) {
-	this.done = done;
-	this.hasError = hasError;
-	this.error = error;
-}
-
-public static VMStatus copy(VMStatus vmStatus) {
-	if (vmStatus == null) {
-	return null;
+	public VMStatus(boolean done, boolean hasError, String error) {
+		this.done = done;
+		this.hasError = hasError;
+		this.error = error;
 	}
 
-	return new VMStatus(vmStatus.done, vmStatus.hasError, vmStatus.error);
-}
+	public static VMStatus copy(VMStatus vmStatus) {
+		if (vmStatus == null) {
+			return null;
+		}
 
-public boolean isDone() {
-	return done;
-}
+		return new VMStatus(vmStatus.done, vmStatus.hasError, vmStatus.error);
+	}
 
-public boolean hasError() {
-	return hasError;
-}
+	public boolean isDone() {
+		return done;
+	}
 
-public String getError() {
-	return error;
-}
+	public boolean hasError() {
+		return hasError;
+	}
+
+	public String getError() {
+		return error;
+	}
 }

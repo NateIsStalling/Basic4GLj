@@ -3,32 +3,32 @@ package com.basic4gl.library.netlib4games;
 import static com.basic4gl.library.netlib4games.NetLayer1.getTickCount;
 
 public class NetLogger {
-public interface NetLogHandler {
-	void netLog(String text);
-}
-
-public static class DebugLogger implements NetLogHandler {
-	@Override
-	public void netLog(String text) {
-	System.out.println(("Net event (" + getTickCount() + "): " + text + "\r\n"));
+	public interface NetLogHandler {
+		void netLog(String text);
 	}
-}
 
-private static NetLogHandler handler;
+	public static class DebugLogger implements NetLogHandler {
+		@Override
+		public void netLog(String text) {
+			System.out.println(("Net event (" + getTickCount() + "): " + text + "\r\n"));
+		}
+	}
 
-private NetLogger() {
-	initDebugNetLogger();
-}
+	private static NetLogHandler handler;
 
-public static void netLog(String text) {
-	handler.netLog(text);
-}
+	private NetLogger() {
+		initDebugNetLogger();
+	}
 
-public static void setNetLogger(NetLogHandler handler) {
-	NetLogger.handler = handler;
-}
+	public static void netLog(String text) {
+		handler.netLog(text);
+	}
 
-public static void initDebugNetLogger() {
-	NetLogger.handler = new DebugLogger();
-}
+	public static void setNetLogger(NetLogHandler handler) {
+		NetLogger.handler = handler;
+	}
+
+	public static void initDebugNetLogger() {
+		NetLogger.handler = new DebugLogger();
+	}
 }

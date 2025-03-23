@@ -15,194 +15,193 @@ import org.lwjgl.openal.*;
  */
 public class SoundEngine extends HasErrorState {
 
-private boolean initialized = false;
-private int voiceCount;
+	private boolean initialized = false;
+	private int voiceCount;
 
-// original source used an uint collection to track AL voice handles;
-// track Sound wrapper objects instead here
-private Sound[] voiceSources;
-private List<Integer> queue =
-	new ArrayList<>(); // Queued voices. Each entry indexes into voices array.
+	// original source used an uint collection to track AL voice handles;
+	// track Sound wrapper objects instead here
+	private Sound[] voiceSources;
+	private List<Integer> queue = new ArrayList<>(); // Queued voices. Each entry indexes into voices array.
 
-public SoundEngine(int voiceCount) {
-	assertTrue(voiceCount > 0);
-	assertTrue(voiceCount <= 1000);
+	public SoundEngine(int voiceCount) {
+		assertTrue(voiceCount > 0);
+		assertTrue(voiceCount <= 1000);
 
-	this.voiceCount = voiceCount;
-	this.voiceSources = new Sound[voiceCount];
+		this.voiceCount = voiceCount;
+		this.voiceSources = new Sound[voiceCount];
 
-	boolean hasError = false;
-	try {
-	Sound.init();
-	} catch (Exception e) {
-	e.printStackTrace();
-	setError(e.getMessage());
-	hasError = true;
+		boolean hasError = false;
+		try {
+			Sound.init();
+		} catch (Exception e) {
+			e.printStackTrace();
+			setError(e.getMessage());
+			hasError = true;
+		}
+
+		int error;
+		if ((error = AL10.alGetError()) != AL10.AL_NO_ERROR) {
+			setError(ALUtil.getALErrorString(error));
+			hasError = true;
+		}
+
+		if (hasError) {
+			voiceSources = null;
+			initialized = false;
+			return;
+		}
+
+		// setup voice queue
+		rebuildQueue();
+
+		initialized = true;
 	}
 
-	int error;
-	if ((error = AL10.alGetError()) != AL10.AL_NO_ERROR) {
-	setError(ALUtil.getALErrorString(error));
-	hasError = true;
+	public void dispose() {
+		Sound.cleanup();
+		voiceSources = null;
+		initialized = false;
 	}
 
-	if (hasError) {
-	voiceSources = null;
-	initialized = false;
-	return;
+	private void rebuildQueue() {
+
+		// Rebuild queue of voices
+		queue.clear();
+		for (int i = 0; i < voiceCount; i++) {
+			queue.add(i);
+		}
 	}
 
-	// setup voice queue
-	rebuildQueue();
+	private int findFreeVoice(Sound forSound) {
+		int index = -1;
+		boolean found = false;
 
-	initialized = true;
-}
+		List<Integer> temp = new ArrayList<>();
+		// Find a free voice
 
-public void dispose() {
-	Sound.cleanup();
-	voiceSources = null;
-	initialized = false;
-}
+		// First look for a free voice that isn't playing
+		Iterator<Integer> i = queue.iterator();
+		while (i.hasNext()) {
+			// Find source
+			index = i.next();
+			Sound source = voiceSources[index];
 
-private void rebuildQueue() {
+			// Check if it's playing
+			boolean isPlaying = source != null && source.isPlaying();
 
-	// Rebuild queue of voices
-	queue.clear();
-	for (int i = 0; i < voiceCount; i++) {
-	queue.add(i);
-	}
-}
+			if (!isPlaying) {
 
-private int findFreeVoice(Sound forSound) {
-	int index = -1;
-	boolean found = false;
+				// Move source to back of queue
+				i.remove();
+				temp.add(index);
 
-	List<Integer> temp = new ArrayList<>();
-	// Find a free voice
+				// Use this source as our "voice"
+				found = true;
+				break;
+			}
+		}
+		queue.addAll(temp);
+		temp.clear();
+		if (found) {
+			voiceSources[index] = forSound;
+			return index;
+		}
 
-	// First look for a free voice that isn't playing
-	Iterator<Integer> i = queue.iterator();
-	while (i.hasNext()) {
-	// Find source
-	index = i.next();
-	Sound source = voiceSources[index];
+		// No non-playing source found.
+		// Now we look for the oldest playing source that isn't looping
+		i = queue.iterator();
+		while (i.hasNext()) {
 
-	// Check if it's playing
-	boolean isPlaying = source != null && source.isPlaying();
+			// Find source
+			index = i.next();
+			Sound source = voiceSources[index];
 
-	if (!isPlaying) {
+			// Check if it's looping
+			if (source == null || !source.isLooping()) {
 
-		// Move source to back of queue
-		i.remove();
-		temp.add(index);
+				// Stop old sound
+				if (source != null) {
+					source.stop();
+				}
 
-		// Use this source as our "voice"
-		found = true;
-		break;
-	}
-	}
-	queue.addAll(temp);
-	temp.clear();
-	if (found) {
-	voiceSources[index] = forSound;
-	return index;
-	}
+				// Move source to back of queue
+				i.remove();
+				temp.add(index);
 
-	// No non-playing source found.
-	// Now we look for the oldest playing source that isn't looping
-	i = queue.iterator();
-	while (i.hasNext()) {
+				// Use this source as our "voice"
+				found = true;
+				break;
+			}
+		}
+		queue.addAll(temp);
+		temp.clear();
+		if (found) {
+			voiceSources[index] = forSound;
+			return index;
+		}
 
-	// Find source
-	index = i.next();
-	Sound source = voiceSources[index];
-
-	// Check if it's looping
-	if (source == null || !source.isLooping()) {
+		// All sounds are playing and looping.
+		// Just use oldest voice
+		index = queue.get(0);
+		Sound source = voiceSources[index];
 
 		// Stop old sound
 		if (source != null) {
-		source.stop();
+			source.stop();
 		}
 
 		// Move source to back of queue
-		i.remove();
-		temp.add(index);
+		queue.remove(0);
+		queue.add(index);
 
-		// Use this source as our "voice"
-		found = true;
-		break;
-	}
-	}
-	queue.addAll(temp);
-	temp.clear();
-	if (found) {
-	voiceSources[index] = forSound;
-	return index;
+		voiceSources[index] = forSound;
+		return index;
 	}
 
-	// All sounds are playing and looping.
-	// Just use oldest voice
-	index = queue.get(0);
-	Sound source = voiceSources[index];
+	public int playSound(Sound sound, float gain, boolean looped) {
+		if (!initialized) {
+			return -1;
+		}
+		if (sound.hasError()) {
+			setError("Error opening sound: " + sound.getError());
+			return -1;
+		}
 
-	// Stop old sound
-	if (source != null) {
-	source.stop();
+		// Find a suitable voice
+		int index = findFreeVoice(sound);
+
+		// Set looping state
+		sound.setLooping(looped);
+
+		// Set gain
+		sound.setGain(gain);
+
+		sound.play();
+
+		clearError();
+		return index;
 	}
 
-	// Move source to back of queue
-	queue.remove(0);
-	queue.add(index);
+	public void stopVoice(int index) {
+		if (!initialized) {
+			return;
+		}
 
-	voiceSources[index] = forSound;
-	return index;
-}
-
-public int playSound(Sound sound, float gain, boolean looped) {
-	if (!initialized) {
-	return -1;
-	}
-	if (sound.hasError()) {
-	setError("Error opening sound: " + sound.getError());
-	return -1;
+		if (index >= 0 && index < voiceCount) {
+			Sound source = voiceSources[index];
+			source.stop();
+		}
 	}
 
-	// Find a suitable voice
-	int index = findFreeVoice(sound);
+	public void stopAll() {
+		if (!initialized) {
+			return;
+		}
 
-	// Set looping state
-	sound.setLooping(looped);
-
-	// Set gain
-	sound.setGain(gain);
-
-	sound.play();
-
-	clearError();
-	return index;
-}
-
-public void stopVoice(int index) {
-	if (!initialized) {
-	return;
+		for (int i = 0; i < voiceCount; i++) {
+			Sound source = voiceSources[i];
+			source.stop();
+		}
+		rebuildQueue();
 	}
-
-	if (index >= 0 && index < voiceCount) {
-	Sound source = voiceSources[index];
-	source.stop();
-	}
-}
-
-public void stopAll() {
-	if (!initialized) {
-	return;
-	}
-
-	for (int i = 0; i < voiceCount; i++) {
-	Sound source = voiceSources[i];
-	source.stop();
-	}
-	rebuildQueue();
-}
 }

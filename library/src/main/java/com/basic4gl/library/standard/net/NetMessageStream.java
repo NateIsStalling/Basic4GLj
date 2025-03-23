@@ -14,75 +14,74 @@ import java.nio.charset.StandardCharsets;
  * messages.
  */
 public class NetMessageStream extends FileStream {
-private NetConnectionStore parent;
+	private NetConnectionStore parent;
 
-/**
-* Note: We use connection handles rather than
-* references, so that we can fail gracefully
-* if the connection is deleted before we
-* have finalised the message.
-*/
-public int connectionHandle;
+	/**
+	 * Note: We use connection handles rather than
+	 * references, so that we can fail gracefully
+	 * if the connection is deleted before we
+	 * have finalised the message.
+	 */
+	public int connectionHandle;
 
-public int channel;
-public boolean reliable;
-public boolean smoothed;
+	public int channel;
+	public boolean reliable;
+	public boolean smoothed;
 
-public NetMessageStream(
-	NetConnectionStore parent,
-	int connectionHandle,
-	int channel,
-	boolean reliable,
-	boolean smoothed,
-	InputStream in) {
-	super(in);
-	if (parent == null) {
-	throw new IllegalArgumentException("NetConnectionStore required");
-	}
-	this.parent = parent;
-	this.connectionHandle = connectionHandle;
-	this.channel = channel;
-	this.reliable = reliable;
-	this.smoothed = smoothed;
-}
-
-public NetMessageStream(
-	NetConnectionStore parent,
-	int connectionHandle,
-	int channel,
-	boolean reliable,
-	boolean smoothed,
-	OutputStream out) {
-
-	super(out);
-	if (parent == null) {
-	throw new IllegalArgumentException("NetConnectionStore required");
-	}
-	this.parent = parent;
-	this.connectionHandle = connectionHandle;
-	this.channel = channel;
-	this.reliable = reliable;
-	this.smoothed = smoothed;
-}
-
-@Override
-public void close() {
-	if (out != null && parent != null && parent.isIndexStored(connectionHandle)) {
-
-	// Send pending packet
-	ByteArrayOutputStream stream =
-		(ByteArrayOutputStream) out; // (Net messages are always string streams)
-	NetConL2 connection = parent.getValueAt(connectionHandle);
-
-	String message = stream.toString(StandardCharsets.UTF_8);
-
-	if (channel >= 0 && channel < NETL2_MAXCHANNELS && message != null) {
-		connection.send(stream.toByteArray(), message.length(), channel, reliable, smoothed);
-	}
+	public NetMessageStream(
+			NetConnectionStore parent,
+			int connectionHandle,
+			int channel,
+			boolean reliable,
+			boolean smoothed,
+			InputStream in) {
+		super(in);
+		if (parent == null) {
+			throw new IllegalArgumentException("NetConnectionStore required");
+		}
+		this.parent = parent;
+		this.connectionHandle = connectionHandle;
+		this.channel = channel;
+		this.reliable = reliable;
+		this.smoothed = smoothed;
 	}
 
-	parent = null;
+	public NetMessageStream(
+			NetConnectionStore parent,
+			int connectionHandle,
+			int channel,
+			boolean reliable,
+			boolean smoothed,
+			OutputStream out) {
 
-	super.close();
-}
+		super(out);
+		if (parent == null) {
+			throw new IllegalArgumentException("NetConnectionStore required");
+		}
+		this.parent = parent;
+		this.connectionHandle = connectionHandle;
+		this.channel = channel;
+		this.reliable = reliable;
+		this.smoothed = smoothed;
+	}
+
+	@Override
+	public void close() {
+		if (out != null && parent != null && parent.isIndexStored(connectionHandle)) {
+
+			// Send pending packet
+			ByteArrayOutputStream stream = (ByteArrayOutputStream) out; // (Net messages are always string streams)
+			NetConL2 connection = parent.getValueAt(connectionHandle);
+
+			String message = stream.toString(StandardCharsets.UTF_8);
+
+			if (channel >= 0 && channel < NETL2_MAXCHANNELS && message != null) {
+				connection.send(stream.toByteArray(), message.length(), channel, reliable, smoothed);
+			}
+		}
+
+		parent = null;
+
+		super.close();
+	}
 }

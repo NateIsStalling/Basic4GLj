@@ -9,44 +9,44 @@ import java.util.Vector;
 import javax.websocket.Session;
 
 public class StackTraceCommandHandler {
-private final TomVM mVM;
-private final Gson mGson;
+	private final TomVM mVM;
+	private final Gson mGson;
 
-public StackTraceCommandHandler(TomVM vm, Gson gson) {
-	mVM = vm;
-	mGson = gson;
-}
-
-public void handle(Session session) {
-	Vector<UserFuncStackFrame> callStack = mVM.getUserCallStack();
-	StackTraceCallback callback = new StackTraceCallback();
-
-	for (UserFuncStackFrame stackFrame : callStack) {
-	StackFrame frame = new StackFrame();
-
-	// TODO 12/2022 consider extending LineNumberMapping to include userFunc names;
-	// userFuncIndex is currently resolved by the editor and may not be easily portable
-	frame.name = String.valueOf(stackFrame.userFuncIndex);
-	// TODO 12/2022 consider extending LineNumberMapping to include GOSUB labels;
-	// returnAddr is currently resolved by the editor and may not be easily portable
-	frame.instructionPointer = String.valueOf(stackFrame.returnAddr);
-
-	callback.stackFrames.add(frame);
+	public StackTraceCommandHandler(TomVM vm, Gson gson) {
+		mVM = vm;
+		mGson = gson;
 	}
 
-	callback.totalFrames = callback.stackFrames.size();
+	public void handle(Session session) {
+		Vector<UserFuncStackFrame> callStack = mVM.getUserCallStack();
+		StackTraceCallback callback = new StackTraceCallback();
 
-	String json = mGson.toJson(callback);
-	message(session, json);
-}
+		for (UserFuncStackFrame stackFrame : callStack) {
+			StackFrame frame = new StackFrame();
 
-private void message(Session session, String json) {
-	if (session != null && session.isOpen()) {
-	try {
-		session.getBasicRemote().sendText(json);
-	} catch (Exception e) {
-		e.printStackTrace();
+			// TODO 12/2022 consider extending LineNumberMapping to include userFunc names;
+			// userFuncIndex is currently resolved by the editor and may not be easily portable
+			frame.name = String.valueOf(stackFrame.userFuncIndex);
+			// TODO 12/2022 consider extending LineNumberMapping to include GOSUB labels;
+			// returnAddr is currently resolved by the editor and may not be easily portable
+			frame.instructionPointer = String.valueOf(stackFrame.returnAddr);
+
+			callback.stackFrames.add(frame);
+		}
+
+		callback.totalFrames = callback.stackFrames.size();
+
+		String json = mGson.toJson(callback);
+		message(session, json);
 	}
+
+	private void message(Session session, String json) {
+		if (session != null && session.isOpen()) {
+			try {
+				session.getBasicRemote().sendText(json);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
-}
 }

@@ -6,23 +6,23 @@ package com.basic4gl.runtime.stackframe;
  * to be returned).
  */
 public class ProtectedStackRange {
-private int startAddr, endAddr;
+	private int startAddr, endAddr;
 
-public ProtectedStackRange() {
-	startAddr = 0;
-	endAddr = 0;
-}
+	public ProtectedStackRange() {
+		startAddr = 0;
+		endAddr = 0;
+	}
 
-public ProtectedStackRange(int startAddr, int endAddr) {
-	this.startAddr = startAddr;
-	this.endAddr = endAddr;
-}
+	public ProtectedStackRange(int startAddr, int endAddr) {
+		this.startAddr = startAddr;
+		this.endAddr = endAddr;
+	}
 
-public boolean containsAddress(int addr) {
-	return addr >= startAddr && addr < endAddr;
-}
+	public boolean containsAddress(int addr) {
+		return addr >= startAddr && addr < endAddr;
+	}
 
-public boolean containsRange(int start, int end) {
-	return start >= startAddr && end <= endAddr;
-}
+	public boolean containsRange(int start, int end) {
+		return start >= startAddr && end <= endAddr;
+	}
 }

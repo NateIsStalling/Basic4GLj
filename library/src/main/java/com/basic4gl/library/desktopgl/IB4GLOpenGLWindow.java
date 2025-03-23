@@ -4,15 +4,15 @@ package com.basic4gl.library.desktopgl;
  * Interface to the OpenGL window.
  */
 public interface IB4GLOpenGLWindow {
-int getWidth();
+	int getWidth();
 
-int getHeight();
+	int getHeight();
 
-int getBPP(); // (Bits per pixel)
+	int getBPP(); // (Bits per pixel)
 
-boolean isFullscreen();
+	boolean isFullscreen();
 
-void swapBuffers();
+	void swapBuffers();
 
-String getTitle();
+	String getTitle();
 }

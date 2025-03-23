@@ -7,36 +7,36 @@ import com.basic4gl.runtime.InstructionPosition;
  */
 public interface MainEditor {
 
-// Debugger and abstract machine state
-boolean isVMRunning();
+	// Debugger and abstract machine state
+	boolean isVMRunning();
 
-int getVMRow(String filename, InstructionPosition instructionPosition);
+	int getVMRow(String filename, InstructionPosition instructionPosition);
 
-int isBreakpt(String filename, int line);
+	int isBreakpt(String filename, int line);
 
-boolean toggleBreakpt(String filename, int line);
+	boolean toggleBreakpt(String filename, int line);
 
-String getVariableAt(String line, int x);
+	String getVariableAt(String line, int x);
 
-String evaluateVariable(String variable);
+	String evaluateVariable(String variable);
 
-void insertDeleteLines(String filename, int fileLineNo, int delta);
+	void insertDeleteLines(String filename, int fileLineNo, int delta);
 
-// Insert or delete one or more lines. delta is positive for inserts,
-// negative for deletes. Calling this function allows the editor to
-// update breakpoints etc.
+	// Insert or delete one or more lines. delta is positive for inserts,
+	// negative for deletes. Calling this function allows the editor to
+	// update breakpoints etc.
 
-// UI objects
-// public abstract TImageList* GetMainImages();
-// public abstract TImageList* GetGutterImages();
+	// UI objects
+	// public abstract TImageList* GetMainImages();
+	// public abstract TImageList* GetGutterImages();
 
-// Syntax highlighting
-// public abstract SyntaxHighlightParams& Highlighting();
-// public abstract TLineAttr GetTextTokenStyle(String textToken);
-// public abstract TLineAttr GetSymbolStyle(String textToken);
+	// Syntax highlighting
+	// public abstract SyntaxHighlightParams& Highlighting();
+	// public abstract TLineAttr GetTextTokenStyle(String textToken);
+	// public abstract TLineAttr GetSymbolStyle(String textToken);
 
-// Misc
-void jumpToFile(String filename);
+	// Misc
+	void jumpToFile(String filename);
 
-void refreshUI();
+	void refreshUI();
 }

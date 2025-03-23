@@ -6,183 +6,183 @@ import com.basic4gl.library.netlib4games.internal.Assert;
  * Layer 2 network message
  */
 public class NetMessageL2 {
-private int channel;
-private boolean reliable;
-private boolean ordered;
-private boolean smoothed;
-private int messageIndex; // unsigned long
-private int reliableIndex; // unsigned long
-private int packetCount;
-private long tickCount;
-private int receivedCount;
-private int dataSize;
-private boolean tickCountRegistered;
-private NetSimplePacket[] packets;
+	private int channel;
+	private boolean reliable;
+	private boolean ordered;
+	private boolean smoothed;
+	private int messageIndex; // unsigned long
+	private int reliableIndex; // unsigned long
+	private int packetCount;
+	private long tickCount;
+	private int receivedCount;
+	private int dataSize;
+	private boolean tickCountRegistered;
+	private NetSimplePacket[] packets;
 
-NetMessageL2(
-	int channel,
-	boolean reliable,
-	boolean smoothed,
-	boolean ordered,
-	int messageIndex,
-	int reliableIndex,
-	int packetCount,
-	long tickCount) {
-	this.channel = channel;
-	this.reliable = reliable;
-	this.smoothed = smoothed;
-	this.ordered = ordered;
-	this.messageIndex = messageIndex;
-	this.reliableIndex = reliableIndex;
-	this.packetCount = packetCount;
-	this.tickCount = tickCount;
-	tickCountRegistered = false;
-	receivedCount = 0;
-	dataSize = 0;
+	NetMessageL2(
+			int channel,
+			boolean reliable,
+			boolean smoothed,
+			boolean ordered,
+			int messageIndex,
+			int reliableIndex,
+			int packetCount,
+			long tickCount) {
+		this.channel = channel;
+		this.reliable = reliable;
+		this.smoothed = smoothed;
+		this.ordered = ordered;
+		this.messageIndex = messageIndex;
+		this.reliableIndex = reliableIndex;
+		this.packetCount = packetCount;
+		this.tickCount = tickCount;
+		tickCountRegistered = false;
+		receivedCount = 0;
+		dataSize = 0;
 
-	// Allocate packet space
-	if (this.packetCount > 0) {
-	packets = new NetSimplePacket[this.packetCount];
-	for (int i = 0; i < this.packetCount; i++) {
-		packets[i] = null;
-	}
-	} else {
-	packets = null;
-	}
-}
-
-public void dispose() {
-
-	// Delete packets
-	if (packets != null) {
-
-	// Delete assigned packets
-	for (int i = 0; i < packetCount; i++) {
-		if (packets[i] != null) {
-		packets[i].dispose();
+		// Allocate packet space
+		if (this.packetCount > 0) {
+			packets = new NetSimplePacket[this.packetCount];
+			for (int i = 0; i < this.packetCount; i++) {
+				packets[i] = null;
+			}
+		} else {
+			packets = null;
 		}
 	}
 
-	// Delete packet array
-	packets = null;
-	}
-}
+	public void dispose() {
 
-boolean isComplete() {
-	return receivedCount >= packetCount;
-}
+		// Delete packets
+		if (packets != null) {
 
-boolean buffer(NetSimplePacket packet, int packetIndex) {
-	Assert.assertTrue(packet != null);
+			// Delete assigned packets
+			for (int i = 0; i < packetCount; i++) {
+				if (packets[i] != null) {
+					packets[i].dispose();
+				}
+			}
 
-	if (packetIndex >= 0 && packetIndex < packetCount && packets[packetIndex] == null) {
-
-	// Add packet to message
-	packets[packetIndex] = packet;
-	receivedCount++;
-	dataSize += packet.size;
-	return true;
-	} else {
-	// Packet already received... or index is bad
-	return false;
-	}
-}
-
-/**
-* @param data
-* @param offset
-* @param size
-* @return size
-*/
-int copyData(byte[] data, int offset, int size) {
-	Assert.assertTrue(data != null);
-	Assert.assertTrue(offset <= dataSize);
-
-	// Adjust size
-	if (offset + size > dataSize) {
-	size = dataSize - offset;
+			// Delete packet array
+			packets = null;
+		}
 	}
 
-	// Find start packet
-	int packet = 0;
-	while (offset > packets[packet].size) {
-	offset -= packets[packet].size;
-	packet++;
+	boolean isComplete() {
+		return receivedCount >= packetCount;
 	}
 
-	// Copy data from packets
-	int destOffset = 0, left = size;
-	while (left > 0) {
-	int copySize = Math.min(left, packets[packet].size - offset);
+	boolean buffer(NetSimplePacket packet, int packetIndex) {
+		Assert.assertTrue(packet != null);
 
-	// Copy data
-	System.arraycopy(packets[packet].data, offset, data, destOffset, copySize);
+		if (packetIndex >= 0 && packetIndex < packetCount && packets[packetIndex] == null) {
 
-	left -= copySize;
-	destOffset += copySize;
-	packet++;
-	offset = 0;
+			// Add packet to message
+			packets[packetIndex] = packet;
+			receivedCount++;
+			dataSize += packet.size;
+			return true;
+		} else {
+			// Packet already received... or index is bad
+			return false;
+		}
 	}
-	return size;
-}
 
-public int getChannel() {
-	return channel;
-}
+	/**
+	 * @param data
+	 * @param offset
+	 * @param size
+	 * @return size
+	 */
+	int copyData(byte[] data, int offset, int size) {
+		Assert.assertTrue(data != null);
+		Assert.assertTrue(offset <= dataSize);
 
-public boolean isReliable() {
-	return reliable;
-}
+		// Adjust size
+		if (offset + size > dataSize) {
+			size = dataSize - offset;
+		}
 
-public boolean isOrdered() {
-	return ordered;
-}
+		// Find start packet
+		int packet = 0;
+		while (offset > packets[packet].size) {
+			offset -= packets[packet].size;
+			packet++;
+		}
 
-public boolean isSmoothed() {
-	return smoothed;
-}
+		// Copy data from packets
+		int destOffset = 0, left = size;
+		while (left > 0) {
+			int copySize = Math.min(left, packets[packet].size - offset);
 
-public void setSmoothed(boolean smoothed) {
-	this.smoothed = smoothed;
-}
+			// Copy data
+			System.arraycopy(packets[packet].data, offset, data, destOffset, copySize);
 
-public int getMessageIndex() {
-	return messageIndex;
-}
+			left -= copySize;
+			destOffset += copySize;
+			packet++;
+			offset = 0;
+		}
+		return size;
+	}
 
-public int getReliableIndex() {
-	return reliableIndex;
-}
+	public int getChannel() {
+		return channel;
+	}
 
-public int getPacketCount() {
-	return packetCount;
-}
+	public boolean isReliable() {
+		return reliable;
+	}
 
-public long getTickCount() {
-	return tickCount;
-}
+	public boolean isOrdered() {
+		return ordered;
+	}
 
-public void setTickCount(long tickCount) {
-	this.tickCount = tickCount;
-}
+	public boolean isSmoothed() {
+		return smoothed;
+	}
 
-public int getReceivedCount() {
-	return receivedCount;
-}
+	public void setSmoothed(boolean smoothed) {
+		this.smoothed = smoothed;
+	}
 
-public int getDataSize() {
-	return dataSize;
-}
+	public int getMessageIndex() {
+		return messageIndex;
+	}
 
-public boolean isTickCountRegistered() {
-	return tickCountRegistered;
-}
+	public int getReliableIndex() {
+		return reliableIndex;
+	}
 
-public void setTickCountRegistered(boolean tickCountRegistered) {
-	this.tickCountRegistered = tickCountRegistered;
-}
+	public int getPacketCount() {
+		return packetCount;
+	}
 
-public NetSimplePacket[] getPackets() {
-	return packets;
-}
+	public long getTickCount() {
+		return tickCount;
+	}
+
+	public void setTickCount(long tickCount) {
+		this.tickCount = tickCount;
+	}
+
+	public int getReceivedCount() {
+		return receivedCount;
+	}
+
+	public int getDataSize() {
+		return dataSize;
+	}
+
+	public boolean isTickCountRegistered() {
+		return tickCountRegistered;
+	}
+
+	public void setTickCountRegistered(boolean tickCountRegistered) {
+		this.tickCountRegistered = tickCountRegistered;
+	}
+
+	public NetSimplePacket[] getPackets() {
+		return packets;
+	}
 }

@@ -21,17 +21,11 @@ spotless {
         importOrder()
 
         removeUnusedImports()
-
-        // Cleanthat will refactor your code, but it may break your style: apply it before your formatter
-        cleanthat()          // has its own section below
-
-        // apply a specific flavor of google-java-format
-        googleJavaFormat().reflowLongStrings().skipJavadocFormatting()
-        // fix formatting of type annotations
-        formatAnnotations()
-
-        trimTrailingWhitespace()
+        palantirJavaFormat('2.50.0').formatJavadoc(false)
         leadingSpacesToTabs()
+        formatAnnotations()
+        trimTrailingWhitespace()
+        endWithNewline()
     }
 }
 

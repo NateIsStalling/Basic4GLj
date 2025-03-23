@@ -11,28 +11,28 @@ package com.basic4gl.lib.util;
  *    interface instead.
  */
 public abstract class Text {
-/**
-* Standard text output
-*/
-abstract void print(String text, boolean newline);
+	/**
+	 * Standard text output
+	 */
+	abstract void print(String text, boolean newline);
 
-abstract void locate(int x, int y);
+	abstract void locate(int x, int y);
 
-abstract void cls();
+	abstract void cls();
 
-abstract void clearRegion(int x1, int y1, int x2, int y2);
+	abstract void clearRegion(int x1, int y1, int x2, int y2);
 
-abstract int getTextRows();
+	abstract int getTextRows();
 
-abstract int getTextCols();
+	abstract int getTextCols();
 
-abstract void resizeText(int cols, int rows);
+	abstract void resizeText(int cols, int rows);
 
-abstract void setTextScrollEnabled(boolean scroll);
+	abstract void setTextScrollEnabled(boolean scroll);
 
-abstract boolean isTextScrollEnabled();
+	abstract boolean isTextScrollEnabled();
 
-abstract void drawText();
+	abstract void drawText();
 
-abstract char getCharAt(int x, int y);
+	abstract char getCharAt(int x, int y);
 }
