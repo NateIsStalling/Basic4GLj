@@ -1,20 +1,35 @@
 plugins {
     id 'java'
+    id("com.diffplug.spotless") version "7.0.2"
 }
 
 description = "Compiler for Basic4GL language"
 
-//
-//sourceSets {
-//    main {
-//        java {
-//            srcDirs = ['src']
-//        }
-//    }
-//}
+repositories {
+    mavenCentral()
+}
 
 dependencies {
     implementation fileTree(dir: "libs", include: "*.jar")
 
     implementation project(":runtime")
 }
+
+spotless {
+    java {
+        // Use the default importOrder configuration
+        importOrder()
+
+        removeUnusedImports()
+
+        // Cleanthat will refactor your code, but it may break your style: apply it before your formatter
+        cleanthat()          // has its own section below
+
+        // apply a specific flavor of google-java-format
+        googleJavaFormat().reflowLongStrings().skipJavadocFormatting()
+        // fix formatting of type annotations
+        formatAnnotations()
+    }
+}
+
+build.dependsOn spotlessApply

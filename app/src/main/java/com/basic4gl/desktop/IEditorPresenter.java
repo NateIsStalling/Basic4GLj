@@ -1,28 +1,29 @@
 package com.basic4gl.desktop;
 
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
-
 import java.io.File;
 import java.util.List;
 
 public interface IEditorPresenter {
-    public void onModeChanged(ApMode mode, String statusMsg);
-    void RefreshDebugDisplays(ApMode mode);
+  void onModeChanged(ApMode mode, String statusMsg);
 
-    void PlaceCursorAtProcessed(final int line, int col);
+  void RefreshDebugDisplays(ApMode mode);
 
-    void RefreshActions(ApMode mode);
+  void PlaceCursorAtProcessed(final int line, int col);
 
-    void onPause();
+  void RefreshActions(ApMode mode);
 
-    void onApplicationClosing();
+  void onPause();
 
-    void setCompilerStatus(String error);
+  void onApplicationClosing();
 
-    void updateCallStack(StackTraceCallback message);
+  void setCompilerStatus(String error);
 
-    void updateEvaluateWatch(String evaluatedWatch, String result);
+  void updateCallStack(StackTraceCallback message);
 
-    void refreshWatchList();
-    void setRecentItems(List<File> files);
+  void updateEvaluateWatch(String evaluatedWatch, String result);
+
+  void refreshWatchList();
+
+  void setRecentItems(List<File> files);
 }

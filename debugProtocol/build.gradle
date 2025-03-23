@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id("com.diffplug.spotless") version "7.0.2"
 }
 
 group 'com.basic4gl.debug.protocol'
@@ -17,6 +18,25 @@ dependencies {
 
     implementation ('com.google.code.gson:gson:2.10')
 }
+
+spotless {
+    java {
+        // Use the default importOrder configuration
+        importOrder()
+
+        removeUnusedImports()
+
+        // Cleanthat will refactor your code, but it may break your style: apply it before your formatter
+        cleanthat()          // has its own section below
+
+        // apply a specific flavor of google-java-format
+        googleJavaFormat().reflowLongStrings().skipJavadocFormatting()
+        // fix formatting of type annotations
+        formatAnnotations()
+    }
+}
+
+build.dependsOn spotlessApply
 
 test {
     useJUnitPlatform()

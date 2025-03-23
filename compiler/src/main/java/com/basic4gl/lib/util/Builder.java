@@ -1,7 +1,6 @@
 package com.basic4gl.lib.util;
 
 import com.basic4gl.compiler.util.IVMDriver;
-
 import java.io.OutputStream;
 
 /**
@@ -14,41 +13,47 @@ import java.io.OutputStream;
  */
 public abstract class Builder implements Library, IFileAccess, ITargetCommandLineOptions {
 
+  public abstract String version();
 
-    public abstract String version();
-    public abstract String author();
-    public abstract String contact();
-    public abstract String id();
+  public abstract String author();
 
-    /**
-     * Bundle the target in a stream to store a standalone copy on the filesystem.
-     * Used by the compiler.
-     * @return
-     */
-    public abstract boolean export(String filename, OutputStream stream, TaskCallback callback) throws Exception;
+  public abstract String contact();
 
-    public abstract Target getTarget();
-    public abstract IVMDriver getVMDriver();
-    public abstract String getFileDescription();
-    public abstract String getFileExtension();
+  public abstract String id();
 
-    /**
-     * Get list of properties the compiler can configure for
-     * building or running the application.
-     * @example Window size or target OS
-     * @return Read-only list of properties for application
-     */
-    public abstract Configuration getSettings();
+  /**
+   * Bundle the target in a stream to store a standalone copy on the filesystem.
+   * Used by the compiler.
+   * @return
+   */
+  public abstract boolean export(String filename, OutputStream stream, TaskCallback callback)
+      throws Exception;
 
-    /**
-     *
-     * @return Instance of target's property collection
-     */
-    public abstract Configuration getConfiguration();
+  public abstract Target getTarget();
 
-    /**
-     *
-     * @param config
-     */
-    public abstract void setConfiguration(Configuration config);
+  public abstract IVMDriver getVMDriver();
+
+  public abstract String getFileDescription();
+
+  public abstract String getFileExtension();
+
+  /**
+   * Get list of properties the compiler can configure for
+   * building or running the application.
+   * @example Window size or target OS
+   * @return Read-only list of properties for application
+   */
+  public abstract Configuration getSettings();
+
+  /**
+   *
+   * @return Instance of target's property collection
+   */
+  public abstract Configuration getConfiguration();
+
+  /**
+   *
+   * @param config
+   */
+  public abstract void setConfiguration(Configuration config);
 }

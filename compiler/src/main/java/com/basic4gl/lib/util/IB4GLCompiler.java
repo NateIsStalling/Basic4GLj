@@ -11,37 +11,37 @@ package com.basic4gl.lib.util;
  */
 public interface IB4GLCompiler {
 
-    /**
-     * Compile Basic4GL code and return its handle.
-     * @param sourceText
-     * @return Returns a non-zero handle if compilation succeeded. Returns 0 if an error occurs.
-     */
-    public abstract int compile(String sourceText);
+  /**
+   * Compile Basic4GL code and return its handle.
+   * @param sourceText
+   * @return Returns a non-zero handle if compilation succeeded. Returns 0 if an error occurs.
+   */
+  int compile(String sourceText);
 
-    // Error retrieving methods. Call only if Compile() returns 0.
+  // Error retrieving methods. Call only if Compile() returns 0.
 
-    /**
-     * Get error description.
-     */
-    public abstract String getErrorText();
+  /**
+   * Get error description.
+   */
+  String getErrorText();
 
-    /**
-     * Line number where error occurred
-     */
-    public abstract int getErrorLine();
+  /**
+   * Line number where error occurred
+   */
+  int getErrorLine();
 
-    /**
-     * Column number where error occurred
-     */
-    public abstract int getErrorColumn();
+  /**
+   * Column number where error occurred
+   */
+  int getErrorColumn();
 
-    // Execute code block
+  // Execute code block
 
-    /**
-     * Execute code.
-     * Returns true if code executed without a runtime error.
-     * Returns false if an error occurred. If an error occurs, the plugin
-     * should return immediately. Basic4GL will then stop and display the error.
-     */
-    public abstract boolean execute(int codeHandle);
+  /**
+   * Execute code.
+   * Returns true if code executed without a runtime error.
+   * Returns false if an error occurred. If an error occurs, the plugin
+   * should return immediately. Basic4GL will then stop and display the error.
+   */
+  boolean execute(int codeHandle);
 }

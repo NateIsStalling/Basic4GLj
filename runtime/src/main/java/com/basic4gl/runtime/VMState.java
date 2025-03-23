@@ -7,28 +7,28 @@ package com.basic4gl.runtime;
  */
 public class VMState {
 
-	// Instruction pointer
-	int ip;
+  // Instruction pointer
+  int ip;
 
-	// Registers
-	Value reg, reg2;
-	String regString, reg2String;
+  // Registers
+  Value reg, reg2;
+  String regString, reg2String;
 
-	// Stacks
-	int stackTop, userFuncStackTop;
-	int currentUserFrame;
+  // Stacks
+  int stackTop, userFuncStackTop;
+  int currentUserFrame;
 
-	// Top of program
-	int codeSize;
-	int codeBlockCount;
-	
-	// Var data
-	int stackDataTop, tempDataLock;
+  // Top of program
+  int codeSize;
+  int codeBlockCount;
 
-	// Error state
-	boolean error;
-	String errorString;
+  // Var data
+  int stackDataTop, tempDataLock;
 
-	// Other state
-	boolean paused;
+  // Error state
+  boolean error;
+  String errorString;
+
+  // Other state
+  boolean paused;
 }

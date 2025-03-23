@@ -1,5 +1,6 @@
 plugins {
     id "application"
+    id("com.diffplug.spotless") version "7.0.2"
 }
 apply plugin: "java"
 
@@ -58,7 +59,6 @@ startScripts {
     classpath = ((Jar)jar).outputs.files + ((Jar)pathingJar).outputs.files
 }
 
-
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
@@ -90,6 +90,25 @@ dependencies {
 
     testImplementation 'junit:junit:4.12'
 }
+
+spotless {
+    java {
+        // Use the default importOrder configuration
+        importOrder()
+
+        removeUnusedImports()
+
+        // Cleanthat will refactor your code, but it may break your style: apply it before your formatter
+        cleanthat()          // has its own section below
+
+        // apply a specific flavor of google-java-format
+        googleJavaFormat().reflowLongStrings().skipJavadocFormatting()
+        // fix formatting of type annotations
+        formatAnnotations()
+    }
+}
+
+build.dependsOn spotlessApply
 
 jar {
     dependsOn(pathingJar)
@@ -130,8 +149,4 @@ task debugAll {
             rootProject.ext.get("debugServerJarPath")
         }
     }
-}
-
-repositories {
-    mavenCentral()
 }

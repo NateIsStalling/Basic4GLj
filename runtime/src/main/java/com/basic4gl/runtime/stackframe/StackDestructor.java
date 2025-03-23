@@ -8,19 +8,18 @@ package com.basic4gl.runtime.stackframe;
  */
 public class StackDestructor {
 
-	/**
-	 * Address of data on stack or in temp space
-	 */
-	public int addr;
+  /**
+   * Address of data on stack or in temp space
+   */
+  public int addr;
 
-	/**
-	 * Index of data type
-	 */
-	public int dataTypeIndex;
+  /**
+   * Index of data type
+   */
+  public int dataTypeIndex;
 
-	public StackDestructor(int addr, int dataTypeIndex)
-	{
-		this.addr = addr;
-		this.dataTypeIndex = dataTypeIndex;
-	}
+  public StackDestructor(int addr, int dataTypeIndex) {
+    this.addr = addr;
+    this.dataTypeIndex = dataTypeIndex;
+  }
 }

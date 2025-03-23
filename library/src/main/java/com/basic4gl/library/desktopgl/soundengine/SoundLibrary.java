@@ -1,29 +1,29 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
 public interface SoundLibrary {
-    void init(int voiceCount);
+  void init(int voiceCount);
 
-    void dispose();
+  void dispose();
 
-    void reset();
+  void reset();
 
-    Sound loadSound(String filename);
+  Sound loadSound(String filename);
 
-    void deleteSound(Sound sound);
+  void deleteSound(Sound sound);
 
-    int playSound(Sound sound, float volume, boolean looped);
+  int playSound(Sound sound, float volume, boolean looped);
 
-    void stopSounds();
+  void stopSounds();
 
-    void playMusic(String filename, float volume, boolean looped);
+  void playMusic(String filename, float volume, boolean looped);
 
-    void stopMusic();
+  void stopMusic();
 
-    boolean isMusicPlaying();
+  boolean isMusicPlaying();
 
-    void setMusicVolume(float volume);
+  void setMusicVolume(float volume);
 
-    void stopSoundVoice(int voice);
+  void stopSoundVoice(int voice);
 
-    void getError(StringBuilder message);
+  void getError(StringBuilder message);
 }
