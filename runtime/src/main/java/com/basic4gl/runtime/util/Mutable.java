@@ -6,17 +6,17 @@ package com.basic4gl.runtime.util;
  * @param <T> Class of object or primitive
  */
 public class Mutable<T> {
-	private T value;
+    private T value;
 
-	public Mutable(T value) {
-		this.value = value;
-	}
+    public Mutable(T value) {
+        this.value = value;
+    }
 
-	public void set(T value) {
-		this.value = value;
-	}
+    public void set(T value) {
+        this.value = value;
+    }
 
-	public T get() {
-		return value;
-	}
+    public T get() {
+        return value;
+    }
 }

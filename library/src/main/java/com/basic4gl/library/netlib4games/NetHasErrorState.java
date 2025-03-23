@@ -5,12 +5,12 @@ package com.basic4gl.library.netlib4games;
  */
 public class NetHasErrorState extends HasErrorState {
 
-	/**
-	 * Set network error state.
-	 * Also automatically logs the error (if logging is enabled.)
-	 */
-	@Override
-	protected void setError(String text) {
-		super.setError(text);
-	}
+    /**
+     * Set network error state.
+     * Also automatically logs the error (if logging is enabled.)
+     */
+    @Override
+    protected void setError(String text) {
+        super.setError(text);
+    }
 }

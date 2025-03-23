@@ -8,80 +8,80 @@ import com.google.gson.Gson;
  * Created by Nate on 2/19/2015.
  */
 public class DebuggerCallbackMessage {
-	public static final int FAILED = -1;
-	public static final int STOPPED = 0;
-	public static final int WORKING = 1;
-	public static final int SUCCESS = 2;
-	public static final int PAUSED = 3;
+    public static final int FAILED = -1;
+    public static final int STOPPED = 0;
+    public static final int WORKING = 1;
+    public static final int SUCCESS = 2;
+    public static final int PAUSED = 3;
 
-	private int status;
-	private String text;
+    private int status;
+    private String text;
 
-	private InstructionPosition instructionPosition;
+    private InstructionPosition instructionPosition;
 
-	private VMStatus vmStatus;
+    private VMStatus vmStatus;
 
-	public DebuggerCallbackMessage() {
-		this.status = STOPPED;
-		this.text = "";
-	}
+    public DebuggerCallbackMessage() {
+        this.status = STOPPED;
+        this.text = "";
+    }
 
-	public DebuggerCallbackMessage(int status, String message, VMStatus vmStatus) {
-		this.status = status;
-		this.text = message;
-		this.vmStatus = VMStatus.copy(vmStatus);
-	}
+    public DebuggerCallbackMessage(int status, String message, VMStatus vmStatus) {
+        this.status = status;
+        this.text = message;
+        this.vmStatus = VMStatus.copy(vmStatus);
+    }
 
-	public void setMessage(int status, String message, VMStatus vmStatus) {
-		this.status = status;
-		this.text = message;
-		this.vmStatus = VMStatus.copy(vmStatus);
-	}
+    public void setMessage(int status, String message, VMStatus vmStatus) {
+        this.status = status;
+        this.text = message;
+        this.vmStatus = VMStatus.copy(vmStatus);
+    }
 
-	public void setMessage(DebuggerCallbackMessage message) {
-		this.status = message.status;
-		this.text = message.text;
-		this.vmStatus = VMStatus.copy(message.getVMStatus());
-	}
+    public void setMessage(DebuggerCallbackMessage message) {
+        this.status = message.status;
+        this.text = message.text;
+        this.vmStatus = VMStatus.copy(message.getVMStatus());
+    }
 
-	public void setSourcePosition(InstructionPosition instructionPosition) {
-		this.instructionPosition = instructionPosition;
-	}
+    public void setSourcePosition(InstructionPosition instructionPosition) {
+        this.instructionPosition = instructionPosition;
+    }
 
-	public void setSourcePosition(int row, int column) {
-		this.instructionPosition = new InstructionPosition(row, column);
-	}
+    public void setSourcePosition(int row, int column) {
+        this.instructionPosition = new InstructionPosition(row, column);
+    }
 
-	public InstructionPosition getSourcePosition() {
-		return instructionPosition;
-	}
+    public InstructionPosition getSourcePosition() {
+        return instructionPosition;
+    }
 
-	public VMStatus getVMStatus() {
-		return vmStatus;
-	}
+    public VMStatus getVMStatus() {
+        return vmStatus;
+    }
 
-	public static DebuggerCallbackMessage fromJson(String json) {
-		Gson gson = new Gson();
-		try {
-			return gson.fromJson(json, DebuggerCallbackMessage.class);
-		} catch (Exception e) {
-			return null;
-		}
-	}
+    public static DebuggerCallbackMessage fromJson(String json) {
+        Gson gson = new Gson();
+        try {
+            return gson.fromJson(json, DebuggerCallbackMessage.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-	public int getStatus() {
-		return status;
-	}
+    public int getStatus() {
+        return status;
+    }
 
-	public String getText() {
-		return text;
-	}
+    public String getText() {
+        return text;
+    }
 
-	public InstructionPosition getInstructionPosition() {
-		return instructionPosition;
-	}
+    public InstructionPosition getInstructionPosition() {
+        return instructionPosition;
+    }
 
-	public VMStatus getVmStatus() {
-		return vmStatus;
-	}
+    public VMStatus getVmStatus() {
+        return vmStatus;
+    }
 }

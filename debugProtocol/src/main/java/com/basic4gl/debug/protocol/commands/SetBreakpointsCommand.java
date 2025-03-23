@@ -5,39 +5,39 @@ import com.basic4gl.debug.protocol.types.SourceBreakpoint;
 import java.util.List;
 
 public class SetBreakpointsCommand extends DebugCommand {
-	public static final String COMMAND = "set-breakpoints";
+    public static final String COMMAND = "set-breakpoints";
 
-	protected Source source;
+    protected Source source;
 
-	protected List<SourceBreakpoint> breakpoints;
+    protected List<SourceBreakpoint> breakpoints;
 
-	protected boolean sourceModified;
+    protected boolean sourceModified;
 
-	public SetBreakpointsCommand() {
-		super(COMMAND);
-	}
+    public SetBreakpointsCommand() {
+        super(COMMAND);
+    }
 
-	public void setSource(Source source) {
-		this.source = source;
-	}
+    public void setSource(Source source) {
+        this.source = source;
+    }
 
-	public Source getSource() {
-		return this.source;
-	}
+    public Source getSource() {
+        return this.source;
+    }
 
-	public void setBreakpoints(List<SourceBreakpoint> breakpoints) {
-		this.breakpoints = breakpoints;
-	}
+    public void setBreakpoints(List<SourceBreakpoint> breakpoints) {
+        this.breakpoints = breakpoints;
+    }
 
-	public List<SourceBreakpoint> getBreakpoints() {
-		return this.breakpoints;
-	}
+    public List<SourceBreakpoint> getBreakpoints() {
+        return this.breakpoints;
+    }
 
-	public void setSourceModified(boolean sourceModified) {
-		this.sourceModified = sourceModified;
-	}
+    public void setSourceModified(boolean sourceModified) {
+        this.sourceModified = sourceModified;
+    }
 
-	public boolean isSourceModified() {
-		return sourceModified;
-	}
+    public boolean isSourceModified() {
+        return sourceModified;
+    }
 }

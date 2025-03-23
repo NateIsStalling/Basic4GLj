@@ -18,64 +18,64 @@ package com.basic4gl.library.netlib4games;
  */
 public abstract class NetListenLow extends HasErrorStateThreadSafe {
 
-	public NetListenLow() {
-		super();
-	}
+    public NetListenLow() {
+        super();
+    }
 
-	public void dispose() {}
+    public void dispose() {}
 
-	/**
-	 * True if a client connection is pending.
-	 * That is, if a connection request has been received in response to a
-	 * client {@see com.basic4gl.library.netlib4games.NetConL2#connect()} call.
-	 *
-	 * @return True if a client connection is pending.
-	 */
-	public abstract boolean isConnectionPending();
+    /**
+     * True if a client connection is pending.
+     * That is, if a connection request has been received in response to a
+     * client {@see com.basic4gl.library.netlib4games.NetConL2#connect()} call.
+     *
+     * @return True if a client connection is pending.
+     */
+    public abstract boolean isConnectionPending();
 
-	/**
-	 * Read the request string for the current pending connection.
-	 * (i.e. the second parameter of the client's {@see com.basic4gl.library.netlib4games.NetConL2#connect()} call.)
-	 * Call this ONLY if {@link #isConnectionPending()} returns true.
-	 *
-	 * @return the request string for the current pending connection
-	 */
-	public abstract String getRequestString();
+    /**
+     * Read the request string for the current pending connection.
+     * (i.e. the second parameter of the client's {@see com.basic4gl.library.netlib4games.NetConL2#connect()} call.)
+     * Call this ONLY if {@link #isConnectionPending()} returns true.
+     *
+     * @return the request string for the current pending connection
+     */
+    public abstract String getRequestString();
 
-	/**
-	 * Accept and return pending connection (see {@link #isConnectionPending()}).
-	 * Call this ONLY if {@link #isConnectionPending()} returns true.
-	 * <p>
-	 * eg:
-	 * <pre>
-	 * {@code
-	 *  if (listener.isConnectionPending()) {
-	 *      NetConL2 connection = new NetConL2(listener.acceptConnection());
-	 *      //...
-	 *  }
-	 * }
-	 * </pre>
-	 *
-	 * @return Returns a low level network protocol connection that can be passed to
-	 * the constructor of a NetConL2 connection.
-	 */
-	public abstract NetConLow acceptConnection();
+    /**
+     * Accept and return pending connection (see {@link #isConnectionPending()}).
+     * Call this ONLY if {@link #isConnectionPending()} returns true.
+     * <p>
+     * eg:
+     * <pre>
+     * {@code
+     *  if (listener.isConnectionPending()) {
+     *      NetConL2 connection = new NetConL2(listener.acceptConnection());
+     *      //...
+     *  }
+     * }
+     * </pre>
+     *
+     * @return Returns a low level network protocol connection that can be passed to
+     * the constructor of a NetConL2 connection.
+     */
+    public abstract NetConLow acceptConnection();
 
-	/**
-	 * Reject the pending connection (see {@link #isConnectionPending()})
-	 * Call this ONLY if {@link #isConnectionPending()} returns true.
-	 */
-	public abstract void rejectConnection();
+    /**
+     * Reject the pending connection (see {@link #isConnectionPending()})
+     * Call this ONLY if {@link #isConnectionPending()} returns true.
+     */
+    public abstract void rejectConnection();
 
-	/**
-	 * Used internally
-	 *
-	 * @param packet
-	 * @param requestStringBuffer
-	 * @return
-	 */
-	protected boolean isConnectionRequest(NetSimplePacket packet, String[] requestStringBuffer) {
-		requestStringBuffer[0] = "";
-		return NetLowLevel.isConnectionRequest(packet, requestStringBuffer);
-	}
+    /**
+     * Used internally
+     *
+     * @param packet
+     * @param requestStringBuffer
+     * @return
+     */
+    protected boolean isConnectionRequest(NetSimplePacket packet, String[] requestStringBuffer) {
+        requestStringBuffer[0] = "";
+        return NetLowLevel.isConnectionRequest(packet, requestStringBuffer);
+    }
 }

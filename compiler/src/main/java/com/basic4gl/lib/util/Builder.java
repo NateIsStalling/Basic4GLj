@@ -13,46 +13,46 @@ import java.io.OutputStream;
  */
 public abstract class Builder implements Library, IFileAccess, ITargetCommandLineOptions {
 
-	public abstract String getVersion();
+    public abstract String getVersion();
 
-	public abstract String getAuthor();
+    public abstract String getAuthor();
 
-	public abstract String getContact();
+    public abstract String getContact();
 
-	public abstract String getId();
+    public abstract String getId();
 
-	/**
-	 * Bundle the target in a stream to store a standalone copy on the filesystem.
-	 * Used by the compiler.
-	 * @return
-	 */
-	public abstract boolean export(String filename, OutputStream stream, TaskCallback callback) throws Exception;
+    /**
+     * Bundle the target in a stream to store a standalone copy on the filesystem.
+     * Used by the compiler.
+     * @return
+     */
+    public abstract boolean export(String filename, OutputStream stream, TaskCallback callback) throws Exception;
 
-	public abstract Target getTarget();
+    public abstract Target getTarget();
 
-	public abstract IVMDriver getVMDriver();
+    public abstract IVMDriver getVMDriver();
 
-	public abstract String getFileDescription();
+    public abstract String getFileDescription();
 
-	public abstract String getFileExtension();
+    public abstract String getFileExtension();
 
-	/**
-	 * Get list of properties the compiler can configure for
-	 * building or running the application.
-	 * @example Window size or target OS
-	 * @return Read-only list of properties for application
-	 */
-	public abstract Configuration getSettings();
+    /**
+     * Get list of properties the compiler can configure for
+     * building or running the application.
+     * @example Window size or target OS
+     * @return Read-only list of properties for application
+     */
+    public abstract Configuration getSettings();
 
-	/**
-	 *
-	 * @return Instance of target's property collection
-	 */
-	public abstract Configuration getConfiguration();
+    /**
+     *
+     * @return Instance of target's property collection
+     */
+    public abstract Configuration getConfiguration();
 
-	/**
-	 *
-	 * @param config
-	 */
-	public abstract void setConfiguration(Configuration config);
+    /**
+     *
+     * @param config
+     */
+    public abstract void setConfiguration(Configuration config);
 }

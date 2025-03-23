@@ -4,14 +4,14 @@ import javax.swing.*;
 
 public interface IFileManager {
 
-	// Child editor access
-	int editorCount();
+    // Child editor access
+    int editorCount();
 
-	JTextArea getEditor(int index);
+    JTextArea getEditor(int index);
 
-	String getFilename(int index);
+    String getFilename(int index);
 
-	String getCurrentDirectory();
+    String getCurrentDirectory();
 
-	String getAppDirectory();
+    String getAppDirectory();
 }

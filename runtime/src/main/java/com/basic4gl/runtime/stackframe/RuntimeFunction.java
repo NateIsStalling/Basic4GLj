@@ -11,28 +11,28 @@ import java.io.IOException;
  */
 public class RuntimeFunction implements Streamable {
 
-	/**
-	 * Index of implementing function, or -1 if none.
-	 */
-	public int functionIndex;
+    /**
+     * Index of implementing function, or -1 if none.
+     */
+    public int functionIndex;
 
-	public RuntimeFunction() {
-		functionIndex = -1;
-	}
+    public RuntimeFunction() {
+        functionIndex = -1;
+    }
 
-	public RuntimeFunction(int functionIndex) {
-		this.functionIndex = functionIndex;
-	}
+    public RuntimeFunction(int functionIndex) {
+        this.functionIndex = functionIndex;
+    }
 
-	@Override
-	public void streamOut(DataOutputStream stream) throws IOException {
-		Streaming.writeLong(stream, functionIndex);
-	}
+    @Override
+    public void streamOut(DataOutputStream stream) throws IOException {
+        Streaming.writeLong(stream, functionIndex);
+    }
 
-	@Override
-	public boolean streamIn(DataInputStream stream) throws IOException {
-		functionIndex = (int) Streaming.readLong(stream);
+    @Override
+    public boolean streamIn(DataInputStream stream) throws IOException {
+        functionIndex = (int) Streaming.readLong(stream);
 
-		return true;
-	}
+        return true;
+    }
 }

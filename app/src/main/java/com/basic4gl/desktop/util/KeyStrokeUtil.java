@@ -5,21 +5,21 @@ import javax.swing.*;
 
 public final class KeyStrokeUtil {
 
-	public static String getShortcutString(KeyStroke keyStroke) {
-		if (keyStroke == null) {
-			return "";
-		}
+    public static String getShortcutString(KeyStroke keyStroke) {
+        if (keyStroke == null) {
+            return "";
+        }
 
-		int modifiers = keyStroke.getModifiers();
-		int keyCode = keyStroke.getKeyCode();
+        int modifiers = keyStroke.getModifiers();
+        int keyCode = keyStroke.getKeyCode();
 
-		String modifierSymbol;
-		if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-			modifierSymbol = "⌘"; // Command symbol for macOS
-		} else {
-			modifierSymbol = "Ctrl"; // Control for Windows/Linux
-		}
+        String modifierSymbol;
+        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+            modifierSymbol = "⌘"; // Command symbol for macOS
+        } else {
+            modifierSymbol = "Ctrl"; // Control for Windows/Linux
+        }
 
-		return modifierSymbol + " " + KeyEvent.getKeyText(keyCode);
-	}
+        return modifierSymbol + " " + KeyEvent.getKeyText(keyCode);
+    }
 }

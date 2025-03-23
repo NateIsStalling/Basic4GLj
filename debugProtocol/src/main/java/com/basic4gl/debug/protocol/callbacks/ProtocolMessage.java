@@ -2,23 +2,23 @@ package com.basic4gl.debug.protocol.callbacks;
 
 public class ProtocolMessage {
 
-	private int id;
+    private int id;
 
-	protected String type;
+    protected String type;
 
-	public ProtocolMessage(String type) {
-		this.type = type;
-	}
+    public ProtocolMessage(String type) {
+        this.type = type;
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public int getId() {
-		return id;
-	}
+    public int getId() {
+        return id;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public String getType() {
+        return type;
+    }
 }
