@@ -21,13 +21,13 @@ import java.util.Map;
  */
 public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
-  static final String DEFAULT_SOUND_ENGINE_ERROR =
+  private static final String DEFAULT_SOUND_ENGINE_ERROR =
       "Sound playback is not available; the sound engine failed to initialize.";
 
-  static boolean triedToLoad = false;
-  static SoundLibrary library = null;
+  private static boolean triedToLoad = false;
+  private static SoundLibrary library = null;
 
-  static FileOpener files = null;
+  private static FileOpener files = null;
 
   @Override
   public void init(FileOpener files) {
@@ -244,10 +244,10 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
   public void init(TomBasicCompiler comp, IServiceCollection services) {
 
     // Register sound resources
-    comp.VM().addResources(sounds);
+    comp.getVM().addResources(sounds);
 
     // Register initialisation function
-    comp.VM().addInitFunction(new InitLibFunction());
+    comp.getVM().addInitFunction(new InitLibFunction());
   }
 
   @Override
@@ -285,7 +285,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
   }
 
-  SoundStore sounds = new SoundStore();
+  private final SoundStore sounds = new SoundStore();
 
   // region Runtime function wrappers
   public class WrapLoadSound implements Function {

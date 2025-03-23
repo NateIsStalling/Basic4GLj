@@ -44,7 +44,7 @@ public class GLUBasicLib implements FunctionLibrary {
 
   @Override
   public Map<String, Constant> constants() {
-    Map<String, Constant> c = new HashMap<String, Constant>();
+    Map<String, Constant> c = new HashMap<>();
     /*c.put("GLU_VERSION_1_1", new Constant(GLU_VERSION_1_1));
     c.put("GLU_VERSION_1_2", new Constant(GLU_VERSION_1_2));
     c.put("GLU_INVALID_ENUM", new Constant(GLU_INVALID_ENUM));
@@ -165,7 +165,7 @@ public class GLUBasicLib implements FunctionLibrary {
 
   @Override
   public Map<String, FunctionSpecification[]> specs() {
-    Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
+    Map<String, FunctionSpecification[]> s = new HashMap<>();
     s.put(
         "gluOrtho2D",
         new FunctionSpecification[] {

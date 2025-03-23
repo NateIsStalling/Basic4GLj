@@ -56,13 +56,13 @@ public class MusicStream extends HasErrorState implements Runnable {
           // Process command
           if (foundCmd) {
             stateLock.lock();
-            switch (cmd.code) {
+            switch (cmd.getCode()) {
               case MSC_Shutdown:
                 shuttingDown = true;
                 break;
 
               case MSC_OpenFile:
-                stream.openFile(cmd.filename, cmd.gain, cmd.looping);
+                stream.openFile(cmd.getFilename(), cmd.getGain(), cmd.isLooping());
                 break;
 
               case MSC_CloseFile:
@@ -70,7 +70,7 @@ public class MusicStream extends HasErrorState implements Runnable {
                 break;
 
               case MSC_SetGain:
-                stream.setGain(cmd.gain);
+                stream.setGain(cmd.getGain());
                 break;
             }
             stateLock.unlock();
@@ -158,10 +158,10 @@ public class MusicStream extends HasErrorState implements Runnable {
 
     // Build command
     MusicStreamCommand cmd = new MusicStreamCommand();
-    cmd.code = code;
-    cmd.filename = filename;
-    cmd.gain = gain;
-    cmd.looping = looping;
+    cmd.setCode(code);
+    cmd.setFilename(filename);
+    cmd.setGain(gain);
+    cmd.setLooping(looping);
 
     // Add to command queue
     commandQueueLock.lock();

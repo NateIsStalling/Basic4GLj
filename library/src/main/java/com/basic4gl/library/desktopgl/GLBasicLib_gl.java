@@ -25,12 +25,12 @@ import org.lwjgl.BufferUtils;
  */
 public class GLBasicLib_gl implements FunctionLibrary {
 
-  ByteBuffer byteBuffer16;
-  ShortBuffer shortBuffer16;
-  IntBuffer intBuffer16;
-  LongBuffer longBuffer16;
-  FloatBuffer floatBuffer16;
-  DoubleBuffer doubleBuffer16;
+  private ByteBuffer byteBuffer16;
+  private ShortBuffer shortBuffer16;
+  private IntBuffer intBuffer16;
+  private LongBuffer longBuffer16;
+  private FloatBuffer floatBuffer16;
+  private DoubleBuffer doubleBuffer16;
 
   @Override
   public String name() {
@@ -62,7 +62,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
   @Override
   public Map<String, Constant> constants() {
-    Map<String, Constant> c = new HashMap<String, Constant>();
+    Map<String, Constant> c = new HashMap<>();
     // c.put("GL_VERSION_1_1", GL_VERSION_1_1));
     c.put("GL_VERSION", new Constant(GL_VERSION));
 
@@ -662,7 +662,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
   @Override
   public Map<String, FunctionSpecification[]> specs() {
-    Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
+    Map<String, FunctionSpecification[]> s = new HashMap<>();
 
     s.put(
         "glAccum",

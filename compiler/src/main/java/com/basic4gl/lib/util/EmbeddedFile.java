@@ -11,9 +11,9 @@ import java.nio.charset.Charset;
  * A single file, embedded into the executable
  */
 public class EmbeddedFile {
-  String filename;
-  int length;
-  FileInputStream data;
+  private String filename;
+  private int length;
+  private FileInputStream data;
 
   public EmbeddedFile() {
     filename = "";

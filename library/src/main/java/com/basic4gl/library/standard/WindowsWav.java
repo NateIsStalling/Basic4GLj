@@ -6,8 +6,24 @@ import java.nio.ByteBuffer;
  * Represents a loaded windows .wav file.
  */
 class WindowsWav {
-  ByteBuffer sound;
-  int len;
+  private ByteBuffer sound;
+  private int len;
+
+  public ByteBuffer getSound() {
+    return sound;
+  }
+
+  public void setSound(ByteBuffer sound) {
+    this.sound = sound;
+  }
+
+  public int getLen() {
+    return len;
+  }
+
+  public void setLen(int len) {
+    this.len = len;
+  }
   /*
   public WindowsWav (String filename) {
       sound   = null;

@@ -25,12 +25,12 @@ public class Standard implements FunctionLibrary {
   public static final float M_DEG2RAD = (M_PI / 180);
 
   // Globals
-  static long lastTickCount = 0;
-  static int maxCatchupTime = DEF_MAX_CATCHUP_TIME;
-  static int catchupTime = maxCatchupTime - 1;
-  static Random rnd;
-  static Vector<String> mArguments;
-  static long performanceFreq;
+  private static long lastTickCount = 0;
+  private static int maxCatchupTime = DEF_MAX_CATCHUP_TIME;
+  private static int catchupTime = maxCatchupTime - 1;
+  private static Random rnd;
+  private static Vector<String> mArguments;
+  private static long performanceFreq;
 
   @Override
   public String name() {
@@ -54,7 +54,7 @@ public class Standard implements FunctionLibrary {
     maxCatchupTime = DEF_MAX_CATCHUP_TIME;
     catchupTime = maxCatchupTime - 1;
 
-    mArguments = new Vector<String>();
+    mArguments = new Vector<>();
     if (args != null) {
       mArguments.addAll(Arrays.asList(args));
     }
@@ -468,17 +468,17 @@ public class Standard implements FunctionLibrary {
     }
   }
 
-  void SetProgramArguments(Vector<String> arguments) {
+  void setProgramArguments(Vector<String> arguments) {
     mArguments = arguments;
   }
 
-  Vector<String> GetProgramArguments() {
+  Vector<String> getProgramArguments() {
     return mArguments;
   }
 
   @Override
   public Map<String, Constant> constants() {
-    Map<String, Constant> c = new HashMap<String, Constant>();
+    Map<String, Constant> c = new HashMap<>();
     // Regular constants
     c.put("true", new Constant(-1));
     c.put("false", new Constant(0));
@@ -492,7 +492,7 @@ public class Standard implements FunctionLibrary {
 
   @Override
   public Map<String, FunctionSpecification[]> specs() {
-    Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
+    Map<String, FunctionSpecification[]> s = new HashMap<>();
 
     // new FuncSpec(params, isFunction, brackets,	new ValType(returnType),
     //				timeshare, vmIndex, freeTempData, paramValidationCallback)

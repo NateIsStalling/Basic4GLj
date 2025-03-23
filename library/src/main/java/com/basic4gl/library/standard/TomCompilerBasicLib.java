@@ -258,7 +258,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     null);*/
 
     // Register initialisation function
-    TomCompilerBasicLib.comp.VM().addInitFunction(new InitFunc());
+    TomCompilerBasicLib.comp.getVM().addInitFunction(new InitFunc());
   }
 
   @Override
@@ -285,7 +285,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     private int errorLine, errorCol;
     private String errorText;
 
-    private void ClearError() {
+    private void clearError() {
       errorText = "";
       errorLine = 0;
       errorCol = 0;
@@ -294,11 +294,11 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     // IB4GLCompiler interface
     public int compile(String sourceText) {
       assertTrue(comp != null);
-      TomVM vm = comp.VM();
+      TomVM vm = comp.getVM();
 
       // Load source text into compiler
-      comp.Parser().getSourceCode().clear();
-      comp.Parser().getSourceCode().add(sourceText);
+      comp.getParser().getSourceCode().clear();
+      comp.getParser().getSourceCode().add(sourceText);
 
       // Compile it
       return doNewCompile(vm);
@@ -318,10 +318,10 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     public boolean execute(int codeHandle) {
-      TomVM vm = comp.VM();
+      TomVM vm = comp.getVM();
 
       // Check code handle is valid
-      if (codeHandle == 0 || !vm.IsCodeBlockValid(codeHandle)) {
+      if (codeHandle == 0 || !vm.isCodeBlockValid(codeHandle)) {
         vm.functionError("Invalid code handle");
         return false;
       }
@@ -336,7 +336,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
       // Find code to execute
       // 2 op-codes earlier will be the callback hook.
-      int offset = vm.GetCodeBlockOffset(codeHandle) - 2;
+      int offset = vm.getCodeBlockOffset(codeHandle) - 2;
 
       // Execute code
       internalExecute(vm, offset, true);
@@ -354,14 +354,14 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
   }
 
   // Globals
-  static TomBasicCompiler comp = null;
-  static IVMDriver host = null;
-  static FileOpener files = null;
-  CompilerPluginAdapter compilerAdapter;
+  private static TomBasicCompiler comp = null;
+  private static IVMDriver host = null;
+  private static FileOpener files = null;
+  private CompilerPluginAdapter compilerAdapter;
 
-  static String error = "";
-  static int errorLine = 0, errorCol = 0;
-  static Vector<Integer> runtimeRoutines = new Vector<>();
+  private static String error = "";
+  private static int errorLine = 0, errorCol = 0;
+  private static final Vector<Integer> runtimeRoutines = new Vector<>();
 
   ////////////////////////////////////////////////////////////////////////////////
   //  Helper routines
@@ -420,7 +420,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
       clearError();
 
       // Return code block index
-      codeBlock = vm.CurrentCodeBlockIndex();
+      codeBlock = vm.getCurrentCodeBlockIndex();
     } else {
 
       // Set error
@@ -510,8 +510,8 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
   void doCompileText(TomVM vm, String text, boolean useOldMethod) {
     // Load it into compiler
-    comp.Parser().getSourceCode().clear();
-    comp.Parser().getSourceCode().add(text);
+    comp.getParser().getSourceCode().clear();
+    comp.getParser().getSourceCode().add(text);
 
     // Compile it
     doCompile(vm, useOldMethod);
@@ -524,7 +524,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     index += 2;
 
     // Load array into compiler
-    comp.Parser().getSourceCode().clear();
+    comp.getParser().getSourceCode().clear();
     for (int i = 0; i < arraySize; i++) {
 
       // Find string index
@@ -534,7 +534,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
       String text = vm.getString(stringIndex);
 
       // Add to parser text
-      comp.Parser().getSourceCode().add(text);
+      comp.getParser().getSourceCode().add(text);
 
       // Next line
       index++;
@@ -558,7 +558,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     } else {
 
       // Read file into parser
-      comp.Parser().getSourceCode().clear();
+      comp.getParser().getSourceCode().clear();
 
       byte[] buffer = new byte[4096];
       int remaining, read;
@@ -566,7 +566,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
       try (BufferedReader br = new BufferedReader(new InputStreamReader(file))) {
         String line;
         while ((line = br.readLine()) != null) {
-          comp.Parser().getSourceCode().add(line);
+          comp.getParser().getSourceCode().add(line);
         }
 
         file.close();

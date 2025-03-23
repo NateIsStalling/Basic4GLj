@@ -69,7 +69,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         1), // Reuse the window, but re-create the OpenGL context (some drivers don't like this)
     RGM_RECREATEWINDOW(2); // Destroy and re-create the entire window.
 
-    private int mode;
+    private final int mode;
 
     ResetGLModeType(int mode) {
       this.mode = mode;
@@ -80,62 +80,62 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     }
   }
 
-  long m_window;
+  protected long m_window;
 
   // long    m_HWnd;             // Window handle
-  boolean m_active; // True if window is active
-  boolean m_focused; // True if window has focus
-  boolean m_visible; // True if window is visible
-  boolean m_fullScreen; // True if fullscreen mode
-  boolean m_border; // True if window has border (windowed mode only)
-  boolean m_allowResizing; // True if window can be dragged and resized
-  boolean m_fitToWorkArea; // True if window should be fitted to the desktop work area
-  int m_width, m_height;
-  int m_bpp; // (Fullscreen mode only)
-  boolean m_stencil; // True to enable stencil buffer
-  String m_title; // Window title
-  double m_fov, m_fovX, m_nearClip, m_farClip;
+  protected boolean m_active; // True if window is active
+  protected boolean m_focused; // True if window has focus
+  protected boolean m_visible; // True if window is visible
+  protected boolean m_fullScreen; // True if fullscreen mode
+  protected boolean m_border; // True if window has border (windowed mode only)
+  protected boolean m_allowResizing; // True if window can be dragged and resized
+  protected boolean m_fitToWorkArea; // True if window should be fitted to the desktop work area
+  protected int m_width, m_height;
+  protected int m_bpp; // (Fullscreen mode only)
+  protected boolean m_stencil; // True to enable stencil buffer
+  protected String m_title; // Window title
+  protected double m_fov, m_fovX, m_nearClip, m_farClip;
   // DEVMODE m_screenSettings;    // Screen settings for fullscreen mode
-  boolean m_closing;
+  protected boolean m_closing;
   // TODO Possibly use Map structure instead of array for m_keyDown if it'd use less memory
   // Character.MAX_VALUE is used for array size to support GLFW keycodes that are in the 256+ range
-  byte[] m_keyDown = new byte[Character.MAX_VALUE]; // Tracks key states
-  int[] m_keyBuffer = new int[GLWINDOWKEYBUFFER]; // Queues key presses
-  int[] m_scanKeyBuffer = new int[GLWINDOWKEYBUFFER]; // Queuse scan keys
-  int m_bufStart, m_bufEnd, m_scanBufStart, m_scanBufEnd;
-  boolean m_dontPaint; // If false (default), WM_PAINT messages will cause a SwapBuffers () call.
+  protected byte[] m_keyDown = new byte[Character.MAX_VALUE]; // Tracks key states
+  protected int[] m_keyBuffer = new int[GLWINDOWKEYBUFFER]; // Queues key presses
+  protected int[] m_scanKeyBuffer = new int[GLWINDOWKEYBUFFER]; // Queuse scan keys
+  protected int m_bufStart, m_bufEnd, m_scanBufStart, m_scanBufEnd;
+  protected boolean m_dontPaint; // If false (default), WM_PAINT messages will cause a SwapBuffers () call.
   // Otherwise they wontException e
-  boolean m_painting;
-  boolean m_pausePressed;
-  int m_mouseX, m_mouseY;
-  boolean[] m_mouseButton = new boolean[3]; // 0 = Left, 1 = Right, 2 = Middle
-  int m_mouseWheel, m_mouseWheelDelta;
-  boolean m_mouseCentred;
+  protected boolean m_painting;
+  protected boolean m_pausePressed;
+  protected int m_mouseX, m_mouseY;
+  protected boolean[] m_mouseButton = new boolean[3]; // 0 = Left, 1 = Right, 2 = Middle
+  protected int m_mouseWheel, m_mouseWheelDelta;
+  protected boolean m_mouseCentred;
   // Used to detect the first time someone uses the MouseXD() or MouseYD() methods.
   // These methods work by placing the mouse cursor in the middle of the
   // window and measuring the distance it moves from that point.
   // On the first call they simply place the cursor in the centre and
   // return 0.
-  boolean m_showingCursor;
-  ResetGLModeType m_resetGLMode;
+  protected boolean m_showingCursor;
+  protected ResetGLModeType m_resetGLMode;
 
-  void IncStart() {
+  void incStart() {
     m_bufStart = (++m_bufStart) % GLWINDOWKEYBUFFER;
   }
 
-  void IncEnd() {
+  void incEnd() {
     m_bufEnd = (++m_bufEnd) % GLWINDOWKEYBUFFER;
   }
 
-  void IncScanStart() {
+  void incScanStart() {
     m_scanBufStart = (++m_scanBufStart) % GLWINDOWKEYBUFFER;
   }
 
-  void IncScanEnd() {
+  void incScanEnd() {
     m_scanBufEnd = (++m_scanBufEnd) % GLWINDOWKEYBUFFER;
   }
 
-  void PositionMouse() {
+  void positionMouse() {
     // TODO without AWT!
     //        try {
     //            new Robot().mouseMove(m_mouseX, m_mouseY);
@@ -144,9 +144,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     //        }
   }
 
-  void BufferScanKey(int key) {
+  void bufferScanKey(int key) {
     int end = m_scanBufEnd;
-    IncScanEnd();
+    incScanEnd();
     if (m_scanBufEnd != m_scanBufStart) {
       m_scanKeyBuffer[end] = key;
     } else {
@@ -154,9 +154,12 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     }
   }
 
-  protected void ResizeGLScene(
-      int width, int height) // Resize the scene in response to a window resize
-      {
+  /**
+   * Resize the scene in response to a window resize
+   * @param width
+   * @param height
+   */
+  protected void resizeGLScene(int width, int height) {
 
     // Sanity checks
     if (height < 10) {
@@ -194,13 +197,13 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     glLoadIdentity();									// Reset The Modelview Matrix*/
   }
 
-  protected void KillWindow() {
+  protected void killWindow() {
 
     // Close the window
-    Hide();
+    hide();
 
     // Must destroy OpenGL context first
-    KillGLContext();
+    killGLContext();
 
     // Delete the window
     /*glWindows.erase (m_HWnd);           // Remove from window list
@@ -214,7 +217,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     }
   }
 
-  protected void KillGLContext() {
+  protected void killGLContext() {
 
     // Destroy the OpenGL context
     glfwTerminate(); // TODO confirm this destroys the context
@@ -226,7 +229,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     }*/
   }
 
-  protected void DoShowCursor() {
+  protected void doShowCursor() {
     if (!m_showingCursor) {
       // TODO Show cursor
       // ShowCursor(true);
@@ -234,7 +237,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     }
   }
 
-  protected void DoHideCursor() {
+  protected void doHideCursor() {
     if (m_showingCursor && (m_fullScreen || m_mouseCentred)) {
       // TODO hide cursor
       // ShowCursor(false);
@@ -292,7 +295,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     m_showingCursor = true;
 
     // Clear key buffers
-    ClearKeyBuffers();
+    clearKeyBuffers();
 
     // Defaults
     m_fov = 60.0;
@@ -337,7 +340,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     */
   }
 
-  public boolean ResetGL() {
+  public boolean resetGL() {
 
     /*if (m_resetGLMode == ResetGLModeType.RGM_RECREATEWINDOW) {
         RecreateWindow(m_fullScreen, m_border, m_width, m_height, m_bpp, m_stencil, m_title, m_allowResizing, m_fitToWorkArea);
@@ -366,19 +369,19 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     // Intialise matrices
     try {
       GL11.glMatrixMode(GL11.GL_PROJECTION);
-      ClearGLMatrix();
+      clearGLMatrix();
     } catch (Exception e) {
       e.printStackTrace();
     }
     try {
       GL11.glMatrixMode(GL11.GL_TEXTURE);
-      ClearGLMatrix();
+      clearGLMatrix();
     } catch (Exception e) {
       e.printStackTrace();
     }
     try {
       GL11.glMatrixMode(GL11.GL_MODELVIEW);
-      ClearGLMatrix();
+      clearGLMatrix();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -1005,7 +1008,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     }
 
     // Multitexturing
-    if (ExtensionSupported("GL_ARB_multitexture")) {
+    if (isExtensionSupported("GL_ARB_multitexture")) {
 
       // Disable texturing for all texture units
       IntBuffer units = BufferUtils.createIntBuffer(1);
@@ -1052,12 +1055,12 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     }
 
     // Setup OpenGL defaults
-    OpenGLDefaults();
+    resetOpenGLDefaults();
 
     return true; // Initialization Went OK
   }
 
-  public void OpenGLDefaults() {
+  public void resetOpenGLDefaults() {
     // Setup a default viewport
     // Get frame buffer size to support high resolution/retina displays
     IntBuffer w = BufferUtils.createIntBuffer(1);
@@ -1068,7 +1071,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
     //        System.out.println("main "+ m_width + ", " + m_height);
     // Setup some 'nice' defaults
-    ResizeGLScene(width, height); // Projection matrix
+    resizeGLScene(width, height); // Projection matrix
 
     // TODO should this be m_width, m_height
     GL11.glViewport(0, 0, m_width, m_height); // Reset The Current Viewport
@@ -1118,7 +1121,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     }
 
     GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);
-    SwapBuffers();
+    swapBuffers();
     GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);
   }
 
@@ -1139,7 +1142,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
       return false;
   }*/
 
-  public void RecreateWindow(
+  public void recreateWindow(
       boolean fullScreen,
       boolean border,
       int width,
@@ -1162,7 +1165,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     m_stencil = stencil;
 
     // Delete existing window
-    KillWindow();
+    killWindow();
 
     // TODO Create window here
     /*
@@ -1323,14 +1326,14 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     }*/
 
     // Setup OpenGL
-    RecreateGLContext();
+    recreateGLContext();
   }
 
   // virtual
-  public void RecreateGLContext() {
+  public void recreateGLContext() {
 
     // Delete existing context
-    KillGLContext();
+    killGLContext();
 
     // Create main context
 
@@ -1351,63 +1354,63 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     */
 
     // Multitexture extension pointers may not be valid anymore, so re-fetch them
-    InitMultitexture();
+    initMultitexture();
 
     // Setup OpenGL defaults
-    OpenGLDefaults();
+    resetOpenGLDefaults();
   }
 
   // Settings
-  public int Width() {
+  public int getWidth() {
     return m_width;
   }
 
-  public int Height() {
+  public int getHeight() {
     return m_height;
   }
 
-  public int Bpp() {
+  public int getBpp() {
     return m_bpp;
   }
 
-  public boolean FullScreen() {
+  public boolean isFullScreen() {
     return m_fullScreen;
   }
 
   // return double&
-  public double FOV() {
+  public double getFOV() {
     return m_fov;
   }
 
-  public double FOVX() {
+  public double getFOVX() {
     return m_fovX;
   }
 
   // return double&
-  public double NearClip() {
+  public double getNearClip() {
     return m_nearClip;
   }
 
   // return double&
-  public double FarClip() {
+  public double getFarClip() {
     return m_farClip;
   }
 
-  public String Title() {
+  public String getTitle() {
     return m_title;
   }
 
-  public ResetGLModeType ResetGLMode() {
+  public ResetGLModeType getResetGLModeType() {
     return m_resetGLMode;
   }
 
   // Active state
-  public boolean Active() {
+  public boolean isActive() {
     return m_active;
   }
 
   /*
-  public void Activate(){
+  public void activate(){
       if (!m_visible)
           Show ();
       else {
@@ -1416,7 +1419,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
       }
   }*/
 
-  public boolean Focused() {
+  public boolean isFocused() {
     return m_focused;
   }
 
@@ -1443,9 +1446,13 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
       }
       return result;
   }*/
-  public void Hide() // Hide window. Switch back from fullscreen (if fullscreen mode)
-      {
-    DoShowCursor();
+
+  /**
+   * Hide window. Switch back from fullscreen (if fullscreen mode)
+   */
+  @Override
+  public void hide() {
+    doShowCursor();
     if (!m_visible) {
       return;
     }
@@ -1457,24 +1464,30 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     //    glfwChangeDisplaySettings(null,0);					// If So Switch Back To The Desktop
   }
 
-  public boolean Visible() {
+  @Override
+  public boolean isVisible() {
     return m_visible;
   }
 
-  public boolean Closing() {
+  @Override
+  public boolean isClosing() {
     return m_closing;
   }
 
-  public void SetClosing(boolean value) {
+  public void setClosing(boolean value) {
     m_closing = value;
   }
 
   // Keyboard handling
-  public int getKey() // Pulls a key from the keyboard buffer. Returns 0 if none waiting.
-      {
+
+  /**
+   * Pulls a key from the keyboard buffer. Returns 0 if none waiting.
+   * @return
+   */
+  public int getKey() {
 
     // Flush any keypress messages
-    // ProcessWindowsMessages ();
+    // processWindowsMessages ();
 
     // Check for buffered keypress
     if (m_bufStart == m_bufEnd) {
@@ -1483,7 +1496,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
     // Extract and return it
     int result = m_keyBuffer[m_bufStart];
-    IncStart();
+    incStart();
     return result;
   }
 
@@ -1499,11 +1512,11 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
     // Extract and return it
     int result = m_scanKeyBuffer[m_scanBufStart];
-    IncScanStart();
+    incScanStart();
     return result;
   }
 
-  public void ClearKeyBuffers() {
+  public void clearKeyBuffers() {
 
     // Clear key states
     for (int i = 0; i < m_keyDown.length; i++)
@@ -1533,7 +1546,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
     // Add a keypress to buffer (if necessary)
     if (down && !wasDown) {
-      BufferScanKey(scanCode);
+      bufferScanKey(scanCode);
     }
 
     // Toggle key bitmask
@@ -1545,7 +1558,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
   }
 
   // Display screen
-  void SwapBuffers() {
+  void swapBuffers() {
     glfwSwapBuffers(m_window); // DisplayManager
   }
 
@@ -1567,7 +1580,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
   }*/
 
   // Multitexturing extension
-  public boolean ExtensionSupported(String extension) {
+  public boolean isExtensionSupported(String extension) {
     // TODO determine what this function does; not sure the purpose of padding the strings with
     // whitespace
     String extensions = GL11.glGetString(GL11.GL_EXTENSIONS);
@@ -1583,7 +1596,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
      */
   }
 
-  public void InitMultitexture() {
+  public void initMultitexture() {
     // TODO Look into extensions
     /*if (ExtensionSupported ("GL_ARB_multitexture")) {
         glMultiTexCoord2f = (PFNGLMULTITEXCOORD2FARBPROC) wglGetProcAddress ("glMultiTexCoord2fARB");
@@ -1598,17 +1611,17 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
   }
 
   // Mouse
-  public int MouseX() {
+  public int getMouseX() {
     // ProcessWindowsMessages();
     return m_mouseX;
   }
 
-  public int MouseY() {
+  public int getMouseY() {
     // ProcessWindowsMessages();
     return m_mouseY;
   }
 
-  public int MouseXD() {
+  public int getMouseXD() {
 
     // Read any pending windows messages
     // ProcessWindowsMessages ();
@@ -1620,9 +1633,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     if (!m_mouseCentred) {
       m_mouseX = m_width / 2;
       m_mouseY = m_height / 2;
-      PositionMouse();
+      positionMouse();
       m_mouseCentred = true;
-      DoHideCursor();
+      doHideCursor();
       return 0;
     }
 
@@ -1632,13 +1645,13 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
     // Recentre cursor x
     m_mouseX = centre;
-    PositionMouse();
+    positionMouse();
 
     // Return result
     return result;
   }
 
-  public int MouseYD() {
+  public int getMouseYD() {
 
     // Read any pending windows messages
     // ProcessWindowsMessages ();
@@ -1650,9 +1663,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     if (!m_mouseCentred) {
       m_mouseX = m_width / 2;
       m_mouseY = m_height / 2;
-      PositionMouse();
+      positionMouse();
       m_mouseCentred = true;
-      DoHideCursor();
+      doHideCursor();
       return 0;
     }
 
@@ -1662,41 +1675,41 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
     // Recentre cursor y
     m_mouseY = centre;
-    PositionMouse();
+    positionMouse();
 
     // Return result
     return result;
   }
 
-  public boolean MouseButton(int index) {
+  public boolean getMouseButton(int index) {
     assertTrue(index >= 0);
     assertTrue(index < 3);
     // ProcessWindowsMessages();
     return m_mouseButton[index];
   }
 
-  public int MouseWheel() {
+  public int getMouseWheel() {
     int result = m_mouseWheel;
     m_mouseWheel = 0;
     return result;
   }
 
   // Misc
-  public boolean DontPaint() {
+  public boolean dontPaint() {
     return m_dontPaint;
   }
 
-  public void SetDontPaint(boolean dontPaint) {
+  public void setDontPaint(boolean dontPaint) {
     m_dontPaint = dontPaint;
   }
 
-  public boolean PausePressed() {
+  public boolean pausePressed() {
     boolean result = m_pausePressed;
     m_pausePressed = false;
     return result;
   }
 
-  void ClearGLMatrix() {
+  void clearGLMatrix() {
 
     // Clear the matrix stack by popping a lot of matrices
     for (int i = 0; i < 256; i++) {

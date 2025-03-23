@@ -8,8 +8,8 @@ import javax.swing.*;
  * Created by Nate on 1/6/2016.
  */
 public class SwingLayout {
-  JFrame mMainFrame;
-  JMenuBar mMenuBar;
+  private JFrame mMainFrame;
+  private JMenuBar mMenuBar;
 
   private Map<String, Integer> mMenus = new HashMap<>();
 

@@ -11,7 +11,7 @@ import java.io.IOException;
  */
 public class RuntimeFunction implements Streamable {
 
-  int prototypeIndex;
+  private int prototypeIndex;
 
   public RuntimeFunction() {
     prototypeIndex = -1;
@@ -30,5 +30,9 @@ public class RuntimeFunction implements Streamable {
   public boolean streamIn(DataInputStream stream) throws IOException {
     prototypeIndex = (int) Streaming.readLong(stream);
     return true;
+  }
+
+  public int getPrototypeIndex() {
+    return prototypeIndex;
   }
 }

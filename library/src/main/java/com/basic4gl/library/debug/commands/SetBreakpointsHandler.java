@@ -24,12 +24,12 @@ public class SetBreakpointsHandler {
 
     String filename = command.getSource().path;
 
-    mDebugger.ClearUserBreakPts(filename);
+    mDebugger.clearUserBreakPoints(filename);
 
     for (SourceBreakpoint breakpoint : command.getBreakpoints()) {
       int line = breakpoint.line;
       Breakpoint verifiedBreakpoint = new Breakpoint();
-      mDebugger.AddUserBreakPt(filename, line);
+      mDebugger.addUserBreakPoint(filename, line);
 
       verifiedBreakpoint.source = command.getSource();
       verifiedBreakpoint.line = breakpoint.line;
@@ -38,7 +38,7 @@ public class SetBreakpointsHandler {
       // currently can only handle breakpoints on the first instruction of a line
       // verifiedBreakpoint.column = breakpoint.column;
 
-      verifiedBreakpoint.verified = mDebugger.IsUserBreakPt(filename, line);
+      verifiedBreakpoint.verified = mDebugger.isUserBreakPoint(filename, line);
 
       // TODO send verifiedBreakpoint in response
     }

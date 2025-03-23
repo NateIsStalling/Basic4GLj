@@ -190,10 +190,10 @@ public class RunHandler {
     // Output window is being run as a java jar file
     if (libraryBinPath.endsWith(".jar")) {
       ArrayList<String> jvmArgs =
-          new ArrayList<String>(
-              Arrays.asList(
-                  "java", jvmDebugArgs // TODO make this configurable
-                  ));
+              new ArrayList<>(
+                      Arrays.asList(
+                              "java", jvmDebugArgs // TODO make this configurable
+                      ));
 
       if (SystemUtils.IS_OS_MAC) {
         jvmArgs.add("-XstartOnFirstThread"); // needed for GLFW

@@ -11,25 +11,13 @@ import java.io.IOException;
  * Recognised constants (e.g. "true", "false")
  */
 public class Constant implements Streamable {
-  /**
-   * Value type
-   */
-  int basicType;
+  private int basicType;
 
-  /**
-   * Value of Constant if {@link #basicType} is {@value BasicValType#VTP_INT}
-   */
-  int intValue;
+  private int intValue;
 
-  /**
-   * Value of Constant if {@link #basicType} is {@value BasicValType#VTP_REAL}
-   */
-  float realValue;
+  private float realValue;
 
-  /**
-   * Value of Constant if {@link #basicType} is {@value BasicValType#VTP_STRING}
-   */
-  String stringValue;
+  private String stringValue;
 
   public Constant() {
     basicType = BasicValType.VTP_STRING;
@@ -77,7 +65,8 @@ public class Constant implements Streamable {
     return basicType;
   }
 
-  public String ToString() {
+  @Override
+  public String toString() {
     switch (basicType) {
       case BasicValType.VTP_INT:
         return String.valueOf(intValue);
@@ -126,5 +115,33 @@ public class Constant implements Streamable {
         break;
     }
     return true;
+  }
+
+  /**
+   * Value type
+   */
+  public int getBasicType() {
+    return basicType;
+  }
+
+  /**
+   * Value of Constant if {@link #basicType} is {@value BasicValType#VTP_INT}
+   */
+  public int getIntValue() {
+    return intValue;
+  }
+
+  /**
+   * Value of Constant if {@link #basicType} is {@value BasicValType#VTP_REAL}
+   */
+  public float getRealValue() {
+    return realValue;
+  }
+
+  /**
+   * Value of Constant if {@link #basicType} is {@value BasicValType#VTP_STRING}
+   */
+  public String getStringValue() {
+    return stringValue;
   }
 }

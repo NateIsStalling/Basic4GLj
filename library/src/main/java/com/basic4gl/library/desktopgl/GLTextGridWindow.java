@@ -50,7 +50,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
   private boolean mClosing;
 
-  GLTextGrid mTextGrid;
+  private GLTextGrid mTextGrid;
 
   private IAppSettings appSettings; // common settings for all libraries
   private Configuration configuration; // runtime configuration for this library
@@ -118,7 +118,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
   public static Library getInstance(TomBasicCompiler compiler) {
     GLTextGridWindow instance = new GLTextGridWindow();
     instance.mComp = compiler;
-    instance.mVM = compiler.VM();
+    instance.mVM = compiler.getVM();
     return instance;
   }
 
@@ -361,7 +361,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     instance.mFiles.setParentDirectory(currentDirectory);
 
     instance.mComp = new TomBasicCompiler(new TomVM(debugger));
-    instance.mVM = instance.mComp.VM();
+    instance.mVM = instance.mComp.getVM();
     instance.mServices = new ServiceCollection();
     instance.mLibraries = new ArrayList<>();
 
@@ -389,8 +389,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
         ((IFileAccess) lib).init(instance.mFiles);
       }
       if (lib instanceof FunctionLibrary) {
-        instance.mComp.AddConstants(((FunctionLibrary) lib).constants());
-        instance.mComp.AddFunctions(lib, ((FunctionLibrary) lib).specs());
+        instance.mComp.addConstants(((FunctionLibrary) lib).constants());
+        instance.mComp.addFunctions(lib, ((FunctionLibrary) lib).specs());
       }
     }
 
@@ -772,7 +772,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     // Get settings
     Configuration config = getConfiguration();
 
-    List<String> list = new ArrayList<String>();
+    List<String> list = new ArrayList<>();
 
     // Get supported platforms
     int windows = Integer.valueOf(config.getValue(GLTextGridWindow.SETTING_SUPPORT_WINDOWS));
@@ -979,7 +979,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     // bindings available for use.
     GL.createCapabilities();
 
-    ResetGL();
+    resetGL();
 
     // Initialize Sprite Engine
     mTextGrid = new GLSpriteEngine(mCharset, mFiles, 25, 40, 16, 16);
@@ -1035,7 +1035,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
       System.out.println("destroy callbacks");
       keyCallback.free();
       charCallback.free();
-      ClearKeyBuffers();
+      clearKeyBuffers();
 
       // Terminate GLFW and release the GLFWerrorfun
       System.out.println("glfwTerminate");
@@ -1052,11 +1052,11 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     System.out.println("exit");
   }
 
-  public void RecreateGLContext() {
-    super.RecreateGLContext();
+  public void recreateGLContext() {
+    super.recreateGLContext();
 
     if (mTextGrid != null) {
-      mTextGrid.UploadCharsetTexture();
+      mTextGrid.uploadCharsetTexture();
     }
   }
 
@@ -1079,16 +1079,6 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     } catch (Exception e) {
       e.printStackTrace();
       return false;
-    }
-  }
-
-  public void swapBuffers() {
-    try {
-      synchronized (this) {
-        glfwSwapBuffers(m_window);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
@@ -1181,7 +1171,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
                       m_pausePressed = true;
                     } else {
                       m_keyDown[key] |= 1;
-                      BufferScanKey((char) key);
+                      bufferScanKey((char) key);
                     }
                   } else if (action == GLFW_RELEASE) {
                     m_keyDown[key] &= ~1;
@@ -1202,7 +1192,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
                   }
 
                   int end = m_bufEnd;
-                  IncEnd(); // Check for room in buffer
+                  incEnd(); // Check for room in buffer
                   if (m_bufEnd != m_bufStart) {
                     m_keyBuffer[end] = (char) codepoint;
                   } else {

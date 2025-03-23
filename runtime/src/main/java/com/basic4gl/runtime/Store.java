@@ -33,10 +33,10 @@ public class Store<T> {
   public Store(T blankElement) {
     this.blankElement = blankElement;
 
-    array = new Vector<T>();
-    valAllocated = new Vector<Boolean>();
+    array = new Vector<>();
+    valAllocated = new Vector<>();
 
-    freeList = new ArrayList<Integer>();
+    freeList = new ArrayList<>();
   }
 
   public boolean isIndexValid(int index) { // Return true if index is a valid

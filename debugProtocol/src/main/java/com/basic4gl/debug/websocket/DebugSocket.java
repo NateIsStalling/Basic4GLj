@@ -20,7 +20,7 @@ public class DebugSocket {
 
   private static Gson gson = new Gson();
 
-  private static Map<UUID, Session> sessionRepository = new HashMap<UUID, Session>();
+  private static Map<UUID, Session> sessionRepository = new HashMap<>();
 
   private static ArrayList<DebugCommand> initializeCommandsQueue = new ArrayList<>();
 
@@ -58,7 +58,7 @@ public class DebugSocket {
   public void onWebSocketText(Session sess, String message) throws IOException {
     logger.log("Server Received TEXT message: " + message);
 
-    DebugCommand command = adapter.FromJson(message);
+    DebugCommand command = adapter.fromJson(message);
 
     // reset pending configuration when initialize command is received
     if (command != null && Objects.equals(command.getCommand(), InitializeCommand.COMMAND)) {

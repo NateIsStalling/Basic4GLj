@@ -13,13 +13,13 @@ import java.io.OutputStream;
  */
 public abstract class Builder implements Library, IFileAccess, ITargetCommandLineOptions {
 
-  public abstract String version();
+  public abstract String getVersion();
 
-  public abstract String author();
+  public abstract String getAuthor();
 
-  public abstract String contact();
+  public abstract String getContact();
 
-  public abstract String id();
+  public abstract String getId();
 
   /**
    * Bundle the target in a stream to store a standalone copy on the filesystem.

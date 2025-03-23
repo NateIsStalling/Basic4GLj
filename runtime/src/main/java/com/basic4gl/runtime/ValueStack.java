@@ -14,7 +14,7 @@ public class ValueStack {
 
   public ValueStack(Store<String> strings) {
     this.strings = strings;
-    data = new Vector<Value>();
+    data = new Vector<>();
   }
 
   public boolean isEmpty() {

@@ -152,7 +152,7 @@ public class DebuggerCommandAdapter
   }
 
   @Override
-  public void OnDebugCallbackReceived(
+  public void onDebugCallbackReceived(
       com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
     synchronized (mMessage) {
       com.basic4gl.lib.util.VMStatus vmStatus = null;
@@ -163,7 +163,7 @@ public class DebuggerCommandAdapter
                 callback.getVMStatus().hasError(),
                 callback.getVMStatus().getError());
       }
-      mMessage.setMessage(callback.status, callback.text, vmStatus);
+      mMessage.setMessage(callback.getStatus(), callback.getText(), vmStatus);
       InstructionPosition instructionPosition = null;
       if (callback.getSourcePosition() != null) {
         instructionPosition =
@@ -176,10 +176,10 @@ public class DebuggerCommandAdapter
   }
 
   @Override
-  public void OnCallbackReceived(Callback callback) {}
+  public void onCallbackReceived(Callback callback) {}
 
   @Override
-  public void OnDebugCommandReceived(DebugCommand command) {
+  public void onDebugCommandReceived(DebugCommand command) {
     System.out.println("Received command: " + command.getCommand());
 
     switch (command.getCommand()) {
@@ -208,7 +208,7 @@ public class DebuggerCommandAdapter
       case StepCommand.COMMAND:
         StepCommand stepCommand = (StepCommand) command;
         StepHandler handler = new StepHandler(mMessage, mVM);
-        handler.DoStep(stepCommand.stepType);
+        handler.doStep(stepCommand.stepType);
         break;
       case StopCommand.COMMAND:
         StopHandler stopHandler = new StopHandler(mVMDriver);
@@ -238,7 +238,7 @@ public class DebuggerCommandAdapter
   }
 
   @Override
-  public void OnDisconnected() {
+  public void onDisconnected() {
     // do nothing
   }
 }

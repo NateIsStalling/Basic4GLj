@@ -54,7 +54,7 @@ public class TomBasicCompiler extends HasErrorState {
   private final Map<String, Constant>
       programConstants; // Constants declared using the const command.
 
-  private final Vector<Library> libraries = new Vector<Library>();
+  private final Vector<Library> libraries = new Vector<>();
   private final Vector<FunctionSpecification> functions;
   private final Map<String, List<Integer>>
       functionIndex; // Maps function name to index of function (in mFunctions array)
@@ -140,19 +140,12 @@ public class TomBasicCompiler extends HasErrorState {
    * stack and an operand stack.
    */
   static class Operator {
-    OperType type;
-    short opCode;
+    private OperType type;
+    private short opCode;
 
-    /**
-     * 1 . Calculate "op Reg" (e.g. "Not Reg")
-     * 2 . Calculate "Reg2 op Reg" (e.g. "Reg2 - Reg")
-     */
-    int params;
+    private int params;
 
-    /**
-     * Operator binding. Higher = tighter.
-     */
-    int binding;
+    private int binding;
 
     Operator(OperType type, short opCode, int params, int binding) {
       this.type = type;
@@ -174,18 +167,51 @@ public class TomBasicCompiler extends HasErrorState {
       params = o.params;
       binding = o.binding;
     }
+
+    public OperType getType() {
+      return type;
+    }
+
+    public void setType(OperType type) {
+      this.type = type;
+    }
+
+    public short getOpCode() {
+      return opCode;
+    }
+
+    public void setOpCode(short opCode) {
+      this.opCode = opCode;
+    }
+
+    /**
+     * 1 . Calculate "op Reg" (e.g. "Not Reg")
+     * 2 . Calculate "Reg2 op Reg" (e.g. "Reg2 - Reg")
+     */
+    public int getParams() {
+      return params;
+    }
+
+    public void setParams(int params) {
+      this.params = params;
+    }
+
+    /**
+     * Operator binding. Higher = tighter.
+     */
+    public int getBinding() {
+      return binding;
+    }
+
+    public void setBinding(int binding) {
+      this.binding = binding;
+    }
   }
 
   static class StackedOperator {
-    /**
-     * Stacked operator
-     */
-    Operator operator;
+    private Operator operator;
 
-    /**
-     * Address of lazy jump op code (for "and" and "or" operations)
-     */
-    int lazyJumpAddress;
+    private int lazyJumpAddress;
 
     StackedOperator(Operator o) {
       operator = o;
@@ -196,21 +222,37 @@ public class TomBasicCompiler extends HasErrorState {
       operator = o;
       lazyJumpAddress = lazyJumpAddr;
     }
+
+    /**
+     * Stacked operator
+     */
+    public Operator getOperator() {
+      return operator;
+    }
+
+    public void setOperator(Operator operator) {
+      this.operator = operator;
+    }
+
+    /**
+     * Address of lazy jump op code (for "and" and "or" operations)
+     */
+    public int getLazyJumpAddress() {
+      return lazyJumpAddress;
+    }
+
+    public void setLazyJumpAddress(int lazyJumpAddress) {
+      this.lazyJumpAddress = lazyJumpAddress;
+    }
   }
 
   /**
    * A program label, i.e. a named destination for "goto" and "gosub"s
    */
   static class Label implements Streamable {
-    /**
-     * Instruction index in code
-     */
-    int offset;
+    private int offset;
 
-    /**
-     * Program data offset. (For use with "RESET labelname" command.)
-     */
-    int programDataOffset;
+    private int programDataOffset;
 
     Label(int offset, int dataOffset) {
       this.offset = offset;
@@ -233,6 +275,28 @@ public class TomBasicCompiler extends HasErrorState {
 
       return true;
     }
+
+    /**
+     * Instruction index in code
+     */
+    public int getOffset() {
+      return offset;
+    }
+
+    public void setOffset(int offset) {
+      this.offset = offset;
+    }
+
+    /**
+     * Program data offset. (For use with "RESET labelname" command.)
+     */
+    public int getProgramDataOffset() {
+      return programDataOffset;
+    }
+
+    public void setProgramDataOffset(int programDataOffset) {
+      this.programDataOffset = programDataOffset;
+    }
   }
 
   /**
@@ -241,15 +305,9 @@ public class TomBasicCompiler extends HasErrorState {
    * jumps are possible.)
    */
   static class Jump {
-    /**
-     * Instruction containing jump instruction
-     */
-    int jumpInstruction;
+    private int jumpInstruction;
 
-    /**
-     * Label to which we are jumping
-     */
-    String labelName;
+    private String labelName;
 
     Jump(int instruction, String labelName) {
       jumpInstruction = instruction;
@@ -260,13 +318,59 @@ public class TomBasicCompiler extends HasErrorState {
       jumpInstruction = 0;
       labelName = "";
     }
+
+    /**
+     * Instruction containing jump instruction
+     */
+    public int getJumpInstruction() {
+      return jumpInstruction;
+    }
+
+    public void setJumpInstruction(int jumpInstruction) {
+      this.jumpInstruction = jumpInstruction;
+    }
+
+    /**
+     * Label to which we are jumping
+     */
+    public String getLabelName() {
+      return labelName;
+    }
+
+    public void setLabelName(String labelName) {
+      this.labelName = labelName;
+    }
   }
 
   // Misc
   static class ParserPos {
-    int line;
-    int column;
-    Token token;
+    private int line;
+    private int column;
+    private Token token;
+
+    public int getLine() {
+      return line;
+    }
+
+    public void setLine(int line) {
+      this.line = line;
+    }
+
+    public int getColumn() {
+      return column;
+    }
+
+    public void setColumn(int column) {
+      this.column = column;
+    }
+
+    public Token getToken() {
+      return token;
+    }
+
+    public void setToken(Token token) {
+      this.token = token;
+    }
   }
 
   public enum LanguageSyntax {
@@ -275,7 +379,7 @@ public class TomBasicCompiler extends HasErrorState {
     // with existing code.
     LS_TRADITIONAL_PRINT(2); // Traditional mode PRINT, but otherwise
     // standard Basic4GL syntax
-    private int type;
+    private final int type;
 
     LanguageSyntax(int type) {
       this.type = type;
@@ -302,15 +406,31 @@ public class TomBasicCompiler extends HasErrorState {
    */
   public static class RollbackPoint {
 
+    private com.basic4gl.runtime.RollbackPoint vmRollback;
+
+    private int runtimeFunctionCount;
+
     /**
      * Virtual machine rollback
      */
-    com.basic4gl.runtime.RollbackPoint vmRollback;
+    public com.basic4gl.runtime.RollbackPoint getVmRollback() {
+      return vmRollback;
+    }
+
+    public void setVmRollback(com.basic4gl.runtime.RollbackPoint vmRollback) {
+      this.vmRollback = vmRollback;
+    }
 
     /**
      * Runtime functions
      */
-    int runtimeFunctionCount;
+    public int getRuntimeFunctionCount() {
+      return runtimeFunctionCount;
+    }
+
+    public void setRuntimeFunctionCount(int runtimeFunctionCount) {
+      this.runtimeFunctionCount = runtimeFunctionCount;
+    }
   }
 
   // TODO Reimplement libraries
@@ -331,36 +451,36 @@ public class TomBasicCompiler extends HasErrorState {
     isCaseSensitive = caseSensitive;
     syntax = LanguageSyntax.LS_BASIC4GL;
 
-    operandStack = new Vector<ValType>();
-    operatorStack = new Vector<StackedOperator>();
-    jumps = new Vector<Jump>();
-    resets = new Vector<Jump>();
-    flowControls = new Vector<FlowControl>();
+    operandStack = new Vector<>();
+    operatorStack = new Vector<>();
+    jumps = new Vector<>();
+    resets = new Vector<>();
+    flowControls = new Vector<>();
 
-    binaryOperators = new HashMap<String, Operator>();
-    unaryOperators = new HashMap<String, Operator>();
+    binaryOperators = new HashMap<>();
+    unaryOperators = new HashMap<>();
 
-    reservedWords = new ArrayList<String>();
+    reservedWords = new ArrayList<>();
 
     parser = new Parser();
 
-    programConstants = new HashMap<String, Constant>();
-    labels = new HashMap<String, Label>();
-    labelIndex = new HashMap<Integer, String>();
+    programConstants = new HashMap<>();
+    labels = new HashMap<>();
+    labelIndex = new HashMap<>();
 
-    functionIndex = new HashMap<String, List<Integer>>();
-    constants = new HashMap<String, Constant>();
+    functionIndex = new HashMap<>();
+    constants = new HashMap<>();
 
-    localUserFunctionIndex = new HashMap<String, Integer>();
-    globalUserFunctionIndex = new HashMap<String, Integer>();
-    visibleUserFunctionIndex = new HashMap<String, Integer>();
-    userFunctionReverseIndex = new HashMap<Integer, String>();
-    runtimeFunctionIndex = new HashMap<String, Integer>();
-    runtimeFunctions = new Vector<com.basic4gl.compiler.RuntimeFunction>();
-    functions = new Vector<FunctionSpecification>();
+    localUserFunctionIndex = new HashMap<>();
+    globalUserFunctionIndex = new HashMap<>();
+    visibleUserFunctionIndex = new HashMap<>();
+    userFunctionReverseIndex = new HashMap<>();
+    runtimeFunctionIndex = new HashMap<>();
+    runtimeFunctions = new Vector<>();
+    functions = new Vector<>();
 
-    unaryOperatorExtensions = new Vector<UnaryOperatorExtension>();
-    binaryOperatorExtensions = new Vector<BinaryOperatorExtension>();
+    unaryOperatorExtensions = new Vector<>();
+    binaryOperatorExtensions = new Vector<>();
 
     functionStart = new InstructionPosition();
     userFuncPrototype = new UserFuncPrototype();
@@ -447,11 +567,11 @@ public class TomBasicCompiler extends HasErrorState {
   }
 
   public List<String> getUnaryOperators() {
-    return new ArrayList<String>(unaryOperators.keySet());
+    return new ArrayList<>(unaryOperators.keySet());
   }
 
   public List<String> getBinaryOperators() {
-    return new ArrayList<String>(binaryOperators.keySet());
+    return new ArrayList<>(binaryOperators.keySet());
   }
 
   void clearState() {
@@ -539,11 +659,11 @@ public class TomBasicCompiler extends HasErrorState {
    * m_plugins.CreateVMFunctionSpecs(); }
    */
 
-  boolean GetToken() {
-    return GetToken(false, false);
+  boolean getToken() {
+    return getToken(false, false);
   }
 
-  boolean GetToken(boolean skipEOL, boolean dataMode) {
+  boolean getToken(boolean skipEOL, boolean dataMode) {
 
     // Read a token
     token = parser.nextToken(skipEOL, dataMode);
@@ -552,25 +672,25 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Text token processing
-    if (token.tokenType == TokenType.CTT_TEXT) {
+    if (token.getTokenType() == TokenType.CTT_TEXT) {
 
       // Apply case sensitivity
       if (!isCaseSensitive) {
-        token.text = token.text.toLowerCase();
+        token.setText(token.getText().toLowerCase());
       }
 
       // Match against reserved keywords
-      if (reservedWords.contains(token.text)) {
-        token.tokenType = TokenType.CTT_KEYWORD;
+      if (reservedWords.contains(token.getText())) {
+        token.setTokenType(TokenType.CTT_KEYWORD);
       }
 
       // Match against external functions
-      else if (IsFunction(token.text)) {
-        token.tokenType = TokenType.CTT_FUNCTION;
-      } else if (isUserFunction(token.text)) {
-        token.tokenType = TokenType.CTT_USER_FUNCTION;
-      } else if (isRuntimeFunction(token.text)) {
-        token.tokenType = TokenType.CTT_RUNTIME_FUNCTION;
+      else if (isFunction(token.getText())) {
+        token.setTokenType(TokenType.CTT_FUNCTION);
+      } else if (isUserFunction(token.getText())) {
+        token.setTokenType(TokenType.CTT_USER_FUNCTION);
+      } else if (isRuntimeFunction(token.getText())) {
+        token.setTokenType(TokenType.CTT_RUNTIME_FUNCTION);
       } else {
 
         // Match against constants
@@ -578,7 +698,7 @@ public class TomBasicCompiler extends HasErrorState {
         // Try permanent constants first
         Constant constant;
         boolean isConstant;
-        constant = constants.get(token.text);
+        constant = constants.get(token.getText());
         isConstant = (constant != null);
 
         // Try plugin DLL constants next
@@ -589,33 +709,33 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Otherwise try program constants
         if (!isConstant) {
-          constant = programConstants.get(token.text);
+          constant = programConstants.get(token.getText());
           isConstant = (constant != null);
         }
 
         if (isConstant) {
           // Replace token with constant
-          token.tokenType = TokenType.CTT_CONSTANT;
+          token.setTokenType(TokenType.CTT_CONSTANT);
 
           // Replace text with text value of constant
-          switch (constant.basicType) {
+          switch (constant.getBasicType()) {
             case BasicValType.VTP_INT:
-              token.text = String.valueOf(constant.intValue);
+              token.setText(String.valueOf(constant.getIntValue()));
               break;
             case BasicValType.VTP_REAL:
-              token.text = String.valueOf(constant.realValue);
+              token.setText(String.valueOf(constant.getRealValue()));
               break;
             case BasicValType.VTP_STRING:
-              token.text = constant.stringValue;
+              token.setText(constant.getStringValue());
               break;
             default:
               break;
           }
-          token.valType = constant.basicType;
+          token.setValType(constant.getBasicType());
         }
       }
-    } else if (token.tokenType == TokenType.CTT_CONSTANT
-        && token.valType == BasicValType.VTP_STRING) {
+    } else if (token.getTokenType() == TokenType.CTT_CONSTANT
+        && token.getValType() == BasicValType.VTP_STRING) {
 
       // 19-Jul-2003
       // Prefix string text constants with "S". This prevents them
@@ -623,7 +743,7 @@ public class TomBasicCompiler extends HasErrorState {
       // any recognised keywords (which are stored in lower case).
       // (This is basically a work around to existing code which doesn't
       // check the token type if it matches a reserved keyword).
-      token.text = (String) "S" + token.text;
+      token.setText((String) "S" + token.getText());
     }
     return true;
   }
@@ -631,14 +751,14 @@ public class TomBasicCompiler extends HasErrorState {
   void internalCompile() {
 
     // Allocate a new code block
-    vm.NewCodeBlock();
+    vm.newCodeBlock();
 
     // Clear error state
     clearError();
     parser.clearError();
 
     // Read initial token
-    if (!GetToken(true, false)) {
+    if (!getToken(true, false)) {
       return;
     }
 
@@ -646,7 +766,7 @@ public class TomBasicCompiler extends HasErrorState {
     while (!parser.isEof() && compileInstruction()) {}
 
     // Terminate program
-    AddInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
+    addInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
 
     if (!hasError()) {
       // Link up gotos
@@ -658,8 +778,8 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Point token to goto instruction, so that it will be displayed
         // if there is an error.
-        token.line = instr.sourceLine;
-        token.col = instr.sourceChar;
+        token.setLine(instr.sourceLine);
+        token.setCol(instr.sourceChar);
 
         // Label must exist
         if (!labelExists(jump.labelName)) {
@@ -681,8 +801,8 @@ public class TomBasicCompiler extends HasErrorState {
         // Point token to reset instruction, so that it will be
         // displayed
         // if there is an error.
-        token.line = instr.sourceLine;
-        token.col = instr.sourceChar;
+        token.setLine(instr.sourceLine);
+        token.setCol(instr.sourceChar);
 
         // Label must exist
         if (!labelExists(jump.labelName)) {
@@ -710,7 +830,7 @@ public class TomBasicCompiler extends HasErrorState {
     }
   }
 
-  boolean NeedAutoEndif() {
+  boolean needAutoEndif() {
 
     // Look at the top-most control structure
     if (flowControls.isEmpty()) {
@@ -726,20 +846,20 @@ public class TomBasicCompiler extends HasErrorState {
         && !top.blockIf;
   }
 
-  public boolean IsFunction(String name) {
+  public boolean isFunction(String name) {
     // TODO Reimplement libraries
     return isBuiltinFunction(name); // || m_plugins.IsPluginFunction(name);
   }
 
-  public TomVM VM() {
+  public TomVM getVM() {
     return vm;
   }
 
-  public Parser Parser() {
+  public Parser getParser() {
     return parser;
   }
 
-  public boolean CaseSensitive() {
+  public boolean isCaseSensitive() {
     return isCaseSensitive;
   }
 
@@ -855,11 +975,11 @@ public class TomBasicCompiler extends HasErrorState {
   }
 
   public long getTokenLine() {
-    return token.line;
+    return token.getLine();
   }
 
   public long getTokenColumn() {
-    return token.col;
+    return token.getCol();
   }
 
   public LanguageSyntax getLanguageSyntax() {
@@ -927,7 +1047,7 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Add bindcode op-code
-    AddInstruction(OpCode.OP_BINDCODE, BasicValType.VTP_INT, new Value());
+    addInstruction(OpCode.OP_BINDCODE, BasicValType.VTP_INT, new Value());
 
     return true;
   }
@@ -935,7 +1055,7 @@ public class TomBasicCompiler extends HasErrorState {
   private boolean compileBindCode() {
 
     // Skip "bindcode" keyword
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -946,19 +1066,19 @@ public class TomBasicCompiler extends HasErrorState {
   private boolean compileExec() {
 
     // Skip "exec" keyword
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Check if explicit code block specified
-    if (!AtSeparatorOrSpecial()) {
+    if (!atSeparatorOrSpecial()) {
       if (!compileBindCodeInternal()) {
         return false;
       }
     }
 
     // Add exec op-code
-    AddInstruction(OpCode.OP_EXEC, BasicValType.VTP_INT, new Value());
+    addInstruction(OpCode.OP_EXEC, BasicValType.VTP_INT, new Value());
 
     return true;
   }
@@ -1095,10 +1215,10 @@ public class TomBasicCompiler extends HasErrorState {
   }
 
   // Compilation
-  void AddInstruction(short opCode, int basictype, Value val) {
+  void addInstruction(short opCode, int basictype, Value val) {
 
     // Add instruction, and include source code position audit
-    int line = token.line, col = token.col;
+    int line = token.getLine(), col = token.getCol();
 
     // Prevent line and col going backwards. (Debugging tools rely on
     // source-
@@ -1121,7 +1241,7 @@ public class TomBasicCompiler extends HasErrorState {
     if (!checkParser()) {
       return false;
     }
-    if (token.newLine && token.tokenType == TokenType.CTT_TEXT && nextToken.text.equals(":")) {
+    if (token.isNewLine() && token.getTokenType() == TokenType.CTT_TEXT && nextToken.getText().equals(":")) {
 
       // Labels cannot exist inside subs/functions
       if (inFunction) {
@@ -1130,7 +1250,7 @@ public class TomBasicCompiler extends HasErrorState {
       }
 
       // Label declaration
-      String labelName = symbolPrefix + token.text;
+      String labelName = symbolPrefix + token.getText();
 
       // Must not already exist
       if (labelExists(labelName)) {
@@ -1142,183 +1262,183 @@ public class TomBasicCompiler extends HasErrorState {
       addLabel(labelName, new Label(vm.getInstructionCount(), vm.getProgramData().size()));
 
       // Skip label
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     }
     // Determine the type of instruction, based on the current token
-    else if (token.text.equals("struc") || token.text.equals("type")) {
+    else if (token.getText().equals("struc") || token.getText().equals("type")) {
       if (!compileStructure()) {
         return false;
       }
-    } else if (token.text.equals("dim")) {
+    } else if (token.getText().equals("dim")) {
       if (!compileDim(false, false)) {
         return false;
       }
-    } else if (token.text.equals("goto")) {
-      if (!GetToken()) {
+    } else if (token.getText().equals("goto")) {
+      if (!getToken()) {
         return false;
       }
       if (!compileGoto(OpCode.OP_JUMP)) {
         return false;
       }
-    } else if (token.text.equals("gosub")) {
-      if (!GetToken()) {
+    } else if (token.getText().equals("gosub")) {
+      if (!getToken()) {
         return false;
       }
       if (!compileGoto(OpCode.OP_CALL)) {
         return false;
       }
-    } else if (token.text.equals("return")) {
+    } else if (token.getText().equals("return")) {
       if (!compileReturn()) {
         return false;
       }
-    } else if (token.text.equals("if")) {
+    } else if (token.getText().equals("if")) {
       if (!compileIf(false)) {
         return false;
       }
-    } else if (token.text.equals("elseif")) {
+    } else if (token.getText().equals("elseif")) {
       if (!(compileElse(true) && compileIf(true))) {
         return false;
       }
-    } else if (token.text.equals("else")) {
+    } else if (token.getText().equals("else")) {
       if (!compileElse(false)) {
         return false;
       }
-    } else if (token.text.equals("endif")) {
+    } else if (token.getText().equals("endif")) {
       if (!compileEndIf(false)) {
         return false;
       }
-    } else if (token.text.equals("for")) {
+    } else if (token.getText().equals("for")) {
       if (!compileFor()) {
         return false;
       }
-    } else if (token.text.equals("next")) {
+    } else if (token.getText().equals("next")) {
       if (!compileNext()) {
         return false;
       }
-    } else if (token.text.equals("while")) {
+    } else if (token.getText().equals("while")) {
       if (!compileWhile()) {
         return false;
       }
-    } else if (token.text.equals("wend")) {
+    } else if (token.getText().equals("wend")) {
       if (!compileWend()) {
         return false;
       }
-    } else if (token.text.equals("do")) {
+    } else if (token.getText().equals("do")) {
       if (!compileDo()) {
         return false;
       }
-    } else if (token.text.equals("loop")) {
+    } else if (token.getText().equals("loop")) {
       if (!compileLoop()) {
         return false;
       }
-    } else if (token.text.equals("end")) {
-      if (!GetToken()) {
+    } else if (token.getText().equals("end")) {
+      if (!getToken()) {
         return false;
       }
 
       // Special case! "End" immediately followed by "if" is syntactically
       // equivalent to "endif"
-      if (token.text.equals("if")) {
+      if (token.getText().equals("if")) {
         if (!compileEndIf(false)) {
           return false;
         }
       }
       // Special case! "End" immediately followed by "function" is
       // syntactically equivalent to "endfunction"
-      else if (token.text.equals("function")) {
+      else if (token.getText().equals("function")) {
         if (!compileEndUserFunction(true)) {
           return false;
         }
-      } else if (token.text.equals("sub")) {
+      } else if (token.getText().equals("sub")) {
         if (!compileEndUserFunction(false)) {
           return false;
         }
       } else
       // Otherwise is "End" program instruction
       {
-        AddInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
+        addInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
       }
-    } else if (token.text.equals("run")) {
-      if (!GetToken()) {
+    } else if (token.getText().equals("run")) {
+      if (!getToken()) {
         return false;
       }
-      AddInstruction(OpCode.OP_RUN, BasicValType.VTP_INT, new Value());
-    } else if (token.text.equals("const")) {
+      addInstruction(OpCode.OP_RUN, BasicValType.VTP_INT, new Value());
+    } else if (token.getText().equals("const")) {
       if (!compileConstant()) {
         return false;
       }
-    } else if (token.text.equals("alloc")) {
+    } else if (token.getText().equals("alloc")) {
       if (!compileAlloc()) {
         return false;
       }
-    } else if (token.text.equals("data")) {
+    } else if (token.getText().equals("data")) {
       if (!compileData()) {
         return false;
       }
-    } else if (token.text.equals("read")) {
+    } else if (token.getText().equals("read")) {
       if (!compileDataRead()) {
         return false;
       }
-    } else if (token.text.equals("reset")) {
+    } else if (token.getText().equals("reset")) {
       if (!compileDataReset()) {
         return false;
       }
-    } else if (token.text.equals("print")) {
+    } else if (token.getText().equals("print")) {
       if (!compilePrint(false)) {
         return false;
       }
-    } else if (token.text.equals("printr")) {
+    } else if (token.getText().equals("printr")) {
       if (!compilePrint(true)) {
         return false;
       }
-    } else if (token.text.equals("input")) {
+    } else if (token.getText().equals("input")) {
       if (!compileInput()) {
         return false;
       }
-    } else if (token.text.equals("language")) {
+    } else if (token.getText().equals("language")) {
       if (!compileLanguage()) {
         return false;
       }
-    } else if (token.text.equals("function") || token.text.equals("sub")) {
+    } else if (token.getText().equals("function") || token.getText().equals("sub")) {
       if (!compileUserFunction(UserFunctionType.UFT_IMPLEMENTATION)) {
         return false;
       }
-    } else if (token.text.equals("endfunction")) {
+    } else if (token.getText().equals("endfunction")) {
       if (!compileEndUserFunction(true)) {
         return false;
       }
-    } else if (token.text.equals("endsub")) {
+    } else if (token.getText().equals("endsub")) {
       if (!compileEndUserFunction(false)) {
         return false;
       }
-    } else if (token.text.equals("declare")) {
+    } else if (token.getText().equals("declare")) {
       if (!compileUserFunctionFwdDecl()) {
         return false;
       }
-    } else if (token.text.equals("runtime")) {
+    } else if (token.getText().equals("runtime")) {
       if (!compileUserFunctionRuntimeDecl()) {
         return false;
       }
-    } else if (token.text.equals("bindcode")) {
+    } else if (token.getText().equals("bindcode")) {
       if (!compileBindCode()) {
         return false;
       }
-    } else if (token.text.equals("exec")) {
+    } else if (token.getText().equals("exec")) {
       if (!compileExec()) {
         return false;
       }
 
-    } else if (token.tokenType == TokenType.CTT_FUNCTION) {
+    } else if (token.getTokenType() == TokenType.CTT_FUNCTION) {
       if (!compileFunction()) {
         return false;
       }
-    } else if (token.tokenType == TokenType.CTT_USER_FUNCTION) {
+    } else if (token.getTokenType() == TokenType.CTT_USER_FUNCTION) {
       if (!compileUserFunctionCall(false, false)) {
         return false;
       }
-    } else if (token.tokenType == TokenType.CTT_RUNTIME_FUNCTION) {
+    } else if (token.getTokenType() == TokenType.CTT_RUNTIME_FUNCTION) {
       if (!compileUserFunctionCall(false, true)) {
         return false;
       }
@@ -1332,20 +1452,20 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Skip separators (:, EOL)
-    if (!SkipSeparators()) {
+    if (!skipSeparators()) {
       return false;
     }
 
     return true;
   }
 
-  boolean AtSeparator() {
-    return token.tokenType == TokenType.CTT_EOL
-        || token.tokenType == TokenType.CTT_EOF
-        || token.text.equals(":");
+  boolean atSeparator() {
+    return token.getTokenType() == TokenType.CTT_EOL
+        || token.getTokenType() == TokenType.CTT_EOF
+        || token.getText().equals(":");
   }
 
-  boolean AtSeparatorOrSpecial() {
+  boolean atSeparatorOrSpecial() {
 
     // Note: Endif is special, as it doesn't require a preceding colon to
     // separate
@@ -1358,31 +1478,31 @@ public class TomBasicCompiler extends HasErrorState {
     // (unlike while, which would have to be written as:
     // while CONDITION: INSTRUCTION(S): wend
     // )
-    return AtSeparator()
-        || token.text.equals("endif")
-        || token.text.equals("else")
-        || token.text.equals("elseif");
+    return atSeparator()
+        || token.getText().equals("endif")
+        || token.getText().equals("else")
+        || token.getText().equals("elseif");
   }
 
-  boolean SkipSeparators() {
+  boolean skipSeparators() {
 
     // Expect separator. Either as an EOL or EOF or ':'
-    if (needColon && !AtSeparatorOrSpecial()) {
+    if (needColon && !atSeparatorOrSpecial()) {
       setError("Expected ':'");
       return false;
     }
 
     // Skip separators
-    while (token.tokenType == TokenType.CTT_EOL
-        || token.tokenType == TokenType.CTT_EOF
-        || token.text.equals(":")) {
+    while (token.getTokenType() == TokenType.CTT_EOL
+        || token.getTokenType() == TokenType.CTT_EOF
+        || token.getText().equals(":")) {
 
       // If we reach the end of the line, insert any necessary implicit
       // "endifs"
-      if (token.tokenType == TokenType.CTT_EOL || token.tokenType == TokenType.CTT_EOF) {
+      if (token.getTokenType() == TokenType.CTT_EOL || token.getTokenType() == TokenType.CTT_EOF) {
 
         // Generate any automatic endifs for the previous line
-        while (NeedAutoEndif()) {
+        while (needAutoEndif()) {
           if (!compileEndIf(true)) {
             return false;
           }
@@ -1394,7 +1514,7 @@ public class TomBasicCompiler extends HasErrorState {
         }
       }
 
-      if (!GetToken(true, false)) {
+      if (!getToken(true, false)) {
         return false;
       }
     }
@@ -1405,9 +1525,9 @@ public class TomBasicCompiler extends HasErrorState {
   private boolean compileStructure() {
 
     // Skip STRUC
-    String keyword = token.text; // Record whether "struc" or "type" was
+    String keyword = token.getText(); // Record whether "struc" or "type" was
     // used to declare type
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -1423,11 +1543,11 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Expect structure name
-    if (token.tokenType != TokenType.CTT_TEXT) {
+    if (token.getTokenType() != TokenType.CTT_TEXT) {
       setError("Expected structure name");
       return false;
     }
-    String name = symbolPrefix + token.text;
+    String name = symbolPrefix + token.getText();
     if (!checkName(name)) {
       return false;
     }
@@ -1435,12 +1555,12 @@ public class TomBasicCompiler extends HasErrorState {
       setError("'" + name + "' has already been used as a structure name");
       return false;
     }
-    if (!GetToken()) // Skip structure name
+    if (!getToken()) // Skip structure name
     {
       return false;
     }
 
-    if (!SkipSeparators()) // Require : or new line
+    if (!skipSeparators()) // Require : or new line
     {
       return false;
     }
@@ -1449,13 +1569,13 @@ public class TomBasicCompiler extends HasErrorState {
     vm.getDataTypes().createStruc(name);
 
     // Expect at least one field
-    if (token.text.equals("endstruc") || token.text.equals("end")) {
+    if (token.getText().equals("endstruc") || token.getText().equals("end")) {
       setError("Expected DIM or field name");
       return false;
     }
 
     // Populate with fields
-    while (!token.text.equals("endstruc") && !token.text.equals("end")) {
+    while (!token.getText().equals("endstruc") && !token.getText().equals("end")) {
 
       // dim statement is optional
       /*
@@ -1466,26 +1586,26 @@ public class TomBasicCompiler extends HasErrorState {
         return false;
       }
 
-      if (!SkipSeparators()) {
+      if (!skipSeparators()) {
         return false;
       }
     }
 
-    if (token.text.equals("end")) {
+    if (token.getText().equals("end")) {
 
       // Skip END
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
 
       // Check END keyword matches declaration keyword
-      if (!token.text.equals(keyword)) {
+      if (!token.getText().equals(keyword)) {
         setError("Expected '" + keyword + "'");
         return false;
       }
 
       // Skip STRUC/TYPE
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     } else {
@@ -1497,7 +1617,7 @@ public class TomBasicCompiler extends HasErrorState {
       }
 
       // Skip ENDSTRUC
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     }
@@ -1507,29 +1627,29 @@ public class TomBasicCompiler extends HasErrorState {
   private boolean compileDim(boolean forStruc, boolean forFuncParam) {
 
     // Skip optional DIM
-    if (token.text.equals("dim")) {
-      if (!GetToken()) {
+    if (token.getText().equals("dim")) {
+      if (!getToken()) {
         return false;
       }
     }
 
     // Expect at least one field in dim
-    if (AtSeparatorOrSpecial()) {
+    if (atSeparatorOrSpecial()) {
       setError("Expected variable declaration");
       return false;
     }
 
     // Parse fields in dim
     boolean needComma = false; // First element doesn't need a comma
-    while (!AtSeparatorOrSpecial() && (!forFuncParam || !token.text.equals(")"))) {
+    while (!atSeparatorOrSpecial() && (!forFuncParam || !token.getText().equals(")"))) {
 
       // Handle commas
       if (needComma) {
-        if (!token.text.equals(",")) {
+        if (!token.getText().equals(",")) {
           setError("Expected ','");
           return false;
         }
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
       }
@@ -1539,8 +1659,8 @@ public class TomBasicCompiler extends HasErrorState {
       String name = "";
       ValType type = new ValType();
       // Create wrappers to pass values by reference
-      Mutable<String> nameRef = new Mutable<String>(name);
-      Mutable<ValType> typeRef = new Mutable<ValType>(type);
+      Mutable<String> nameRef = new Mutable<>(name);
+      Mutable<ValType> typeRef = new Mutable<>(type);
       if (!compileDimField(nameRef, typeRef, forStruc, forFuncParam)) {
         return false;
       }
@@ -1617,22 +1737,22 @@ public class TomBasicCompiler extends HasErrorState {
           // Generate code to allocate local variable data
           // Note: Opcode contains the index of the variable. Var
           // type and size data stored in the user function defn.
-          AddInstruction(OpCode.OP_DECLARE_LOCAL, BasicValType.VTP_INT, new Value(varIndex));
+          addInstruction(OpCode.OP_DECLARE_LOCAL, BasicValType.VTP_INT, new Value(varIndex));
 
           // Data containing strings will need to be "destroyed" when
           // the stack unwinds.
           if (vm.getDataTypes().containsString(type)) {
-            AddInstruction(
+            addInstruction(
                 OpCode.OP_REG_DESTRUCTOR,
                 BasicValType.VTP_INT,
                 new Value((int) vm.getStoreTypeIndex(type)));
           }
 
           // Optional "= value"?
-          if (token.text.equals("=")) {
+          if (token.getText().equals("=")) {
 
             // Add opcode to load variable address
-            AddInstruction(OpCode.OP_LOAD_LOCAL_VAR, BasicValType.VTP_INT, new Value(varIndex));
+            addInstruction(OpCode.OP_LOAD_LOCAL_VAR, BasicValType.VTP_INT, new Value(varIndex));
 
             // Set register type
             regType.setType(getCurrentUserFunctionPrototype().localVarTypes.get(varIndex));
@@ -1649,7 +1769,7 @@ public class TomBasicCompiler extends HasErrorState {
             }
 
             // Compile the rest of the assignment
-            if (!InternalCompileAssignment()) {
+            if (!internalCompileAssignment()) {
               return false;
             }
           }
@@ -1679,13 +1799,13 @@ public class TomBasicCompiler extends HasErrorState {
           // Note: Opcode contains the index of the variable. Var
           // type
           // and size data is stored in the variable entry.
-          AddInstruction(OpCode.OP_DECLARE, BasicValType.VTP_INT, new Value(varIndex));
+          addInstruction(OpCode.OP_DECLARE, BasicValType.VTP_INT, new Value(varIndex));
 
           // Optional "= value"?
-          if (token.text.equals("=")) {
+          if (token.getText().equals("=")) {
 
             // Add opcode to load variable address
-            AddInstruction(OpCode.OP_LOAD_VAR, BasicValType.VTP_INT, new Value(varIndex));
+            addInstruction(OpCode.OP_LOAD_VAR, BasicValType.VTP_INT, new Value(varIndex));
 
             // Set register type
             regType.setType(vm.getVariables().getVariables().get(varIndex).type);
@@ -1702,7 +1822,7 @@ public class TomBasicCompiler extends HasErrorState {
             }
 
             // Compile the rest of the assignment
-            if (!InternalCompileAssignment()) {
+            if (!internalCompileAssignment()) {
               return false;
             }
           }
@@ -1724,8 +1844,8 @@ public class TomBasicCompiler extends HasErrorState {
 
   private boolean compileTokenName(
       Mutable<String> name, Mutable<TokenType> tokenType, boolean allowSuffix) {
-    tokenType.set(token.tokenType);
-    name.set(token.text);
+    tokenType.set(token.getTokenType());
+    name.set(token.getText());
 
     if (tokenType.get() != TokenType.CTT_TEXT
         && tokenType.get() != TokenType.CTT_USER_FUNCTION
@@ -1742,7 +1862,7 @@ public class TomBasicCompiler extends HasErrorState {
       }
     }
 
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -1756,12 +1876,12 @@ public class TomBasicCompiler extends HasErrorState {
     name.set("");
 
     // Look for structure type
-    if (token.tokenType == TokenType.CTT_TEXT) {
-      String structureName = symbolPrefix + token.text;
+    if (token.getTokenType() == TokenType.CTT_TEXT) {
+      String structureName = symbolPrefix + token.getText();
       int i = vm.getDataTypes().getStrucIndex(structureName);
       if (i >= 0) {
         type.get().basicType = i;
-        if (!GetToken()) // Skip token type keyword
+        if (!getToken()) // Skip token type keyword
         {
           return false;
         }
@@ -1769,9 +1889,9 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Look for preceeding & (indicates pointer)
-    if (token.text.equals("&")) {
+    if (token.getText().equals("&")) {
       type.get().pointerLevel++;
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     }
@@ -1812,18 +1932,18 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Skip "as"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Expect "single", "double", "integer", "string" or a structure type
-    if (token.tokenType != TokenType.CTT_TEXT && token.tokenType != TokenType.CTT_KEYWORD) {
+    if (token.getTokenType() != TokenType.CTT_TEXT && token.getTokenType() != TokenType.CTT_KEYWORD) {
       setError("Expected 'single', 'double', 'integer', 'string' or type name");
       return false;
     }
-    if (token.text.equals("integer")) {
+    if (token.getText().equals("integer")) {
       type.get().basicType = BasicValType.VTP_INT;
-    } else if (token.text.equals("single") || token.text.equals("double"))
+    } else if (token.getText().equals("single") || token.getText().equals("double"))
 
     // Note: Basic4GL supports only one type of floating point number.
     // We will accept both keywords, but simply allocate a real (=
@@ -1831,12 +1951,12 @@ public class TomBasicCompiler extends HasErrorState {
     // precision) floating point number each time.
     {
       type.get().basicType = BasicValType.VTP_REAL;
-    } else if (token.text.equals("string")) {
+    } else if (token.getText().equals("string")) {
       type.get().basicType = BasicValType.VTP_STRING;
     } else {
 
       // Look for recognised structure name
-      String structureName = symbolPrefix + token.text;
+      String structureName = symbolPrefix + token.getText();
       int i = vm.getDataTypes().getStrucIndex(structureName);
       if (i < 0) {
         setError("Expected 'single', 'double', 'integer', 'string' or type name");
@@ -1846,7 +1966,7 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Skip type name
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -1858,7 +1978,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Compile data type
     TokenType tokenType = TokenType.CTT_CONSTANT;
-    Mutable<TokenType> tokenTypeRef = new Mutable<TokenType>(tokenType);
+    Mutable<TokenType> tokenTypeRef = new Mutable<>(tokenType);
     if (!compileDataType(name, type, tokenTypeRef)) {
       return false;
     }
@@ -1871,10 +1991,10 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Look for array dimensions
-    if (token.text.equals("(")) {
+    if (token.getText().equals("(")) {
 
       boolean foundComma = false;
-      while (token.text.equals("(") || foundComma) {
+      while (token.getText().equals("(") || foundComma) {
 
         // Room for one more dimension?
         if (type.get().arrayLevel >= TomVM.ARRAY_MAX_DIMENSIONS) {
@@ -1884,7 +2004,7 @@ public class TomBasicCompiler extends HasErrorState {
                   + " dimensions.");
           return false;
         }
-        if (!GetToken()) // Skip "("
+        if (!getToken()) // Skip "("
         {
           return false;
         }
@@ -1892,7 +2012,7 @@ public class TomBasicCompiler extends HasErrorState {
         // Validate dimensions.
         // Firstly, pointers don't have dimensions declared with them.
         if (type.get().pointerLevel > 0) {
-          if (!token.text.equals(")")) {
+          if (!token.getText().equals(")")) {
             setError("Use '()' to declare a pointer to an array");
             return false;
           }
@@ -1908,11 +2028,11 @@ public class TomBasicCompiler extends HasErrorState {
           Value value = new Value();
           String stringValue = "";
 
-          Mutable<Integer> expressionTypeRef = new Mutable<Integer>(expressionType);
-          Mutable<Value> valueRef = new Mutable<Value>(value);
-          Mutable<String> stringValueRef = new Mutable<String>(stringValue);
+          Mutable<Integer> expressionTypeRef = new Mutable<>(expressionType);
+          Mutable<Value> valueRef = new Mutable<>(value);
+          Mutable<String> stringValueRef = new Mutable<>(stringValue);
 
-          if (!EvaluateConstantExpression(expressionTypeRef, valueRef, stringValueRef)) {
+          if (!evaluateConstantExpression(expressionTypeRef, valueRef, stringValueRef)) {
             return false;
           }
 
@@ -1941,11 +2061,11 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Expect closing ')', or a separating comma
         foundComma = false;
-        if (token.text.equals(")")) {
-          if (!GetToken()) {
+        if (token.getText().equals(")")) {
+          if (!getToken()) {
             return false;
           }
-        } else if (token.text.equals(",")) {
+        } else if (token.getText().equals(",")) {
           foundComma = true;
         } else {
           setError("Expected ')' or ','");
@@ -1955,7 +2075,7 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // "as" keyword (QBasic/FreeBasic compatibility)
-    if (token.text.equals("as")) {
+    if (token.getText().equals("as")) {
       if (!compileAs(name, type)) {
         return false;
       }
@@ -1973,21 +2093,21 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Look for "take address"
     boolean takeAddress = false;
-    if (token.text.equals("&")) {
+    if (token.getText().equals("&")) {
       takeAddress = true;
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     }
 
     // Look for variable name
-    if (token.tokenType != TokenType.CTT_TEXT) {
+    if (token.getTokenType() != TokenType.CTT_TEXT) {
       setError("Expected variable name");
       return false;
     }
 
     // Prefix variable names
-    String varName = symbolPrefix + token.text;
+    String varName = symbolPrefix + token.getText();
 
     // Find variable
     boolean found = false;
@@ -2002,7 +2122,7 @@ public class TomBasicCompiler extends HasErrorState {
       if (varIndex >= 0) {
 
         // Generate code to load variable
-        AddInstruction(OpCode.OP_LOAD_LOCAL_VAR, BasicValType.VTP_INT, new Value(varIndex));
+        addInstruction(OpCode.OP_LOAD_LOCAL_VAR, BasicValType.VTP_INT, new Value(varIndex));
 
         // Set register type
         regType.setType(getCurrentUserFunctionPrototype().localVarTypes.get(varIndex));
@@ -2021,7 +2141,7 @@ public class TomBasicCompiler extends HasErrorState {
       if (varIndex >= 0) {
 
         // Generate code to load variable
-        AddInstruction(OpCode.OP_LOAD_VAR, BasicValType.VTP_INT, new Value(varIndex));
+        addInstruction(OpCode.OP_LOAD_VAR, BasicValType.VTP_INT, new Value(varIndex));
 
         // Set register type
         regType.setType(vm.getVariables().getVariables().get(varIndex).type);
@@ -2034,13 +2154,13 @@ public class TomBasicCompiler extends HasErrorState {
     if (!found) {
       setError(
           (String) "Unknown variable: "
-              + token.text
+              + token.getText()
               + ". Variables must be declared first with DIM");
       return false;
     }
 
     // Skip past variable name
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -2083,7 +2203,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Generate dereference instruction
     regType.pointerLevel--;
-    AddInstruction(OpCode.OP_DEREF, regType.getStoredType(), new Value()); // Load
+    addInstruction(OpCode.OP_DEREF, regType.getStoredType(), new Value()); // Load
     // variable
 
     return true;
@@ -2119,7 +2239,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     boolean done = false;
     while (!done) {
-      if (token.text.equals(".")) {
+      if (token.getText().equals(".")) {
 
         // Lookup subfield
         // Register must contain a structure type
@@ -2132,17 +2252,17 @@ public class TomBasicCompiler extends HasErrorState {
         assertTrue(vm.getDataTypes().isTypeValid(regType));
 
         // Skip "."
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
 
         // Read field name
-        if (token.tokenType != TokenType.CTT_TEXT) {
+        if (token.getTokenType() != TokenType.CTT_TEXT) {
           setError("Expected field name");
           return false;
         }
-        String fieldName = token.text;
-        if (!GetToken()) {
+        String fieldName = token.getText();
+        if (!getToken()) {
           return false;
         }
 
@@ -2157,7 +2277,7 @@ public class TomBasicCompiler extends HasErrorState {
         // Generate code to calculate address of field
         // Reg is initially pointing to address of structure.
         StructureField field = vm.getDataTypes().getFields().get(fieldIndex);
-        AddInstruction(OpCode.OP_ADD_CONST, BasicValType.VTP_INT, new Value(field.dataOffset));
+        addInstruction(OpCode.OP_ADD_CONST, BasicValType.VTP_INT, new Value(field.dataOffset));
 
         // Reg now contains pointer to field
         regType.setType(field.type);
@@ -2167,7 +2287,7 @@ public class TomBasicCompiler extends HasErrorState {
         if (!compileDerefs()) {
           return false;
         }
-      } else if (token.text.equals("(")) {
+      } else if (token.getText().equals("(")) {
 
         // Register must contain an array
         if (regType.getVirtualPointerLevel() != 0 || regType.arrayLevel == 0) {
@@ -2182,7 +2302,7 @@ public class TomBasicCompiler extends HasErrorState {
           }
 
           // Index into array
-          if (!GetToken()) // Skip "(" or ","
+          if (!getToken()) // Skip "(" or ","
           {
             return false;
           }
@@ -2213,7 +2333,7 @@ public class TomBasicCompiler extends HasErrorState {
           // Input: reg = Array index
           // reg2 = Array address
           // Output: reg = Pointer to array element
-          AddInstruction(OpCode.OP_ARRAY_INDEX, BasicValType.VTP_INT, new Value());
+          addInstruction(OpCode.OP_ARRAY_INDEX, BasicValType.VTP_INT, new Value());
 
           // reg now points to an element
           regType.setType(reg2Type);
@@ -2226,14 +2346,14 @@ public class TomBasicCompiler extends HasErrorState {
             return false;
           }
 
-        } while (token.text.equals(","));
+        } while (token.getText().equals(","));
 
         // Expect closing bracket
-        if (!token.text.equals(")")) {
+        if (!token.getText().equals(")")) {
           setError("Expected ')'");
           return false;
         }
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
       } else {
@@ -2279,11 +2399,11 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     Operator o = null;
-    while ((token.text.equals(")") && getOperatorTOS().operator.type != OperType.OT_STOP)
-        || ((o = binaryOperators.get(token.text)) != null)) {
+    while ((token.getText().equals(")") && getOperatorTOS().operator.type != OperType.OT_STOP)
+        || ((o = binaryOperators.get(token.getText())) != null)) {
 
       // Special case, right bracket
-      if (token.text.equals(")")) {
+      if (token.getText().equals(")")) {
 
         // Evaluate all operators down to left bracket
         while (getOperatorTOS().operator.type != OperType.OT_STOP
@@ -2306,7 +2426,7 @@ public class TomBasicCompiler extends HasErrorState {
         operatorStack.remove(operatorStack.size() - 1);
 
         // Move on
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
 
@@ -2335,10 +2455,10 @@ public class TomBasicCompiler extends HasErrorState {
         if (o.type == OperType.OT_LAZYBOOLOPERATOR) {
           if (o.opCode == OpCode.OP_OP_AND) {
             lazyJumpAddr = vm.getInstructionCount();
-            AddInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT, new Value(0));
+            addInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT, new Value(0));
           } else if (o.opCode == OpCode.OP_OP_OR) {
             lazyJumpAddr = vm.getInstructionCount();
-            AddInstruction(OpCode.OP_JUMP_TRUE, BasicValType.VTP_INT, new Value(0));
+            addInstruction(OpCode.OP_JUMP_TRUE, BasicValType.VTP_INT, new Value(0));
           }
         }
 
@@ -2351,7 +2471,7 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Load second operand
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
         if (!compileExpressionLoad(mustBeConstant)) {
@@ -2412,7 +2532,7 @@ public class TomBasicCompiler extends HasErrorState {
       }
 
       // Perform unary operation
-      AddInstruction(o.operator.opCode, regType.basicType, new Value());
+      addInstruction(o.operator.opCode, regType.basicType, new Value());
 
       // Special case, boolean operator
       // Result will be an integer
@@ -2514,7 +2634,7 @@ public class TomBasicCompiler extends HasErrorState {
       }
 
       // Generate operation code
-      AddInstruction(o.operator.opCode, opCodeType, new Value());
+      addInstruction(o.operator.opCode, opCodeType, new Value());
 
       // Special case, boolean operator
       // Result will be an integer
@@ -2536,15 +2656,15 @@ public class TomBasicCompiler extends HasErrorState {
   private boolean compileLoad() {
 
     // Compile load var or constant, or function result
-    if (token.tokenType == TokenType.CTT_CONSTANT || token.text.equals("null")) {
+    if (token.getTokenType() == TokenType.CTT_CONSTANT || token.getText().equals("null")) {
       return compileLoadConst();
-    } else if (token.tokenType == TokenType.CTT_TEXT || token.text.equals("&")) {
+    } else if (token.getTokenType() == TokenType.CTT_TEXT || token.getText().equals("&")) {
       return compileLoadVar();
-    } else if (token.tokenType == TokenType.CTT_FUNCTION) {
+    } else if (token.getTokenType() == TokenType.CTT_FUNCTION) {
       return compileFunction(true);
-    } else if (token.tokenType == TokenType.CTT_USER_FUNCTION) {
+    } else if (token.getTokenType() == TokenType.CTT_USER_FUNCTION) {
       return compileUserFunctionCall(true, false);
-    } else if (token.tokenType == TokenType.CTT_RUNTIME_FUNCTION) {
+    } else if (token.getTokenType() == TokenType.CTT_RUNTIME_FUNCTION) {
       return compileUserFunctionCall(true, true);
     }
 
@@ -2565,7 +2685,7 @@ public class TomBasicCompiler extends HasErrorState {
     while (true) {
 
       // Special case, left bracket
-      if (token.text.equals("(")) {
+      if (token.getText().equals("(")) {
         operatorStack.add(
             new StackedOperator(
                 new Operator(OperType.OT_LBRACKET, OpCode.OP_NOP, 0, -10000))); // Brackets
@@ -2577,7 +2697,7 @@ public class TomBasicCompiler extends HasErrorState {
 
       // Otherwise look for recognised unary operator
       else {
-        Operator o = unaryOperators.get(token.text);
+        Operator o = unaryOperators.get(token.getText());
         if (o != null) // Operator found
         {
           operatorStack.add(new StackedOperator(o)); // => Stack
@@ -2593,58 +2713,58 @@ public class TomBasicCompiler extends HasErrorState {
         }
       }
 
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     }
   }
 
   private boolean compileNull() {
-    AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_INT, new Value(0)); // Load 0 into
+    addInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_INT, new Value(0)); // Load 0 into
     // register
     regType.setType(new ValType(BasicValType.VTP_NULL, (byte) 0, (byte) 1, false)); // Type
     // is
     // pointer
     // to
     // VTP_NULL
-    return GetToken();
+    return getToken();
   }
 
   private boolean compileLoadConst() {
 
     // Special case, "null" reserved word
-    if (token.text.equals("null")) {
+    if (token.getText().equals("null")) {
       return compileNull();
     }
 
     // Compile load constant
-    if (token.tokenType == TokenType.CTT_CONSTANT) {
+    if (token.getTokenType() == TokenType.CTT_CONSTANT) {
 
       // Special case, string constants
-      if (token.valType == BasicValType.VTP_STRING) {
+      if (token.getValType() == BasicValType.VTP_STRING) {
 
         // Allocate new string constant
         String text;
-        text = token.text.substring(1, token.text.length()); // Remove S prefix
-        int index = vm.StoreStringConstant(text);
+        text = token.getText().substring(1, token.getText().length()); // Remove S prefix
+        int index = vm.storeStringConstant(text);
 
         // store load instruction
-        AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING, new Value(index));
+        addInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING, new Value(index));
         regType.setType(BasicValType.VTP_STRING);
-      } else if (token.valType == BasicValType.VTP_REAL) {
-        AddInstruction(
-            OpCode.OP_LOAD_CONST, BasicValType.VTP_REAL, new Value(Float.valueOf(token.text)));
+      } else if (token.getValType() == BasicValType.VTP_REAL) {
+        addInstruction(
+            OpCode.OP_LOAD_CONST, BasicValType.VTP_REAL, new Value(Float.valueOf(token.getText())));
         regType.setType(BasicValType.VTP_REAL);
-      } else if (token.valType == BasicValType.VTP_INT) {
-        AddInstruction(
-            OpCode.OP_LOAD_CONST, BasicValType.VTP_INT, new Value(Cast.StringToInt(token.text)));
+      } else if (token.getValType() == BasicValType.VTP_INT) {
+        addInstruction(
+            OpCode.OP_LOAD_CONST, BasicValType.VTP_INT, new Value(Cast.toInt(token.getText())));
         regType.setType(BasicValType.VTP_INT);
       } else {
         setError("Unknown data type");
         return false;
       }
 
-      return GetToken();
+      return getToken();
     }
 
     setError("Expected constant");
@@ -2657,7 +2777,7 @@ public class TomBasicCompiler extends HasErrorState {
     operandStack.add(new ValType(regType));
 
     // Generate push code
-    AddInstruction(OpCode.OP_PUSH, regType.getStoredType(), new Value());
+    addInstruction(OpCode.OP_PUSH, regType.getStoredType(), new Value());
 
     return true;
   }
@@ -2674,7 +2794,7 @@ public class TomBasicCompiler extends HasErrorState {
     operandStack.remove(operandStack.size() - 1);
 
     // Generate pop code
-    AddInstruction(OpCode.OP_POP, reg2Type.getStoredType(), new Value());
+    addInstruction(OpCode.OP_POP, reg2Type.getStoredType(), new Value());
 
     return true;
   }
@@ -2705,7 +2825,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Store instruction
     if (code != OpCode.OP_NOP) {
-      AddInstruction(code, BasicValType.VTP_INT, new Value());
+      addInstruction(code, BasicValType.VTP_INT, new Value());
       regType.setType(basictype);
       return true;
     }
@@ -2740,7 +2860,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Store instruction
     if (code != OpCode.OP_NOP) {
-      AddInstruction(code, BasicValType.VTP_INT, new Value());
+      addInstruction(code, BasicValType.VTP_INT, new Value());
       reg2Type.setType(type);
       return true;
     }
@@ -2867,17 +2987,17 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Compile code to assign value to variable
-    if (!InternalCompileAssignment()) {
+    if (!internalCompileAssignment()) {
       return false;
     }
 
     return true;
   }
 
-  boolean InternalCompileAssignment() {
+  boolean internalCompileAssignment() {
 
     // Expect =
-    if (!token.text.equals("=")) {
+    if (!token.getText().equals("=")) {
       setError("Expected '='");
       return false;
     }
@@ -2889,7 +3009,7 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Skip =
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -2918,7 +3038,7 @@ public class TomBasicCompiler extends HasErrorState {
       }
 
       // Save reg into [reg2]
-      AddInstruction(OpCode.OP_SAVE, reg2Type.basicType, new Value());
+      addInstruction(OpCode.OP_SAVE, reg2Type.basicType, new Value());
     }
 
     // Pointer case. m_reg2 must point to a pointer and m_reg1 point to a
@@ -2931,10 +3051,10 @@ public class TomBasicCompiler extends HasErrorState {
               && regType.basicType == reg2Type.basicType)) {
 
         // Validate pointer scope before saving to variable
-        AddInstruction(OpCode.OP_CHECK_PTR, BasicValType.VTP_INT, new Value());
+        addInstruction(OpCode.OP_CHECK_PTR, BasicValType.VTP_INT, new Value());
 
         // Save address to pointer
-        AddInstruction(OpCode.OP_SAVE, BasicValType.VTP_INT, new Value());
+        addInstruction(OpCode.OP_SAVE, BasicValType.VTP_INT, new Value());
       } else {
         setError("Types do not match");
         return false;
@@ -2954,13 +3074,13 @@ public class TomBasicCompiler extends HasErrorState {
         dataType.pointerLevel--;
         dataType.isByRef = false;
         if (vm.getDataTypes().containsPointer(dataType)) {
-          AddInstruction(
+          addInstruction(
               OpCode.OP_CHECK_PTRS,
               BasicValType.VTP_INT,
               new Value((int) vm.getStoreTypeIndex(dataType)));
         }
 
-        AddInstruction(
+        addInstruction(
             OpCode.OP_COPY, BasicValType.VTP_INT, new Value((int) vm.getStoreTypeIndex(regType)));
       } else {
         setError("Types do not match");
@@ -2997,28 +3117,28 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Validate label
-    if (token.tokenType != TokenType.CTT_TEXT) {
+    if (token.getTokenType() != TokenType.CTT_TEXT) {
       setError("Expected label name");
       return false;
     }
 
     // Record jump, so that we can fix up the offset in the second compile
     // pass.
-    String labelName = symbolPrefix + token.text;
+    String labelName = symbolPrefix + token.getText();
     jumps.add(new Jump(vm.getInstructionCount(), labelName));
 
     // Add jump instruction
-    AddInstruction(jumpType, BasicValType.VTP_INT, new Value(0));
+    addInstruction(jumpType, BasicValType.VTP_INT, new Value(0));
 
     // Move on
-    return GetToken();
+    return getToken();
   }
 
   private boolean compileIf(boolean elseif) {
 
     // Skip "if"
     int line = parser.getLine(), col = parser.getColumn();
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -3039,14 +3159,14 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Special case!
     // If next instruction is a "goto", then we can ommit the "then"
-    if (!token.text.equals("goto")) {
+    if (!token.getText().equals("goto")) {
 
       // Otherwise expect "then"
-      if (!token.text.equals("then")) {
+      if (!token.getText().equals("then")) {
         setError("Expected 'then'");
         return false;
       }
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     }
@@ -3058,8 +3178,8 @@ public class TomBasicCompiler extends HasErrorState {
             // applies
             // to
             // traditional syntax
-            && !(token.tokenType == TokenType.CTT_EOL
-                || token.tokenType == TokenType.CTT_EOF); // "then"
+            && !(token.getTokenType() == TokenType.CTT_EOL
+                || token.getTokenType() == TokenType.CTT_EOF); // "then"
     // must
     // not
     // be
@@ -3083,7 +3203,7 @@ public class TomBasicCompiler extends HasErrorState {
             !autoEndif));
 
     // Create conditional jump
-    AddInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT, new Value(0));
+    addInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT, new Value(0));
 
     needColon = false; // Don't need colon between this and next
     // instruction
@@ -3105,7 +3225,7 @@ public class TomBasicCompiler extends HasErrorState {
     // then.)
     int line = parser.getLine(), col = parser.getColumn();
     if (!elseif) {
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     }
@@ -3123,7 +3243,7 @@ public class TomBasicCompiler extends HasErrorState {
             top.blockIf));
 
     // Generate code to jump around else block
-    AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(0));
+    addInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(0));
 
     // Fixup jump around IF block
     assertTrue(top.jumpOut < vm.getInstructionCount());
@@ -3147,7 +3267,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Skip "endif"
     if (!top.impliedEndif && !automatic) {
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     }
@@ -3168,7 +3288,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Skip "for"
     int line = parser.getLine(), col = parser.getColumn();
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -3177,11 +3297,11 @@ public class TomBasicCompiler extends HasErrorState {
     if (!checkParser()) {
       return false;
     }
-    if (nextToken.text.equals("(")) {
+    if (nextToken.getText().equals("(")) {
       setError("Cannot use array variable in 'for' - 'next' structure");
       return false;
     }
-    String loopVarUnprefixed = token.text;
+    String loopVarUnprefixed = token.getText();
     String loopVar = symbolPrefix + loopVarUnprefixed;
 
     // Verify variable is numeric
@@ -3224,7 +3344,7 @@ public class TomBasicCompiler extends HasErrorState {
       }
     }
     if (!found) {
-      setError("Unknown variable: " + token.text + ". Must be declared with DIM");
+      setError("Unknown variable: " + token.getText() + ". Must be declared with DIM");
       return false;
     }
 
@@ -3239,16 +3359,16 @@ public class TomBasicCompiler extends HasErrorState {
     int loopPos = vm.getInstructionCount();
 
     // Expect "to"
-    if (!token.text.equals("to")) {
+    if (!token.getText().equals("to")) {
       setError("Expected 'to'");
       return false;
     }
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Compile load variable and push
-    ParserPos savedPos = SavePos(); // Save parser position
+    ParserPos savedPos = savePosition(); // Save parser position
     parser.setPos(varLine, varCol); // Point to variable name
     token = varToken;
 
@@ -3261,7 +3381,7 @@ public class TomBasicCompiler extends HasErrorState {
       return false;
     }
 
-    RestorePos(savedPos); // Restore parser position
+    restorePosition(savedPos); // Restore parser position
 
     // Compile "to" expression
     if (!compileExpression()) {
@@ -3275,19 +3395,19 @@ public class TomBasicCompiler extends HasErrorState {
     Integer stepType = loopVarType;
     Value stepValue = new Value();
 
-    if (token.text.equals("step")) {
+    if (token.getText().equals("step")) {
 
       // Skip step instruction
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
 
       // Compile step constant (expression)
       String stringValue = "";
-      Mutable<Integer> stepTypeRef = new Mutable<Integer>(stepType);
-      Mutable<Value> stepValueRef = new Mutable<Value>(stepValue);
-      Mutable<String> stringValueRef = new Mutable<String>(stringValue);
-      if (!EvaluateConstantExpression(stepTypeRef, stepValueRef, stringValueRef)) {
+      Mutable<Integer> stepTypeRef = new Mutable<>(stepType);
+      Mutable<Value> stepValueRef = new Mutable<>(stepValue);
+      Mutable<String> stringValueRef = new Mutable<>(stringValue);
+      if (!evaluateConstantExpression(stepTypeRef, stepValueRef, stringValueRef)) {
         return false;
       }
 
@@ -3357,7 +3477,7 @@ public class TomBasicCompiler extends HasErrorState {
             false));
 
     // Create conditional jump
-    AddInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT, new Value(0));
+    addInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT, new Value(0));
 
     return true;
   }
@@ -3373,8 +3493,8 @@ public class TomBasicCompiler extends HasErrorState {
     flowControls.remove(flowControls.size() - 1);
 
     // Skip "next"
-    int nextLine = token.line, nextCol = token.col;
-    if (!GetToken()) {
+    int nextLine = token.getLine(), nextCol = token.getCol();
+    if (!getToken()) {
       return false;
     }
 
@@ -3396,7 +3516,7 @@ public class TomBasicCompiler extends HasErrorState {
     // (This keeps the
     // debugger happy)
     Token saveToken = token;
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
     if (!compileAssignment()) {
@@ -3406,7 +3526,7 @@ public class TomBasicCompiler extends HasErrorState {
     token = saveToken;
 
     // Generate jump back instruction
-    AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(top.jumpLoop));
+    addInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(top.jumpLoop));
 
     // Fixup jump around FOR block
     assertTrue(top.jumpOut < vm.getInstructionCount());
@@ -3421,7 +3541,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Skip "while"
     int line = parser.getLine(), col = parser.getColumn();
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -3445,7 +3565,7 @@ public class TomBasicCompiler extends HasErrorState {
         new FlowControl(FlowControlType.FCT_WHILE, vm.getInstructionCount(), loopPos, line, col));
 
     // Create conditional jump
-    AddInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT, new Value(0));
+    addInstruction(OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT, new Value(0));
     return true;
   }
 
@@ -3460,12 +3580,12 @@ public class TomBasicCompiler extends HasErrorState {
     flowControls.remove(flowControls.size() - 1);
 
     // Skip "wend"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Generate jump back
-    AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(top.jumpLoop));
+    addInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(top.jumpLoop));
 
     // Fixup jump around WHILE block
     assertTrue(top.jumpOut < vm.getInstructionCount());
@@ -3480,18 +3600,18 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Skip "do"
     int line = parser.getLine(), col = parser.getColumn();
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Look for "while" or "until"
-    if (token.text.equals("while") || token.text.equals("until")) {
+    if (token.getText().equals("while") || token.getText().equals("until")) {
 
       // Is this a negative condition?
-      boolean negative = token.text.equals("until");
+      boolean negative = token.getText().equals("until");
 
       // Skip "while" or "until"
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
 
@@ -3516,7 +3636,7 @@ public class TomBasicCompiler extends HasErrorState {
               FlowControlType.FCT_DO_PRE, vm.getInstructionCount(), loopPos, line, col));
 
       // Create conditional jump
-      AddInstruction(
+      addInstruction(
           negative ? OpCode.OP_JUMP_TRUE : OpCode.OP_JUMP_FALSE,
           BasicValType.VTP_INT,
           new Value(0));
@@ -3547,12 +3667,12 @@ public class TomBasicCompiler extends HasErrorState {
     flowControls.remove(flowControls.size() - 1);
 
     // Skip "DO"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Look for "while" or "until"
-    if (token.text.equals("while") || token.text.equals("until")) {
+    if (token.getText().equals("while") || token.getText().equals("until")) {
 
       // This must be a post condition "do"
       if (top.controlType != FlowControlType.FCT_DO_POST) {
@@ -3561,10 +3681,10 @@ public class TomBasicCompiler extends HasErrorState {
       }
 
       // Is this a negative condition?
-      boolean negative = token.text.equals("until");
+      boolean negative = token.getText().equals("until");
 
       // Skip "while" or "until"
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
 
@@ -3584,7 +3704,7 @@ public class TomBasicCompiler extends HasErrorState {
       }
 
       // Create conditional jump back to "do"
-      AddInstruction(
+      addInstruction(
           negative ? OpCode.OP_JUMP_FALSE : OpCode.OP_JUMP_TRUE,
           BasicValType.VTP_INT,
           new Value(top.jumpLoop));
@@ -3594,7 +3714,7 @@ public class TomBasicCompiler extends HasErrorState {
     } else {
 
       // Jump unconditionally back to "do"
-      AddInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(top.jumpLoop));
+      addInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(top.jumpLoop));
 
       // If this is a precondition "do", fixup the jump around the "do"
       // block
@@ -3623,7 +3743,7 @@ public class TomBasicCompiler extends HasErrorState {
     return true;
   }
 
-  public void AddConstants(Map<String, Constant> constants) {
+  public void addConstants(Map<String, Constant> constants) {
     if (constants == null) {
       return;
     }
@@ -3633,7 +3753,7 @@ public class TomBasicCompiler extends HasErrorState {
     }
   }
 
-  public void AddFunctions(Library library, Map<String, FunctionSpecification[]> specs) {
+  public void addFunctions(Library library, Map<String, FunctionSpecification[]> specs) {
     int specIndex;
     int vmIndex;
     int i;
@@ -3693,7 +3813,7 @@ public class TomBasicCompiler extends HasErrorState {
         // Add function name . function spec mapping
         List<Integer> l = functionIndex.get(name.toLowerCase());
         if (l == null) {
-          l = new ArrayList<Integer>();
+          l = new ArrayList<>();
           functionIndex.put(name.toLowerCase(), l);
         }
         l.add(specIndex);
@@ -3720,7 +3840,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Find builtin functions
     boolean found = false;
-    for (Integer i : functionIndex.get(token.text)) {
+    for (Integer i : functionIndex.get(token.getText())) {
       if (!(functionCount < TC_MAXOVERLOADEDFUNCTIONS)) {
         break;
       }
@@ -3752,16 +3872,16 @@ public class TomBasicCompiler extends HasErrorState {
         // ever happen if we required a return value, but none of the
         // functions
         // return one.
-        setError(token.text + " does not return a value");
+        setError(token.getText() + " does not return a value");
         return false;
       } else {
-        setError(token.text + " is not a recognised function name");
+        setError(token.getText() + " is not a recognised function name");
         return false;
       }
     }
 
     // Skip function name token
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -3793,12 +3913,12 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Expect opening bracket
     if (brackets) {
-      if (!token.text.equals("(")) {
+      if (!token.getText().equals("(")) {
         setError("Expected '('");
         return false;
       }
       // Skip it
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     }
@@ -3810,7 +3930,7 @@ public class TomBasicCompiler extends HasErrorState {
     // However "any type" parameters also have their
     // data type pushed with them, in which case
     // pushCount > count.
-    while (functionCount > 0 && !token.text.equals(")") && !AtSeparatorOrSpecial()) {
+    while (functionCount > 0 && !token.getText().equals(")") && !atSeparatorOrSpecial()) {
 
       // Trim functions with less parameters than we have found
       int src, dst;
@@ -3834,12 +3954,12 @@ public class TomBasicCompiler extends HasErrorState {
 
       if (!first) {
         // Expect comma
-        if (!token.text.equals(",")) {
+        if (!token.getText().equals(",")) {
           setError("Expected ','");
           return false;
         }
         // Skip it
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
       }
@@ -3928,7 +4048,7 @@ public class TomBasicCompiler extends HasErrorState {
         // If parameter is an "any type" then generate code to push the
         // parameter type to the stack.
         if (isAnyType) {
-          AddInstruction(
+          addInstruction(
               OpCode.OP_LOAD_CONST,
               BasicValType.VTP_INT,
               new Value((int) vm.getStoreTypeIndex(regType)));
@@ -3966,12 +4086,12 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Expect closing bracket
     if (brackets) {
-      if (!token.text.equals(")")) {
+      if (!token.getText().equals(")")) {
         setError("Expected ')'");
         return false;
       }
       // Skip it
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     }
@@ -3981,7 +4101,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Builtin function
     {
-      AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(spec.spec.getIndex()));
+      addInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(spec.spec.getIndex()));
     } else
 
     // DLL function
@@ -3989,7 +4109,7 @@ public class TomBasicCompiler extends HasErrorState {
     // The 3 low bytes are the function index within the DLL.
     // This may be revised later...
     {
-      AddInstruction(
+      addInstruction(
           OpCode.OP_CALL_DLL,
           BasicValType.VTP_INT,
           new Value((spec.pluginIndex << 24) | (spec.spec.getIndex() & 0x00ffffff)));
@@ -4004,7 +4124,7 @@ public class TomBasicCompiler extends HasErrorState {
       // in the "temp" area. If the data contains strings, they will need
       // to be "destroyed" when temp data is unwound.
       if (!regType.canStoreInRegister() && vm.getDataTypes().containsString(regType)) {
-        AddInstruction(
+        addInstruction(
             OpCode.OP_REG_DESTRUCTOR,
             BasicValType.VTP_INT,
             new Value((int) vm.getStoreTypeIndex(regType)));
@@ -4027,7 +4147,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Generate explicit timesharing break (if necessary)
     if (spec.spec.getTimeshare()) {
-      AddInstruction(OpCode.OP_TIMESHARE, BasicValType.VTP_INT, new Value());
+      addInstruction(OpCode.OP_TIMESHARE, BasicValType.VTP_INT, new Value());
     }
 
     return true;
@@ -4036,38 +4156,38 @@ public class TomBasicCompiler extends HasErrorState {
   private boolean compileConstant() {
 
     // Skip CONST
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Expect at least one field in dim
-    if (AtSeparatorOrSpecial()) {
+    if (atSeparatorOrSpecial()) {
       setError("Expected constant declaration");
       return false;
     }
 
     // Parse fields in dim
     boolean needComma = false; // First element doesn't need a comma
-    while (!AtSeparatorOrSpecial()) {
+    while (!atSeparatorOrSpecial()) {
 
       // Handle commas
       if (needComma) {
-        if (!token.text.equals(",")) {
+        if (!token.getText().equals(",")) {
           setError("Expected ','");
           return false;
         }
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
       }
       needComma = true; // Remaining elements do need commas
 
       // Read constant name
-      if (token.tokenType != TokenType.CTT_TEXT) {
+      if (token.getTokenType() != TokenType.CTT_TEXT) {
         setError("Expected constant name");
         return false;
       }
-      String name = token.text;
+      String name = token.getText();
       if (programConstants.containsKey(name)) {
         setError("'" + name + "' has already been declared as a constant.");
         return false;
@@ -4075,7 +4195,7 @@ public class TomBasicCompiler extends HasErrorState {
       if (!checkName(name)) {
         return false;
       }
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
 
@@ -4092,17 +4212,17 @@ public class TomBasicCompiler extends HasErrorState {
         }
       }
 
-      if (token.text.equals("as")) {
+      if (token.getText().equals("as")) {
         if (type != BasicValType.VTP_UNDEFINED) {
           setError("'" + name + "'s type has already been defined. Cannot use 'as' here.");
           return false;
         }
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
-        if (token.text.equals("integer")) {
+        if (token.getText().equals("integer")) {
           type = BasicValType.VTP_INT;
-        } else if (token.text.equals("single") || token.text.equals("double"))
+        } else if (token.getText().equals("single") || token.getText().equals("double"))
 
         // Note: Basic4GL supports only one type of floating point
         // number.
@@ -4111,13 +4231,13 @@ public class TomBasicCompiler extends HasErrorState {
         // precision) floating point number each time.
         {
           type = BasicValType.VTP_REAL;
-        } else if (token.text.equals("string")) {
+        } else if (token.getText().equals("string")) {
           type = BasicValType.VTP_STRING;
         } else {
           setError("Expected 'integer', 'single', 'double', 'string'");
           return false;
         }
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
       }
@@ -4128,11 +4248,11 @@ public class TomBasicCompiler extends HasErrorState {
       }
 
       // Expect =
-      if (!token.text.equals("=")) {
+      if (!token.getText().equals("=")) {
         setError("Expected '='");
         return false;
       }
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
 
@@ -4140,11 +4260,11 @@ public class TomBasicCompiler extends HasErrorState {
       Value value = new Value();
       String stringValue = "";
 
-      Mutable<Integer> typeRef = new Mutable<Integer>(type);
-      Mutable<Value> valueRef = new Mutable<Value>(value);
-      Mutable<String> stringValueRef = new Mutable<String>(stringValue);
+      Mutable<Integer> typeRef = new Mutable<>(type);
+      Mutable<Value> valueRef = new Mutable<>(value);
+      Mutable<String> stringValueRef = new Mutable<>(stringValue);
 
-      if (!EvaluateConstantExpression(typeRef, valueRef, stringValueRef)) {
+      if (!evaluateConstantExpression(typeRef, valueRef, stringValueRef)) {
         return false;
       }
 
@@ -4174,7 +4294,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Add instruction to free temp data (if necessary)
     if (freeTempData) {
-      AddInstruction(OpCode.OP_FREE_TEMP, BasicValType.VTP_INT, new Value());
+      addInstruction(OpCode.OP_FREE_TEMP, BasicValType.VTP_INT, new Value());
     }
     freeTempData = false;
 
@@ -4183,10 +4303,10 @@ public class TomBasicCompiler extends HasErrorState {
 
   private boolean compileExtendedUnOperation(short operOpCode) {
 
-    Mutable<ValType> type = new Mutable<ValType>(new ValType());
-    Mutable<Integer> opFunc = new Mutable<Integer>(-1);
-    Mutable<Boolean> freeTempData = new Mutable<Boolean>(false);
-    Mutable<ValType> resultType = new Mutable<ValType>(new ValType());
+    Mutable<ValType> type = new Mutable<>(new ValType());
+    Mutable<Integer> opFunc = new Mutable<>(-1);
+    Mutable<Boolean> freeTempData = new Mutable<>(false);
+    Mutable<ValType> resultType = new Mutable<>(new ValType());
     boolean found = false;
 
     // Iterate through external operator extension functions until we find
@@ -4217,7 +4337,7 @@ public class TomBasicCompiler extends HasErrorState {
     // Generate code to call external operator function
     assertTrue(opFunc.get() >= 0);
     assertTrue(opFunc.get() < vm.getOperatorFunctionCount());
-    AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT, new Value(opFunc.get()));
+    addInstruction(OpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT, new Value(opFunc.get()));
 
     // Set register to result type
     regType.setType(resultType.get());
@@ -4230,11 +4350,11 @@ public class TomBasicCompiler extends HasErrorState {
 
   private boolean compileExtendedBinOperation(short operOpCode) {
 
-    Mutable<ValType> type1 = new Mutable<ValType>(new ValType());
-    Mutable<ValType> type2 = new Mutable<ValType>(new ValType());
-    Mutable<Integer> opFunc = new Mutable<Integer>(-1);
-    Mutable<Boolean> freeTempData = new Mutable<Boolean>(false);
-    Mutable<ValType> resultType = new Mutable<ValType>(new ValType());
+    Mutable<ValType> type1 = new Mutable<>(new ValType());
+    Mutable<ValType> type2 = new Mutable<>(new ValType());
+    Mutable<Integer> opFunc = new Mutable<>(-1);
+    Mutable<Boolean> freeTempData = new Mutable<>(false);
+    Mutable<ValType> resultType = new Mutable<>(new ValType());
     boolean found = false;
 
     // Iterate through external operator extension functions until we find
@@ -4270,7 +4390,7 @@ public class TomBasicCompiler extends HasErrorState {
     // Generate code to call external operator function
     assertTrue(opFunc.get() >= 0);
     assertTrue(opFunc.get() < vm.getOperatorFunctionCount());
-    AddInstruction(OpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT, new Value(opFunc.get()));
+    addInstruction(OpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT, new Value(opFunc.get()));
 
     // Set register to result type
     regType.setType(resultType.get());
@@ -4281,7 +4401,7 @@ public class TomBasicCompiler extends HasErrorState {
     return true;
   }
 
-  public String FunctionName(int index) // Find function name for function #.
+  public String getFunctionNameAt(int index) // Find function name for function #.
         // Used for debug reporting
       {
     for (String key : functionIndex.keySet()) {
@@ -4297,12 +4417,12 @@ public class TomBasicCompiler extends HasErrorState {
   private boolean compileAlloc() {
 
     // Skip "alloc"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Expect &pointer variable
-    if (token.text.equals("&")) {
+    if (token.getText().equals("&")) {
       setError("First argument must be a pointer");
       return false;
     }
@@ -4333,11 +4453,11 @@ public class TomBasicCompiler extends HasErrorState {
     for (i = 0; i < dataType.arrayLevel; i++) {
 
       // Expect ,
-      if (!token.text.equals(",")) {
+      if (!token.getText().equals(",")) {
         setError("Expected ','");
         return false;
       }
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
 
@@ -4360,7 +4480,7 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Add alloc instruction
-    AddInstruction(
+    addInstruction(
         OpCode.OP_ALLOC, BasicValType.VTP_INT, new Value((int) vm.getStoreTypeIndex(dataType)));
 
     // Instruction automatically removes all array indices that were pushed
@@ -4382,12 +4502,12 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Generate code to save address to pointer
-    AddInstruction(OpCode.OP_SAVE, BasicValType.VTP_INT, new Value());
+    addInstruction(OpCode.OP_SAVE, BasicValType.VTP_INT, new Value());
 
     return true;
   }
 
-  ParserPos SavePos() {
+  ParserPos savePosition() {
 
     // Save the current parser position, so we can return to it later.
     ParserPos pos = new ParserPos();
@@ -4397,29 +4517,29 @@ public class TomBasicCompiler extends HasErrorState {
     return pos;
   }
 
-  void RestorePos(ParserPos pos) {
+  void restorePosition(ParserPos position) {
 
     // Restore parser position
-    parser.setPos(pos.line, pos.column);
-    token = pos.token;
+    parser.setPos(position.line, position.column);
+    token = position.token;
   }
 
   // Debugging
-  public String DescribeStackCall(int returnAddr) {
+  public String describeStackCall(int returnAddress) {
 
     // Return a string describing the gosub call
-    if (returnAddr == 0 || returnAddr >= vm.getInstructionCount()) {
+    if (returnAddress == 0 || returnAddress >= vm.getInstructionCount()) {
       return "???";
     }
 
     // Look at instruction immediately before return address.
     // This should be the gosub
-    if (vm.getInstruction(returnAddr - 1).opCode != OpCode.OP_CALL) {
+    if (vm.getInstruction(returnAddress - 1).opCode != OpCode.OP_CALL) {
       return "???";
     }
 
     // Get target address
-    int target = vm.getInstruction(returnAddr - 1).value.getIntVal();
+    int target = vm.getInstruction(returnAddress - 1).value.getIntVal();
 
     // Lookup label name
     String name = labelIndex.get(target);
@@ -4431,7 +4551,7 @@ public class TomBasicCompiler extends HasErrorState {
     return name;
   }
 
-  public boolean TempCompileExpression(
+  public boolean tempCompileExpression(
       String expression, ValType valType, boolean inFunction, int currentFunction) {
 
     // Load expression into parser
@@ -4451,7 +4571,7 @@ public class TomBasicCompiler extends HasErrorState {
     parser.clearError();
 
     // Read first token
-    if (!GetToken(true, false)) {
+    if (!getToken(true, false)) {
       return false;
     }
 
@@ -4460,13 +4580,13 @@ public class TomBasicCompiler extends HasErrorState {
       return false;
     }
 
-    if (token.tokenType != TokenType.CTT_EOL) {
+    if (token.getTokenType() != TokenType.CTT_EOL) {
       setError("Extra characters after expression");
       return false;
     }
 
     // Terminate program
-    AddInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
+    addInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
 
     // Return expression result type
     valType.setType(regType);
@@ -4476,7 +4596,7 @@ public class TomBasicCompiler extends HasErrorState {
   private boolean compileData() {
 
     // Skip "data"
-    if (!GetToken(false, true)) // Use "DATA" mode read
+    if (!getToken(false, true)) // Use "DATA" mode read
     {
       return false;
     }
@@ -4487,18 +4607,18 @@ public class TomBasicCompiler extends HasErrorState {
 
       // Handle commas
       if (needComma) {
-        if (!token.text.equals(",")) {
+        if (!token.getText().equals(",")) {
           setError("Expected ','");
           return false;
         }
-        if (!GetToken(false, true)) {
+        if (!getToken(false, true)) {
           return false;
         }
       }
       needComma = true; // Remaining elements do need commas
 
       // Consecutive commas?
-      if (token.text.equals(",") || AtSeparatorOrSpecial()) {
+      if (token.getText().equals(",") || atSeparatorOrSpecial()) {
 
         // Store a blank string
         vm.storeProgramData(BasicValType.VTP_STRING, new Value(0));
@@ -4506,53 +4626,53 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Extract value
         Value v = new Value();
-        if (token.valType == BasicValType.VTP_STRING) {
+        if (token.getValType() == BasicValType.VTP_STRING) {
 
           // Allocate new string constant
-          String text = token.text.substring(1, token.text.length() - 1); // Remove S prefix
-          v.setIntVal(vm.StoreStringConstant(text));
-        } else if (token.valType == BasicValType.VTP_INT) {
-          v.setIntVal(Cast.StringToInt(token.text));
+          String text = token.getText().substring(1, token.getText().length() - 1); // Remove S prefix
+          v.setIntVal(vm.storeStringConstant(text));
+        } else if (token.getValType() == BasicValType.VTP_INT) {
+          v.setIntVal(Cast.toInt(token.getText()));
         } else {
-          v.setRealVal(Float.valueOf(token.text));
+          v.setRealVal(Float.valueOf(token.getText()));
         }
 
         // Store data in VM
-        vm.storeProgramData(token.valType, v);
+        vm.storeProgramData(token.getValType(), v);
 
         // Next token
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
       }
-    } while (!AtSeparatorOrSpecial());
+    } while (!atSeparatorOrSpecial());
     return true;
   }
 
   private boolean compileDataRead() {
 
     // Skip "read"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Expect at one variable name
-    if (AtSeparatorOrSpecial()) {
+    if (atSeparatorOrSpecial()) {
       setError("Expected variable name");
       return false;
     }
 
     // Parse fields in dim
     boolean needComma = false; // First element doesn't need a comma
-    while (!AtSeparatorOrSpecial()) {
+    while (!atSeparatorOrSpecial()) {
 
       // Handle commas
       if (needComma) {
-        if (!token.text.equals(",")) {
+        if (!token.getText().equals(",")) {
           setError("Expected ','");
           return false;
         }
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
       }
@@ -4581,14 +4701,14 @@ public class TomBasicCompiler extends HasErrorState {
       }
 
       // Generate READ op-code
-      AddInstruction(OpCode.OP_DATA_READ, type.basicType, new Value());
+      addInstruction(OpCode.OP_DATA_READ, type.basicType, new Value());
 
       if (!compilePop()) {
         return false;
       }
 
       // Save reg into [reg2]
-      AddInstruction(OpCode.OP_SAVE, reg2Type.basicType, new Value());
+      addInstruction(OpCode.OP_SAVE, reg2Type.basicType, new Value());
     }
     return true;
   }
@@ -4596,37 +4716,37 @@ public class TomBasicCompiler extends HasErrorState {
   private boolean compileDataReset() {
 
     // Skip "reset"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // If label specified, use offset stored in label
-    if (!AtSeparatorOrSpecial()) {
+    if (!atSeparatorOrSpecial()) {
 
       // Validate label
-      if (token.tokenType != TokenType.CTT_TEXT) {
+      if (token.getTokenType() != TokenType.CTT_TEXT) {
         setError("Expected label name");
         return false;
       }
 
       // Record reset, so that we can fix up the offset in the second
       // compile pass.
-      String labelName = symbolPrefix + token.text;
+      String labelName = symbolPrefix + token.getText();
       resets.add(new Jump(vm.getInstructionCount(), labelName));
 
       // Skip label name
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
     }
 
     // Add jump instruction
-    AddInstruction(OpCode.OP_DATA_RESET, BasicValType.VTP_INT, new Value(0));
+    addInstruction(OpCode.OP_DATA_RESET, BasicValType.VTP_INT, new Value(0));
 
     return true;
   }
 
-  boolean EvaluateConstantExpression(
+  boolean evaluateConstantExpression(
       Mutable<Integer> basictype, Mutable<Value> result, Mutable<String> stringResult) {
 
     // Note: If type is passed in as VTP_UNDEFINED, then any constant
@@ -4655,7 +4775,7 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Add "end program" opcode, so we can safely evaluate it
-    AddInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
+    addInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
 
     // Setup virtual machine to execute expression
     // Note: Expressions can't branch or loop, and it's very difficult to
@@ -4707,11 +4827,11 @@ public class TomBasicCompiler extends HasErrorState {
     String stringValue = "";
 
     // Create wrappers to pass values by reference
-    Mutable<Integer> typeRef = new Mutable<Integer>(basictype);
-    Mutable<Value> valueRef = new Mutable<Value>(value);
-    Mutable<String> stringValueRef = new Mutable<String>(stringValue);
+    Mutable<Integer> typeRef = new Mutable<>(basictype);
+    Mutable<Value> valueRef = new Mutable<>(value);
+    Mutable<String> stringValueRef = new Mutable<>(stringValue);
 
-    if (!EvaluateConstantExpression(typeRef, valueRef, stringValueRef)) {
+    if (!evaluateConstantExpression(typeRef, valueRef, stringValueRef)) {
       return false;
     }
 
@@ -4724,16 +4844,16 @@ public class TomBasicCompiler extends HasErrorState {
     if (basictype == BasicValType.VTP_STRING) {
 
       // Create string constant entry if necessary
-      int index = vm.StoreStringConstant(stringValue);
-      AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING, new Value(index));
+      int index = vm.storeStringConstant(stringValue);
+      addInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING, new Value(index));
     } else {
-      AddInstruction(OpCode.OP_LOAD_CONST, basictype, value);
+      addInstruction(OpCode.OP_LOAD_CONST, basictype, value);
     }
 
     return true;
   }
 
-  FunctionSpecification FindFunction(String name, int paramCount) {
+  FunctionSpecification findFunction(String name, int paramCount) {
 
     // Search for function with matching name & param count
     List<Integer> l = functionIndex.get(name);
@@ -4757,20 +4877,20 @@ public class TomBasicCompiler extends HasErrorState {
     // separately
 
     // Skip "print"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     boolean foundSemiColon = false;
     int operandCount = 0;
-    while (!AtSeparatorOrSpecial()) {
+    while (!atSeparatorOrSpecial()) {
 
       // Look for semicolon
-      if (token.text.equals(";")) {
+      if (token.getText().equals(";")) {
 
         // Record it, and move on to next
         foundSemiColon = true;
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
       } else {
@@ -4798,7 +4918,7 @@ public class TomBasicCompiler extends HasErrorState {
       if (!compilePop()) {
         return false;
       }
-      AddInstruction(OpCode.OP_OP_PLUS, BasicValType.VTP_STRING, new Value());
+      addInstruction(OpCode.OP_OP_PLUS, BasicValType.VTP_STRING, new Value());
       regType.setType(BasicValType.VTP_STRING);
 
       operandCount--;
@@ -4823,13 +4943,13 @@ public class TomBasicCompiler extends HasErrorState {
       return true; // Do nothing!
     }
 
-    FunctionSpecification spec = FindFunction(newLine ? "printr" : "print", operandCount);
+    FunctionSpecification spec = findFunction(newLine ? "printr" : "print", operandCount);
     if (spec == null) {
       return false;
     }
 
     // Generate code to call it
-    AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(spec.getIndex()));
+    addInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(spec.getIndex()));
 
     // Generate code to clean up stack
     if (operandCount == 1) {
@@ -4850,49 +4970,49 @@ public class TomBasicCompiler extends HasErrorState {
     // But it's a lot better than before.
 
     // Skip "input"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Check for prompt
-    if (token.tokenType == TokenType.CTT_CONSTANT && token.valType == BasicValType.VTP_STRING) {
+    if (token.getTokenType() == TokenType.CTT_CONSTANT && token.getValType() == BasicValType.VTP_STRING) {
 
       // Allocate new string constant
-      String text = token.text.substring(1, token.text.length()); // Remove
+      String text = token.getText().substring(1, token.getText().length()); // Remove
       // S
       // prefix
 
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
 
       // Expect , or ;
-      if (token.text.equals(";")) {
+      if (token.getText().equals(";")) {
         text += "? ";
-      } else if (!token.text.equals(",")) {
+      } else if (!token.getText().equals(",")) {
         setError("Expected ',' or ';'");
         return false;
       }
-      if (!GetToken()) {
+      if (!getToken()) {
         return false;
       }
 
       // Create new string constant
-      int index = vm.StoreStringConstant(text);
+      int index = vm.storeStringConstant(text);
 
       // Generate code to print it (load, push, call "print" function)
-      AddInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING, new Value(index));
+      addInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_STRING, new Value(index));
       regType.setType(BasicValType.VTP_STRING);
       if (!compilePush()) {
         return false;
       }
 
       // Generate code to call "print" function
-      FunctionSpecification printSpec = FindFunction("print", 1);
+      FunctionSpecification printSpec = findFunction("print", 1);
       if (printSpec == null) {
         return false;
       }
-      AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(printSpec.getIndex()));
+      addInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(printSpec.getIndex()));
 
       // Generate code to clean up stack
       if (!compilePop()) {
@@ -4925,12 +5045,12 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Generate code to call "input$()" function
-    FunctionSpecification inputSpec = FindFunction("input$", 0);
+    FunctionSpecification inputSpec = findFunction("input$", 0);
     if (inputSpec == null) {
       return false;
     }
-    AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(inputSpec.getIndex()));
-    AddInstruction(OpCode.OP_TIMESHARE, BasicValType.VTP_INT, new Value()); // Timesharing break
+    addInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(inputSpec.getIndex()));
+    addInstruction(OpCode.OP_TIMESHARE, BasicValType.VTP_INT, new Value()); // Timesharing break
     // is necessary
     regType.setType(BasicValType.VTP_STRING);
 
@@ -4945,11 +5065,11 @@ public class TomBasicCompiler extends HasErrorState {
       }
 
       // Generate code to call "val()" function
-      FunctionSpecification valSpec = FindFunction("val", 1);
+      FunctionSpecification valSpec = findFunction("val", 1);
       if (valSpec == null) {
         return false;
       }
-      AddInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(valSpec.getIndex()));
+      addInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(valSpec.getIndex()));
       regType.setType(BasicValType.VTP_REAL);
 
       // Clean up stack
@@ -4970,7 +5090,7 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Generate code to save value
-    AddInstruction(OpCode.OP_SAVE, reg2Type.basicType, new Value());
+    addInstruction(OpCode.OP_SAVE, reg2Type.basicType, new Value());
 
     return true;
   }
@@ -4979,16 +5099,16 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Compile language directive
     // Skip "language"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Expect syntax type
-    if (token.text.equals("traditional")) {
+    if (token.getText().equals("traditional")) {
       syntax = LanguageSyntax.LS_TRADITIONAL;
-    } else if (token.text.equals("basic4gl")) {
+    } else if (token.getText().equals("basic4gl")) {
       syntax = LanguageSyntax.LS_BASIC4GL;
-    } else if (token.text.equals("traditional_print")) {
+    } else if (token.getText().equals("traditional_print")) {
       syntax = LanguageSyntax.LS_TRADITIONAL_PRINT;
     } else {
       setError("Expected 'traditional', 'basic4gl' or 'traditional_print'");
@@ -4996,7 +5116,7 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Skip syntax token
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -5006,7 +5126,7 @@ public class TomBasicCompiler extends HasErrorState {
   private boolean compileUserFunctionFwdDecl() {
 
     // Skip "declare"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -5016,7 +5136,7 @@ public class TomBasicCompiler extends HasErrorState {
 
   private boolean compileUserFunctionRuntimeDecl() {
     // Skip "runtime"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -5026,9 +5146,9 @@ public class TomBasicCompiler extends HasErrorState {
   private boolean compileUserFunction(UserFunctionType funcType) {
     // Function or sub?
     boolean hasReturnVal;
-    if (token.text.equals("function")) {
+    if (token.getText().equals("function")) {
       hasReturnVal = true;
-    } else if (token.text.equals("sub")) {
+    } else if (token.getText().equals("sub")) {
       hasReturnVal = false;
     } else {
       setError("Expected 'sub' or 'function'");
@@ -5050,7 +5170,7 @@ public class TomBasicCompiler extends HasErrorState {
     functionStart.setSourcePosition(parser.getLine(), parser.getColumn());
 
     // Skip "func"
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -5058,9 +5178,9 @@ public class TomBasicCompiler extends HasErrorState {
     TokenType tokenType = TokenType.CTT_CONSTANT;
     ValType type = new ValType(BasicValType.VTP_UNDEFINED);
     String name = "";
-    Mutable<TokenType> tokenTypeRef = new Mutable<TokenType>(tokenType);
-    Mutable<ValType> typeRef = new Mutable<ValType>(type);
-    Mutable<String> nameRef = new Mutable<String>(name);
+    Mutable<TokenType> tokenTypeRef = new Mutable<>(tokenType);
+    Mutable<ValType> typeRef = new Mutable<>(type);
+    Mutable<String> nameRef = new Mutable<>(name);
 
     if (hasReturnVal) {
       if (!compileDataType(nameRef, typeRef, tokenTypeRef)) {
@@ -5108,27 +5228,27 @@ public class TomBasicCompiler extends HasErrorState {
     userFuncPrototype.reset();
 
     // Expect "("
-    if (!token.text.equals("(")) {
+    if (!token.getText().equals("(")) {
       setError("Expected '('");
       return false;
     }
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Look for function parameters
-    if (!token.text.equals(")")) {
+    if (!token.getText().equals(")")) {
       if (!compileDim(false, true)) {
         return false;
       }
     }
 
     // Expect ")"
-    if (!token.text.equals(")")) {
+    if (!token.getText().equals(")")) {
       setError("Expected ')'");
       return false;
     }
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -5136,7 +5256,7 @@ public class TomBasicCompiler extends HasErrorState {
     if (hasReturnVal) {
 
       // Any trailing () denote an array
-      while (token.text.equals("(")) {
+      while (token.getText().equals("(")) {
 
         // Room for one more dimension?
         if (type.arrayLevel >= TomVM.ARRAY_MAX_DIMENSIONS) {
@@ -5150,23 +5270,23 @@ public class TomBasicCompiler extends HasErrorState {
         // Add dimension
         type.arrayLevel++;
 
-        if (!GetToken()) // Skip "("
+        if (!getToken()) // Skip "("
         {
           return false;
         }
 
         // Expect ")"
-        if (!token.text.equals(")")) {
+        if (!token.getText().equals(")")) {
           setError("')' expected");
           return false;
         }
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
       }
 
       // "as" keyword (QBasic/FreeBasic compatibility)
-      if (token.text.equals("as")) {
+      if (token.getText().equals("as")) {
 
         typeRef.set(type);
         nameRef.set(name);
@@ -5256,7 +5376,7 @@ public class TomBasicCompiler extends HasErrorState {
 
       // Create jump-past-function op-code
       functionJumpOver = vm.getInstructionCount();
-      AddInstruction(
+      addInstruction(
           OpCode.OP_JUMP,
           BasicValType.VTP_INT,
           new Value(0)); // Jump target will be fixed up when "endfunction" is
@@ -5266,7 +5386,7 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Implementation of runtime function
         int index = runtimeFunctionIndex.get(name);
-        RuntimeFunction runtimeFunction = vm.CurrentCodeBlock().getRuntimeFunction(index);
+        RuntimeFunction runtimeFunction = vm.getCurrentCodeBlock().getRuntimeFunction(index);
 
         // Check if already implemented
         if (runtimeFunction.functionIndex >= 0) {
@@ -5276,7 +5396,7 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Function must match runtime prototype
         if (!userFuncPrototype.matches(
-            prototypes.get(runtimeFunctions.get(index).prototypeIndex))) {
+            prototypes.get(runtimeFunctions.get(index).getPrototypeIndex()))) {
           setError("Function/sub does not match its RUNTIME declaration");
           return false;
         }
@@ -5371,18 +5491,18 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Skip 'endfunction'
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // If end of function is reached without a return value, need to trigger
     // a runtime error.
     if (getCurrentUserFunctionPrototype().hasReturnVal) {
-      AddInstruction(OpCode.OP_NO_VALUE_RETURNED, BasicValType.VTP_INT, new Value(0));
+      addInstruction(OpCode.OP_NO_VALUE_RETURNED, BasicValType.VTP_INT, new Value(0));
     } else
     // Add return-from-user-function instruction
     {
-      AddInstruction(OpCode.OP_RETURN_USER_FUNC, BasicValType.VTP_INT, new Value(0));
+      addInstruction(OpCode.OP_RETURN_USER_FUNC, BasicValType.VTP_INT, new Value(0));
     }
 
     // Fix up jump-past-function op-code
@@ -5403,15 +5523,15 @@ public class TomBasicCompiler extends HasErrorState {
 
   private boolean compileUserFunctionCall(boolean mustReturnValue, boolean isRuntimeFunc) {
     assertTrue(
-        (!isRuntimeFunc && token.tokenType == TokenType.CTT_USER_FUNCTION)
-            || (isRuntimeFunc && token.tokenType == TokenType.CTT_RUNTIME_FUNCTION));
+        (!isRuntimeFunc && token.getTokenType() == TokenType.CTT_USER_FUNCTION)
+            || (isRuntimeFunc && token.getTokenType() == TokenType.CTT_RUNTIME_FUNCTION));
     assertTrue(
-        (!isRuntimeFunc && isUserFunction(token.text))
-            || (isRuntimeFunc && isRuntimeFunction(token.text)));
+        (!isRuntimeFunc && isUserFunction(token.getText()))
+            || (isRuntimeFunc && isRuntimeFunction(token.getText())));
 
     // Read function name
-    String name = token.text;
-    if (!GetToken()) {
+    String name = token.getText();
+    if (!getToken()) {
       return false;
     }
 
@@ -5420,7 +5540,7 @@ public class TomBasicCompiler extends HasErrorState {
     int prototypeIndex;
     if (isRuntimeFunc) {
       index = runtimeFunctionIndex.get(name);
-      prototypeIndex = runtimeFunctions.get(index).prototypeIndex;
+      prototypeIndex = runtimeFunctions.get(index).getPrototypeIndex();
     } else {
       index = visibleUserFunctionIndex.get(name);
       prototypeIndex = vm.getUserFunctions().get(index).mPrototypeIndex;
@@ -5435,17 +5555,17 @@ public class TomBasicCompiler extends HasErrorState {
     // Add op-code to prepare function stack frame.
     // Stack frame remains inactive while evaluating its parameters.
     if (isRuntimeFunc) {
-      AddInstruction(OpCode.OP_CREATE_RUNTIME_FRAME, BasicValType.VTP_INT, new Value(index));
+      addInstruction(OpCode.OP_CREATE_RUNTIME_FRAME, BasicValType.VTP_INT, new Value(index));
     } else {
-      AddInstruction(OpCode.OP_CREATE_USER_FRAME, BasicValType.VTP_INT, new Value(index));
+      addInstruction(OpCode.OP_CREATE_USER_FRAME, BasicValType.VTP_INT, new Value(index));
     }
 
     // Expect "("
-    if (!token.text.equals("(")) {
+    if (!token.getText().equals("(")) {
       setError("Expected '('");
       return false;
     }
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -5453,17 +5573,17 @@ public class TomBasicCompiler extends HasErrorState {
     boolean needComma = false;
     for (int i = 0; i < prototype.paramCount; i++) {
       if (needComma) {
-        if (!token.text.equals(",")) {
+        if (!token.getText().equals(",")) {
           setError("Expected ','");
           return false;
         }
-        if (!GetToken()) {
+        if (!getToken()) {
           return false;
         }
       }
       needComma = true;
 
-      Mutable<UserFuncPrototype> funcRef = new Mutable<UserFuncPrototype>(prototype);
+      Mutable<UserFuncPrototype> funcRef = new Mutable<>(prototype);
       if (!compileUserFuncParam(funcRef, i)) {
         return false;
       }
@@ -5472,18 +5592,18 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     // Expect ")"
-    if (!token.text.equals(")")) {
+    if (!token.getText().equals(")")) {
       setError("Expected ')'");
       return false;
     }
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
     // Add op-code to call function.
     // Type: Unused.
     // Value: index of function specification.
-    AddInstruction(OpCode.OP_CALL_USER_FUNC, BasicValType.VTP_INT, new Value());
+    addInstruction(OpCode.OP_CALL_USER_FUNC, BasicValType.VTP_INT, new Value());
 
     if (prototype.hasReturnVal) {
 
@@ -5491,7 +5611,7 @@ public class TomBasicCompiler extends HasErrorState {
       // stack unwinds.
       if (!prototype.returnValType.canStoreInRegister()
           && vm.getDataTypes().containsString(prototype.returnValType)) {
-        AddInstruction(
+        addInstruction(
             OpCode.OP_REG_DESTRUCTOR,
             BasicValType.VTP_INT,
             new Value((int) vm.getStoreTypeIndex(prototype.returnValType)));
@@ -5534,7 +5654,7 @@ public class TomBasicCompiler extends HasErrorState {
       }
 
       // Save reg into parameter
-      AddInstruction(OpCode.OP_SAVE_PARAM, type.basicType, new Value(i));
+      addInstruction(OpCode.OP_SAVE_PARAM, type.basicType, new Value(i));
     }
 
     // Pointer case. Parameter must be a pointer and m_reg must point to a
@@ -5542,11 +5662,11 @@ public class TomBasicCompiler extends HasErrorState {
     else if (type.getVirtualPointerLevel() == 1) {
 
       // Special case: We accept "null" to pointer parameters
-      if (token.text.equals("null")) {
+      if (token.getText().equals("null")) {
         if (!compileNull()) {
           return false;
         }
-        AddInstruction(OpCode.OP_SAVE_PARAM, BasicValType.VTP_INT, new Value(i));
+        addInstruction(OpCode.OP_SAVE_PARAM, BasicValType.VTP_INT, new Value(i));
       } else {
 
         // Otherwise we implicitly take the address of any variable
@@ -5563,7 +5683,7 @@ public class TomBasicCompiler extends HasErrorState {
         if (regType.pointerLevel == type.pointerLevel
             && regType.arrayLevel == type.arrayLevel
             && regType.basicType == type.basicType) {
-          AddInstruction(OpCode.OP_SAVE_PARAM, BasicValType.VTP_INT, new Value(i));
+          addInstruction(OpCode.OP_SAVE_PARAM, BasicValType.VTP_INT, new Value(i));
         } else {
           setError("Types do not match");
           return false;
@@ -5585,11 +5705,11 @@ public class TomBasicCompiler extends HasErrorState {
           && regType.isByRef
           && regType.arrayLevel == type.arrayLevel
           && regType.basicType == type.basicType) {
-        AddInstruction(
+        addInstruction(
             OpCode.OP_COPY_USER_STACK,
             BasicValType.VTP_INT,
             new Value((int) vm.getStoreTypeIndex(type)));
-        AddInstruction(OpCode.OP_SAVE_PARAM_PTR, BasicValType.VTP_INT, new Value(i));
+        addInstruction(OpCode.OP_SAVE_PARAM_PTR, BasicValType.VTP_INT, new Value(i));
       } else {
         setError("Types do not match");
         return false;
@@ -5599,7 +5719,7 @@ public class TomBasicCompiler extends HasErrorState {
     // Data containing strings will need to be "destroyed" when the stack
     // unwinds.
     if (vm.getDataTypes().containsString(type)) {
-      AddInstruction(
+      addInstruction(
           OpCode.OP_REG_DESTRUCTOR,
           BasicValType.VTP_INT,
           new Value((int) vm.getStoreTypeIndex(type)));
@@ -5609,7 +5729,7 @@ public class TomBasicCompiler extends HasErrorState {
   }
 
   private boolean compileReturn() {
-    if (!GetToken()) {
+    if (!getToken()) {
       return false;
     }
 
@@ -5629,7 +5749,7 @@ public class TomBasicCompiler extends HasErrorState {
         if (!type.canStoreInRegister()) {
 
           // Add instruction to move that data into temp data
-          AddInstruction(
+          addInstruction(
               OpCode.OP_MOVE_TEMP,
               BasicValType.VTP_INT,
               new Value((int) vm.getStoreTypeIndex(type)));
@@ -5638,20 +5758,20 @@ public class TomBasicCompiler extends HasErrorState {
           // Note: The 0 in the instruction value indicates that temp
           // data should NOT be freed on return (as we have just moved
           // the return value there.)
-          AddInstruction(OpCode.OP_RETURN_USER_FUNC, BasicValType.VTP_INT, new Value(0));
+          addInstruction(OpCode.OP_RETURN_USER_FUNC, BasicValType.VTP_INT, new Value(0));
         } else
         // Add return-from-function OP-code
         // Note: The 1 in the instruction value indicates that temp
         // data should be freed on return.
         {
-          AddInstruction(OpCode.OP_RETURN_USER_FUNC, BasicValType.VTP_INT, new Value(1));
+          addInstruction(OpCode.OP_RETURN_USER_FUNC, BasicValType.VTP_INT, new Value(1));
         }
       } else {
-        AddInstruction(OpCode.OP_RETURN_USER_FUNC, BasicValType.VTP_INT, new Value(1));
+        addInstruction(OpCode.OP_RETURN_USER_FUNC, BasicValType.VTP_INT, new Value(1));
       }
     } else {
       // Add "return from Gosub" op-code
-      AddInstruction(OpCode.OP_RETURN, BasicValType.VTP_INT, new Value());
+      addInstruction(OpCode.OP_RETURN, BasicValType.VTP_INT, new Value());
     }
 
     return true;

@@ -9,7 +9,7 @@ import javax.swing.*;
 
 public class FileManager implements IFileManager {
 
-  private final Vector<FileEditor> fileEditors = new Vector<FileEditor>();
+  private final Vector<FileEditor> fileEditors = new Vector<>();
 
   private String currentDirectory; // Current working directory
 

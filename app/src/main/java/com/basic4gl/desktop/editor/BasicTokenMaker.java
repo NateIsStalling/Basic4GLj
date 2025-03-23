@@ -14,10 +14,10 @@ import org.fife.ui.rsyntaxtextarea.TokenMap;
 public class BasicTokenMaker extends AbstractTokenMaker {
   private static final String INCLUDE = "include ";
   private static final char CHAR_COMMENT = '\'';
-  public static final List<String> reservedWords = new ArrayList<String>();
-  public static final List<String> functions = new ArrayList<String>();
-  public static final List<String> constants = new ArrayList<String>();
-  public static final List<String> operators = new ArrayList<String>();
+  public static final List<String> reservedWords = new ArrayList<>();
+  public static final List<String> functions = new ArrayList<>();
+  public static final List<String> constants = new ArrayList<>();
+  public static final List<String> operators = new ArrayList<>();
 
   @Override
   public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {

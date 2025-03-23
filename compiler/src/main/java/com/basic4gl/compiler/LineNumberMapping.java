@@ -15,12 +15,12 @@ import java.util.Vector;
  * Used by debugging code so that lines correctly match up with program addresses.
  */
 public class LineNumberMapping extends ILineNumberMapping implements Serializable {
-  Vector<String> filenames = new Vector<String>();
-  Map<String, Integer> filenameLookup = new HashMap<String, Integer>();
-  Vector<SourcePosition> mapping = new Vector<SourcePosition>();
-  Vector<Vector<Integer>> reverseMapping = new Vector<Vector<Integer>>();
+  private final Vector<String> filenames = new Vector<>();
+  private final Map<String, Integer> filenameLookup = new HashMap<>();
+  private final Vector<SourcePosition> mapping = new Vector<>();
+  private final Vector<Vector<Integer>> reverseMapping = new Vector<>();
 
-  int GetFileIndex(String filename) {
+  int getFileIndex(String filename) {
 
     // Is file already in list?
     if (filenameLookup.containsKey(filename)) {
@@ -30,7 +30,7 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
       int index = filenames.size();
       filenameLookup.put(filename, index);
       filenames.add(filename);
-      reverseMapping.add(new Vector<Integer>());
+      reverseMapping.add(new Vector<>());
       return index;
     }
   }
@@ -45,7 +45,7 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
     }
   }
 
-  int MainFromSource(int fileIndex, int fileLineNo) {
+  int getMainFromSource(int fileIndex, int fileLineNo) {
     // Check line is valid
     if (fileLineNo >= 0 && fileLineNo < reverseMapping.get(fileIndex).size()) {
       return reverseMapping.get(fileIndex).get(fileLineNo);
@@ -55,17 +55,17 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
   }
 
   // Mapping building
-  public void Clear() {
+  public void clear() {
     filenames.clear();
     filenameLookup.clear();
     mapping.clear();
     reverseMapping.clear();
   }
 
-  public void AddLine(String filename, int fileLineNo) {
+  public void addLine(String filename, int fileLineNo) {
 
     // Append mapping entry
-    int fileIndex = GetFileIndex(filename);
+    int fileIndex = getFileIndex(filename);
     int mainLineNo = mapping.size();
     mapping.add(new SourcePosition(fileIndex, fileLineNo));
 
@@ -96,11 +96,11 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
 
   @Override
   public int getSourceFromMain(String filename, int lineNo) {
-    return getSourceFromMain(GetFileIndex(filename), lineNo);
+    return getSourceFromMain(getFileIndex(filename), lineNo);
   }
 
   @Override
   public int getMainFromSource(String filename, int fileLineNo) {
-    return MainFromSource(GetFileIndex(filename), fileLineNo);
+    return getMainFromSource(getFileIndex(filename), fileLineNo);
   }
 }

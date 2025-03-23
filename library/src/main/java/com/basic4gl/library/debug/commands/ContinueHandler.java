@@ -16,12 +16,12 @@ public class ContinueHandler {
 
   public void handle() {
     mVM.clearTempBreakPoints();
-    Continue();
+    doContinue();
   }
 
   @Deprecated
   // "Doesn't work with remote launch"
-  protected void Continue() {
+  protected void doContinue() {
     // TODO fix this section
     // throw new NotImplementedException();
 

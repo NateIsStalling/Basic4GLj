@@ -24,7 +24,7 @@ public class Parser extends HasErrorState {
   private int column;
 
   public Parser() {
-    sourceCode = new Vector<String>();
+    sourceCode = new Vector<>();
     specialText = "";
     reset();
   }
@@ -116,9 +116,9 @@ public class Parser extends HasErrorState {
 
     // Create token, with some defaults
     Token t = new Token();
-    t.text = "";
-    t.valType = BasicValType.VTP_INT;
-    t.newLine = (column == 0);
+    t.setText("");
+    t.setValType(BasicValType.VTP_INT);
+    t.setNewLine((column == 0));
 
     // Skip leading whitespace.
     // Detect newlines
@@ -128,11 +128,11 @@ public class Parser extends HasErrorState {
 
       // Substitute the position in the source that
       // the special text has been associated with.
-      t.line = specialSourceLine;
-      t.col = specialSourceColumn;
+      t.setLine(specialSourceLine);
+      t.setCol(specialSourceColumn);
     } else {
-      t.line = line;
-      t.col = column;
+      t.setLine(line);
+      t.setCol(column);
     }
     while (!isEof() && c <= ' ' && (c != 13 || skipEOL)) {
       if (isSpecialMode) {
@@ -140,34 +140,34 @@ public class Parser extends HasErrorState {
 
         // Substitute the position in the source that
         // the special text has been associated with.
-        t.line = specialSourceLine;
-        t.col = specialSourceColumn;
+        t.setLine(specialSourceLine);
+        t.setCol(specialSourceColumn);
       } else {
-        t.line = line;
-        t.col = column;
+        t.setLine(line);
+        t.setCol(column);
       }
       c = getChar(false);
-      t.newLine = t.newLine || column == 0;
+      t.setNewLine(t.isNewLine() || column == 0);
     }
 
     // Determine token type
     if (c == 0) {
-      t.tokenType = TokenType.CTT_EOF;
+      t.setTokenType(TokenType.CTT_EOF);
     } else if (c == 13) {
-      t.tokenType = TokenType.CTT_EOL;
+      t.setTokenType(TokenType.CTT_EOL);
     } else if (c == '"') {
-      t.tokenType = TokenType.CTT_CONSTANT;
-      t.valType = BasicValType.VTP_STRING;
+      t.setTokenType(TokenType.CTT_CONSTANT);
+      t.setValType(BasicValType.VTP_STRING);
     } else if (!dataMode) {
       if (isNumber((char) c)) {
-        t.tokenType = TokenType.CTT_CONSTANT;
+        t.setTokenType(TokenType.CTT_CONSTANT);
         if (c == '.') {
-          t.valType = BasicValType.VTP_REAL;
+          t.setValType(BasicValType.VTP_REAL);
         }
       } else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
-        t.tokenType = TokenType.CTT_TEXT;
+        t.setTokenType(TokenType.CTT_TEXT);
       } else {
-        t.tokenType = TokenType.CTT_SYMBOL;
+        t.setTokenType(TokenType.CTT_SYMBOL);
       }
     } else {
 
@@ -176,25 +176,25 @@ public class Parser extends HasErrorState {
       // of statement).
       // Anything else is considered part of the data element.
       if (c == ',' || c == ':') {
-        t.tokenType = TokenType.CTT_SYMBOL;
+        t.setTokenType(TokenType.CTT_SYMBOL);
       } else {
-        t.tokenType = TokenType.CTT_TEXT;
+        t.setTokenType(TokenType.CTT_TEXT);
       }
     }
 
     // Empty token types
-    if (t.tokenType == TokenType.CTT_EOF || t.tokenType == TokenType.CTT_EOL) {
+    if (t.getTokenType() == TokenType.CTT_EOF || t.getTokenType() == TokenType.CTT_EOL) {
       return t;
     }
 
     // Extract token text
     // Regular case, not dataMode text
-    if (!dataMode || t.tokenType != TokenType.CTT_TEXT) {
+    if (!dataMode || t.getTokenType() != TokenType.CTT_TEXT) {
       // Don't include leading quote (if string constant)
-      if (!(t.tokenType == TokenType.CTT_CONSTANT && t.valType == BasicValType.VTP_STRING)) {
-        t.text = t.text + (char) c;
+      if (!(t.getTokenType() == TokenType.CTT_CONSTANT && t.getValType() == BasicValType.VTP_STRING)) {
+        t.setText(t.getText() + (char) c);
       }
-      c = peekChar(t.valType == BasicValType.VTP_STRING);
+      c = peekChar(t.getValType() == BasicValType.VTP_STRING);
       byte lcase = (byte) Character.toLowerCase(c);
       boolean done = false;
       boolean hex = false;
@@ -202,9 +202,9 @@ public class Parser extends HasErrorState {
       while (!done && !hasError()) {
 
         // Determine whether found end of token
-        switch (t.tokenType) {
+        switch (t.getTokenType()) {
           case CTT_CONSTANT:
-            if (t.valType == BasicValType.VTP_STRING) {
+            if (t.getValType() == BasicValType.VTP_STRING) {
               if (c == '"') {
                 done = true;
                 getChar(false); // Skip terminating quote
@@ -213,13 +213,13 @@ public class Parser extends HasErrorState {
                 done = true;
               }
             } else {
-              boolean validDecimalPt = (c == '.' && t.valType == BasicValType.VTP_INT);
+              boolean validDecimalPt = (c == '.' && t.getValType() == BasicValType.VTP_INT);
               if (validDecimalPt) // Floating point number
               {
-                t.valType = BasicValType.VTP_REAL;
+                t.setValType(BasicValType.VTP_REAL);
               }
 
-              boolean hexSpecifier = lcase == 'x' && (t.text.equals("0") || t.text.equals("-0"));
+              boolean hexSpecifier = lcase == 'x' && (t.getText().equals("0") || t.getText().equals("-0"));
               if (hexSpecifier) {
                 hex = true;
               }
@@ -241,11 +241,11 @@ public class Parser extends HasErrorState {
             // trailed with a $,
             // # or %
             {
-              t.text = t.text + getChar(false);
+              t.setText(t.getText() + getChar(false));
             }
             break;
           case CTT_SYMBOL:
-            done = !(isComparison(t.text.charAt(0)) && isComparison(c));
+            done = !(isComparison(t.getText().charAt(0)) && isComparison(c));
             break;
           default:
             setError("Bad token");
@@ -253,16 +253,16 @@ public class Parser extends HasErrorState {
 
         // Store character
         if (!done) {
-          t.text = t.text + getChar(t.valType == BasicValType.VTP_STRING);
-          c = peekChar(t.valType == BasicValType.VTP_STRING);
+          t.setText(t.getText() + getChar(t.getValType() == BasicValType.VTP_STRING));
+          c = peekChar(t.getValType() == BasicValType.VTP_STRING);
           lcase = (byte) Character.toLowerCase(c);
         } else {
           // Check token is well formed
-          if (t.tokenType == TokenType.CTT_CONSTANT && t.valType == BasicValType.VTP_INT) {
+          if (t.getTokenType() == TokenType.CTT_CONSTANT && t.getValType() == BasicValType.VTP_INT) {
             // Check integer number is valid
-            char last = t.text.charAt(t.text.length() - 1);
+            char last = t.getText().charAt(t.getText().length() - 1);
             if (last == 'x' || last == 'X') {
-              setError("'" + t.text + "' is not a valid number");
+              setError("'" + t.getText() + "' is not a valid number");
             }
           }
         }
@@ -271,7 +271,7 @@ public class Parser extends HasErrorState {
 
       // Special case: dataMode text
       // Token is actually a text constant
-      t.tokenType = TokenType.CTT_CONSTANT;
+      t.setTokenType(TokenType.CTT_CONSTANT);
       boolean done = false;
       boolean hex = false;
       boolean firstIteration = true;
@@ -290,14 +290,14 @@ public class Parser extends HasErrorState {
           // Assume numeric until non-numeric character found.
           // (Also, numeric types can't have spaces).
           // Decimal point means floating point (real) type.
-          if (t.valType != BasicValType.VTP_STRING) {
+          if (t.getValType() != BasicValType.VTP_STRING) {
 
-            boolean validDecimalPt = (c == '.' && t.valType == BasicValType.VTP_INT);
+            boolean validDecimalPt = (c == '.' && t.getValType() == BasicValType.VTP_INT);
             if (validDecimalPt) // Floating point number
             {
-              t.valType = BasicValType.VTP_REAL;
+              t.setValType(BasicValType.VTP_REAL);
             }
-            boolean hexSpecifier = (lcase == 'x' && (t.text.equals("0") || t.text.equals("-0")));
+            boolean hexSpecifier = (lcase == 'x' && (t.getText().equals("0") || t.getText().equals("-0")));
             if (hexSpecifier) {
               hex = true;
             }
@@ -312,7 +312,7 @@ public class Parser extends HasErrorState {
                 || (c > ' ' && whiteSpaceFound)) // Contained
             // whitespace
             {
-              t.valType = BasicValType.VTP_STRING;
+              t.setValType(BasicValType.VTP_STRING);
             }
           }
           if (c <= ' ') {
@@ -321,19 +321,19 @@ public class Parser extends HasErrorState {
         }
         if (!done) {
           if (firstIteration) {
-            t.text = String.valueOf((char) c);
+            t.setText(String.valueOf((char) c));
           } else {
-            t.text = t.text + getChar(false);
+            t.setText(t.getText() + getChar(false));
           }
           c = peekChar(false);
           lcase = (byte) Character.toLowerCase(c);
         } else {
           // Check token is well formed
-          if (t.tokenType == TokenType.CTT_CONSTANT && t.valType == BasicValType.VTP_INT) {
+          if (t.getTokenType() == TokenType.CTT_CONSTANT && t.getValType() == BasicValType.VTP_INT) {
             // Check integer number is valid
-            char last = t.text.charAt(t.text.length() - 1);
+            char last = t.getText().charAt(t.getText().length() - 1);
             if (last == 'x' || last == 'X') {
-              setError("'" + t.text + "' is not a valid number");
+              setError("'" + t.getText() + "' is not a valid number");
             }
           }
         }
@@ -342,11 +342,11 @@ public class Parser extends HasErrorState {
       }
 
       // Trim trailing whitespace
-      int end = t.text.length() - 1;
-      while (end >= 0 && t.text.charAt(end) <= ' ') {
+      int end = t.getText().length() - 1;
+      while (end >= 0 && t.getText().charAt(end) <= ' ') {
         end--;
       }
-      t.text = t.text.substring(0, end + 1);
+      t.setText(t.getText().substring(0, end + 1));
     }
 
     return t;

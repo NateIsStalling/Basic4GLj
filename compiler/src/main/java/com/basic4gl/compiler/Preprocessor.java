@@ -24,17 +24,17 @@ import java.util.*;
 public class Preprocessor extends HasErrorState {
 
   // Registered source file servers
-  List<ISourceFileServer> fileServers = new ArrayList<ISourceFileServer>();
+  private List<ISourceFileServer> fileServers = new ArrayList<>();
 
   // Stack of currently opened files.
   // openFiles.back() is the current file being parsed
-  Vector<ISourceFile> openFiles = new Vector<ISourceFile>();
+  private Vector<ISourceFile> openFiles = new Vector<>();
 
   // Filenames of visited source files. (To prevent circular includes)
-  List<String> visitedFiles = new ArrayList<String>();
+  private List<String> visitedFiles = new ArrayList<>();
 
   // Source file <=> Processed file mapping
-  LineNumberMapping lineNumberMap = new LineNumberMapping();
+  private LineNumberMapping lineNumberMap = new LineNumberMapping();
 
   void closeAll() {
 
@@ -45,7 +45,7 @@ public class Preprocessor extends HasErrorState {
     openFiles.clear();
   }
 
-  ISourceFile OpenFile(String filename) {
+  ISourceFile openFile(String filename) {
     System.out.println("Preprocessing include file: \n" + filename);
     // Query file servers in order until one returns an open file.
     for (ISourceFileServer server : fileServers) {
@@ -90,7 +90,7 @@ public class Preprocessor extends HasErrorState {
     // Reset
     closeAll();
     visitedFiles.clear();
-    lineNumberMap.Clear();
+    lineNumberMap.clear();
     clearError();
 
     // Clear the parser
@@ -127,7 +127,7 @@ public class Preprocessor extends HasErrorState {
           if (!visitedFiles.contains(filename)) {
 
             // Open next file
-            ISourceFile file = OpenFile(filename);
+            ISourceFile file = openFile(filename);
             if (file == null) {
               setError("Unable to open file: " + includeName);
             } else {
@@ -143,7 +143,7 @@ public class Preprocessor extends HasErrorState {
         } else {
           // Not an #include line
           // Add to parser, and line number map
-          lineNumberMap.AddLine(openFiles.lastElement().getFilename(), lineNo);
+          lineNumberMap.addLine(openFiles.lastElement().getFilename(), lineNo);
           parser.getSourceCode().add(line);
         }
       }

@@ -104,7 +104,7 @@ public class RMultiHeaderScrollPane extends JScrollPane {
     }
   }
 
-  private static final RTextArea getFirstRTextAreaDescendant(Component comp) {
+  private static RTextArea getFirstRTextAreaDescendant(Component comp) {
     Stack stack = new Stack();
     stack.add(comp);
 

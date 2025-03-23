@@ -644,7 +644,7 @@ public class FileEditor implements SearchListener {
   }
 
   public ArrayList<Integer> getBreakpoints() {
-    ArrayList<Integer> points = new ArrayList<Integer>();
+    ArrayList<Integer> points = new ArrayList<>();
 
     MultiHeaderGutter gutter = scrollPane.getGutter();
     if (gutter != null) {

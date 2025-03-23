@@ -14,7 +14,7 @@ public class NetLogger {
     }
   }
 
-  static NetLogHandler handler;
+  private static NetLogHandler handler;
 
   private NetLogger() {
     initDebugNetLogger();

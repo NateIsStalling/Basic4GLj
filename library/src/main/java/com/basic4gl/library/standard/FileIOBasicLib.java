@@ -27,16 +27,16 @@ import java.util.regex.Pattern;
 public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
 
   // State variables
-  static IAppSettings appSettings;
-  static FileOpener files;
+  private static IAppSettings appSettings;
+  private static FileOpener files;
 
   // FileAccessorAdapter pluginAdapter;
-  FileStreamResourceStore fileStreams;
-  String lastError = "";
-  FileStream stream;
+  private FileStreamResourceStore fileStreams;
+  private String lastError = "";
+  private FileStream stream;
 
-  List<File> findFileCollection = new ArrayList<>();
-  int findFileHandle = -1;
+  private List<File> findFileCollection = new ArrayList<>();
+  private int findFileHandle = -1;
 
   @Override
   public String name() {
@@ -72,10 +72,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     // Register resources
-    comp.VM().addResources(fileStreams);
+    comp.getVM().addResources(fileStreams);
 
     // Register initialisation functions
-    comp.VM().addInitFunction(new Init());
+    comp.getVM().addInitFunction(new Init());
   }
 
   @Override

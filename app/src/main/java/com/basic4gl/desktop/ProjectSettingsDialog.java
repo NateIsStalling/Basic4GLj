@@ -224,7 +224,7 @@ public class ProjectSettingsDialog
   }
 
   @Override
-  public void OnConfigurationChanged(Configuration configuration) {
+  public void onConfigurationChanged(Configuration configuration) {
     Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
 
     builder.setConfiguration(configuration);

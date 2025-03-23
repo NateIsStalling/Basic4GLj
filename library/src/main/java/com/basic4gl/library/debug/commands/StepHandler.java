@@ -13,7 +13,7 @@ public class StepHandler extends ContinueHandler {
   }
 
   // Debugging
-  public void DoStep(int type) {
+  public void doStep(int type) {
     // TODO handle this in the editor
     //        if (mHost.isApplicationRunning())
     //            return;
@@ -26,13 +26,13 @@ public class StepHandler extends ContinueHandler {
     // Patch in temp breakpoints
     switch (type) {
       case 1:
-        mVM.AddStepBreakPts(false);
+        mVM.addStepBreakPoints(false);
         break; // Step over
       case 2:
-        mVM.AddStepBreakPts(true);
+        mVM.addStepBreakPoints(true);
         break; // Step into
       case 3:
-        if (!mVM.AddStepOutBreakPt()) // Step out
+        if (!mVM.addStepOutBreakPoint()) // Step out
         {
           return; // (No gosub to step out of)
         }
@@ -40,7 +40,7 @@ public class StepHandler extends ContinueHandler {
     }
 
     // Resume running program
-    Continue();
+    doContinue();
     //        mHost.resumeApplication();
   }
 }

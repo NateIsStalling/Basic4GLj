@@ -52,7 +52,7 @@ public class Data {
    * Temp data below this point will NOT be
    * freed when {@link #freeTempData()} is called.
    */
-  int tempDataLock;
+  private int tempDataLock;
 
   int internalAllocate(int count) {
 
@@ -83,7 +83,7 @@ public class Data {
     // Initialize data
     this.maxDataSize = maxDataSize;
     permanent = stackSize;
-    data = new Vector<Value>();
+    data = new Vector<>();
     clear();
   }
 
@@ -91,23 +91,23 @@ public class Data {
     return data;
   }
 
-  public int MaxDataSize() {
+  public int getMaxDataSize() {
     return maxDataSize;
   }
 
-  public int Permanent() {
+  public int getPermanent() {
     return permanent;
   }
 
-  public int StackTop() {
+  public int getStackTop() {
     return stackTop;
   }
 
-  public int TempData() {
+  public int getTempData() {
     return tempData;
   }
 
-  public int TempDataLock() {
+  public int getTempDataLock() {
     return tempDataLock;
   }
 
@@ -450,8 +450,7 @@ public class Data {
       }
       for (int i = 0; i < elementCount; i++) {
         int withOffset = i + offset;
-        array[withOffset] =
-            Integer.valueOf(data.data().get(index + 2 + i).getIntVal()).shortValue();
+        array[withOffset] = Integer.valueOf(data.data().get(index + 2 + i).getIntVal()).shortValue();
       }
       return elementCount;
     } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -2418,7 +2417,7 @@ public class Data {
     }
   }
 
-  public static int TempArray(Data data, TypeLibrary typeLib, int elementType, int arraySize) {
+  public static int initTempArray(Data data, TypeLibrary typeLib, int elementType, int arraySize) {
     assertTrue(arraySize > 0);
 
     // Setup a basic 1D array of Integers
@@ -2437,7 +2436,7 @@ public class Data {
     assertTrue(array != null);
 
     // Allocate temporary array
-    int dataIndex = TempArray(data, typeLib, BasicValType.VTP_INT, arraySize);
+    int dataIndex = initTempArray(data, typeLib, BasicValType.VTP_INT, arraySize);
 
     // Translate C array into data
     for (int i = 0; i < arraySize; i++) {
@@ -2453,7 +2452,7 @@ public class Data {
     assertTrue(array != null);
 
     // Allocate temporary array
-    int dataIndex = TempArray(data, typeLib, BasicValType.VTP_INT, arraySize);
+    int dataIndex = initTempArray(data, typeLib, BasicValType.VTP_INT, arraySize);
 
     // Translate C array into data
     for (int i = 0; i < arraySize; i++) {
@@ -2469,7 +2468,7 @@ public class Data {
     assertTrue(array != null);
 
     // Allocate temporary array
-    int dataIndex = TempArray(data, typeLib, BasicValType.VTP_REAL, arraySize);
+    int dataIndex = initTempArray(data, typeLib, BasicValType.VTP_REAL, arraySize);
 
     // Translate C array into data
     for (int i = 0; i < arraySize; i++) {
@@ -2484,7 +2483,7 @@ public class Data {
     assertTrue(array != null);
 
     // Allocate temporary array
-    int dataIndex = TempArray(data, typeLib, BasicValType.VTP_REAL, arraySize);
+    int dataIndex = initTempArray(data, typeLib, BasicValType.VTP_REAL, arraySize);
 
     // Translate C array into data
     for (int i = 0; i < arraySize; i++) {
@@ -2500,7 +2499,7 @@ public class Data {
     assertTrue(array != null);
 
     // Allocate temporary array
-    int dataIndex = TempArray(data, typeLib, BasicValType.VTP_REAL, arraySize);
+    int dataIndex = initTempArray(data, typeLib, BasicValType.VTP_REAL, arraySize);
 
     // Translate C array into data
     for (int i = 0; i < arraySize; i++) {

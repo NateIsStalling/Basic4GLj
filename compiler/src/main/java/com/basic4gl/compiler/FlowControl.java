@@ -25,7 +25,7 @@ class FlowControl {
     FCT_DO_POST(5);
 
     private static final Map<Integer, FlowControlType> values =
-        new HashMap<Integer, FlowControlType>();
+            new HashMap<>();
     private final int type;
 
     FlowControlType(int type) {
@@ -50,36 +50,36 @@ class FlowControl {
   /**
    * Type of flow control construct
    */
-  FlowControlType controlType;
+  protected FlowControlType controlType;
 
   /**
    * Index of instruction that jumps past (out) of flow control construct
    */
-  int jumpOut;
+  protected int jumpOut;
 
   /**
    * Instruction to jump to to loop
    */
-  int jumpLoop;
+  protected int jumpLoop;
 
-  InstructionPosition sourcePos;
+  protected InstructionPosition sourcePos;
 
   /**
    * Misc data
    */
-  String data;
+  protected String data;
 
   /**
    * If/elseif/else only.
    * True if there is an implied endif after the explicit endif
    */
-  boolean impliedEndif;
+  protected boolean impliedEndif;
 
   /**
    * True if is a block if. Block ifs require "endifs".
    * Non-block ifs have an implicit endif at the end of the line
    */
-  boolean blockIf;
+  protected boolean blockIf;
 
   FlowControl(FlowControlType type, int jumpOut, int jumpLoop, int line, int col) {
     this(type, jumpOut, jumpLoop, line, col, false, "", false);

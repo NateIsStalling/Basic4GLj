@@ -49,7 +49,7 @@ public class CallbackMessage {
     return instructionPosition;
   }
 
-  public static CallbackMessage FromJson(String json) {
+  public static CallbackMessage fromJson(String json) {
     Gson gson = new Gson();
     try {
       return gson.fromJson(json, CallbackMessage.class);

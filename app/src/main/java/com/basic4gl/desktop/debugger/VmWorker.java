@@ -15,8 +15,8 @@ public class VmWorker extends SwingWorker<Object, Object>
 
   private RemoteDebugger remoteDebugger;
 
-  DebuggerTaskCallback mCallbacks;
-  CountDownLatch mCompletionLatch;
+  private DebuggerTaskCallback mCallbacks;
+  private CountDownLatch mCompletionLatch;
 
   public VmWorker(IFileProvider fileOpener) {
     mFiles = fileOpener;
@@ -107,8 +107,7 @@ public class VmWorker extends SwingWorker<Object, Object>
     return null;
   }
 
-  @Override
-  public void OnDebugCallbackReceived(
+  public void onDebugCallbackReceived(
       com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
 
     VMStatus vmStatus = null;
@@ -120,7 +119,7 @@ public class VmWorker extends SwingWorker<Object, Object>
               callback.getVMStatus().getError());
     }
     DebuggerCallbackMessage message =
-        new DebuggerCallbackMessage(callback.status, callback.text, vmStatus);
+        new DebuggerCallbackMessage(callback.getStatus(), callback.getText(), vmStatus);
 
     InstructionPosition instructionPosition = callback.getSourcePosition();
     if (instructionPosition != null) {
@@ -130,14 +129,12 @@ public class VmWorker extends SwingWorker<Object, Object>
     publish(message);
   }
 
-  @Override
-  public void OnCallbackReceived(Callback callback) {
+  public void onCallbackReceived(Callback callback) {
     // TODO 12/2022 improve type safety of interface/map callback DTO to domain model
     publish(callback);
   }
 
-  @Override
-  public void OnDisconnected() {
+  public void onDisconnected() {
     mCallbacks.onDebuggerDisconnected();
   }
 

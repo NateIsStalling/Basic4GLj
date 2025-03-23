@@ -181,7 +181,7 @@ public class BuilderDesktopGL extends Builder {
 
       // Add Basic4GLj classes to new Jar
       System.out.println("Adding source files");
-      List<String> files = new ArrayList<String>();
+      List<String> files = new ArrayList<>();
       // TODO Only add required classes
       files.add("com/basic4gl/compiler");
       files.add("com/basic4gl/lib"); // TODO this namespace should be renamed..
@@ -262,7 +262,7 @@ public class BuilderDesktopGL extends Builder {
   }
 
   @Override
-  public String version() {
+  public String getVersion() {
     return "1";
   }
 
@@ -272,17 +272,17 @@ public class BuilderDesktopGL extends Builder {
   }
 
   @Override
-  public String author() {
+  public String getAuthor() {
     return "Nathaniel Nielsen";
   }
 
   @Override
-  public String contact() {
+  public String getContact() {
     return "https://github.com/NateIsStalling/Basic4GLj/issues";
   }
 
   @Override
-  public String id() {
+  public String getId() {
     return "desktopgl";
   }
 

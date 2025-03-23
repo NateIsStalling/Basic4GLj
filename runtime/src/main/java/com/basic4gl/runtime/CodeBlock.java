@@ -21,7 +21,7 @@ public class CodeBlock implements Streamable {
    */
   public int programOffset;
 
-  public Vector<RuntimeFunction> runtimeFunctions = new Vector<RuntimeFunction>();
+  public Vector<RuntimeFunction> runtimeFunctions = new Vector<>();
 
   public CodeBlock() {
     programOffset = -1;

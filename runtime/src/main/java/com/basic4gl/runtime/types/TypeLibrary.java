@@ -18,8 +18,8 @@ public class TypeLibrary implements Streamable {
   private Vector<Structure> structures;
 
   public TypeLibrary() {
-    fields = new Vector<StructureField>();
-    structures = new Vector<Structure>();
+    fields = new Vector<>();
+    structures = new Vector<>();
   }
 
   public Vector<StructureField> getFields() {
@@ -239,7 +239,7 @@ public class TypeLibrary implements Streamable {
       result = structures.get(type.basicType).name + " ";
     } else {
       // Basic type
-      result = ValType.BasicValTypeName(type.basicType) + " ";
+      result = ValType.getBasicValTypeName(type.basicType) + " ";
     }
 
     // Append pointer prefix

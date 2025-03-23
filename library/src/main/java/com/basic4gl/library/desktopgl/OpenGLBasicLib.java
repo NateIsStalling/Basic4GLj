@@ -30,25 +30,29 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
   // Stores pointers to Corona image objects
   // typedef vmPointerResourceStore<corona.Image> ImageResourceStore;
 
-  static final int MAXIMAGESIZE = (2048 * 2048);
+  private static final int MAXIMAGESIZE = (2048 * 2048);
   // Globals
-  static GLWindow appWindow;
-  static TextureResourceStore textures;
-  static PointerResourceStore<Image> images; // ImageResourceStore
-  static DisplayListResourceStore displayLists;
+  private static GLWindow appWindow;
+  private static TextureResourceStore textures;
+  private static PointerResourceStore<Image> images; // ImageResourceStore
+  private static DisplayListResourceStore displayLists;
 
   // Global state
-  static boolean truncateBlankFrames; // Truncate blank frames from image strips
-  static boolean usingTransparentCol; // Use transparent colour when loading images
+  private static boolean truncateBlankFrames; // Truncate blank frames from image strips
+  private static boolean usingTransparentCol; // Use transparent colour when loading images
   // unsigned long int
-  static long transparentCol; // Transparent colour as RGB triplet
-  static boolean doMipmap; // Build mipmap textures when loading images
-  static boolean doLinearFilter; // Use linear filtering on textures (otherwise use nearest)
+  private static long transparentCol; // Transparent colour as RGB triplet
+  private static boolean doMipmap; // Build mipmap textures when loading images
+  private static boolean doLinearFilter; // Use linear filtering on textures (otherwise use nearest)
 
-  ByteBuffer byteBuffer16;
-  IntBuffer intBuffer16;
-  FloatBuffer floatBuffer16;
-  DoubleBuffer doubleBuffer16;
+  private ByteBuffer byteBuffer16;
+  private IntBuffer intBuffer16;
+  private FloatBuffer floatBuffer16;
+  private DoubleBuffer doubleBuffer16;
+
+  public static GLWindow getAppWindow() {
+    return appWindow;
+  }
 
   @Override
   public String name() {
@@ -73,7 +77,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
   @Override
   public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
 
-    appWindow.ClearKeyBuffers();
+    appWindow.clearKeyBuffers();
 
     if (textures == null) {
       textures = new TextureResourceStore();
@@ -121,7 +125,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
   @Override
   public Map<String, Constant> constants() {
-    Map<String, Constant> c = new HashMap<String, Constant>();
+    Map<String, Constant> c = new HashMap<>();
 
     c.put("GL_ACTIVE_TEXTURE", new Constant(GL_ACTIVE_TEXTURE));
     c.put("GL_CLIENT_ACTIVE_TEXTURE", new Constant(GL_CLIENT_ACTIVE_TEXTURE));
@@ -242,7 +246,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
   @Override
   public Map<String, FunctionSpecification[]> specs() {
-    Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
+    Map<String, FunctionSpecification[]> s = new HashMap<>();
     s.put(
         "loadimage",
         new FunctionSpecification[] {
@@ -1501,7 +1505,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
       return images;
     } else {
-      return new Vector<Image>();
+      return new Vector<>();
     }
   }
 
@@ -1542,7 +1546,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     Vector<Image> images = loadTexStripImages(filename, frameXSize, frameYSize);
 
     // Upload into textures
-    Vector<Integer> textures = new Vector<Integer>();
+    Vector<Integer> textures = new Vector<>();
     for (int i = 0; i < images.size(); i++) {
       // TODO Confirm texture dimensions are powers of 2
       // images.set(i, ResizeImageForOpenGL(images.get(i)));
@@ -2236,7 +2240,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
   public static final class WrapExtensionSupported implements Function {
     public void run(TomVM vm) {
       vm.getReg()
-          .setIntVal(OpenGLBasicLib.appWindow.ExtensionSupported(vm.getStringParam(1)) ? 1 : 0);
+          .setIntVal(OpenGLBasicLib.appWindow.isExtensionSupported(vm.getStringParam(1)) ? 1 : 0);
     }
   }
 
@@ -2250,13 +2254,13 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
   public static final class WrapWindowWidth implements Function {
     public void run(TomVM vm) {
-      vm.getReg().setIntVal(OpenGLBasicLib.appWindow.Width());
+      vm.getReg().setIntVal(OpenGLBasicLib.appWindow.getWidth());
     }
   }
 
   public static final class WrapWindowHeight implements Function {
     public void run(TomVM vm) {
-      vm.getReg().setIntVal(OpenGLBasicLib.appWindow.Height());
+      vm.getReg().setIntVal(OpenGLBasicLib.appWindow.getHeight());
     }
   }
 
@@ -2539,7 +2543,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
   public static final class WrapglBegin implements Function {
     public void run(TomVM vm) {
-      OpenGLBasicLib.appWindow.SetDontPaint(
+      OpenGLBasicLib.appWindow.setDontPaint(
           true); // Dont paint on WM_PAINT messages when between a glBegin() and a glEnd ()
       glBegin(
           vm.getIntParam(
@@ -2551,7 +2555,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
   public static final class WrapglEnd implements Function {
     public void run(TomVM vm) {
       glEnd();
-      OpenGLBasicLib.appWindow.SetDontPaint(false);
+      OpenGLBasicLib.appWindow.setDontPaint(false);
     }
   }
 

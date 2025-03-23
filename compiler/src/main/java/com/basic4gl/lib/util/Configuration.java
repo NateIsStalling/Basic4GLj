@@ -15,22 +15,22 @@ public class Configuration implements Serializable {
   public static final int PARAM_BOOL = 3;
   public static final int PARAM_CHOICE = 4;
 
-  private List<String[]> fieldNames = new ArrayList<String[]>();
-  private List<Integer> parameterTypes = new ArrayList<Integer>();
-  private List<String> values = new ArrayList<String>();
+  private List<String[]> fieldNames = new ArrayList<>();
+  private List<Integer> parameterTypes = new ArrayList<>();
+  private List<String> values = new ArrayList<>();
 
   public Configuration() {}
 
   public Configuration(Configuration config) {
-    fieldNames = new ArrayList<String[]>(config.fieldNames.size());
+    fieldNames = new ArrayList<>(config.fieldNames.size());
     for (String[] item : config.fieldNames) {
       fieldNames.add(item.clone());
     }
-    parameterTypes = new ArrayList<Integer>(config.parameterTypes.size());
+    parameterTypes = new ArrayList<>(config.parameterTypes.size());
     for (Integer item : config.parameterTypes) {
       parameterTypes.add(item);
     }
-    values = new ArrayList<String>(config.values.size());
+    values = new ArrayList<>(config.values.size());
     for (String item : config.values) {
       values.add(item);
     }

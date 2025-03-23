@@ -11,53 +11,53 @@ import java.util.Arrays;
  * Disk file implementation of ISourceFile
  */
 public class DiskFile implements ISourceFile {
-  FileInputStream mFile;
-  FileChannel mChannel;
+  private FileInputStream fileInputStream;
+  private FileChannel channel;
 
-  ByteBuffer mBuffer;
-  String mFilename;
+  private ByteBuffer buffer;
+  private final String filename;
 
-  long mSize;
-  int lineNo;
+  private long size;
+  private int lineNo;
 
   public DiskFile(String filename) {
-    mFilename = filename;
+    this.filename = filename;
     if (new File(filename).exists()) {
       try {
 
-        mFile = new FileInputStream(mFilename);
-        mChannel = mFile.getChannel();
-        mSize = mChannel.size();
+        fileInputStream = new FileInputStream(this.filename);
+        channel = fileInputStream.getChannel();
+        size = channel.size();
 
-        mBuffer = ByteBuffer.allocate((int) mSize);
-        mChannel.read(mBuffer);
+        buffer = ByteBuffer.allocate((int) size);
+        channel.read(buffer);
 
-        mChannel.close();
-        mFile.close();
+        channel.close();
+        fileInputStream.close();
 
-        mBuffer.rewind();
+        buffer.rewind();
 
       } catch (Exception e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
-        mChannel = null;
-        mFile = null;
+        channel = null;
+        fileInputStream = null;
       }
     } else {
-      mChannel = null;
-      mFile = null;
+      channel = null;
+      fileInputStream = null;
     }
     lineNo = 0;
   }
 
-  public boolean Fail() {
-    return (mFile == null);
+  public boolean hasError() {
+    return (fileInputStream == null);
   }
 
   // ISourceFile methods
   @Override
   public String getFilename() {
-    return mFilename;
+    return filename;
   }
 
   @Override
@@ -76,7 +76,7 @@ public class DiskFile implements ISourceFile {
 
       // Parse mBuffer until it reaches a new line character
       do {
-        b = mBuffer.get();
+        b = buffer.get();
         crFlag = (b == '\r'); // Set return character flag
 
         if (b != '\n' && !crFlag) {
@@ -85,15 +85,15 @@ public class DiskFile implements ISourceFile {
 
         // Check if return character is followed by a new line character
         if (crFlag) {
-          b = mBuffer.get();
+          b = buffer.get();
           // If return character was not followed by a new line char or null char
           // then reset the buffer's position to before the last byte read
           if (b != '\n' && b != 0) {
-            mBuffer.position(mBuffer.position() - 1);
+            buffer.position(buffer.position() - 1);
           }
         }
         i++;
-      } while (mBuffer.hasRemaining() && b != '\n' && b != 0 && !crFlag);
+      } while (buffer.hasRemaining() && b != '\n' && b != 0 && !crFlag);
 
       return new String(Arrays.copyOfRange(lineBuffer, 0, i));
     } else {
@@ -103,7 +103,7 @@ public class DiskFile implements ISourceFile {
 
   @Override
   public boolean isEof() {
-    return Fail() || !mBuffer.hasRemaining();
+    return hasError() || !buffer.hasRemaining();
   }
 
   @Override

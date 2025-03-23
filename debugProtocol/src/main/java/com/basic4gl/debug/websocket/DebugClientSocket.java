@@ -47,8 +47,8 @@ public class DebugClientSocket {
   public void onWebSocketText(Session sess, String message) throws IOException {
     logger.log("Client Received TEXT message: " + message);
 
-    DebugCommand command = commandFactory.FromJson(message);
-    Callback callback = callbackFactory.FromJson(message);
+    DebugCommand command = commandFactory.fromJson(message);
+    Callback callback = callbackFactory.fromJson(message);
 
     // handle terminated command
     if (command != null && Objects.equals(command.getCommand(), DisconnectCommand.COMMAND)) {
@@ -58,16 +58,16 @@ public class DebugClientSocket {
 
     if (command != null && command.isValid()) {
       logger.log("Client processing command");
-      commandListener.OnDebugCommandReceived(command);
+      commandListener.onDebugCommandReceived(command);
     } else if (callback != null) {
       logger.log("Client processing callback");
-      callbackListener.OnCallbackReceived(callback);
+      callbackListener.onCallbackReceived(callback);
     } else {
       // TODO 12/2022 migrate to separate Callback subtypes to align with DAP spec
-      DebuggerCallbackMessage debuggerCallbackMessage = DebuggerCallbackMessage.FromJson(message);
+      DebuggerCallbackMessage debuggerCallbackMessage = DebuggerCallbackMessage.fromJson(message);
       if (debuggerCallbackMessage != null) {
         logger.log("Client processing callback");
-        callbackListener.OnDebugCallbackReceived(debuggerCallbackMessage);
+        callbackListener.onDebugCallbackReceived(debuggerCallbackMessage);
       } else {
         logger.log("Client ignoring message");
       }
@@ -76,8 +76,8 @@ public class DebugClientSocket {
 
   @OnClose
   public void onWebSocketClose(CloseReason reason) {
-    callbackListener.OnDisconnected();
-    commandListener.OnDisconnected();
+    callbackListener.onDisconnected();
+    commandListener.onDisconnected();
 
     logger.log("Socket Closed: " + reason);
     closureLatch.countDown();

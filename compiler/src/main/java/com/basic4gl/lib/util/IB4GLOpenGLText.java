@@ -19,7 +19,7 @@ public interface IB4GLOpenGLText {
 
     TEXT_OVERLAID(2); // Same as TEXT_BUFFERED, except DrawText() only renders the text.
     // Must explictly clear and swap buffers as necessary.
-    private int mMode;
+    private final int mMode;
 
     TextMode(int mode) {
       mMode = mode;

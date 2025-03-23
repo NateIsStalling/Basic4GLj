@@ -27,21 +27,21 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
 
   // Listen socket
   //    DatagramSocket m_socket;
-  DatagramChannel m_channel;
-  InetSocketAddress m_addr;
-  int m_port;
-  int m_maxPacketSize;
+  private DatagramChannel m_channel;
+  private InetSocketAddress m_addr;
+  private int m_port;
+  private int m_maxPacketSize;
 
-  ByteBuffer socketBuffer;
+  private ByteBuffer socketBuffer;
 
   // Incoming connection requests
-  List<NetPendConLowUDP> m_pending = new ArrayList<>();
+  private List<NetPendConLowUDP> m_pending = new ArrayList<>();
 
   // All connections sharing m_socket
-  List<NetConLowUDP> m_connections = new ArrayList<>();
+  private List<NetConLowUDP> m_connections = new ArrayList<>();
 
   // Thread handling
-  Thread m_socketServiceThread;
+  private Thread m_socketServiceThread;
   private final Object connectionLock = new Object();
 
   /**
@@ -103,8 +103,8 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
     Iterator<NetPendConLowUDP> it = m_pending.iterator();
     while (it.hasNext()) {
       NetPendConLowUDP i = it.next();
-      if ((i).addr.getPort() == addr.getPort()
-          && (i).addr.getHostString().equals(addr.getHostString())) {
+      if ((i).getAddress().getPort() == addr.getPort()
+          && (i).getAddress().getHostString().equals(addr.getHostString())) {
         return true;
       }
     }
@@ -316,7 +316,7 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
     String result;
     synchronized (connectionLock) {
       Assert.assertTrue(isConnectionPending());
-      result = m_pending.get(0).requestString;
+      result = m_pending.get(0).getRequestString();
     }
     return result;
   }
@@ -334,12 +334,12 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
       m_pending.remove(0);
 
       // Create a connection, and add to list
-      connection = new NetConLowUDP(m_channel, pendConnection.addr, m_maxPacketSize, this);
+      connection = new NetConLowUDP(m_channel, pendConnection.getAddress(), m_maxPacketSize, this);
       m_connections.add(connection);
 
       // Queue first packet
       connection.queuePendingPacket(
-          new NetSimplePacket(pendConnection.packet.data, pendConnection.packet.size));
+          new NetSimplePacket(pendConnection.getPacket().data, pendConnection.getPacket().size));
     }
 
     // Finished with connection request

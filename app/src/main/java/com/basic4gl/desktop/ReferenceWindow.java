@@ -16,10 +16,10 @@ public class ReferenceWindow {
   private static final String TITLE = "Function Reference";
   private JFrame mFrame;
 
-  JTextPane mFunctionPane;
-  JTextPane mConstantPane;
-  JScrollPane mFunctionScrollPane;
-  JScrollPane mConstantScrollPane;
+  private JTextPane mFunctionPane;
+  private JTextPane mConstantPane;
+  private JScrollPane mFunctionScrollPane;
+  private JScrollPane mConstantScrollPane;
 
   public ReferenceWindow(Frame parent) {
     mFrame = new JFrame(TITLE);
@@ -80,7 +80,7 @@ public class ReferenceWindow {
     }
   }
 
-  String TypeString(ValType type) {
+  String getTypeString(ValType type) {
     String result = "";
     for (int i = 0; i < type.getVirtualPointerLevel(); i++) {
       result += "&";
@@ -107,7 +107,7 @@ public class ReferenceWindow {
     return result;
   }
 
-  String TypeString(int type) {
+  String getTypeString(int type) {
     String result = "";
 
     switch (type) {
@@ -145,7 +145,7 @@ public class ReferenceWindow {
         String line = "";
         if (spec.isFunction()) // Return type
         {
-          line = line + TypeString(spec.getReturnType()) + " ";
+          line = line + getTypeString(spec.getReturnType()) + " ";
         }
         line += name; // Function name
         if (spec.hasBrackets()) // Opening bracket
@@ -161,7 +161,7 @@ public class ReferenceWindow {
             if (needComma) {
               line += ", ";
             }
-            line += TypeString(type);
+            line += getTypeString(type);
             needComma = true;
           }
         }
@@ -183,9 +183,9 @@ public class ReferenceWindow {
       String line =
           key
               + " = ("
-              + TypeString(comp.getConstants().get(key).getType())
+              + getTypeString(comp.getConstants().get(key).getType())
               + ") "
-              + comp.getConstants().get(key).ToString();
+              + comp.getConstants().get(key).toString();
       text += line + '\n';
     }
     mConstantPane.setText(text);

@@ -2,7 +2,7 @@ package com.basic4gl.debug.protocol.callbacks;
 
 public class ProtocolMessage {
 
-  int id;
+  private int id;
 
   protected String type;
 

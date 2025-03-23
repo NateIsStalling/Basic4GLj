@@ -11,7 +11,7 @@ import java.util.Set;
  */
 public abstract class IntHandleResources extends Resources {
 
-  protected Set<Integer> handles = new HashSet<Integer>();
+  protected Set<Integer> handles = new HashSet<>();
 
   protected abstract void deleteHandle(int handle);
 

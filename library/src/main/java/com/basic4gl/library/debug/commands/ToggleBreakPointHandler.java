@@ -14,7 +14,7 @@ public class ToggleBreakPointHandler {
   }
 
   public boolean toggleBreakPoint(String filename, int line) {
-    boolean isBreakpoint = mDebugger.ToggleUserBreakPt(filename, line);
+    boolean isBreakpoint = mDebugger.toggleUserBreakPoint(filename, line);
     // If program is not running, breakpoints will be patched as soon as it
     // resumes or restarts.
     // If it IS running, however we must explicitly force a re-patch to ensure

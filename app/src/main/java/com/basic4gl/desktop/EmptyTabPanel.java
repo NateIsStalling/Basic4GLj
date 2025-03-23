@@ -69,7 +69,7 @@ public class EmptyTabPanel extends JPanel {
     newButton.setHorizontalAlignment(SwingConstants.LEFT);
     newButton.addActionListener(
         (x) -> {
-          listener.OnNewClick();
+          listener.onNewClick();
         });
 
     wrapper.add(newButton);
@@ -89,7 +89,7 @@ public class EmptyTabPanel extends JPanel {
     openButton.setHorizontalAlignment(SwingConstants.LEFT);
     openButton.addActionListener(
         (x) -> {
-          listener.OnOpenClick();
+          listener.onOpenClick();
         });
 
     wrapper.add(openButton);
@@ -129,7 +129,7 @@ public class EmptyTabPanel extends JPanel {
       recentItemButton.setText(file.getName());
       recentItemButton.addActionListener(
           (x) -> {
-            listener.OnOpenClick(file);
+            listener.onOpenClick(file);
           });
 
       recentItem.add(recentItemButton);
@@ -159,10 +159,10 @@ public class EmptyTabPanel extends JPanel {
   }
 
   public static interface IEmptyTabPanelListener {
-    void OnNewClick();
+    void onNewClick();
 
-    void OnOpenClick();
+    void onOpenClick();
 
-    void OnOpenClick(File file);
+    void onOpenClick(File file);
   }
 }

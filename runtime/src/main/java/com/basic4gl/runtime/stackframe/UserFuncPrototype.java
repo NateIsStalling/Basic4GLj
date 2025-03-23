@@ -27,8 +27,8 @@ public class UserFuncPrototype implements Streamable {
   public ValType returnValType;
 
   public UserFuncPrototype() {
-    localVarTypes = new Vector<ValType>();
-    localVarIndex = new HashMap<String, Integer>();
+    localVarTypes = new Vector<>();
+    localVarIndex = new HashMap<>();
     reset();
   }
 

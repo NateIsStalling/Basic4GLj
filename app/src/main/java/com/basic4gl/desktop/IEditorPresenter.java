@@ -4,14 +4,14 @@ import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import java.io.File;
 import java.util.List;
 
-public interface IEditorPresenter {
+interface IEditorPresenter {
   void onModeChanged(ApMode mode, String statusMsg);
 
-  void RefreshDebugDisplays(ApMode mode);
+  void refreshDebugDisplays(ApMode mode);
 
-  void PlaceCursorAtProcessed(final int line, int col);
+  void placeCursorAtProcessed(final int line, int col);
 
-  void RefreshActions(ApMode mode);
+  void refreshActions(ApMode mode);
 
   void onPause();
 

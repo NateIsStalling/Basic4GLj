@@ -173,7 +173,7 @@ public abstract class GLBasicSprite {
   public float[] color = new float[4];
   public int srcBlend, dstBlend;
 
-  protected Vector<Integer> textures = new Vector<Integer>();
+  protected Vector<Integer> textures = new Vector<>();
 
   // Class type identification
   public abstract GLSpriteEngine.GLSpriteType getGLSpriteType();

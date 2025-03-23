@@ -44,22 +44,22 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
   // State
   // TODO this may need to be moved into appSettings
-  TomBasicCompiler.LanguageSyntax languageSyntax = TomBasicCompiler.LanguageSyntax.LS_BASIC4GL;
+  private TomBasicCompiler.LanguageSyntax languageSyntax = TomBasicCompiler.LanguageSyntax.LS_BASIC4GL;
 
   // Libraries
-  public List<Library> libraries = new ArrayList<Library>();
-  private List<Integer> builders =
-      new ArrayList<Integer>(); // Indexes of libraries that can be launch targets
+  private final List<Library> libraries = new ArrayList<>();
+  private final List<Integer> builders =
+          new ArrayList<>(); // Indexes of libraries that can be launch targets
   public int currentBuilder = -1; // Index of mTarget in mTargets
 
   // Editor state
-  ApMode mode = ApMode.AP_STOPPED;
+  private ApMode mode = ApMode.AP_STOPPED;
 
-  List<String> watchList = new ArrayList<String>();
+  private List<String> watchList = new ArrayList<>();
 
-  FileManager fileManager;
+  private FileManager fileManager;
 
-  String libraryPath;
+  private String libraryPath;
 
   public BasicEditor(
       String libraryPath,
@@ -78,7 +78,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     this.compiler = compiler;
   }
 
-  public void InitLibraries() {
+  public void initLibraries() {
     // TODO Implement standard libraries
     // Plug in constant and function libraries
     /*
@@ -122,8 +122,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         ((IFileAccess) lib).init(fileOpener);
       }
       if (lib instanceof FunctionLibrary) {
-        compiler.AddConstants(((FunctionLibrary) lib).constants());
-        compiler.AddFunctions(lib, ((FunctionLibrary) lib).specs());
+        compiler.addConstants(((FunctionLibrary) lib).constants());
+        compiler.addFunctions(lib, ((FunctionLibrary) lib).specs());
       }
       if (lib instanceof Builder) {
         builders.add(i);
@@ -252,7 +252,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
   @Override
   public int isBreakpt(String filename, int line) {
-    return debugger.IsUserBreakPt(filename, line) ? 1 : 0;
+    return debugger.isUserBreakPoint(filename, line) ? 1 : 0;
   }
 
   @Override
@@ -276,7 +276,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
   @Override
   public void insertDeleteLines(String filename, int fileLineNo, int delta) {
-    debugger.InsertDeleteLines(filename, fileLineNo, delta);
+    debugger.insertDeleteLines(filename, fileLineNo, delta);
   }
 
   @Override
@@ -284,7 +284,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
   @Override
   public void refreshUI() {
-    presenter.RefreshActions(mode);
+    presenter.refreshActions(mode);
   }
 
   // Compilation and execution routines
@@ -295,7 +295,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     return preprocessor.preprocess(
         new EditorSourceFile(
             fileManager.getEditor(mainFiledIndex), fileManager.getFilename(mainFiledIndex)),
-        compiler.Parser());
+        compiler.getParser());
   }
 
   @Override
@@ -313,7 +313,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
     // Compile
     if (!loadProgramIntoCompiler()) {
-      presenter.PlaceCursorAtProcessed(compiler.Parser().getSourceCode().size() - 1, 0);
+      presenter.placeCursorAtProcessed(compiler.getParser().getSourceCode().size() - 1, 0);
       presenter.setCompilerStatus(preprocessor.getError());
       return false;
     }
@@ -325,7 +325,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     // VMView().RefreshVMView();
 
     if (compiler.hasError()) {
-      presenter.PlaceCursorAtProcessed(
+      presenter.placeCursorAtProcessed(
           (int) compiler.getTokenLine(), (int) compiler.getTokenColumn());
       presenter.setCompilerStatus(compiler.getError());
 
@@ -405,7 +405,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
   }
 
   public void reset() {
-    compiler.VM().pause();
+    compiler.getVM().pause();
     if (vmWorker != null) {
       // TODO 1/2023 need to restart the existing app to free up the JVM port used for debugging
       vmWorker.terminateApplication();
@@ -511,6 +511,18 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     refreshWatchList();
   }
 
+  public ApMode getMode() {
+    return mode;
+  }
+
+  public void setMode(ApMode mode) {
+    this.mode = mode;
+  }
+
+  public List<Library> getLibraries() {
+    return libraries;
+  }
+
   // TODO Reimplement callbacks
   public class DebugCallback implements DebuggerTaskCallback {
 
@@ -544,7 +556,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
       InstructionPosition instructionPosition = message.getInstructionPosition();
       if (instructionPosition != null) {
-        presenter.PlaceCursorAtProcessed(
+        presenter.placeCursorAtProcessed(
             instructionPosition.getSourceLine(), instructionPosition.getSourceColumn());
       }
 
@@ -573,8 +585,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
           break;
       }
 
-      presenter.RefreshActions(mode);
-      presenter.RefreshDebugDisplays(mode);
+      presenter.refreshActions(mode);
+      presenter.refreshDebugDisplays(mode);
 
       // TODO 12/2022 move ClearTempBreakPts
       // mVM.ClearTempBreakPts();
@@ -617,8 +629,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
           break;
       }
 
-      presenter.RefreshActions(mode);
-      presenter.RefreshDebugDisplays(mode);
+      presenter.refreshActions(mode);
+      presenter.refreshDebugDisplays(mode);
 
       // TODO 12/2022 move ClearTempBreakPts
       // mVM.ClearTempBreakPts();

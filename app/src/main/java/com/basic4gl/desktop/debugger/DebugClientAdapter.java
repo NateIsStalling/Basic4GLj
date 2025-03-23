@@ -59,12 +59,10 @@ public class DebugClientAdapter implements IDebugCommandListener {
     }
   }
 
-  @Override
-  public void OnDebugCommandReceived(DebugCommand command) {}
+  public void onDebugCommandReceived(DebugCommand command) {}
 
-  @Override
-  public void OnDisconnected() {
-    callbackListener.OnDisconnected();
+  public void onDisconnected() {
+    callbackListener.onDisconnected();
   }
 
   public int message(DebugCommand command) {

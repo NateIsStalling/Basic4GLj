@@ -10,7 +10,7 @@ public class CallbackFactory {
     this.gson = gson;
   }
 
-  public Callback FromJson(String commandJson) {
+  public Callback fromJson(String commandJson) {
     Callback callback = null;
 
     try {

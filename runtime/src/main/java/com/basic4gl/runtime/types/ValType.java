@@ -66,7 +66,7 @@ public class ValType implements Streamable {
    * @param type
    * @return
    */
-  static String BasicValTypeName(int type) {
+  static String getBasicValTypeName(int type) {
     if (type < 0) {
       switch (type) {
         case VTP_INT:

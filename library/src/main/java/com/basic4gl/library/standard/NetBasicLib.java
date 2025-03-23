@@ -26,33 +26,33 @@ import java.net.DatagramPacket;
 import java.util.*;
 
 public class NetBasicLib implements FunctionLibrary {
-  private final int MAX_CHANNELS = 32;
+  private static final int MAX_CHANNELS = 32;
 
-  static int serverCount = 0;
+  private static int serverCount = 0;
 
-  static byte[] buffer = new byte[65536];
+  private static final byte[] buffer = new byte[65536];
 
-  static String _lastError;
+  private static String lastError;
 
   static void setLastError(String error) {
     System.out.println(error);
-    _lastError = error;
+    lastError = error;
   }
 
   static void clearError() {
-    _lastError = "";
+    lastError = "";
   }
 
-  FileStreamResourceStore fileStreams;
-  NetServerStore servers;
+  private FileStreamResourceStore fileStreams;
+  private NetServerStore servers;
 
-  NetConnectionStore connections;
+  private NetConnectionStore connections;
 
-  NetConReqValidator netConReqValidator;
+  private NetConReqValidator netConReqValidator;
 
   @Override
   public Map<String, Constant> constants() {
-    Map<String, Constant> c = new HashMap<String, Constant>();
+    Map<String, Constant> c = new HashMap<>();
     c.put("CHANNEL_UNORDERED", new Constant(0));
     c.put("CHANNEL_ORDERED", new Constant(1));
     c.put("CHANNEL_MAX", new Constant(MAX_CHANNELS - 1));
@@ -406,9 +406,9 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     // Register resources
-    comp.VM().addResources(fileStreams);
-    comp.VM().addResources(servers);
-    comp.VM().addResources(connections);
+    comp.getVM().addResources(fileStreams);
+    comp.getVM().addResources(servers);
+    comp.getVM().addResources(connections);
 
     // Hook into validator
     netConReqValidator = new NetConReqValidatorL1();

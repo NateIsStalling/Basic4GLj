@@ -14,7 +14,7 @@ import org.lwjgl.opengl.GL11;
  */
 public class LoadImage {
   // File opener
-  static FileOpener mFiles = null;
+  private static FileOpener mFiles = null;
 
   static void init(FileOpener files) {
     assertTrue(files != null);
@@ -284,7 +284,7 @@ public class LoadImage {
     }
 
     // Extract images
-    Vector<Image> images = new Vector<Image>();
+    Vector<Image> images = new Vector<>();
     int bpp = image.getBPP();
     if (bpp > 0) {
       for (int y = image.getHeight() - frameHeight; y >= 0; y -= frameHeight) {

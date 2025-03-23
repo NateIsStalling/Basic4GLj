@@ -27,16 +27,16 @@ public class UserFuncStackFrame {
   public Vector<Integer> localVarDataOffsets;
 
   public UserFuncStackFrame() {
-    localVarDataOffsets = new Vector<Integer>();
+    localVarDataOffsets = new Vector<>();
   }
 
-  public void InitForGosub(int returnAddr) {
+  public void initForGosub(int returnAddress) {
     userFuncIndex = -1;
-    this.returnAddr = returnAddr;
+    this.returnAddr = returnAddress;
     localVarDataOffsets.clear();
   }
 
-  public void InitForUserFunction(UserFuncPrototype prototype, int userFuncIndex) {
+  public void initForUserFunction(UserFuncPrototype prototype, int userFuncIndex) {
     this.userFuncIndex = userFuncIndex;
     returnAddr = -1;
 

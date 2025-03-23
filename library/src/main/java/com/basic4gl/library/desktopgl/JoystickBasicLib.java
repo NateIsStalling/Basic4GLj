@@ -23,16 +23,16 @@ import org.lwjgl.BufferUtils;
  * Created by Nate on 11/19/2015.
  */
 public class JoystickBasicLib implements FunctionLibrary, IGLRenderer {
-  static final int DEFAULT_JOY_THRESHHOLD = 0x4000;
-  static final int JOY_BUTTONS = 4;
+  private static final int DEFAULT_JOY_THRESHHOLD = 0x4000;
+  private static final int JOY_BUTTONS = 4;
   // Global variables
-  static GLWindow appWindow;
+  private static GLWindow appWindow;
 
-  static FloatBuffer joyInfo; // Current joystick state
-  static ByteBuffer buttons;
+  private static FloatBuffer joyInfo; // Current joystick state
+  private static ByteBuffer buttons;
 
-  static int xPosIndex = 0;
-  static int yPosIndex = 1;
+  private static int xPosIndex = 0;
+  private static int yPosIndex = 1;
 
   /*
   1. Left and right on left sticker.
@@ -41,10 +41,10 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer {
   4. Up and down on right sticker.
   5. Left and right on right sticker.
   */
-  static boolean autoPoll =
+  private static boolean autoPoll =
       true; // When true, joystick is automatically Polled before any function call
-  static boolean initialised = false;
-  static int threshHold = DEFAULT_JOY_THRESHHOLD; // Number of units the joystick must be moved
+  private static boolean initialised = false;
+  private static int threshHold = DEFAULT_JOY_THRESHHOLD; // Number of units the joystick must be moved
 
   public void setWindow(GLWindow window) {
     appWindow = window;
@@ -69,7 +69,7 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer {
   @Override
   public void init(TomBasicCompiler comp, IServiceCollection services) {
     // Init function
-    comp.VM()
+    comp.getVM()
         .addInitFunction(
             new InitLibFunction()); // This function will be called before Basic4GL runs any program
   }

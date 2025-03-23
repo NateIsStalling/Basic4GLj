@@ -18,10 +18,10 @@ import java.util.Map;
 public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
 
   // Globals
-  static FileOpener files = null;
-  static long performanceFreq;
+  private static FileOpener files = null;
+  private static long performanceFreq;
 
-  WindowsWavStore wavFiles;
+  private WindowsWavStore wavFiles;
 
   @Override
   public String name() {
@@ -42,7 +42,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
   public void init(TomBasicCompiler comp, IServiceCollection services) {
     wavFiles = new WindowsWavStore();
     // Register resources
-    comp.VM().addResources(wavFiles);
+    comp.getVM().addResources(wavFiles);
   }
 
   @Override

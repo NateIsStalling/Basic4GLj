@@ -11,7 +11,7 @@ public class DiskFileServer implements ISourceFileServer {
   @Override
   public ISourceFile openSourceFile(String filename) {
     DiskFile file = new DiskFile(filename);
-    if (file.Fail()) {
+    if (file.hasError()) {
       file = null;
       return null;
     }

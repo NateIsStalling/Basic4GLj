@@ -12,7 +12,7 @@ import javax.swing.border.EmptyBorder;
  * Created by Nate on 1/12/2015.
  */
 public class AboutDialog {
-  JDialog mDialog;
+  private JDialog mDialog;
 
   public AboutDialog(Frame parent) {
     Locale locale = new Locale("en", "US");

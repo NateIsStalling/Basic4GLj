@@ -43,7 +43,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
   private java.util.List<Integer> builders; // Indexes of libraries that can be launch targets
   private int currentBuilder; // Index value of target in mTargets
 
-  private final java.util.List<JComponent> settingComponents = new ArrayList<JComponent>();
+  private final java.util.List<JComponent> settingComponents = new ArrayList<>();
   private Configuration currentConfig;
 
   public ExportDialog(
@@ -54,7 +54,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
     this.compiler = compiler;
     this.preprocessor = preprocessor;
-    vm = this.compiler.VM();
+    vm = this.compiler.getVM();
     fileEditors = editors;
 
     dialog = new JDialog(parent);
@@ -246,8 +246,8 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
     int i = 0;
     for (Library lib : this.libraries) {
       if (lib instanceof FunctionLibrary) {
-        compiler.AddConstants(((FunctionLibrary) lib).constants());
-        compiler.AddFunctions(lib, ((FunctionLibrary) lib).specs());
+        compiler.addConstants(((FunctionLibrary) lib).constants());
+        compiler.addFunctions(lib, ((FunctionLibrary) lib).specs());
       }
       if (lib instanceof Builder) {
         builders.add(i);
@@ -324,7 +324,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
   }
 
   @Override
-  public void OnConfigurationChanged(Configuration configuration) {
+  public void onConfigurationChanged(Configuration configuration) {
     Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
 
     builder.setConfiguration(configuration);
@@ -394,7 +394,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
       }
 
       // Clear source code from parser
-      compiler.Parser().getSourceCode().clear();
+      compiler.getParser().getSourceCode().clear();
 
       // Load code into preprocessor; may be unnecessary
       if (!loadProgramIntoCompiler()) {
@@ -425,7 +425,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
       return preprocessor.preprocess(
           new EditorSourceFile(
               fileEditors.get(0).getEditorPane(), fileEditors.get(0).getFilePath()),
-          compiler.Parser());
+          compiler.getParser());
     }
 
     private void loadParser(RSyntaxTextArea editorPane) // Load editor text into parser
@@ -440,7 +440,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
           line = editorPane.getText(start, stop - start);
 
-          compiler.Parser().getSourceCode().add(line);
+          compiler.getParser().getSourceCode().add(line);
         }
       } catch (BadLocationException e) {
         // TODO Auto-generated catch block

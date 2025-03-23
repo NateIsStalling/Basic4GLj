@@ -17,7 +17,7 @@ public class ValTypeSet implements Streamable {
   private Vector<ValType> valTypes;
 
   public ValTypeSet() {
-    valTypes = new Vector<ValType>();
+    valTypes = new Vector<>();
   }
 
   public void clear() {

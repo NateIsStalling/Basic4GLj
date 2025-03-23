@@ -32,7 +32,7 @@ public class EvaluateWatchHandler {
   }
 
   public void handle(String watch, String context, int requestId, Session session) {
-    String result = EvaluateWatch(watch, context);
+    String result = evaluateWatch(watch, context);
 
     EvaluateWatchCallback callback = new EvaluateWatchCallback();
     callback.setRequestId(requestId);
@@ -52,7 +52,7 @@ public class EvaluateWatchHandler {
     }
   }
 
-  public String EvaluateWatch(String watch, String context) {
+  public String evaluateWatch(String watch, String context) {
     // TODO sync editor state; consider checking this in the editor
     //        if (mHost.isApplicationRunning()) {
     //            return DEFAULT_VALUE;
@@ -80,7 +80,7 @@ public class EvaluateWatchHandler {
       int codeStart = mVM.getInstructionCount();
       ValType valType = new ValType();
       // TODO Possibly means to pass parameters by ref
-      if (!mComp.TempCompileExpression(watch, valType, inFunction, currentFunction)) {
+      if (!mComp.tempCompileExpression(watch, valType, inFunction, currentFunction)) {
         return mComp.getError();
       }
 
@@ -114,9 +114,9 @@ public class EvaluateWatchHandler {
       }
 
       // Convert expression result to string
-      return DisplayVariable(valType);
+      return displayVariable(valType);
     } finally {
-      mVM.SetState(state);
+      mVM.setState(state);
       // TODO sync editor UI state
       // mHost.restoreHostState();
       // TODO Add VM viewer
@@ -144,14 +144,14 @@ public class EvaluateWatchHandler {
     !mVM.hasError() && !mVM.isDone() && !mVM.isPaused() && !mVMDriver.isClosing());
   }
 
-  private String DisplayVariable(ValType valType) {
+  private String displayVariable(ValType valType) {
     if (valType.matchesType(BasicValType.VTP_STRING)) { // String is special case.
       return "\"" + mVM.getRegString() + "\""; // Stored in string register.
     } else {
       String temp;
       try {
-        Mutable<Integer> maxChars = new Mutable<Integer>(TomVM.DATA_TO_STRING_MAX_CHARS);
-        temp = mVM.ValToString(mVM.getReg(), valType, maxChars);
+        Mutable<Integer> maxChars = new Mutable<>(TomVM.DATA_TO_STRING_MAX_CHARS);
+        temp = mVM.valToString(mVM.getReg(), valType, maxChars);
       } catch (Exception ex) {
 
         // Floating point errors can be raised when converting floats to string

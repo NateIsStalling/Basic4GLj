@@ -127,13 +127,13 @@ public class MainWindow
   private final DefaultListModel<String> gosubListModel = new DefaultListModel<>();
 
   // Editors
-  final IConfigurableAppSettings appSettings = new EditorAppSettings();
-  BasicEditor basicEditor;
-  FileManager fileManager;
+  private final IConfigurableAppSettings appSettings = new EditorAppSettings();
+  private BasicEditor basicEditor;
+  private FileManager fileManager;
 
-  IncludeLinkGenerator linkGenerator = new IncludeLinkGenerator(this);
+  private IncludeLinkGenerator linkGenerator = new IncludeLinkGenerator(this);
 
-  SearchContext searchContext;
+  private SearchContext searchContext;
 
   // Debugging
   private boolean isDebugMode = false;
@@ -143,9 +143,9 @@ public class MainWindow
   private boolean isDelayScreenSwitchEnabled = false;
 
   // TODO create config file
-  static String debugServerBinPath;
-  static String outputBinPath;
-  static String applicationStoragePath;
+  private static String debugServerBinPath;
+  private static String outputBinPath;
+  private static String applicationStoragePath;
 
   public static void main(String[] args) {
     // Location to store logs
@@ -485,7 +485,7 @@ public class MainWindow
             if (evt.getClickCount() == 2) {
               // Double-click detected
               int index = list.locationToIndex(evt.getPoint());
-              EditWatch();
+              editWatch();
             }
           }
         });
@@ -498,22 +498,22 @@ public class MainWindow
           @Override
           public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-              EditWatch();
+              editWatch();
             }
           }
 
           @Override
           public void keyReleased(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-              DeleteWatch();
+              deleteWatch();
             } else if (e.getKeyCode() == KeyEvent.VK_INSERT) {
               watchListBox.setSelectedIndex(basicEditor.getWatchListSize());
-              EditWatch();
+              editWatch();
             }
           }
         });
 
-    watchListBox.addListSelectionListener(e -> UpdateWatchHint());
+    watchListBox.addListSelectionListener(e -> updateWatchHint());
 
     JPanel gosubFrame = new JPanel();
     gosubFrame.setLayout(new BorderLayout());
@@ -612,7 +612,7 @@ public class MainWindow
         (BiConsumer<JTabbedPane, Integer>)
             (tabPane, tabIndex) -> {
               if (tabIndex != -1) {
-                if (FileCheckSaveChanges(tabIndex)) {
+                if (fileCheckSaveChanges(tabIndex)) {
                   // Clear file's breakpoints
                   FileEditor editor = fileManager.getFileEditors().get(tabIndex);
                   List<Integer> breakpoints = editor.getBreakpoints();
@@ -699,11 +699,11 @@ public class MainWindow
     fileManager.setCurrentDirectory(fileManager.getFileDirectory());
 
     // TODO this should be done as a callback
-    RefreshActions(basicEditor.mode);
-    RefreshDebugDisplays(basicEditor.mode);
+    refreshActions(basicEditor.getMode());
+    refreshDebugDisplays(basicEditor.getMode());
 
-    basicEditor.InitLibraries();
-    ResetProject();
+    basicEditor.initLibraries();
+    resetProject();
     basicEditor.loadSettings();
 
     // Warm up the debug server
@@ -725,7 +725,7 @@ public class MainWindow
     }
 
     // Clear source code from parser
-    basicEditor.compiler.Parser().getSourceCode().clear();
+    basicEditor.compiler.getParser().getSourceCode().clear();
 
     if (!basicEditor.loadProgramIntoCompiler()) {
       compilerStatusLabel.setText(basicEditor.preprocessor.getError());
@@ -734,7 +734,7 @@ public class MainWindow
     ExportDialog dialog =
         new ExportDialog(
             frame, basicEditor.compiler, basicEditor.preprocessor, fileManager.getFileEditors());
-    dialog.setLibraries(basicEditor.libraries, basicEditor.currentBuilder);
+    dialog.setLibraries(basicEditor.getLibraries(), basicEditor.currentBuilder);
     dialog.setVisible(true);
     basicEditor.currentBuilder = dialog.getCurrentBuilder();
   }
@@ -762,7 +762,7 @@ public class MainWindow
 
   private void showSettings() {
     ProjectSettingsDialog dialog = new ProjectSettingsDialog(frame, appSettings);
-    dialog.setLibraries(basicEditor.libraries, basicEditor.currentBuilder);
+    dialog.setLibraries(basicEditor.getLibraries(), basicEditor.currentBuilder);
     dialog.setVisible(true);
     basicEditor.currentBuilder = dialog.getCurrentBuilder();
   }
@@ -773,13 +773,13 @@ public class MainWindow
 
   private void tryCloseWindow() {
     // Stop program running
-    if (basicEditor.mode == ApMode.AP_RUNNING || basicEditor.mode == ApMode.AP_PAUSED) {
+    if (basicEditor.getMode() == ApMode.AP_RUNNING || basicEditor.getMode() == ApMode.AP_PAUSED) {
       basicEditor.setMode(ApMode.AP_STOPPED, null);
       return;
     }
 
     // Save file before closing
-    if (!MultifileCheckSaveChanges()) {
+    if (!multifileCheckSaveChanges()) {
       return;
     }
 
@@ -791,7 +791,7 @@ public class MainWindow
     System.exit(0);
   }
 
-  private void ResetProject() {
+  private void resetProject() {
     // Clear out the current project and setup a new basic one with a single
     // source-file.
 
@@ -845,7 +845,7 @@ public class MainWindow
   }
 
   void actionNew() {
-    if (MultifileCheckSaveChanges()) {
+    if (multifileCheckSaveChanges()) {
 
       fileManager.setRunDirectory(fileManager.getFileDirectory());
       fileManager.setCurrentDirectory(fileManager.getRunDirectory());
@@ -863,7 +863,7 @@ public class MainWindow
   }
 
   void actionOpen(File file) {
-    if (MultifileCheckSaveChanges()) {
+    if (multifileCheckSaveChanges()) {
       FileEditor editor = null;
       if (file != null) {
         fileManager.setCurrentDirectory(fileManager.getFileDirectory());
@@ -911,7 +911,7 @@ public class MainWindow
     }
   }
 
-  boolean FileCheckSaveChanges(int index) {
+  boolean fileCheckSaveChanges(int index) {
 
     // Is sub-file modified?
     FileEditor editor = fileManager.getFileEditors().get(index);
@@ -939,7 +939,7 @@ public class MainWindow
     return true;
   }
 
-  boolean MultifileCheckSaveChanges() {
+  boolean multifileCheckSaveChanges() {
     Mutable<String> description = new Mutable<>("");
     if (fileManager.isMultifileModified(description)) {
 
@@ -953,7 +953,7 @@ public class MainWindow
 
       switch (result) {
         case JOptionPane.YES_OPTION:
-          return MultifileSaveAll();
+          return multifileSaveAll();
 
         case JOptionPane.NO_OPTION:
           return true;
@@ -966,7 +966,7 @@ public class MainWindow
     return true;
   }
 
-  boolean MultifileSaveAll() {
+  boolean multifileSaveAll() {
 
     // Save all modified files
     for (int i = 0; i < fileManager.getFileEditors().size(); i++) {
@@ -1067,7 +1067,7 @@ public class MainWindow
     debugMenuItem.setSelected(isDebugMode);
     debugButton.setSelected(isDebugMode);
 
-    RefreshDebugDisplays(basicEditor.mode);
+    refreshDebugDisplays(basicEditor.getMode());
   }
 
   public void closeAll() {
@@ -1080,10 +1080,10 @@ public class MainWindow
 
     // Clear DLLs, breakpoints, bookmarks etc
     // m_dlls.Clear();
-    basicEditor.debugger.ClearUserBreakPts();
+    basicEditor.debugger.clearUserBreakPoints();
 
     // Refresh UI
-    RefreshActions(basicEditor.mode);
+    refreshActions(basicEditor.getMode());
   }
 
   public void closeTab(int index) {
@@ -1144,7 +1144,7 @@ public class MainWindow
     cursorPositionLabel.setText(0 + ":" + 0); // Reset label
 
     // Set tab as read-only if App is running or paused
-    boolean readOnly = basicEditor.mode != ApMode.AP_STOPPED;
+    boolean readOnly = basicEditor.getMode() != ApMode.AP_STOPPED;
     editor.getEditorPane().setEditable(!readOnly);
 
     // TODO set syntax highlight colors
@@ -1156,12 +1156,12 @@ public class MainWindow
   }
 
   @Override
-  public void PlaceCursorAtProcessed(final int row, int col) {
+  public void placeCursorAtProcessed(final int row, int col) {
 
     // Place cursor at position corresponding to row, col in post-processed file.
     // Find corresponding source position
-    Mutable<String> filename = new Mutable<String>("");
-    Mutable<Integer> fileRow = new Mutable<Integer>(0);
+    Mutable<String> filename = new Mutable<>("");
+    Mutable<Integer> fileRow = new Mutable<>(0);
     basicEditor.preprocessor.getLineNumberMap().getSourceFromMain(filename, fileRow, row);
 
     final String file = filename.get();
@@ -1218,13 +1218,13 @@ public class MainWindow
 
     // Place editor into paused mode
     basicEditor.setMode(ApMode.AP_PAUSED, null);
-    RefreshActions(basicEditor.mode);
+    refreshActions(basicEditor.getMode());
 
     // Place editor into debug mode
     isDebugMode = true;
     debugMenuItem.setSelected(true);
     debugButton.setSelected(true);
-    RefreshDebugDisplays(basicEditor.mode);
+    refreshDebugDisplays(basicEditor.getMode());
 
     // TODO Add VMViewer
     // VMView().SetVMIsRunning(false);
@@ -1273,8 +1273,8 @@ public class MainWindow
     }
 
     // Update UI
-    RefreshActions(basicEditor.mode);
-    RefreshDebugDisplays(basicEditor.mode);
+    refreshActions(basicEditor.getMode());
+    refreshDebugDisplays(basicEditor.getMode());
     compilerStatusLabel.setText(statusMsg);
 
     // Notify virtual machine view
@@ -1283,7 +1283,7 @@ public class MainWindow
   }
 
   @Override
-  public void RefreshActions(ApMode mode) {
+  public void refreshActions(ApMode mode) {
 
     // Enable/disable actions to reflect state
     switch (mode) {
@@ -1390,7 +1390,7 @@ public class MainWindow
   }
 
   @Override
-  public void RefreshDebugDisplays(ApMode mode) {
+  public void refreshDebugDisplays(ApMode mode) {
 
     // Show/hide debug controls
     playButton.setVisible(isDebugMode);
@@ -1467,7 +1467,7 @@ public class MainWindow
           //  would like to rely on frame.name to align with Microsoft's DAP specification
           Integer returnAddr = NumberUtil.parseIntOrNull(frame.instructionPointer);
           String gosubLabel =
-              returnAddr != null ? basicEditor.compiler.DescribeStackCall(returnAddr) : "???";
+              returnAddr != null ? basicEditor.compiler.describeStackCall(returnAddr) : "???";
           gosubListModel.addElement("gosub " + gosubLabel);
         }
       } else {
@@ -1499,7 +1499,7 @@ public class MainWindow
     watchListModel.addElement(" "); // Last line is blank, and can be clicked on to add new watch
   }
 
-  private void EditWatch() {
+  private void editWatch() {
     String newWatch, oldWatch;
 
     // Find watch
@@ -1524,10 +1524,10 @@ public class MainWindow
     basicEditor.updateWatch(newWatch, index);
 
     watchListBox.setSelectedIndex(saveIndex);
-    UpdateWatchHint();
+    updateWatchHint();
   }
 
-  void DeleteWatch() {
+  void deleteWatch() {
 
     // Find watch
     int index = watchListBox.getSelectedIndex();
@@ -1537,10 +1537,10 @@ public class MainWindow
     basicEditor.removeWatchAt(index);
 
     watchListBox.setSelectedIndex(saveIndex);
-    UpdateWatchHint();
+    updateWatchHint();
   }
 
-  private void UpdateWatchHint() {
+  private void updateWatchHint() {
     int index = watchListBox.getSelectedIndex();
     if (index > -1 && index < basicEditor.getWatchListSize()) {
       watchListBox.setToolTipText((String) watchListModel.get(index));
@@ -1590,17 +1590,17 @@ public class MainWindow
   }
 
   @Override
-  public void OnNewClick() {
+  public void onNewClick() {
     actionNew();
   }
 
   @Override
-  public void OnOpenClick() {
+  public void onOpenClick() {
     actionOpen();
   }
 
   @Override
-  public void OnOpenClick(File file) {
+  public void onOpenClick(File file) {
     actionOpen(file);
   }
 }

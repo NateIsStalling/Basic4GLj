@@ -16,7 +16,7 @@ public class ConfigurationFormPanel extends JPanel {
   }
 
   private final JPanel configPane = this;
-  private final java.util.List<JComponent> settingComponents = new ArrayList<JComponent>();
+  private final java.util.List<JComponent> settingComponents = new ArrayList<>();
 
   private Configuration currentConfig;
 
@@ -146,11 +146,11 @@ public class ConfigurationFormPanel extends JPanel {
       }
       currentConfig.setValue(i, val);
     }
-    listener.OnConfigurationChanged(currentConfig);
+    listener.onConfigurationChanged(currentConfig);
   }
 
-  public static interface IOnConfigurationChangeListener {
+  public interface IOnConfigurationChangeListener {
 
-    void OnConfigurationChanged(Configuration configuration);
+    void onConfigurationChanged(Configuration configuration);
   }
 }

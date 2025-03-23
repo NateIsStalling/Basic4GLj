@@ -31,7 +31,7 @@ public class MultiHeaderGutter extends JPanel {
   private int lineNumberingStartIndex;
   private Font lineNumberFont;
   private List<IconRowHeader> iconAreas;
-  private List<Boolean> autoHideIconArea = new ArrayList<Boolean>();
+  private List<Boolean> autoHideIconArea = new ArrayList<>();
   private boolean iconRowHeaderInheritsGutterBackground;
   private FoldIndicator foldIndicator;
   private MultiHeaderGutter.TextAreaListener listener = new MultiHeaderGutter.TextAreaListener();
@@ -279,7 +279,7 @@ public class MultiHeaderGutter extends JPanel {
 
   public void addIconRowHeader() {
     if (this.iconAreas == null) {
-      this.iconAreas = new ArrayList<IconRowHeader>();
+      this.iconAreas = new ArrayList<>();
     }
     RTextAreaEditorKit kit = (RTextAreaEditorKit) textArea.getUI().getEditorKit(textArea);
     IconRowHeader header = kit.createIconRowHeader(textArea);
@@ -291,7 +291,7 @@ public class MultiHeaderGutter extends JPanel {
 
   void addIconRowHeader(RTextArea textArea) {
     if (this.iconAreas == null) {
-      this.iconAreas = new ArrayList<IconRowHeader>();
+      this.iconAreas = new ArrayList<>();
     }
     RTextAreaEditorKit kit = (RTextAreaEditorKit) textArea.getUI().getEditorKit(textArea);
     IconRowHeader header = kit.createIconRowHeader(textArea);
@@ -412,7 +412,7 @@ public class MultiHeaderGutter extends JPanel {
         this.lineNumberList.setTextArea(textArea);
       }
       if (this.iconAreas == null) {
-        this.iconAreas = new ArrayList<IconRowHeader>();
+        this.iconAreas = new ArrayList<>();
       }
       if (this.iconAreas.size() != 0) {
         for (IconRowHeader iconArea : this.iconAreas) {

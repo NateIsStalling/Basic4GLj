@@ -40,7 +40,7 @@ public class GLSpriteEngine extends GLTextGrid {
     SPR_INVALID(0),
     SPR_SPRITE(1),
     SPR_TILEMAP(2);
-    private int type;
+    private final int type;
 
     GLSpriteType(int type) {
       this.type = type;
@@ -52,13 +52,13 @@ public class GLSpriteEngine extends GLTextGrid {
   }
 
   // Sprites
-  GLSpriteList sprites = new GLSpriteList();
+  private GLSpriteList sprites = new GLSpriteList();
 
   // Camera settings
   private float width, height, fov;
 
   // Working variables
-  GLBasicSprite cursor;
+  private GLBasicSprite cursor;
 
   void drawSprites(boolean inFront) {
 

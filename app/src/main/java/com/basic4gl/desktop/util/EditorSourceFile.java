@@ -8,9 +8,9 @@ import javax.swing.text.BadLocationException;
  * Created by Nate on 2/25/2015.
  */
 public class EditorSourceFile implements ISourceFile {
-  JTextArea sourceMemo;
-  int lineNumber;
-  String filename;
+  private final JTextArea sourceMemo;
+  private final String filename;
+  private int lineNumber;
 
   public EditorSourceFile(JTextArea textArea, String filename) {
     this.sourceMemo = textArea;

@@ -15,7 +15,7 @@ public class GLSprite extends GLBasicSprite {
 
   private float frame;
 
-  private void SetDefaults() {
+  private void setDefaults() {
     frame = 0;
     xd = 0;
     yd = 0;
@@ -72,17 +72,17 @@ public class GLSprite extends GLBasicSprite {
 
   public GLSprite() {
     super();
-    SetDefaults();
+    setDefaults();
   }
 
   public GLSprite(int tex) {
     super(tex);
-    SetDefaults();
+    setDefaults();
   }
 
   public GLSprite(Vector<Integer> tex) {
     super(tex);
-    SetDefaults();
+    setDefaults();
   }
 
   // Class type identification

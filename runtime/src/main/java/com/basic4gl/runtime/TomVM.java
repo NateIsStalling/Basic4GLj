@@ -75,11 +75,11 @@ public class TomVM extends HasErrorState implements Streamable {
   // Reg1.
 
   // Registers
-  Value mReg, // Register values (when int or float)
+  private Value mReg, // Register values (when int or float)
       mReg2;
-  String mRegString, // Register values when string
+  private String mRegString, // Register values when string
       mReg2String;
-  int mCurrentUserFrame;
+  private int mCurrentUserFrame;
   // The current active frame.
   // Note that this is often but NOT ALWAYS the top of the stack.
   // (When evaluating parameters for a impending function call, the pending
@@ -103,30 +103,29 @@ public class TomVM extends HasErrorState implements Streamable {
   // IDLL_Basic4GL_Runtime m_pluginRuntime;
 
   // Debugger
-  IVMDebugger mDebugger;
+  private IVMDebugger mDebugger;
 
   // Variables, data and data types
-  TypeLibrary mDataTypes;
-  Data mData;
-  VariableCollection mVariables;
-  Vector<String> mStringConstants; // Constant strings declared in program
-  Store<String> mStrings;
-  List<Resources> mResources;
-  Vector<UserFuncPrototype> mUserFunctionPrototypes;
-  Vector<UserFunc> mUserFunctions;
+  private TypeLibrary mDataTypes;
+  private Data mData;
+  private VariableCollection mVariables;
+  private Vector<String> mStringConstants; // Constant strings declared in program
+  private Store<String> mStrings;
+  private List<Resources> mResources;
+  private Vector<UserFuncPrototype> mUserFunctionPrototypes;
+  private Vector<UserFunc> mUserFunctions;
 
-  public Vector<Function> mInitFunctions; // Initialisation functions
+  private Vector<Function> mInitFunctions; // Initialisation functions
 
   // Program data
-  Vector<ProgramDataElement> mProgramData; // General purpose program data
+  private Vector<ProgramDataElement> mProgramData; // General purpose program data
   // (e.g declared with "DATA"
   // keyword in BASIC)
-  int mProgramDataOffset;
+  private int mProgramDataOffset;
 
   // Instructions
-  // TODO make private
-  public Vector<Instruction> mCode;
-  ValTypeSet mTypeSet;
+  private Vector<Instruction> mCode;
+  private ValTypeSet mTypeSet;
 
   /**
    * Instruction pointer
@@ -134,16 +133,16 @@ public class TomVM extends HasErrorState implements Streamable {
   private int mIp;
 
   // Debugging
-  ArrayList<PatchedBreakPt> mPatchedBreakPts; // Patched in breakpoints
-  ArrayList<TempBreakPt> mTempBreakPts; // Temporary breakpoints, generated
+  private ArrayList<PatchedBreakPt> mPatchedBreakPts; // Patched in breakpoints
+  private ArrayList<TempBreakPt> mTempBreakPts; // Temporary breakpoints, generated
   // for stepping over a line
 
-  boolean m_paused, // Set to true when program hits a breakpoint. (Or can be
+  private boolean m_paused, // Set to true when program hits a breakpoint. (Or can be
       // set by caller.)
       m_breakPtsPatched; // Set to true if breakpoints are patched and in
   // synchronisation with compiled code
 
-  boolean mStopped;
+  private boolean mStopped;
 
   // TODO Reimplement libraries
   // public TomVM(PluginDLLManager plugins, IVMDebugger debugger) {
@@ -163,29 +162,29 @@ public class TomVM extends HasErrorState implements Streamable {
 
     mReg = new Value();
     mReg2 = new Value();
-    mResources = new ArrayList<Resources>();
+    mResources = new ArrayList<>();
 
-    mStrings = new Store<String>("");
+    mStrings = new Store<>("");
     mStack = new ValueStack(mStrings);
-    mUserCallStack = new Vector<UserFuncStackFrame>();
-    mStackDestructors = new Vector<StackDestructor>();
-    mTempDestructors = new Vector<StackDestructor>();
+    mUserCallStack = new Vector<>();
+    mStackDestructors = new Vector<>();
+    mTempDestructors = new Vector<>();
 
-    mProgramData = new Vector<ProgramDataElement>();
-    mCodeBlocks = new Vector<CodeBlock>();
-    mStringConstants = new Vector<String>();
+    mProgramData = new Vector<>();
+    mCodeBlocks = new Vector<>();
+    mStringConstants = new Vector<>();
 
     mTypeSet = new ValTypeSet();
 
-    mCode = new Vector<Instruction>();
-    mFunctions = new Vector<Function>();
+    mCode = new Vector<>();
+    mFunctions = new Vector<>();
     mOperatorFunctions = new Vector<>();
-    mUserFunctions = new Vector<UserFunc>();
-    mUserFunctionPrototypes = new Vector<UserFuncPrototype>();
-    mPatchedBreakPts = new ArrayList<PatchedBreakPt>();
-    mTempBreakPts = new ArrayList<TempBreakPt>();
+    mUserFunctions = new Vector<>();
+    mUserFunctionPrototypes = new Vector<>();
+    mPatchedBreakPts = new ArrayList<>();
+    mTempBreakPts = new ArrayList<>();
 
-    mInitFunctions = new Vector<Function>();
+    mInitFunctions = new Vector<>();
     // TODO Reimplement libraries
     // m_plugins = plugins;
     // Create plugin runtime
@@ -497,7 +496,7 @@ public class TomVM extends HasErrorState implements Streamable {
           {
 
             // Copy data
-            if (CopyData(
+            if (copyData(
                 getReg().getIntVal(),
                 getReg2().getIntVal(),
                 mTypeSet.getValType(instruction.value.getIntVal()))) {
@@ -522,12 +521,12 @@ public class TomVM extends HasErrorState implements Streamable {
 
             // Pop and validate array dimensions sizes into type (if
             // applicable)
-            if (var.type.getPhysicalPointerLevel() == 0 && !PopArrayDimensions(var.type)) {
+            if (var.type.getPhysicalPointerLevel() == 0 && !popArrayDimensions(var.type)) {
               break;
             }
 
             // Validate type size
-            if (!ValidateTypeSize(var.type)) {
+            if (!validateTypeSize(var.type)) {
               break;
             }
 
@@ -563,12 +562,12 @@ public class TomVM extends HasErrorState implements Streamable {
 
             // Pop and validate array dimensions sizes into type (if
             // applicable)
-            if (type.getPhysicalPointerLevel() == 0 && !PopArrayDimensions(type)) {
+            if (type.getPhysicalPointerLevel() == 0 && !popArrayDimensions(type)) {
               break;
             }
 
             // Validate type size
-            if (!ValidateTypeSizeForStack(type)) {
+            if (!validateTypeSizeForStack(type)) {
               break;
             }
 
@@ -877,7 +876,7 @@ public class TomVM extends HasErrorState implements Streamable {
         case OpCode.OP_FREE_TEMP:
 
           // Free temporary data
-          UnwindTemp();
+          unwindTemp();
           mData.freeTempData();
           mIp++; // Proceed to next instruction
           continue step;
@@ -887,12 +886,12 @@ public class TomVM extends HasErrorState implements Streamable {
 
             // Extract type, and array dimensions
             ValType type = new ValType(mTypeSet.getValType(instruction.value.getIntVal()));
-            if (!PopArrayDimensions(type)) {
+            if (!popArrayDimensions(type)) {
               break;
             }
 
             // Validate type size
-            if (!ValidateTypeSize(type)) {
+            if (!validateTypeSize(type)) {
               break;
             }
 
@@ -920,7 +919,7 @@ public class TomVM extends HasErrorState implements Streamable {
             // Push stack frame, with return address
             mUserCallStack.add(new UserFuncStackFrame());
             UserFuncStackFrame stackFrame = mUserCallStack.lastElement();
-            stackFrame.InitForGosub(mIp + 1);
+            stackFrame.initForGosub(mIp + 1);
 
             // Jump to subroutine
             mIp = instruction.value.getIntVal();
@@ -979,7 +978,7 @@ public class TomVM extends HasErrorState implements Streamable {
             int funcIndex = instruction.value.getIntVal();
             mUserCallStack.add(new UserFuncStackFrame());
             UserFuncStackFrame stackFrame = mUserCallStack.lastElement();
-            stackFrame.InitForUserFunction(
+            stackFrame.initForUserFunction(
                 mUserFunctionPrototypes.get(mUserFunctions.get(funcIndex).mPrototypeIndex),
                 funcIndex);
 
@@ -1029,7 +1028,7 @@ public class TomVM extends HasErrorState implements Streamable {
             // Create and initialize stack frame
             mUserCallStack.add(new UserFuncStackFrame());
             UserFuncStackFrame stackFrame = mUserCallStack.lastElement();
-            stackFrame.InitForUserFunction(
+            stackFrame.initForUserFunction(
                 mUserFunctionPrototypes.get(mUserFunctions.get(funcIndex).mPrototypeIndex),
                 funcIndex);
 
@@ -1070,9 +1069,9 @@ public class TomVM extends HasErrorState implements Streamable {
             // Restore previous stack frame data
             boolean doFreeTempData = instruction.value.getIntVal() == 1;
             if (doFreeTempData) {
-              UnwindTemp();
+              unwindTemp();
             }
-            UnwindStack(stackFrame.prevStackTop);
+            unwindStack(stackFrame.prevStackTop);
             mData.restoreState(
                 stackFrame.prevStackTop, stackFrame.prevTempDataLock, doFreeTempData);
 
@@ -1118,7 +1117,7 @@ public class TomVM extends HasErrorState implements Streamable {
               // Push stack frame, with return address
               mUserCallStack.add(new UserFuncStackFrame());
               UserFuncStackFrame stackFrame = mUserCallStack.lastElement();
-              stackFrame.InitForGosub(mIp + 1);
+              stackFrame.initForGosub(mIp + 1);
 
               // Jump to subroutine
               mIp = codeBlock.programOffset;
@@ -1135,7 +1134,7 @@ public class TomVM extends HasErrorState implements Streamable {
         case OpCode.OP_DATA_READ:
 
           // Read program data into register
-          if (ReadProgramData(instruction.basicVarType)) {
+          if (readProgramData(instruction.basicVarType)) {
             mIp++; // Proceed to next instruction
             continue step;
           } else {
@@ -1195,7 +1194,7 @@ public class TomVM extends HasErrorState implements Streamable {
             // Copy data pointed to by mReg into next stack frame
             // parameter.
             // Instruction value points to the parameter data type.
-            if (CopyToParam(
+            if (copyToParam(
                 getReg().getIntVal(), mTypeSet.getValType(instruction.value.getIntVal()))) {
               mIp++; // Proceed to next instruction
               continue step;
@@ -1206,7 +1205,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         case OpCode.OP_MOVE_TEMP:
           {
-            if (MoveToTemp(
+            if (moveToTemp(
                 getReg().getIntVal(), mTypeSet.getValType(instruction.value.getIntVal()))) {
               mIp++; // Proceed to next instruction
               continue step;
@@ -1217,7 +1216,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         case OpCode.OP_CHECK_PTR:
           {
-            if (CheckPointer(getReg2().getIntVal(), getReg().getIntVal())) {
+            if (checkPointer(getReg2().getIntVal(), getReg().getIntVal())) {
               mIp++; // Proceed to next instruction
               continue step;
             } else {
@@ -1228,7 +1227,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         case OpCode.OP_CHECK_PTRS:
           {
-            if (CheckPointers(
+            if (checkPointers(
                 getReg().getIntVal(),
                 mTypeSet.getValType(instruction.value.getIntVal()),
                 getReg2().getIntVal())) {
@@ -1248,12 +1247,12 @@ public class TomVM extends HasErrorState implements Streamable {
             assertTrue(ptr >= 0);
             if (ptr == 0) {
               // Do nothing
-            } else if (ptr < mData.TempData()) {
+            } else if (ptr < mData.getTempData()) {
 
               // Pointer into temp data found
               assertTrue(mTempDestructors.isEmpty() || mTempDestructors.lastElement().addr < ptr);
               mTempDestructors.add(new StackDestructor(ptr, instruction.value.getIntVal()));
-            } else if (ptr >= mData.StackTop() && ptr < mData.Permanent()) {
+            } else if (ptr >= mData.getStackTop() && ptr < mData.getPermanent()) {
 
               // Pointer into stack data found
               assertTrue(mStackDestructors.isEmpty() || mStackDestructors.lastElement().addr > ptr);
@@ -1305,14 +1304,14 @@ public class TomVM extends HasErrorState implements Streamable {
   }
 
   // Constant strings
-  public int StoreStringConstant(String string) {
+  public int storeStringConstant(String string) {
     int index = mStringConstants.size();
     mStringConstants.add(string);
     return index;
   }
 
   // Internal methods
-  void BlockCopy(int sourceIndex, int destIndex, int size) {
+  void blockCopy(int sourceIndex, int destIndex, int size) {
 
     // Block copy data
     assertTrue(mData.isIndexValid(sourceIndex));
@@ -1324,7 +1323,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
   }
 
-  void CopyStructure(int sourceIndex, int destIndex, ValType type) {
+  void copyStructure(int sourceIndex, int destIndex, ValType type) {
     assertTrue(mDataTypes.isTypeValid(type));
     assertTrue(type.getVirtualPointerLevel() == 0);
     assertTrue(type.arrayLevel == 0);
@@ -1336,11 +1335,11 @@ public class TomVM extends HasErrorState implements Streamable {
     // Copy fields in structure
     for (int i = 0; i < s.fieldCount; i++) {
       StructureField f = mDataTypes.getFields().get(s.firstFieldIndex + i);
-      CopyField(sourceIndex + f.dataOffset, destIndex + f.dataOffset, f.type);
+      copyField(sourceIndex + f.dataOffset, destIndex + f.dataOffset, f.type);
     }
   }
 
-  void CopyArray(int sourceIndex, int destIndex, ValType type) {
+  void copyArray(int sourceIndex, int destIndex, ValType type) {
     assertTrue(mDataTypes.isTypeValid(type));
     assertTrue(type.getVirtualPointerLevel() == 0);
     assertTrue(type.arrayLevel > 0);
@@ -1361,14 +1360,14 @@ public class TomVM extends HasErrorState implements Streamable {
     // Copy elements
     for (int i = 0; i < mData.data().get(sourceIndex).getIntVal(); i++) {
       if (elementType.arrayLevel > 0) {
-        CopyArray(sourceIndex + 2 + i * elementSize, destIndex + 2 + i * elementSize, elementType);
+        copyArray(sourceIndex + 2 + i * elementSize, destIndex + 2 + i * elementSize, elementType);
       } else {
-        CopyField(sourceIndex + 2 + i * elementSize, destIndex + 2 + i * elementSize, elementType);
+        copyField(sourceIndex + 2 + i * elementSize, destIndex + 2 + i * elementSize, elementType);
       }
     }
   }
 
-  void CopyField(int sourceIndex, int destIndex, ValType type) {
+  void copyField(int sourceIndex, int destIndex, ValType type) {
 
     assertTrue(mDataTypes.isTypeValid(type));
 
@@ -1396,18 +1395,18 @@ public class TomVM extends HasErrorState implements Streamable {
 
     // If contains no strings, can just block copy
     else if (!mDataTypes.containsString(type)) {
-      BlockCopy(sourceIndex, destIndex, mDataTypes.getDataSize(type));
+      blockCopy(sourceIndex, destIndex, mDataTypes.getDataSize(type));
     }
 
     // Otherwise copy array or structure
     else if (type.arrayLevel > 0) {
-      CopyArray(sourceIndex, destIndex, type);
+      copyArray(sourceIndex, destIndex, type);
     } else {
-      CopyStructure(sourceIndex, destIndex, type);
+      copyStructure(sourceIndex, destIndex, type);
     }
   }
 
-  boolean CopyData(int sourceIndex, int destIndex, ValType type) {
+  boolean copyData(int sourceIndex, int destIndex, ValType type) {
     assertTrue(mDataTypes.isTypeValid(type));
     assertTrue(type.getVirtualPointerLevel() == 0);
 
@@ -1460,15 +1459,15 @@ public class TomVM extends HasErrorState implements Streamable {
 
     // If data type doesn't contain strings, can do a straight block copy
     if (!mDataTypes.containsString(type)) {
-      BlockCopy(sourceIndex, destIndex, size);
+      blockCopy(sourceIndex, destIndex, size);
     } else {
-      CopyField(sourceIndex, destIndex, type);
+      copyField(sourceIndex, destIndex, type);
     }
 
     return true;
   }
 
-  boolean CheckPointers(int index, ValType type, int destIndex) {
+  boolean checkPointers(int index, ValType type, int destIndex) {
 
     // Check that pointers in data at "index" of type "type" can be stored
     // at
@@ -1484,7 +1483,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
     // Type is a pointer?
     if (type.pointerLevel > 0) {
-      return CheckPointer(destIndex, mData.data().get(index).getIntVal());
+      return checkPointer(destIndex, mData.data().get(index).getIntVal());
     }
 
     // Type is not a pointer, but contains one or more pointers.
@@ -1504,7 +1503,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
       // Check each element
       for (int i = 0; i < elements; i++) {
-        if (!CheckPointers(arrayStart + i * elementSize, elementType, destIndex)) {
+        if (!checkPointers(arrayStart + i * elementSize, elementType, destIndex)) {
           return false;
         }
       }
@@ -1521,7 +1520,7 @@ public class TomVM extends HasErrorState implements Streamable {
       // Check each field in structure
       for (int i = 0; i < s.fieldCount; i++) {
         StructureField f = mDataTypes.getFields().get(s.firstFieldIndex + i);
-        if (!CheckPointers(index + f.dataOffset, f.type, destIndex)) {
+        if (!checkPointers(index + f.dataOffset, f.type, destIndex)) {
           return false;
         }
       }
@@ -1530,7 +1529,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
   }
 
-  boolean CheckPointer(int dest, int ptr) {
+  boolean checkPointer(int dest, int ptr) {
 
     // Check that pointer "ptr" can be stored at "dest" without a pointer
     // scope
@@ -1553,12 +1552,12 @@ public class TomVM extends HasErrorState implements Streamable {
     }
 
     // Check whether pointer points to temporary stack data
-    if (ptr < mData.Permanent()) {
+    if (ptr < mData.getPermanent()) {
 
       // Such pointers can only be stored in variables in the current
       // stack frame.
       if (mUserCallStack.isEmpty()
-          || !(dest >= mData.StackTop() && dest < mUserCallStack.lastElement().prevStackTop)) {
+          || !(dest >= mData.getStackTop() && dest < mUserCallStack.lastElement().prevStackTop)) {
         return false;
       }
     }
@@ -1566,7 +1565,7 @@ public class TomVM extends HasErrorState implements Streamable {
     return true;
   }
 
-  boolean PopArrayDimensions(ValType type) {
+  boolean popArrayDimensions(ValType type) {
     assertTrue(mDataTypes.isTypeValid(type));
     assertTrue(type.getVirtualPointerLevel() == 0);
 
@@ -1586,13 +1585,13 @@ public class TomVM extends HasErrorState implements Streamable {
     return true;
   }
 
-  boolean ValidateTypeSize(ValType type) {
+  boolean validateTypeSize(ValType type) {
 
     // Enforce variable size limitations.
     // This prevents rogue programs from trying to allocate unrealistic
     // amounts
     // of data.
-    if (mDataTypes.isDataSizeBiggerThan(type, mData.MaxDataSize())) {
+    if (mDataTypes.isDataSizeBiggerThan(type, mData.getMaxDataSize())) {
       setError(ERR_VARIABLE_TOO_BIG);
       return false;
     }
@@ -1605,12 +1604,12 @@ public class TomVM extends HasErrorState implements Streamable {
     return true;
   }
 
-  boolean ValidateTypeSizeForStack(ValType type) {
+  boolean validateTypeSizeForStack(ValType type) {
     // Enforce variable size limitations.
     // This prevents rogue programs from trying to allocate unrealistic
     // amounts
     // of data.
-    if (mDataTypes.isDataSizeBiggerThan(type, mData.MaxDataSize())) {
+    if (mDataTypes.isDataSizeBiggerThan(type, mData.getMaxDataSize())) {
       setError(ERR_VARIABLE_TOO_BIG);
       return false;
     }
@@ -1623,7 +1622,7 @@ public class TomVM extends HasErrorState implements Streamable {
     return true;
   }
 
-  void PatchInBreakPt(int offset) {
+  void patchInBreakPoint(int offset) {
 
     // Only patch if offset is valid and there is no breakpoint there
     // already.
@@ -1634,8 +1633,8 @@ public class TomVM extends HasErrorState implements Streamable {
 
       // Record previous op-code
       PatchedBreakPt bp = new PatchedBreakPt();
-      bp.offset = offset;
-      bp.replacedOpCode = mCode.get(offset).opCode;
+      bp.setOffset(offset);
+      bp.setReplacedOpCode(mCode.get(offset).opCode);
       mPatchedBreakPts.add(bp);
 
       // Patch in breakpoint
@@ -1647,15 +1646,15 @@ public class TomVM extends HasErrorState implements Streamable {
 
     // Patch out breakpoints and restore program to its no breakpoint state.
     for (PatchedBreakPt pt : mPatchedBreakPts) {
-      if (pt.offset < mCode.size()) {
-        mCode.get(pt.offset).opCode = pt.replacedOpCode;
+      if (pt.getOffset() < mCode.size()) {
+        mCode.get(pt.getOffset()).opCode = pt.getReplacedOpCode();
       }
     }
     mPatchedBreakPts.clear();
     m_breakPtsPatched = false;
   }
 
-  void InternalPatchIn() {
+  void internalPatchIn() {
 
     // Patch breakpoint instructions into the virtual machine code program.
     // This consists of swapping the virtual machine op-codes with
@@ -1680,25 +1679,25 @@ public class TomVM extends HasErrorState implements Streamable {
 
       // Patch in breakpt
       if (offset < mCode.size()) {
-        PatchInBreakPt(offset);
+        patchInBreakPoint(offset);
       }
     }
 
     // Patch in temp breakpts
     for (TempBreakPt pt : mTempBreakPts) {
-      PatchInBreakPt(pt.offset);
+      patchInBreakPoint(pt.getOffset());
     }
 
     m_breakPtsPatched = true;
   }
 
-  TempBreakPt MakeTempBreakPt(int offset) {
+  TempBreakPt makeTempBreakPoint(int offset) {
     TempBreakPt breakPt = new TempBreakPt();
-    breakPt.offset = offset;
+    breakPt.setOffset(offset);
     return breakPt;
   }
 
-  int CalcBreakPtOffset(int line) {
+  int calcBreakPointOffset(int line) {
     int offset = 0;
     while (offset < mCode.size() && mCode.get(offset).sourceLine < line) {
       offset++;
@@ -1712,7 +1711,7 @@ public class TomVM extends HasErrorState implements Streamable {
     // TODO Value is meant to be unsigned; confirm this doesn't cause issues
   }
 
-  public void AddStepBreakPts(boolean stepInto) {
+  public void addStepBreakPoints(boolean stepInto) {
     // Add temporary breakpoints to catch execution after stepping over the
     // current line
     if (mIp >= mCode.size()) {
@@ -1737,7 +1736,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
 
     // Create breakpoint on next line
-    mTempBreakPts.add(MakeTempBreakPt(endOffset));
+    mTempBreakPts.add(makeTempBreakPoint(endOffset));
 
     // Scan for jumps, and place breakpoints at destination addresses
     for (int i = startOffset; i < endOffset; i++) {
@@ -1777,20 +1776,23 @@ public class TomVM extends HasErrorState implements Streamable {
           && (dest < startOffset
               || dest >= endOffset)) // Destination outside line we are stepping over?
       {
-        mTempBreakPts.add(MakeTempBreakPt(dest)); // Add breakpoint
+        mTempBreakPts.add(makeTempBreakPoint(dest)); // Add breakpoint
       }
     }
   }
 
-  public boolean AddStepOutBreakPt() // Add breakpoint to step out of gosub
-      {
+  /**
+   * Add breakpoint to step out of gosub
+   * @return
+   */
+  public boolean addStepOutBreakPoint() {
 
     // Call stack must contain at least 1 return
     if (!mUserCallStack.isEmpty()) {
       int returnAddr = mUserCallStack.lastElement().returnAddr;
       if (returnAddr < mCode.size()) { // Validate it
         // Place breakpoint
-        mTempBreakPts.add(MakeTempBreakPt(returnAddr));
+        mTempBreakPts.add(makeTempBreakPoint(returnAddr));
         return true;
       }
     }
@@ -1801,89 +1803,89 @@ public class TomVM extends HasErrorState implements Streamable {
     VMState s = new VMState();
 
     // Instruction pointer
-    s.ip = mIp;
+    s.setIp(mIp);
 
     // Registers
-    s.reg = mReg;
-    s.reg2 = mReg2;
-    s.regString = mRegString;
-    s.reg2String = mReg2String;
+    s.setReg(mReg);
+    s.setReg2(mReg2);
+    s.setRegString(mRegString);
+    s.setReg2String(mReg2String);
 
     // Stacks
-    s.stackTop = mStack.size();
-    s.userFuncStackTop = mUserCallStack.size();
-    s.currentUserFrame = mCurrentUserFrame;
+    s.setStackTop(mStack.size());
+    s.setUserFuncStackTop(mUserCallStack.size());
+    s.setCurrentUserFrame(mCurrentUserFrame);
 
     // Top of program
-    s.codeSize = getInstructionCount();
-    s.codeBlockCount = mCodeBlocks.size();
+    s.setCodeSize(getInstructionCount());
+    s.setCodeBlockCount(mCodeBlocks.size());
 
     // Var data
     Mutable<Integer> tempTop = new Mutable<>(0), tempLock = new Mutable<>(0);
     mData.saveState(tempTop, tempLock);
-    s.stackDataTop = tempTop.get();
-    s.tempDataLock = tempLock.get();
+    s.setStackDataTop(tempTop.get());
+    s.setTempDataLock(tempLock.get());
 
     // Error state
-    s.error = hasError();
-    if (s.error) {
-      s.errorString = getError();
+    s.setError(hasError());
+    if (s.isError()) {
+      s.setErrorString(getError());
     } else {
-      s.errorString = "";
+      s.setErrorString("");
     }
 
     // Other state
-    s.paused = m_paused;
+    s.setPaused(m_paused);
 
     return s;
   }
 
-  public void SetState(VMState state) {
+  public void setState(VMState state) {
 
     // Instruction pointer
-    mIp = state.ip;
+    mIp = state.getIp();
 
     // Registers
-    mReg = state.reg;
-    mReg2 = state.reg2;
-    mRegString = state.regString;
-    mReg2String = state.reg2String;
+    mReg = state.getReg();
+    mReg2 = state.getReg2();
+    mRegString = state.getRegString();
+    mReg2String = state.getReg2String();
 
     // Stacks
-    if (state.stackTop < mStack.size()) {
-      mStack.resize(state.stackTop);
+    if (state.getStackTop() < mStack.size()) {
+      mStack.resize(state.getStackTop());
     }
-    if (state.userFuncStackTop < mUserCallStack.size()) {
-      mUserCallStack.setSize(state.userFuncStackTop);
+    if (state.getUserFuncStackTop() < mUserCallStack.size()) {
+      mUserCallStack.setSize(state.getUserFuncStackTop());
     }
-    mCurrentUserFrame = state.currentUserFrame;
+    mCurrentUserFrame = state.getCurrentUserFrame();
 
     // Top of program
-    if (state.codeSize < mCode.size()) {
-      mCode.setSize(state.codeSize);
+    if (state.getCodeSize() < mCode.size()) {
+      mCode.setSize(state.getCodeSize());
     }
-    if (state.codeBlockCount < mCodeBlocks.size()) {
-      mCodeBlocks.setSize(state.codeBlockCount);
+    if (state.getCodeBlockCount() < mCodeBlocks.size()) {
+      mCodeBlocks.setSize(state.getCodeBlockCount());
     }
 
     // Var data
-    UnwindTemp();
-    UnwindStack(state.stackDataTop);
-    mData.restoreState(state.stackDataTop, state.tempDataLock, true);
+    unwindTemp();
+    unwindStack(state.getStackDataTop());
+    mData.restoreState(state.getStackDataTop(), state.getTempDataLock(), true);
 
     // Error state
-    if (state.error) {
-      setError(state.errorString);
+    if (state.isError()) {
+      setError(state.getErrorString());
     } else {
       clearError();
     }
 
     // Other state
-    m_paused = state.paused;
+    m_paused = state.isPaused();
   }
 
   // Displaying data
-  public String BasicValToString(Value val, int type, boolean constant) {
+  public String basicValToString(Value val, int type, boolean constant) {
     switch (type) {
       case BasicValType.VTP_INT:
         return String.valueOf(val.getIntVal());
@@ -1908,7 +1910,7 @@ public class TomVM extends HasErrorState implements Streamable {
   }
 
   // TODO Move to utility class
-  static String TrimToLength(String str, Mutable<Integer> length) {
+  static String trimToLength(String str, Mutable<Integer> length) {
     if (str.length() > length.get()) {
       length.set(0);
       return str.substring(0, length.get());
@@ -1917,7 +1919,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
   }
 
-  void Deref(Value val, ValType type) {
+  void deref(Value val, ValType type) {
     type.pointerLevel--;
     if (type.pointerLevel == 0 && !type.isBasicType()) {
 
@@ -1937,7 +1939,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
   }
 
-  public String ValToString(Value val, ValType type, Mutable<Integer> maxChars) {
+  public String valToString(Value val, ValType type, Mutable<Integer> maxChars) {
     assertTrue(mDataTypes.isTypeValid(type));
     assertTrue(type.getPhysicalPointerLevel() > 0 || type.isBasicType());
 
@@ -1947,7 +1949,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
     // Basic types
     if (type.isBasicType()) {
-      return TrimToLength(BasicValToString(val, type.basicType, false), maxChars);
+      return trimToLength(basicValToString(val, type.basicType, false), maxChars);
     }
 
     // Pointer types
@@ -1955,10 +1957,10 @@ public class TomVM extends HasErrorState implements Streamable {
 
       // Follow pointer down
       if (val.getIntVal() == 0) {
-        return TrimToLength("[UNSET POINTER]", maxChars);
+        return trimToLength("[UNSET POINTER]", maxChars);
       }
-      Deref(val, type);
-      return TrimToLength("&", maxChars) + ValToString(val, type, maxChars);
+      deref(val, type);
+      return trimToLength("&", maxChars) + valToString(val, type, maxChars);
     }
 
     // Type is not basic, or a pointer. Must be a value by reference. Either
@@ -1967,7 +1969,7 @@ public class TomVM extends HasErrorState implements Streamable {
     assertTrue(type.isByRef);
     int dataIndex = val.getIntVal(); // Points to data
     if (dataIndex == 0) {
-      return TrimToLength("[UNSET]", maxChars);
+      return trimToLength("[UNSET]", maxChars);
     }
     String result = "";
 
@@ -1982,7 +1984,7 @@ public class TomVM extends HasErrorState implements Streamable {
       int arrayStart = dataIndex + 2;
 
       // Enumerate elements
-      result = TrimToLength("{", maxChars);
+      result = trimToLength("{", maxChars);
       for (int i = 0; i < elements && maxChars.get() > 0; i++) {
         Value element = new Value(arrayStart + i * elementSize); // Address
         // of
@@ -1993,53 +1995,53 @@ public class TomVM extends HasErrorState implements Streamable {
         elementType.isByRef = false;
 
         // Deref to reach data
-        Deref(element, elementType);
+        deref(element, elementType);
 
         // Describe element
-        result += ValToString(element, elementType, maxChars);
+        result += valToString(element, elementType, maxChars);
         if (i < elements - 1) {
-          result += TrimToLength(", ", maxChars);
+          result += trimToLength(", ", maxChars);
         }
       }
-      result += TrimToLength("}", maxChars);
+      result += trimToLength("}", maxChars);
       return result;
     }
 
     // Structures
     if (type.basicType >= 0) {
-      result = TrimToLength("{", maxChars);
+      result = trimToLength("{", maxChars);
       Structure structure = mDataTypes.getStructures().get(type.basicType);
       for (int i = 0; i < structure.fieldCount && maxChars.get() > 0; i++) {
         StructureField field = mDataTypes.getFields().get(structure.firstFieldIndex + i);
         Value fieldVal = new Value(dataIndex + field.dataOffset);
         ValType fieldType = new ValType(field.type);
         fieldType.pointerLevel++;
-        Deref(fieldVal, fieldType);
+        deref(fieldVal, fieldType);
         result +=
-            TrimToLength(field.name + "=", maxChars) + ValToString(fieldVal, fieldType, maxChars);
+            trimToLength(field.name + "=", maxChars) + valToString(fieldVal, fieldType, maxChars);
         if (i < structure.fieldCount - 1) {
-          result += TrimToLength(", ", maxChars);
+          result += trimToLength(", ", maxChars);
         }
       }
-      result += TrimToLength("}", maxChars);
+      result += trimToLength("}", maxChars);
       return result;
     }
 
     return "???";
   }
 
-  public String VarToString(Variable v, int maxChars) {
-    return DataToString(v.dataIndex, v.type, maxChars);
+  public String varToString(Variable v, int maxChars) {
+    return dataToString(v.dataIndex, v.type, maxChars);
   }
 
-  public String DataToString(int dataIndex, ValType type, int maxChars) {
+  public String dataToString(int dataIndex, ValType type, int maxChars) {
     Value val = new Value(dataIndex);
     type.pointerLevel++;
-    Deref(val, type);
-    return ValToString(val, type, new Mutable<Integer>(maxChars));
+    deref(val, type);
+    return valToString(val, type, new Mutable<>(maxChars));
   }
 
-  boolean ReadProgramData(int basictype) {
+  boolean readProgramData(int basicType) {
 
     // Read program data into register.
 
@@ -2053,7 +2055,7 @@ public class TomVM extends HasErrorState implements Streamable {
     ProgramDataElement e = mProgramData.get(mProgramDataOffset++);
 
     // Convert to requested type
-    switch (basictype) {
+    switch (basicType) {
       case BasicValType.VTP_STRING:
 
         // Convert type to int.
@@ -2112,7 +2114,7 @@ public class TomVM extends HasErrorState implements Streamable {
     return false;
   }
 
-  int StoredDataSize(int sourceIndex, ValType type) {
+  int storedDataSize(int sourceIndex, ValType type) {
     assertTrue(!type.isByRef);
 
     if (type.pointerLevel == 0 && type.arrayLevel > 0) {
@@ -2126,7 +2128,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
   }
 
-  boolean CopyToParam(int sourceIndex, ValType type) {
+  boolean copyToParam(int sourceIndex, ValType type) {
 
     // Check source index is valid
     if (!mData.isIndexValid(sourceIndex) || sourceIndex == 0) {
@@ -2138,7 +2140,7 @@ public class TomVM extends HasErrorState implements Streamable {
     // Note that the "type" does not specify array dimensions (if type is an
     // array),
     // so they must be read from the source array.
-    int size = StoredDataSize(sourceIndex, type);
+    int size = storedDataSize(sourceIndex, type);
 
     // Allocate data for parameter on stack
     if (!mData.hasStackRoomFor(size)) {
@@ -2148,11 +2150,11 @@ public class TomVM extends HasErrorState implements Streamable {
     int dataIndex = mData.allocateStack(size);
 
     // Block copy the data
-    BlockCopy(sourceIndex, dataIndex, size);
+    blockCopy(sourceIndex, dataIndex, size);
 
     // Duplicate any contained strings
     if (mDataTypes.containsString(type)) {
-      DuplicateStrings(dataIndex, type);
+      duplicateStrings(dataIndex, type);
     }
 
     // Store pointer in register
@@ -2161,7 +2163,7 @@ public class TomVM extends HasErrorState implements Streamable {
     return true;
   }
 
-  void DuplicateStrings(int dataIndex, ValType type) {
+  void duplicateStrings(int dataIndex, ValType type) {
 
     // Called after data is block copied.
     // Strings are stored as pointers to string objects. After a block copy,
@@ -2207,7 +2209,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
       // Duplicate strings in each array element
       for (int i = 0; i < elements; i++) {
-        DuplicateStrings(arrayStart + i * elementSize, elementType);
+        duplicateStrings(arrayStart + i * elementSize, elementType);
       }
     }
 
@@ -2222,13 +2224,13 @@ public class TomVM extends HasErrorState implements Streamable {
       for (int i = 0; i < s.fieldCount; i++) {
         StructureField f = mDataTypes.getFields().get(s.firstFieldIndex + i);
         if (mDataTypes.containsString(f.type)) {
-          DuplicateStrings(dataIndex + f.dataOffset, f.type);
+          duplicateStrings(dataIndex + f.dataOffset, f.type);
         }
       }
     }
   }
 
-  boolean MoveToTemp(int sourceIndex, ValType type) {
+  boolean moveToTemp(int sourceIndex, ValType type) {
 
     // Free temp data
     // Note: We can do this because we know that the data isn't really
@@ -2239,16 +2241,16 @@ public class TomVM extends HasErrorState implements Streamable {
 
     // Special handling is required if data being copied is already in the
     // temp region
-    boolean sourceIsTemp = sourceIndex > 0 && sourceIndex < mData.TempData();
+    boolean sourceIsTemp = sourceIndex > 0 && sourceIndex < mData.getTempData();
 
     // Destroy temp data.
     // However, if the data being copied is in temp data, we use a
     // protected-stack-range to prevent it being destroyed.
     if (sourceIsTemp) {
-      UnwindTemp(
-          new ProtectedStackRange(sourceIndex, sourceIndex + StoredDataSize(sourceIndex, type)));
+      unwindTemp(
+          new ProtectedStackRange(sourceIndex, sourceIndex + storedDataSize(sourceIndex, type)));
     } else {
-      UnwindTemp();
+      unwindTemp();
     }
 
     // Free the data
@@ -2258,7 +2260,7 @@ public class TomVM extends HasErrorState implements Streamable {
     // Note that the "type" does not specify array dimensions (if type is an
     // array),
     // so they must be read from the source array.
-    int size = StoredDataSize(sourceIndex, type);
+    int size = storedDataSize(sourceIndex, type);
 
     // Allocate data for parameter on stack
     if (!mData.hasStackRoomFor(size)) {
@@ -2268,7 +2270,7 @@ public class TomVM extends HasErrorState implements Streamable {
     int dataIndex = mData.allocateTemp(size, false);
 
     // Block copy the data
-    BlockCopy(sourceIndex, dataIndex, size);
+    blockCopy(sourceIndex, dataIndex, size);
 
     // Extra logic required to manage strings
     if (mDataTypes.containsString(type)) {
@@ -2278,7 +2280,7 @@ public class TomVM extends HasErrorState implements Streamable {
       // than moved, and we must duplicate all the contained string
       // objects.
       if (!sourceIsTemp) {
-        DuplicateStrings(dataIndex, type);
+        duplicateStrings(dataIndex, type);
       }
     }
 
@@ -2288,16 +2290,16 @@ public class TomVM extends HasErrorState implements Streamable {
     return true;
   }
 
-  void UnwindTemp() {
-    UnwindTemp(new ProtectedStackRange());
+  void unwindTemp() {
+    unwindTemp(new ProtectedStackRange());
   }
 
-  void UnwindTemp(ProtectedStackRange protect) {
-    int newTop = mData.TempDataLock();
+  void unwindTemp(ProtectedStackRange protect) {
+    int newTop = mData.getTempDataLock();
 
     // Run destrution logic over data that is about to be deallocated.
     while (!mTempDestructors.isEmpty() && mTempDestructors.lastElement().addr >= newTop) {
-      DestroyData(mTempDestructors.lastElement(), protect);
+      destroyData(mTempDestructors.lastElement(), protect);
       mTempDestructors.remove(mTempDestructors.size() - 1);
     }
 
@@ -2306,11 +2308,11 @@ public class TomVM extends HasErrorState implements Streamable {
     // handle that instead.
   }
 
-  void UnwindStack(int newTop) {
+  void unwindStack(int newTop) {
 
     // Run destruction logic over data that is about to be deallocated.
     while (!mStackDestructors.isEmpty() && mStackDestructors.lastElement().addr < newTop) {
-      DestroyData(mStackDestructors.lastElement(), new ProtectedStackRange());
+      destroyData(mStackDestructors.lastElement(), new ProtectedStackRange());
       mStackDestructors.remove(mStackDestructors.size() - 1);
     }
 
@@ -2319,12 +2321,12 @@ public class TomVM extends HasErrorState implements Streamable {
     // handle that instead.
   }
 
-  void DestroyData(StackDestructor d, ProtectedStackRange protect) {
+  void destroyData(StackDestructor d, ProtectedStackRange protect) {
     // Apply destructor logic to data block.
-    DestroyData(d.addr, mTypeSet.getValType(d.dataTypeIndex), protect);
+    destroyData(d.addr, mTypeSet.getValType(d.dataTypeIndex), protect);
   }
 
-  void DestroyData(int index, ValType type, ProtectedStackRange protect) {
+  void destroyData(int index, ValType type, ProtectedStackRange protect) {
     assertTrue(mDataTypes.containsString(type));
     assertTrue(!type.isByRef);
 
@@ -2362,7 +2364,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
       // Recursively destroy each element
       for (int i = 0; i < count; i++) {
-        DestroyData(arrayStart + i * elementSize, elementType, protect);
+        destroyData(arrayStart + i * elementSize, elementType, protect);
       }
     } else {
 
@@ -2388,17 +2390,17 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // Destroy if contains string(s)
         if (mDataTypes.containsString(f.type)) {
-          DestroyData(index + f.dataOffset, f.type, protect);
+          destroyData(index + f.dataOffset, f.type, protect);
         }
       }
     }
   }
 
-  public int NewCodeBlock() {
+  public int newCodeBlock() {
     mCodeBlocks.add(new CodeBlock());
 
     // Set pointer to code
-    CurrentCodeBlock().programOffset = mCode.size();
+    getCurrentCodeBlock().programOffset = mCode.size();
 
     // Bind code block
     mBoundCodeBlock = mCodeBlocks.size() - 1;
@@ -2407,22 +2409,22 @@ public class TomVM extends HasErrorState implements Streamable {
     return mBoundCodeBlock;
   }
 
-  public CodeBlock CurrentCodeBlock() {
+  public CodeBlock getCurrentCodeBlock() {
     assertTrue(!mCodeBlocks.isEmpty());
     return mCodeBlocks.lastElement();
   }
 
-  public int CurrentCodeBlockIndex() {
+  public int getCurrentCodeBlockIndex() {
     assertTrue(!mCodeBlocks.isEmpty());
     return mCodeBlocks.size() - 1;
   }
 
-  public boolean IsCodeBlockValid(int index) {
+  public boolean isCodeBlockValid(int index) {
     return index >= 0 && index < mCodeBlocks.size();
   }
 
-  public int GetCodeBlockOffset(int index) {
-    assertTrue(IsCodeBlockValid(index));
+  public int getCodeBlockOffset(int index) {
+    assertTrue(isCodeBlockValid(index));
     return mCodeBlocks.get(index).programOffset;
   }
 
@@ -2729,7 +2731,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
   public void patchIn() {
     if (!m_breakPtsPatched) {
-      InternalPatchIn();
+      internalPatchIn();
     }
   }
 

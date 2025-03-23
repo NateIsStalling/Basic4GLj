@@ -86,7 +86,7 @@ public class NetConL2 extends HasErrorState
    */
   public NetConL2(NetConLow connection, NetSettingsStaticL2 settings) {
     m_settingsStatic = settings;
-    m_connection = new NetConL1(connection, settings.l1Settings);
+    m_connection = new NetConL1(connection, settings.getL1Settings());
     init();
   }
 
@@ -439,7 +439,7 @@ public class NetConL2 extends HasErrorState
     Assert.assertTrue(hasDataPending());
     long result;
     synchronized (inQueueLock) {
-      result = m_messageQueue.get(0).dataSize;
+      result = m_messageQueue.get(0).getDataSize();
     }
     return result;
   }
@@ -526,7 +526,7 @@ public class NetConL2 extends HasErrorState
     Assert.assertTrue(hasDataPending());
     int result;
     synchronized (inQueueLock) {
-      result = m_messageQueue.get(0).channel;
+      result = m_messageQueue.get(0).getChannel();
     }
     return result;
   }
@@ -542,7 +542,7 @@ public class NetConL2 extends HasErrorState
     Assert.assertTrue(hasDataPending());
     boolean result;
     synchronized (inQueueLock) {
-      result = m_messageQueue.get(0).reliable;
+      result = m_messageQueue.get(0).isReliable();
     }
     return result;
   }
@@ -558,7 +558,7 @@ public class NetConL2 extends HasErrorState
     Assert.assertTrue(hasDataPending());
     boolean result;
     synchronized (inQueueLock) {
-      result = m_messageQueue.get(0).smoothed;
+      result = m_messageQueue.get(0).isSmoothed();
     }
     return result;
   }
@@ -600,7 +600,7 @@ public class NetConL2 extends HasErrorState
           if (m_inChannels[channel] == null) {
             netLog("Create incoming channel #" + channel + (ordered ? ", ordered" : ", unordered"));
             m_inChannels[channel] =
-                new NetInChannelL2(channel, ordered, m_settingsStatic.maxBufferPackets);
+                new NetInChannelL2(channel, ordered, m_settingsStatic.getMaxBufferPackets());
           }
 
           // Read data

@@ -25,7 +25,7 @@ public class Cast {
   }
 
   // TODO Find where to use StringToInt
-  public static int StringToInt(String s) {
+  public static int toInt(String s) {
     int i;
     String s2 = "";
     String s3 = "";

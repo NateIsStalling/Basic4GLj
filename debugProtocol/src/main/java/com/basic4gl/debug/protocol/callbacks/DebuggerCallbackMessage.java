@@ -14,12 +14,12 @@ public class DebuggerCallbackMessage {
   public static final int SUCCESS = 2;
   public static final int PAUSED = 3;
 
-  public int status;
-  public String text;
+  private int status;
+  private String text;
 
-  public InstructionPosition instructionPosition;
+  private InstructionPosition instructionPosition;
 
-  public VMStatus vmStatus;
+  private VMStatus vmStatus;
 
   public DebuggerCallbackMessage() {
     this.status = STOPPED;
@@ -60,12 +60,28 @@ public class DebuggerCallbackMessage {
     return vmStatus;
   }
 
-  public static DebuggerCallbackMessage FromJson(String json) {
+  public static DebuggerCallbackMessage fromJson(String json) {
     Gson gson = new Gson();
     try {
       return gson.fromJson(json, DebuggerCallbackMessage.class);
     } catch (Exception e) {
       return null;
     }
+  }
+
+  public int getStatus() {
+    return status;
+  }
+
+  public String getText() {
+    return text;
+  }
+
+  public InstructionPosition getInstructionPosition() {
+    return instructionPosition;
+  }
+
+  public VMStatus getVmStatus() {
+    return vmStatus;
   }
 }

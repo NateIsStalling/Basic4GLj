@@ -6,7 +6,6 @@ import java.net.URL;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Set;
 
 /**
  * Created by Nate on 11/1/2015.
@@ -14,7 +13,6 @@ import java.util.Set;
 public class FileOpener extends HasErrorState {
   private String parentDirectory;
   private EmbeddedFiles embeddedFiles;
-  Set<String> tempFiles;
 
   public FileOpener(String parent) {
     parent = FileUtil.separatorsToSystem(parent);

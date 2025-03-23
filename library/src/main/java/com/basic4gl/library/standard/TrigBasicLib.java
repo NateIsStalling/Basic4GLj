@@ -30,14 +30,14 @@ public class TrigBasicLib implements FunctionLibrary {
 
   // Matrix constructors.
   // Note: These all drop their result into the global "matrix" variable (below)
-  public static float[] matrix = new float[16];
-  private static float[] v1 = new float[4],
+  public static final float[] matrix = new float[16];
+  private static final float[] v1 = new float[4],
       v2 = new float[4],
       m1 = new float[16],
       m2 = new float[16];
 
   // Indices
-  int scaleVec,
+  private int scaleVec,
       scaleVec2,
       scaleMatrix,
       scaleMatrix2,
@@ -90,21 +90,21 @@ public class TrigBasicLib implements FunctionLibrary {
     comp.addUnOperExtension(new TrigUnOperatorExtension());
     comp.addBinOperExtension(new TrigBinOperatorExtension());
 
-    scaleVec = comp.VM().addOperatorFunction(new OpScaleVec());
-    scaleVec2 = comp.VM().addOperatorFunction(new OpScaleVec2());
-    scaleMatrix = comp.VM().addOperatorFunction(new OpScaleMatrix());
-    scaleMatrix2 = comp.VM().addOperatorFunction(new OpScaleMatrix2());
-    divVec = comp.VM().addOperatorFunction(new OpDivVec());
-    divMatrix = comp.VM().addOperatorFunction(new OpDivMatrix());
-    matrixVec = comp.VM().addOperatorFunction(new OpMatrixVec());
-    matrixMatrix = comp.VM().addOperatorFunction(new OpMatrixMatrix());
-    vecVec = comp.VM().addOperatorFunction(new OpVecVec());
-    vecPlusVec = comp.VM().addOperatorFunction(new OpVecPlusVec());
-    vecMinusVec = comp.VM().addOperatorFunction(new OpVecMinusVec());
-    matrixPlusMatrix = comp.VM().addOperatorFunction(new OpMatrixPlusMatrix());
-    matrixMinusMatrix = comp.VM().addOperatorFunction(new OpMatrixMinusMatrix());
-    negVec = comp.VM().addOperatorFunction(new OpNegVec());
-    negMatrix = comp.VM().addOperatorFunction(new OpNegMatrix());
+    scaleVec = comp.getVM().addOperatorFunction(new OpScaleVec());
+    scaleVec2 = comp.getVM().addOperatorFunction(new OpScaleVec2());
+    scaleMatrix = comp.getVM().addOperatorFunction(new OpScaleMatrix());
+    scaleMatrix2 = comp.getVM().addOperatorFunction(new OpScaleMatrix2());
+    divVec = comp.getVM().addOperatorFunction(new OpDivVec());
+    divMatrix = comp.getVM().addOperatorFunction(new OpDivMatrix());
+    matrixVec = comp.getVM().addOperatorFunction(new OpMatrixVec());
+    matrixMatrix = comp.getVM().addOperatorFunction(new OpMatrixMatrix());
+    vecVec = comp.getVM().addOperatorFunction(new OpVecVec());
+    vecPlusVec = comp.getVM().addOperatorFunction(new OpVecPlusVec());
+    vecMinusVec = comp.getVM().addOperatorFunction(new OpVecMinusVec());
+    matrixPlusMatrix = comp.getVM().addOperatorFunction(new OpMatrixPlusMatrix());
+    matrixMinusMatrix = comp.getVM().addOperatorFunction(new OpMatrixMinusMatrix());
+    negVec = comp.getVM().addOperatorFunction(new OpNegVec());
+    negMatrix = comp.getVM().addOperatorFunction(new OpNegMatrix());
   }
 
   @Override
@@ -119,7 +119,7 @@ public class TrigBasicLib implements FunctionLibrary {
 
   @Override
   public Map<String, FunctionSpecification[]> specs() {
-    Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
+    Map<String, FunctionSpecification[]> s = new HashMap<>();
     s.put(
         "Vec4",
         new FunctionSpecification[] {

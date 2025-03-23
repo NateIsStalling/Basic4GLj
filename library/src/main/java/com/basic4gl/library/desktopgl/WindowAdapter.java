@@ -5,26 +5,26 @@ package com.basic4gl.library.desktopgl;
  */
 class WindowAdapter implements IB4GLOpenGLWindow {
   public int getWidth() {
-    return OpenGLBasicLib.appWindow.Width();
+    return OpenGLBasicLib.getAppWindow().getWidth();
   }
 
   public int getHeight() {
-    return OpenGLBasicLib.appWindow.Height();
+    return OpenGLBasicLib.getAppWindow().getHeight();
   }
 
   public int getBPP() {
-    return OpenGLBasicLib.appWindow.Bpp();
+    return OpenGLBasicLib.getAppWindow().getBpp();
   }
 
   public boolean isFullscreen() {
-    return OpenGLBasicLib.appWindow.FullScreen();
+    return OpenGLBasicLib.getAppWindow().isFullScreen();
   }
 
   public void swapBuffers() {
-    OpenGLBasicLib.appWindow.SwapBuffers();
+    OpenGLBasicLib.getAppWindow().swapBuffers();
   }
 
   public String getTitle() {
-    return OpenGLBasicLib.appWindow.Title();
+    return OpenGLBasicLib.getAppWindow().getTitle();
   }
 }

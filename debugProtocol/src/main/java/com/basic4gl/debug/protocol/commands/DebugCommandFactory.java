@@ -10,7 +10,7 @@ public class DebugCommandFactory {
     this.gson = gson;
   }
 
-  public DebugCommand FromJson(String commandJson) {
+  public DebugCommand fromJson(String commandJson) {
     DebugCommand command = null;
 
     try {

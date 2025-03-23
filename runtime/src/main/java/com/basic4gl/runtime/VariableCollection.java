@@ -103,7 +103,7 @@ public class VariableCollection implements Streamable {
     this.data = data;
     this.types = types;
 
-    variables = new Vector<Variable>();
+    variables = new Vector<>();
   }
 
   /**

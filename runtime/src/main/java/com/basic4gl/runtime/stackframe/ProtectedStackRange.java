@@ -6,7 +6,7 @@ package com.basic4gl.runtime.stackframe;
  * to be returned).
  */
 public class ProtectedStackRange {
-  int startAddr, endAddr;
+  private int startAddr, endAddr;
 
   public ProtectedStackRange() {
     startAddr = 0;

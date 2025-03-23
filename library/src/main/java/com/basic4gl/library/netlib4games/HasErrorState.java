@@ -7,8 +7,8 @@ import com.basic4gl.library.netlib4games.internal.Assert;
  */
 public class HasErrorState extends AbstractHasErrorState {
   // Error status
-  boolean m_error;
-  String m_errorString;
+  private boolean m_error;
+  private String m_errorString;
 
   @Override
   protected void setError(String text) {

@@ -75,7 +75,7 @@ public class NetInChannelL2 extends HasErrorState {
     NetMessageL2 message = null;
     Iterator<NetMessageL2> i = m_messages.iterator();
     int index = 0;
-    while (message == null || message.messageIndex < messageIndex) {
+    while (message == null || message.getMessageIndex() < messageIndex) {
       if (i.hasNext()) {
         message = i.next();
         index++;
@@ -86,7 +86,7 @@ public class NetInChannelL2 extends HasErrorState {
     }
 
     // If none exists, create a new one
-    if (message == null || message.messageIndex > messageIndex) {
+    if (message == null || message.getMessageIndex() > messageIndex) {
       message =
           new NetMessageL2(
               m_channel,
@@ -109,7 +109,7 @@ public class NetInChannelL2 extends HasErrorState {
       // We don't want to include spikes from dropped packets in our timing
       // calculations.
       if (resent) {
-        message.smoothed = false;
+        message.setSmoothed(false);
       }
     } else {
 
@@ -127,25 +127,25 @@ public class NetInChannelL2 extends HasErrorState {
     while (it.hasNext()) {
       NetMessageL2 i = it.next();
 
-      if ((i).smoothed && (i).isComplete()) {
+      if (i.isSmoothed() && i.isComplete()) {
 
-        if (!(i).tickCountRegistered) {
+        if (!i.isTickCountRegistered()) {
 
           // Register tick count difference
-          callback.registerTickCountDifference(tickCount - (i).tickCount);
-          (i).tickCountRegistered = true;
+          callback.registerTickCountDifference(tickCount - i.getTickCount());
+          i.setTickCountRegistered(true);
 
           // Adjust tick count on message
           if (doSmoothing) {
-            (i).tickCount += adjustment;
+            i.setTickCount(i.getTickCount() + adjustment);
           } else {
-            (i).smoothed = false;
+            i.setSmoothed(false);
           }
         }
 
         // Check if wakeup is required
-        if (doSmoothing && i.tickCount >= tickCount) {
-          long newWakeup = i.tickCount - tickCount;
+        if (doSmoothing && i.getTickCount() >= tickCount) {
+          long newWakeup = i.getTickCount() - tickCount;
           if (wakeup == INFINITE || newWakeup < wakeup) {
             wakeup = newWakeup;
           }
@@ -167,16 +167,16 @@ public class NetInChannelL2 extends HasErrorState {
       NetMessageL2 i = null;
       while (it.hasNext()) {
         i = it.next();
-        boolean complete = (i).isComplete(); // Message is complete
-        boolean isPacketDue = tickCount >= (i).tickCount;
+        boolean complete = i.isComplete(); // Message is complete
+        boolean isPacketDue = tickCount >= i.getTickCount();
 
         // TODO refactor this boolean; NetLayer2.cpp uses this condition to scan the iterator
-        boolean notFound = !complete && (!doSmoothing || !(i).smoothed || isPacketDue);
+        boolean notFound = !complete && (!doSmoothing || !i.isSmoothed() || isPacketDue);
         if (!notFound) {
 
           // If the channels is ordered, then make sure there aren't any older reliable messages
           // waiting to be promoted. If there are, then we can't promote this message yet.
-          if (!m_ordered || (i).reliableIndex == m_reliableIndex) {
+          if (!m_ordered || i.getReliableIndex() == m_reliableIndex) {
             found = true;
           }
           break;
@@ -187,39 +187,39 @@ public class NetInChannelL2 extends HasErrorState {
         NetMessageL2 msg = i;
         callback.queueMessage(msg);
         m_messages.remove(i);
-        m_packetCount -= msg.receivedCount;
+        m_packetCount -= msg.getReceivedCount();
 
         netLog(
             "Promote completed L2 message. Channel "
-                + (m_channel)
+                + m_channel
                 + ", Msg "
-                + (msg.messageIndex)
+                + msg.getMessageIndex()
                 + ", "
-                + (msg.packetCount)
+                + msg.getPacketCount()
                 + " packets, "
-                + (msg.dataSize)
+                + msg.getDataSize()
                 + " bytes");
 
         // Delete older packets (from ordered channels)
         if (m_ordered) {
 
           // Update message index and reliable index
-          m_messageIndex = msg.messageIndex;
-          if (msg.reliable) {
+          m_messageIndex = msg.getMessageIndex();
+          if (msg.isReliable()) {
             m_reliableIndex++;
           }
 
           // Remove any older messages from queue
-          while (!m_messages.isEmpty() && m_messages.get(0).messageIndex < m_messageIndex) {
+          while (!m_messages.isEmpty() && m_messages.get(0).getMessageIndex() < m_messageIndex) {
             NetMessageL2 otherMsg = m_messages.get(0);
             m_messages.remove(0);
-            m_packetCount -= otherMsg.receivedCount;
+            m_packetCount -= otherMsg.getReceivedCount();
 
             netLog(
                 "Discard incomplete ordered unreliable L2 message. Channel "
-                    + (m_channel)
+                    + m_channel
                     + ", Msg "
-                    + (msg.messageIndex));
+                    + msg.getMessageIndex());
 
             otherMsg.dispose();
           }
@@ -243,7 +243,7 @@ public class NetInChannelL2 extends HasErrorState {
       boolean reliable = true;
       while (it.hasNext() && reliable) {
         message = it.next();
-        reliable = message.reliable;
+        reliable = message.isReliable();
       }
 
       // None found
@@ -254,7 +254,7 @@ public class NetInChannelL2 extends HasErrorState {
 
       // Drop the message
       m_messages.remove(message);
-      m_packetCount -= message.receivedCount;
+      m_packetCount -= message.getReceivedCount();
       message.dispose();
     }
   }
