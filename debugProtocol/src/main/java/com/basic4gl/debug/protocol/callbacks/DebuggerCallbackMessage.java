@@ -14,32 +14,31 @@ public class DebuggerCallbackMessage {
     public static final int SUCCESS = 2;
     public static final int PAUSED = 3;
 
+    private int status;
+    private String text;
 
-    public int status;
-    public String text;
+    private InstructionPosition instructionPosition;
 
-    public InstructionPosition instructionPosition;
+    private VMStatus vmStatus;
 
-    public VMStatus vmStatus;
-
-    public DebuggerCallbackMessage(){
+    public DebuggerCallbackMessage() {
         this.status = STOPPED;
         this.text = "";
     }
 
-    public DebuggerCallbackMessage(int status, String message, VMStatus vmStatus){
+    public DebuggerCallbackMessage(int status, String message, VMStatus vmStatus) {
         this.status = status;
         this.text = message;
         this.vmStatus = VMStatus.copy(vmStatus);
     }
 
-    public void setMessage(int status, String message, VMStatus vmStatus){
+    public void setMessage(int status, String message, VMStatus vmStatus) {
         this.status = status;
         this.text = message;
         this.vmStatus = VMStatus.copy(vmStatus);
     }
 
-    public void setMessage(DebuggerCallbackMessage message){
+    public void setMessage(DebuggerCallbackMessage message) {
         this.status = message.status;
         this.text = message.text;
         this.vmStatus = VMStatus.copy(message.getVMStatus());
@@ -61,7 +60,7 @@ public class DebuggerCallbackMessage {
         return vmStatus;
     }
 
-    public static DebuggerCallbackMessage FromJson(String json) {
+    public static DebuggerCallbackMessage fromJson(String json) {
         Gson gson = new Gson();
         try {
             return gson.fromJson(json, DebuggerCallbackMessage.class);
@@ -69,5 +68,20 @@ public class DebuggerCallbackMessage {
             return null;
         }
     }
-}
 
+    public int getStatus() {
+        return status;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public InstructionPosition getInstructionPosition() {
+        return instructionPosition;
+    }
+
+    public VMStatus getVmStatus() {
+        return vmStatus;
+    }
+}

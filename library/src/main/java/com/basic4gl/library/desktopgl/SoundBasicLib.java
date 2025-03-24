@@ -3,16 +3,15 @@ package com.basic4gl.library.desktopgl;
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.library.desktopgl.soundengine.Basic4GLSoundLibrary;
 import com.basic4gl.library.desktopgl.soundengine.Sound;
-import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.library.desktopgl.soundengine.SoundLibrary;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.ResourceStore;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,12 +21,14 @@ import java.util.Map;
  */
 public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
-    static final String DEFAULT_SOUND_ENGINE_ERROR = "Sound playback is not available; the sound engine failed to initialize.";
+    private static final String DEFAULT_SOUND_ENGINE_ERROR =
+            "Sound playback is not available; the sound engine failed to initialize.";
 
-    static boolean triedToLoad = false;
-    static SoundLibrary library = null;
+    private static boolean triedToLoad = false;
+    private static SoundLibrary library = null;
 
-    static FileOpener files = null;
+    private static FileOpener files = null;
+
     @Override
     public void init(FileOpener files) {
         SoundBasicLib.files = files;
@@ -42,6 +43,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             }
         }
     }
+
     static boolean checkSoundEngine() {
         if (!triedToLoad) {
 
@@ -68,18 +70,106 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     @Override
     public Map<String, FunctionSpecification[]> specs() {
         Map<String, FunctionSpecification[]> s = new HashMap<>();
-        s.put("loadsound", new FunctionSpecification[]{ new FunctionSpecification( WrapLoadSound.class, new ParamTypeList( BasicValType.VTP_STRING), true, true, BasicValType.VTP_INT, true, false, null)});
-        s.put("deletesound", new FunctionSpecification[]{ new FunctionSpecification( WrapDeleteSound.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
-        s.put("playsound", new FunctionSpecification[]{ new FunctionSpecification( WrapPlaySound.class, new ParamTypeList (BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null),
-                new FunctionSpecification( WrapPlaySound2.class, new ParamTypeList (BasicValType.VTP_INT, BasicValType.VTP_REAL, BasicValType.VTP_INT), true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("stopsoundvoice", new FunctionSpecification[]{ new FunctionSpecification( WrapStopSoundVoice.class, new ParamTypeList (BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, false, false, null)});
-        s.put("stopsounds", new FunctionSpecification[]{ new FunctionSpecification( WrapStopSounds.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, false, false, null)});
-        s.put("playmusic", new FunctionSpecification[]{ new FunctionSpecification( WrapPlayMusic.class, new ParamTypeList (BasicValType.VTP_STRING), true, false, BasicValType.VTP_INT, true, false, null),
-                new FunctionSpecification( WrapPlayMusic2.class, new ParamTypeList (BasicValType.VTP_STRING, BasicValType.VTP_REAL, BasicValType.VTP_INT), true, false, BasicValType.VTP_INT, true, false, null)});
-        s.put("stopmusic", new FunctionSpecification[]{ new FunctionSpecification( WrapStopMusic.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, false, false, null)});
-        s.put("musicplaying", new FunctionSpecification[]{ new FunctionSpecification( WrapMusicPlaying.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)});
-        s.put("setmusicvolume", new FunctionSpecification[]{ new FunctionSpecification( WrapSetMusicVolume.class, new ParamTypeList (BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
-        s.put("sounderror", new FunctionSpecification[]{ new FunctionSpecification( WrapSoundError.class, new ParamTypeList(), true, true, BasicValType.VTP_STRING, false, false, null)});
+        s.put("loadsound", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapLoadSound.class,
+                    new ParamTypeList(BasicValType.VTP_STRING),
+                    true,
+                    true,
+                    BasicValType.VTP_INT,
+                    true,
+                    false,
+                    null)
+        });
+        s.put("deletesound", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapDeleteSound.class,
+                    new ParamTypeList(BasicValType.VTP_INT),
+                    true,
+                    false,
+                    BasicValType.VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("playsound", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapPlaySound.class,
+                    new ParamTypeList(BasicValType.VTP_INT),
+                    true,
+                    true,
+                    BasicValType.VTP_INT,
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapPlaySound2.class,
+                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_REAL, BasicValType.VTP_INT),
+                    true,
+                    true,
+                    BasicValType.VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("stopsoundvoice", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapStopSoundVoice.class,
+                    new ParamTypeList(BasicValType.VTP_INT),
+                    true,
+                    false,
+                    BasicValType.VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("stopsounds", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapStopSounds.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, false, false, null)
+        });
+        s.put("playmusic", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapPlayMusic.class,
+                    new ParamTypeList(BasicValType.VTP_STRING),
+                    true,
+                    false,
+                    BasicValType.VTP_INT,
+                    true,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapPlayMusic2.class,
+                    new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_REAL, BasicValType.VTP_INT),
+                    true,
+                    false,
+                    BasicValType.VTP_INT,
+                    true,
+                    false,
+                    null)
+        });
+        s.put("stopmusic", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapStopMusic.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, false, false, null)
+        });
+        s.put("musicplaying", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapMusicPlaying.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
+        });
+        s.put("setmusicvolume", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetMusicVolume.class,
+                    new ParamTypeList(BasicValType.VTP_REAL),
+                    true,
+                    false,
+                    BasicValType.VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("sounderror", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSoundError.class, new ParamTypeList(), true, true, BasicValType.VTP_STRING, false, false, null)
+        });
         return s;
     }
 
@@ -99,17 +189,16 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
-    }
+    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
 
     @Override
     public void init(TomBasicCompiler comp, IServiceCollection services) {
 
         // Register sound resources
-        comp.VM().addResources(sounds);
+        comp.getVM().addResources(sounds);
 
         // Register initialisation function
-        comp.VM().addInitFunction(new InitLibFunction());
+        comp.getVM().addInitFunction(new InitLibFunction());
     }
 
     @Override
@@ -132,8 +221,6 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
         return null;
     }
 
-
-
     /**
      *  Stores sound objects as returned from the sound engine.
      */
@@ -143,13 +230,15 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
                 library.deleteSound(getValueAt(index));
             }
         }
-        public SoundStore(){ super(null) ;}
+
+        public SoundStore() {
+            super(null);
+        }
     }
 
+    private final SoundStore sounds = new SoundStore();
 
-    SoundStore sounds = new SoundStore();
-
-    //region Runtime function wrappers
+    // region Runtime function wrappers
     public class WrapLoadSound implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
@@ -163,12 +252,12 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
                 } else {
                     vm.getReg().setIntVal(0);
                 }
-            }
-            else {
+            } else {
                 vm.getReg().setIntVal(0);
             }
         }
     }
+
     public class WrapDeleteSound implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
@@ -179,36 +268,39 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             }
         }
     }
+
     public class WrapPlaySound implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
                 int handle = vm.getIntParam(1);
                 if (handle > 0 && sounds.isIndexStored(handle)) {
-                    vm.getReg().setIntVal( library.playSound(sounds.getValueAt(handle), 1, false));
+                    vm.getReg().setIntVal(library.playSound(sounds.getValueAt(handle), 1, false));
                 } else {
                     vm.getReg().setIntVal(-1);
                 }
-            }
-            else {
+            } else {
                 vm.getReg().setIntVal(-1);
             }
         }
     }
+
     public class WrapPlaySound2 implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
                 int handle = vm.getIntParam(3);
                 if (handle > 0 && sounds.isIndexStored(handle)) {
-                    vm.getReg().setIntVal( library.playSound(sounds.getValueAt(handle), vm.getRealParam(2), vm.getIntParam(1) != 0));
+                    vm.getReg()
+                            .setIntVal(library.playSound(
+                                    sounds.getValueAt(handle), vm.getRealParam(2), vm.getIntParam(1) != 0));
                 } else {
                     vm.getReg().setIntVal(-1);
                 }
-            }
-            else {
+            } else {
                 vm.getReg().setIntVal(-1);
             }
         }
     }
+
     public class WrapStopSounds implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
@@ -216,6 +308,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             }
         }
     }
+
     public class WrapPlayMusic implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
@@ -224,6 +317,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             }
         }
     }
+
     public class WrapPlayMusic2 implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
@@ -232,6 +326,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             }
         }
     }
+
     public class WrapStopMusic implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
@@ -239,11 +334,13 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             }
         }
     }
+
     public class WrapMusicPlaying implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal( checkSoundEngine() && library.isMusicPlaying() ? -1 : 0);
+            vm.getReg().setIntVal(checkSoundEngine() && library.isMusicPlaying() ? -1 : 0);
         }
     }
+
     public class WrapSetMusicVolume implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
@@ -251,17 +348,19 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             }
         }
     }
+
     public class WrapSoundError implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
                 StringBuilder buffer = new StringBuilder();
                 library.getError(buffer);
-                vm.setRegString( buffer.toString());
+                vm.setRegString(buffer.toString());
             } else {
                 vm.setRegString(DEFAULT_SOUND_ENGINE_ERROR);
             }
         }
     }
+
     public class WrapStopSoundVoice implements Function {
         public void run(TomVM vm) {
             if (checkSoundEngine()) {
@@ -270,5 +369,5 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
         }
     }
 
-    //endregion
+    // endregion
 }

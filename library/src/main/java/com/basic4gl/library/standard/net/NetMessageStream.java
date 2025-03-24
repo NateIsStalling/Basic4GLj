@@ -1,12 +1,11 @@
 package com.basic4gl.library.standard.net;
 
+import static com.basic4gl.library.netlib4games.NetLayer2.NETL2_MAXCHANNELS;
+
 import com.basic4gl.lib.util.FileStream;
 import com.basic4gl.library.netlib4games.NetConL2;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-
-import static com.basic4gl.library.netlib4games.NetLayer2.NETL2_MAXCHANNELS;
 
 /**
  * A network message wrapped up as an input or output stream.
@@ -24,6 +23,7 @@ public class NetMessageStream extends FileStream {
      * have finalised the message.
      */
     public int connectionHandle;
+
     public int channel;
     public boolean reliable;
     public boolean smoothed;
@@ -65,24 +65,18 @@ public class NetMessageStream extends FileStream {
         this.smoothed = smoothed;
     }
 
-
     @Override
     public void close() {
         if (out != null && parent != null && parent.isIndexStored(connectionHandle)) {
 
             // Send pending packet
-            ByteArrayOutputStream stream = (ByteArrayOutputStream) out;                // (Net messages are always string streams)
+            ByteArrayOutputStream stream = (ByteArrayOutputStream) out; // (Net messages are always string streams)
             NetConL2 connection = parent.getValueAt(connectionHandle);
 
             String message = stream.toString(StandardCharsets.UTF_8);
 
             if (channel >= 0 && channel < NETL2_MAXCHANNELS && message != null) {
-                connection.send(
-                        stream.toByteArray(),
-                        message.length(),
-                        channel,
-                        reliable,
-                        smoothed);
+                connection.send(stream.toByteArray(), message.length(), channel, reliable, smoothed);
             }
         }
 

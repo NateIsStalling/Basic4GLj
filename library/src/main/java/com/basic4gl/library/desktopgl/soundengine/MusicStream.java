@@ -2,7 +2,6 @@ package com.basic4gl.library.desktopgl.soundengine;
 
 import com.basic4gl.library.desktopgl.soundengine.util.ThreadEvent;
 import com.basic4gl.runtime.HasErrorState;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -34,7 +33,7 @@ public class MusicStream extends HasErrorState implements Runnable {
                     // Look for command
                     MusicStreamCommand cmd = new MusicStreamCommand();
                     commandQueueLock.lock();
-                    if (commandQueue.size() > 0) {
+                    if (!commandQueue.isEmpty()) {
 
                         // Extract command
                         cmd = commandQueue.get(0);
@@ -57,13 +56,13 @@ public class MusicStream extends HasErrorState implements Runnable {
                     // Process command
                     if (foundCmd) {
                         stateLock.lock();
-                        switch (cmd.code) {
+                        switch (cmd.getCode()) {
                             case MSC_Shutdown:
                                 shuttingDown = true;
                                 break;
 
                             case MSC_OpenFile:
-                                stream.openFile(cmd.filename, cmd.gain, cmd.looping);
+                                stream.openFile(cmd.getFilename(), cmd.getGain(), cmd.isLooping());
                                 break;
 
                             case MSC_CloseFile:
@@ -71,7 +70,7 @@ public class MusicStream extends HasErrorState implements Runnable {
                                 break;
 
                             case MSC_SetGain:
-                                stream.setGain(cmd.gain);
+                                stream.setGain(cmd.getGain());
                                 break;
                         }
                         stateLock.unlock();
@@ -111,7 +110,6 @@ public class MusicStream extends HasErrorState implements Runnable {
     // Command queue
     private final List<MusicStreamCommand> commandQueue;
 
-
     // Thread synchronisation
     private final ReentrantLock commandQueueLock, stateLock;
     private final ThreadEvent wakeEvent, readyEvent;
@@ -139,7 +137,7 @@ public class MusicStream extends HasErrorState implements Runnable {
                 thread.wait();
             }
         } catch (InterruptedException consumed) {
-            //Do nothing
+            // Do nothing
         }
     }
 
@@ -159,10 +157,10 @@ public class MusicStream extends HasErrorState implements Runnable {
 
         // Build command
         MusicStreamCommand cmd = new MusicStreamCommand();
-        cmd.code = code;
-        cmd.filename = filename;
-        cmd.gain = gain;
-        cmd.looping = looping;
+        cmd.setCode(code);
+        cmd.setFilename(filename);
+        cmd.setGain(gain);
+        cmd.setLooping(looping);
 
         // Add to command queue
         commandQueueLock.lock();
@@ -186,8 +184,8 @@ public class MusicStream extends HasErrorState implements Runnable {
         openFile(filename, gain, false);
     }
 
-    public void openFile(String filename, float gain, boolean looping)    // Open file and start playing
-    {
+    public void openFile(String filename, float gain, boolean looping) // Open file and start playing
+            {
         sendCommand(MusicStreamCommandCode.MSC_OpenFile, filename, gain, looping);
     }
 
@@ -206,7 +204,6 @@ public class MusicStream extends HasErrorState implements Runnable {
         stateLock.unlock();
         return result;
     }
-
 
     // Error status
     public void updateErrorState() {

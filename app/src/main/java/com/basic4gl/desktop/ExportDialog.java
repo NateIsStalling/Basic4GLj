@@ -7,18 +7,17 @@ import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.TomVM;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.*;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.BadLocationException;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 /**
  * Created by Nate on 2/5/2015.
@@ -39,18 +38,20 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
     private final ConfigurationFormPanel configPane;
     private final JButton exportButton;
 
-    //Libraries
+    // Libraries
     private java.util.List<Library> libraries;
-    private java.util.List<Integer> builders;  //Indexes of libraries that can be launch targets
-    private int currentBuilder;                 //Index value of target in mTargets
+    private java.util.List<Integer> builders; // Indexes of libraries that can be launch targets
+    private int currentBuilder; // Index value of target in mTargets
 
-    private final java.util.List<JComponent> settingComponents = new ArrayList<JComponent>();
+    private final java.util.List<JComponent> settingComponents = new ArrayList<>();
     private Configuration currentConfig;
-    public ExportDialog(Frame parent, TomBasicCompiler compiler, Preprocessor preprocessor, Vector<FileEditor> editors) {
+
+    public ExportDialog(
+            Frame parent, TomBasicCompiler compiler, Preprocessor preprocessor, Vector<FileEditor> editors) {
 
         this.compiler = compiler;
         this.preprocessor = preprocessor;
-        vm = this.compiler.VM();
+        vm = this.compiler.getVM();
         fileEditors = editors;
 
         dialog = new JDialog(parent);
@@ -75,7 +76,6 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
         buttonPane.add(cancelButton);
 
-
         SwingUtilities.updateComponentTreeUI(tabs);
         tabs.setUI(new FlatTabbedPaneUI() {
             @Override
@@ -88,20 +88,21 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         // The following line enables to use scrolling tabs.
         tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-        //File tab
+        // File tab
         JPanel filePane = new JPanel();
         filePane.setLayout(new BoxLayout(filePane, BoxLayout.LINE_AXIS));
         tabs.addTab("File", filePane);
 
-        //Settings tab; duplicate of the build tab in ProjectSettingsDialog
+        // Settings tab; duplicate of the build tab in ProjectSettingsDialog
         JPanel targetPane = new JPanel();
         targetPane.setLayout(new BorderLayout());
         tabs.addTab("Settings", targetPane);
 
-        //Configure File tab
+        // Configure File tab
         filePane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         filePathTextField = new JTextField();
-        filePathTextField.setMaximumSize(new Dimension((int) filePathTextField.getMaximumSize().getWidth(), 28));
+        filePathTextField.setMaximumSize(
+                new Dimension((int) filePathTextField.getMaximumSize().getWidth(), 28));
         JButton fileButton = new JButton("...");
         fileButton.addActionListener(new ActionListener() {
             @Override
@@ -111,8 +112,8 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 dialog.setAcceptAllFileFilterUsed(false);
                 for (int i = 0; i < builders.size(); i++) {
                     Builder builder = (Builder) libraries.get(builders.get(i));
-                    FileNameExtensionFilter filter = new FileNameExtensionFilter(builder.getFileDescription(),
-                            builder.getFileExtension());
+                    FileNameExtensionFilter filter =
+                            new FileNameExtensionFilter(builder.getFileDescription(), builder.getFileExtension());
                     if (i == currentBuilder) {
                         currentFilter = filter;
                     }
@@ -126,18 +127,18 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
                 if (result == JFileChooser.APPROVE_OPTION) {
                     String path = dialog.getSelectedFile().getAbsolutePath();
-                    if(((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions().length > 0) {
-                        //Append extension if needed
+                    if (((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions().length > 0) {
+                        // Append extension if needed
                         String extension = ((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions()[0];
                         if (!path.endsWith("." + extension)) {
                             path += "." + extension;
                         }
                     }
 
-                    //Update file path
+                    // Update file path
                     filePathTextField.setText(path);
 
-                    //Change current target to match file extension if applicable
+                    // Change current target to match file extension if applicable
                     int index = Arrays.asList(dialog.getChoosableFileFilters()).indexOf(dialog.getFileFilter());
                     if (index != currentBuilder) {
                         builderComboBox.setSelectedIndex(index);
@@ -152,7 +153,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         filePane.add(Box.createRigidArea(new Dimension(10, 0)));
         filePane.add(fileButton);
 
-        //Configure Settings tab
+        // Configure Settings tab
         JPanel targetSelectionPane = new JPanel();
         targetPane.add(targetSelectionPane, BorderLayout.NORTH);
         targetSelectionPane.setLayout(new BoxLayout(targetSelectionPane, BoxLayout.LINE_AXIS));
@@ -177,7 +178,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         infoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         infoPanel.add(infoLabel, BorderLayout.PAGE_START);
         infoTextPane = new JTextPane();
-        //mInfoTextPane.setBackground(Color.LIGHT_GRAY);
+        // mInfoTextPane.setBackground(Color.LIGHT_GRAY);
         infoTextPane.setEditable(false);
         JScrollPane targetInfoScrollPane = new JScrollPane(infoTextPane);
         targetInfoScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -192,7 +193,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         propertiesLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         propertiesPanel.add(propertiesLabel, BorderLayout.PAGE_START);
         configPane = new ConfigurationFormPanel(this);
-        //mConfigPane.setBackground(Color.LIGHT_GRAY);
+        // mConfigPane.setBackground(Color.LIGHT_GRAY);
 
         configPane.setBorder(new EmptyBorder(4, 4, 4, 4));
         JScrollPane targetPropertiesScrollPane = new JScrollPane(configPane);
@@ -200,7 +201,6 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         propertiesPanel.add(targetPropertiesScrollPane, BorderLayout.CENTER);
         configPane.setLayout(new BoxLayout(configPane, BoxLayout.Y_AXIS));
         configPane.setAlignmentX(0f);
-
 
         builderComboBox.addActionListener(e -> {
             JComboBox cb = (JComboBox) e.getSource();
@@ -210,7 +210,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
             int builderIndex = cb.getSelectedIndex();
             selectBuilder(builderIndex);
         });
-        //JScrollPane scrollPane = new ScrollPane(textLicenses);
+        // JScrollPane scrollPane = new ScrollPane(textLicenses);
         dialog.pack();
         dialog.setSize(new Dimension(464, 346));
         dialog.setLocationRelativeTo(parent);
@@ -220,16 +220,16 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         currentBuilder = builderIndex;
         Library target = libraries.get(builders.get(currentBuilder));
 
-        //TODO Display target info
+        // TODO Display target info
         infoTextPane.setText(target.description());
         configPane.setConfiguration(new Configuration(((Builder) target).getConfiguration()));
     }
 
-    public void setVisible(boolean visible){
+    public void setVisible(boolean visible) {
         dialog.setVisible(visible);
     }
 
-    public void setLibraries(java.util.List<Library> libraries, int currentBuilder){
+    public void setLibraries(java.util.List<Library> libraries, int currentBuilder) {
         builderComboBox.removeAllItems();
         this.currentBuilder = currentBuilder;
         this.libraries = libraries;
@@ -237,8 +237,8 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         int i = 0;
         for (Library lib : this.libraries) {
             if (lib instanceof FunctionLibrary) {
-                compiler.AddConstants(((FunctionLibrary) lib).constants());
-                compiler.AddFunctions(lib, ((FunctionLibrary)lib).specs());
+                compiler.addConstants(((FunctionLibrary) lib).constants());
+                compiler.addFunctions(lib, ((FunctionLibrary) lib).specs());
             }
             if (lib instanceof Builder) {
                 builders.add(i);
@@ -249,12 +249,11 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         builderComboBox.setSelectedIndex(currentBuilder);
     }
 
-
-    public int getCurrentBuilder(){
+    public int getCurrentBuilder() {
         return currentBuilder;
     }
 
-    private void export(){
+    private void export() {
         try {
             File dest;
             int decision;
@@ -264,28 +263,37 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
             if (lib instanceof Builder) {
                 builder = (Builder) lib;
             } else {
-                JOptionPane.showMessageDialog(dialog,"Cannot build application. \n" + lib.name() + " is not a valid builder.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        dialog,
+                        "Cannot build application. \n" + lib.name() + " is not a valid builder.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             configPane.applyConfig();
 
-            if (!filePathTextField.getText().equals("")) {
+            if (!filePathTextField.getText().isEmpty()) {
                 dest = new File(filePathTextField.getText());
-                if (dest.isDirectory()){
-                    JOptionPane.showMessageDialog(dialog,"Please enter a filename.");
+                if (dest.isDirectory()) {
+                    JOptionPane.showMessageDialog(dialog, "Please enter a filename.");
                     return;
                 }
                 if (!filePathTextField.getText().endsWith("." + builder.getFileExtension())) {
                     dest = new File(filePathTextField.getText() + "." + builder.getFileExtension());
                 }
 
-                if (dest.exists()){
-                    Object[] options = {"Yes",
-                            "No"};
-                    decision = JOptionPane.showOptionDialog(dialog, "File already exists! Overwrite?",
-                            "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-                            options, options[1]);
+                if (dest.exists()) {
+                    Object[] options = {"Yes", "No"};
+                    decision = JOptionPane.showOptionDialog(
+                            dialog,
+                            "File already exists! Overwrite?",
+                            "Confirm",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            options,
+                            options[1]);
                     if (decision == 1) {
                         return;
                     }
@@ -295,7 +303,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 ExportWorker export = new ExportWorker(builder, dest, new ExportCallback());
                 export.execute();
             } else {
-                JOptionPane.showMessageDialog(dialog,"Please enter a filename.");
+                JOptionPane.showMessageDialog(dialog, "Please enter a filename.");
                 return;
             }
         } catch (Exception e1) {
@@ -306,65 +314,62 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
     }
 
     @Override
-    public void OnConfigurationChanged(Configuration configuration) {
+    public void onConfigurationChanged(Configuration configuration) {
         Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
 
         builder.setConfiguration(configuration);
     }
 
-    private class ExportWorker extends SwingWorker<Object, CallbackMessage>{
-        private Builder mBuilder;
-        private File mDest;
-        private ExportCallback mCallback;
-        private CallbackMessage mMessage;
-        public ExportWorker(Builder builder, File dest, ExportCallback callback){
-            mBuilder = builder;
-            mDest = dest;
-            mCallback = callback;
+    private class ExportWorker extends SwingWorker<Object, CallbackMessage> {
+        private final Builder builder;
+        private final File dest;
+        private final ExportCallback exportCallback;
+        private CallbackMessage callbackMessage;
+
+        public ExportWorker(Builder builder, File dest, ExportCallback callback) {
+            this.builder = builder;
+            this.dest = dest;
+            exportCallback = callback;
         }
+
         @Override
-        protected void done(){
+        protected void done() {
             int success;
-            if (mCallback != null) {
-                publish(mMessage);
+            if (exportCallback != null) {
+                publish(callbackMessage);
             }
         }
+
         @Override
         protected void process(java.util.List<CallbackMessage> chunks) {
             for (CallbackMessage message : chunks) {
-                mCallback.message(message);
+                exportCallback.message(message);
             }
         }
 
         @Override
         protected Object doInBackground() throws Exception {
-            mMessage = new CallbackMessage(CallbackMessage.WORKING, "");
+            callbackMessage = new CallbackMessage(CallbackMessage.WORKING, "");
 
             if (!compile()) {
-                mMessage.setMessage(CallbackMessage.FAILED, compiler.getError());
-                return null; //TODO Throw error
+                callbackMessage.setMessage(CallbackMessage.FAILED, compiler.getError());
+                return null; // TODO Throw error
             }
-            //Export to file
-            FileOutputStream stream = new FileOutputStream(mDest);
+            // Export to file
+            FileOutputStream stream = new FileOutputStream(dest);
 
             try {
-                boolean success = mBuilder.export(mDest.getName(), stream, mCallback);
+                boolean success = builder.export(dest.getName(), stream, exportCallback);
 
                 if (success) {
-                    mMessage.setMessage(
-                            CallbackMessage.SUCCESS,
-                            "Exported successful");
+                    callbackMessage.setMessage(CallbackMessage.SUCCESS, "Exported successful");
                 } else {
-                    mMessage.setMessage(
-                            CallbackMessage.FAILED,
-                            "Export failed");
+                    callbackMessage.setMessage(CallbackMessage.FAILED, "Export failed");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
 
-                mMessage.setMessage(
-                        CallbackMessage.FAILED,
-                        e.getMessage());
+                callbackMessage.setMessage(CallbackMessage.FAILED, e.getMessage());
             }
 
             return null;
@@ -374,20 +379,16 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         private boolean compile() {
 
             if (fileEditors.isEmpty()) {
-                mMessage.setMessage(
-                    CallbackMessage.FAILED,
-            "No files are open");
+                callbackMessage.setMessage(CallbackMessage.FAILED, "No files are open");
                 return false;
             }
 
             // Clear source code from parser
-            compiler.Parser().getSourceCode().clear();
+            compiler.getParser().getSourceCode().clear();
 
             // Load code into preprocessor; may be unnecessary
             if (!loadProgramIntoCompiler()) {
-                mMessage.setMessage(
-                        CallbackMessage.FAILED,
-                        preprocessor.getError());
+                callbackMessage.setMessage(CallbackMessage.FAILED, preprocessor.getError());
                 return false;
             }
 
@@ -397,29 +398,29 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
             // Return result
             if (compiler.hasError()) {
-                mMessage.setMessage(
-                    CallbackMessage.FAILED,
-                    compiler.getError());
+                callbackMessage.setMessage(CallbackMessage.FAILED, compiler.getError());
                 return false;
             }
 
             // Reset Virtual machine
-            //mVM.Reset ();
+            // mVM.Reset ();
 
-            mMessage.setMessage(
-                CallbackMessage.WORKING,
-                "User's code compiled");
+            callbackMessage.setMessage(CallbackMessage.WORKING, "User's code compiled");
             return true;
         }
+
         // Compilation and execution routines
-        private boolean loadProgramIntoCompiler(){
-            //TODO Get editor assigned as main file
+        private boolean loadProgramIntoCompiler() {
+            // TODO Get editor assigned as main file
             return preprocessor.preprocess(
-                    new EditorSourceFile(fileEditors.get(0).getEditorPane(), fileEditors.get(0).getFilePath()),
-                    compiler.Parser());
+                    new EditorSourceFile(
+                            fileEditors.get(0).getEditorPane(),
+                            fileEditors.get(0).getFilePath()),
+                    compiler.getParser());
         }
+
         private void loadParser(RSyntaxTextArea editorPane) // Load editor text into parser
-        {
+                {
             int start, stop; // line offsets
             String line; // line to add
             // Load editor text into parser (appended to bottom)
@@ -430,8 +431,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
                     line = editorPane.getText(start, stop - start);
 
-                    compiler.Parser().getSourceCode().add(line);
-
+                    compiler.getParser().getSourceCode().add(line);
                 }
             } catch (BadLocationException e) {
                 // TODO Auto-generated catch block
@@ -439,31 +439,33 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
             }
         }
     }
+
     public void enableComponents(Container container, boolean enable) {
         Component[] components = container.getComponents();
         for (Component component : components) {
             component.setEnabled(enable);
             if (component instanceof Container) {
-                enableComponents((Container)component, enable);
+                enableComponents((Container) component, enable);
             }
         }
     }
+
     public class ExportCallback implements TaskCallback {
 
         @Override
         public void message(CallbackMessage message) {
-            if (message.getStatus() == CallbackMessage.WORKING){
-                //TODO display build progress
+            if (message.getStatus() == CallbackMessage.WORKING) {
+                // TODO display build progress
                 System.out.println("Exporting...");
                 return;
             }
             if (message.getStatus() == CallbackMessage.SUCCESS) {
                 System.out.println("Export successful.");
-                JOptionPane.showMessageDialog(dialog, "Export successful!","Success", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Export successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 dialog.setVisible(false);
-            } else if (message.getStatus() == CallbackMessage.FAILED){
+            } else if (message.getStatus() == CallbackMessage.FAILED) {
                 System.out.println("Export failed.");
-                JOptionPane.showMessageDialog(dialog, message.getText(),"Export failed.", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, message.getText(), "Export failed.", JOptionPane.ERROR_MESSAGE);
             }
             enableComponents(tabs, true);
             exportButton.setEnabled(true);

@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 public final class FileUtil {
     private FileUtil() {}
 
-
     public static File getTempDirectory(String parentDirectory) {
         File tempDirectory = null;
 
@@ -18,7 +17,8 @@ public final class FileUtil {
             tempDirectory = tempFolderPath.toFile();
         }
 
-        // fallback to parent directory if tmpdir is not available for some reason - parent may be same as installation dir
+        // fallback to parent directory if tmpdir is not available for some reason - parent may be same
+        // as installation dir
         if ((tempDirectory == null || !tempDirectory.canWrite()) && parentDirectory != null) {
             tempDirectory = new File(parentDirectory);
         }
@@ -35,7 +35,7 @@ public final class FileUtil {
         if (res == null) {
             return null;
         }
-        if (File.separatorChar=='\\') {
+        if (File.separatorChar == '\\') {
             // From Linux/Mac to Windows
             return res.replace('/', File.separatorChar);
         } else {

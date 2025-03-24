@@ -1,14 +1,13 @@
 package com.basic4gl.library.desktopgl;
 
-import com.basic4gl.library.standard.TrigBasicLib;
-import org.lwjgl.BufferUtils;
+import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static org.lwjgl.opengl.GL11.*;
 
+import com.basic4gl.library.standard.TrigBasicLib;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Vector;
-
-import static com.basic4gl.runtime.util.Assert.assertTrue;
-import static org.lwjgl.opengl.GL11.*;
+import org.lwjgl.BufferUtils;
 
 /**
  * A 2D grid of texture tiles for use in 2D sprite drawing.
@@ -102,7 +101,7 @@ public class GLTileMap extends GLBasicSprite {
             return;
         }
 
-        ByteBuffer byteBuf = BufferUtils.createByteBuffer(color.length * 4); //4 bytes per float
+        ByteBuffer byteBuf = BufferUtils.createByteBuffer(color.length * 4); // 4 bytes per float
         FloatBuffer buffer = byteBuf.asFloatBuffer();
         buffer.put(color);
         buffer.position(0);
@@ -134,12 +133,8 @@ public class GLTileMap extends GLBasicSprite {
         }
 
         // Scale to tile size
-        glScalef(sizeX * scale,
-                sizeY * scale,
-                1);
-        TrigBasicLib.scale(1.0f / (sizeX * scale),
-                1.0f / (sizeY * scale),
-                1);
+        glScalef(sizeX * scale, sizeY * scale, 1);
+        TrigBasicLib.scale(1.0f / (sizeX * scale), 1.0f / (sizeY * scale), 1);
         TrigBasicLib.matrixTimesMatrix(TrigBasicLib.getGlobalMatrix(), m2, m1);
 
         // Centre offset
@@ -155,8 +150,9 @@ public class GLTileMap extends GLBasicSprite {
 
         // Now we can use our m1 matrix to translate from camera space into tile space
         // Find range of tiles spanned.
-        float[][] camCorner = new float[][]{{0, 0, 0, 1}, {1, 0, 0, 1}, {0, 1, 0, 1}, {1, 1, 0, 1}};
-//    vmReal camCorner[4][4] = {{.1,.1, 0, 1}, {.9,.1, 0, 1}, {.1,.9, 0, 1}, {.9,.9, 0, 1} };       // DEBUGGING!!!
+        float[][] camCorner = new float[][] {{0, 0, 0, 1}, {1, 0, 0, 1}, {0, 1, 0, 1}, {1, 1, 0, 1}};
+        //    vmReal camCorner[4][4] = {{.1,.1, 0, 1}, {.9,.1, 0, 1}, {.1,.9, 0, 1}, {.9,.9, 0, 1} };
+        //    // DEBUGGING!!!
         int maxX = -1000000, minX = 1000000, maxY = -1000000, minY = 1000000;
         for (int i = 0; i < 4; i++) {
             float[] tileSpaceCorner = new float[4];

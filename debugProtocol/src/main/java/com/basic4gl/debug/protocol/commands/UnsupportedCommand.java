@@ -1,6 +1,6 @@
 package com.basic4gl.debug.protocol.commands;
 
-public class UnsupportedCommand extends DebugCommand{
+public class UnsupportedCommand extends DebugCommand {
     public UnsupportedCommand() {
         super(null);
     }
@@ -10,5 +10,7 @@ public class UnsupportedCommand extends DebugCommand{
     }
 
     @Override
-    public boolean isValid() { return false; }
+    public boolean isValid() {
+        return false;
+    }
 }

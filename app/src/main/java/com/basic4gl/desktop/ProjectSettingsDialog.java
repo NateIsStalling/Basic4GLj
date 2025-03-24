@@ -2,13 +2,12 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.lib.util.*;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 /**
  * Created by Nate on 2/5/2015.
@@ -20,12 +19,12 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
     private final JComboBox builderComboBox;
 
     private final JTextPane infoTextPane;
-    //Libraries
+    // Libraries
     private java.util.List<Library> libraries;
-    private java.util.List<Integer> builders;        //Indexes of libraries that can be launch targets
-    private int currentBuilder;            //Index value of target
+    private java.util.List<Integer> builders; // Indexes of libraries that can be launch targets
+    private int currentBuilder; // Index value of target
 
-    private ConfigurationFormPanel configPane;
+    private final ConfigurationFormPanel configPane;
 
     private final IConfigurableAppSettings appSettings;
 
@@ -60,7 +59,6 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
         buttonPane.add(cancelButton);
 
-
         SwingUtilities.updateComponentTreeUI(tabbedPane);
         tabbedPane.setUI(new FlatTabbedPaneUI() {
             @Override
@@ -78,7 +76,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         buildSettingsTab.setLayout(new BorderLayout());
         tabbedPane.addTab("Build", buildSettingsTab);
 
-        //Safe Mode settings tab
+        // Safe Mode settings tab
         JPanel safeModeSettingsTab = new JPanel();
         safeModeSettingsTab.setLayout(new BorderLayout());
         tabbedPane.addTab("Safe Mode", safeModeSettingsTab);
@@ -108,7 +106,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         infoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         infoPanel.add(infoLabel, BorderLayout.PAGE_START);
         infoTextPane = new JTextPane();
-        //mInfoTextPane.setBackground(Color.LIGHT_GRAY);
+        // mInfoTextPane.setBackground(Color.LIGHT_GRAY);
         infoTextPane.setEditable(false);
         JScrollPane targetInfoScrollPane = new JScrollPane(infoTextPane);
         targetInfoScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -124,7 +122,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         propertiesPanel.add(propertiesLabel, BorderLayout.PAGE_START);
 
         configPane = new ConfigurationFormPanel(this);
-        //configPane.setBackground(Color.LIGHT_GRAY);
+        // configPane.setBackground(Color.LIGHT_GRAY);
 
         configPane.setBorder(new EmptyBorder(4, 4, 4, 4));
         JScrollPane targetPropertiesScrollPane = new JScrollPane(configPane);
@@ -141,7 +139,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
 
         JTextPane safeModeDescriptionTextPane = new JTextPane();
         safeModeDescriptionTextPane.setBorder(new EmptyBorder(10, 10, 10, 10));
-        //mInfoTextPane.setBackground(Color.LIGHT_GRAY);
+        // mInfoTextPane.setBackground(Color.LIGHT_GRAY);
         safeModeDescriptionTextPane.setEditable(false);
         safeModeDescriptionTextPane.setText(resources.getString("safeModeDescription"));
 
@@ -181,7 +179,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
             selectBuilder(builderIndex);
         });
 
-        //JScrollPane scrollPane = new ScrollPane(textLicenses);
+        // JScrollPane scrollPane = new ScrollPane(textLicenses);
         dialog.pack();
         dialog.setSize(new Dimension(520, 360));
         dialog.setLocationRelativeTo(parent);
@@ -191,17 +189,16 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         currentBuilder = builderIndex;
         Library target = libraries.get(builders.get(currentBuilder));
 
-        //TODO Display target info
+        // TODO Display target info
         infoTextPane.setText(target.description());
         configPane.setConfiguration(new Configuration(((Builder) target).getConfiguration()));
     }
 
-
-    public void setVisible(boolean visible){
+    public void setVisible(boolean visible) {
         dialog.setVisible(visible);
     }
 
-    public void setLibraries(java.util.List<Library> libraries, int currentBuilder){
+    public void setLibraries(java.util.List<Library> libraries, int currentBuilder) {
         builderComboBox.removeAllItems();
         this.currentBuilder = currentBuilder;
         this.libraries = libraries;
@@ -217,14 +214,12 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         builderComboBox.setSelectedIndex(currentBuilder);
     }
 
-
-    public int getCurrentBuilder(){
+    public int getCurrentBuilder() {
         return currentBuilder;
     }
 
-
     @Override
-    public void OnConfigurationChanged(Configuration configuration) {
+    public void onConfigurationChanged(Configuration configuration) {
         Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
 
         builder.setConfiguration(configuration);

@@ -1,7 +1,6 @@
 package com.basic4gl.lib.util;
 
 import com.basic4gl.compiler.util.IVMDriver;
-
 import java.io.OutputStream;
 
 /**
@@ -14,11 +13,13 @@ import java.io.OutputStream;
  */
 public abstract class Builder implements Library, IFileAccess, ITargetCommandLineOptions {
 
+    public abstract String getVersion();
 
-    public abstract String version();
-    public abstract String author();
-    public abstract String contact();
-    public abstract String id();
+    public abstract String getAuthor();
+
+    public abstract String getContact();
+
+    public abstract String getId();
 
     /**
      * Bundle the target in a stream to store a standalone copy on the filesystem.
@@ -28,8 +29,11 @@ public abstract class Builder implements Library, IFileAccess, ITargetCommandLin
     public abstract boolean export(String filename, OutputStream stream, TaskCallback callback) throws Exception;
 
     public abstract Target getTarget();
+
     public abstract IVMDriver getVMDriver();
+
     public abstract String getFileDescription();
+
     public abstract String getFileExtension();
 
     /**

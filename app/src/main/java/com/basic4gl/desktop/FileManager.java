@@ -3,21 +3,19 @@ package com.basic4gl.desktop;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.util.IFileManager;
 import com.basic4gl.runtime.util.Mutable;
-
-import javax.swing.*;
 import java.io.File;
 import java.util.Vector;
+import javax.swing.*;
 
 public class FileManager implements IFileManager {
 
-    private final Vector<FileEditor> fileEditors = new Vector<FileEditor>();
+    private final Vector<FileEditor> fileEditors = new Vector<>();
 
-    private String currentDirectory;   //Current working directory
+    private String currentDirectory; // Current working directory
 
-    private String appDirectory;  // Application directory (where the basic4glj executable is)
+    private String appDirectory; // Application directory (where the basic4glj executable is)
     private String fileDirectory; // File I/O in this directory
-    private String runDirectory;  // Basic4GL programs are run in this directory
-
+    private String runDirectory; // Basic4GL programs are run in this directory
 
     @Override
     public int editorCount() {
@@ -152,7 +150,7 @@ public class FileManager implements IFileManager {
         for (int i = 0; i < fileEditors.size(); i++) {
             if (fileEditors.get(i).isModified()) {
                 result = true;
-                if (!desc.equals("")) {
+                if (!desc.isEmpty()) {
                     desc += ", ";
                 }
                 String filename = fileEditors.get(i).getShortFilename();

@@ -1,23 +1,20 @@
 package com.basic4gl.library.netlib4games;
 
-
-import com.basic4gl.library.netlib4games.internal.Assert;
-
 import static com.basic4gl.library.netlib4games.NetLayer1.NETL1_RELIABLE;
 import static com.basic4gl.library.netlib4games.NetLayer1.NETL1_RESENT;
+
+import com.basic4gl.library.netlib4games.internal.Assert;
 
 /**
  * Outgoing layer 1 network packet
  */
 public class NetOutPacketL1 {
-    /**
-     * Time at which packet is due to be (re)sent
-     */
-    long due;
-    long id;
-    boolean reliable;
-    boolean resent;
-    NetSimplePacket packet;
+    private long due;
+
+    private final long id;
+    private final boolean reliable;
+    private final boolean resent;
+    private final NetSimplePacket packet;
 
     NetOutPacketL1(long due, NetSimplePacket packet) {
         Assert.assertTrue(packet != null);
@@ -36,5 +33,32 @@ public class NetOutPacketL1 {
 
     public void dispose() {
         packet.dispose();
+    }
+
+    /**
+     * Time at which packet is due to be (re)sent
+     */
+    public long getDue() {
+        return due;
+    }
+
+    public void setDue(long due) {
+        this.due = due;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public boolean isReliable() {
+        return reliable;
+    }
+
+    public boolean isResent() {
+        return resent;
+    }
+
+    public NetSimplePacket getPacket() {
+        return packet;
     }
 }

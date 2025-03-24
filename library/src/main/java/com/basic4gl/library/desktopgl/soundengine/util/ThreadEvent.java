@@ -4,7 +4,8 @@ package com.basic4gl.library.desktopgl.soundengine.util;
  * Created by Nate on 1/21/2016.
  */
 public class ThreadEvent {
-    final Thread event;
+    private final Thread event;
+
     public ThreadEvent() {
         event = new Thread();
     }
@@ -39,7 +40,7 @@ public class ThreadEvent {
                 event.wait(timeout);
             }
         } catch (InterruptedException consumed) {
-            //Do nothing
+            // Do nothing
         }
     }
 
@@ -49,7 +50,7 @@ public class ThreadEvent {
                 event.wait();
             }
         } catch (InterruptedException e) {
-            //Do nothing
+            // Do nothing
         }
     }
 

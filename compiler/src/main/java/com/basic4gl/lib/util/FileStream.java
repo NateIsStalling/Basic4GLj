@@ -7,21 +7,26 @@ import java.io.*;
  */
 public class FileStream {
     public InputStream in;
-    public OutputStream  out;
-    public FileStream () {
-        this.in		= null;
-        this.out	= null;
-    }
-    public FileStream (InputStream in) {
-        this.in	    = in;
-        this.out    = null;
-    }
-    public FileStream (OutputStream  out) {
-        this.in	    = null;
-        this.out	= out;
+    public OutputStream out;
+
+    public FileStream() {
+        this.in = null;
+        this.out = null;
     }
 
-    boolean equals(FileStream s){ return this.in.equals(s.in) && this.out.equals(s.out);}
+    public FileStream(InputStream in) {
+        this.in = in;
+        this.out = null;
+    }
+
+    public FileStream(OutputStream out) {
+        this.in = null;
+        this.out = out;
+    }
+
+    boolean equals(FileStream s) {
+        return this.in.equals(s.in) && this.out.equals(s.out);
+    }
 
     public void close() {
         if (in != null) {

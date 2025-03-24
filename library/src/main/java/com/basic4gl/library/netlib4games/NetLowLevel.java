@@ -32,5 +32,4 @@ public class NetLowLevel {
         }
         return result;
     }
-
 }

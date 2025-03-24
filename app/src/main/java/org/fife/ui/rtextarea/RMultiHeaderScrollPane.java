@@ -13,13 +13,11 @@ import java.util.Arrays;
 import java.util.Stack;
 import javax.swing.JScrollPane;
 
-import org.fife.ui.rtextarea.RTextArea;
-
 public class RMultiHeaderScrollPane extends JScrollPane {
-    private MultiHeaderGutter gutter;
+    private final MultiHeaderGutter gutter;
 
     public RMultiHeaderScrollPane() {
-        this((Component)null, true);
+        this((Component) null, true);
     }
 
     public RMultiHeaderScrollPane(Component comp) {
@@ -44,14 +42,13 @@ public class RMultiHeaderScrollPane extends JScrollPane {
 
     private void checkGutterVisibility() {
         int count = this.gutter.getComponentCount();
-        if(count == 0) {
-            if(this.getRowHeader() != null && this.getRowHeader().getView() == this.gutter) {
-                this.setRowHeaderView((Component)null);
+        if (count == 0) {
+            if (this.getRowHeader() != null && this.getRowHeader().getView() == this.gutter) {
+                this.setRowHeaderView((Component) null);
             }
-        } else if(this.getRowHeader() == null || this.getRowHeader().getView() == null) {
+        } else if (this.getRowHeader() == null || this.getRowHeader().getView() == null) {
             this.setRowHeaderView(this.gutter);
         }
-
     }
 
     public MultiHeaderGutter getGutter() {
@@ -63,7 +60,7 @@ public class RMultiHeaderScrollPane extends JScrollPane {
     }
 
     public RTextArea getTextArea() {
-        return (RTextArea)this.getViewport().getView();
+        return (RTextArea) this.getViewport().getView();
     }
 
     public boolean isFoldIndicatorEnabled() {
@@ -91,34 +88,33 @@ public class RMultiHeaderScrollPane extends JScrollPane {
 
     public void setViewportView(Component view) {
         RTextArea rtaCandidate = null;
-        if(!(view instanceof RTextArea)) {
+        if (!(view instanceof RTextArea)) {
             rtaCandidate = getFirstRTextAreaDescendant(view);
-            if(rtaCandidate == null) {
+            if (rtaCandidate == null) {
                 throw new IllegalArgumentException("view must be either an RTextArea or a JLayer wrapping one");
             }
         } else {
-            rtaCandidate = (RTextArea)view;
+            rtaCandidate = (RTextArea) view;
         }
 
         super.setViewportView(view);
-        if(this.gutter != null) {
+        if (this.gutter != null) {
             this.gutter.setTextArea(rtaCandidate);
         }
-
     }
 
-    private static final RTextArea getFirstRTextAreaDescendant(Component comp) {
+    private static RTextArea getFirstRTextAreaDescendant(Component comp) {
         Stack stack = new Stack();
         stack.add(comp);
 
-        while(!stack.isEmpty()) {
-            Component current = (Component)stack.pop();
-            if(current instanceof RTextArea) {
-                return (RTextArea)current;
+        while (!stack.isEmpty()) {
+            Component current = (Component) stack.pop();
+            if (current instanceof RTextArea) {
+                return (RTextArea) current;
             }
 
-            if(current instanceof Container) {
-                Container container = (Container)current;
+            if (current instanceof Container) {
+                Container container = (Container) current;
                 stack.addAll(Arrays.asList(container.getComponents()));
             }
         }

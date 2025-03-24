@@ -16,24 +16,24 @@ public interface IB4GLCompiler {
      * @param sourceText
      * @return Returns a non-zero handle if compilation succeeded. Returns 0 if an error occurs.
      */
-    public abstract int compile(String sourceText);
+    int compile(String sourceText);
 
     // Error retrieving methods. Call only if Compile() returns 0.
 
     /**
      * Get error description.
      */
-    public abstract String getErrorText();
+    String getErrorText();
 
     /**
      * Line number where error occurred
      */
-    public abstract int getErrorLine();
+    int getErrorLine();
 
     /**
      * Column number where error occurred
      */
-    public abstract int getErrorColumn();
+    int getErrorColumn();
 
     // Execute code block
 
@@ -43,5 +43,5 @@ public interface IB4GLCompiler {
      * Returns false if an error occurred. If an error occurs, the plugin
      * should return immediately. Basic4GL will then stop and display the error.
      */
-    public abstract boolean execute(int codeHandle);
+    boolean execute(int codeHandle);
 }

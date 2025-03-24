@@ -6,26 +6,34 @@ package com.basic4gl.lib.util;
 public interface IB4GLOpenGLText {
     // Text mode constants/variables
     enum TextMode {
-        TEXT_SIMPLE( 0),    // (Default). After any print function, text is automatically rendered as follows:
+        TEXT_SIMPLE(0), // (Default). After any print function, text is automatically rendered as follows:
         //      * Back buffer is cleared
         //      * Text is rendered
         //      * Buffers are swapped
 
-        TEXT_BUFFERED( 1),      // Must explicitly call DrawText(), as before:
+        TEXT_BUFFERED(1), // Must explicitly call DrawText(), as before:
         //      * Back buffer is cleared
         //      * Text is rendered
         //      * Buffers are swapped
 
-        TEXT_OVERLAID( 2);       // Same as TEXT_BUFFERED, except DrawText() only renders the text.
+        TEXT_OVERLAID(2); // Same as TEXT_BUFFERED, except DrawText() only renders the text.
         // Must explictly clear and swap buffers as necessary.
-        private int mMode;
-        TextMode(int mode){
-            mMode = mode;
+        private final int mode;
+
+        TextMode(int mode) {
+            this.mode = mode;
         }
-        public int getMode(){ return mMode;}
+
+        public int getMode() {
+            return mode;
+        }
     }
+
     void setFont(int fontTexture);
+
     int getDefaultFont();
+
     void setTextMode(TextMode mode);
+
     void setColor(byte red, byte green, byte blue);
 }

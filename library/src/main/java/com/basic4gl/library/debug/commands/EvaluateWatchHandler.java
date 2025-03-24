@@ -11,7 +11,6 @@ import com.basic4gl.runtime.types.OpCode;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Mutable;
 import com.google.gson.Gson;
-
 import javax.websocket.Session;
 
 public class EvaluateWatchHandler {
@@ -20,30 +19,26 @@ public class EvaluateWatchHandler {
 
     static final String DEFAULT_VALUE = "???";
 
-    private final TomBasicCompiler mComp;
-    private final TomVM mVM;
-    private final IVMDriver mVMDriver;
-    private final Gson mGson;
+    private final TomBasicCompiler compiler;
+    private final TomVM vm;
+    private final IVMDriver vmDriver;
+    private final Gson gson;
 
-    public EvaluateWatchHandler(
-        IVMDriver vmDriver,
-        TomBasicCompiler comp,
-        TomVM vm,
-        Gson gson) {
-        mVMDriver = vmDriver;
-        mComp = comp;
-        mVM = vm;
-        mGson = gson;
+    public EvaluateWatchHandler(IVMDriver vmDriver, TomBasicCompiler compiler, TomVM vm, Gson gson) {
+        this.vmDriver = vmDriver;
+        this.compiler = compiler;
+        this.vm = vm;
+        this.gson = gson;
     }
 
     public void handle(String watch, String context, int requestId, Session session) {
-        String result = EvaluateWatch(watch, context);
+        String result = evaluateWatch(watch, context);
 
         EvaluateWatchCallback callback = new EvaluateWatchCallback();
         callback.setRequestId(requestId);
         callback.setResult(result);
 
-        String json = mGson.toJson(callback);
+        String json = gson.toJson(callback);
         message(session, json);
     }
 
@@ -56,126 +51,124 @@ public class EvaluateWatchHandler {
             }
         }
     }
-    public String EvaluateWatch(String watch, String context) {
-        //TODO sync editor state; consider checking this in the editor
+
+    public String evaluateWatch(String watch, String context) {
+        // TODO sync editor state; consider checking this in the editor
         //        if (mHost.isApplicationRunning()) {
-//            return DEFAULT_VALUE;
-//        }
+        //            return DEFAULT_VALUE;
+        //        }
 
         // Save virtual machine state
-        VMState state = mVM.getState();
-        //TODO sync editor UI state
-//        mHost.pushApplicationState();
+        VMState state = vm.getState();
+        // TODO sync editor UI state
+        //        mHost.pushApplicationState();
         try {
 
             // Setup compiler "in function" state to match the the current VM user
             // stack state.
             int currentFunction;
-            if (mVM.getCurrentUserFrame() < 0 ||
-                    mVM.getUserCallStack().lastElement().userFuncIndex < 0) {
+            if (vm.getCurrentUserFrame() < 0 || vm.getUserCallStack().lastElement().userFuncIndex < 0) {
                 currentFunction = -1;
             } else {
-                currentFunction = mVM.getUserCallStack().get(mVM.getCurrentUserFrame()).userFuncIndex;
+                currentFunction = vm.getUserCallStack().get(vm.getCurrentUserFrame()).userFuncIndex;
             }
 
             boolean inFunction = currentFunction >= 0;
 
             // Compile watch expression
             // This also gives us the expression result type
-            int codeStart = mVM.getInstructionCount();
+            int codeStart = vm.getInstructionCount();
             ValType valType = new ValType();
-            //TODO Possibly means to pass parameters by ref
-            if (!mComp.TempCompileExpression(watch, valType, inFunction, currentFunction)) {
-                return mComp.getError();
+            // TODO Possibly means to pass parameters by ref
+            if (!compiler.tempCompileExpression(watch, valType, inFunction, currentFunction)) {
+                return compiler.getError();
             }
 
             boolean canCallFunc = canCallFunc(context);
             if (!canCallFunc) {
                 // Expressions aren't allowed to call functions for mouse-over hints.
                 // Scan compiled code for OP_CALL_FUNC or OP_CALL_OPERATOR_FUNC
-                for (int i = codeStart; i < mVM.getInstructionCount(); i++) {
-                    if (mVM.getInstruction(i).opCode == OpCode.OP_CALL_FUNC
-                            || mVM.getInstruction(i).opCode == OpCode.OP_CALL_OPERATOR_FUNC
-                            || mVM.getInstruction(i).opCode == OpCode.OP_CALL_DLL
-                            || mVM.getInstruction(i).opCode == OpCode.OP_CREATE_USER_FRAME) {
+                for (int i = codeStart; i < vm.getInstructionCount(); i++) {
+                    if (vm.getInstruction(i).opCode == OpCode.OP_CALL_FUNC
+                            || vm.getInstruction(i).opCode == OpCode.OP_CALL_OPERATOR_FUNC
+                            || vm.getInstruction(i).opCode == OpCode.OP_CALL_DLL
+                            || vm.getInstruction(i).opCode == OpCode.OP_CREATE_USER_FRAME) {
                         return "Mouse hints can't call functions. Use watch instead.";
                     }
                 }
             }
 
             // Run compiled code
-            mVM.gotoInstruction(codeStart);
+            vm.gotoInstruction(codeStart);
 
             continueApplication();
 
             // Error occurred?
-            if (mVM.hasError()) {
-                return mVM.getError();
+            if (vm.hasError()) {
+                return vm.getError();
             }
 
             // Execution didn't finish?
-            if (!mVM.isDone()) {
+            if (!vm.isDone()) {
                 return DEFAULT_VALUE;
             }
 
             // Convert expression result to string
-            return DisplayVariable(valType);
+            return displayVariable(valType);
         } finally {
-            mVM.SetState(state);
-            //TODO sync editor UI state
-            //mHost.restoreHostState();
+            vm.setState(state);
+            // TODO sync editor UI state
+            // mHost.restoreHostState();
             // TODO Add VM viewer
-            //VMView().RefreshVMView();
+            // VMView().RefreshVMView();
         }
     }
 
     private void continueApplication() {
-        //TODO sync editor UI state; report progress
-//        mMode = ApMode.AP_RUNNING;
+        // TODO sync editor UI state; report progress
+        //        mMode = ApMode.AP_RUNNING;
         do {
 
             // Run the virtual machine for a certain number of steps
-            //TODO Continue
-            mVM.continueVM(GB_STEPS_UNTIL_REFRESH);
+            // TODO Continue
+            vm.continueVM(GB_STEPS_UNTIL_REFRESH);
 
             // Process windows messages (to keep application responsive)
-            //Application.ProcessMessages ();
-            //mGLWin.ProcessWindowsMessages();
-            //TODO Implement pausing
-            //if (mTarget.PausePressed ())           // Check for pause key. (This allows us to pause when in full screen mode. Useful for debugging.)
+            // Application.ProcessMessages ();
+            // mGLWin.ProcessWindowsMessages();
+            // TODO Implement pausing
+            // if (mTarget.PausePressed ())           // Check for pause key. (This allows us to pause
+            // when in full screen mode. Useful for debugging.)
             //    mVM.Pause ();
-        } while (//mMode == ApMode.AP_RUNNING
-                !mVM.hasError()
-                && !mVM.isDone()
-                && !mVM.isPaused()
-                && !mVMDriver.isClosing());
+        } while ( // mMode == ApMode.AP_RUNNING
+        !vm.hasError() && !vm.isDone() && !vm.isPaused() && !vmDriver.isClosing());
     }
 
-    private String DisplayVariable(ValType valType) {
-        if (valType.matchesType(BasicValType.VTP_STRING)) {                              // String is special case.
-            return "\"" + mVM.getRegString() + "\"";                 // Stored in string register.
+    private String displayVariable(ValType valType) {
+        if (valType.matchesType(BasicValType.VTP_STRING)) { // String is special case.
+            return "\"" + vm.getRegString() + "\""; // Stored in string register.
         } else {
             String temp;
             try {
-                Mutable<Integer> maxChars = new Mutable<Integer>(TomVM.DATA_TO_STRING_MAX_CHARS);
-                temp = mVM.ValToString(mVM.getReg(), valType, maxChars);
+                Mutable<Integer> maxChars = new Mutable<>(TomVM.DATA_TO_STRING_MAX_CHARS);
+                temp = vm.valToString(vm.getReg(), valType, maxChars);
             } catch (Exception ex) {
 
                 // Floating point errors can be raised when converting floats to string
                 /*switch (ex.getCause()) {
-                    case EXCEPTION_FLT_DENORMAL_OPERAND:
-                    case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-                    case EXCEPTION_FLT_INEXACT_RESULT:
-                    case EXCEPTION_FLT_INVALID_OPERATION:
-                    case EXCEPTION_FLT_OVERFLOW:
-                    case EXCEPTION_FLT_STACK_CHECK:
-                    case EXCEPTION_FLT_UNDERFLOW:
-                    case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                    case EXCEPTION_INT_OVERFLOW:
-                        temp = "Floating point exception";
-                    default:*/
+                case EXCEPTION_FLT_DENORMAL_OPERAND:
+                case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+                case EXCEPTION_FLT_INEXACT_RESULT:
+                case EXCEPTION_FLT_INVALID_OPERATION:
+                case EXCEPTION_FLT_OVERFLOW:
+                case EXCEPTION_FLT_STACK_CHECK:
+                case EXCEPTION_FLT_UNDERFLOW:
+                case EXCEPTION_INT_DIVIDE_BY_ZERO:
+                case EXCEPTION_INT_OVERFLOW:
+                	temp = "Floating point exception";
+                default:*/
                 temp = "An exception occurred";
-                //}
+                // }
             }
             return temp;
         }

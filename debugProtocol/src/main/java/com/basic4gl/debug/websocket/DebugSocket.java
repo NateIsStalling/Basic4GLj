@@ -5,29 +5,28 @@ import com.basic4gl.debug.ILogger;
 import com.basic4gl.debug.protocol.callbacks.CallbackMessage;
 import com.basic4gl.debug.protocol.commands.*;
 import com.google.gson.Gson;
-
-import javax.websocket.*;
-import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import javax.websocket.*;
+import javax.websocket.server.ServerEndpoint;
 
-//TODO https://stackoverflow.com/questions/17080216/how-to-send-message-to-particular-websocket-connection-using-java-server
+// TODO
+// https://stackoverflow.com/questions/17080216/how-to-send-message-to-particular-websocket-connection-using-java-server
 
 @ServerEndpoint(value = "/debug/")
-public class DebugSocket
-{
-    private static ILogger logger = new ConsoleLogger();
+public class DebugSocket {
+    private static final ILogger logger = new ConsoleLogger();
 
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
-    private static Map<UUID, Session> sessionRepository = new HashMap<UUID, Session>();
+    private static final Map<UUID, Session> sessionRepository = new HashMap<>();
 
-    private static ArrayList<DebugCommand> initializeCommandsQueue = new ArrayList<>();
+    private static final ArrayList<DebugCommand> initializeCommandsQueue = new ArrayList<>();
 
     private static boolean configurationDone = false;
 
-    private CountDownLatch closureLatch = new CountDownLatch(1);
+    private final CountDownLatch closureLatch = new CountDownLatch(1);
 
     private Session session;
 
@@ -36,32 +35,30 @@ public class DebugSocket
     private DebugCommandFactory adapter;
 
     @OnOpen
-    public void onWebSocketConnect(Session sess)
-    {
+    public void onWebSocketConnect(Session session) {
         UUID sessionId = UUID.randomUUID();
-        sessionRepository.put(sessionId, sess);
+        sessionRepository.put(sessionId, session);
 
-        this.session = sess;
+        this.session = session;
         this.sessionId = sessionId;
 
         this.adapter = new DebugCommandFactory(new Gson());
 
         // send any initialization events to client if configuration is done
         if (configurationDone) {
-            for (DebugCommand command: initializeCommandsQueue) {
-                sendClient(session, gson.toJson(command));
+            for (DebugCommand command : initializeCommandsQueue) {
+                sendClient(this.session, gson.toJson(command));
             }
         }
 
-        logger.log("Socket Connected: " + sess);
+        logger.log("Socket Connected: " + session);
     }
 
     @OnMessage
-    public void onWebSocketText(Session sess, String message) throws IOException
-    {
+    public void onWebSocketText(Session sess, String message) throws IOException {
         logger.log("Server Received TEXT message: " + message);
 
-        DebugCommand command = adapter.FromJson(message);
+        DebugCommand command = adapter.fromJson(message);
 
         // reset pending configuration when initialize command is received
         if (command != null && Objects.equals(command.getCommand(), InitializeCommand.COMMAND)) {
@@ -74,7 +71,7 @@ public class DebugSocket
             configurationDone = true;
 
             // notify others of pending events; may be processed one or more times
-            for (DebugCommand initializeCommand: initializeCommandsQueue) {
+            for (DebugCommand initializeCommand : initializeCommandsQueue) {
                 replyAll(gson.toJson(initializeCommand));
             }
         }
@@ -95,8 +92,7 @@ public class DebugSocket
     }
 
     @OnClose
-    public void onWebSocketClose(CloseReason reason)
-    {
+    public void onWebSocketClose(CloseReason reason) {
         sessionRepository.remove(sessionId);
 
         logger.log("Socket Closed: " + reason);
@@ -107,7 +103,7 @@ public class DebugSocket
         String message = gson.toJson(callbackMessage);
 
         Set<Map.Entry<UUID, Session>> sessions = sessionRepository.entrySet();
-        for (Map.Entry<UUID, Session> entry: sessions) {
+        for (Map.Entry<UUID, Session> entry : sessions) {
             if (!entry.getKey().equals(sessionId)) {
                 sendClient(entry.getValue(), message);
             }
@@ -117,13 +113,11 @@ public class DebugSocket
     }
 
     @OnError
-    public void onWebSocketError(Throwable cause)
-    {
+    public void onWebSocketError(Throwable cause) {
         logger.error(cause);
     }
 
-    public void awaitClosure() throws InterruptedException
-    {
+    public void awaitClosure() throws InterruptedException {
         logger.log("Awaiting closure from remote");
         closureLatch.await();
     }
@@ -138,7 +132,7 @@ public class DebugSocket
 
     private void replyAll(String message) {
         Set<Map.Entry<UUID, Session>> sessions = sessionRepository.entrySet();
-        for (Map.Entry<UUID, Session> entry: sessions) {
+        for (Map.Entry<UUID, Session> entry : sessions) {
             if (!entry.getKey().equals(sessionId)) {
                 sendClient(entry.getValue(), message);
             }

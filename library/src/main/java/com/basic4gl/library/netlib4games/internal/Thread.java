@@ -4,19 +4,18 @@ import static com.basic4gl.library.netlib4games.internal.ThreadUtils.INFINITE;
 
 public class Thread {
     private final String name;
-    private java.lang.Thread m_thread;
-    private final ThreadEvent m_terminateEvent;
+    private java.lang.Thread thread;
+    private final ThreadEvent terminateEvent;
 
     public Thread(String name) {
         this.name = name;
-        m_thread = null;
-        m_terminateEvent = new ThreadEvent("Thread.m_terminateEvent");
+        thread = null;
+        terminateEvent = new ThreadEvent("Thread.terminateEvent");
     }
 
     public void dispose() {
         terminate();
     }
-
 
     /**
      * Start the thread. Thread does not start until this method is called.
@@ -24,18 +23,18 @@ public class Thread {
      * @param threaded runnable
      */
     public void start(Runnable threaded) {
-        Assert.assertTrue(m_thread == null);
+        Assert.assertTrue(thread == null);
         Assert.assertTrue(threaded != null);
-        m_terminateEvent.reset();
+        terminateEvent.reset();
 
-        m_thread = new java.lang.Thread(threaded);
+        thread = new java.lang.Thread(threaded);
 
-        m_thread.start();
+        thread.start();
     }
 
     public boolean isRunning() {
-        synchronized (m_thread) {
-            return m_thread != null;
+        synchronized (thread) {
+            return thread != null;
         }
     }
 
@@ -51,7 +50,7 @@ public class Thread {
      * @param waitFor true if thread should wait until completed signal is set
      */
     void terminate(boolean waitFor) {
-        m_terminateEvent.set();
+        terminateEvent.set();
         if (waitFor) {
             waitFor();
         }
@@ -64,7 +63,7 @@ public class Thread {
      * @return
      */
     public ThreadEvent getTerminateEvent() {
-        return m_terminateEvent;
+        return terminateEvent;
     }
 
     /**
@@ -81,12 +80,12 @@ public class Thread {
      * @return true if no InterruptedException occurred
      */
     public boolean waitFor(long timeout) {
-        if (m_thread != null) {
-            synchronized (m_thread) {
+        if (thread != null) {
+            synchronized (thread) {
                 boolean signalled = false;
                 try {
-                    m_thread.join(timeout);
-                    m_thread = null;
+                    thread.join(timeout);
+                    thread = null;
                 } catch (InterruptedException e) {
                     return false;
                 }
@@ -100,10 +99,10 @@ public class Thread {
     }
 
     public void raisePriority() {
-        synchronized (m_thread) {
-            Assert.assertTrue(m_thread != null);
+        synchronized (thread) {
+            Assert.assertTrue(thread != null);
             // set thread priority above normal
-            m_thread.setPriority(java.lang.Thread.NORM_PRIORITY + 1);
+            thread.setPriority(java.lang.Thread.NORM_PRIORITY + 1);
         }
     }
 }

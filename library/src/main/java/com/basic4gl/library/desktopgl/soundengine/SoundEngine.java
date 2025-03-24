@@ -1,14 +1,13 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
+import static com.basic4gl.runtime.util.Assert.assertTrue;
+
 import com.basic4gl.library.desktopgl.soundengine.util.ALUtil;
 import com.basic4gl.runtime.HasErrorState;
-import org.lwjgl.openal.*;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import org.lwjgl.openal.*;
 
 /**
  * Main interface to the sound engine.
@@ -17,12 +16,12 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
 public class SoundEngine extends HasErrorState {
 
     private boolean initialized = false;
-    private int voiceCount;
+    private final int voiceCount;
 
     // original source used an uint collection to track AL voice handles;
     // track Sound wrapper objects instead here
     private Sound[] voiceSources;
-    private List<Integer> queue = new ArrayList<>();	// Queued voices. Each entry indexes into voices array.
+    private final List<Integer> queue = new ArrayList<>(); // Queued voices. Each entry indexes into voices array.
 
     public SoundEngine(int voiceCount) {
         assertTrue(voiceCount > 0);
@@ -57,6 +56,7 @@ public class SoundEngine extends HasErrorState {
 
         initialized = true;
     }
+
     public void dispose() {
         Sound.cleanup();
         voiceSources = null;

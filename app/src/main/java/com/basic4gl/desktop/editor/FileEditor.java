@@ -1,5 +1,8 @@
 package com.basic4gl.desktop.editor;
 
+import com.basic4gl.desktop.util.EditorUtil;
+import com.basic4gl.desktop.util.IFileManager;
+import com.basic4gl.desktop.util.SwingIconUtil;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -7,14 +10,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
-
-import com.basic4gl.desktop.util.EditorUtil;
-import com.basic4gl.desktop.util.IFileManager;
-import com.basic4gl.desktop.util.SwingIconUtil;
 import org.fife.rsta.ui.CollapsibleSectionPanel;
 import org.fife.rsta.ui.search.*;
 import org.fife.ui.rsyntaxtextarea.*;
@@ -41,13 +39,12 @@ public class FileEditor implements SearchListener {
     private final RMultiHeaderScrollPane scrollPane;
     private final RSyntaxTextArea editorPane;
 
-    //private Map<Integer, Object> lineHighlights; //Highlight lines with breakpoints
+    // private Map<Integer, Object> lineHighlights; //Highlight lines with breakpoints
 
-    private String fileName;    //Filename without path
-    private String filePath;    //Full path including name
+    private String fileName; // Filename without path
+    private String filePath; // Full path including name
     private boolean isModified;
-    private boolean isSaved;      //File exists on system
-
+    private boolean isSaved; // File exists on system
 
     public FileEditor(
             IFileEditorActionListener actionListener,
@@ -61,7 +58,6 @@ public class FileEditor implements SearchListener {
         this.actionListener = actionListener;
         this.fileManager = fileManager;
         this.toggleBreakpointListener = toggleBreakpointListener;
-
 
         fileName = "";
         filePath = "";
@@ -78,48 +74,51 @@ public class FileEditor implements SearchListener {
 
         scrollPane = new RMultiHeaderScrollPane(editorPane);
 
-
-        //Add shortcut keys for breakpoints
+        // Add shortcut keys for breakpoints
 
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         InputMap inputMap = editorPane.getInputMap();
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0),
-                RTextAreaEditorKit.rtaNextBookmarkAction);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK),
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), RTextAreaEditorKit.rtaNextBookmarkAction);
+        inputMap.put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK),
                 RTextAreaEditorKit.rtaPrevBookmarkAction);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, toolkit.getMenuShortcutKeyMask()),
+        inputMap.put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F2, toolkit.getMenuShortcutKeyMask()),
                 RTextAreaEditorKit.rtaToggleBookmarkAction);
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0),
-                "RTA.NextBreakpointAction");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK),
-                "RTA.PrevBreakpointAction");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, toolkit.getMenuShortcutKeyMask()),
-                "RTA.ToggleBreakpointAction");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "RTA.NextBreakpointAction");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK), "RTA.PrevBreakpointAction");
+        inputMap.put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F3, toolkit.getMenuShortcutKeyMask()), "RTA.ToggleBreakpointAction");
 
-        //Update action map for use with the multi-header scroll pane
+        // Update action map for use with the multi-header scroll pane
         ActionMap actionMap = editorPane.getActionMap();
-        actionMap.put(RTextAreaEditorKit.rtaNextBookmarkAction,
-                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction
-                        (RTextAreaEditorKit.rtaNextBookmarkAction,true, HEADER_BOOKMARK));
-        actionMap.put(RTextAreaEditorKit.rtaPrevBookmarkAction,
-                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction
-                        (RTextAreaEditorKit.rtaPrevBookmarkAction,false, HEADER_BOOKMARK));
-        actionMap.put(RTextAreaEditorKit.rtaToggleBookmarkAction,
-                new MultiHeaderBookmarkActions.MultiHeaderToggleBookmarkAction
-                        (RTextAreaEditorKit.rtaToggleBookmarkAction, HEADER_BOOKMARK));
+        actionMap.put(
+                RTextAreaEditorKit.rtaNextBookmarkAction,
+                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction(
+                        RTextAreaEditorKit.rtaNextBookmarkAction, true, HEADER_BOOKMARK));
+        actionMap.put(
+                RTextAreaEditorKit.rtaPrevBookmarkAction,
+                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction(
+                        RTextAreaEditorKit.rtaPrevBookmarkAction, false, HEADER_BOOKMARK));
+        actionMap.put(
+                RTextAreaEditorKit.rtaToggleBookmarkAction,
+                new MultiHeaderBookmarkActions.MultiHeaderToggleBookmarkAction(
+                        RTextAreaEditorKit.rtaToggleBookmarkAction, HEADER_BOOKMARK));
 
-        actionMap.put("RTA.NextBreakpointAction",
-                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction
-                        ("RTA.NextBreakpointAction",true, HEADER_BREAK_PT));
-        actionMap.put("RTA.PrevBreakpointAction",
-                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction
-                        ("RTA.PrevBreakpointAction",false, HEADER_BREAK_PT));
-        actionMap.put("RTA.ToggleBreakpointAction",
-                new MultiHeaderToggleBreakPointAction
-                        ("RTA.ToggleBreakpointAction",this));
+        actionMap.put(
+                "RTA.NextBreakpointAction",
+                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction(
+                        "RTA.NextBreakpointAction", true, HEADER_BREAK_PT));
+        actionMap.put(
+                "RTA.PrevBreakpointAction",
+                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction(
+                        "RTA.PrevBreakpointAction", false, HEADER_BREAK_PT));
+        actionMap.put(
+                "RTA.ToggleBreakpointAction",
+                new MultiHeaderToggleBreakPointAction("RTA.ToggleBreakpointAction", this));
 
-        //Enable bookmarks
+        // Enable bookmarks
         final MultiHeaderGutter gutter = scrollPane.getGutter();
         gutter.addIconRowHeader();
         gutter.addIconRowHeader();
@@ -128,14 +127,10 @@ public class FileEditor implements SearchListener {
 
         gutter.getIconRowHeader(HEADER_BOOKMARK).addMouseListener(new MouseListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
+            public void mouseClicked(MouseEvent e) {}
 
             @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
+            public void mousePressed(MouseEvent e) {}
 
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -145,59 +140,47 @@ public class FileEditor implements SearchListener {
             }
 
             @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
+            public void mouseEntered(MouseEvent e) {}
 
             @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
+            public void mouseExited(MouseEvent e) {}
         });
 
         gutter.getIconRowHeader(HEADER_BREAK_PT).addMouseListener(new MouseListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
+            public void mouseClicked(MouseEvent e) {}
 
             @Override
             public void mousePressed(MouseEvent e) {
 
-                        try {
-                            //boolean highlight = false;
-                            int offs = editorPane.viewToModel(e.getPoint());
-                            int ble = offs > -1 ? editorPane.getLineOfOffset(offs):-1;
-                            if(ble > -1) {
-                                FileEditor.this.toggleBreakpointListener.onToggleBreakpoint(getFilePath(), ble);
-                                //highlight = mMainEditor.toggleBreakpt(getFilename(), ble);
-                            }
-                            //TODO toggle highlighting breakpoints
-                            /*
-                            if (highlight)
-                                lineHighlights.put(offs, editorPane.addLineHighlight(ble, new Color(255,0,0,128)));
-                            else
-                                editorPane.removeLineHighlight(lineHighlights.get(ble));
-                            */
-                        } catch (BadLocationException var3) {
-                            var3.printStackTrace();
-                        }
-
+                try {
+                    // boolean highlight = false;
+                    int offs = editorPane.viewToModel(e.getPoint());
+                    int ble = offs > -1 ? editorPane.getLineOfOffset(offs) : -1;
+                    if (ble > -1) {
+                        FileEditor.this.toggleBreakpointListener.onToggleBreakpoint(getFilePath(), ble);
+                        // highlight = mMainEditor.toggleBreakpt(getFilename(), ble);
+                    }
+                    // TODO toggle highlighting breakpoints
+                    /*
+                    if (highlight)
+                    	lineHighlights.put(offs, editorPane.addLineHighlight(ble, new Color(255,0,0,128)));
+                    else
+                    	editorPane.removeLineHighlight(lineHighlights.get(ble));
+                    */
+                } catch (BadLocationException var3) {
+                    var3.printStackTrace();
+                }
             }
 
             @Override
-            public void mouseReleased(MouseEvent e) {
-            }
+            public void mouseReleased(MouseEvent e) {}
 
             @Override
-            public void mouseEntered(MouseEvent e) {
-
-            }
+            public void mouseEntered(MouseEvent e) {}
 
             @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
+            public void mouseExited(MouseEvent e) {}
         });
 
         gutter.setBookmarkIcon(HEADER_BOOKMARK, SwingIconUtil.createImageIcon(ICON_BOOKMARK));
@@ -225,20 +208,20 @@ public class FileEditor implements SearchListener {
 
         // Configure popup context menu
         JPopupMenu popup = editorPane.getPopupMenu();
-        popup.remove(popup.getComponents().length - 1);    //Remove folding option
-        popup.remove(popup.getComponents().length - 1);    //Remove separator
+        popup.remove(popup.getComponents().length - 1); // Remove folding option
+        popup.remove(popup.getComponents().length - 1); // Remove separator
 
-        //Set default color scheme
+        // Set default color scheme
         scheme = editorPane.getSyntaxScheme();
-        scheme.setStyle(TokenTypes.IDENTIFIER, new Style(new Color(0, 0, 128)));    //Normal text
+        scheme.setStyle(TokenTypes.IDENTIFIER, new Style(new Color(0, 0, 128))); // Normal text
         scheme.setStyle(TokenTypes.LITERAL_NUMBER_DECIMAL_INT, new Style(new Color(0, 0, 128)));
 
-        scheme.setStyle(TokenTypes.COMMENT_EOL, new Style(new Color(101, 124, 167))); //Comment
-        scheme.setStyle(TokenTypes.RESERVED_WORD, new Style(new Color(0, 0, 255)));    //Keyword
-        scheme.setStyle(TokenTypes.RESERVED_WORD_2, new Style(new Color(0, 128, 255)));    //Constants
-        scheme.setStyle(TokenTypes.LITERAL_STRING_DOUBLE_QUOTE, new Style(new Color(0, 128, 0)));    //String
-        scheme.setStyle(TokenTypes.FUNCTION, new Style(new Color(255, 0, 0))); //Function
-        scheme.setStyle(TokenTypes.OPERATOR, new Style(new Color(128, 0, 128))); //Operator
+        scheme.setStyle(TokenTypes.COMMENT_EOL, new Style(new Color(101, 124, 167))); // Comment
+        scheme.setStyle(TokenTypes.RESERVED_WORD, new Style(new Color(0, 0, 255))); // Keyword
+        scheme.setStyle(TokenTypes.RESERVED_WORD_2, new Style(new Color(0, 128, 255))); // Constants
+        scheme.setStyle(TokenTypes.LITERAL_STRING_DOUBLE_QUOTE, new Style(new Color(0, 128, 0))); // String
+        scheme.setStyle(TokenTypes.FUNCTION, new Style(new Color(255, 0, 0))); // Function
+        scheme.setStyle(TokenTypes.OPERATOR, new Style(new Color(128, 0, 128))); // Operator
     }
 
     public JPanel getContentPane() {
@@ -287,8 +270,7 @@ public class FileEditor implements SearchListener {
                 case REPLACE_ALL:
                     if (textArea.isEditable()) {
                         result = SearchEngine.replaceAll(textArea, context);
-                        JOptionPane.showMessageDialog(null, result.getCount() +
-                                " occurrences replaced.");
+                        JOptionPane.showMessageDialog(null, result.getCount() + " occurrences replaced.");
                     } else {
                         JOptionPane.showMessageDialog(null, "File is read-only.");
                     }
@@ -312,17 +294,15 @@ public class FileEditor implements SearchListener {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
-
     }
 
     public String getTitle() {
         String result;
-        result  = (fileName.equals("") ? DEFAULT_NAME : fileName).toLowerCase();
+        result = (fileName.isEmpty() ? DEFAULT_NAME : fileName).toLowerCase();
 
         // Append asterisk if modified
         if (isModified) {
-            result = result + " *";
+            result += " *";
         }
 
         return result;
@@ -341,15 +321,11 @@ public class FileEditor implements SearchListener {
     }
 
     public File getFile() {
-        return !filePath.isEmpty()
-                ? new File(filePath)
-                : null;
+        return !filePath.isEmpty() ? new File(filePath) : null;
     }
 
     public String getShortFilename() {
-        return !fileName.equals("")
-                ? new File(fileName).getName()
-                : DEFAULT_NAME.toLowerCase();
+        return !fileName.isEmpty() ? new File(fileName).getName() : DEFAULT_NAME.toLowerCase();
     }
 
     public boolean isModified() {
@@ -362,12 +338,12 @@ public class FileEditor implements SearchListener {
 
     public boolean save(boolean saveAs, String parentDirectory) {
         boolean save = true;
-        if (saveAs || !isSaved || filePath.equals("")) {
+        if (saveAs || !isSaved || filePath.isEmpty()) {
             JFileChooser dialog = new JFileChooser();
             dialog.setAcceptAllFileFilterUsed(false);
             dialog.addChoosableFileFilter(new FileNameExtensionFilter("GLBasic Program (*.gb)", "gb"));
             dialog.addChoosableFileFilter(new FileNameExtensionFilter("Text File (*.txt)", "txt"));
-            dialog.setAcceptAllFileFilterUsed(true);    //Move "All Files" to bottom of filter list
+            dialog.setAcceptAllFileFilterUsed(true); // Move "All Files" to bottom of filter list
             dialog.setCurrentDirectory(new File(fileManager.getCurrentDirectory()));
             dialog.setSelectedFile(new File(fileName));
             int result = dialog.showSaveDialog(scrollPane);
@@ -375,8 +351,8 @@ public class FileEditor implements SearchListener {
             if (result == JFileChooser.APPROVE_OPTION) {
                 String path = dialog.getSelectedFile().getAbsolutePath();
                 if (dialog.getFileFilter() instanceof FileNameExtensionFilter) {
-                    //Append extension if needed
-                    if(((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions().length > 0){
+                    // Append extension if needed
+                    if (((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions().length > 0) {
                         String extension = ((FileNameExtensionFilter) dialog.getFileFilter()).getExtensions()[0];
                         if (!path.endsWith("." + extension)) {
                             path += "." + extension;
@@ -408,19 +384,19 @@ public class FileEditor implements SearchListener {
     }
 
     public static FileEditor open(
-        Frame parent,
-        IFileEditorActionListener actionListener,
-        IFileManager fileManager,
-        IToggleBreakpointListener listener,
-        LinkGenerator linkGenerator,
-        SearchContext searchContext) {
+            Frame parent,
+            IFileEditorActionListener actionListener,
+            IFileManager fileManager,
+            IToggleBreakpointListener listener,
+            LinkGenerator linkGenerator,
+            SearchContext searchContext) {
 
         FileEditor editor = null;
         JFileChooser dialog = new JFileChooser();
         dialog.setAcceptAllFileFilterUsed(false);
         dialog.addChoosableFileFilter(new FileNameExtensionFilter("GLBasic Program (*.gb)", "gb"));
         dialog.addChoosableFileFilter(new FileNameExtensionFilter("Text File (*.txt)", "txt"));
-        dialog.setAcceptAllFileFilterUsed(true);    //Move "All Files" to bottom of filter list
+        dialog.setAcceptAllFileFilterUsed(true); // Move "All Files" to bottom of filter list
         dialog.setCurrentDirectory(new File(fileManager.getCurrentDirectory()));
         int result = dialog.showOpenDialog(parent);
 
@@ -437,18 +413,19 @@ public class FileEditor implements SearchListener {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            editor.editorPane.discardAllEdits();    //Otherwise 'undo' will clear the text area after loading
+            editor.editorPane.discardAllEdits(); // Otherwise 'undo' will clear the text area after loading
         }
 
         return editor;
     }
+
     public static FileEditor open(
-        File file,
-        IFileEditorActionListener actionListener,
-        IFileManager fileManager,
-        IToggleBreakpointListener listener,
-        LinkGenerator linkGenerator,
-        SearchContext searchContext) {
+            File file,
+            IFileEditorActionListener actionListener,
+            IFileManager fileManager,
+            IToggleBreakpointListener listener,
+            LinkGenerator linkGenerator,
+            SearchContext searchContext) {
 
         FileEditor editor = null;
         editor = new FileEditor(actionListener, fileManager, listener, linkGenerator, searchContext);
@@ -464,19 +441,18 @@ public class FileEditor implements SearchListener {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-        }
-        else {
+        } else {
             editor.filePath = file.getAbsolutePath();
             editor.fileName = file.getName();
             editor.isSaved = false;
         }
-        editor.editorPane.discardAllEdits();    //Otherwise 'undo' will clear the text area after loading
+        editor.editorPane.discardAllEdits(); // Otherwise 'undo' will clear the text area after loading
 
         return editor;
     }
 
     public void gotoNextBookmark(boolean forward) {
-        //Copied from org.fife.ui.rtextarea.RTextAreaEditorKit.NextBookmarkAction
+        // Copied from org.fife.ui.rtextarea.RTextAreaEditorKit.NextBookmarkAction
         MultiHeaderGutter gutter = scrollPane.getGutter();
         if (gutter != null) {
 
@@ -484,8 +460,7 @@ public class FileEditor implements SearchListener {
 
                 GutterIconInfo[] bookmarks = gutter.getBookmarks(HEADER_BOOKMARK);
                 if (bookmarks.length == 0) {
-                    UIManager.getLookAndFeel().
-                            provideErrorFeedback(editorPane);
+                    UIManager.getLookAndFeel().provideErrorFeedback(editorPane);
                     return;
                 }
 
@@ -524,8 +499,7 @@ public class FileEditor implements SearchListener {
                 if (editorPane instanceof RSyntaxTextArea) {
                     RSyntaxTextArea rsta = (RSyntaxTextArea) editorPane;
                     if (rsta.isCodeFoldingEnabled()) {
-                        rsta.getFoldManager().
-                                ensureOffsetNotInClosedFold(offs);
+                        rsta.getFoldManager().ensureOffsetNotInClosedFold(offs);
                     }
                 }
                 int line = editorPane.getLineOfOffset(offs);
@@ -533,13 +507,12 @@ public class FileEditor implements SearchListener {
                 editorPane.setCaretPosition(offs);
 
             } catch (BadLocationException ble) { // Never happens
-                UIManager.getLookAndFeel().
-                        provideErrorFeedback(editorPane);
+                UIManager.getLookAndFeel().provideErrorFeedback(editorPane);
                 ble.printStackTrace();
             }
         }
-
     }
+
     public void toggleFindToolBar(boolean replace) {
         FindToolBar findToolBar = this.findToolBar;
         if (replace) {
@@ -553,7 +526,8 @@ public class FileEditor implements SearchListener {
             csp.showBottomComponent(findToolBar);
         }
     }
-    public void toggleBookmark(){
+
+    public void toggleBookmark() {
         int line;
         try {
             line = editorPane.getLineOfOffset(editorPane.getCaretPosition());
@@ -567,7 +541,7 @@ public class FileEditor implements SearchListener {
     }
 
     public void gotoNextBreakpoint(boolean forward) {
-        //Copied from org.fife.ui.rtextarea.RTextAreaEditorKit.NextBookmarkAction
+        // Copied from org.fife.ui.rtextarea.RTextAreaEditorKit.NextBookmarkAction
         MultiHeaderGutter gutter = scrollPane.getGutter();
         if (gutter != null) {
 
@@ -575,8 +549,7 @@ public class FileEditor implements SearchListener {
 
                 GutterIconInfo[] bookmarks = gutter.getBookmarks(HEADER_BREAK_PT);
                 if (bookmarks.length == 0) {
-                    UIManager.getLookAndFeel().
-                            provideErrorFeedback(editorPane);
+                    UIManager.getLookAndFeel().provideErrorFeedback(editorPane);
                     return;
                 }
 
@@ -615,8 +588,7 @@ public class FileEditor implements SearchListener {
                 if (editorPane instanceof RSyntaxTextArea) {
                     RSyntaxTextArea rsta = (RSyntaxTextArea) editorPane;
                     if (rsta.isCodeFoldingEnabled()) {
-                        rsta.getFoldManager().
-                                ensureOffsetNotInClosedFold(offs);
+                        rsta.getFoldManager().ensureOffsetNotInClosedFold(offs);
                     }
                 }
                 int line = editorPane.getLineOfOffset(offs);
@@ -624,32 +596,31 @@ public class FileEditor implements SearchListener {
                 editorPane.setCaretPosition(offs);
 
             } catch (BadLocationException ble) { // Never happens
-                UIManager.getLookAndFeel().
-                        provideErrorFeedback(editorPane);
+                UIManager.getLookAndFeel().provideErrorFeedback(editorPane);
                 ble.printStackTrace();
             }
         }
-
     }
-    public void toggleBreakpoint(){
+
+    public void toggleBreakpoint() {
         int line;
-        //boolean highlight = false;
+        // boolean highlight = false;
         GutterIconInfo tag;
         try {
             line = editorPane.getLineOfOffset(editorPane.getCaretPosition());
 
             scrollPane.getGutter().toggleBookmark(HEADER_BREAK_PT, line);
 
-            //TODO toggle highlighting row of breakpoint
+            // TODO toggle highlighting row of breakpoint
             /*
             highlight = pane.getGutter().toggleBookmark(HEADER_BREAK_PT, line);
             if (highlight) {
-                lineHighlights.put(line,
-                        editorPane.addLineHighlight(line, new Color(255, 0, 0, 128)));
+            	lineHighlights.put(line,
+            			editorPane.addLineHighlight(line, new Color(255, 0, 0, 128)));
             }
             else {
-                editorPane.removeLineHighlight(lineHighlights.get(line));
-                lineHighlights.remove(line);
+            	editorPane.removeLineHighlight(lineHighlights.get(line));
+            	lineHighlights.remove(line);
             }
             */
             toggleBreakpointListener.onToggleBreakpoint(getFilePath(), line);
@@ -660,19 +631,18 @@ public class FileEditor implements SearchListener {
         }
     }
 
-    public ArrayList<Integer> getBreakpoints()
-    {
-        ArrayList<Integer> points = new ArrayList<Integer>();
+    public ArrayList<Integer> getBreakpoints() {
+        ArrayList<Integer> points = new ArrayList<>();
 
         MultiHeaderGutter gutter = scrollPane.getGutter();
         if (gutter != null) {
             GutterIconInfo[] bookmarks = gutter.getBookmarks(HEADER_BREAK_PT);
-            for (GutterIconInfo info: bookmarks) {
+            for (GutterIconInfo info : bookmarks) {
                 try {
                     int line = editorPane.getLineOfOffset(info.getMarkedOffset());
                     points.add(line);
                     System.out.println("Breakpoint at line: " + info.getMarkedOffset());
-                } catch (BadLocationException ex){
+                } catch (BadLocationException ex) {
                     ex.printStackTrace();
                 }
             }
@@ -705,6 +675,7 @@ public class FileEditor implements SearchListener {
      */
     public static class MultiHeaderToggleBreakPointAction extends RecordableTextAction {
         private final FileEditor fileEditor;
+
         public MultiHeaderToggleBreakPointAction(String name, FileEditor fileEditor) {
             super(name);
             this.fileEditor = fileEditor;
@@ -719,6 +690,5 @@ public class FileEditor implements SearchListener {
         public final String getMacroID() {
             return getName();
         }
-
     }
 }

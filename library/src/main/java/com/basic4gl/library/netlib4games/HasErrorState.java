@@ -7,22 +7,22 @@ import com.basic4gl.library.netlib4games.internal.Assert;
  */
 public class HasErrorState extends AbstractHasErrorState {
     // Error status
-    boolean m_error;
-    String m_errorString;
+    private boolean hasError;
+    private String message;
 
     @Override
     protected void setError(String text) {
-        m_error = true;
-        m_errorString = text;
+        hasError = true;
+        message = text;
     }
 
     public HasErrorState() {
-        m_error = false;
+        hasError = false;
     }
 
     @Override
     public boolean hasError() {
-        return m_error;
+        return hasError;
     }
 
     @Override
@@ -30,11 +30,11 @@ public class HasErrorState extends AbstractHasErrorState {
         // TODO review suspicious assert
         Assert.assertTrue(hasError());
 
-        return m_errorString;
+        return message;
     }
 
     @Override
     public void clearError() {
-        m_error = false;
+        hasError = false;
     }
 }

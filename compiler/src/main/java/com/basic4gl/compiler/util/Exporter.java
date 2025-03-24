@@ -21,11 +21,11 @@ public class Exporter {
      * @throws IOException
      */
     public static void addSource(List<String> files, String excludeRegex, JarOutputStream target) throws IOException {
-        String tempPath = null; //Last valid path in the files list
-        boolean copy;           //Should file be copied
+        String tempPath = null; // Last valid path in the files list
+        boolean copy; // Should file be copied
         HashSet<String> entryNames = new HashSet<>(); // Avoid duplicate entry ZipExceptions
 
-        //Get location of application
+        // Get location of application
         CodeSource src = Exporter.class.getProtectionDomain().getCodeSource();
 
         Pattern excludePattern = Pattern.compile(excludeRegex, Pattern.CASE_INSENSITIVE);
@@ -42,12 +42,12 @@ public class Exporter {
                 }
                 String name = e.getName();
 
-                if (name.startsWith("META-INF/"))   //Do not copy manifest to destination
+                if (name.startsWith("META-INF/")) // Do not copy manifest to destination
                 {
                     continue;
                 }
 
-                //Check if file should be added
+                // Check if file should be added
                 copy = false;
                 Matcher excludeFileMatcher = excludePattern.matcher(name);
 
@@ -56,7 +56,7 @@ public class Exporter {
                     continue;
                 }
 
-                //Check if entry name matches cached name
+                // Check if entry name matches cached name
                 if (tempPath != null && name.startsWith(tempPath)) {
                     Matcher excludePathMatcher = excludePattern.matcher(tempPath);
 
@@ -66,16 +66,16 @@ public class Exporter {
                 }
 
                 if (!copy) {
-                    for (String file : files)    //Check if entry name is in file list
+                    for (String file : files) // Check if entry name is in file list
                     {
                         if (name.startsWith(file)) {
-                            tempPath = file;    //Cache path
+                            tempPath = file; // Cache path
                             copy = true;
                             break;
                         }
                     }
                 }
-                //Copy file to destination
+                // Copy file to destination
                 if (copy && entryNames.add(name)) {
                     target.putNextEntry(e);
                     for (int c = input.read(); c != -1; c = input.read()) {
@@ -86,11 +86,8 @@ public class Exporter {
                 }
             }
 
-        }
-        else
-        {
+        } else {
             System.err.println("Source not recognized");
         }
     }
-
 }

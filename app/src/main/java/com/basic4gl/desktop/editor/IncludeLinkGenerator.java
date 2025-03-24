@@ -1,13 +1,12 @@
 package com.basic4gl.desktop.editor;
 
-import org.fife.ui.rsyntaxtextarea.LinkGenerator;
-import org.fife.ui.rsyntaxtextarea.LinkGeneratorResult;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-
-import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.io.File;
 import java.util.Arrays;
+import javax.swing.event.HyperlinkEvent;
+import org.fife.ui.rsyntaxtextarea.LinkGenerator;
+import org.fife.ui.rsyntaxtextarea.LinkGeneratorResult;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 public class IncludeLinkGenerator implements LinkGenerator {
     private static final String INCLUDE = "include ";
@@ -15,9 +14,9 @@ public class IncludeLinkGenerator implements LinkGenerator {
     /**
      * Separators used to determine words in text.
      */
-    private final java.util.List<String> textSeparators =
-            Arrays.asList("\n");
-    //Arrays.asList(",", ";", "\n", "|", "{", "}", "[", "]", "=", "\"", "'", "*", "%", "&", "?");
+    private final java.util.List<String> textSeparators = Arrays.asList("\n");
+
+    // Arrays.asList(",", ";", "\n", "|", "{", "}", "[", "]", "=", "\"", "'", "*", "%", "&", "?");
 
     private final ITabProvider tabProvider;
 
@@ -104,10 +103,10 @@ public class IncludeLinkGenerator implements LinkGenerator {
     }
 
     String separatorsToSystem(String res) {
-        if (res==null) {
+        if (res == null) {
             return null;
         }
-        if (File.separatorChar=='\\') {
+        if (File.separatorChar == '\\') {
             // From Windows to Linux/Mac
             return res.replace('/', File.separatorChar);
         } else {

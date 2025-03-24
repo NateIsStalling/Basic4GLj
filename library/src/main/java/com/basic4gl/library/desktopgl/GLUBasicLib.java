@@ -1,22 +1,21 @@
 package com.basic4gl.library.desktopgl;
 
+import static org.lwjgl.opengl.GL11.glFrustum;
+import static org.lwjgl.opengl.GL11.glOrtho;
+
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.compiler.util.FunctionSpecification;
+import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.lwjgl.opengl.GL11.glFrustum;
-import static org.lwjgl.opengl.GL11.glOrtho;
 
 /**
  * Created by Nate on 11/5/2015.
@@ -33,22 +32,19 @@ public class GLUBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
+    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
 
-    }
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services){
-
-    }
+    public void init(TomBasicCompiler comp, IServiceCollection services) {}
 
     @Override
     public void cleanup() {
-        //Do nothing
+        // Do nothing
     }
 
     @Override
     public Map<String, Constant> constants() {
-        Map<String, Constant> c = new HashMap<String, Constant>();
+        Map<String, Constant> c = new HashMap<>();
         /*c.put("GLU_VERSION_1_1", new Constant(GLU_VERSION_1_1));
         c.put("GLU_VERSION_1_2", new Constant(GLU_VERSION_1_2));
         c.put("GLU_INVALID_ENUM", new Constant(GLU_INVALID_ENUM));
@@ -169,10 +165,51 @@ public class GLUBasicLib implements FunctionLibrary {
 
     @Override
     public Map<String, FunctionSpecification[]> specs() {
-        Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
-        s.put("gluOrtho2D", new FunctionSpecification[]{new FunctionSpecification(WrapgluOrtho2D.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
-        s.put("gluPerspective", new FunctionSpecification[]{new FunctionSpecification(WrapgluPerspective.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
-        s.put("gluLookAt", new FunctionSpecification[]{new FunctionSpecification(WrapgluLookAt.class, new ParamTypeList (BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL), true, false, BasicValType.VTP_INT, false, false, null)});
+        Map<String, FunctionSpecification[]> s = new HashMap<>();
+        s.put("gluOrtho2D", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapgluOrtho2D.class,
+                    new ParamTypeList(
+                            BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL),
+                    true,
+                    false,
+                    BasicValType.VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("gluPerspective", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapgluPerspective.class,
+                    new ParamTypeList(
+                            BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL),
+                    true,
+                    false,
+                    BasicValType.VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("gluLookAt", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapgluLookAt.class,
+                    new ParamTypeList(
+                            BasicValType.VTP_REAL,
+                            BasicValType.VTP_REAL,
+                            BasicValType.VTP_REAL,
+                            BasicValType.VTP_REAL,
+                            BasicValType.VTP_REAL,
+                            BasicValType.VTP_REAL,
+                            BasicValType.VTP_REAL,
+                            BasicValType.VTP_REAL,
+                            BasicValType.VTP_REAL),
+                    true,
+                    false,
+                    BasicValType.VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
         return s;
     }
 
@@ -191,32 +228,23 @@ public class GLUBasicLib implements FunctionLibrary {
         return null;
     }
 
+    public static final class WrapgluOrtho2D implements Function {
 
-    public static final class WrapgluOrtho2D implements Function
-
-    {
         public void run(TomVM vm) {
-            //gluOrtho2D();   //Replaced with glOrtho
-            glOrtho(vm.getRealParam(4),
-                    vm.getRealParam(3),
-                    vm.getRealParam(2),
-                    vm.getRealParam(1),
-                    -1, 1);
+            // gluOrtho2D();   //Replaced with glOrtho
+            glOrtho(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1), -1, 1);
         }
     }
 
-    public static final class WrapgluPerspective implements Function
+    public static final class WrapgluPerspective implements Function {
 
-    {
         public void run(TomVM vm) {
-            //gluPerspective(); //Replaced with glFrustrum
+            // gluPerspective(); //Replaced with glFrustrum
 
-            perspectiveGL(vm.getRealParam(4),
-                    vm.getRealParam(3),
-                    vm.getRealParam(2),
-                    vm.getRealParam(1));
+            perspectiveGL(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
-        private void perspectiveGL(double fovY, double aspect, double zNear, double zFar){
+
+        private void perspectiveGL(double fovY, double aspect, double zNear, double zFar) {
             double fW, fH;
             fH = Math.tan(fovY / 360.0 * Math.PI) * zNear;
             fW = fH * aspect;
@@ -224,23 +252,21 @@ public class GLUBasicLib implements FunctionLibrary {
         }
     }
 
-    public static final class WrapgluLookAt implements Function
+    public static final class WrapgluLookAt implements Function {
 
-    {
         public void run(TomVM vm) {
-            //TODO implement gluLookAt
+            // TODO implement gluLookAt
             throw new UnsupportedOperationException();
             /*gluLookAt(vm.GetRealParam(9),
-                    vm.GetRealParam(8),
-                    vm.GetRealParam(7),
-                    vm.GetRealParam(6),
-                    vm.GetRealParam(5),
-                    vm.GetRealParam(4),
-                    vm.GetRealParam(3),
-                    vm.GetRealParam(2),
-                    vm.GetRealParam(1));
+            		vm.GetRealParam(8),
+            		vm.GetRealParam(7),
+            		vm.GetRealParam(6),
+            		vm.GetRealParam(5),
+            		vm.GetRealParam(4),
+            		vm.GetRealParam(3),
+            		vm.GetRealParam(2),
+            		vm.GetRealParam(1));
             */
         }
     }
 }
-

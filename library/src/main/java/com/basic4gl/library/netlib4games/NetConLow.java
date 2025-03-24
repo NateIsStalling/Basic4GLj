@@ -35,15 +35,12 @@ public abstract class NetConLow extends HasErrorStateThreadSafe {
         super();
     }
 
-    public void dispose() {
-
-    }
+    public void dispose() {}
 
     /**
      * @return true if connection is a client connection, or false if is a server connection.
      */
     public abstract boolean isClient();
-
 
     /**
      * Connect to address.
@@ -85,12 +82,10 @@ public abstract class NetConLow extends HasErrorStateThreadSafe {
      */
     public abstract void send(byte[] data, int size);
 
-
     /**
      * @return True if a data is waiting to be received. If not connected, should simply return false.
      */
     public abstract boolean isDataPending();
-
 
     /**
      * @return Size of pending data.
@@ -120,7 +115,6 @@ public abstract class NetConLow extends HasErrorStateThreadSafe {
      * @param size   In = Amount of room in data, Out = # of bytes read.
      */
     public abstract int receivePart(byte[] data, int offset, int size);
-
 
     /**
      * Discard the top-of-queue pending packet.

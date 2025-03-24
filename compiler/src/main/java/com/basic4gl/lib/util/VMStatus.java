@@ -7,9 +7,7 @@ public class VMStatus {
     protected boolean hasError;
     protected String error;
 
-    public VMStatus() {
-
-    }
+    public VMStatus() {}
 
     public VMStatus(boolean done, boolean hasError, String error) {
         this.done = done;

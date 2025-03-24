@@ -12,19 +12,20 @@ public class CallbackMessage {
     public static final int SUCCESS = 2;
     public static final int PAUSED = 3;
 
-
     protected int status;
     protected String text;
 
-    public CallbackMessage(){
+    public CallbackMessage() {
         this.status = STOPPED;
         this.text = "";
     }
-    public CallbackMessage(int status, String message){
+
+    public CallbackMessage(int status, String message) {
         this.status = status;
         this.text = message;
     }
-    public boolean setMessage(int status, String message){
+
+    public boolean setMessage(int status, String message) {
         if (this.status == status && Objects.equals(this.text, message)) {
             // no change
             return false;
@@ -34,7 +35,8 @@ public class CallbackMessage {
 
         return true;
     }
-    public boolean setMessage(CallbackMessage message){
+
+    public boolean setMessage(CallbackMessage message) {
         if (message == null) {
             // no change
             return false;

@@ -1,5 +1,6 @@
 plugins {
     id "application"
+    id("com.diffplug.spotless") version "7.0.2"
 }
 apply plugin: "java"
 
@@ -58,7 +59,6 @@ startScripts {
     classpath = ((Jar)jar).outputs.files + ((Jar)pathingJar).outputs.files
 }
 
-
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
@@ -90,6 +90,22 @@ dependencies {
 
     testImplementation 'junit:junit:4.12'
 }
+
+spotless {
+    java {
+        // Use the default importOrder configuration
+        importOrder()
+
+        removeUnusedImports()
+        palantirJavaFormat('2.50.0').formatJavadoc(false)
+
+        formatAnnotations()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+build.dependsOn spotlessApply
 
 jar {
     dependsOn(pathingJar)
@@ -130,8 +146,4 @@ task debugAll {
             rootProject.ext.get("debugServerJarPath")
         }
     }
-}
-
-repositories {
-    mavenCentral()
 }

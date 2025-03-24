@@ -9,7 +9,7 @@ import java.util.concurrent.BlockingQueue;
  * Simple event wrapper for thread synchronization event
  */
 public class ThreadEvent {
-    final java.lang.Thread event;
+    private final java.lang.Thread event;
     private final List<BlockingQueue<Boolean>> queue;
 
     private final String name;
@@ -48,7 +48,6 @@ public class ThreadEvent {
             }
         }
     }
-
 
     // Member access
     public java.lang.Thread getEventHandle() {

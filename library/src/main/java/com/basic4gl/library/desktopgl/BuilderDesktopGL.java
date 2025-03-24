@@ -1,11 +1,10 @@
 package com.basic4gl.library.desktopgl;
 
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.*;
 import com.basic4gl.compiler.util.Exporter;
 import com.basic4gl.compiler.util.IVMDriver;
+import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.TomVM;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -22,12 +21,12 @@ import java.util.zip.ZipOutputStream;
  */
 public class BuilderDesktopGL extends Builder {
 
-    private GLTextGridWindow mTarget;
-    private FileOpener mFiles;
+    private GLTextGridWindow target;
+    private FileOpener files;
 
     public static Library getInstance(TomBasicCompiler compiler) {
         BuilderDesktopGL instance = new BuilderDesktopGL();
-        instance.mTarget = (GLTextGridWindow) GLTextGridWindow.getInstance(compiler);
+        instance.target = (GLTextGridWindow) GLTextGridWindow.getInstance(compiler);
         return instance;
     }
 
@@ -43,19 +42,18 @@ public class BuilderDesktopGL extends Builder {
 
     @Override
     public Configuration getSettings() {
-        return mTarget.getSettings();
+        return target.getSettings();
     }
 
     @Override
     public Configuration getConfiguration() {
-        return mTarget.getConfiguration();
+        return target.getConfiguration();
     }
 
     @Override
     public void setConfiguration(Configuration config) {
-        mTarget.setConfiguration(config);
+        target.setConfiguration(config);
     }
-
 
     @Override
     public boolean export(String filename, OutputStream stream, TaskCallback callback) throws Exception {
@@ -63,19 +61,19 @@ public class BuilderDesktopGL extends Builder {
         File file = new File(filename);
         File jar = new File(file.getName().replaceFirst("[.][^.]+$", "") + ".jar");
         String classpath = ".";
-        //TODO set this as a parameter or global constant
+        // TODO set this as a parameter or global constant
         ZipOutputStream output = new ZipOutputStream(stream);
         JarOutputStream target;
         ZipEntry zipEntry;
         JarEntry jarEntry;
 
-        //TODO Add build option for single Jar
+        // TODO Add build option for single Jar
 
         ClassLoader loader = getClass().getClassLoader();
         List<String> dependencies;
 
-        //Generate class path
-        dependencies = mTarget.getClassPathObjects();
+        // Generate class path
+        dependencies = this.target.getClassPathObjects();
         i = 0;
         if (dependencies != null) {
             for (String dependency : dependencies) {
@@ -84,18 +82,17 @@ public class BuilderDesktopGL extends Builder {
             }
         }
 
-        //Add external dependencies
-        dependencies = mTarget.getDependencies();
+        // Add external dependencies
+        dependencies = this.target.getDependencies();
         if (dependencies != null) {
             // pre-validate
             for (String dependency : dependencies) {
                 File source = new File(dependency);
 
-                if (!source.exists()
-                        || ClassLoader.getSystemClassLoader().getResource(dependency) == null) {
+                if (!source.exists() || ClassLoader.getSystemClassLoader().getResource(dependency) == null) {
 
                     System.out.println("Dependency not found: " + dependency);
-                    continue;       //TODO throw build error
+                    continue; // TODO throw build error
                 }
             }
             // add
@@ -108,8 +105,8 @@ public class BuilderDesktopGL extends Builder {
                     input = ClassLoader.getSystemClassLoader().getResourceAsStream(dependency);
                 } else {
                     continue;
-                    //TODO throw build error
-                    //throw new Exception("Cannot find dependency: " + dependency);
+                    // TODO throw build error
+                    // throw new Exception("Cannot find dependency: " + dependency);
                 }
 
                 zipEntry = new ZipEntry(dependency);
@@ -123,47 +120,53 @@ public class BuilderDesktopGL extends Builder {
             }
         }
 
-        //Add launcher script
-        //TODO add additional scripts for each platform
+        // Add launcher script
+        // TODO add additional scripts for each platform
         zipEntry = new ZipEntry("launcher.bat");
         zipEntry.setTime(System.currentTimeMillis());
         output.putNextEntry(zipEntry);
         output.write(String.format(
-                "::Run %1$s; requires Java be installed and in your system path\n" +
-                        "::Log console output for debugging\n" +
-                        ">output.log (\n" +
-                        "\tjava -jar \"%1$s\"\n" +
-                        ")",
-                jar.getName()).getBytes(StandardCharsets.UTF_8));
+                        "::Run %1$s; requires Java be installed and in your system path\n"
+                                + "::Log console output for debugging\n"
+                                + ">output.log (\n"
+                                + "\tjava -jar \"%1$s\"\n"
+                                + ")",
+                        jar.getName())
+                .getBytes(StandardCharsets.UTF_8));
         output.closeEntry();
 
-        //TODO update script for better logging
+        // TODO update script for better logging
         zipEntry = new ZipEntry("launcher-macos.sh");
         zipEntry.setTime(System.currentTimeMillis());
         output.putNextEntry(zipEntry);
         output.write(String.format(
-                "# Run %1$s; requires Java be installed and in your system path\n" +
-                        "# -XstartOnFirstThread is required by LWJGL for window to display on Mac OS\n" +
-                        "java -XstartOnFirstThread -jar \"%1$s\"\n",
-                jar.getName()).getBytes(StandardCharsets.UTF_8));
+                        "# Run %1$s; requires Java be installed and in your system path\n"
+                                + "# -XstartOnFirstThread is required by LWJGL for window to display on Mac"
+                                + " OS\n"
+                                + "java -XstartOnFirstThread -jar \"%1$s\"\n",
+                        jar.getName())
+                .getBytes(StandardCharsets.UTF_8));
         output.closeEntry();
 
         zipEntry = new ZipEntry("README.txt");
         zipEntry.setTime(System.currentTimeMillis());
         output.putNextEntry(zipEntry);
         output.write(String.format(
-                "Execute launcher.bat to run %1$s on Windows.\n" +
-                    "To run %1$s on Mac OS, execute launcher-macos.sh or run the jar with the following additional Java option from the terminal: \n" +
-                    "-XstartOnFirstThread",
-                jar.getName()).getBytes(StandardCharsets.UTF_8));
+                        "Execute launcher.bat to run %1$s on Windows.\n"
+                                + "To run %1$s on Mac OS, execute launcher-macos.sh or run the jar with the"
+                                + " following additional Java option from the terminal: \n"
+                                + "-XstartOnFirstThread",
+                        jar.getName())
+                .getBytes(StandardCharsets.UTF_8));
         output.closeEntry();
         try {
-            //Create application's manifest
+            // Create application's manifest
             Manifest manifest = new Manifest();
             manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
 
             manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, classpath);
-            manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, mTarget.getClass().getName());
+            manifest.getMainAttributes()
+                    .put(Attributes.Name.MAIN_CLASS, this.target.getClass().getName());
 
             zipEntry = new ZipEntry(jar.getName());
             zipEntry.setTime(System.currentTimeMillis());
@@ -172,12 +175,12 @@ public class BuilderDesktopGL extends Builder {
 
             target = new JarOutputStream(bytes, manifest);
 
-            //Add Basic4GLj classes to new Jar
+            // Add Basic4GLj classes to new Jar
             System.out.println("Adding source files");
-            List<String> files = new ArrayList<String>();
-            //TODO Only add required classes
+            List<String> files = new ArrayList<>();
+            // TODO Only add required classes
             files.add("com/basic4gl/compiler");
-            files.add("com/basic4gl/lib"); //TODO this namespace should be renamed..
+            files.add("com/basic4gl/lib"); // TODO this namespace should be renamed..
             files.add("com/basic4gl/library");
             files.add("com/basic4gl/util");
             files.add("com/basic4gl/runtime");
@@ -185,7 +188,7 @@ public class BuilderDesktopGL extends Builder {
             files.add("org/apache/commons/cli"); // args support
             files.add("org/apache/commons/imaging"); // MD2 support
             files.add("org/lwjgl");
-            //TODO this should only be added if target OS
+            // TODO this should only be added if target OS
             files.add("macos"); // lwjgl natives
 
             // exclude any html/javadoc to save on file size
@@ -193,47 +196,46 @@ public class BuilderDesktopGL extends Builder {
 
             Exporter.addSource(files, excludeRegex, target);
 
-            //Save VM's initial state to Jar
-            mTarget.reset();
+            // Save VM's initial state to Jar
+            this.target.reset();
             jarEntry = new JarEntry(GLTextGridWindow.STATE_FILE);
             target.putNextEntry(jarEntry);
-            mTarget.saveState(target);
+            this.target.saveState(target);
             target.closeEntry();
 
-            //Serialize the build configuration and add to Jar
+            // Serialize the build configuration and add to Jar
             jarEntry = new JarEntry(GLTextGridWindow.CONFIG_FILE);
             target.putNextEntry(jarEntry);
-            mTarget.saveConfiguration(target);
+            this.target.saveConfiguration(target);
             target.closeEntry();
 
-            //TODO Implement embedding resources
+            // TODO Implement embedding resources
             target.close();
             bytes.writeTo(output);
-            //Writing Jar to archive complete
+            // Writing Jar to archive complete
             output.closeEntry();
-
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         /*if (singleJar){
-            System.out.println("Adding dependencies");
-            if (dependencies != null)
-                for (String file: dependencies) {
-                    File source = new File(libRoot + file);
-                    if (!source.exists())
-                        continue;
-                    FileInputStream input = new FileInputStream(source);
+        	System.out.println("Adding dependencies");
+        	if (dependencies != null)
+        		for (String file: dependencies) {
+        			File source = new File(libRoot + file);
+        			if (!source.exists())
+        				continue;
+        			FileInputStream input = new FileInputStream(source);
 
-                    entry = new JarEntry(file);
-                    entry.setTime(source.lastModified());
+        			entry = new JarEntry(file);
+        			entry.setTime(source.lastModified());
 
-                    target.putNextEntry(entry);
-                    for (int c = input.read(); c != -1; c = input.read()) {
-                        target.write(c);
-                    }
-                    target.closeEntry();
-                }
+        			target.putNextEntry(entry);
+        			for (int c = input.read(); c != -1; c = input.read()) {
+        				target.write(c);
+        			}
+        			target.closeEntry();
+        		}
         }*/
 
         output.close();
@@ -242,12 +244,12 @@ public class BuilderDesktopGL extends Builder {
 
     @Override
     public Target getTarget() {
-        return mTarget;
+        return target;
     }
 
     @Override
     public IVMDriver getVMDriver() {
-        return mTarget;
+        return target;
     }
 
     @Override
@@ -256,7 +258,7 @@ public class BuilderDesktopGL extends Builder {
     }
 
     @Override
-    public String version() {
+    public String getVersion() {
         return "1";
     }
 
@@ -266,39 +268,35 @@ public class BuilderDesktopGL extends Builder {
     }
 
     @Override
-    public String author() {
+    public String getAuthor() {
         return "Nathaniel Nielsen";
     }
 
     @Override
-    public String contact() {
+    public String getContact() {
         return "https://github.com/NateIsStalling/Basic4GLj/issues";
     }
 
     @Override
-    public String id() {
+    public String getId() {
         return "desktopgl";
     }
 
+    @Override
+    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
-
-    }
-
-    @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {
-    }
+    public void init(TomBasicCompiler comp, IServiceCollection services) {}
 
     @Override
     public void cleanup() {
-        //Do nothing
+        // Do nothing
     }
 
     @Override
     public void init(FileOpener files) {
-        mFiles = files;
-        mTarget.init(files);
+        this.files = files;
+        target.init(files);
     }
 
     @Override
@@ -313,36 +311,36 @@ public class BuilderDesktopGL extends Builder {
 
     @Override
     public String getConfigFilePathCommandLineOption() {
-        return mTarget.getConfigFilePathCommandLineOption();
+        return target.getConfigFilePathCommandLineOption();
     }
 
     @Override
     public String getLineMappingFilePathCommandLineOption() {
-        return mTarget.getLineMappingFilePathCommandLineOption();
+        return target.getLineMappingFilePathCommandLineOption();
     }
 
     @Override
     public String getLogFilePathCommandLineOption() {
-        return mTarget.getLogFilePathCommandLineOption();
+        return target.getLogFilePathCommandLineOption();
     }
 
     @Override
     public String getParentDirectoryCommandLineOption() {
-        return mTarget.getParentDirectoryCommandLineOption();
+        return target.getParentDirectoryCommandLineOption();
     }
 
     @Override
     public String getProgramFilePathCommandLineOption() {
-        return mTarget.getProgramFilePathCommandLineOption();
+        return target.getProgramFilePathCommandLineOption();
     }
 
     @Override
     public String getDebuggerPortCommandLineOption() {
-        return mTarget.getDebuggerPortCommandLineOption();
+        return target.getDebuggerPortCommandLineOption();
     }
 
     @Override
     public String getSandboxModeEnabledOption() {
-        return mTarget.getSandboxModeEnabledOption();
+        return target.getSandboxModeEnabledOption();
     }
 }

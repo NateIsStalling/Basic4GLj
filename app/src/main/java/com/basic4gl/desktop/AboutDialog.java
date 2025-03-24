@@ -1,33 +1,32 @@
 package com.basic4gl.desktop;
 
 import com.basic4gl.desktop.util.SwingIconUtil;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 /**
  * Created by Nate on 1/12/2015.
  */
 public class AboutDialog {
-    JDialog mDialog;
+    private final JDialog dialog;
 
     public AboutDialog(Frame parent) {
         Locale locale = new Locale("en", "US");
         ResourceBundle resources = ResourceBundle.getBundle("build", locale);
 
-        mDialog = new JDialog(parent);
+        dialog = new JDialog(parent);
 
-        mDialog.setTitle("About");
+        dialog.setTitle("About");
 
-        mDialog.setResizable(false);
-        mDialog.setModal(true);
+        dialog.setResizable(false);
+        dialog.setModal(true);
 
         JPanel mainPanel = new JPanel();
-        mDialog.add(mainPanel);
+        dialog.add(mainPanel);
         GridLayout mainLayout = new GridLayout(2, 1);
         mainPanel.setLayout(mainLayout);
 
@@ -50,11 +49,11 @@ public class AboutDialog {
         labelDescription.setBorder(new EmptyBorder(5, 5, 5, 5));
         descriptionPanel.add(labelDescription);
         descriptionPanel.add(new JLabel("Version: " + resources.getString(BuildInfo.APPLICATION_VERSION_RESOURCE)));
-        descriptionPanel.add(new JLabel("Build Date: " + resources.getString(BuildInfo.APPLICATION_BUILD_DATE_RESOURCE)));
+        descriptionPanel.add(
+                new JLabel("Build Date: " + resources.getString(BuildInfo.APPLICATION_BUILD_DATE_RESOURCE)));
         descriptionPanel.add(Box.createVerticalGlue());
         descriptionPanel.add(new JLabel(BuildInfo.APPLICATION_COPYRIGHT));
         descriptionPanel.add(new JLabel(BuildInfo.APPLICATION_WEBSITE));
-
 
         JTextPane textLicenses = new JTextPane();
         JScrollPane scrollLicenses = new JScrollPane(textLicenses);
@@ -72,11 +71,10 @@ public class AboutDialog {
             System.err.println("Couldn't find file: about.html");
         }
         mainPanel.add(scrollLicenses);
-        //JScrollPane scrollPane = new ScrollPane(textLicenses);
-        mDialog.pack();
-        mDialog.setSize(new Dimension(360, 320));
-        mDialog.setLocationRelativeTo(parent);
-        mDialog.setVisible(true);
+        // JScrollPane scrollPane = new ScrollPane(textLicenses);
+        dialog.pack();
+        dialog.setSize(new Dimension(360, 320));
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
     }
-
 }

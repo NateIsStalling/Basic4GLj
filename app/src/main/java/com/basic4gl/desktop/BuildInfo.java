@@ -1,7 +1,7 @@
 package com.basic4gl.desktop;
 
 public class BuildInfo {
-    //Window Constants
+    // Window Constants
     public static final String APPLICATION_VERSION_RESOURCE = "applicationVersion";
     public static final String APPLICATION_BUILD_DATE_RESOURCE = "applicationBuildDate";
     public static final String APPLICATION_NAME = "Basic4GLj";

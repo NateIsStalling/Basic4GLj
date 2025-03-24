@@ -26,16 +26,14 @@ public class NetPacketHeaderL1 {
     private final ByteBuffer buffer;
 
     public NetPacketHeaderL1() {
-        buffer = ByteBuffer.wrap(new byte[SIZE])
-                .order(BYTE_ORDER);
+        buffer = ByteBuffer.wrap(new byte[SIZE]).order(BYTE_ORDER);
     }
 
     public NetPacketHeaderL1(byte[] buffer) {
         if (buffer.length < SIZE) {
             throw new IllegalArgumentException("Buffer size too small");
         }
-        this.buffer = ByteBuffer.wrap(buffer)
-                .order(BYTE_ORDER);
+        this.buffer = ByteBuffer.wrap(buffer).order(BYTE_ORDER);
     }
 
     public static NetPacketHeaderL1 with(byte[] buffer) {
@@ -72,5 +70,4 @@ public class NetPacketHeaderL1 {
 
         buffer.putInt(ID_POSITION, id);
     }
-
 }

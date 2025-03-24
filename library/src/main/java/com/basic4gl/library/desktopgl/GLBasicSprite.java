@@ -1,10 +1,9 @@
 package com.basic4gl.library.desktopgl;
 
-import org.lwjgl.opengl.GL11;
+import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import java.util.Vector;
-
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Abstract base type for 2D sprite and sprite like objects.
@@ -31,7 +30,7 @@ public abstract class GLBasicSprite {
     }
 
     /*public ~GLBasicSprite (){
-        Remove ();
+    	Remove ();
     }*/
 
     private void internalRemove() {
@@ -174,7 +173,7 @@ public abstract class GLBasicSprite {
     public float[] color = new float[4];
     public int srcBlend, dstBlend;
 
-    protected Vector<Integer> textures = new Vector<Integer>();
+    protected Vector<Integer> textures = new Vector<>();
 
     // Class type identification
     public abstract GLSpriteEngine.GLSpriteType getGLSpriteType();
@@ -224,7 +223,7 @@ public abstract class GLBasicSprite {
     }
 
     public void addTextures(Vector<Integer> t) {
-        textures.addAll(t);            // Append textures to end
+        textures.addAll(t); // Append textures to end
         checkFrame();
     }
 
@@ -239,7 +238,7 @@ public abstract class GLBasicSprite {
     }
 
     // Rendering/animation
-    public abstract void render(float[] camInv);           // camInv is the inverted camera matrix
+    public abstract void render(float[] camInv); // camInv is the inverted camera matrix
 
     public void animate() {
         // By default Animate does nothing. Override for types to which it is
@@ -259,12 +258,12 @@ public abstract class GLBasicSprite {
     public void copy(GLBasicSprite s) {
         assertTrue(isSameTypeAs(s));
         internalCopy(s);
-        reorder();             // (As ZOrder may have changed)
+        reorder(); // (As ZOrder may have changed)
     }
 
     /*
     public GLBasicSprite& operator= (glBasicSprite& s) {
-        Copy (s);
-        return *this;
+    	Copy (s);
+    	return *this;
     }*/
 }

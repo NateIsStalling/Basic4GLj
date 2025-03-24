@@ -7,12 +7,12 @@ import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
 
 public class SetBreakpointsHandler {
-    private final Debugger mDebugger;
-    private final TomVM mVM;
+    private final Debugger debugger;
+    private final TomVM vm;
 
     public SetBreakpointsHandler(Debugger debugger, TomVM vm) {
-        mDebugger = debugger;
-        mVM = vm;
+        this.debugger = debugger;
+        this.vm = vm;
     }
 
     public void handle(SetBreakpointsCommand command) {
@@ -24,25 +24,25 @@ public class SetBreakpointsHandler {
 
         String filename = command.getSource().path;
 
-        mDebugger.ClearUserBreakPts(filename);
+        debugger.clearUserBreakPoints(filename);
 
-        for (SourceBreakpoint breakpoint: command.getBreakpoints()) {
+        for (SourceBreakpoint breakpoint : command.getBreakpoints()) {
             int line = breakpoint.line;
             Breakpoint verifiedBreakpoint = new Breakpoint();
-            mDebugger.AddUserBreakPt(filename, line);
+            debugger.addUserBreakPoint(filename, line);
 
             verifiedBreakpoint.source = command.getSource();
             verifiedBreakpoint.line = breakpoint.line;
 
-            //TODO decide how to handle breakpoint column;
+            // TODO decide how to handle breakpoint column;
             // currently can only handle breakpoints on the first instruction of a line
-            //verifiedBreakpoint.column = breakpoint.column;
+            // verifiedBreakpoint.column = breakpoint.column;
 
-            verifiedBreakpoint.verified = mDebugger.IsUserBreakPt(filename, line);
+            verifiedBreakpoint.verified = debugger.isUserBreakPoint(filename, line);
 
-            //TODO send verifiedBreakpoint in response
+            // TODO send verifiedBreakpoint in response
         }
 
-        mVM.repatchBreakpoints();
+        vm.repatchBreakpoints();
     }
 }

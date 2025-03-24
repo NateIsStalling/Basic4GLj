@@ -1,10 +1,12 @@
 package com.basic4gl.library.desktopgl;
 
+import static org.lwjgl.opengl.GL11.*;
+
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.compiler.util.FunctionSpecification;
+import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.runtime.Data;
@@ -12,28 +14,23 @@ import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Function;
-import org.lwjgl.BufferUtils;
-
 import java.nio.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.lwjgl.opengl.GL11.*;
-
+import org.lwjgl.BufferUtils;
 
 /**
  * Created by Nate on 4/16/2015.
  */
 public class GLBasicLib_gl implements FunctionLibrary {
 
-    ByteBuffer byteBuffer16;
-    ShortBuffer shortBuffer16;
-    IntBuffer intBuffer16;
-    LongBuffer longBuffer16;
-    FloatBuffer floatBuffer16;
-    DoubleBuffer doubleBuffer16;
-
+    private ByteBuffer byteBuffer16;
+    private ShortBuffer shortBuffer16;
+    private IntBuffer intBuffer16;
+    private LongBuffer longBuffer16;
+    private FloatBuffer floatBuffer16;
+    private DoubleBuffer doubleBuffer16;
 
     @Override
     public String name() {
@@ -54,20 +51,19 @@ public class GLBasicLib_gl implements FunctionLibrary {
         floatBuffer16 = BufferUtils.createFloatBuffer(16);
         doubleBuffer16 = BufferUtils.createDoubleBuffer(16);
     }
-    @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services){
 
-    }
+    @Override
+    public void init(TomBasicCompiler comp, IServiceCollection services) {}
 
     @Override
     public void cleanup() {
-        //Do nothing
+        // Do nothing
     }
 
     @Override
     public Map<String, Constant> constants() {
-        Map<String, Constant> c = new HashMap<String, Constant>();
-        //c.put("GL_VERSION_1_1", GL_VERSION_1_1));
+        Map<String, Constant> c = new HashMap<>();
+        // c.put("GL_VERSION_1_1", GL_VERSION_1_1));
         c.put("GL_VERSION", new Constant(GL_VERSION));
 
         c.put("GL_ACCUM", new Constant(GL_ACCUM));
@@ -162,9 +158,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         c.put("GL_INVALID_ENUM", new Constant(GL_INVALID_ENUM));
         c.put("GL_INVALID_VALUE", new Constant(GL_INVALID_VALUE));
         c.put("GL_INVALID_OPERATION", new Constant(GL_INVALID_OPERATION));
-        //TODO Constants unavailable in GL 2; original source used GL 1.1
-        //c.put("GL_STACK_OVERFLOW", GL_STACK_OVERFLOW));
-        //c.put("GL_STACK_UNDERFLOW", GL_STACK_UNDERFLOW));
+        // TODO Constants unavailable in GL 2; original source used GL 1.1
+        // c.put("GL_STACK_OVERFLOW", GL_STACK_OVERFLOW));
+        // c.put("GL_STACK_UNDERFLOW", GL_STACK_UNDERFLOW));
         c.put("GL_OUT_OF_MEMORY", new Constant(GL_OUT_OF_MEMORY));
         c.put("GL_2D", new Constant(GL_2D));
         c.put("GL_3D", new Constant(GL_3D));
@@ -505,7 +501,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         c.put("GL_REPEAT", new Constant(GL_REPEAT));
         c.put("GL_CLIENT_PIXEL_STORE_BIT", new Constant(GL_CLIENT_PIXEL_STORE_BIT));
         c.put("GL_CLIENT_VERTEX_ARRAY_BIT", new Constant(GL_CLIENT_VERTEX_ARRAY_BIT));
-        //NOTE: GL_CLIENT_ALL_ATTRIB_BITS was cast to unsigned int in original source
+        // NOTE: GL_CLIENT_ALL_ATTRIB_BITS was cast to unsigned int in original source
         c.put("GL_CLIENT_ALL_ATTRIB_BITS", new Constant(GL_CLIENT_ALL_ATTRIB_BITS));
         c.put("GL_POLYGON_OFFSET_FACTOR", new Constant(GL_POLYGON_OFFSET_FACTOR));
         c.put("GL_POLYGON_OFFSET_UNITS", new Constant(GL_POLYGON_OFFSET_UNITS));
@@ -597,7 +593,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
         c.put("GL_T2F_N3F_V3F", new Constant(GL_T2F_N3F_V3F));
         c.put("GL_T2F_C4F_N3F_V3F", new Constant(GL_T2F_C4F_N3F_V3F));
         c.put("GL_T4F_C4F_N3F_V4F", new Constant(GL_T4F_C4F_N3F_V4F));
-/*
+        /*
         c.put("GL_EXT_vertex_array", GL_EXT_vertex_array));
         c.put("GL_EXT_bgra", GL_EXT_bgra));
         c.put("GL_EXT_paletted_texture", GL_EXT_paletted_texture));
@@ -666,1243 +662,4853 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     @Override
     public Map<String, FunctionSpecification[]> specs() {
-        Map<String, FunctionSpecification[]> s = new HashMap<String, FunctionSpecification[]>();
+        Map<String, FunctionSpecification[]> s = new HashMap<>();
 
-        s.put("glAccum", new FunctionSpecification[]{new FunctionSpecification(WrapglAccum.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL)),
-                true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glAlphaFunc", new FunctionSpecification[]{new FunctionSpecification(WrapglAlphaFunc.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL)),
-                true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glAreTexturesResident", new FunctionSpecification[]{new FunctionSpecification(WrapglAreTexturesResident.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
-                true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glArrayElement", new FunctionSpecification[]{new FunctionSpecification(WrapglArrayElement.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT)),
-                true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glBindTexture", new FunctionSpecification[]{new FunctionSpecification(WrapglBindTexture.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glBlendFunc", new FunctionSpecification[]{new FunctionSpecification(WrapglBlendFunc.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCallList", new FunctionSpecification[]{new FunctionSpecification(WrapglCallList.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClear", new FunctionSpecification[]{new FunctionSpecification(WrapglClear.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClearAccum", new FunctionSpecification[]{new FunctionSpecification(WrapglClearAccum.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClearColor", new FunctionSpecification[]{new FunctionSpecification(WrapglClearColor.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClearDepth", new FunctionSpecification[]{new FunctionSpecification(WrapglClearDepth.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClearIndex", new FunctionSpecification[]{new FunctionSpecification(WrapglClearIndex.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClearStencil", new FunctionSpecification[]{new FunctionSpecification(WrapglClearStencil.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glClipPlane", new FunctionSpecification[]{
-                new FunctionSpecification(WrapglClipPlane.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglClipPlane_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3b", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3b.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3bv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3bv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor3bv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3d", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3dv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor3dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3f", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3fv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor3fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3i", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3iv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor3iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3s", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3sv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor3sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3ub", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3ub.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3ubv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3ubv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor3ubv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3ui", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3ui.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3uiv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3uiv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor3uiv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3us", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3us.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor3usv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor3usv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor3usv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4b", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4b.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4bv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4bv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor4bv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4d", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4dv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor4dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4f", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4fv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor4fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4i", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4iv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor4iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4s", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4sv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor4sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4ub", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4ub.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4ubv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4ubv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor4ubv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4ui", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4ui.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4uiv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4uiv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor4uiv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4us", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4us.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColor4usv", new FunctionSpecification[]{new FunctionSpecification(WrapglColor4usv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglColor4usv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColorMask", new FunctionSpecification[]{new FunctionSpecification(WrapglColorMask.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glColorMaterial", new FunctionSpecification[]{new FunctionSpecification(WrapglColorMaterial.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCopyPixels", new FunctionSpecification[]{new FunctionSpecification(WrapglCopyPixels.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCopyTexImage1D", new FunctionSpecification[]{new FunctionSpecification(WrapglCopyTexImage1D.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCopyTexImage2D", new FunctionSpecification[]{new FunctionSpecification(WrapglCopyTexImage2D.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCopyTexSubImage1D", new FunctionSpecification[]{new FunctionSpecification(WrapglCopyTexSubImage1D.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCopyTexSubImage2D", new FunctionSpecification[]{new FunctionSpecification(WrapglCopyTexSubImage2D.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glCullFace", new FunctionSpecification[]{new FunctionSpecification(WrapglCullFace.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDepthFunc", new FunctionSpecification[]{new FunctionSpecification(WrapglDepthFunc.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDepthMask", new FunctionSpecification[]{new FunctionSpecification(WrapglDepthMask.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDepthRange", new FunctionSpecification[]{new FunctionSpecification(WrapglDepthRange.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDisable", new FunctionSpecification[]{new FunctionSpecification(WrapglDisable.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDisableClientState", new FunctionSpecification[]{new FunctionSpecification(WrapglDisableClientState.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDrawArrays", new FunctionSpecification[]{new FunctionSpecification(WrapglDrawArrays.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glDrawBuffer", new FunctionSpecification[]{new FunctionSpecification(WrapglDrawBuffer.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEdgeFlag", new FunctionSpecification[]{new FunctionSpecification(WrapglEdgeFlag.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEdgeFlagv", new FunctionSpecification[]{new FunctionSpecification(WrapglEdgeFlagv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglEdgeFlagv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEnable", new FunctionSpecification[]{new FunctionSpecification(WrapglEnable.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEnableClientState", new FunctionSpecification[]{new FunctionSpecification(WrapglEnableClientState.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEndList", new FunctionSpecification[]{new FunctionSpecification(WrapglEndList.class,
-                new ParamTypeList(new ValType[]{})
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord1d", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord1d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord1dv", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord1dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglEvalCoord1dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord1f", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord1f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord1fv", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord1fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglEvalCoord1fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord2d", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord2d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord2dv", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord2dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglEvalCoord2dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord2f", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord2f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalCoord2fv", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalCoord2fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglEvalCoord2fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalMesh1", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalMesh1.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalMesh2", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalMesh2.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalPoint1", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalPoint1.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glEvalPoint2", new FunctionSpecification[]{new FunctionSpecification(WrapglEvalPoint2.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFeedbackBuffer", new FunctionSpecification[]{new FunctionSpecification(WrapglFeedbackBuffer.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFinish", new FunctionSpecification[]{new FunctionSpecification(WrapglFinish.class,
-                new ParamTypeList(new ValType[]{})
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFlush", new FunctionSpecification[]{new FunctionSpecification(WrapglFlush.class,
-                new ParamTypeList(new ValType[]{})
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFogf", new FunctionSpecification[]{new FunctionSpecification(WrapglFogf.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFogfv", new FunctionSpecification[]{new FunctionSpecification(WrapglFogfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglFogfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFogi", new FunctionSpecification[]{new FunctionSpecification(WrapglFogi.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFogiv", new FunctionSpecification[]{new FunctionSpecification(WrapglFogiv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglFogiv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFrontFace", new FunctionSpecification[]{new FunctionSpecification(WrapglFrontFace.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glFrustum", new FunctionSpecification[]{new FunctionSpecification(WrapglFrustum.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetBooleanv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetBooleanv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetBooleanv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetClipPlane", new FunctionSpecification[]{new FunctionSpecification(WrapglGetClipPlane.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetClipPlane_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetDoublev", new FunctionSpecification[]{new FunctionSpecification(WrapglGetDoublev.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetDoublev_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetError", new FunctionSpecification[]{new FunctionSpecification(WrapglGetError.class,
-                new ParamTypeList(new ValType[]{})
-                , true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetFloatv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetFloatv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetFloatv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetIntegerv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetIntegerv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetIntegerv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetLightfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetLightfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetLightfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetLightiv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetLightiv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetLightiv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetMaterialfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetMaterialfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetMaterialfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetMaterialiv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetMaterialiv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetMaterialiv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetPixelMapuiv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetPixelMapuiv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetPixelMapuiv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexEnvfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexEnvfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetTexEnvfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexEnviv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexEnviv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetTexEnviv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexGendv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexGendv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetTexGendv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexGenfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexGenfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetTexGenfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexGeniv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexGeniv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetTexGeniv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexLevelParameterfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexLevelParameterfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetTexLevelParameterfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexLevelParameteriv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexLevelParameteriv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetTexLevelParameteriv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexParameterfv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexParameterfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetTexParameterfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glGetTexParameteriv", new FunctionSpecification[]{new FunctionSpecification(WrapglGetTexParameteriv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglGetTexParameteriv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glHint", new FunctionSpecification[]{new FunctionSpecification(WrapglHint.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)
+        s.put("glAccum", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglAccum.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
         });
-        s.put("glIndexMask", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexMask.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexd", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexd.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexdv", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexdv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglIndexdv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexf", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexf.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexfv", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglIndexfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexi", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexi.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexiv", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexiv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglIndexiv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexs", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexs.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexsv", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexsv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglIndexsv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexub", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexub.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIndexubv", new FunctionSpecification[]{new FunctionSpecification(WrapglIndexubv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglIndexubv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glInitNames", new FunctionSpecification[]{new FunctionSpecification(WrapglInitNames.class,
-                new ParamTypeList(new ValType[]{})
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIsEnabled", new FunctionSpecification[]{new FunctionSpecification(WrapglIsEnabled.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIsList", new FunctionSpecification[]{new FunctionSpecification(WrapglIsList.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glIsTexture", new FunctionSpecification[]{new FunctionSpecification(WrapglIsTexture.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightModelf", new FunctionSpecification[]{new FunctionSpecification(WrapglLightModelf.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightModelfv", new FunctionSpecification[]{new FunctionSpecification(WrapglLightModelfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglLightModelfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightModeli", new FunctionSpecification[]{new FunctionSpecification(WrapglLightModeli.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightModeliv", new FunctionSpecification[]{new FunctionSpecification(WrapglLightModeliv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglLightModeliv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightf", new FunctionSpecification[]{new FunctionSpecification(WrapglLightf.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightfv", new FunctionSpecification[]{new FunctionSpecification(WrapglLightfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglLightfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLighti", new FunctionSpecification[]{new FunctionSpecification(WrapglLighti.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLightiv", new FunctionSpecification[]{new FunctionSpecification(WrapglLightiv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglLightiv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLineStipple", new FunctionSpecification[]{new FunctionSpecification(WrapglLineStipple.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLineWidth", new FunctionSpecification[]{new FunctionSpecification(WrapglLineWidth.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glListBase", new FunctionSpecification[]{new FunctionSpecification(WrapglListBase.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLoadIdentity", new FunctionSpecification[]{new FunctionSpecification(WrapglLoadIdentity.class,
-                new ParamTypeList(new ValType[]{})
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLoadName", new FunctionSpecification[]{new FunctionSpecification(WrapglLoadName.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glLogicOp", new FunctionSpecification[]{new FunctionSpecification(WrapglLogicOp.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMapGrid1d", new FunctionSpecification[]{new FunctionSpecification(WrapglMapGrid1d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMapGrid1f", new FunctionSpecification[]{new FunctionSpecification(WrapglMapGrid1f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMapGrid2d", new FunctionSpecification[]{new FunctionSpecification(WrapglMapGrid2d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMapGrid2f", new FunctionSpecification[]{new FunctionSpecification(WrapglMapGrid2f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMaterialf", new FunctionSpecification[]{new FunctionSpecification(WrapglMaterialf.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMaterialfv", new FunctionSpecification[]{new FunctionSpecification(WrapglMaterialfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglMaterialfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMateriali", new FunctionSpecification[]{new FunctionSpecification(WrapglMateriali.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMaterialiv", new FunctionSpecification[]{new FunctionSpecification(WrapglMaterialiv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglMaterialiv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glMatrixMode", new FunctionSpecification[]{new FunctionSpecification(WrapglMatrixMode.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNewList", new FunctionSpecification[]{new FunctionSpecification(WrapglNewList.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3b", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3b.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3bv", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3bv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglNormal3bv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3d", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3dv", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglNormal3dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3f", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3fv", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglNormal3fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3i", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3iv", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglNormal3iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3s", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glNormal3sv", new FunctionSpecification[]{new FunctionSpecification(WrapglNormal3sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglNormal3sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glOrtho", new FunctionSpecification[]{new FunctionSpecification(WrapglOrtho.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPassThrough", new FunctionSpecification[]{new FunctionSpecification(WrapglPassThrough.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPixelStoref", new FunctionSpecification[]{new FunctionSpecification(WrapglPixelStoref.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPixelStorei", new FunctionSpecification[]{new FunctionSpecification(WrapglPixelStorei.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPixelTransferf", new FunctionSpecification[]{new FunctionSpecification(WrapglPixelTransferf.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPixelTransferi", new FunctionSpecification[]{new FunctionSpecification(WrapglPixelTransferi.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPixelZoom", new FunctionSpecification[]{new FunctionSpecification(WrapglPixelZoom.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPointSize", new FunctionSpecification[]{new FunctionSpecification(WrapglPointSize.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPolygonMode", new FunctionSpecification[]{new FunctionSpecification(WrapglPolygonMode.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPolygonOffset", new FunctionSpecification[]{new FunctionSpecification(WrapglPolygonOffset.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPopAttrib", new FunctionSpecification[]{new FunctionSpecification(WrapglPopAttrib.class,
-                new ParamTypeList(new ValType[]{})
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPopClientAttrib", new FunctionSpecification[]{new FunctionSpecification(WrapglPopClientAttrib.class,
-                new ParamTypeList(new ValType[]{})
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPopMatrix", new FunctionSpecification[]{new FunctionSpecification(WrapglPopMatrix.class,
-                new ParamTypeList(new ValType[]{})
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPopName", new FunctionSpecification[]{new FunctionSpecification(WrapglPopName.class,
-                new ParamTypeList(new ValType[]{})
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPrioritizeTextures", new FunctionSpecification[]{new FunctionSpecification(WrapglPrioritizeTextures.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPushAttrib", new FunctionSpecification[]{new FunctionSpecification(WrapglPushAttrib.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPushClientAttrib", new FunctionSpecification[]{new FunctionSpecification(WrapglPushClientAttrib.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPushMatrix", new FunctionSpecification[]{new FunctionSpecification(WrapglPushMatrix.class,
-                new ParamTypeList(new ValType[]{})
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glPushName", new FunctionSpecification[]{new FunctionSpecification(WrapglPushName.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2d", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2dv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos2dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2f", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2fv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos2fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2i", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2iv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos2iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2s", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos2sv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos2sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos2sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3d", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3dv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos3dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3f", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3fv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos3fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3i", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3iv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos3iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3s", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos3sv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos3sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos3sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4d", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4dv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos4dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4f", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4fv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos4fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4i", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4iv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos4iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4s", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRasterPos4sv", new FunctionSpecification[]{new FunctionSpecification(WrapglRasterPos4sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRasterPos4sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glReadBuffer", new FunctionSpecification[]{new FunctionSpecification(WrapglReadBuffer.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectd", new FunctionSpecification[]{new FunctionSpecification(WrapglRectd.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectdv", new FunctionSpecification[]{new FunctionSpecification(WrapglRectdv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectdv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectdv_3.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectdv_4.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectf", new FunctionSpecification[]{new FunctionSpecification(WrapglRectf.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectfv", new FunctionSpecification[]{new FunctionSpecification(WrapglRectfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectfv_3.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectfv_4.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRecti", new FunctionSpecification[]{new FunctionSpecification(WrapglRecti.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectiv", new FunctionSpecification[]{new FunctionSpecification(WrapglRectiv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectiv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectiv_3.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectiv_4.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRects", new FunctionSpecification[]{new FunctionSpecification(WrapglRects.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRectsv", new FunctionSpecification[]{new FunctionSpecification(WrapglRectsv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectsv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectsv_3.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglRectsv_4.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRenderMode", new FunctionSpecification[]{new FunctionSpecification(WrapglRenderMode.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, true, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRotated", new FunctionSpecification[]{new FunctionSpecification(WrapglRotated.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glRotatef", new FunctionSpecification[]{new FunctionSpecification(WrapglRotatef.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glScaled", new FunctionSpecification[]{new FunctionSpecification(WrapglScaled.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glScalef", new FunctionSpecification[]{new FunctionSpecification(WrapglScalef.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glScissor", new FunctionSpecification[]{new FunctionSpecification(WrapglScissor.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glSelectBuffer", new FunctionSpecification[]{new FunctionSpecification(WrapglSelectBuffer.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glShadeModel", new FunctionSpecification[]{new FunctionSpecification(WrapglShadeModel.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glStencilFunc", new FunctionSpecification[]{new FunctionSpecification(WrapglStencilFunc.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glStencilMask", new FunctionSpecification[]{new FunctionSpecification(WrapglStencilMask.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glStencilOp", new FunctionSpecification[]{new FunctionSpecification(WrapglStencilOp.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1d", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1dv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord1dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1f", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1fv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord1fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1i", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1iv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord1iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1s", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord1sv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord1sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord1sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2d", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2dv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord2dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2f", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2fv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord2fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2i", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2iv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord2iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2s", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord2sv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord2sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord2sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3d", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3dv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord3dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3f", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3fv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord3fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3i", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3iv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord3iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3s", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord3sv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord3sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord3sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4d", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4dv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord4dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4f", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4fv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord4fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4i", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4iv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord4iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4s", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexCoord4sv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexCoord4sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexCoord4sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexEnvf", new FunctionSpecification[]{new FunctionSpecification(WrapglTexEnvf.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexEnvfv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexEnvfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexEnvfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexEnvi", new FunctionSpecification[]{new FunctionSpecification(WrapglTexEnvi.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexEnviv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexEnviv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexEnviv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGend", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGend.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGendv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGendv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexGendv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGenf", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGenf.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGenfv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGenfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexGenfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGeni", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGeni.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexGeniv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexGeniv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexGeniv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexParameterf", new FunctionSpecification[]{new FunctionSpecification(WrapglTexParameterf.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexParameterfv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexParameterfv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexParameterfv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexParameteri", new FunctionSpecification[]{new FunctionSpecification(WrapglTexParameteri.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTexParameteriv", new FunctionSpecification[]{new FunctionSpecification(WrapglTexParameteriv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglTexParameteriv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTranslated", new FunctionSpecification[]{new FunctionSpecification(WrapglTranslated.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glTranslatef", new FunctionSpecification[]{new FunctionSpecification(WrapglTranslatef.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2d", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2dv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex2dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2f", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2fv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex2fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2i", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2iv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex2iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2s", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex2sv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex2sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex2sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3d", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3dv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex3dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3f", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3fv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex3fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3i", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3iv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex3iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3s", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex3sv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex3sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex3sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4d", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4d.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4dv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4dv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex4dv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4f", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4f.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL), new ValType (BasicValType.VTP_REAL))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4fv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4fv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex4fv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_REAL, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4i", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4i.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4iv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4iv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex4iv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4s", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4s.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glVertex4sv", new FunctionSpecification[]{new FunctionSpecification(WrapglVertex4sv.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null),
-                new FunctionSpecification(WrapglVertex4sv_2.class,
-                        new ParamTypeList(new ValType (BasicValType.VTP_INT, (byte) 0, (byte) 1, true))
-                        , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
-        s.put("glViewport", new FunctionSpecification[]{new FunctionSpecification(WrapglViewport.class,
-                new ParamTypeList(new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT), new ValType (BasicValType.VTP_INT))
-                , true, false, new ValType (BasicValType.VTP_INT), false, false, null)});
+        s.put("glAlphaFunc", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglAlphaFunc.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glAreTexturesResident", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglAreTexturesResident.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    true,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glArrayElement", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglArrayElement.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glBindTexture", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglBindTexture.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glBlendFunc", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglBlendFunc.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glCallList", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglCallList.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glClear", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglClear.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glClearAccum", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglClearAccum.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glClearColor", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglClearColor.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glClearDepth", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglClearDepth.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glClearIndex", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglClearIndex.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glClearStencil", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglClearStencil.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glClipPlane", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglClipPlane.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglClipPlane_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3b", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3b.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3bv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3bv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor3bv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3d.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor3dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3f.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor3fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3i.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor3iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3s.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor3sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3ub", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3ub.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3ubv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3ubv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor3ubv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3ui", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3ui.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3uiv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3uiv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor3uiv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3us", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3us.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor3usv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor3usv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor3usv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4b", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4b.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4bv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4bv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor4bv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4d.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor4dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4f.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor4fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4i.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor4iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4s.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor4sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4ub", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4ub.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4ubv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4ubv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor4ubv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4ui", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4ui.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4uiv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4uiv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor4uiv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4us", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4us.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColor4usv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColor4usv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglColor4usv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColorMask", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColorMask.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glColorMaterial", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglColorMaterial.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glCopyPixels", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglCopyPixels.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glCopyTexImage1D", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglCopyTexImage1D.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glCopyTexImage2D", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglCopyTexImage2D.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glCopyTexSubImage1D", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglCopyTexSubImage1D.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glCopyTexSubImage2D", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglCopyTexSubImage2D.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glCullFace", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglCullFace.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glDepthFunc", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglDepthFunc.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glDepthMask", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglDepthMask.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glDepthRange", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglDepthRange.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glDisable", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglDisable.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glDisableClientState", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglDisableClientState.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glDrawArrays", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglDrawArrays.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glDrawBuffer", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglDrawBuffer.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEdgeFlag", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEdgeFlag.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEdgeFlagv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEdgeFlagv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglEdgeFlagv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEnable", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEnable.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEnableClientState", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEnableClientState.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEndList", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEndList.class,
+                    new ParamTypeList(new ValType[] {}),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalCoord1d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalCoord1d.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalCoord1dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalCoord1dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglEvalCoord1dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalCoord1f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalCoord1f.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalCoord1fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalCoord1fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglEvalCoord1fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalCoord2d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalCoord2d.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalCoord2dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalCoord2dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglEvalCoord2dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalCoord2f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalCoord2f.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalCoord2fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalCoord2fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglEvalCoord2fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalMesh1", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalMesh1.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalMesh2", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalMesh2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalPoint1", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalPoint1.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glEvalPoint2", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglEvalPoint2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glFeedbackBuffer", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglFeedbackBuffer.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glFinish", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglFinish.class,
+                    new ParamTypeList(new ValType[] {}),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glFlush", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglFlush.class,
+                    new ParamTypeList(new ValType[] {}),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glFogf", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglFogf.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glFogfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglFogfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglFogfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glFogi", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglFogi.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glFogiv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglFogiv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglFogiv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glFrontFace", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglFrontFace.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glFrustum", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglFrustum.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetBooleanv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetBooleanv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetBooleanv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetClipPlane", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetClipPlane.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetClipPlane_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetDoublev", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetDoublev.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetDoublev_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetError", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetError.class,
+                    new ParamTypeList(new ValType[] {}),
+                    true,
+                    true,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetFloatv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetFloatv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetFloatv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetIntegerv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetIntegerv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetIntegerv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetLightfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetLightfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetLightfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetLightiv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetLightiv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetLightiv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetMaterialfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetMaterialfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetMaterialfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetMaterialiv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetMaterialiv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetMaterialiv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetPixelMapuiv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetPixelMapuiv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetPixelMapuiv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetTexEnvfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetTexEnvfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetTexEnvfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetTexEnviv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetTexEnviv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetTexEnviv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetTexGendv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetTexGendv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetTexGendv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetTexGenfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetTexGenfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetTexGenfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetTexGeniv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetTexGeniv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetTexGeniv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetTexLevelParameterfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetTexLevelParameterfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetTexLevelParameterfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetTexLevelParameteriv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetTexLevelParameteriv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetTexLevelParameteriv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetTexParameterfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetTexParameterfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetTexParameterfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glGetTexParameteriv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglGetTexParameteriv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglGetTexParameteriv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glHint", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglHint.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIndexMask", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIndexMask.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIndexd", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIndexd.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIndexdv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIndexdv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglIndexdv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIndexf", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIndexf.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIndexfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIndexfv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglIndexfv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIndexi", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIndexi.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIndexiv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIndexiv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglIndexiv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIndexs", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIndexs.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIndexsv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIndexsv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglIndexsv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIndexub", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIndexub.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIndexubv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIndexubv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglIndexubv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glInitNames", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglInitNames.class,
+                    new ParamTypeList(new ValType[] {}),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIsEnabled", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIsEnabled.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    true,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIsList", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIsList.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    true,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glIsTexture", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglIsTexture.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    true,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLightModelf", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLightModelf.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLightModelfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLightModelfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglLightModelfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLightModeli", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLightModeli.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLightModeliv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLightModeliv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglLightModeliv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLightf", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLightf.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLightfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLightfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglLightfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLighti", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLighti.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLightiv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLightiv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglLightiv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLineStipple", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLineStipple.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLineWidth", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLineWidth.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glListBase", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglListBase.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLoadIdentity", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLoadIdentity.class,
+                    new ParamTypeList(new ValType[] {}),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLoadName", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLoadName.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glLogicOp", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglLogicOp.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glMapGrid1d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglMapGrid1d.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glMapGrid1f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglMapGrid1f.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glMapGrid2d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglMapGrid2d.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glMapGrid2f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglMapGrid2f.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glMaterialf", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglMaterialf.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glMaterialfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglMaterialfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglMaterialfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glMateriali", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglMateriali.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glMaterialiv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglMaterialiv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglMaterialiv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glMatrixMode", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglMatrixMode.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glNewList", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglNewList.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glNormal3b", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglNormal3b.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glNormal3bv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglNormal3bv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglNormal3bv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glNormal3d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglNormal3d.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glNormal3dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglNormal3dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglNormal3dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glNormal3f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglNormal3f.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glNormal3fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglNormal3fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglNormal3fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glNormal3i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglNormal3i.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glNormal3iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglNormal3iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglNormal3iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glNormal3s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglNormal3s.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glNormal3sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglNormal3sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglNormal3sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glOrtho", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglOrtho.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPassThrough", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPassThrough.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPixelStoref", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPixelStoref.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPixelStorei", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPixelStorei.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPixelTransferf", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPixelTransferf.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPixelTransferi", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPixelTransferi.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPixelZoom", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPixelZoom.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPointSize", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPointSize.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPolygonMode", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPolygonMode.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPolygonOffset", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPolygonOffset.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPopAttrib", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPopAttrib.class,
+                    new ParamTypeList(new ValType[] {}),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPopClientAttrib", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPopClientAttrib.class,
+                    new ParamTypeList(new ValType[] {}),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPopMatrix", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPopMatrix.class,
+                    new ParamTypeList(new ValType[] {}),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPopName", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPopName.class,
+                    new ParamTypeList(new ValType[] {}),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPrioritizeTextures", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPrioritizeTextures.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPushAttrib", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPushAttrib.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPushClientAttrib", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPushClientAttrib.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPushMatrix", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPushMatrix.class,
+                    new ParamTypeList(new ValType[] {}),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glPushName", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglPushName.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos2d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos2d.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos2dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos2dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos2dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos2f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos2f.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos2fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos2fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos2fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos2i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos2i.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos2iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos2iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos2iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos2s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos2s.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos2sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos2sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos2sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos3d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos3d.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos3dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos3dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos3dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos3f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos3f.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos3fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos3fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos3fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos3i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos3i.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos3iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos3iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos3iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos3s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos3s.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos3sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos3sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos3sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos4d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos4d.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos4dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos4dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos4dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos4f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos4f.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos4fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos4fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos4fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos4i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos4i.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos4iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos4iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos4iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos4s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos4s.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRasterPos4sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRasterPos4sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRasterPos4sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glReadBuffer", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglReadBuffer.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRectd", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRectd.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRectdv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRectdv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectdv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectdv_3.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectdv_4.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRectf", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRectf.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRectfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRectfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectfv_3.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectfv_4.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRecti", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRecti.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRectiv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRectiv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectiv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectiv_3.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectiv_4.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRects", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRects.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRectsv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRectsv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectsv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectsv_3.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglRectsv_4.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRenderMode", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRenderMode.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    true,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRotated", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRotated.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glRotatef", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglRotatef.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glScaled", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglScaled.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glScalef", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglScalef.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glScissor", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglScissor.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glSelectBuffer", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglSelectBuffer.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glShadeModel", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglShadeModel.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glStencilFunc", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglStencilFunc.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glStencilMask", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglStencilMask.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glStencilOp", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglStencilOp.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord1d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord1d.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord1dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord1dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord1dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord1f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord1f.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord1fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord1fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord1fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord1i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord1i.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord1iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord1iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord1iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord1s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord1s.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord1sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord1sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord1sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord2d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord2d.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord2dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord2dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord2dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord2f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord2f.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord2fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord2fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord2fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord2i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord2i.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord2iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord2iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord2iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord2s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord2s.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord2sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord2sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord2sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord3d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord3d.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord3dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord3dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord3dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord3f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord3f.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord3fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord3fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord3fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord3i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord3i.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord3iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord3iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord3iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord3s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord3s.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord3sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord3sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord3sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord4d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord4d.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord4dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord4dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord4dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord4f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord4f.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord4fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord4fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord4fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord4i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord4i.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord4iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord4iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord4iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord4s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord4s.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexCoord4sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexCoord4sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexCoord4sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexEnvf", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexEnvf.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexEnvfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexEnvfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexEnvfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexEnvi", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexEnvi.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexEnviv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexEnviv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexEnviv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexGend", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexGend.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexGendv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexGendv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexGendv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexGenf", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexGenf.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexGenfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexGenfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexGenfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexGeni", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexGeni.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexGeniv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexGeniv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexGeniv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexParameterf", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexParameterf.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexParameterfv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexParameterfv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexParameterfv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexParameteri", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexParameteri.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTexParameteriv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTexParameteriv.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglTexParameteriv_2.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTranslated", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTranslated.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glTranslatef", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglTranslatef.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex2d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex2d.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex2dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex2dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex2dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex2f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex2f.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL), new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex2fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex2fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex2fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex2i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex2i.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex2iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex2iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex2iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex2s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex2s.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT), new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex2sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex2sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex2sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex3d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex3d.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex3dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex3dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex3dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex3f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex3f.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex3fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex3fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex3fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex3i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex3i.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex3iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex3iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex3iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex3s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex3s.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex3sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex3sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex3sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex4d", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex4d.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex4dv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex4dv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex4dv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex4f", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex4f.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL),
+                            new ValType(BasicValType.VTP_REAL)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex4fv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex4fv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex4fv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex4i", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex4i.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex4iv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex4iv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex4iv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex4s", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex4s.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glVertex4sv", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglVertex4sv.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapglVertex4sv_2.class,
+                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 0, (byte) 1, true)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
+        s.put("glViewport", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapglViewport.class,
+                    new ParamTypeList(
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT),
+                            new ValType(BasicValType.VTP_INT)),
+                    true,
+                    false,
+                    new ValType(BasicValType.VTP_INT),
+                    false,
+                    false,
+                    null)
+        });
 
         return s;
     }
@@ -1944,15 +5550,35 @@ public class GLBasicLib_gl implements FunctionLibrary {
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
             ByteBuffer a2 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
 
-            Data.readAndZero(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a1.array(), vm.getIntParam(3));
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a2.array(), vm.getIntParam(3));
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a1.array(),
+                    vm.getIntParam(3));
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a2.array(),
+                    vm.getIntParam(3));
 
             IntBuffer b1 = a1.asIntBuffer();
             b1.limit(vm.getIntParam(3));
 
             vm.getReg().setIntVal(glAreTexturesResident(b1, a2) ? 1 : 0);
-            Data.writeArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a1.array(), vm.getIntParam(3));
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a2.array(), vm.getIntParam(3));
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a1.array(),
+                    vm.getIntParam(3));
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a2.array(),
+                    vm.getIntParam(3));
         }
     }
 
@@ -2031,14 +5657,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             doubleBuffer16.rewind();
             doubleBuffer16.put(a);
             doubleBuffer16.rewind();
             glClipPlane(vm.getIntParam(2), doubleBuffer16);
             doubleBuffer16.rewind();
             doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2062,7 +5698,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglColor3b implements Function {
 
         public void run(TomVM vm) {
-            glColor3b(vm.getIntParam(3).byteValue(), vm.getIntParam(2).byteValue(), vm.getIntParam(1).byteValue());
+            glColor3b(
+                    vm.getIntParam(3).byteValue(),
+                    vm.getIntParam(2).byteValue(),
+                    vm.getIntParam(1).byteValue());
         }
     }
 
@@ -2070,14 +5709,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             byte[] a = new byte[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glColor3bv(byteBuffer16);
-                        byteBuffer16.rewind();
-                        byteBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            byteBuffer16.rewind();
+            byteBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2090,9 +5739,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (byte) vm.getRefParam(1).getIntVal();
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glColor3bv(byteBuffer16);
             vm.getRefParam(1).setIntVal((int) byteBuffer16.get(0));
         }
@@ -2109,14 +5758,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             doubleBuffer16.rewind();
             doubleBuffer16.put(a);
             doubleBuffer16.rewind();
             glColor3dv(doubleBuffer16);
             doubleBuffer16.rewind();
             doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2147,22 +5806,32 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglColor3fv implements Function {
 
         public void run(TomVM vm) {
-            float[] a = new float[16]; 
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            float[] a = new float[16];
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glColor3fv(floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
     public final class WrapglColor3fv_2 implements Function {
 
         public void run(TomVM vm) {
-            float[] a = new float[16]; 
+            float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
                 return;
@@ -2187,14 +5856,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glColor3iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2207,9 +5886,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glColor3iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -2218,7 +5897,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglColor3s implements Function {
 
         public void run(TomVM vm) {
-            glColor3s(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glColor3s(
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
@@ -2226,14 +5908,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glColor3sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2246,9 +5938,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glColor3sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -2257,7 +5949,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglColor3ub implements Function {
 
         public void run(TomVM vm) {
-            glColor3ub(vm.getIntParam(3).byteValue(), vm.getIntParam(2).byteValue(), vm.getIntParam(1).byteValue());
+            glColor3ub(
+                    vm.getIntParam(3).byteValue(),
+                    vm.getIntParam(2).byteValue(),
+                    vm.getIntParam(1).byteValue());
         }
     }
 
@@ -2265,14 +5960,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             byte[] a = new byte[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glColor3ubv(byteBuffer16);
-                        byteBuffer16.rewind();
-                        byteBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            byteBuffer16.rewind();
+            byteBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2285,9 +5990,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (byte) vm.getRefParam(1).getIntVal();
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glColor3ubv(byteBuffer16);
             vm.getRefParam(1).setIntVal((int) byteBuffer16.get(0));
         }
@@ -2304,14 +6009,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glColor3uiv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2324,9 +6039,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glColor3uiv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -2335,7 +6050,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglColor3us implements Function {
 
         public void run(TomVM vm) {
-            glColor3us(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glColor3us(
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
@@ -2343,14 +6061,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glColor3usv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2363,9 +6091,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glColor3usv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -2374,7 +6102,11 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglColor4b implements Function {
 
         public void run(TomVM vm) {
-            glColor4b(vm.getIntParam(4).byteValue(), vm.getIntParam(3).byteValue(), vm.getIntParam(2).byteValue(), vm.getIntParam(1).byteValue());
+            glColor4b(
+                    vm.getIntParam(4).byteValue(),
+                    vm.getIntParam(3).byteValue(),
+                    vm.getIntParam(2).byteValue(),
+                    vm.getIntParam(1).byteValue());
         }
     }
 
@@ -2382,14 +6114,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             byte[] a = new byte[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glColor4bv(byteBuffer16);
-                        byteBuffer16.rewind();
-                        byteBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            byteBuffer16.rewind();
+            byteBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2402,9 +6144,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (byte) vm.getRefParam(1).getIntVal();
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glColor4bv(byteBuffer16);
             vm.getRefParam(1).setIntVal((int) byteBuffer16.get(0));
         }
@@ -2421,14 +6163,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glColor4dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2441,9 +6193,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glColor4dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -2460,14 +6212,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glColor4fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2499,14 +6261,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glColor4iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2519,9 +6291,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glColor4iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -2530,7 +6302,11 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglColor4s implements Function {
 
         public void run(TomVM vm) {
-            glColor4s(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glColor4s(
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
@@ -2538,14 +6314,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glColor4sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2558,9 +6344,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glColor4sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -2569,7 +6355,11 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglColor4ub implements Function {
 
         public void run(TomVM vm) {
-            glColor4ub(vm.getIntParam(4).byteValue(), vm.getIntParam(3).byteValue(), vm.getIntParam(2).byteValue(), vm.getIntParam(1).byteValue());
+            glColor4ub(
+                    vm.getIntParam(4).byteValue(),
+                    vm.getIntParam(3).byteValue(),
+                    vm.getIntParam(2).byteValue(),
+                    vm.getIntParam(1).byteValue());
         }
     }
 
@@ -2577,14 +6367,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             byte[] a = new byte[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glColor4ubv(byteBuffer16);
-                        byteBuffer16.rewind();
-                        byteBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            byteBuffer16.rewind();
+            byteBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2597,9 +6397,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (byte) vm.getRefParam(1).getIntVal();
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glColor4ubv(byteBuffer16);
             vm.getRefParam(1).setIntVal((int) byteBuffer16.get(0));
         }
@@ -2616,14 +6416,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glColor4uiv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2636,9 +6446,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glColor4uiv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -2647,7 +6457,11 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglColor4us implements Function {
 
         public void run(TomVM vm) {
-            glColor4us(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glColor4us(
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
@@ -2655,14 +6469,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glColor4usv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2675,9 +6499,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glColor4usv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -2707,28 +6531,57 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglCopyTexImage1D implements Function {
 
         public void run(TomVM vm) {
-            glCopyTexImage1D(vm.getIntParam(7), vm.getIntParam(6), vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
+            glCopyTexImage1D(
+                    vm.getIntParam(7),
+                    vm.getIntParam(6),
+                    vm.getIntParam(5),
+                    vm.getIntParam(4),
+                    vm.getIntParam(3),
+                    vm.getIntParam(2),
+                    vm.getIntParam(1));
         }
     }
 
     public static final class WrapglCopyTexImage2D implements Function {
 
         public void run(TomVM vm) {
-            glCopyTexImage2D(vm.getIntParam(8), vm.getIntParam(7), vm.getIntParam(6), vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
+            glCopyTexImage2D(
+                    vm.getIntParam(8),
+                    vm.getIntParam(7),
+                    vm.getIntParam(6),
+                    vm.getIntParam(5),
+                    vm.getIntParam(4),
+                    vm.getIntParam(3),
+                    vm.getIntParam(2),
+                    vm.getIntParam(1));
         }
     }
 
     public static final class WrapglCopyTexSubImage1D implements Function {
 
         public void run(TomVM vm) {
-            glCopyTexSubImage1D(vm.getIntParam(6), vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
+            glCopyTexSubImage1D(
+                    vm.getIntParam(6),
+                    vm.getIntParam(5),
+                    vm.getIntParam(4),
+                    vm.getIntParam(3),
+                    vm.getIntParam(2),
+                    vm.getIntParam(1));
         }
     }
 
     public static final class WrapglCopyTexSubImage2D implements Function {
 
         public void run(TomVM vm) {
-            glCopyTexSubImage2D(vm.getIntParam(8), vm.getIntParam(7), vm.getIntParam(6), vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
+            glCopyTexSubImage2D(
+                    vm.getIntParam(8),
+                    vm.getIntParam(7),
+                    vm.getIntParam(6),
+                    vm.getIntParam(5),
+                    vm.getIntParam(4),
+                    vm.getIntParam(3),
+                    vm.getIntParam(2),
+                    vm.getIntParam(1));
         }
     }
 
@@ -2803,14 +6656,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             byte[] a = new byte[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glEdgeFlagv(byteBuffer16);
-                        byteBuffer16.rewind();
-                        byteBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            byteBuffer16.rewind();
+            byteBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2823,9 +6686,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (byte) vm.getRefParam(1).getIntVal();
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glEdgeFlagv(byteBuffer16);
             vm.getRefParam(1).setIntVal((int) byteBuffer16.get(0));
         }
@@ -2863,14 +6726,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glEvalCoord1dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2883,9 +6756,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glEvalCoord1dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -2902,14 +6775,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glEvalCoord1fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2922,9 +6805,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glEvalCoord1fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -2941,14 +6824,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glEvalCoord2dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -2961,9 +6854,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glEvalCoord2dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -2980,14 +6873,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glEvalCoord2fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3000,9 +6903,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glEvalCoord2fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -3044,13 +6947,23 @@ public class GLBasicLib_gl implements FunctionLibrary {
             }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
 
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a1.array(), vm.getIntParam(3));
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a1.array(),
+                    vm.getIntParam(3));
 
             FloatBuffer b1 = a1.asFloatBuffer();
             b1.limit(vm.getIntParam(3));
 
             glFeedbackBuffer(vm.getIntParam(2), b1);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a1.array(), vm.getIntParam(3));
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a1.array(),
+                    vm.getIntParam(3));
         }
     }
 
@@ -3079,14 +6992,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glFogfv(vm.getIntParam(2), floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3099,9 +7022,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glFogfv(vm.getIntParam(2), floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -3118,14 +7041,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glFogiv(vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3138,9 +7071,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glFogiv(vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -3155,21 +7088,37 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglFrustum implements Function {
         public void run(TomVM vm) {
-            glFrustum(vm.getRealParam(6), vm.getRealParam(5), vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
+            glFrustum(
+                    vm.getRealParam(6),
+                    vm.getRealParam(5),
+                    vm.getRealParam(4),
+                    vm.getRealParam(3),
+                    vm.getRealParam(2),
+                    vm.getRealParam(1));
         }
     }
 
     public final class WrapglGetBooleanv implements Function {
         public void run(TomVM vm) {
             byte[] a = new byte[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glGetBooleanv(vm.getIntParam(2), byteBuffer16);
-                        byteBuffer16.rewind();
-                        byteBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            byteBuffer16.rewind();
+            byteBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3182,9 +7131,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (byte) vm.getRefParam(1).getIntVal();
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glGetBooleanv(vm.getIntParam(2), byteBuffer16);
             vm.getRefParam(1).setIntVal((int) byteBuffer16.get(0));
         }
@@ -3194,14 +7143,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glGetClipPlane(vm.getIntParam(2), doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3214,9 +7173,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glGetClipPlane(vm.getIntParam(2), doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -3226,14 +7185,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glGetDoublev(vm.getIntParam(2), doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3246,9 +7215,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glGetDoublev(vm.getIntParam(2), doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -3265,14 +7234,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glGetFloatv(vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3295,14 +7274,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglGetIntegerv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetIntegerv(vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3314,9 +7303,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetIntegerv(vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -3325,14 +7314,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglGetLightfv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glGetLightfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3355,14 +7354,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglGetLightiv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetLightiv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3374,9 +7383,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetLightiv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -3385,14 +7394,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglGetMaterialfv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glGetMaterialfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3415,14 +7434,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglGetMaterialiv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetMaterialiv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3434,9 +7463,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetMaterialiv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -3446,14 +7475,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetPixelMapuiv(vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3465,9 +7504,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetPixelMapuiv(vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -3476,14 +7515,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglGetTexEnvfv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glGetTexEnvfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3507,14 +7556,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetTexEnviv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3527,9 +7586,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetTexEnviv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -3539,14 +7598,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glGetTexGendv(vm.getIntParam(3), vm.getIntParam(2), doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3558,9 +7627,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glGetTexGendv(vm.getIntParam(3), vm.getIntParam(2), doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -3570,14 +7639,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glGetTexGenfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3602,14 +7681,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetTexGeniv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3621,9 +7710,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetTexGeniv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -3633,14 +7722,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glGetTexLevelParameterfv(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3664,14 +7763,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetTexLevelParameteriv(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3683,9 +7792,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetTexLevelParameteriv(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -3694,14 +7803,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglGetTexParameterfv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glGetTexParameterfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3724,14 +7843,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglGetTexParameteriv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetTexParameteriv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3743,9 +7872,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glGetTexParameteriv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -3773,14 +7902,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglIndexdv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glIndexdv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3792,9 +7931,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glIndexdv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -3809,14 +7948,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglIndexfv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glIndexfv(floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3846,14 +7995,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glIndexiv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3866,9 +8025,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glIndexiv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -3883,14 +8042,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglIndexsv implements Function {
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glIndexsv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3903,9 +8072,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glIndexsv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -3921,14 +8090,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             byte[] a = new byte[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glIndexubv(byteBuffer16);
-                        byteBuffer16.rewind();
-                        byteBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            byteBuffer16.rewind();
+            byteBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -3941,9 +8120,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (byte) vm.getRefParam(1).getIntVal();
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glIndexubv(byteBuffer16);
             vm.getRefParam(1).setIntVal((int) byteBuffer16.get(0));
         }
@@ -3953,7 +8132,6 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             glInitNames();
-
         }
     }
 
@@ -3961,7 +8139,6 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(glIsEnabled(vm.getIntParam(1)) ? 1 : 0);
         }
-
     }
 
     public static final class WrapglIsList implements Function {
@@ -3985,14 +8162,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglLightModelfv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glLightModelfv(vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4021,14 +8208,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglLightModeliv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glLightModeliv(vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4040,9 +8237,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glLightModeliv(vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -4057,14 +8254,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglLightfv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glLightfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4093,14 +8300,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglLightiv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glLightiv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4113,9 +8330,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glLightiv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -4152,7 +8369,6 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             glLoadName(vm.getIntParam(1));
         }
-
     }
 
     public static final class WrapglLogicOp implements Function {
@@ -4178,14 +8394,26 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglMapGrid2d implements Function {
 
         public void run(TomVM vm) {
-            glMapGrid2d(vm.getIntParam(6), vm.getRealParam(5), vm.getRealParam(4), vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
+            glMapGrid2d(
+                    vm.getIntParam(6),
+                    vm.getRealParam(5),
+                    vm.getRealParam(4),
+                    vm.getIntParam(3),
+                    vm.getRealParam(2),
+                    vm.getRealParam(1));
         }
     }
 
     public static final class WrapglMapGrid2f implements Function {
 
         public void run(TomVM vm) {
-            glMapGrid2f(vm.getIntParam(6), vm.getRealParam(5), vm.getRealParam(4), vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
+            glMapGrid2f(
+                    vm.getIntParam(6),
+                    vm.getRealParam(5),
+                    vm.getRealParam(4),
+                    vm.getIntParam(3),
+                    vm.getRealParam(2),
+                    vm.getRealParam(1));
         }
     }
 
@@ -4200,14 +8428,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glMaterialfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4239,14 +8477,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glMaterialiv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4258,9 +8506,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glMaterialiv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -4280,21 +8528,34 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglNormal3b implements Function {
         public void run(TomVM vm) {
-            glNormal3b(vm.getIntParam(3).byteValue(), vm.getIntParam(2).byteValue(), vm.getIntParam(1).byteValue());
+            glNormal3b(
+                    vm.getIntParam(3).byteValue(),
+                    vm.getIntParam(2).byteValue(),
+                    vm.getIntParam(1).byteValue());
         }
     }
 
     public final class WrapglNormal3bv implements Function {
         public void run(TomVM vm) {
             byte[] a = new byte[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glNormal3bv(byteBuffer16);
-                        byteBuffer16.rewind();
-                        byteBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            byteBuffer16.rewind();
+            byteBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4306,9 +8567,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (byte) vm.getRefParam(1).getIntVal();
-                    byteBuffer16.rewind();
-                    byteBuffer16.put(a);
-                    byteBuffer16.rewind();
+            byteBuffer16.rewind();
+            byteBuffer16.put(a);
+            byteBuffer16.rewind();
             glNormal3bv(byteBuffer16);
             vm.getRefParam(1).setIntVal((int) byteBuffer16.get(0));
         }
@@ -4323,14 +8584,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglNormal3dv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glNormal3dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4342,9 +8613,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glNormal3dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -4359,14 +8630,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglNormal3fv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             floatBuffer16.rewind();
             floatBuffer16.put(a);
             floatBuffer16.rewind();
             glNormal3fv(floatBuffer16);
             floatBuffer16.rewind();
             floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4395,14 +8676,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglNormal3iv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glNormal3iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4414,9 +8705,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glNormal3iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -4424,21 +8715,34 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglNormal3s implements Function {
         public void run(TomVM vm) {
-            glNormal3s(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glNormal3s(
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglNormal3sv implements Function {
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glNormal3sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4451,9 +8755,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glNormal3sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -4461,7 +8765,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglOrtho implements Function {
         public void run(TomVM vm) {
-            glOrtho(vm.getRealParam(6), vm.getRealParam(5), vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
+            glOrtho(
+                    vm.getRealParam(6),
+                    vm.getRealParam(5),
+                    vm.getRealParam(4),
+                    vm.getRealParam(3),
+                    vm.getRealParam(2),
+                    vm.getRealParam(1));
         }
     }
 
@@ -4475,8 +8785,8 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             glPixelStoref(vm.getIntParam(2), vm.getIntParam(1));
-            //TODO Original source used this line instead
-            //glPixelStoref(vm.GetIntParam(2), vm.GetRealParam(1));
+            // TODO Original source used this line instead
+            // glPixelStoref(vm.GetIntParam(2), vm.GetRealParam(1));
         }
     }
 
@@ -4560,8 +8870,18 @@ public class GLBasicLib_gl implements FunctionLibrary {
             }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
             ByteBuffer a2 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
-            Data.readAndZero(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a1.array(), vm.getIntParam(3));
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a2.array(), vm.getIntParam(3));
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a1.array(),
+                    vm.getIntParam(3));
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a2.array(),
+                    vm.getIntParam(3));
 
             IntBuffer b1 = a1.asIntBuffer();
             FloatBuffer b2 = a2.asFloatBuffer();
@@ -4569,8 +8889,18 @@ public class GLBasicLib_gl implements FunctionLibrary {
             b2.limit(vm.getIntParam(3));
 
             glPrioritizeTextures(b1, b2);
-            Data.writeArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a1.array(), vm.getIntParam(3));
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a2.array(), vm.getIntParam(3));
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a1.array(),
+                    vm.getIntParam(3));
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a2.array(),
+                    vm.getIntParam(3));
         }
     }
 
@@ -4603,20 +8933,29 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             glRasterPos2d(vm.getRealParam(2), vm.getRealParam(1));
         }
-
     }
 
     public final class WrapglRasterPos2dv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glRasterPos2dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4628,9 +8967,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glRasterPos2dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -4646,14 +8985,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglRasterPos2fv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glRasterPos2fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4665,9 +9014,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glRasterPos2fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -4682,14 +9031,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglRasterPos2iv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glRasterPos2iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4701,9 +9060,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glRasterPos2iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -4720,14 +9079,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glRasterPos2sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4740,9 +9109,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glRasterPos2sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -4758,14 +9127,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglRasterPos3dv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glRasterPos3dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4777,9 +9156,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glRasterPos3dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -4794,14 +9173,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglRasterPos3fv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glRasterPos3fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4813,9 +9202,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glRasterPos3fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -4830,14 +9219,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglRasterPos3iv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glRasterPos3iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4849,9 +9248,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glRasterPos3iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -4859,21 +9258,34 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglRasterPos3s implements Function {
         public void run(TomVM vm) {
-            glRasterPos3s(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glRasterPos3s(
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglRasterPos3sv implements Function {
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glRasterPos3sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4885,9 +9297,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glRasterPos3sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -4903,14 +9315,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glRasterPos4dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4923,9 +9345,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glRasterPos4dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -4942,14 +9364,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glRasterPos4fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -4962,9 +9394,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glRasterPos4fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -4974,20 +9406,29 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             glRasterPos4i(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
-
     }
 
     public final class WrapglRasterPos4iv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glRasterPos4iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5000,9 +9441,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glRasterPos4iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -5011,7 +9452,11 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglRasterPos4s implements Function {
 
         public void run(TomVM vm) {
-            glRasterPos4s(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glRasterPos4s(
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
@@ -5019,14 +9464,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glRasterPos4sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5038,9 +9493,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glRasterPos4sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -5064,17 +9519,37 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
-            Data.readAndZero(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glRectdv(doubleBuffer16, a2);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
 
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
         }
     }
 
@@ -5087,13 +9562,23 @@ public class GLBasicLib_gl implements FunctionLibrary {
             }
             a[0] = vm.getRefParam(2).getRealVal();
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glRectdv(doubleBuffer16, a2);
             vm.getRefParam(2).setRealVal((float) doubleBuffer16.get(0));
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
         }
     }
 
@@ -5101,19 +9586,29 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             double[] a = new double[16];
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
-            Data.readAndZero(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             Data.zeroArray(a2, 16);
             if (!vm.checkNullRefParam(1)) {
                 return;
             }
             a2.put(0, vm.getRefParam(1).getRealVal());
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glRectdv(doubleBuffer16, a2);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             vm.getRefParam(1).setRealVal((float) a2.get(0));
         }
     }
@@ -5132,9 +9627,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a2.put(0, vm.getRefParam(1).getRealVal());
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glRectdv(doubleBuffer16, a2);
             vm.getRefParam(2).setRealVal((float) doubleBuffer16.get(0));
             vm.getRefParam(1).setRealVal((float) a2.get(0));
@@ -5152,16 +9647,36 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             FloatBuffer a2 = BufferUtils.createFloatBuffer(16);
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glRectfv(floatBuffer16, a2);
-            Data.writeArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
 
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
         }
     }
 
@@ -5173,25 +9688,40 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(2).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             FloatBuffer a2 = BufferUtils.createFloatBuffer(16);
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
             glRectfv(floatBuffer16, a2);
             vm.getRefParam(2).setRealVal(floatBuffer16.get(0));
 
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a2, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
         }
     }
 
     public final class WrapglRectfv_3 implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             FloatBuffer a2 = BufferUtils.createFloatBuffer(16);
             Data.zeroArray(a2, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -5199,9 +9729,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
             }
             a2.put(0, vm.getRefParam(1).getRealVal());
             glRectfv(floatBuffer16, a2);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
 
             vm.getRefParam(1).setRealVal(a2.get(0));
         }
@@ -5222,9 +9757,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
             }
             a2.put(0, vm.getRefParam(1).getRealVal());
 
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glRectfv(floatBuffer16, a2);
             vm.getRefParam(2).setRealVal(floatBuffer16.get(0));
 
@@ -5243,18 +9778,38 @@ public class GLBasicLib_gl implements FunctionLibrary {
             int[] a = new int[16];
             IntBuffer a2 = BufferUtils.createIntBuffer(16);
 
-            Data.readAndZero(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glRectiv(intBuffer16, a2);
 
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
 
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
         }
     }
 
@@ -5268,15 +9823,25 @@ public class GLBasicLib_gl implements FunctionLibrary {
             }
             a[0] = vm.getRefParam(2).getIntVal();
             IntBuffer a2 = BufferUtils.createIntBuffer(16);
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
 
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glRectiv(intBuffer16, a2);
             vm.getRefParam(2).setIntVal(intBuffer16.get(0));
 
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
         }
     }
 
@@ -5286,20 +9851,30 @@ public class GLBasicLib_gl implements FunctionLibrary {
             int[] a = new int[16];
             IntBuffer a2 = BufferUtils.createIntBuffer(16);
 
-            Data.readAndZero(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             Data.zeroArray(a2, 16);
             if (!vm.checkNullRefParam(1)) {
                 return;
             }
             a2.put(0, vm.getRefParam(1).getIntVal());
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glRectiv(intBuffer16, a2);
 
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
 
             vm.getRefParam(1).setIntVal(a2.get(0));
         }
@@ -5320,9 +9895,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
             }
             a2.put(0, vm.getRefParam(1).getIntVal());
 
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
 
             glRectiv(intBuffer16, a2);
             vm.getRefParam(2).setIntVal(intBuffer16.get(0));
@@ -5332,7 +9907,11 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglRects implements Function {
         public void run(TomVM vm) {
-            glRects(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glRects(
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
@@ -5341,17 +9920,37 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             short[] a = new short[16];
             ShortBuffer a2 = BufferUtils.createShortBuffer(16);
-            Data.readAndZero(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glRectsv(shortBuffer16, a2);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
 
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
         }
     }
 
@@ -5365,14 +9964,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
             }
             a[0] = (short) vm.getRefParam(2).getIntVal();
             ShortBuffer a2 = BufferUtils.createShortBuffer(16);
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glRectsv(shortBuffer16, a2);
             vm.getRefParam(2).setIntVal((int) shortBuffer16.get(0));
 
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a2, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a2,
+                    16);
         }
     }
 
@@ -5382,17 +9991,27 @@ public class GLBasicLib_gl implements FunctionLibrary {
             short[] a = new short[16];
             ShortBuffer a2 = BufferUtils.createShortBuffer(16);
 
-            Data.readAndZero(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
             Data.zeroArray(a2, 16);
             if (!vm.checkNullRefParam(1)) {
                 return;
             }
             a2.put(0, (short) vm.getRefParam(1).getIntVal());
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glRectsv(shortBuffer16, a2);
-            Data.writeArray(vm.getData(), vm.getIntParam(2), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(2),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
 
             vm.getRefParam(1).setIntVal((int) a2.get(0));
         }
@@ -5414,9 +10033,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a2.put(0, (short) vm.getRefParam(1).getIntVal());
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glRectsv(shortBuffer16, a2);
             vm.getRefParam(2).setIntVal((int) shortBuffer16.get(0));
 
@@ -5466,11 +10085,21 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             ByteBuffer a1 = ByteBuffer.wrap(new byte[65536]).order(ByteOrder.nativeOrder());
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a1, vm.getIntParam(2));
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a1,
+                    vm.getIntParam(2));
             IntBuffer b1 = a1.asIntBuffer();
             b1.limit(vm.getIntParam(2));
             glSelectBuffer(b1);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a1, vm.getIntParam(2));
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a1,
+                    vm.getIntParam(2));
         }
     }
 
@@ -5508,14 +10137,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord1dv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glTexCoord1dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5527,9 +10166,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glTexCoord1dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -5545,14 +10184,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexCoord1fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5565,9 +10214,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexCoord1fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -5584,14 +10233,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexCoord1iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5604,9 +10263,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexCoord1iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -5622,14 +10281,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord1sv implements Function {
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glTexCoord1sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5641,9 +10310,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glTexCoord1sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -5658,14 +10327,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord2dv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glTexCoord2dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5677,9 +10356,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glTexCoord2dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -5694,14 +10373,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord2fv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexCoord2fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5713,9 +10402,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexCoord2fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -5730,14 +10419,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord2iv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexCoord2iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5749,9 +10448,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexCoord2iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -5766,14 +10465,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord2sv implements Function {
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glTexCoord2sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5785,9 +10494,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glTexCoord2sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -5802,14 +10511,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord3dv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glTexCoord3dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5821,9 +10540,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glTexCoord3dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -5838,14 +10557,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord3fv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexCoord3fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5857,9 +10586,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexCoord3fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -5874,14 +10603,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord3iv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexCoord3iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5893,9 +10632,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexCoord3iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -5903,21 +10642,34 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglTexCoord3s implements Function {
         public void run(TomVM vm) {
-            glTexCoord3s(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glTexCoord3s(
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglTexCoord3sv implements Function {
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glTexCoord3sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5929,9 +10681,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glTexCoord3sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -5946,14 +10698,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord4dv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glTexCoord4dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -5965,9 +10727,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glTexCoord4dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -5982,14 +10744,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord4fv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexCoord4fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6001,9 +10773,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexCoord4fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -6018,14 +10790,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexCoord4iv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexCoord4iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6037,9 +10819,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexCoord4iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -6047,21 +10829,35 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglTexCoord4s implements Function {
         public void run(TomVM vm) {
-            glTexCoord4s(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glTexCoord4s(
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglTexCoord4sv implements Function {
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glTexCoord4sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6073,9 +10869,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (byte) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glTexCoord4sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -6090,14 +10886,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexEnvfv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexEnvfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6109,9 +10915,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexEnvfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -6126,14 +10932,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexEnviv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexEnviv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6145,9 +10961,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexEnviv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -6162,14 +10978,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexGendv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glTexGendv(vm.getIntParam(3), vm.getIntParam(2), doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6181,9 +11007,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glTexGendv(vm.getIntParam(3), vm.getIntParam(2), doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -6198,14 +11024,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexGenfv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexGenfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6217,9 +11053,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexGenfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -6234,14 +11070,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexGeniv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexGeniv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6253,9 +11099,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexGeniv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -6270,14 +11116,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexParameterfv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexParameterfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6289,9 +11145,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glTexParameterfv(vm.getIntParam(3), vm.getIntParam(2), floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -6306,14 +11162,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglTexParameteriv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexParameteriv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6325,9 +11191,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glTexParameteriv(vm.getIntParam(3), vm.getIntParam(2), intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -6354,14 +11220,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglVertex2dv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glVertex2dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6373,9 +11249,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glVertex2dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -6390,14 +11266,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglVertex2fv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glVertex2fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6409,9 +11295,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glVertex2fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -6426,14 +11312,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglVertex2iv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glVertex2iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6445,9 +11341,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glVertex2iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -6462,14 +11358,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglVertex2sv implements Function {
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glVertex2sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6481,9 +11387,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glVertex2sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -6498,14 +11404,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglVertex3dv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glVertex3dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6517,9 +11433,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glVertex3dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -6534,15 +11450,25 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglVertex3fv implements Function {
         public void run(TomVM vm) {
             float[] a = new float[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
 
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glVertex3fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6555,9 +11481,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
             }
             a[0] = vm.getRefParam(1).getRealVal();
 
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glVertex3fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -6572,14 +11498,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglVertex3iv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glVertex3iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6591,9 +11527,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glVertex3iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -6601,21 +11537,34 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglVertex3s implements Function {
         public void run(TomVM vm) {
-            glVertex3s(vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glVertex3s(
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglVertex3sv implements Function {
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glVertex3sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6627,9 +11576,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glVertex3sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
@@ -6644,14 +11593,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglVertex4dv implements Function {
         public void run(TomVM vm) {
             double[] a = new double[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glVertex4dv(doubleBuffer16);
-                        doubleBuffer16.rewind();
-                        doubleBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            doubleBuffer16.rewind();
+            doubleBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6663,9 +11622,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                    doubleBuffer16.rewind();
-                    doubleBuffer16.put(a);
-                    doubleBuffer16.rewind();
+            doubleBuffer16.rewind();
+            doubleBuffer16.put(a);
+            doubleBuffer16.rewind();
             glVertex4dv(doubleBuffer16);
             vm.getRefParam(1).setRealVal((float) doubleBuffer16.get(0));
         }
@@ -6679,29 +11638,39 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglVertex4fv implements Function {
         public void run(TomVM vm) {
-            float[] a = new float[16]; 
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            float[] a = new float[16];
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glVertex4fv(floatBuffer16);
-                        floatBuffer16.rewind();
-                        floatBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), a, 16);
+            floatBuffer16.rewind();
+            floatBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
     public final class WrapglVertex4fv_2 implements Function {
         public void run(TomVM vm) {
-            float[] a = new float[16]; 
+            float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
                 return;
             }
             a[0] = vm.getRefParam(1).getRealVal();
-                        floatBuffer16.rewind();
-                        floatBuffer16.put(a);
-                        floatBuffer16.rewind();
+            floatBuffer16.rewind();
+            floatBuffer16.put(a);
+            floatBuffer16.rewind();
             glVertex4fv(floatBuffer16);
             vm.getRefParam(1).setRealVal(floatBuffer16.get(0));
         }
@@ -6716,14 +11685,24 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public final class WrapglVertex4iv implements Function {
         public void run(TomVM vm) {
             int[] a = new int[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glVertex4iv(intBuffer16);
-                        intBuffer16.rewind();
-                        intBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            intBuffer16.rewind();
+            intBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6735,9 +11714,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = vm.getRefParam(1).getIntVal();
-                    intBuffer16.rewind();
-                    intBuffer16.put(a);
-                    intBuffer16.rewind();
+            intBuffer16.rewind();
+            intBuffer16.put(a);
+            intBuffer16.rewind();
             glVertex4iv(intBuffer16);
             vm.getRefParam(1).setIntVal(intBuffer16.get(0));
         }
@@ -6745,21 +11724,35 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglVertex4s implements Function {
         public void run(TomVM vm) {
-            glVertex4s(vm.getIntParam(4).shortValue(), vm.getIntParam(3).shortValue(), vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glVertex4s(
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglVertex4sv implements Function {
         public void run(TomVM vm) {
             short[] a = new short[16];
-            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            Data.readAndZero(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glVertex4sv(shortBuffer16);
-                        shortBuffer16.rewind();
-                        shortBuffer16.get(a);
-            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType (BasicValType.VTP_INT, (byte) 1, (byte) 1, true), a, 16);
+            shortBuffer16.rewind();
+            shortBuffer16.get(a);
+            Data.writeArray(
+                    vm.getData(),
+                    vm.getIntParam(1),
+                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                    a,
+                    16);
         }
     }
 
@@ -6771,17 +11764,16 @@ public class GLBasicLib_gl implements FunctionLibrary {
                 return;
             }
             a[0] = (short) vm.getRefParam(1).getIntVal();
-                    shortBuffer16.rewind();
-                    shortBuffer16.put(a);
-                    shortBuffer16.rewind();
+            shortBuffer16.rewind();
+            shortBuffer16.put(a);
+            shortBuffer16.rewind();
             glVertex4sv(shortBuffer16);
             vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
         }
     }
 
     public static final class WrapglViewport implements Function {
-        public WrapglViewport() {
-        }
+        public WrapglViewport() {}
 
         public void run(TomVM vm) {
             glViewport(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));

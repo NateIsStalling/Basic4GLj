@@ -1,37 +1,37 @@
 package com.basic4gl.lib.util;
 
+import static com.basic4gl.runtime.util.Assert.assertTrue;
+
 import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.charset.Charset;
 
-import static com.basic4gl.runtime.util.Assert.assertTrue;
-
 /**
  * A single file, embedded into the executable
  */
 public class EmbeddedFile {
-    String filename;
-    int length;
-    FileInputStream data;
+    private final String filename;
+    private final int length;
+    private FileInputStream data;
 
-    public EmbeddedFile()
-    {
+    public EmbeddedFile() {
         filename = "";
         length = 0;
         data = null;
     }
 
-    public EmbeddedFile(ByteBuffer rawData){
+    public EmbeddedFile(ByteBuffer rawData) {
         this(rawData, IntBuffer.allocate(1).put(0, 0));
     }
-    public EmbeddedFile(ByteBuffer rawData, IntBuffer offset){
+
+    public EmbeddedFile(ByteBuffer rawData, IntBuffer offset) {
         assertTrue(rawData != null);
 
         // Read filename length
         rawData.position(rawData.position() + offset.get());
-        int nameLength = rawData.asIntBuffer().get(); //*((int *) (rawData + offset));
-        offset.put(0, offset.get(0) + Integer.SIZE/Byte.SIZE);
+        int nameLength = rawData.asIntBuffer().get(); // *((int *) (rawData + offset));
+        offset.put(0, offset.get(0) + Integer.SIZE / Byte.SIZE);
 
         // Read filename
         byte[] name = new byte[nameLength];
@@ -42,24 +42,27 @@ public class EmbeddedFile {
 
         // Read length
         rawData.position(rawData.position() + offset.get());
-        length = rawData.asIntBuffer().get(); //*((int *) (rawData + offset));
-        offset.put(0, offset.get(0) + Integer.SIZE/Byte.SIZE);
+        length = rawData.asIntBuffer().get(); // *((int *) (rawData + offset));
+        offset.put(0, offset.get(0) + Integer.SIZE / Byte.SIZE);
 
         // Save pointer to data
         rawData.position(rawData.position() + offset.get());
-        //m_data = rawData.position() + offset.get();
+        // this.data = rawData.position() + offset.get();
         offset.put(0, offset.get(0) + length);
     }
 
-    public String getFilename() { return filename; }
+    public String getFilename() {
+        return filename;
+    }
 
     /**
      * Return file as a generic input stream
      */
-    public FileInputStream toStream()
-    {
+    public FileInputStream toStream() {
         return data;
     }
 
-    public int length() { return length; }
+    public int length() {
+        return length;
+    }
 }

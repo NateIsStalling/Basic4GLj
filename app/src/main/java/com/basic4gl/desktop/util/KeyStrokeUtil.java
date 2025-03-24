@@ -1,7 +1,7 @@
 package com.basic4gl.desktop.util;
 
-import javax.swing.*;
 import java.awt.event.KeyEvent;
+import javax.swing.*;
 
 public final class KeyStrokeUtil {
 

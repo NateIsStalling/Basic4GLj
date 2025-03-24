@@ -1,9 +1,9 @@
 package com.basic4gl.library.netlib4games;
 
-import com.basic4gl.library.netlib4games.internal.Assert;
-
 import static com.basic4gl.library.netlib4games.NetL1Type.l1Connect;
 import static com.basic4gl.library.netlib4games.NetLayer1.MAX_CON_REQ_SIZE;
+
+import com.basic4gl.library.netlib4games.internal.Assert;
 
 public class NetConReqValidatorL1 extends NetConReqValidator {
     public boolean isConnectionRequest(NetSimplePacket packet, String[] requestStringBuffer) {

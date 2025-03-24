@@ -1,20 +1,32 @@
 plugins {
     id 'java'
+    id("com.diffplug.spotless") version "7.0.2"
 }
 
 description = "Compiler for Basic4GL language"
 
-//
-//sourceSets {
-//    main {
-//        java {
-//            srcDirs = ['src']
-//        }
-//    }
-//}
+repositories {
+    mavenCentral()
+}
 
 dependencies {
     implementation fileTree(dir: "libs", include: "*.jar")
 
     implementation project(":runtime")
 }
+
+spotless {
+    java {
+        // Use the default importOrder configuration
+        importOrder()
+
+        removeUnusedImports()
+        palantirJavaFormat('2.50.0').formatJavadoc(false)
+
+        formatAnnotations()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+build.dependsOn spotlessApply

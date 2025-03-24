@@ -1,33 +1,33 @@
 package com.basic4gl.library.netlib4games;
 
-
 import com.basic4gl.library.netlib4games.internal.Assert;
 
 /**
  * Layer 2 network message
  */
 public class NetMessageL2 {
-    int channel;
-    boolean reliable;
-    boolean ordered;
-    boolean smoothed;
-    int messageIndex;   // unsigned long
-    int reliableIndex; // unsigned long
-    int packetCount;
-    long tickCount;
-    int receivedCount;
-    int dataSize;
-    boolean tickCountRegistered;
-    NetSimplePacket[] packets;
+    private final int channel;
+    private final boolean reliable;
+    private final boolean ordered;
+    private boolean smoothed;
+    private final int messageIndex; // unsigned long
+    private final int reliableIndex; // unsigned long
+    private final int packetCount;
+    private long tickCount;
+    private int receivedCount;
+    private int dataSize;
+    private boolean tickCountRegistered;
+    private NetSimplePacket[] packets;
 
-    NetMessageL2(int channel,
-                 boolean reliable,
-                 boolean smoothed,
-                 boolean ordered,
-                 int messageIndex,
-                 int reliableIndex,
-                 int packetCount,
-                 long tickCount) {
+    NetMessageL2(
+            int channel,
+            boolean reliable,
+            boolean smoothed,
+            boolean ordered,
+            int messageIndex,
+            int reliableIndex,
+            int packetCount,
+            long tickCount) {
         this.channel = channel;
         this.reliable = reliable;
         this.smoothed = smoothed;
@@ -124,5 +124,65 @@ public class NetMessageL2 {
             offset = 0;
         }
         return size;
+    }
+
+    public int getChannel() {
+        return channel;
+    }
+
+    public boolean isReliable() {
+        return reliable;
+    }
+
+    public boolean isOrdered() {
+        return ordered;
+    }
+
+    public boolean isSmoothed() {
+        return smoothed;
+    }
+
+    public void setSmoothed(boolean smoothed) {
+        this.smoothed = smoothed;
+    }
+
+    public int getMessageIndex() {
+        return messageIndex;
+    }
+
+    public int getReliableIndex() {
+        return reliableIndex;
+    }
+
+    public int getPacketCount() {
+        return packetCount;
+    }
+
+    public long getTickCount() {
+        return tickCount;
+    }
+
+    public void setTickCount(long tickCount) {
+        this.tickCount = tickCount;
+    }
+
+    public int getReceivedCount() {
+        return receivedCount;
+    }
+
+    public int getDataSize() {
+        return dataSize;
+    }
+
+    public boolean isTickCountRegistered() {
+        return tickCountRegistered;
+    }
+
+    public void setTickCountRegistered(boolean tickCountRegistered) {
+        this.tickCountRegistered = tickCountRegistered;
+    }
+
+    public NetSimplePacket[] getPackets() {
+        return packets;
     }
 }

@@ -9,14 +9,17 @@ public class NetSettingsL1 {
      * Handshake timeout after 10 seconds inactivity
      */
     public static final int NET_HANDSHAKETIMEOUT_MILLIS = 10000;
+
     /**
      * Timeout after 30 seconds of inactivity
      */
     public static final int NET_TIMEOUT_MILLIS = 60000;
+
     /**
      * Keepalives sent every 10 seconds
      */
     public static final int NET_KEEPALIVE_MILLIS = 10000;
+
     /**
      * Reliable packets resent every .2 seconds (until confirmed)
      */

@@ -1,19 +1,18 @@
 package com.basic4gl.library.netlib4games;
 
-import com.basic4gl.library.netlib4games.internal.Assert;
-import com.basic4gl.library.netlib4games.internal.Thread;
-import com.basic4gl.library.netlib4games.internal.ThreadEvent;
-import com.basic4gl.library.netlib4games.internal.ThreadUtils;
-
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import static com.basic4gl.library.netlib4games.NetL1Type.*;
 import static com.basic4gl.library.netlib4games.NetLayer1.*;
 import static com.basic4gl.library.netlib4games.NetLogger.netLog;
 import static com.basic4gl.library.netlib4games.internal.ThreadUtils.INFINITE;
+
+import com.basic4gl.library.netlib4games.internal.Assert;
+import com.basic4gl.library.netlib4games.internal.Thread;
+import com.basic4gl.library.netlib4games.internal.ThreadEvent;
+import com.basic4gl.library.netlib4games.internal.ThreadUtils;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Layer 1 network connection implementation.
@@ -30,46 +29,47 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     /**
      * Settings that cannot be changed once the object has been constructed.
      */
-    NetSettingsStaticL1 m_settingsStatic;
+    private final NetSettingsStaticL1 settingsStatic;
 
     /**
      * Settings that can be changed at any time
      */
-    NetSettingsL1 m_settings = new NetSettingsL1();
+    private NetSettingsL1 settings = new NetSettingsL1();
 
     /**
      * Low level network connection object. E.g. NetConLowUDP for UDP/IP
      */
-    NetConLow m_connection;
+    private final NetConLow connection;
 
-    List<NetInPacketL1> m_recvBuffer = new ArrayList<>();
-    List<NetOutPacketL1> m_sendBuffer = new ArrayList<>();
-    boolean m_handShaking;
-    int m_sendIDReliable;
-    int m_sendIDUnreliable;
+    private final List<NetInPacketL1> recvBuffer = new ArrayList<>();
+    private final List<NetOutPacketL1> sendBuffer = new ArrayList<>();
+    private boolean handShaking;
+    private int sendIDReliable;
+    private int sendIDUnreliable;
+
     /**
      * Used to coordinate keepalives
      */
-    long m_lastSent;
+    private long lastSent;
+
     /**
      * Used to detect timeouts
      */
-    long m_lastReceived;
+    private long lastReceived;
 
     /**
      * Used to track which packets have already been received, and filter out duplicates.
      * Packets can be sent multiple times (e.g. if a confirmation packet is lost,
      * or deliberately duplicated if NetSettingsL1.dup > 1).
      */
-    NetRevolvingBitBuffer m_reliableReceived,
-            m_unreliableReceived;
+    private final NetRevolvingBitBuffer reliableReceived, unreliableReceived;
 
     // Threading
 
     /**
      * Each connection has its own thread for processing network events.
      */
-    Thread m_processThread;
+    private Thread processThread;
 
     /**
      * Used to lock any operation that could clash with the processing thread.
@@ -94,68 +94,64 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     /**
      * Callback used to hook into the connection's processing thread.
      */
-    NetProcessThreadListener m_callback;
+    private NetProcessThreadListener netProcessThreadListener;
 
     /**
      * Used by thread callback to request a wakeup, for special processing
      */
-    long m_wakeupTime;
-
+    private long wakeupTime;
 
     /**
      * Construct a network connection with supplied settings
      */
     public NetConL1(NetConLow connection, NetSettingsStaticL1 settings) {
         super();
-        m_connection = connection;
-        m_settingsStatic = settings;
-        m_reliableReceived = new NetRevolvingBitBuffer(m_settingsStatic.reliableBitBufSize, 0);
-        m_unreliableReceived = new NetRevolvingBitBuffer(m_settingsStatic.unreliableBitBufSize, 0);
-        m_sendIDReliable = 0;
-        m_sendIDUnreliable = 0;
-        m_wakeupTime = INFINITE;
+        this.connection = connection;
+        settingsStatic = settings;
+        reliableReceived = new NetRevolvingBitBuffer(settingsStatic.getReliableBitBufSize(), 0);
+        unreliableReceived = new NetRevolvingBitBuffer(settingsStatic.getUnreliableBitBufSize(), 0);
+        sendIDReliable = 0;
+        sendIDUnreliable = 0;
+        wakeupTime = INFINITE;
 
-
-        Assert.assertTrue(m_connection != null);
+        Assert.assertTrue(this.connection != null);
 
         netLog("Create L1 connection");
 
         // Init state
-        m_handShaking = m_connection.isConnected();
+        handShaking = this.connection.isConnected();
 
         // Init timing
-        m_lastSent = m_lastReceived = getTickCount();
+        lastSent = lastReceived = getTickCount();
 
         // Validate
         validate();
     }
-
 
     /**
      * Construct a network connection with default settings
      */
     public NetConL1(NetConLow connection) {
         super();
-        m_connection = connection;
-        m_settingsStatic = new NetSettingsStaticL1();
-        m_reliableReceived = new NetRevolvingBitBuffer(m_settingsStatic.reliableBitBufSize, 0);
-        m_unreliableReceived = new NetRevolvingBitBuffer(m_settingsStatic.unreliableBitBufSize, 0);
-        m_sendIDReliable = 0;
-        m_sendIDUnreliable = 0;
-        m_wakeupTime = INFINITE;
+        this.connection = connection;
+        settingsStatic = new NetSettingsStaticL1();
+        reliableReceived = new NetRevolvingBitBuffer(settingsStatic.getReliableBitBufSize(), 0);
+        unreliableReceived = new NetRevolvingBitBuffer(settingsStatic.getUnreliableBitBufSize(), 0);
+        sendIDReliable = 0;
+        sendIDUnreliable = 0;
+        wakeupTime = INFINITE;
 
-
-        Assert.assertTrue(m_connection != null);
+        Assert.assertTrue(this.connection != null);
 
         netLog("Create L1 connection");
 
         // Init state
-        m_handShaking = m_connection.isConnected();
+        handShaking = this.connection.isConnected();
 
         // Init timing
         long tickCount = getTickCount();
-        m_lastSent = tickCount;
-        m_lastReceived = tickCount;
+        lastSent = tickCount;
+        lastReceived = tickCount;
 
         // Validate
         validate();
@@ -170,25 +166,25 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
         disconnect(!hasError());
 
         // Close the processing thread
-        m_processThread.terminate();
+        processThread.terminate();
 
         // Clear send/receive buffers
-        Iterator<NetInPacketL1> receivePacket = m_recvBuffer.iterator();
+        Iterator<NetInPacketL1> receivePacket = recvBuffer.iterator();
         while (receivePacket.hasNext()) {
             NetInPacketL1 packet = receivePacket.next();
             packet.dispose();
         }
-        m_recvBuffer.clear();
+        recvBuffer.clear();
 
-        Iterator<NetOutPacketL1> sendPacket = m_sendBuffer.iterator();
+        Iterator<NetOutPacketL1> sendPacket = sendBuffer.iterator();
         while (sendPacket.hasNext()) {
             NetOutPacketL1 packet = sendPacket.next();
             packet.dispose();
         }
-        m_sendBuffer.clear();
+        sendBuffer.clear();
 
-        if (m_connection != null) {
-            m_connection.dispose();
+        if (connection != null) {
+            connection.dispose();
         }
 
         netLog("Delete L1 connection");
@@ -199,19 +195,19 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
         // Validate the connection and ensure that it is useable.
         // Called by constructors.
         // Calling code should check error state to see whether connection is useable
-        if (m_connection.hasError()) {
-            setError(m_connection.getError());
+        if (connection.hasError()) {
+            setError(connection.getError());
         }
 
         // Check max packet size, but only if connected. The UDP protocol at least
         // must be connected before it can correctly return the maximum packet size
-        else if (isConnected() && m_connection.getMaxPacketSize() <= NetPacketHeaderL1.SIZE) {
+        else if (isConnected() && connection.getMaxPacketSize() <= NetPacketHeaderL1.SIZE) {
             setError("Underlying network protocol packet size is too small!");
         } else {
             clearError();
         }
 
-        // TODO!: Validate m_settingsStatic
+        // TODO!: Validate this.settingsStatic
 
         // Disconnect if error
         if (hasError() && isConnected()) {
@@ -219,13 +215,9 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
         }
     }
 
-    void buildHeader(
-            NetPacketHeaderL1 header,
-            boolean reliable,
-            NetL1Type type,
-            int id) {
+    void buildHeader(NetPacketHeaderL1 header, boolean reliable, NetL1Type type, int id) {
 
-        // Encode layer 1 packet header		
+        // Encode layer 1 packet header
         header.setId(id);
         header.setFlags((byte) ((type.getType() & NETL1_TYPEMASK) | (reliable ? NETL1_RELIABLE : 0)));
     }
@@ -237,27 +229,27 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     void buildAndSend(boolean reliable, NetL1Type type, int id, long tickCount, boolean dups) {
         NetPacketHeaderL1 header = new NetPacketHeaderL1();
         buildHeader(header, reliable, type, id);
-        long dupFactor = dups ? m_settings.dup : 1L;
+        long dupFactor = dups ? settings.dup : 1L;
         for (int i = 0; i < dupFactor; i++) {
-            m_connection.send(header.getBuffer(), NetPacketHeaderL1.SIZE);
+            connection.send(header.getBuffer(), NetPacketHeaderL1.SIZE);
         }
         synchronized (stateLock) {
-            m_lastSent = tickCount;
+            lastSent = tickCount;
         }
     }
 
     boolean processRecvPacket(long tickCount) {
 
         // Process the next inbound packet.
-        if (!m_connection.isDataPending()) {
+        if (!connection.isDataPending()) {
             return false;
         }
 
         // Record that data was received.
-        m_lastReceived = tickCount;
+        lastReceived = tickCount;
 
         // Get packet size
-        int size = m_connection.getPendingDataSize();
+        int size = connection.getPendingDataSize();
         // Note: If a packet is received that is smaller than our layer 1 header,
         // then it is erroneous. All we can do is ignore it and continue.
 
@@ -268,7 +260,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
             // Read packet header
             NetPacketHeaderL1 header = new NetPacketHeaderL1();
             int recvSize = NetPacketHeaderL1.SIZE;
-            recvSize = m_connection.receivePart(header.getBuffer(), 0, recvSize);
+            recvSize = connection.receivePart(header.getBuffer(), 0, recvSize);
 
             netLog("Incoming L1 packet. " + getDescription(header));
 
@@ -281,127 +273,130 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
 
             // Process packet
             switch (type) {
-                case l1User: {
+                case l1User:
+                    {
+                        NetRevolvingBitBuffer buffer = reliable ? reliableReceived : unreliableReceived;
 
-                    NetRevolvingBitBuffer buffer = reliable ? m_reliableReceived : m_unreliableReceived;
+                        // Reserve room in reliables-received array
+                        boolean falsesRemoved = buffer.setTop(id + 1, false);
 
-                    // Reserve room in reliables-received array
-                    boolean falsesRemoved = buffer.setTop(id + 1, false);
-
-                    // If we had to remove some "false" values from the bottom, this means
-                    // that there are packets that were never received!
-                    // If this is the reliable buffer, then we have an error as we are
-                    // unable to guarantee that reliable packets were delivered.
-                    if (falsesRemoved && reliable) {
-                        disconnect(true);
-                        setError("Reliable packet never arrived");
-                        break;
-                    }
-
-                    // If the packet is in range, and we haven't already received
-                    // one for this id, then process it. Otherwise discard it as 
-                    // a duplicate.
-                    if (buffer.isInRange(id) && !buffer.getValueAt(id)) {
-
-                        netLog("Queue incoming L1 packet");
-
-                        int dataSize = size - NetPacketHeaderL1.SIZE;
-                        NetInPacketL1 packet = new NetInPacketL1(dataSize, resent);
-                        if (dataSize > 0) {
-                            m_connection.receivePart(packet.packet.data, NetPacketHeaderL1.SIZE, dataSize);
+                        // If we had to remove some "false" values from the bottom, this means
+                        // that there are packets that were never received!
+                        // If this is the reliable buffer, then we have an error as we are
+                        // unable to guarantee that reliable packets were delivered.
+                        if (falsesRemoved && reliable) {
+                            disconnect(true);
+                            setError("Reliable packet never arrived");
+                            break;
                         }
 
-                        // Create and queue received packet
-                        synchronized (inQueueLock) {
-                            m_recvBuffer.add(packet);
+                        // If the packet is in range, and we haven't already received
+                        // one for this id, then process it. Otherwise discard it as
+                        // a duplicate.
+                        if (buffer.isInRange(id) && !buffer.getValueAt(id)) {
+
+                            netLog("Queue incoming L1 packet");
+
+                            int dataSize = size - NetPacketHeaderL1.SIZE;
+                            NetInPacketL1 packet = new NetInPacketL1(dataSize, resent);
+                            if (dataSize > 0) {
+                                connection.receivePart(packet.getPacket().data, NetPacketHeaderL1.SIZE, dataSize);
+                            }
+
+                            // Create and queue received packet
+                            synchronized (inQueueLock) {
+                                recvBuffer.add(packet);
+                            }
+
+                            // Mark ID as received
+                            buffer.set(id, true);
+                        } else {
+                            netLog("Already received this L1 packet, ignore duplicate");
                         }
 
-                        // Mark ID as received
-                        buffer.set(id, true);
-                    } else {
-                        netLog("Already received this L1 packet, ignore duplicate");
-                    }
+                        // Always confirm reliable packets.
+                        // Even duplicates, as the original confirmation message may
+                        // have been lost.
+                        if (reliable) {
 
-                    // Always confirm reliable packets.
-                    // Even duplicates, as the original confirmation message may
-                    // have been lost.
-                    if (reliable) {
-
-                        netLog("Confirm L1 packet");
-                        buildAndSend(false, l1Confirm, id, tickCount, false);
+                            netLog("Confirm L1 packet");
+                            buildAndSend(false, l1Confirm, id, tickCount, false);
+                        }
                     }
-                }
-                break;
+                    break;
 
                 case l1KeepAlive:
                     break;
 
-                case l1Confirm: {
+                case l1Confirm:
+                    {
 
-                    // Remove confirmed packet from send buffer
-                    synchronized (outQueueLock) {
-                        Iterator<NetOutPacketL1> sendIt = m_sendBuffer.iterator();
-                        while (sendIt.hasNext()) {
-                            NetOutPacketL1 packet = sendIt.next();
-                            if (packet.id == id) {
+                        // Remove confirmed packet from send buffer
+                        synchronized (outQueueLock) {
+                            Iterator<NetOutPacketL1> sendIt = sendBuffer.iterator();
+                            while (sendIt.hasNext()) {
+                                NetOutPacketL1 packet = sendIt.next();
+                                if (packet.getId() == id) {
 
-                                // Delete packet
-                                packet.dispose();
+                                    // Delete packet
+                                    packet.dispose();
 
-                                // Remove entry from buffer
-                                sendIt.remove();
+                                    // Remove entry from buffer
+                                    sendIt.remove();
+                                }
                             }
                         }
                     }
-                }
-                break;
+                    break;
 
-                case l1Connect: {
+                case l1Connect:
+                    {
+                        if (!connection.isClient()) {
 
-                    if (!m_connection.isClient()) {
+                            // Connection request
+                            // Send accepted packet.
+                            // Note, we do this regardless of whether we are handshaking or not.
+                            // This is because the other end may not know that we have progressed
+                            // past the handshaking stage (eg a previous "accept" may not have
+                            // gotten through.)
 
-                        // Connection request
-                        // Send accepted packet.
-                        // Note, we do this regardless of whether we are handshaking or not.
-                        // This is because the other end may not know that we have progressed
-                        // past the handshaking stage (eg a previous "accept" may not have
-                        // gotten through.)
+                            netLog("Send L1 accept");
 
-                        netLog("Send L1 accept");
+                            // Send connection accepted packet
+                            buildAndSend(false, l1Accept, 0, tickCount, false);
 
-                        // Send connection accepted packet
-                        buildAndSend(false, l1Accept, 0, tickCount, false);
-
-                        // Handshaking is now complete
-                        synchronized (stateLock) {
-                            m_handShaking = false;
+                            // Handshaking is now complete
+                            synchronized (stateLock) {
+                                handShaking = false;
+                            }
                         }
                     }
-                }
-                break;
+                    break;
 
-                case l1Accept: {
+                case l1Accept:
+                    {
 
-                    // Connection accepted
-                    if (m_connection.isClient()) {
-                        synchronized (stateLock) {
-                            m_handShaking = false;
+                        // Connection accepted
+                        if (connection.isClient()) {
+                            synchronized (stateLock) {
+                                handShaking = false;
+                            }
                         }
                     }
-                }
-                break;
+                    break;
 
-                case l1Disconnect: {
+                case l1Disconnect:
+                    {
 
-                    // Clean disconnect received
-                    disconnect(false);
-                }
-                break;
+                        // Clean disconnect received
+                        disconnect(false);
+                    }
+                    break;
             }
         }
 
         // Finished with this packet
-        m_connection.onDonePendingData();
+        connection.onDonePendingData();
 
         return true;
     }
@@ -409,46 +404,42 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     @Override
     public void run() {
 
-        while (!m_processThread.isTerminating()) {
+        while (!processThread.isTerminating()) {
 
-            // Wait for data event on connection, or until it is time to 
+            // Wait for data event on connection, or until it is time to
             // perform a maintenance action such as sending a keepalive,
-            // resending a reliable packet etc.		
+            // resending a reliable packet etc.
 
             // Calculate when the next maintenance action is due
             long wait;
             synchronized (processLock) {
+                if (connection.isConnected()) {
 
-
-                if (m_connection.isConnected()) {
-
-                    long nextEvent = m_wakeupTime;
+                    long nextEvent = wakeupTime;
 
                     // Timeout?
-                    long event = m_lastReceived + (m_handShaking ? m_settings.handshakeTimeout : m_settings.timeout);
+                    long event = lastReceived + (handShaking ? settings.handshakeTimeout : settings.timeout);
                     if (event < nextEvent) {
                         nextEvent = event;
                     }
 
                     // Keepalive?
-                    event = m_lastSent + (m_handShaking ? m_settings.reliableResend : m_settings.keepAlive);
+                    event = lastSent + (handShaking ? settings.reliableResend : settings.keepAlive);
                     if (event < nextEvent) {
                         nextEvent = event;
                     }
 
                     // Reliable resend?
-                    if (!m_handShaking) {
+                    if (!handShaking) {
                         synchronized (outQueueLock) {
-
-                            Iterator<NetOutPacketL1> sendIt = m_sendBuffer.iterator();
+                            Iterator<NetOutPacketL1> sendIt = sendBuffer.iterator();
                             while (sendIt.hasNext()) {
                                 NetOutPacketL1 packet = sendIt.next();
-                                event = packet.due;
+                                event = packet.getDue();
                                 if (event < nextEvent) {
                                     nextEvent = event;
                                 }
                             }
-
                         }
                     }
 
@@ -464,49 +455,47 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
                 } else {
                     wait = INFINITE;
                 }
-
             }
 
             // Wait for data or next due event
-            ThreadEvent[] events = new ThreadEvent[]{m_connection.getEvent(), m_processThread.getTerminateEvent()};
+            ThreadEvent[] events = new ThreadEvent[] {connection.getEvent(), processThread.getTerminateEvent()};
             if (wait > 0) {
                 ThreadUtils.waitForEvents(events, 2, false, wait);
             }
-            m_wakeupTime = INFINITE;
+            wakeupTime = INFINITE;
 
             synchronized (processLock) {
-                if (!m_processThread.isTerminating() && m_connection.isConnected()) {
+                if (!processThread.isTerminating() && connection.isConnected()) {
 
                     long tickCount = getTickCount();
 
                     // Process incoming packets
                     synchronized (inQueueLock) {
-                        while (processRecvPacket(tickCount)) {
-                        }
+                        while (processRecvPacket(tickCount)) {}
                     }
 
                     // Process outgoing packets
                     synchronized (outQueueLock) {
-                        Iterator<NetOutPacketL1> sendIt = m_sendBuffer.iterator();
+                        Iterator<NetOutPacketL1> sendIt = sendBuffer.iterator();
                         while (sendIt.hasNext()) {
                             NetOutPacketL1 i = sendIt.next();
-                            if (tickCount > i.due) {
+                            if (tickCount > i.getDue()) {
 
                                 // Send the packet
-                                netLog("Send buffered outgoing L1 packet. " + getDescription(i.packet));
+                                netLog("Send buffered outgoing L1 packet. " + getDescription(i.getPacket()));
 
                                 // Mark the packet as resent
-                                NetPacketHeaderL1 header = new NetPacketHeaderL1(i.packet.data);
+                                NetPacketHeaderL1 header = new NetPacketHeaderL1(i.getPacket().data);
                                 header.setFlags((byte) (header.getFlags() | (byte) NETL1_RESENT));
 
-                                m_connection.send(i.packet.data, i.packet.size);
-                                m_lastSent = tickCount;
+                                connection.send(i.getPacket().data, i.getPacket().size);
+                                lastSent = tickCount;
 
                                 // If packet is reliable, leave it in the buffer
-                                if (i.reliable) {
+                                if (i.isReliable()) {
 
                                     // Update due date of next resend
-                                    i.due = tickCount + m_settings.reliableResend;
+                                    i.setDue(tickCount + settings.reliableResend);
                                 } else {
                                     // Otherwise delete it, and remove from buffer.
 
@@ -521,9 +510,9 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
                     // Keepalives and timeouts
 
                     // Timeouts
-                    long timeout = m_handShaking ? m_settings.handshakeTimeout : m_settings.timeout;
-                    if (tickCount >= m_lastReceived + timeout) {
-                        netLog("last received " + m_lastReceived);
+                    long timeout = handShaking ? settings.handshakeTimeout : settings.timeout;
+                    if (tickCount >= lastReceived + timeout) {
+                        netLog("last received " + lastReceived);
                         netLog("tickcount " + tickCount);
                         netLog("timeout " + timeout);
                         netLog("L1 connection timed out");
@@ -531,11 +520,11 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
                     }
 
                     // Keep alives
-                    else if (m_connection.isConnected() && m_handShaking) {
+                    else if (connection.isConnected() && handShaking) {
 
                         // Keepalives are not sent during handshaking, but the client does keep
                         // sending requests until accepted, disconnected or timed out
-                        if (m_connection.isClient() && tickCount >= m_lastSent + m_settings.reliableResend) {
+                        if (connection.isClient() && tickCount >= lastSent + settings.reliableResend) {
 
                             netLog("Resend L1 connect request");
                             buildAndSend(false, l1Connect, 0, tickCount, false);
@@ -543,7 +532,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
                     } else {
 
                         // Send keepalive
-                        if (tickCount > m_lastSent + m_settings.keepAlive) {
+                        if (tickCount > lastSent + settings.keepAlive) {
 
                             netLog("Send L1 keepalive");
                             buildAndSend(false, l1KeepAlive, 0, tickCount, false);
@@ -552,14 +541,12 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
                 }
 
                 // Process thread callback
-                if (m_callback != null) {
-                    m_callback.onProcessThread();
+                if (netProcessThreadListener != null) {
+                    netProcessThreadListener.onProcessThread();
                 }
-
             }
         }
     }
-
 
     // Member access
 
@@ -569,12 +556,12 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     public NetSettingsL1 getSettings() {
 
         // Locking unnecessary on read, as only UI thread writes to settings
-        return m_settings;
+        return settings;
     }
 
     public void setSettings(NetSettingsL1 settings) {
         synchronized (processLock) {
-            m_settings = settings;
+            this.settings = settings;
         }
     }
 
@@ -584,7 +571,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     public boolean isHandShaking() {
         boolean result;
         synchronized (stateLock) {
-            result = m_handShaking;
+            result = handShaking;
         }
         return result;
     }
@@ -597,15 +584,15 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     public boolean connect(String address, String connectionRequest) {
         boolean result;
         synchronized (processLock) {
-            if (m_connection.isClient() && !isConnected() && m_connection.connect(address)) {
+            if (connection.isClient() && !isConnected() && connection.connect(address)) {
 
                 netLog("Send L1 connection request");
 
                 // Switch to handshaking mode
-                m_handShaking = true;
+                handShaking = true;
 
                 // Client connections must start the handshaking sequence
-                if (m_connection.isClient()) {
+                if (connection.isClient()) {
 
                     // Build connection packet
                     byte[] buf = new byte[NetPacketHeaderL1.SIZE + MAX_CON_REQ_SIZE];
@@ -623,25 +610,29 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
                     }
 
                     // Or packet
-                    if (size >= m_connection.getMaxPacketSize() - NetPacketHeaderL1.SIZE) {
-                        size = m_connection.getMaxPacketSize() - NetPacketHeaderL1.SIZE - 1;
+                    if (size >= connection.getMaxPacketSize() - NetPacketHeaderL1.SIZE) {
+                        size = connection.getMaxPacketSize() - NetPacketHeaderL1.SIZE - 1;
                     }
 
                     // Insert string
                     if (size > 0) {
-                        System.arraycopy(connectionRequest.getBytes(StandardCharsets.UTF_8), 0, buf, NetPacketHeaderL1.SIZE, size);
+                        System.arraycopy(
+                                connectionRequest.getBytes(StandardCharsets.UTF_8),
+                                0,
+                                buf,
+                                NetPacketHeaderL1.SIZE,
+                                size);
                     }
 
                     // Send packet
-                    for (int i = 0; i < m_settings.dup; i++) {
-                        m_connection.send(buf, NetPacketHeaderL1.SIZE + size);
+                    for (int i = 0; i < settings.dup; i++) {
+                        connection.send(buf, NetPacketHeaderL1.SIZE + size);
                     }
 
                     synchronized (stateLock) {
-                        m_lastSent = getTickCount();
+                        lastSent = getTickCount();
                     }
                 }
-
             }
 
             result = isConnected();
@@ -674,18 +665,15 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
 
                     // Send clean disconnect packet(s)
                     NetPacketHeaderL1 header = new NetPacketHeaderL1();
-                    buildHeader(header,
-                            false,
-                            l1Disconnect,
-                            0);
+                    buildHeader(header, false, l1Disconnect, 0);
 
-                    for (int i = 0; i < m_settings.dup; i++) {
-                        m_connection.send(header.getBuffer(), NetPacketHeaderL1.SIZE);
+                    for (int i = 0; i < settings.dup; i++) {
+                        connection.send(header.getBuffer(), NetPacketHeaderL1.SIZE);
                     }
                 }
 
                 // Low level disconnect
-                m_connection.disconnect();
+                connection.disconnect();
             }
         }
     }
@@ -693,10 +681,9 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     /**
      * Note: Connection is considered connected even in the handshaking stage.
      */
-
     public boolean isConnected() {
 
-        return m_connection.isConnected();
+        return connection.isConnected();
     }
 
     /**
@@ -705,10 +692,9 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     public boolean isDataPending() {
         boolean result;
         synchronized (inQueueLock) {
-            result = !m_recvBuffer.isEmpty();
+            result = !recvBuffer.isEmpty();
         }
         return result;
-
     }
 
     /**
@@ -717,7 +703,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     public int getPendingDataSize() {
         int result;
         synchronized (inQueueLock) {
-            result = isDataPending() ? m_recvBuffer.get(0).packet.size : 0;
+            result = isDataPending() ? recvBuffer.get(0).getPacket().size : 0;
         }
         return result;
     }
@@ -729,7 +715,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     public boolean isPendingResent() {
         boolean result;
         synchronized (inQueueLock) {
-            result = isDataPending() && m_recvBuffer.get(0).resent;
+            result = isDataPending() && recvBuffer.get(0).isResent();
         }
         return result;
     }
@@ -744,7 +730,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
             if (isDataPending()) {
 
                 // Find topmost queued packet
-                NetSimplePacket packet = m_recvBuffer.get(0).packet;
+                NetSimplePacket packet = recvBuffer.get(0).getPacket();
 
                 // Number of bytes to copy
                 int remainingBytes = offset >= packet.size ? 0 : packet.size - offset;
@@ -780,8 +766,8 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     public void onDonePendingData() {
         synchronized (inQueueLock) {
             if (isDataPending()) {
-                NetInPacketL1 packet = m_recvBuffer.get(0);
-                m_recvBuffer.remove(0);
+                NetInPacketL1 packet = recvBuffer.get(0);
+                recvBuffer.remove(0);
                 packet.dispose();
             }
         }
@@ -794,7 +780,7 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     public int getMaxPacketSize() {
 
         // Allow room for our header
-        return Math.min(m_settingsStatic.prefMaxPacketSize, m_connection.getMaxPacketSize()) - NetPacketHeaderL1.SIZE;
+        return Math.min(settingsStatic.getPrefMaxPacketSize(), connection.getMaxPacketSize()) - NetPacketHeaderL1.SIZE;
     }
 
     /**
@@ -814,13 +800,13 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
         // Create new packet. Allow room for our header
         NetSimplePacket packet = new NetSimplePacket(size + NetPacketHeaderL1.SIZE);
         NetPacketHeaderL1 packetHeader = new NetPacketHeaderL1(packet.data);
-        //TODO        char				*packetData	= packet->data + sizeof (NetPacketHeaderL1);
+        // TODO        char				*packetData	= packet->data + sizeof (NetPacketHeaderL1);
 
         // Setup header
         if (reliable) {
-            buildHeader(packetHeader, true, l1User, m_sendIDReliable++);
+            buildHeader(packetHeader, true, l1User, sendIDReliable++);
         } else {
-            buildHeader(packetHeader, false, l1User, m_sendIDUnreliable++);
+            buildHeader(packetHeader, false, l1User, sendIDUnreliable++);
         }
 
         netLog("Send L1 packet, " + getDescription(packetHeader));
@@ -831,12 +817,12 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
         }
 
         // Send packet
-        // Note: Packets are not sent during the handshaking stage, 
+        // Note: Packets are not sent during the handshaking stage,
         // Instead they are queued, and flushed once the actual handshake succeeds.
         synchronized (stateLock) {
             if (!isHandShaking()) {
-                for (int i = 0; i < m_settings.dup; i++) {
-                    m_connection.send(packet.data, packet.size);
+                for (int i = 0; i < settings.dup; i++) {
+                    connection.send(packet.data, packet.size);
                 }
             }
 
@@ -852,12 +838,12 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
                 if (isHandShaking()) {
                     due = getTickCount();
                 } else {
-                    due = getTickCount() + m_settings.reliableResend;
+                    due = getTickCount() + settings.reliableResend;
                 }
 
                 // Create queued outgoing packet
                 synchronized (outQueueLock) {
-                    m_sendBuffer.add(new NetOutPacketL1(due, packet));
+                    sendBuffer.add(new NetOutPacketL1(due, packet));
                 }
             } else {
                 // Packet not queued, delete it
@@ -867,8 +853,8 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
     }
 
     public void startThread() {
-        m_processThread = new Thread(NetConL1.class.getName());
-        m_processThread.start(this);
+        processThread = new Thread(NetConL1.class.getName());
+        processThread.start(this);
     }
 
     /**
@@ -880,26 +866,26 @@ public class NetConL1 extends NetHasErrorStateThreadsafe implements Runnable {
      */
     public void setNetProcessThreadCallback(NetProcessThreadListener callback) {
         synchronized (processLock) {
-            m_callback = callback;
+            netProcessThreadListener = callback;
         }
     }
 
     /**
-     * Request that m_callback be called in msec milliseconds.
+     * Request that this.callback be called in msec milliseconds.
      * <p>
-     * The m_callback will then be called on the connections process thread.
+     * The this.callback will then be called on the connections process thread.
      * </p>
      */
     public void requestWakeup(long millis) {
 
         // Must only be used by objects using the thread callback mechanism,
         // (and must only be called during that callback, from that thread.)
-        if (m_wakeupTime == INFINITE || millis < m_wakeupTime) {
-            m_wakeupTime = millis;
+        if (wakeupTime == INFINITE || millis < wakeupTime) {
+            wakeupTime = millis;
         }
     }
 
     public String getAddress() {
-        return m_connection.getAddress();
+        return connection.getAddress();
     }
 }

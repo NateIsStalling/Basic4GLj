@@ -20,6 +20,7 @@ public class Callback extends ProtocolMessage {
     public int getRequestId() {
         return requestId;
     }
+
     public void setRequestId(int requestId) {
         this.requestId = requestId;
     }

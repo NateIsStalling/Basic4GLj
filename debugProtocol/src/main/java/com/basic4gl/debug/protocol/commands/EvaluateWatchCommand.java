@@ -17,9 +17,7 @@ public class EvaluateWatchCommand extends DebugCommand {
         super(COMMAND);
     }
 
-    public EvaluateWatchCommand(
-        String watch,
-        String context) {
+    public EvaluateWatchCommand(String watch, String context) {
         super(COMMAND);
 
         this.watch = watch;

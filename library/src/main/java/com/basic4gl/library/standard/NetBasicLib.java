@@ -1,5 +1,10 @@
 package com.basic4gl.library.standard;
 
+import static com.basic4gl.library.netlib4games.NetLogger.initDebugNetLogger;
+import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
+import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
+import static com.basic4gl.runtime.util.Assert.assertTrue;
+
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
@@ -8,53 +13,46 @@ import com.basic4gl.lib.util.FileStreamResourceStore;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
-import com.basic4gl.library.standard.net.NetConnectionStore;
-import com.basic4gl.library.standard.net.NetMessageStream;
-import com.basic4gl.library.standard.net.NetServerStore;
 import com.basic4gl.library.netlib4games.*;
 import com.basic4gl.library.netlib4games.udp.NetConLowUDP;
 import com.basic4gl.library.netlib4games.udp.NetListenLowUDP;
+import com.basic4gl.library.standard.net.NetConnectionStore;
+import com.basic4gl.library.standard.net.NetMessageStream;
+import com.basic4gl.library.standard.net.NetServerStore;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.util.Function;
-
 import java.io.*;
 import java.net.DatagramPacket;
 import java.util.*;
 
-import static com.basic4gl.library.netlib4games.NetLogger.initDebugNetLogger;
-import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
-import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
-
 public class NetBasicLib implements FunctionLibrary {
-    private final int MAX_CHANNELS = 32;
+    private static final int MAX_CHANNELS = 32;
 
+    private static int serverCount = 0;
 
-    static int serverCount = 0;
+    private static final byte[] buffer = new byte[65536];
 
-    static byte[] buffer = new byte[65536];
-
-    static String _lastError;
+    private static String lastError;
 
     static void setLastError(String error) {
         System.out.println(error);
-        _lastError = error;
+        lastError = error;
     }
 
     static void clearError() {
-        _lastError = "";
+        lastError = "";
     }
 
-    FileStreamResourceStore fileStreams;
-    NetServerStore servers;
+    private FileStreamResourceStore fileStreams;
+    private NetServerStore servers;
 
-    NetConnectionStore connections;
+    private NetConnectionStore connections;
 
-    NetConReqValidator netConReqValidator;
+    private NetConReqValidator netConReqValidator;
 
     @Override
     public Map<String, Constant> constants() {
-        Map<String, Constant> c = new HashMap<String, Constant>();
+        Map<String, Constant> c = new HashMap<>();
         c.put("CHANNEL_UNORDERED", new Constant(0));
         c.put("CHANNEL_ORDERED", new Constant(1));
         c.put("CHANNEL_MAX", new Constant(MAX_CHANNELS - 1));
@@ -66,32 +64,161 @@ public class NetBasicLib implements FunctionLibrary {
     public Map<String, FunctionSpecification[]> specs() {
         Map<String, FunctionSpecification[]> s = new TreeMap<>();
         // Functions
-        s.put("NewServer", new FunctionSpecification[]{new FunctionSpecification(WrapNewServer.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, true, false, null)});
-        s.put("DeleteServer", new FunctionSpecification[]{new FunctionSpecification(WrapDeleteServer.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, true, false, null)});
-        s.put("ConnectionPending", new FunctionSpecification[]{new FunctionSpecification(WrapConnectionPending.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
-        s.put("AcceptConnection", new FunctionSpecification[]{new FunctionSpecification(WrapAcceptConnection.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, true, false, null)});
-        s.put("RejectConnection", new FunctionSpecification[]{new FunctionSpecification(WrapRejectConnection.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, true, false, null)});
-        s.put("NewConnection", new FunctionSpecification[]{new FunctionSpecification(WrapNewConnection.class, new ParamTypeList(VTP_STRING, VTP_INT), true, true, VTP_INT, true, false, null)});
-        s.put("DeleteConnection", new FunctionSpecification[]{new FunctionSpecification(WrapDeleteConnection.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, true, false, null)});
-        s.put("ConnectionHandShaking", new FunctionSpecification[]{new FunctionSpecification(WrapConnectionHandShaking.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
-        s.put("ConnectionConnected", new FunctionSpecification[]{new FunctionSpecification(WrapConnectionConnected.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
-        s.put("MessagePending", new FunctionSpecification[]{new FunctionSpecification(WrapMessagePending.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
-        s.put("ReceiveMessage", new FunctionSpecification[]{new FunctionSpecification(WrapReceiveMessage.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
-        s.put("MessageChannel", new FunctionSpecification[]{new FunctionSpecification(WrapMessageChannel.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
-        s.put("MessageReliable", new FunctionSpecification[]{new FunctionSpecification(WrapMessageReliable.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
-        s.put("MessageSmoothed", new FunctionSpecification[]{new FunctionSpecification(WrapMessageSmoothed.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)});
-        s.put("SendMessage", new FunctionSpecification[]{new FunctionSpecification(WrapSendMessage.class, new ParamTypeList(VTP_INT, VTP_INT, VTP_INT, VTP_INT), true, true, VTP_INT, false, false, null)});
-        s.put("ConnectionAddress", new FunctionSpecification[]{new FunctionSpecification(WrapConnectionAddress.class, new ParamTypeList(VTP_INT), true, true, VTP_STRING, false, false, null)});
+        s.put("NewServer", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapNewServer.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, true, false, null)
+        });
+        s.put("DeleteServer", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapDeleteServer.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, true, false, null)
+        });
+        s.put("ConnectionPending", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapConnectionPending.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
+        });
+        s.put("AcceptConnection", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapAcceptConnection.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, true, false, null)
+        });
+        s.put("RejectConnection", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapRejectConnection.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, true, false, null)
+        });
+        s.put("NewConnection", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapNewConnection.class,
+                    new ParamTypeList(VTP_STRING, VTP_INT),
+                    true,
+                    true,
+                    VTP_INT,
+                    true,
+                    false,
+                    null)
+        });
+        s.put("DeleteConnection", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapDeleteConnection.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, true, false, null)
+        });
+        s.put("ConnectionHandShaking", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapConnectionHandShaking.class,
+                    new ParamTypeList(VTP_INT),
+                    true,
+                    true,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("ConnectionConnected", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapConnectionConnected.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
+        });
+        s.put("MessagePending", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapMessagePending.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
+        });
+        s.put("ReceiveMessage", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapReceiveMessage.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
+        });
+        s.put("MessageChannel", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapMessageChannel.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
+        });
+        s.put("MessageReliable", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapMessageReliable.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
+        });
+        s.put("MessageSmoothed", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapMessageSmoothed.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
+        });
+        s.put("SendMessage", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSendMessage.class,
+                    new ParamTypeList(VTP_INT, VTP_INT, VTP_INT, VTP_INT),
+                    true,
+                    true,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("ConnectionAddress", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapConnectionAddress.class, new ParamTypeList(VTP_INT), true, true, VTP_STRING, false, false, null)
+        });
 
         // L1 settings
-        s.put("SetConnectionHandshakeTimeout", new FunctionSpecification[]{new FunctionSpecification(WrapSetConnectionHandshakeTimeout.class, new ParamTypeList(VTP_INT, VTP_INT), true, false, VTP_INT, false, false, null)});
-        s.put("SetConnectionTimeout", new FunctionSpecification[]{new FunctionSpecification(WrapSetConnectionTimeout.class, new ParamTypeList(VTP_INT, VTP_INT), true, false, VTP_INT, false, false, null)});
-        s.put("SetConnectionKeepAlive", new FunctionSpecification[]{new FunctionSpecification(WrapSetConnectionKeepAlive.class, new ParamTypeList(VTP_INT, VTP_INT), true, false, VTP_INT, false, false, null)});
-        s.put("SetConnectionReliableResend", new FunctionSpecification[]{new FunctionSpecification(WrapSetConnectionReliableResend.class, new ParamTypeList(VTP_INT, VTP_INT), true, false, VTP_INT, false, false, null)});
-        s.put("SetConnectionDuplicates", new FunctionSpecification[]{new FunctionSpecification(WrapSetConnectionDuplicates.class, new ParamTypeList(VTP_INT, VTP_INT), true, false, VTP_INT, false, false, null)});
+        s.put("SetConnectionHandshakeTimeout", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetConnectionHandshakeTimeout.class,
+                    new ParamTypeList(VTP_INT, VTP_INT),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("SetConnectionTimeout", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetConnectionTimeout.class,
+                    new ParamTypeList(VTP_INT, VTP_INT),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("SetConnectionKeepAlive", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetConnectionKeepAlive.class,
+                    new ParamTypeList(VTP_INT, VTP_INT),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("SetConnectionReliableResend", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetConnectionReliableResend.class,
+                    new ParamTypeList(VTP_INT, VTP_INT),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("SetConnectionDuplicates", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetConnectionDuplicates.class,
+                    new ParamTypeList(VTP_INT, VTP_INT),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
 
         // L2 settings
-        s.put("SetConnectionSmoothingPercentage", new FunctionSpecification[]{new FunctionSpecification(WrapSetConnectionSmoothingPercentage.class, new ParamTypeList(VTP_INT, VTP_INT), true, false, VTP_INT, false, false, null)});
+        s.put("SetConnectionSmoothingPercentage", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetConnectionSmoothingPercentage.class,
+                    new ParamTypeList(VTP_INT, VTP_INT),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
+        });
         return s;
     }
 
@@ -143,16 +270,14 @@ public class NetBasicLib implements FunctionLibrary {
             connections = new NetConnectionStore();
         }
 
-
         // Register resources
-        comp.VM().addResources(fileStreams);
-        comp.VM().addResources(servers);
-        comp.VM().addResources(connections);
+        comp.getVM().addResources(fileStreams);
+        comp.getVM().addResources(servers);
+        comp.getVM().addResources(connections);
 
         // Hook into validator
         netConReqValidator = new NetConReqValidatorL1();
         NetLowLevel.setValidator(netConReqValidator);
-
     }
 
     @Override
@@ -172,8 +297,6 @@ public class NetBasicLib implements FunctionLibrary {
         return null;
     }
 
-
-
     ////////////////////////////////////////////////////////////////////////////////
     //  Helper functions
     boolean checkError(com.basic4gl.library.netlib4games.HasErrorState obj) {
@@ -188,10 +311,8 @@ public class NetBasicLib implements FunctionLibrary {
         }
     }
 
-
-////////////////////////////////////////////////////////////////////////////////
-//  Function wrappers
-
+    ////////////////////////////////////////////////////////////////////////////////
+    //  Function wrappers
 
     public final class WrapNewServer implements Function {
         public void run(TomVM vm) {
@@ -287,7 +408,7 @@ public class NetBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
 
             // Calculate address string
-            String addressString = vm.getStringParam(2) + ':' +String.valueOf(vm.getIntParam(1));
+            String addressString = vm.getStringParam(2) + ':' + String.valueOf(vm.getIntParam(1));
 
             // Create new connection
             NetConL2 connection = new NetConL2(new NetConLowUDP());
@@ -372,8 +493,7 @@ public class NetBasicLib implements FunctionLibrary {
 
                     // Get message properties
                     int channel = connection.getPendingChannel();
-                    boolean reliable = connection.isPendingReliable(),
-                            smoothed = connection.isPendingSmoothed();
+                    boolean reliable = connection.isPendingReliable(), smoothed = connection.isPendingSmoothed();
 
                     // Get message data
                     int size = 65536;
@@ -384,13 +504,8 @@ public class NetBasicLib implements FunctionLibrary {
                     InputStream stream = new ByteArrayInputStream(Arrays.copyOf(buffer, size));
 
                     // Create message
-                    NetMessageStream message = new NetMessageStream(
-                            connections,
-                            index,
-                            channel,
-                            reliable,
-                            smoothed,
-                            stream);
+                    NetMessageStream message =
+                            new NetMessageStream(connections, index, channel, reliable, smoothed, stream);
 
                     // Store it
                     vm.getReg().setIntVal(fileStreams.alloc(message));
@@ -477,12 +592,7 @@ public class NetBasicLib implements FunctionLibrary {
 
                     // Create message
                     NetMessageStream message = new NetMessageStream(
-                            connections,
-                            index,
-                            channel,
-                            reliable,
-                            smoothed,
-                            new ByteArrayOutputStream());
+                            connections, index, channel, reliable, smoothed, new ByteArrayOutputStream());
 
                     // Store message
                     vm.getReg().setIntVal(fileStreams.alloc(message));

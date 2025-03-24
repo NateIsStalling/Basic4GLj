@@ -3,28 +3,27 @@
 
 package com.basic4gl.library.standard;
 
+import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
+import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
+import static com.basic4gl.runtime.types.OpCode.*;
+import static com.basic4gl.runtime.util.Assert.assertTrue;
+
 import com.basic4gl.compiler.Constant;
 import com.basic4gl.compiler.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.*;
 import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.compiler.util.IVMDriverAccess;
-import com.basic4gl.runtime.util.Mutable;
+import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.Value;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Function;
-
+import com.basic4gl.runtime.util.Mutable;
 import java.io.*;
 import java.nio.IntBuffer;
 import java.util.*;
-
-import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
-import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
-import static com.basic4gl.runtime.types.OpCode.*;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 /**
  * Functions for compiling and executing code at runtime.
@@ -39,31 +38,104 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     public Map<String, FunctionSpecification[]> specs() {
         Map<String, FunctionSpecification[]> s = new TreeMap<>();
         // Register functions
-        s.put("compile", new FunctionSpecification[]{
-                new FunctionSpecification(WrapCompile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FunctionSpecification(WrapCompile2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FunctionSpecification(WrapCompileList.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true)), true, true, VTP_INT, true, false, null),
-                new FunctionSpecification(WrapCompileList2.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true), new ValType(VTP_STRING)), true, true, VTP_INT, true, false, null)
+        s.put("compile", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapCompile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
+            new FunctionSpecification(
+                    WrapCompile2.class,
+                    new ParamTypeList(VTP_STRING, VTP_STRING),
+                    true,
+                    true,
+                    VTP_INT,
+                    true,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapCompileList.class,
+                    new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true)),
+                    true,
+                    true,
+                    VTP_INT,
+                    true,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapCompileList2.class,
+                    new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true), new ValType(VTP_STRING)),
+                    true,
+                    true,
+                    VTP_INT,
+                    true,
+                    false,
+                    null)
         });
 
-        s.put("compilefile", new FunctionSpecification[]{
-                new FunctionSpecification(WrapCompileFile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FunctionSpecification(WrapCompileFile2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null)
+        s.put("compilefile", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapCompileFile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
+            new FunctionSpecification(
+                    WrapCompileFile2.class,
+                    new ParamTypeList(VTP_STRING, VTP_STRING),
+                    true,
+                    true,
+                    VTP_INT,
+                    true,
+                    false,
+                    null)
         });
 
-        s.put("execute", new FunctionSpecification[]{new FunctionSpecification(WrapExecute.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, true, false, null)});
-        s.put("compilererror", new FunctionSpecification[]{new FunctionSpecification(WrapCompilerError.class, new ParamTypeList(), true, true, VTP_STRING, false, false, null)});
-        s.put("compilererrorline", new FunctionSpecification[]{new FunctionSpecification(WrapCompilerErrorLine.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)});
-        s.put("compilererrorcol", new FunctionSpecification[]{new FunctionSpecification(WrapCompilerErrorCol.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)});
-        s.put("comp", new FunctionSpecification[]{
-                new FunctionSpecification(WrapComp.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FunctionSpecification(WrapComp2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FunctionSpecification(WrapCompList.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true)), true, true, VTP_INT, true, false, null),
-                new FunctionSpecification(WrapCompList2.class, new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true), new ValType(VTP_STRING)), true, true, VTP_INT, true, false, null)
+        s.put("execute", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapExecute.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, true, false, null)
         });
-        s.put("compfile", new FunctionSpecification[]{
-                new FunctionSpecification(WrapCompFile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
-                new FunctionSpecification(WrapCompFile2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null)
+        s.put("compilererror", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapCompilerError.class, new ParamTypeList(), true, true, VTP_STRING, false, false, null)
+        });
+        s.put("compilererrorline", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapCompilerErrorLine.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
+        });
+        s.put("compilererrorcol", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapCompilerErrorCol.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
+        });
+        s.put("comp", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapComp.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
+            new FunctionSpecification(
+                    WrapComp2.class, new ParamTypeList(VTP_STRING, VTP_STRING), true, true, VTP_INT, true, false, null),
+            new FunctionSpecification(
+                    WrapCompList.class,
+                    new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true)),
+                    true,
+                    true,
+                    VTP_INT,
+                    true,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapCompList2.class,
+                    new ParamTypeList(new ValType(VTP_STRING, (byte) 1, (byte) 1, true), new ValType(VTP_STRING)),
+                    true,
+                    true,
+                    VTP_INT,
+                    true,
+                    false,
+                    null)
+        });
+        s.put("compfile", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapCompFile.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
+            new FunctionSpecification(
+                    WrapCompFile2.class,
+                    new ParamTypeList(VTP_STRING, VTP_STRING),
+                    true,
+                    true,
+                    VTP_INT,
+                    true,
+                    false,
+                    null)
         });
         return s;
     }
@@ -94,9 +166,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
-
-    }
+    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
 
     @Override
     public void init(TomBasicCompiler comp, IServiceCollection services) {
@@ -104,23 +174,21 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         // Save pointer to compiler and window
         TomCompilerBasicLib.comp = comp;
 
-        //TODO Work on extension interfaces
+        // TODO Work on extension interfaces
         // Hookup and register compiler plugin adapter
-    /*comp.Plugins().RegisterInterface(
-            static_cast < IB4GLCompiler * > (compilerAdapter),
-            "IB4GLCompiler",
-            IB4GLCOMPILER_MAJOR,
-            IB4GLCOMPILER_MINOR,
-            null);*/
+        /*comp.Plugins().RegisterInterface(
+        static_cast < IB4GLCompiler * > (compilerAdapter),
+        "IB4GLCompiler",
+        IB4GLCOMPILER_MAJOR,
+        IB4GLCOMPILER_MINOR,
+        null);*/
 
         // Register initialisation function
-        TomCompilerBasicLib.comp.VM().addInitFunction(new InitFunc());
+        TomCompilerBasicLib.comp.getVM().addInitFunction(new InitFunc());
     }
 
     @Override
-    public void cleanup() {
-
-    }
+    public void cleanup() {}
 
     @Override
     public List<String> getDependencies() {
@@ -143,21 +211,20 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         private int errorLine, errorCol;
         private String errorText;
 
-        private void ClearError() {
+        private void clearError() {
             errorText = "";
             errorLine = 0;
             errorCol = 0;
         }
 
-
         // IB4GLCompiler interface
         public int compile(String sourceText) {
             assertTrue(comp != null);
-            TomVM vm = comp.VM();
+            TomVM vm = comp.getVM();
 
             // Load source text into compiler
-            comp.Parser().getSourceCode().clear();
-            comp.Parser().getSourceCode().add(sourceText);
+            comp.getParser().getSourceCode().clear();
+            comp.getParser().getSourceCode().add(sourceText);
 
             // Compile it
             return doNewCompile(vm);
@@ -177,10 +244,10 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         }
 
         public boolean execute(int codeHandle) {
-            TomVM vm = comp.VM();
+            TomVM vm = comp.getVM();
 
             // Check code handle is valid
-            if (codeHandle == 0 || !vm.IsCodeBlockValid(codeHandle)) {
+            if (codeHandle == 0 || !vm.isCodeBlockValid(codeHandle)) {
                 vm.functionError("Invalid code handle");
                 return false;
             }
@@ -195,7 +262,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
             // Find code to execute
             // 2 op-codes earlier will be the callback hook.
-            int offset = vm.GetCodeBlockOffset(codeHandle) - 2;
+            int offset = vm.getCodeBlockOffset(codeHandle) - 2;
 
             // Execute code
             internalExecute(vm, offset, true);
@@ -213,14 +280,14 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     // Globals
-    static TomBasicCompiler comp = null;
-    static IVMDriver host = null;
-    static FileOpener files = null;
-    CompilerPluginAdapter compilerAdapter;
+    private static TomBasicCompiler comp = null;
+    private static IVMDriver host = null;
+    private static FileOpener files = null;
+    private CompilerPluginAdapter compilerAdapter;
 
-    static String error = "";
-    static int errorLine = 0, errorCol = 0;
-    static Vector<Integer> runtimeRoutines = new Vector<>();
+    private static String error = "";
+    private static int errorLine = 0, errorCol = 0;
+    private static final Vector<Integer> runtimeRoutines = new Vector<>();
 
     ////////////////////////////////////////////////////////////////////////////////
     //  Helper routines
@@ -258,7 +325,10 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         // Create hook for builtin/DLL function callbacks.
         // This consists of a GOSUB call to the code to be executed, followed by an
         // END CALLBACK op-code to trigger the return to the calling function.
-        vm.addInstruction(new Instruction(OP_CALL, VTP_INT, new Value((int) vm.getInstructionCount() + 2)));    // Add 2 to call the code after these 2 op-codes
+        vm.addInstruction(new Instruction(
+                OP_CALL,
+                VTP_INT,
+                new Value((int) vm.getInstructionCount() + 2))); // Add 2 to call the code after these 2 op-codes
         vm.addInstruction(new Instruction(OP_END_CALLBACK, VTP_INT, new Value()));
 
         int codeBlock = 0;
@@ -272,7 +342,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             clearError();
 
             // Return code block index
-            codeBlock = vm.CurrentCodeBlockIndex();
+            codeBlock = vm.getCurrentCodeBlockIndex();
         } else {
 
             // Set error
@@ -307,7 +377,8 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
      */
     boolean checkForFunctions(TomVM vm) {
         if (!vm.getUserFunctionPrototypes().isEmpty()) {
-            vm.functionError("'Compile' and 'Execute' cannot be used in programs that have functions/subs. Use 'Comp' and 'Exec' instead");
+            vm.functionError("'Compile' and 'Execute' cannot be used in programs that have functions/subs. Use 'Comp'"
+                    + " and 'Exec' instead");
             return false;
         } else {
             return true;
@@ -326,7 +397,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
         // Attempt to compile text and append to end of existing program
         comp.clearError();
-        int saveIP = vm.getIP();      // Compiler can set IP back to 0, so we need to preserve it explicitly
+        int saveIP = vm.getIP(); // Compiler can set IP back to 0, so we need to preserve it explicitly
         if (comp.compileOntoEnd()) {
 
             // No error
@@ -360,8 +431,8 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
     void doCompileText(TomVM vm, String text, boolean useOldMethod) {
         // Load it into compiler
-        comp.Parser().getSourceCode().clear();
-        comp.Parser().getSourceCode().add(text);
+        comp.getParser().getSourceCode().clear();
+        comp.getParser().getSourceCode().add(text);
 
         // Compile it
         doCompile(vm, useOldMethod);
@@ -374,7 +445,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         index += 2;
 
         // Load array into compiler
-        comp.Parser().getSourceCode().clear();
+        comp.getParser().getSourceCode().clear();
         for (int i = 0; i < arraySize; i++) {
 
             // Find string index
@@ -384,7 +455,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             String text = vm.getString(stringIndex);
 
             // Add to parser text
-            comp.Parser().getSourceCode().add(text);
+            comp.getParser().getSourceCode().add(text);
 
             // Next line
             index++;
@@ -408,15 +479,15 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         } else {
 
             // Read file into parser
-            comp.Parser().getSourceCode().clear();
+            comp.getParser().getSourceCode().clear();
 
             byte[] buffer = new byte[4096];
             int remaining, read;
-            //Read file in chunks
+            // Read file in chunks
             try (BufferedReader br = new BufferedReader(new InputStreamReader(file))) {
                 String line;
                 while ((line = br.readLine()) != null) {
-                    comp.Parser().getSourceCode().add(line);
+                    comp.getParser().getSourceCode().add(line);
                 }
 
                 file.close();
@@ -429,7 +500,6 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         }
     }
 
-
     void internalExecute(TomVM vm, int offset) {
         internalExecute(vm, offset, false);
     }
@@ -437,7 +507,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     void internalExecute(TomVM vm, int offset, boolean isCallback) {
 
         // Move IP to offset
-        int saveIP = vm.getIP();          // (Save current IP)
+        int saveIP = vm.getIP(); // (Save current IP)
         vm.gotoInstruction(offset);
 
         // Run code in virtual machine
@@ -447,25 +517,25 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             } catch (Exception e) {
                 switch (e.getMessage()) {
 
-                    // Skip mathematics errors (overflows, divide by 0 etc).
-                    // This is quite important!, as some OpenGL drivers will trigger
-                    // divide-by-zero and other conditions if geometry happens to
-                    // be aligned in certain ways. The appropriate behaviour is to
-                    // ignore these errors, and keep running, and NOT to stop the
-                    // program!
-                /*case EXCEPTION_FLT_DENORMAL_OPERAND:
-                case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-                case EXCEPTION_FLT_INEXACT_RESULT:
-                case EXCEPTION_FLT_INVALID_OPERATION:
-                case EXCEPTION_FLT_OVERFLOW:
-                case EXCEPTION_FLT_STACK_CHECK:
-                case EXCEPTION_FLT_UNDERFLOW:
-                case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                case EXCEPTION_INT_OVERFLOW:
-                    vm.SkipInstruction();
-                    break;
-                */
-                    // All other exceptions will stop the program.
+                        // Skip mathematics errors (overflows, divide by 0 etc).
+                        // This is quite important!, as some OpenGL drivers will trigger
+                        // divide-by-zero and other conditions if geometry happens to
+                        // be aligned in certain ways. The appropriate behaviour is to
+                        // ignore these errors, and keep running, and NOT to stop the
+                        // program!
+                        /*case EXCEPTION_FLT_DENORMAL_OPERAND:
+                        case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+                        case EXCEPTION_FLT_INEXACT_RESULT:
+                        case EXCEPTION_FLT_INVALID_OPERATION:
+                        case EXCEPTION_FLT_OVERFLOW:
+                        case EXCEPTION_FLT_STACK_CHECK:
+                        case EXCEPTION_FLT_UNDERFLOW:
+                        case EXCEPTION_INT_DIVIDE_BY_ZERO:
+                        case EXCEPTION_INT_OVERFLOW:
+                        	vm.SkipInstruction();
+                        	break;
+                        */
+                        // All other exceptions will stop the program.
                     default:
                         vm.miscError("An exception occurred");
                 }
@@ -473,7 +543,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         } while (!Thread.currentThread().isInterrupted()
                 && !vm.hasError()
                 && !vm.isDone()
-                && (isCallback || !vm.isPaused())            // Note: User cannot pause inside a callback
+                && (isCallback || !vm.isPaused()) // Note: User cannot pause inside a callback
                 && !(isCallback && vm.isEndCallback())
                 && host.handleEvents()
                 && !host.isClosing());
@@ -501,7 +571,6 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             comp.setSymbolPrefix(oldPrefix);
         }
     }
-
 
     public final class WrapCompileList implements Function {
         public void run(TomVM vm) {
@@ -576,7 +645,8 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
                     // Copy error to error variables
                     error = vm.getError();
-                    Mutable<Integer> errorLineWrapper = new Mutable<>(errorLine), errorColWrapper = new Mutable<>(errorCol);
+                    Mutable<Integer> errorLineWrapper = new Mutable<>(errorLine),
+                            errorColWrapper = new Mutable<>(errorCol);
                     vm.getIPInSourceCode(errorLineWrapper, errorColWrapper);
                     errorLine = errorLineWrapper.get();
                     errorCol = errorColWrapper.get();
@@ -609,8 +679,9 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             vm.getReg().setIntVal(errorCol);
         }
     }
-////////////////////////////////////////////////////////////////////////////////
-// New runtime compilation methods
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // New runtime compilation methods
 
     public final class WrapComp implements Function {
         public void run(TomVM vm) {

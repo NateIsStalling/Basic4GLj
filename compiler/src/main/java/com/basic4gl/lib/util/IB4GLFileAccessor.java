@@ -13,5 +13,5 @@ public interface IB4GLFileAccessor {
      * Otherwise simply returns the filename (in dst parameter).
      * dst must be at least MAX_PATH characters in length.
      */
-	 void getFilenameForRead(String filename, String dst);
+    void getFilenameForRead(String filename, String dst);
 }

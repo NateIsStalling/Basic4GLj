@@ -2,7 +2,7 @@ package com.basic4gl.runtime;
 
 public class RollbackPoint {
     // Registered code blocks
-	public int codeBlockCount;
+    public int codeBlockCount;
     public int boundCodeBlock;
 
     // User function prototypes

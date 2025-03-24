@@ -1,55 +1,46 @@
 package com.basic4gl.library.netlib4games;
 
+import static com.basic4gl.library.netlib4games.NetLayer2.*;
 
 import com.basic4gl.library.netlib4games.internal.Assert;
-
-import static com.basic4gl.library.netlib4games.NetLayer2.*;
 
 /**
  * Layer 2 outgoing network channel.
  */
 public class NetOutChannelL2 extends HasErrorState {
-    private final int m_channel;
-    private final boolean m_ordered;
-    private int m_messageIndex;
-    private int m_reliableIndex;
+    private final int channel;
+    private final boolean ordered;
+    private int messageIndex;
+    private int reliableIndex;
 
     public NetOutChannelL2(int channel, boolean ordered) {
-        m_channel = channel;
-        m_ordered = ordered;
-        m_messageIndex = 0;
-        m_reliableIndex = 0;
+        this.channel = channel;
+        this.ordered = ordered;
+        messageIndex = 0;
+        reliableIndex = 0;
     }
 
     @Deprecated
-    public void dispose() {
-
-    }
+    public void dispose() {}
 
     // Member access
     public int getChannel() {
-        return m_channel;
+        return channel;
     }
 
     public boolean isOrdered() {
-        return m_ordered;
+        return ordered;
     }
 
     public int getMessageIndex() {
-        return m_messageIndex;
+        return messageIndex;
     }
 
     public int getReliableIndex() {
-        return m_reliableIndex;
+        return reliableIndex;
     }
 
-    public void send(
-            NetConL1 connection,
-            byte[] data,
-            int size,
-            boolean reliable,
-            boolean smoothed,
-            long tickCount) {
+    public void send(NetConL1 connection, byte[] data, int size, boolean reliable, boolean smoothed, long tickCount) {
         Assert.assertTrue(data != null);
         Assert.assertTrue(size >= 0);
 
@@ -74,11 +65,11 @@ public class NetOutChannelL2 extends HasErrorState {
             NetPacketHeaderL2 header = new NetPacketHeaderL2(buffer);
             byte channelFlags = (byte) ((reliable ? NETL2_RELIABLE : 0)
                     | (smoothed ? NETL2_SMOOTHED : 0)
-                    | (m_ordered ? NETL2_ORDERED : 0)
-                    | (m_channel & NETL2_CHANNELMASK));
+                    | (ordered ? NETL2_ORDERED : 0)
+                    | (channel & NETL2_CHANNELMASK));
             header.setChannelFlags(channelFlags);
-            header.setMessageIndex(m_messageIndex);
-            header.setReliableIndex(m_reliableIndex);
+            header.setMessageIndex(messageIndex);
+            header.setReliableIndex(reliableIndex);
             header.setPacketCount(packets);
             header.setPacketIndex(packet);
             header.setTickCount(tickCount);
@@ -96,9 +87,9 @@ public class NetOutChannelL2 extends HasErrorState {
         }
 
         // Update packet indices
-        m_messageIndex++;
+        messageIndex++;
         if (reliable) {
-            m_reliableIndex++;
+            reliableIndex++;
         }
     }
 }

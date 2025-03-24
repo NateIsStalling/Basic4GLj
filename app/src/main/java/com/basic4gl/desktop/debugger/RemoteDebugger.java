@@ -4,12 +4,11 @@ import com.basic4gl.debug.protocol.commands.*;
 import com.basic4gl.debug.protocol.types.Source;
 import com.basic4gl.debug.protocol.types.SourceBreakpoint;
 import com.basic4gl.lib.util.Library;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class RemoteDebugger implements IDebugger {
-    private DebugClientAdapter adapter;
+    private final DebugClientAdapter adapter;
 
     public RemoteDebugger(DebugClientAdapter adapter) {
         this.adapter = adapter;
@@ -46,9 +45,7 @@ public class RemoteDebugger implements IDebugger {
     }
 
     @Override
-    public void runApplication(Library builder, String currentDirectory, String libraryPath) {
-
-    }
+    public void runApplication(Library builder, String currentDirectory, String libraryPath) {}
 
     @Override
     public void stopApplication() {
@@ -77,7 +74,7 @@ public class RemoteDebugger implements IDebugger {
         source.path = filename;
         source.name = filename;
 
-        for (int line: breakpoints) {
+        for (int line : breakpoints) {
             SourceBreakpoint s = new SourceBreakpoint();
 
             s.line = line;
@@ -103,8 +100,8 @@ public class RemoteDebugger implements IDebugger {
     @Override
     public int evaluateWatch(String watch, boolean canCallFunc) {
         String context = canCallFunc
-            ? EvaluateWatchCommand.EVALUATE_CONTEXT_WATCH
-            : EvaluateWatchCommand.EVALUATE_CONTEXT_VARIABLES;
+                ? EvaluateWatchCommand.EVALUATE_CONTEXT_WATCH
+                : EvaluateWatchCommand.EVALUATE_CONTEXT_VARIABLES;
         DebugCommand command = new EvaluateWatchCommand(watch, context);
 
         int requestId = adapter.message(command);

@@ -23,10 +23,8 @@ public class DebugServerFactory {
             }));
 
             // Handle output from debug server
-            final BufferedReader errinput = new BufferedReader(new InputStreamReader(
-                    process.getErrorStream()));
-            final BufferedReader input = new BufferedReader(new InputStreamReader(
-                    process.getInputStream()));
+            final BufferedReader errinput = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            final BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -63,15 +61,10 @@ public class DebugServerFactory {
     private static String[] buildCommandArgs(String debugServerBinPath, String port) {
         // Run debug server with java if path is a jar file
         if (debugServerBinPath.endsWith(".jar")) {
-            return new String[] {
-                "java", "-jar", debugServerBinPath, port
-            };
+            return new String[] {"java", "-jar", debugServerBinPath, port};
         }
 
         // Debug server is a binary executable; java parameters are not required
-        return new String[] {
-            debugServerBinPath, port
-        };
-
+        return new String[] {debugServerBinPath, port};
     }
 }

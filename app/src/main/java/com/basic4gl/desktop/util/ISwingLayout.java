@@ -5,5 +5,6 @@ package com.basic4gl.desktop.util;
  */
 public interface ISwingLayout {
     void addMenuItems();
+
     void addPanel();
 }

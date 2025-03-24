@@ -5,12 +5,11 @@ import com.basic4gl.debug.websocket.DebugClientSocket;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
 import com.basic4gl.debug.websocket.IDebugCommandListener;
 import com.google.gson.Gson;
-import org.eclipse.jetty.util.component.LifeCycle;
-
+import java.net.URI;
 import javax.websocket.ContainerProvider;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
-import java.net.URI;
+import org.eclipse.jetty.util.component.LifeCycle;
 
 public class DebugClientAdapter implements IDebugCommandListener {
     private WebSocketContainer container;
@@ -29,18 +28,15 @@ public class DebugClientAdapter implements IDebugCommandListener {
 
         URI uri = URI.create("ws://localhost:" + debugServerPort + "/debug/");
 
-        try
-        {
+        try {
             container = ContainerProvider.getWebSocketContainer();
 
             // Create client side endpoint
             DebugClientSocket clientEndpoint = new DebugClientSocket(this, callbackListener);
 
             // Attempt Connect
-            session = container.connectToServer(clientEndpoint,uri);
-        }
-        catch (Throwable t)
-        {
+            session = container.connectToServer(clientEndpoint, uri);
+        } catch (Throwable t) {
             t.printStackTrace(System.err);
         }
     }
@@ -63,14 +59,10 @@ public class DebugClientAdapter implements IDebugCommandListener {
         }
     }
 
-    @Override
-    public void OnDebugCommandReceived(DebugCommand command) {
+    public void onDebugCommandReceived(DebugCommand command) {}
 
-    }
-
-    @Override
-    public void OnDisconnected() {
-        callbackListener.OnDisconnected();
+    public void onDisconnected() {
+        callbackListener.onDisconnected();
     }
 
     public int message(DebugCommand command) {
@@ -91,7 +83,6 @@ public class DebugClientAdapter implements IDebugCommandListener {
 
         return 0;
     }
-
 
     private int newRequestId() {
         // TODO consider synchronized block

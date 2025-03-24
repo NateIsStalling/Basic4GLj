@@ -13,10 +13,10 @@ import java.util.Map;
  * A set of embedded files, keyed by relative filename
  */
 public class EmbeddedFiles {
-    private String parentDirectory; //Parent directory
-//    private Map<String,EmbeddedFile> m_files = new HashMap<>();
+    private String parentDirectory; // Parent directory
+    //    private Map<String,EmbeddedFile> files = new HashMap<>();
 
-    private Map<String, File> tempFiles = new HashMap<>();
+    private final Map<String, File> tempFiles = new HashMap<>();
 
     public URL getResource(String filename) {
         return this.getClass().getClassLoader().getResource(filename);
@@ -28,8 +28,8 @@ public class EmbeddedFiles {
 
     // Find stream.
     // Caller must free
-    public FileInputStream open(String filename)        // Opens file. Returns NULL if not present.
-    {
+    public FileInputStream open(String filename) // Opens file. Returns NULL if not present.
+            {
         if (isStored(filename)) {
             try {
                 File file = new File(getResource(filename).toURI());
@@ -41,8 +41,12 @@ public class EmbeddedFiles {
         return null;
     }
 
-    public FileInputStream openOrLoad(String filename)        // Opens file. Falls back to disk if not present. Returns NULL if not present OR on disk
-    {
+    /**
+     * Opens file. Falls back to disk if not present. Returns NULL if not present OR on disk
+     * @param filename
+     * @return
+     */
+    public FileInputStream openOrLoad(String filename) {
 
         // Try embedded files first
         FileInputStream result = open(filename);
@@ -61,13 +65,24 @@ public class EmbeddedFiles {
         }
         return result;
     }
+
     // Routines
 
-    // Copy a InputStream into a OutputStream
+    /**
+     * Copy a InputStream into a OutputStream
+     * @param src
+     * @param dst
+     */
     public static void copyStream(InputStream src, OutputStream dst) {
         copyStream(src, dst, -1);
     }
 
+    /**
+     * Copy a InputStream into a OutputStream
+     * @param src
+     * @param dst
+     * @param len
+     */
     public static void copyStream(InputStream src, OutputStream dst, long len) {
 
         // Copy stream to stream
@@ -95,7 +110,13 @@ public class EmbeddedFiles {
         }
     }
 
-    // Create embedded representation of stream
+    /**
+     * Create embedded representation of stream
+     * @param parent
+     * @param filename
+     * @param stream
+     * @return
+     */
     static boolean embedFile(String parent, String filename, OutputStream stream) {
 
         // Open file
@@ -112,14 +133,16 @@ public class EmbeddedFiles {
         String relName = new File(parent, filename).getAbsolutePath();
 
         // Calculate lengths
-        int nameLen = relName.length() + 1;        // +1 for 0 terminator
+        int nameLen = relName.length() + 1; // +1 for 0 terminator
         LongBuffer fileLen = LongBuffer.allocate(1).put(0, file.length());
 
         // Write data to stream
         try {
             stream.write(ByteBuffer.allocate(4).putInt(nameLen).array());
             stream.write(relName.getBytes(StandardCharsets.UTF_8));
-            stream.write(ByteBuffer.allocate(Long.SIZE / Byte.SIZE).putLong(fileLen.get()).array());
+            stream.write(ByteBuffer.allocate(Long.SIZE / Byte.SIZE)
+                    .putLong(fileLen.get())
+                    .array());
             copyStream(new FileInputStream(file), stream, fileLen.get());
             return true;
         } catch (Exception e) {
@@ -128,8 +151,7 @@ public class EmbeddedFiles {
         }
     }
 
-
-    String extractStoredFile(String filename, String mParent){
+    String extractStoredFile(String filename, String mParent) {
         filename = FileUtil.separatorsToSystem(filename);
         Exception exception = null;
         File file = null;
@@ -155,7 +177,7 @@ public class EmbeddedFiles {
                 out.write(buffer, 0, length);
             }
 
-        } catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
             exception = e;
         } finally {
@@ -174,8 +196,7 @@ public class EmbeddedFiles {
                 }
             }
         }
-        if (file == null || exception != null)
-        {
+        if (file == null || exception != null) {
             return "";
         }
         // Return new filename

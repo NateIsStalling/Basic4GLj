@@ -1,16 +1,16 @@
 package com.basic4gl.debug.protocol.callbacks;
-import com.google.gson.Gson;
 
+import com.google.gson.Gson;
 import java.util.Objects;
 
 public class CallbackFactory {
     private final Gson gson;
 
-    public CallbackFactory(Gson gson){
+    public CallbackFactory(Gson gson) {
         this.gson = gson;
     }
 
-    public Callback FromJson(String commandJson) {
+    public Callback fromJson(String commandJson) {
         Callback callback = null;
 
         try {
@@ -30,4 +30,3 @@ public class CallbackFactory {
         return null;
     }
 }
-

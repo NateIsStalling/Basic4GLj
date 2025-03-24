@@ -1,16 +1,14 @@
 package com.basic4gl.debug.protocol.types;
 
 public class VMStatus {
-    //TODO replace with exited event
+    // TODO replace with exited event
     public boolean done;
 
     public boolean hasError;
 
     public String error;
 
-    public VMStatus() {
-
-    }
+    public VMStatus() {}
 
     public VMStatus(boolean done, boolean hasError, String error) {
         this.done = done;
@@ -23,10 +21,7 @@ public class VMStatus {
             return null;
         }
 
-        return new VMStatus(
-            vmStatus.done,
-            vmStatus.hasError,
-            vmStatus.error);
+        return new VMStatus(vmStatus.done, vmStatus.hasError, vmStatus.error);
     }
 
     public boolean isDone() {

@@ -1,17 +1,16 @@
 package com.basic4gl.debug.protocol.commands;
 
 import com.google.gson.Gson;
-
 import java.util.Objects;
 
 public class DebugCommandFactory {
     private final Gson gson;
 
-    public DebugCommandFactory(Gson gson){
+    public DebugCommandFactory(Gson gson) {
         this.gson = gson;
     }
 
-    public DebugCommand FromJson(String commandJson) {
+    public DebugCommand fromJson(String commandJson) {
         DebugCommand command = null;
 
         try {

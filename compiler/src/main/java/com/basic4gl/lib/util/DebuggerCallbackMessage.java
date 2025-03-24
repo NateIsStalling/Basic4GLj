@@ -1,7 +1,6 @@
 package com.basic4gl.lib.util;
 
 import com.basic4gl.runtime.InstructionPosition;
-
 import java.util.Objects;
 
 /**
@@ -14,18 +13,17 @@ public class DebuggerCallbackMessage {
     public static final int SUCCESS = 2;
     public static final int PAUSED = 3;
 
-
     protected int status;
     protected String text;
     protected InstructionPosition instructionPosition;
     public VMStatus vmStatus;
 
-    public DebuggerCallbackMessage(){
+    public DebuggerCallbackMessage() {
         this.status = STOPPED;
         this.text = "";
     }
 
-    public DebuggerCallbackMessage(int status, String message, VMStatus vmStatus){
+    public DebuggerCallbackMessage(int status, String message, VMStatus vmStatus) {
         this.status = status;
         this.text = message;
         this.vmStatus = vmStatus;
@@ -37,10 +35,8 @@ public class DebuggerCallbackMessage {
         this.vmStatus = vmStatus;
     }
 
-    public boolean setMessage(int status, String message, VMStatus vmStatus){
-        if (this.status == status
-            && Objects.equals(this.text, message)
-            && Objects.equals(this.vmStatus, vmStatus)) {
+    public boolean setMessage(int status, String message, VMStatus vmStatus) {
+        if (this.status == status && Objects.equals(this.text, message) && Objects.equals(this.vmStatus, vmStatus)) {
             // no change
             return false;
         }
@@ -51,7 +47,8 @@ public class DebuggerCallbackMessage {
 
         return true;
     }
-    public boolean setMessage(DebuggerCallbackMessage message){
+
+    public boolean setMessage(DebuggerCallbackMessage message) {
         if (message == null) {
             // no change
             return false;

@@ -1,28 +1,28 @@
 package com.basic4gl.library.netlib4games;
 
+import static com.basic4gl.library.netlib4games.NetLogger.netLog;
+import static com.basic4gl.library.netlib4games.internal.ThreadUtils.INFINITE;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.basic4gl.library.netlib4games.NetLogger.netLog;
-import static com.basic4gl.library.netlib4games.internal.ThreadUtils.INFINITE;
-
 public class NetInChannelL2 extends HasErrorState {
-    private final int m_channel;
-    private final boolean m_ordered;
-    private final long m_maxBufferPackets;
-    private final List<NetMessageL2> m_messages = new ArrayList<>();
-    private int m_messageIndex;
-    private int m_reliableIndex;
-    private int m_packetCount;
+    private final int channel;
+    private final boolean ordered;
+    private final long maxBufferPackets;
+    private final List<NetMessageL2> messages = new ArrayList<>();
+    private int messageIndex;
+    private int reliableIndex;
+    private int packetCount;
 
     public NetInChannelL2(int channel, boolean ordered, long maxBufferPackets) {
-        m_channel = channel;
-        m_ordered = ordered;
-        m_maxBufferPackets = maxBufferPackets;
-        m_messageIndex = 0;
-        m_reliableIndex = 0;
-        m_packetCount = 0;
+        this.channel = channel;
+        this.ordered = ordered;
+        this.maxBufferPackets = maxBufferPackets;
+        messageIndex = 0;
+        reliableIndex = 0;
+        packetCount = 0;
     }
 
     public void dispose() {
@@ -31,7 +31,7 @@ public class NetInChannelL2 extends HasErrorState {
 
     void clear() {
         // Delete pending messages
-        Iterator<NetMessageL2> i = m_messages.iterator();
+        Iterator<NetMessageL2> i = messages.iterator();
         while (i.hasNext()) {
             NetMessageL2 message = i.next();
             message.dispose();
@@ -41,7 +41,7 @@ public class NetInChannelL2 extends HasErrorState {
 
     // Member access
     public int getChannel() {
-        return m_channel;
+        return channel;
     }
 
     /**
@@ -50,23 +50,32 @@ public class NetInChannelL2 extends HasErrorState {
      * @return true if channel is ordered
      */
     public boolean isOrdered() {
-        return m_ordered;
+        return ordered;
     }
 
-    public void buffer(NetSimplePacket packet, boolean reliable, boolean smoothed, boolean resent, int messageIndex, int reliableIndex, int packetIndex, int packetCount, long tickCount) {
+    public void buffer(
+            NetSimplePacket packet,
+            boolean reliable,
+            boolean smoothed,
+            boolean resent,
+            int messageIndex,
+            int reliableIndex,
+            int packetIndex,
+            int packetCount,
+            long tickCount) {
 
         assert packet != null;
 
         // Ordered channels can reject messages older than the last one promoted.
-        if (m_ordered && messageIndex < m_messageIndex) {
+        if (ordered && messageIndex < this.messageIndex) {
             return;
         }
 
         // Find corresponding message
         NetMessageL2 message = null;
-        Iterator<NetMessageL2> i = m_messages.iterator();
+        Iterator<NetMessageL2> i = messages.iterator();
         int index = 0;
-        while (message == null || message.messageIndex < messageIndex) {
+        while (message == null || message.getMessageIndex() < messageIndex) {
             if (i.hasNext()) {
                 message = i.next();
                 index++;
@@ -77,28 +86,22 @@ public class NetInChannelL2 extends HasErrorState {
         }
 
         // If none exists, create a new one
-        if (message == null || message.messageIndex > messageIndex) {
-            message = new NetMessageL2(m_channel,
-                    reliable,
-                    smoothed,
-                    m_ordered,
-                    messageIndex,
-                    reliableIndex,
-                    packetCount,
-                    tickCount);
+        if (message == null || message.getMessageIndex() > messageIndex) {
+            message = new NetMessageL2(
+                    channel, reliable, smoothed, ordered, messageIndex, reliableIndex, packetCount, tickCount);
 
             // Insert at correct position
-            m_messages.add(index, message);
+            messages.add(index, message);
         }
         // Add packet to message
         if (message.buffer(packet, packetIndex)) {
-            m_packetCount++;
+            this.packetCount++;
 
             // Disable smoothing if any part of the message was resent.
             // We don't want to include spikes from dropped packets in our timing
             // calculations.
             if (resent) {
-                message.smoothed = false;
+                message.setSmoothed(false);
             }
         } else {
 
@@ -111,29 +114,29 @@ public class NetInChannelL2 extends HasErrorState {
 
         // Register tickCount differences
         long wakeup = INFINITE;
-        Iterator<NetMessageL2> it = m_messages.iterator();
+        Iterator<NetMessageL2> it = messages.iterator();
         while (it.hasNext()) {
             NetMessageL2 i = it.next();
 
-            if ((i).smoothed && (i).isComplete()) {
+            if (i.isSmoothed() && i.isComplete()) {
 
-                if (!(i).tickCountRegistered) {
+                if (!i.isTickCountRegistered()) {
 
                     // Register tick count difference
-                    callback.registerTickCountDifference(tickCount - (i).tickCount);
-                    (i).tickCountRegistered = true;
+                    callback.registerTickCountDifference(tickCount - i.getTickCount());
+                    i.setTickCountRegistered(true);
 
                     // Adjust tick count on message
                     if (doSmoothing) {
-                        (i).tickCount += adjustment;
+                        i.setTickCount(i.getTickCount() + adjustment);
                     } else {
-                        (i).smoothed = false;
+                        i.setSmoothed(false);
                     }
                 }
 
                 // Check if wakeup is required
-                if (doSmoothing && i.tickCount >= tickCount) {
-                    long newWakeup = i.tickCount - tickCount;
+                if (doSmoothing && i.getTickCount() >= tickCount) {
+                    long newWakeup = i.getTickCount() - tickCount;
                     if (wakeup == INFINITE || newWakeup < wakeup) {
                         wakeup = newWakeup;
                     }
@@ -151,21 +154,20 @@ public class NetInChannelL2 extends HasErrorState {
             found = false;
 
             // Search for complete message. Oldest first
-            it = m_messages.iterator();
+            it = messages.iterator();
             NetMessageL2 i = null;
             while (it.hasNext()) {
                 i = it.next();
-                boolean complete = (i).isComplete();// Message is complete
-                boolean isPacketDue = tickCount >= (i).tickCount;
+                boolean complete = i.isComplete(); // Message is complete
+                boolean isPacketDue = tickCount >= i.getTickCount();
 
                 // TODO refactor this boolean; NetLayer2.cpp uses this condition to scan the iterator
-                boolean notFound = !complete && (!doSmoothing || !(i).smoothed || isPacketDue);
+                boolean notFound = !complete && (!doSmoothing || !i.isSmoothed() || isPacketDue);
                 if (!notFound) {
 
                     // If the channels is ordered, then make sure there aren't any older reliable messages
                     // waiting to be promoted. If there are, then we can't promote this message yet.
-                    if (!m_ordered
-                            || (i).reliableIndex == m_reliableIndex) {
+                    if (!ordered || i.getReliableIndex() == reliableIndex) {
                         found = true;
                     }
                     break;
@@ -175,27 +177,38 @@ public class NetInChannelL2 extends HasErrorState {
                 // Promote message
                 NetMessageL2 msg = i;
                 callback.queueMessage(msg);
-                m_messages.remove(i);
-                m_packetCount -= msg.receivedCount;
+                messages.remove(i);
+                packetCount -= msg.getReceivedCount();
 
-                netLog("Promote completed L2 message. Channel " + (m_channel) + ", Msg " + (msg.messageIndex) + ", " + (msg.packetCount) + " packets, " + (msg.dataSize) + " bytes");
+                netLog("Promote completed L2 message. Channel "
+                        + channel
+                        + ", Msg "
+                        + msg.getMessageIndex()
+                        + ", "
+                        + msg.getPacketCount()
+                        + " packets, "
+                        + msg.getDataSize()
+                        + " bytes");
 
                 // Delete older packets (from ordered channels)
-                if (m_ordered) {
+                if (ordered) {
 
                     // Update message index and reliable index
-                    m_messageIndex = msg.messageIndex;
-                    if (msg.reliable) {
-                        m_reliableIndex++;
+                    messageIndex = msg.getMessageIndex();
+                    if (msg.isReliable()) {
+                        reliableIndex++;
                     }
 
                     // Remove any older messages from queue
-                    while (!m_messages.isEmpty() && m_messages.get(0).messageIndex < m_messageIndex) {
-                        NetMessageL2 otherMsg = m_messages.get(0);
-                        m_messages.remove(0);
-                        m_packetCount -= otherMsg.receivedCount;
+                    while (!messages.isEmpty() && messages.get(0).getMessageIndex() < messageIndex) {
+                        NetMessageL2 otherMsg = messages.get(0);
+                        messages.remove(0);
+                        packetCount -= otherMsg.getReceivedCount();
 
-                        netLog("Discard incomplete ordered unreliable L2 message. Channel " + (m_channel) + ", Msg " + (msg.messageIndex));
+                        netLog("Discard incomplete ordered unreliable L2 message. Channel "
+                                + channel
+                                + ", Msg "
+                                + msg.getMessageIndex());
 
                         otherMsg.dispose();
                     }
@@ -211,15 +224,15 @@ public class NetInChannelL2 extends HasErrorState {
      * maximum size.)
      */
     public void cullMessages() {
-        while (m_packetCount > m_maxBufferPackets) {
+        while (packetCount > maxBufferPackets) {
 
             // Search for oldest unreliable message
-            Iterator<NetMessageL2> it = m_messages.iterator();
+            Iterator<NetMessageL2> it = messages.iterator();
             NetMessageL2 message = null;
             boolean reliable = true;
             while (it.hasNext() && reliable) {
                 message = it.next();
-                reliable = message.reliable;
+                reliable = message.isReliable();
             }
 
             // None found
@@ -229,8 +242,8 @@ public class NetInChannelL2 extends HasErrorState {
             }
 
             // Drop the message
-            m_messages.remove(message);
-            m_packetCount -= message.receivedCount;
+            messages.remove(message);
+            packetCount -= message.getReceivedCount();
             message.dispose();
         }
     }

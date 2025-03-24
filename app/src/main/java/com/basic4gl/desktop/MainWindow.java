@@ -1,52 +1,50 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.debug.protocol.types.StackFrame;
+import static com.basic4gl.desktop.Theme.*;
+import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.formdev.flatlaf.FlatClientProperties.*;
+
+import com.basic4gl.compiler.Preprocessor;
+import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
+import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
 import com.basic4gl.desktop.util.*;
-import com.basic4gl.compiler.Preprocessor;
-import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.EditorAppSettings;
 import com.basic4gl.lib.util.IConfigurableAppSettings;
-import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
-import com.formdev.flatlaf.FlatLaf;
+import com.basic4gl.runtime.util.Mutable;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import com.formdev.flatlaf.util.SystemInfo;
-import org.fife.ui.rsyntaxtextarea.*;
-import org.fife.ui.rtextarea.SearchContext;
-
-import javax.swing.*;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.*;
-import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
-
-import static com.basic4gl.desktop.Theme.*;
-import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
-import static com.formdev.flatlaf.FlatClientProperties.*;
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.*;
+import javax.swing.text.BadLocationException;
+import org.fife.ui.rsyntaxtextarea.*;
+import org.fife.ui.rtextarea.SearchContext;
 
 /**
  * Created by Nate on 2/24/2015.
  */
-public class MainWindow implements
-        IEditorPresenter,
-        ITabProvider,
-        IToggleBreakpointListener,
-        IFileEditorActionListener,
-        EmptyTabPanel.IEmptyTabPanelListener {
+public class MainWindow
+        implements IEditorPresenter,
+                ITabProvider,
+                IToggleBreakpointListener,
+                IFileEditorActionListener,
+                EmptyTabPanel.IEmptyTabPanelListener {
 
     private final CaretListener TrackCaretPosition = new CaretListener() {
         @Override
@@ -72,7 +70,7 @@ public class MainWindow implements
     private final JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
     private final JSplitPane debugPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     private final JTabbedPane tabControl = new JTabbedPane();
-    private  JPanel emptyTabPanel;
+    private JPanel emptyTabPanel;
 
     private final JMenu bookmarkSubMenu = new JMenu("Bookmarks");
     private final JMenu breakpointSubMenu = new JMenu("Breakpoints");
@@ -119,22 +117,22 @@ public class MainWindow implements
     private final JButton settingsButton = new JButton(createImageIcon(ICON_SETTINGS));
     private final JSeparator debugSeparator = new JSeparator(JSeparator.VERTICAL);
     // Labels
-    private final JLabel compilerStatusLabel = new JLabel("");    // Compiler/VM Status
+    private final JLabel compilerStatusLabel = new JLabel(""); // Compiler/VM Status
     private final JLabel cursorPositionLabel = new JLabel("0:0"); // Cursor Position
 
     // Debugging
     private final DefaultListModel<String> watchListModel = new DefaultListModel<>();
-    private final JList <String> watchListBox = new JList<>(watchListModel);
+    private final JList<String> watchListBox = new JList<>(watchListModel);
     private final DefaultListModel<String> gosubListModel = new DefaultListModel<>();
 
     // Editors
-    final IConfigurableAppSettings appSettings = new EditorAppSettings();
-    BasicEditor basicEditor;
-    FileManager fileManager;
+    private final IConfigurableAppSettings appSettings = new EditorAppSettings();
+    private BasicEditor basicEditor;
+    private FileManager fileManager;
 
-    IncludeLinkGenerator linkGenerator = new IncludeLinkGenerator(this);
+    private IncludeLinkGenerator linkGenerator = new IncludeLinkGenerator(this);
 
-    SearchContext searchContext;
+    private SearchContext searchContext;
 
     // Debugging
     private boolean isDebugMode = false;
@@ -144,29 +142,31 @@ public class MainWindow implements
     private boolean isDelayScreenSwitchEnabled = false;
 
     // TODO create config file
-    static String debugServerBinPath;
-    static String outputBinPath;
-    static String applicationStoragePath;
+    private static String debugServerBinPath;
+    private static String outputBinPath;
+    private static String applicationStoragePath;
 
     public static void main(String[] args) {
         // Location to store logs
-        applicationStoragePath = System.getProperty("user.home") +
-            System.getProperty("file.separator") +
-            BuildInfo.APPLICATION_NAME;
+        applicationStoragePath =
+                System.getProperty("user.home") + System.getProperty("file.separator") + BuildInfo.APPLICATION_NAME;
 
         if (args.length >= 2) {
             // for debugging; set by gradle debugAll
             outputBinPath = args[0];
             debugServerBinPath = args[1];
         } else if (System.getProperty("jpackage.app-path") != null) {
-            // app was built with jpackage; the output window and debug server binaries should be bundled with it
+            // app was built with jpackage; the output window and debug server binaries should be bundled
+            // with it
             String appPath = System.getProperty("jpackage.app-path");
             File appDirectory = new File(appPath).getParentFile();
-            // TODO these should NOT be hardcoded; figure out how to generate some appconfig.json with builds to include these as config settings
+            // TODO these should NOT be hardcoded; figure out how to generate some appconfig.json with
+            // builds to include these as config settings
             outputBinPath = new File(appDirectory, "Basic4GLjOutput").getAbsolutePath();
             debugServerBinPath = new File(appDirectory, "Basic4GLjDebugServer").getAbsolutePath();
         } else {
-            // TODO these should NOT be hardcoded; figure out how to generate some appconfig.json with builds to include these as config settings
+            // TODO these should NOT be hardcoded; figure out how to generate some appconfig.json with
+            // builds to include these as config settings
             String appHome = System.getenv("APP_HOME"); // APP_HOME is defined in scripts distributed with build
             if (appHome != null && !appHome.trim().isEmpty()) {
                 File appDirectory = new File(appHome);
@@ -191,7 +191,7 @@ public class MainWindow implements
         }
 
         System.setProperty("apple.laf.useScreenMenuBar", "true");
-        System.setProperty("apple.awt.application.name", "Basic4GLj" );
+        System.setProperty("apple.awt.application.name", "Basic4GLj");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Basic4GLj");
 
         FlatLightLaf.setup();
@@ -221,13 +221,13 @@ public class MainWindow implements
         FlatDesktop.setPreferencesHandler(() -> showSettings());
         FlatDesktop.setQuitHandler(response -> tryCloseWindow());
 
-//        findDialog = new FindDialog(mFrame, this);
-//        replaceDialog = new ReplaceDialog(mFrame, this);
+        //        findDialog = new FindDialog(mFrame, this);
+        //        replaceDialog = new ReplaceDialog(mFrame, this);
 
         // This ties the properties of the two dialogs together (match case,
         // regex, etc.).
-//        context = findDialog.getSearchContext();
-//        replaceDialog.setSearchContext(context);
+        //        context = findDialog.getSearchContext();
+        //        replaceDialog.setSearchContext(context);
 
         searchContext = new SearchContext();
 
@@ -304,12 +304,12 @@ public class MainWindow implements
         JMenuItem aboutMenuItem = new JMenuItem("About");
         helpMenu.add(aboutMenuItem);
 
-//        searchField = new JTextField(30);
-//        mToolBar.add(searchField);
-//        regexCB = new JCheckBox("Regex");
-//        mToolBar.add(regexCB);
-//        matchCaseCB = new JCheckBox("Match Case");
-//        mToolBar.add(matchCaseCB);
+        //        searchField = new JTextField(30);
+        //        mToolBar.add(searchField);
+        //        regexCB = new JCheckBox("Regex");
+        //        mToolBar.add(regexCB);
+        //        matchCaseCB = new JCheckBox("Match Case");
+        //        mToolBar.add(matchCaseCB);
 
         Toolkit toolkit = Toolkit.getDefaultToolkit();
 
@@ -351,7 +351,8 @@ public class MainWindow implements
         findMenuItem.addActionListener(e -> {
             showFindReplaceMenu(false);
         });
-        replaceMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.SHIFT_MASK | toolkit.getMenuShortcutKeyMask()));
+        replaceMenuItem.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.SHIFT_MASK | toolkit.getMenuShortcutKeyMask()));
         replaceMenuItem.addActionListener(e -> {
             showFindReplaceMenu(true);
         });
@@ -405,7 +406,8 @@ public class MainWindow implements
             int i = tabControl.getSelectedIndex();
             fileManager.selectPreviousBreakpoint(i);
         });
-        toggleBreakpointMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, toolkit.getMenuShortcutKeyMask()));
+        toggleBreakpointMenuItem.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F3, toolkit.getMenuShortcutKeyMask()));
         toggleBreakpointMenuItem.addActionListener(e -> {
             int i = tabControl.getSelectedIndex();
             fileManager.toggleBreakpoint(i);
@@ -426,10 +428,10 @@ public class MainWindow implements
             // hide menu items that are in macOS application menu
             aboutMenuItem.setVisible(false);
             settingsMenuItem.setVisible(false);
-            //TODO mExitMenuItem.setVisible(false);
+            // TODO mExitMenuItem.setVisible(false);
         }
 
-        //Debugger
+        // Debugger
         JPanel watchListFrame = new JPanel();
         watchListFrame.setLayout(new BorderLayout());
         JLabel watchlistLabel = new JLabel("Watchlist");
@@ -444,35 +446,34 @@ public class MainWindow implements
                 if (evt.getClickCount() == 2) {
                     // Double-click detected
                     int index = list.locationToIndex(evt.getPoint());
-                    EditWatch();
+                    editWatch();
                 }
             }
         });
 
         watchListBox.addKeyListener(new KeyListener() {
             @Override
-            public void keyTyped(KeyEvent e) {
-            }
+            public void keyTyped(KeyEvent e) {}
 
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    EditWatch();
+                    editWatch();
                 }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-                    DeleteWatch();
+                    deleteWatch();
                 } else if (e.getKeyCode() == KeyEvent.VK_INSERT) {
                     watchListBox.setSelectedIndex(basicEditor.getWatchListSize());
-                    EditWatch();
+                    editWatch();
                 }
             }
         });
 
-        watchListBox.addListSelectionListener(e -> UpdateWatchHint());
+        watchListBox.addListSelectionListener(e -> updateWatchHint());
 
         JPanel gosubFrame = new JPanel();
         gosubFrame.setLayout(new BorderLayout());
@@ -486,7 +487,7 @@ public class MainWindow implements
         debugPane.setLeftComponent(watchListFrame);
         debugPane.setRightComponent(gosubFrame);
 
-        //Toolbar
+        // Toolbar
         JToolBar toolBar = new JToolBar();
         toolBar.add(newButton);
         toolBar.add(openButton);
@@ -522,7 +523,7 @@ public class MainWindow implements
         toolBar.setAlignmentY(1);
         toolBar.setFloatable(false);
 
-        //Status Panel
+        // Status Panel
         JPanel panelStatusInfo = new JPanel(new BorderLayout());
         JPanel panelStatusCursor = new JPanel();
 
@@ -563,13 +564,13 @@ public class MainWindow implements
         // The following line enables to use scrolling tabs.
         tabControl.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-        tabControl.putClientProperty( TABBED_PANE_TAB_CLOSABLE, true );
-        tabControl.putClientProperty( TABBED_PANE_TAB_CLOSE_TOOLTIPTEXT, "Close" );
-        tabControl.putClientProperty( TABBED_PANE_TAB_CLOSE_CALLBACK,
-                (BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
+        tabControl.putClientProperty(TABBED_PANE_TAB_CLOSABLE, true);
+        tabControl.putClientProperty(TABBED_PANE_TAB_CLOSE_TOOLTIPTEXT, "Close");
+        tabControl.putClientProperty(
+                TABBED_PANE_TAB_CLOSE_CALLBACK, (BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
                     if (tabIndex != -1) {
-                        if (FileCheckSaveChanges(tabIndex)) {
-                            //Clear file's breakpoints
+                        if (fileCheckSaveChanges(tabIndex)) {
+                            // Clear file's breakpoints
                             FileEditor editor = fileManager.getFileEditors().get(tabIndex);
                             List<Integer> breakpoints = editor.getBreakpoints();
                             String file = editor.getFilePath();
@@ -578,17 +579,17 @@ public class MainWindow implements
                                 basicEditor.toggleBreakpt(file, line);
                             }
 
-                            //Remove tab
+                            // Remove tab
                             tabControl.remove(tabIndex);
                             fileManager.getFileEditors().remove(tabIndex.intValue());
 
-                            //Refresh controls if no files open
+                            // Refresh controls if no files open
                             if (fileManager.editorCount() == 0) {
                                 basicEditor.setMode(ApMode.AP_CLOSED, null);
                             }
                         }
                     }
-                } );
+                });
 
         mainPane.setTopComponent(tabControl);
         debugPane.setLeftComponent(watchListFrame);
@@ -602,8 +603,7 @@ public class MainWindow implements
 
         frame.addWindowListener(new WindowListener() {
             @Override
-            public void windowOpened(WindowEvent e) {
-            }
+            public void windowOpened(WindowEvent e) {}
 
             @Override
             public void windowClosing(WindowEvent e) {
@@ -611,31 +611,26 @@ public class MainWindow implements
             }
 
             @Override
-            public void windowClosed(WindowEvent e) {
-            }
+            public void windowClosed(WindowEvent e) {}
 
             @Override
-            public void windowIconified(WindowEvent e) {
-            }
+            public void windowIconified(WindowEvent e) {}
 
             @Override
-            public void windowDeiconified(WindowEvent e) {
-            }
+            public void windowDeiconified(WindowEvent e) {}
 
             @Override
-            public void windowActivated(WindowEvent e) {
-            }
+            public void windowActivated(WindowEvent e) {}
 
             @Override
-            public void windowDeactivated(WindowEvent e) {
-            }
+            public void windowDeactivated(WindowEvent e) {}
         });
-        //Initialize syntax highlighting
+        // Initialize syntax highlighting
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
         // TODO don't hardcode this classname
         atmf.putMapping("text/basic4gl", "com.basic4gl.desktop.editor.BasicTokenMaker");
 
-        //mDLLs(GetCurrentDir().c_str(), false)
+        // mDLLs(GetCurrentDir().c_str(), false)
         fileManager = new FileManager();
         Preprocessor preprocessor = new Preprocessor(2, new EditorSourceFileServer(fileManager), new DiskFileServer());
         Debugger debugger = new Debugger(preprocessor.getLineNumberMap());
@@ -643,9 +638,8 @@ public class MainWindow implements
         TomBasicCompiler comp = new TomBasicCompiler(vm);
         basicEditor = new BasicEditor(outputBinPath, fileManager, this, appSettings, preprocessor, debugger, comp);
 
-
-        //TODO Confirm this doesn't break if app is ever signed
-        //getParent
+        // TODO Confirm this doesn't break if app is ever signed
+        // getParent
         fileManager.setAppDirectory(new File(".").getAbsolutePath());
 
         if (new File(fileManager.getAppDirectory(), "Programs").exists()) {
@@ -657,18 +651,15 @@ public class MainWindow implements
         fileManager.setCurrentDirectory(fileManager.getFileDirectory());
 
         // TODO this should be done as a callback
-        RefreshActions(basicEditor.mode);
-        RefreshDebugDisplays(basicEditor.mode);
+        refreshActions(basicEditor.getMode());
+        refreshDebugDisplays(basicEditor.getMode());
 
-        basicEditor.InitLibraries();
-        ResetProject();
+        basicEditor.initLibraries();
+        resetProject();
         basicEditor.loadSettings();
 
-
         // Warm up the debug server
-        DebugServerFactory.startDebugServer(
-            debugServerBinPath,
-            DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
+        DebugServerFactory.startDebugServer(debugServerBinPath, DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
 
         // Display the window.
         frame.pack();
@@ -679,20 +670,20 @@ public class MainWindow implements
     private void actionExport() {
         basicEditor.setMode(ApMode.AP_STOPPED, null);
         if (fileManager.editorCount() == 0) {
-            JOptionPane.showMessageDialog(frame, "Nothing to export", "Cannot export",
-                    JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Nothing to export", "Cannot export", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         // Clear source code from parser
-        basicEditor.compiler.Parser().getSourceCode().clear();
+        basicEditor.compiler.getParser().getSourceCode().clear();
 
         if (!basicEditor.loadProgramIntoCompiler()) {
             compilerStatusLabel.setText(basicEditor.preprocessor.getError());
             return;
         }
-        ExportDialog dialog = new ExportDialog(frame, basicEditor.compiler, basicEditor.preprocessor, fileManager.getFileEditors());
-        dialog.setLibraries(basicEditor.libraries, basicEditor.currentBuilder);
+        ExportDialog dialog =
+                new ExportDialog(frame, basicEditor.compiler, basicEditor.preprocessor, fileManager.getFileEditors());
+        dialog.setLibraries(basicEditor.getLibraries(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
     }
@@ -700,7 +691,7 @@ public class MainWindow implements
     @Override
     public void setRecentItems(List<File> files) {
         recentSubMenu.removeAll();
-        for (File file: files) {
+        for (File file : files) {
 
             JMenuItem fileMenuItem = new JMenuItem(file.getName());
             recentSubMenu.add(fileMenuItem);
@@ -719,7 +710,7 @@ public class MainWindow implements
 
     private void showSettings() {
         ProjectSettingsDialog dialog = new ProjectSettingsDialog(frame, appSettings);
-        dialog.setLibraries(basicEditor.libraries, basicEditor.currentBuilder);
+        dialog.setLibraries(basicEditor.getLibraries(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
     }
@@ -730,25 +721,25 @@ public class MainWindow implements
 
     private void tryCloseWindow() {
         // Stop program running
-        if (basicEditor.mode == ApMode.AP_RUNNING || basicEditor.mode == ApMode.AP_PAUSED) {
+        if (basicEditor.getMode() == ApMode.AP_RUNNING || basicEditor.getMode() == ApMode.AP_PAUSED) {
             basicEditor.setMode(ApMode.AP_STOPPED, null);
             return;
         }
 
         // Save file before closing
-        if (!MultifileCheckSaveChanges()) {
+        if (!multifileCheckSaveChanges()) {
             return;
         }
 
-        //TODO Add libraries
+        // TODO Add libraries
         // Library cleanup functions
-        //ShutDownTomWindowsBasicLib();
+        // ShutDownTomWindowsBasicLib();
 
         frame.dispose();
         System.exit(0);
     }
 
-    private void ResetProject() {
+    private void resetProject() {
         // Clear out the current project and setup a new basic one with a single
         // source-file.
 
@@ -759,11 +750,9 @@ public class MainWindow implements
         // Create a default tab
         addTab();
 
-
-        //Display the editor
+        // Display the editor
         tabControl.setSelectedIndex(0);
     }
-
 
     @Override
     public int getFileTabIndex(String filename) {
@@ -801,15 +790,13 @@ public class MainWindow implements
         tabControl.setSelectedIndex(tabControl.getTabCount() - 1);
     }
 
-
-
     void actionNew() {
-        if (MultifileCheckSaveChanges()) {
+        if (multifileCheckSaveChanges()) {
 
             fileManager.setRunDirectory(fileManager.getFileDirectory());
             fileManager.setCurrentDirectory(fileManager.getRunDirectory());
 
-            //Clear file editors
+            // Clear file editors
             this.tabControl.removeAll();
             fileManager.getFileEditors().clear();
 
@@ -822,7 +809,7 @@ public class MainWindow implements
     }
 
     void actionOpen(File file) {
-        if (MultifileCheckSaveChanges()) {
+        if (multifileCheckSaveChanges()) {
             FileEditor editor = null;
             if (file != null) {
                 fileManager.setCurrentDirectory(fileManager.getFileDirectory());
@@ -838,11 +825,10 @@ public class MainWindow implements
 
     void openEditor(FileEditor editor) {
         if (editor != null) {
-            //TODO Check if file should open as new tab or project
-            //For now just open as new project
-            //So... close all current tabs
+            // TODO Check if file should open as new tab or project
+            // For now just open as new project
+            // So... close all current tabs
             closeAll();
-
 
             // Set current directory to main file directory
             // Must be done BEFORE setting the long filename, because the short
@@ -852,13 +838,14 @@ public class MainWindow implements
 
             fileManager.setCurrentDirectory(fileManager.getRunDirectory());
 
-            //Display file
+            // Display file
             addTab(editor);
         }
     }
 
     void actionClearRecent() {
-        int result = JOptionPane.showConfirmDialog(frame,
+        int result = JOptionPane.showConfirmDialog(
+                frame,
                 "Clear recently opened files?",
                 "Confirm",
                 JOptionPane.YES_NO_OPTION,
@@ -869,19 +856,19 @@ public class MainWindow implements
         }
     }
 
-    boolean FileCheckSaveChanges(int index) {
+    boolean fileCheckSaveChanges(int index) {
 
         // Is sub-file modified?
         FileEditor editor = fileManager.getFileEditors().get(index);
         if (editor.isModified()) {
-            int result = JOptionPane.showConfirmDialog(frame,
+            int result = JOptionPane.showConfirmDialog(
+                    frame,
                     "Save changes to " + editor.getShortFilename(),
                     "Confirm",
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
 
             switch (result) {
-
                 case JOptionPane.YES_OPTION:
                     return actionSave(index);
 
@@ -896,20 +883,20 @@ public class MainWindow implements
         return true;
     }
 
-    boolean MultifileCheckSaveChanges() {
+    boolean multifileCheckSaveChanges() {
         Mutable<String> description = new Mutable<>("");
         if (fileManager.isMultifileModified(description)) {
 
-            int result = JOptionPane.showConfirmDialog(frame,
+            int result = JOptionPane.showConfirmDialog(
+                    frame,
                     "Save changes to " + description.get(),
                     "Confirm",
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
 
             switch (result) {
-
                 case JOptionPane.YES_OPTION:
-                    return MultifileSaveAll();
+                    return multifileSaveAll();
 
                 case JOptionPane.NO_OPTION:
                     return true;
@@ -922,7 +909,7 @@ public class MainWindow implements
         return true;
     }
 
-    boolean MultifileSaveAll() {
+    boolean multifileSaveAll() {
 
         // Save all modified files
         for (int i = 0; i < fileManager.getFileEditors().size(); i++) {
@@ -938,7 +925,7 @@ public class MainWindow implements
     }
 
     boolean actionSave() {
-        //Save content of current tab
+        // Save content of current tab
         if (fileManager.getFileEditors().isEmpty()
                 || this.tabControl.getTabCount() == 0
                 || this.tabControl.getSelectedIndex() == -1) {
@@ -948,10 +935,11 @@ public class MainWindow implements
         int index = tabControl.getSelectedIndex();
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
-            //TODO Check if index of main file
+            // TODO Check if index of main file
             int main = 0;
             if (index == main) {
-                fileManager.setFileDirectory(new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
+                fileManager.setFileDirectory(
+                        new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
                 fileManager.setRunDirectory(fileManager.getFileDirectory());
                 fileManager.setCurrentDirectory(fileManager.getRunDirectory());
             }
@@ -962,7 +950,7 @@ public class MainWindow implements
     }
 
     boolean actionSave(int index) {
-        //Save content of current tab
+        // Save content of current tab
         if (fileManager.getFileEditors().isEmpty()
                 || this.tabControl.getTabCount() == 0
                 || this.tabControl.getSelectedIndex() == -1) {
@@ -971,10 +959,11 @@ public class MainWindow implements
 
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
-            //TODO Check if main file
+            // TODO Check if main file
             int main = 0;
             if (index == main) {
-                fileManager.setFileDirectory(new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
+                fileManager.setFileDirectory(
+                        new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
                 fileManager.setRunDirectory(fileManager.getFileDirectory());
                 fileManager.setCurrentDirectory(fileManager.getRunDirectory());
             }
@@ -985,7 +974,7 @@ public class MainWindow implements
     }
 
     void actionSaveAs() {
-        //Save content of current tab as new file
+        // Save content of current tab as new file
         if (fileManager.getFileEditors().isEmpty()
                 || this.tabControl.getTabCount() == 0
                 || this.tabControl.getSelectedIndex() == -1) {
@@ -996,16 +985,17 @@ public class MainWindow implements
         fileManager.setCurrentDirectory(fileManager.getFileDirectory());
 
         if (fileManager.getFileEditors().get(index).save(true, fileManager.getCurrentDirectory())) {
-            //TODO get current main file
+            // TODO get current main file
             int main = 0;
             if (index == main) {
-                fileManager.setFileDirectory(new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
+                fileManager.setFileDirectory(
+                        new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
                 fileManager.setRunDirectory(fileManager.getFileDirectory());
                 fileManager.setCurrentDirectory(fileManager.getRunDirectory());
             }
 
         } else {
-            //Restore Current directory
+            // Restore Current directory
             fileManager.setCurrentDirectory(fileManager.getRunDirectory());
         }
         tabControl.setTitleAt(index, fileManager.getFileEditors().get(index).getTitle());
@@ -1018,7 +1008,7 @@ public class MainWindow implements
         debugMenuItem.setSelected(isDebugMode);
         debugButton.setSelected(isDebugMode);
 
-        RefreshDebugDisplays(basicEditor.mode);
+        refreshDebugDisplays(basicEditor.getMode());
     }
 
     public void closeAll() {
@@ -1030,11 +1020,11 @@ public class MainWindow implements
         fileManager.setRunDirectory(fileManager.getAppDirectory() + "\\Programs");
 
         // Clear DLLs, breakpoints, bookmarks etc
-        //m_dlls.Clear();
-        basicEditor.debugger.ClearUserBreakPts();
+        // this.dlls.Clear();
+        basicEditor.debugger.clearUserBreakPoints();
 
         // Refresh UI
-        RefreshActions(basicEditor.mode);
+        refreshActions(basicEditor.getMode());
     }
 
     public void closeTab(int index) {
@@ -1069,7 +1059,7 @@ public class MainWindow implements
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
-//                mTabControl.getTabComponentAt(index).invalidate();
+                //                mTabControl.getTabComponentAt(index).invalidate();
             }
 
             @Override
@@ -1087,29 +1077,29 @@ public class MainWindow implements
             }
         });
 
-        //Allow user to see cursor position
+        // Allow user to see cursor position
         editor.getEditorPane().addCaretListener(TrackCaretPosition);
-        cursorPositionLabel.setText(0 + ":" + 0); //Reset label
+        cursorPositionLabel.setText(0 + ":" + 0); // Reset label
 
-        //Set tab as read-only if App is running or paused
-        boolean readOnly = basicEditor.mode != ApMode.AP_STOPPED;
+        // Set tab as read-only if App is running or paused
+        boolean readOnly = basicEditor.getMode() != ApMode.AP_STOPPED;
         editor.getEditorPane().setEditable(!readOnly);
 
-        //TODO set syntax highlight colors
+        // TODO set syntax highlight colors
 
-        //Refresh interface if there was previously no tabs open
+        // Refresh interface if there was previously no tabs open
         if (count == 0) {
             basicEditor.setMode(ApMode.AP_STOPPED, null);
         }
     }
 
     @Override
-    public void PlaceCursorAtProcessed(final int row, int col) {
+    public void placeCursorAtProcessed(final int row, int col) {
 
         // Place cursor at position corresponding to row, col in post-processed file.
         // Find corresponding source position
-        Mutable<String> filename = new Mutable<String>("");
-        Mutable<Integer> fileRow = new Mutable<Integer>(0);
+        Mutable<String> filename = new Mutable<>("");
+        Mutable<Integer> fileRow = new Mutable<>(0);
         basicEditor.preprocessor.getLineNumberMap().getSourceFromMain(filename, fileRow, row);
 
         final String file = filename.get();
@@ -1120,15 +1110,16 @@ public class MainWindow implements
         if (r >= 0) {
             int index = getTabIndex(file);
             if (index == -1) {
-                //Attempt to open tab
-                addTab(FileEditor.open(new File(file),this, fileManager, this, linkGenerator, searchContext));
+                // Attempt to open tab
+                addTab(FileEditor.open(new File(file), this, fileManager, this, linkGenerator, searchContext));
                 index = tabControl.getTabCount() - 1;
-                //return;
+                // return;
             }
 
             tabControl.setSelectedIndex(index);
 
-            final JTextArea frame = fileManager.getFileEditors().get(getTabIndex(file)).getEditorPane();
+            final JTextArea frame =
+                    fileManager.getFileEditors().get(getTabIndex(file)).getEditorPane();
 
             // Set focus
             frame.grabFocus();
@@ -1138,12 +1129,14 @@ public class MainWindow implements
                 // Place cursor
                 if (r >= 0) {
                     try {
-                        JTextArea textArea = fileManager.getFileEditors().get(tabControl.getSelectedIndex()).getEditorPane();
+                        JTextArea textArea = fileManager
+                                .getFileEditors()
+                                .get(tabControl.getSelectedIndex())
+                                .getEditorPane();
                         int offset = textArea.getLineStartOffset(r);
 
-                        //Reduce column position if it would place the cursor at the next line
-                        if (textArea.getLineCount() > r + 1
-                                && offset + col1 == textArea.getLineStartOffset(r + 1)) {
+                        // Reduce column position if it would place the cursor at the next line
+                        if (textArea.getLineCount() > r + 1 && offset + col1 == textArea.getLineStartOffset(r + 1)) {
                             offset = textArea.getLineStartOffset(r + 1) - 1;
                         } else {
                             offset += col1;
@@ -1151,29 +1144,28 @@ public class MainWindow implements
 
                         frame.setCaretPosition(offset);
                     } catch (Exception ex) {
-                        //Do nothing
+                        // Do nothing
                     }
                 }
             });
         }
     }
 
-
     @Override
     public void onPause() {
 
         // Place editor into paused mode
         basicEditor.setMode(ApMode.AP_PAUSED, null);
-        RefreshActions(basicEditor.mode);
+        refreshActions(basicEditor.getMode());
 
         // Place editor into debug mode
         isDebugMode = true;
         debugMenuItem.setSelected(true);
         debugButton.setSelected(true);
-        RefreshDebugDisplays(basicEditor.mode);
+        refreshDebugDisplays(basicEditor.getMode());
 
-        //TODO Add VMViewer
-        //VMView().SetVMIsRunning(false);
+        // TODO Add VMViewer
+        // VMView().SetVMIsRunning(false);
     }
 
     @Override
@@ -1181,8 +1173,12 @@ public class MainWindow implements
         // Get focus back
         frame.requestFocus();
         if (!fileManager.getFileEditors().isEmpty() && tabControl.getTabCount() != 0) {
-            //TODO set tab to file that error occurred in
-            fileManager.getFileEditors().get(tabControl.getSelectedIndex()).getEditorPane().grabFocus();
+            // TODO set tab to file that error occurred in
+            fileManager
+                    .getFileEditors()
+                    .get(tabControl.getSelectedIndex())
+                    .getEditorPane()
+                    .grabFocus();
         }
     }
 
@@ -1191,9 +1187,8 @@ public class MainWindow implements
         compilerStatusLabel.setText(error);
     }
 
-
     @Override
-    public void onModeChanged(ApMode mode, String statusMsg){
+    public void onModeChanged(ApMode mode, String statusMsg) {
         if (mode != ApMode.AP_CLOSED) {
             copyMenuItem.setEnabled(true);
             findMenuItem.setEnabled(true);
@@ -1220,19 +1215,17 @@ public class MainWindow implements
         }
 
         // Update UI
-        RefreshActions(basicEditor.mode);
-        RefreshDebugDisplays(basicEditor.mode);
+        refreshActions(basicEditor.getMode());
+        refreshDebugDisplays(basicEditor.getMode());
         compilerStatusLabel.setText(statusMsg);
 
         // Notify virtual machine view
-        //TODO Implement VM Viewer
-        //VMView().SetVMIsRunning(mode == ApMode.AP_RUNNING);
+        // TODO Implement VM Viewer
+        // VMView().SetVMIsRunning(mode == ApMode.AP_RUNNING);
     }
 
-
     @Override
-    public void RefreshActions(ApMode mode) {
-
+    public void refreshActions(ApMode mode) {
 
         // Enable/disable actions to reflect state
         switch (mode) {
@@ -1283,8 +1276,7 @@ public class MainWindow implements
                         this,
                         newMenuItem.getAccelerator(),
                         openMenuItem.getAccelerator(),
-                        basicEditor.getRecentFiles()
-                );
+                        basicEditor.getRecentFiles());
                 mainPane.setTopComponent(emptyTabPanel);
                 break;
             case AP_STOPPED:
@@ -1335,12 +1327,11 @@ public class MainWindow implements
                 runMenuItem.setText("Stop Program");
                 runButton.setIcon(createImageIcon(ICON_STOP_APP));
                 break;
-
         }
     }
 
     @Override
-    public void RefreshDebugDisplays(ApMode mode) {
+    public void refreshDebugDisplays(ApMode mode) {
 
         // Show/hide debug controls
         playButton.setVisible(isDebugMode);
@@ -1349,16 +1340,16 @@ public class MainWindow implements
         stepOutButton.setVisible(isDebugMode);
         debugSeparator.setVisible(isDebugMode);
 
-        //TODO Show/hide debug pane
+        // TODO Show/hide debug pane
         if (isDebugMode) {
             mainPane.setResizeWeight(0.7);
-            //mDebugPane.setEnabled(true);
+            // mDebugPane.setEnabled(true);
             mainPane.setEnabled(true);
             mainPane.setBottomComponent(debugPane);
             SwingUtilities.invokeLater(() -> debugPane.setDividerLocation(0.7));
         } else {
             mainPane.remove(debugPane);
-            //mDebugPane.setEnabled(false);
+            // mDebugPane.setEnabled(false);
             mainPane.setEnabled(false);
         }
 
@@ -1368,10 +1359,12 @@ public class MainWindow implements
             stepOverButton.setEnabled(mode != ApMode.AP_RUNNING);
             stepInButton.setEnabled(mode != ApMode.AP_RUNNING);
 
-            //TODO 12/2022 determine appropriate state for mStepOutButton;
-            // does the editor even need to care about UserCallStack size with remote debugger protocol setup?
+            // TODO 12/2022 determine appropriate state for mStepOutButton;
+            // does the editor even need to care about UserCallStack size with remote debugger protocol
+            // setup?
             stepOutButton.setEnabled(mode == ApMode.AP_PAUSED);
-            //TODO old mStepOutButton.setEnabled(mode == ApMode.AP_PAUSED && (mEditor.mVM.UserCallStack().size() > 0));
+            // TODO old mStepOutButton.setEnabled(mode == ApMode.AP_PAUSED &&
+            // (mEditor.mVM.UserCallStack().size() > 0));
         }
         if (!isDebugMode) {
             return;
@@ -1392,7 +1385,8 @@ public class MainWindow implements
         // Update call stack
         gosubListModel.addElement("IP");
 
-        int totalFrames = stackTraceCallback.stackFrames.size(); // callback.totalFrames may be larger if paging is enforced
+        int totalFrames =
+                stackTraceCallback.stackFrames.size(); // callback.totalFrames may be larger if paging is enforced
         for (int i2 = 0; i2 < totalFrames; i2++) {
             StackFrame frame = stackTraceCallback.stackFrames.get(totalFrames - i2 - 1);
 
@@ -1400,18 +1394,18 @@ public class MainWindow implements
             Integer userFuncIndex = NumberUtil.parseIntOrNull(frame.name);
             if (userFuncIndex != null) {
                 if (userFuncIndex >= 0) {
-                    // TODO 12/2022 migrate GetUserFunctionName to LineNumberMapping and handle in the DebugCommandAdapter;
+                    // TODO 12/2022 migrate GetUserFunctionName to LineNumberMapping and handle in the
+                    // DebugCommandAdapter;
                     //  would like to rely on frame.name to align with Microsoft's DAP specification
                     gosubListModel.addElement(basicEditor.compiler.getUserFunctionName(userFuncIndex) + "()");
 
                     // Otherwise must be a gosub
                 } else {
-                    // TODO 12/2022 migrate DescribeStackCall to LineNumberMapping and handle in the DebugCommandAdapter;
+                    // TODO 12/2022 migrate DescribeStackCall to LineNumberMapping and handle in the
+                    // DebugCommandAdapter;
                     //  would like to rely on frame.name to align with Microsoft's DAP specification
                     Integer returnAddr = NumberUtil.parseIntOrNull(frame.instructionPointer);
-                    String gosubLabel = returnAddr != null
-                        ? basicEditor.compiler.DescribeStackCall(returnAddr)
-                        : "???";
+                    String gosubLabel = returnAddr != null ? basicEditor.compiler.describeStackCall(returnAddr) : "???";
                     gosubListModel.addElement("gosub " + gosubLabel);
                 }
             } else {
@@ -1425,7 +1419,7 @@ public class MainWindow implements
         int index = 0;
         for (String watch : basicEditor.getWatches()) {
             if (Objects.equals(watch, evaluatedWatch)) {
-                watchListModel.setElementAt(watch +": " + result, index);
+                watchListModel.setElementAt(watch + ": " + result, index);
             }
             index++;
         }
@@ -1440,10 +1434,10 @@ public class MainWindow implements
 
             watchListModel.addElement(watch + ": " + "???");
         }
-        watchListModel.addElement(" ");              // Last line is blank, and can be clicked on to add new watch
+        watchListModel.addElement(" "); // Last line is blank, and can be clicked on to add new watch
     }
 
-    private void EditWatch() {
+    private void editWatch() {
         String newWatch, oldWatch;
 
         // Find watch
@@ -1454,16 +1448,16 @@ public class MainWindow implements
         oldWatch = basicEditor.getWatchOrDefault(index);
 
         // Prompt for new text
-        newWatch = (String) JOptionPane.showInputDialog(frame, "Enter variable/expression:", "Watch variable",
-                JOptionPane.PLAIN_MESSAGE, null, null, oldWatch);
+        newWatch = (String) JOptionPane.showInputDialog(
+                frame, "Enter variable/expression:", "Watch variable", JOptionPane.PLAIN_MESSAGE, null, null, oldWatch);
 
         basicEditor.updateWatch(newWatch, index);
 
         watchListBox.setSelectedIndex(saveIndex);
-        UpdateWatchHint();
+        updateWatchHint();
     }
 
-    void DeleteWatch() {
+    void deleteWatch() {
 
         // Find watch
         int index = watchListBox.getSelectedIndex();
@@ -1473,10 +1467,10 @@ public class MainWindow implements
         basicEditor.removeWatchAt(index);
 
         watchListBox.setSelectedIndex(saveIndex);
-        UpdateWatchHint();
+        updateWatchHint();
     }
 
-    private void UpdateWatchHint() {
+    private void updateWatchHint() {
         int index = watchListBox.getSelectedIndex();
         if (index > -1 && index < basicEditor.getWatchListSize()) {
             watchListBox.setToolTipText((String) watchListModel.get(index));
@@ -1490,20 +1484,22 @@ public class MainWindow implements
         basicEditor.toggleBreakpt(filePath, line);
     }
 
-    private void setClosingTabsEnabled(boolean enabled){
-        tabControl.putClientProperty( TABBED_PANE_TAB_CLOSABLE, enabled );
-        //TODO get main file index
-//        int main = 0;
-        //TODO only disable closing the tab with the main program
-//        if (enabled) {
-//            for (int i = 0; i < mTabControl.getTabCount(); i++) {
-//                ((ButtonTabComponent) mTabControl.getTabComponentAt(i)).getButton().setEnabled(true);
-//            }
-//        } else {
-//            if (main > -1 && main < mTabControl.getTabCount()) {
-//                ((ButtonTabComponent) mTabControl.getTabComponentAt(main)).getButton().setEnabled(false);
-//            }
-//        }
+    private void setClosingTabsEnabled(boolean enabled) {
+        tabControl.putClientProperty(TABBED_PANE_TAB_CLOSABLE, enabled);
+        // TODO get main file index
+        //        int main = 0;
+        // TODO only disable closing the tab with the main program
+        //        if (enabled) {
+        //            for (int i = 0; i < mTabControl.getTabCount(); i++) {
+        //                ((ButtonTabComponent)
+        // mTabControl.getTabComponentAt(i)).getButton().setEnabled(true);
+        //            }
+        //        } else {
+        //            if (main > -1 && main < mTabControl.getTabCount()) {
+        //                ((ButtonTabComponent)
+        // mTabControl.getTabComponentAt(main)).getButton().setEnabled(false);
+        //            }
+        //        }
     }
 
     private void showFindReplaceMenu(boolean replace) {
@@ -1524,17 +1520,17 @@ public class MainWindow implements
     }
 
     @Override
-    public void OnNewClick() {
+    public void onNewClick() {
         actionNew();
     }
 
     @Override
-    public void OnOpenClick() {
+    public void onOpenClick() {
         actionOpen();
     }
 
     @Override
-    public void OnOpenClick(File file) {
+    public void onOpenClick(File file) {
         actionOpen(file);
     }
 }

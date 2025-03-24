@@ -1,11 +1,10 @@
 package org.fife.ui.rtextarea;
 
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-
-import javax.swing.*;
-import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 /**
  * Created by Nate on 3/22/2015.
@@ -14,18 +13,18 @@ public class MultiHeaderBookmarkActions {
     /**
      * Action to jump to the next bookmark.
      */
-    public static final String rtaMultiHeaderNextBookmarkAction		= "RTA.NextBookmarkAction";
+    public static final String rtaMultiHeaderNextBookmarkAction = "RTA.NextBookmarkAction";
 
     /**
      * Action to jump to the previous bookmark.
      */
-    public static final String rtaMultiHeaderPrevBookmarkAction		= "RTA.PrevBookmarkAction";
+    public static final String rtaMultiHeaderPrevBookmarkAction = "RTA.PrevBookmarkAction";
 
     /**
      * Toggles whether the current line has a bookmark, if this text area
      * is in an {@link RMultiHeaderScrollPane}.
      */
-    public static final String rtaMultiHeaderToggleBookmarkAction		= "RTA.ToggleBookmarkAction";
+    public static final String rtaMultiHeaderToggleBookmarkAction = "RTA.ToggleBookmarkAction";
 
     /**
      * Action that moves the caret to the next (or previous) bookmark.
@@ -44,22 +43,21 @@ public class MultiHeaderBookmarkActions {
         public void actionPerformedImpl(ActionEvent e, RTextArea textArea) {
             MultiHeaderGutter gutter = null;
             Container parent = textArea.getParent();
-            if(parent instanceof JViewport) {
+            if (parent instanceof JViewport) {
                 parent = parent.getParent();
-                if(parent instanceof RMultiHeaderScrollPane) {
-                    RMultiHeaderScrollPane sp = (RMultiHeaderScrollPane)parent;
+                if (parent instanceof RMultiHeaderScrollPane) {
+                    RMultiHeaderScrollPane sp = (RMultiHeaderScrollPane) parent;
                     gutter = sp.getGutter();
                 }
             }
 
-            if (gutter!=null) {
+            if (gutter != null) {
                 if (headerIndex > -1 && headerIndex < gutter.getIconRowHeaderCount()) {
                     try {
 
                         GutterIconInfo[] bookmarks = gutter.getBookmarks(headerIndex);
                         if (bookmarks.length == 0) {
-                            UIManager.getLookAndFeel().
-                                    provideErrorFeedback(textArea);
+                            UIManager.getLookAndFeel().provideErrorFeedback(textArea);
                             return;
                         }
 
@@ -98,8 +96,7 @@ public class MultiHeaderBookmarkActions {
                         if (textArea instanceof RSyntaxTextArea) {
                             RSyntaxTextArea rsta = (RSyntaxTextArea) textArea;
                             if (rsta.isCodeFoldingEnabled()) {
-                                rsta.getFoldManager().
-                                        ensureOffsetNotInClosedFold(offs);
+                                rsta.getFoldManager().ensureOffsetNotInClosedFold(offs);
                             }
                         }
                         int line = textArea.getLineOfOffset(offs);
@@ -107,20 +104,17 @@ public class MultiHeaderBookmarkActions {
                         textArea.setCaretPosition(offs);
 
                     } catch (BadLocationException ble) { // Never happens
-                        UIManager.getLookAndFeel().
-                                provideErrorFeedback(textArea);
+                        UIManager.getLookAndFeel().provideErrorFeedback(textArea);
                         ble.printStackTrace();
                     }
                 }
             }
-
         }
 
         @Override
         public final String getMacroID() {
             return getName();
         }
-
     }
 
     /**
@@ -129,7 +123,7 @@ public class MultiHeaderBookmarkActions {
     public static class MultiHeaderToggleBookmarkAction extends RecordableTextAction {
         private int headerIndex;
 
-        public MultiHeaderToggleBookmarkAction(String name,int headerIndex) {
+        public MultiHeaderToggleBookmarkAction(String name, int headerIndex) {
             super(name);
             this.headerIndex = headerIndex;
         }
@@ -138,21 +132,20 @@ public class MultiHeaderBookmarkActions {
         public void actionPerformedImpl(ActionEvent e, RTextArea textArea) {
             MultiHeaderGutter gutter = null;
             Container parent = textArea.getParent();
-            if(parent instanceof JViewport) {
+            if (parent instanceof JViewport) {
                 parent = parent.getParent();
-                if(parent instanceof RMultiHeaderScrollPane) {
-                    RMultiHeaderScrollPane sp = (RMultiHeaderScrollPane)parent;
+                if (parent instanceof RMultiHeaderScrollPane) {
+                    RMultiHeaderScrollPane sp = (RMultiHeaderScrollPane) parent;
                     gutter = sp.getGutter();
                 }
             }
 
-            if (gutter!=null) {
+            if (gutter != null) {
                 int line = textArea.getCaretLineNumber();
                 try {
                     gutter.toggleBookmark(headerIndex, line);
                 } catch (BadLocationException ble) { // Never happens
-                    UIManager.getLookAndFeel().
-                            provideErrorFeedback(textArea);
+                    UIManager.getLookAndFeel().provideErrorFeedback(textArea);
                     ble.printStackTrace();
                 }
             }
@@ -162,7 +155,5 @@ public class MultiHeaderBookmarkActions {
         public final String getMacroID() {
             return getName();
         }
-
     }
-
 }

@@ -4,36 +4,33 @@ import com.basic4gl.debug.protocol.callbacks.Callback;
 import com.basic4gl.debug.protocol.types.InstructionPosition;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
 import com.basic4gl.lib.util.*;
-
-import javax.swing.*;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import javax.swing.*;
 
-public class VmWorker extends SwingWorker<Object, Object>
-implements IDebugCallbackListener, IDebugger {
+public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallbackListener, IDebugger {
 
-    private final IFileProvider mFiles;
+    private final IFileProvider files;
 
     private RemoteDebugger remoteDebugger;
 
-    DebuggerTaskCallback mCallbacks;
-    CountDownLatch mCompletionLatch;
+    private DebuggerTaskCallback debuggerTaskCallback;
+    private CountDownLatch completionLatch;
 
-    public VmWorker(
-            IFileProvider fileOpener) {
-        mFiles = fileOpener;
+    public VmWorker(IFileProvider fileOpener) {
+        files = fileOpener;
     }
 
     public void setCompletionLatch(CountDownLatch latch) {
-        mCompletionLatch = latch;
+        completionLatch = latch;
     }
 
     public CountDownLatch getCompletionLatch() {
-        return mCompletionLatch;
+        return completionLatch;
     }
 
     public void setCallbacks(DebuggerTaskCallback callbacks) {
-        mCallbacks = callbacks;
+        debuggerTaskCallback = callbacks;
     }
 
     @Override
@@ -41,88 +38,85 @@ implements IDebugCallbackListener, IDebugger {
         super.process(chunks);
         for (Object message : chunks) {
             if (message instanceof DebuggerCallbackMessage) {
-                mCallbacks.message((DebuggerCallbackMessage) message);
+                debuggerTaskCallback.message((DebuggerCallbackMessage) message);
             } else {
-                mCallbacks.messageObject(message);
+                debuggerTaskCallback.messageObject(message);
             }
-
         }
     }
 
     @Override
     protected Object doInBackground() throws Exception {
-//        IVMDriver driver = mBuilder.getVMDriver();
+        //        IVMDriver driver = this.builder.getVMDriver();
         boolean noError;
         DebugClientAdapter adapter = null;
 
         System.out.println("Running...");
         try {
-            mFiles.useAppDirectory();
-//            driver.onPreExecute();
-            mFiles.useCurrentDirectory();
+            files.useAppDirectory();
+            //            driver.onPreExecute();
+            files.useCurrentDirectory();
 
-            //Initialize libraries
-//            for (Library lib : mComp.getLibraries()) {
-//                driver.initLibrary(lib);
-//                lib.init(mVM);
-//            }
+            // Initialize libraries
+            //            for (Library lib : mComp.getLibraries()) {
+            //                driver.initLibrary(lib);
+            //                lib.init(mVM);
+            //            }
             adapter = new DebugClientAdapter(this, DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
             adapter.connect();
             remoteDebugger = new RemoteDebugger(adapter);
 
-            mCallbacks.onDebuggerConnected();
+            debuggerTaskCallback.onDebuggerConnected();
 
-
-            //Debugger is attached
+            // Debugger is attached
             while (!this.isCancelled()
-//TODO 1/2023 need to keep connection alive while debugee is idle
-//                    && (mMessage.getStatus() == CallbackMessage.STOPPED
-//                    || mMessage.getStatus() == CallbackMessage.WORKING
-//                    || mMessage.getStatus() == CallbackMessage.PAUSED)
+            // TODO 1/2023 need to keep connection alive while debugee is idle
+            //                    && (mMessage.getStatus() == CallbackMessage.STOPPED
+            //                    || mMessage.getStatus() == CallbackMessage.WORKING
+            //                    || mMessage.getStatus() == CallbackMessage.PAUSED)
             ) {
                 // idle thread;
                 Thread.sleep(100);
             }
 
-            //TODO 12/2022 remove this; handled by socket callbacks
-//            //Perform debugger callbacks
-//            int success;
-//            success = !mVM.hasError()
-//                    ? CallbackMessage.SUCCESS
-//                    : CallbackMessage.FAILED;
-//            publish(new CallbackMessage(success, success == CallbackMessage.SUCCESS
-//                    ? "Program completed"
-//                    : mVM.getError()));
-            //TODO 12/2022 is this still needed?
-//            driver.onPostExecute();
+            // TODO 12/2022 remove this; handled by socket callbacks
+            //            //Perform debugger callbacks
+            //            int success;
+            //            success = !mVM.hasError()
+            //                    ? CallbackMessage.SUCCESS
+            //                    : CallbackMessage.FAILED;
+            //            publish(new CallbackMessage(success, success == CallbackMessage.SUCCESS
+            //                    ? "Program completed"
+            //                    : mVM.getError()));
+            // TODO 12/2022 is this still needed?
+            //            driver.onPostExecute();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             adapter.stop();
             remoteDebugger = null;
 
-            mCallbacks.onDebuggerDisconnected();
-//            driver.onFinally();
-            //Confirm this thread has completed before a new one can be executed
-            if (mCompletionLatch != null) {
-                mCompletionLatch.countDown();
+            debuggerTaskCallback.onDebuggerDisconnected();
+            //            driver.onFinally();
+            // Confirm this thread has completed before a new one can be executed
+            if (completionLatch != null) {
+                completionLatch.countDown();
             }
         }
         return null;
     }
 
-    @Override
-    public void OnDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
+    public void onDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
 
         VMStatus vmStatus = null;
         if (callback.getVMStatus() != null) {
             vmStatus = new VMStatus(
-                callback.getVMStatus().isDone(),
-                callback.getVMStatus().hasError(),
-                callback.getVMStatus().getError()
-            );
+                    callback.getVMStatus().isDone(),
+                    callback.getVMStatus().hasError(),
+                    callback.getVMStatus().getError());
         }
-        DebuggerCallbackMessage message = new DebuggerCallbackMessage(callback.status, callback.text, vmStatus);
+        DebuggerCallbackMessage message =
+                new DebuggerCallbackMessage(callback.getStatus(), callback.getText(), vmStatus);
 
         InstructionPosition instructionPosition = callback.getSourcePosition();
         if (instructionPosition != null) {
@@ -132,15 +126,13 @@ implements IDebugCallbackListener, IDebugger {
         publish(message);
     }
 
-    @Override
-    public void OnCallbackReceived(Callback callback) {
+    public void onCallbackReceived(Callback callback) {
         // TODO 12/2022 improve type safety of interface/map callback DTO to domain model
         publish(callback);
     }
 
-    @Override
-    public void OnDisconnected() {
-        mCallbacks.onDebuggerDisconnected();
+    public void onDisconnected() {
+        debuggerTaskCallback.onDebuggerDisconnected();
     }
 
     @Override

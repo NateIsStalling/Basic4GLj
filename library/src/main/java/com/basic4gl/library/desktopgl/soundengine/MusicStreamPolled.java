@@ -1,19 +1,18 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
+import static com.basic4gl.library.desktopgl.soundengine.util.STBVorbisUtil.getVorbisFileErrorString;
+import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static org.lwjgl.stb.STBVorbis.*;
+
 import com.basic4gl.library.desktopgl.soundengine.util.ALUtil;
 import com.basic4gl.runtime.HasErrorState;
+import java.io.File;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
 import org.lwjgl.stb.STBVorbisInfo;
-
-import java.io.File;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-
-import static com.basic4gl.library.desktopgl.soundengine.util.STBVorbisUtil.getVorbisFileErrorString;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
-import static org.lwjgl.stb.STBVorbis.*;
 
 /**
  * A polled implementation of a streaming music file.
@@ -34,7 +33,6 @@ public class MusicStreamPolled extends HasErrorState {
     // won't be interrupted.
     static final int MUSIC_STREAM_BUFFERS = 64;
     static final int STREAM_BLOCK_SIZE = 4096;
-
 
     // File access
     private File file;
@@ -136,7 +134,6 @@ public class MusicStreamPolled extends HasErrorState {
         }
     }
 
-
     public MusicStreamPolled() {
         file = null;
         buffers = null;
@@ -200,8 +197,8 @@ public class MusicStreamPolled extends HasErrorState {
         openFile(filename, gain, false);
     }
 
-    public void openFile(String filename, float gain, boolean looping)    // Open file and start playing
-    {
+    public void openFile(String filename, float gain, boolean looping) // Open file and start playing
+            {
         if (!initialised) {
             return;
         }
@@ -316,7 +313,6 @@ public class MusicStreamPolled extends HasErrorState {
         }
     }
 
-
     // Must be called periodically to keep stream playing
     public void update() {
         if (!initialised) {
@@ -325,14 +321,14 @@ public class MusicStreamPolled extends HasErrorState {
 
         // Check state is streaming state
         IntBuffer sourceType = BufferUtils.createIntBuffer(1);
-        AL10.alGetSourcei(source.get(0), AL10.AL_SOURCE_TYPE,  sourceType);
+        AL10.alGetSourcei(source.get(0), AL10.AL_SOURCE_TYPE, sourceType);
         if (sourceType.get(0) != AL11.AL_STREAMING) {
             return;
         }
 
         // Look for processed buffers
         IntBuffer processedBuffer = BufferUtils.createIntBuffer(1);
-        AL10.alGetSourcei(source.get(0), AL10.AL_BUFFERS_PROCESSED,  processedBuffer);
+        AL10.alGetSourcei(source.get(0), AL10.AL_BUFFERS_PROCESSED, processedBuffer);
         int processed = processedBuffer.get(0);
 
         // Remove them
@@ -375,6 +371,4 @@ public class MusicStreamPolled extends HasErrorState {
             }
         }
     }
-
-
 }

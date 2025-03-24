@@ -10,7 +10,7 @@ public class EditorSettingsFactory {
 
     public static final int CONFIG_RECENT_FILES_MAX_COUNT = 10;
 
-    public static EditorSettings loadFrom(String applicationStoragePath) throws FileNotFoundException, IOException  {
+    public static EditorSettings loadFrom(String applicationStoragePath) throws FileNotFoundException, IOException {
         File configFile = new File(applicationStoragePath, CONFIG_FILE_NAME);
 
         EditorSettings settings = new EditorSettings();
@@ -44,7 +44,6 @@ public class EditorSettingsFactory {
                 .limit(CONFIG_RECENT_FILES_MAX_COUNT)
                 .toArray(String[]::new);
         String recentFiles = String.join(",", recentFilePaths);
-
 
         Properties prop = new Properties();
         prop.setProperty(CONFIG_RECENT_FILES, recentFiles);

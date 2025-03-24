@@ -14,7 +14,5 @@ public class StackFrame {
 
     public String instructionPointer;
 
-    public StackFrame() {
-
-    }
+    public StackFrame() {}
 }

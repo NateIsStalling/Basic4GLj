@@ -19,10 +19,12 @@ public class NetLayer1 {
     public static final int MAX_CON_REQ_SIZE = 4096;
 
     public static final int NETL1_RELIABLE = 0x80;
+
     /**
      * Set if this packet is a resend of a previous packet
      */
     public static final int NETL1_RESENT = 0x40;
+
     public static final int NETL1_TYPEMASK = 0x3f;
 
     public static NetL1Type getNetLayerType(int x) {
@@ -62,9 +64,7 @@ public class NetLayer1 {
             default:
                 typeStr = "UNKNOWN!?!";
         }
-        return (reliable ? "Reliable, " : "Unreliable, ") +
-                (resent ? "Resent, " : "") +
-                typeStr + ", id: " + id;
+        return (reliable ? "Reliable, " : "Unreliable, ") + (resent ? "Resent, " : "") + typeStr + ", id: " + id;
     }
 
     static String getDescription(NetSimplePacket packet) {

@@ -18,12 +18,18 @@ public class NetLayer2 {
         boolean reliable = (channelFlags & NETL2_RELIABLE) != 0,
                 smoothed = (channelFlags & NETL2_SMOOTHED) != 0,
                 ordered = (channelFlags & NETL2_ORDERED) != 0;
-        return "Channel " + channel
-                + ", Packet " + (header.getPacketIndex()) + " of " + (header.getPacketCount())
+        return "Channel "
+                + channel
+                + ", Packet "
+                + (header.getPacketIndex())
+                + " of "
+                + (header.getPacketCount())
                 + (ordered ? ", Ordered " : ", Unordered")
                 + (reliable ? ", Reliable " : ", Unreliable")
                 + (smoothed ? ", Smoothed " : ", Unsmoothed")
-                + ", # " + (header.getMessageIndex())
-                + ", Reliable # " + (header.getReliableIndex());
+                + ", # "
+                + (header.getMessageIndex())
+                + ", Reliable # "
+                + (header.getReliableIndex());
     }
 }

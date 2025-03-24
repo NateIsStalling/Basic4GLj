@@ -4,13 +4,13 @@ import com.basic4gl.compiler.util.IVMDriver;
 
 public class StopHandler {
 
-    private final IVMDriver mVMDriver;
+    private final IVMDriver vmDriver;
 
     public StopHandler(IVMDriver vmDriver) {
-        mVMDriver = vmDriver;
+        this.vmDriver = vmDriver;
     }
 
     public void stop() {
-        mVMDriver.stop();
+        vmDriver.stop();
     }
 }

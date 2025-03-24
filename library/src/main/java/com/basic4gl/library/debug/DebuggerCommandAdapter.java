@@ -1,10 +1,5 @@
 package com.basic4gl.library.debug;
 
-import java.net.URI;
-import javax.websocket.ContainerProvider;
-import javax.websocket.Session;
-import javax.websocket.WebSocketContainer;
-
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.debug.protocol.callbacks.Callback;
@@ -20,43 +15,37 @@ import com.basic4gl.library.debug.commands.*;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.InstructionPosition;
 import com.basic4gl.runtime.TomVM;
-
 import com.google.gson.Gson;
-
+import java.net.URI;
+import javax.websocket.ContainerProvider;
+import javax.websocket.Session;
+import javax.websocket.WebSocketContainer;
 import org.eclipse.jetty.util.component.LifeCycle;
 
-public class DebuggerCommandAdapter
-    implements DebuggerTaskCallback, IDebugCommandListener, IDebugCallbackListener
-{
+public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugCommandListener, IDebugCallbackListener {
 
-    private final DebuggerCallbackMessage mMessage;
-    private final Debugger mDebugger;
-    private final IVMDriver mVMDriver;
-    private final TomBasicCompiler mComp;
-    private final TomVM mVM;
+    private final DebuggerCallbackMessage callbackMessage;
+    private final Debugger debugger;
+    private final IVMDriver vmDriver;
+    private final TomBasicCompiler compiler;
+    private final TomVM vm;
 
     private final Gson gson = new Gson();
 
     private WebSocketContainer container;
     private Session session;
 
-
     public DebuggerCommandAdapter(
-            DebuggerCallbackMessage message,
-            Debugger debugger,
-            IVMDriver vmDriver,
-            TomBasicCompiler comp,
-            TomVM vm) {
-        mMessage = message;
-        mDebugger = debugger;
-        mVMDriver = vmDriver;
-        mComp = comp;
-        mVM = vm;
+            DebuggerCallbackMessage message, Debugger debugger, IVMDriver vmDriver, TomBasicCompiler comp, TomVM vm) {
+        callbackMessage = message;
+        this.debugger = debugger;
+        this.vmDriver = vmDriver;
+        compiler = comp;
+        this.vm = vm;
     }
 
     public void connect(URI debugSocketUri) {
-        try
-        {
+        try {
             container = ContainerProvider.getWebSocketContainer();
 
             // Create client side endpoint
@@ -66,9 +55,7 @@ public class DebuggerCommandAdapter
             session = container.connectToServer(clientEndpoint, debugSocketUri);
 
             onDebuggerConnected();
-        }
-        catch (Throwable t)
-        {
+        } catch (Throwable t) {
             t.printStackTrace(System.err);
         }
     }
@@ -105,11 +92,13 @@ public class DebuggerCommandAdapter
         VMStatus status = null;
         if (message.getVMStatus() != null) {
             status = new VMStatus(
-                message.getVMStatus().isDone(),
-                message.getVMStatus().hasError(),
-                message.getVMStatus().getError());
+                    message.getVMStatus().isDone(),
+                    message.getVMStatus().hasError(),
+                    message.getVMStatus().getError());
         }
-        com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage(message.getStatus(), message.getText(), status);
+        com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback =
+                new com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage(
+                        message.getStatus(), message.getText(), status);
         InstructionPosition instructionPosition = message.getInstructionPosition();
 
         if (instructionPosition != null) {
@@ -127,7 +116,9 @@ public class DebuggerCommandAdapter
         }
 
         VMStatus status = null;
-        com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback = new com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage(message.getStatus(), message.getText(), status);
+        com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback =
+                new com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage(
+                        message.getStatus(), message.getText(), status);
         String json = gson.toJson(callback);
         message(json);
     }
@@ -154,64 +145,62 @@ public class DebuggerCommandAdapter
     }
 
     @Override
-    public void OnDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
-        synchronized (mMessage) {
+    public void onDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
+        synchronized (callbackMessage) {
             com.basic4gl.lib.util.VMStatus vmStatus = null;
             if (callback.getVMStatus() != null) {
                 vmStatus = new com.basic4gl.lib.util.VMStatus(
-                    callback.getVMStatus().isDone(),
-                    callback.getVMStatus().hasError(),
-                    callback.getVMStatus().getError()
-                );
+                        callback.getVMStatus().isDone(),
+                        callback.getVMStatus().hasError(),
+                        callback.getVMStatus().getError());
             }
-            mMessage.setMessage(callback.status, callback.text, vmStatus);
+            callbackMessage.setMessage(callback.getStatus(), callback.getText(), vmStatus);
             InstructionPosition instructionPosition = null;
             if (callback.getSourcePosition() != null) {
-                instructionPosition = new InstructionPosition(callback.getSourcePosition().line, callback.getSourcePosition().column);
+                instructionPosition =
+                        new InstructionPosition(callback.getSourcePosition().line, callback.getSourcePosition().column);
             }
-            mMessage.setInstructionPosition(instructionPosition);
-            mMessage.notify();
+            callbackMessage.setInstructionPosition(instructionPosition);
+            callbackMessage.notify();
         }
     }
 
     @Override
-    public void OnCallbackReceived(Callback callback) {
-
-    }
+    public void onCallbackReceived(Callback callback) {}
 
     @Override
-    public void OnDebugCommandReceived(DebugCommand command) {
+    public void onDebugCommandReceived(DebugCommand command) {
         System.out.println("Received command: " + command.getCommand());
 
         switch (command.getCommand()) {
             case ContinueCommand.COMMAND:
-                ContinueHandler continueHandler = new ContinueHandler(mVM, mMessage);
+                ContinueHandler continueHandler = new ContinueHandler(vm, callbackMessage);
                 continueHandler.handle();
                 break;
             case EvaluateWatchCommand.COMMAND:
                 EvaluateWatchCommand c = (EvaluateWatchCommand) command;
-                EvaluateWatchHandler evaluateWatchHandler = new EvaluateWatchHandler(mVMDriver, mComp, mVM, gson);
+                EvaluateWatchHandler evaluateWatchHandler = new EvaluateWatchHandler(vmDriver, compiler, vm, gson);
                 evaluateWatchHandler.handle(c.watch, c.context, c.getId(), session);
                 break;
             case PauseCommand.COMMAND:
-                PauseHandler pauseHandler = new PauseHandler(mVM);
+                PauseHandler pauseHandler = new PauseHandler(vm);
                 pauseHandler.pause();
                 break;
             case ResumeCommand.COMMAND:
-                continueHandler = new ContinueHandler(mVM, mMessage);
+                continueHandler = new ContinueHandler(vm, callbackMessage);
                 continueHandler.handle();
                 break;
             case StackTraceCommand.COMMAND:
-                StackTraceCommandHandler stackTraceCommandHandler = new StackTraceCommandHandler(mVM, gson);
+                StackTraceCommandHandler stackTraceCommandHandler = new StackTraceCommandHandler(vm, gson);
                 stackTraceCommandHandler.handle(session);
                 break;
             case StepCommand.COMMAND:
                 StepCommand stepCommand = (StepCommand) command;
-                StepHandler handler = new StepHandler(mMessage, mVM);
-                handler.DoStep(stepCommand.stepType);
+                StepHandler handler = new StepHandler(callbackMessage, vm);
+                handler.doStep(stepCommand.stepType);
                 break;
             case StopCommand.COMMAND:
-                StopHandler stopHandler = new StopHandler(mVMDriver);
+                StopHandler stopHandler = new StopHandler(vmDriver);
                 stopHandler.stop();
                 break;
             case DisconnectCommand.COMMAND:
@@ -219,16 +208,17 @@ public class DebuggerCommandAdapter
                 break;
             case SetBreakpointsCommand.COMMAND:
                 SetBreakpointsCommand setBreakpointsCommand = (SetBreakpointsCommand) command;
-                SetBreakpointsHandler setBreakpointsHandler = new SetBreakpointsHandler(mDebugger, mVM);
+                SetBreakpointsHandler setBreakpointsHandler = new SetBreakpointsHandler(debugger, vm);
                 setBreakpointsHandler.handle(setBreakpointsCommand);
                 break;
             case TerminateCommand.COMMAND:
-                mVMDriver.terminate();
+                vmDriver.terminate();
                 break;
             case ToggleBreakpointCommand.COMMAND:
                 ToggleBreakpointCommand toggleBreakpointCommand = (ToggleBreakpointCommand) command;
-                ToggleBreakPointHandler toggleBreakPointHandler = new ToggleBreakPointHandler(mDebugger, mVM);
-                toggleBreakPointHandler.toggleBreakPoint(toggleBreakpointCommand.filename, toggleBreakpointCommand.line);
+                ToggleBreakPointHandler toggleBreakPointHandler = new ToggleBreakPointHandler(debugger, vm);
+                toggleBreakPointHandler.toggleBreakPoint(
+                        toggleBreakpointCommand.filename, toggleBreakpointCommand.line);
                 break;
             default:
                 System.out.println("Ignored unsupported command: " + command.getCommand());
@@ -236,7 +226,7 @@ public class DebuggerCommandAdapter
     }
 
     @Override
-    public void OnDisconnected() {
+    public void onDisconnected() {
         // do nothing
     }
 }

@@ -18,7 +18,9 @@ public class DebugCommand extends ProtocolMessage {
         this.command = command;
     }
 
-    public boolean isValid() { return true; }
+    public boolean isValid() {
+        return true;
+    }
 
     public String getCommand() {
         return command;

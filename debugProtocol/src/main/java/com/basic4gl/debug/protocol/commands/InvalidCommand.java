@@ -6,5 +6,7 @@ public class InvalidCommand extends DebugCommand {
     }
 
     @Override
-    public boolean isValid() { return false; }
+    public boolean isValid() {
+        return false;
+    }
 }

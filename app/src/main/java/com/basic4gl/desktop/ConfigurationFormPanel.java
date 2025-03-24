@@ -1,11 +1,10 @@
 package com.basic4gl.desktop;
 
 import com.basic4gl.lib.util.Configuration;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 public class ConfigurationFormPanel extends JPanel {
 
@@ -17,7 +16,7 @@ public class ConfigurationFormPanel extends JPanel {
     }
 
     private final JPanel configPane = this;
-    private final java.util.List<JComponent> settingComponents = new ArrayList<JComponent>();
+    private final java.util.List<JComponent> settingComponents = new ArrayList<>();
 
     private Configuration currentConfig;
 
@@ -31,7 +30,7 @@ public class ConfigurationFormPanel extends JPanel {
         JPanel wrapper;
         JLabel label;
 
-        //Override parameter type if field contains multiple values
+        // Override parameter type if field contains multiple values
         if (field.length > 1) {
             paramType = Configuration.PARAM_CHOICE;
         }
@@ -77,7 +76,8 @@ public class ConfigurationFormPanel extends JPanel {
                 label = new JLabel(field[0]);
                 label.setAlignmentX(0f);
                 configPane.add(label);
-                JSpinner spinner = new JSpinner(new SpinnerNumberModel(Integer.valueOf(value).intValue(), 0, Short.MAX_VALUE, 1));
+                JSpinner spinner = new JSpinner(
+                        new SpinnerNumberModel(Integer.valueOf(value).intValue(), 0, Short.MAX_VALUE, 1));
                 settingComponents.add(spinner);
                 configPane.add(spinner);
                 break;
@@ -97,9 +97,10 @@ public class ConfigurationFormPanel extends JPanel {
                 break;
         }
     }
+
     public void setConfiguration(Configuration configuration) {
         currentConfig = configuration;
-        //Load settings
+        // Load settings
         removeAll();
 
         String[] field;
@@ -116,7 +117,7 @@ public class ConfigurationFormPanel extends JPanel {
         }
     }
 
-    public void applyConfig(){
+    public void applyConfig() {
         String val;
         if (currentConfig == null) {
             return;
@@ -144,10 +145,11 @@ public class ConfigurationFormPanel extends JPanel {
             }
             currentConfig.setValue(i, val);
         }
-        listener.OnConfigurationChanged(currentConfig);
+        listener.onConfigurationChanged(currentConfig);
     }
-    public static interface IOnConfigurationChangeListener {
 
-        public void OnConfigurationChanged(Configuration configuration);
+    public interface IOnConfigurationChangeListener {
+
+        void onConfigurationChanged(Configuration configuration);
     }
 }

@@ -5,27 +5,24 @@ import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.ValType;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
-
-import javax.swing.*;
 import java.awt.*;
 import java.util.Vector;
+import javax.swing.*;
 
 /**
  * Created by Nate on 1/30/2015.
  */
 public class ReferenceWindow {
     private static final String TITLE = "Function Reference";
-    private JFrame mFrame;
+    private final JFrame frame;
 
-    JTextPane mFunctionPane;
-    JTextPane mConstantPane;
-    JScrollPane mFunctionScrollPane;
-    JScrollPane mConstantScrollPane;
+    private final JTextPane functionPane;
+    private final JTextPane constantPane;
 
     public ReferenceWindow(Frame parent) {
-        mFrame = new JFrame(TITLE);
+        frame = new JFrame(TITLE);
 
-        mFrame.setResizable(true);
+        frame.setResizable(true);
 
         JPanel panel;
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -42,86 +39,85 @@ public class ReferenceWindow {
         // The following line enables to use scrolling tabs.
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-        //Setup Functions tab
+        // Setup Functions tab
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         JLabel label = new JLabel("This is a raw dump of functions, and their parameter and return types");
         label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 0));
         panel.add(label, BorderLayout.NORTH);
 
-        mFunctionPane = new JTextPane();
-        mFunctionPane.setEditable(false);
-        mFunctionScrollPane = new JScrollPane(mFunctionPane);
-        panel.add(mFunctionScrollPane, BorderLayout.CENTER);
+        functionPane = new JTextPane();
+        functionPane.setEditable(false);
+        JScrollPane functionScrollPane = new JScrollPane(functionPane);
+        panel.add(functionScrollPane, BorderLayout.CENTER);
 
         tabbedPane.addTab("Functions", panel);
 
-        //Setup Constants tab
+        // Setup Constants tab
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        mConstantPane = new JTextPane();
-        mConstantPane.setEditable(false);
-        mConstantScrollPane = new JScrollPane(mConstantPane);
-        panel.add(mConstantScrollPane, BorderLayout.CENTER);
+        constantPane = new JTextPane();
+        constantPane.setEditable(false);
+        JScrollPane constantScrollPane = new JScrollPane(constantPane);
+        panel.add(constantScrollPane, BorderLayout.CENTER);
 
         tabbedPane.addTab("Constants", panel);
 
-        mFrame.add(tabbedPane);
+        frame.add(tabbedPane);
 
-        mFrame.pack();
-        mFrame.setSize(new Dimension(464, 346));
-        mFrame.setLocationRelativeTo(parent);
-
+        frame.pack();
+        frame.setSize(new Dimension(464, 346));
+        frame.setLocationRelativeTo(parent);
     }
 
     public void setVisible(boolean visible) {
-        if (mFrame != null) {
-            mFrame.setVisible(visible);
+        if (frame != null) {
+            frame.setVisible(visible);
         }
     }
 
-    String TypeString(ValType type) {
+    String getTypeString(ValType type) {
         String result = "";
         for (int i = 0; i < type.getVirtualPointerLevel(); i++) {
-            result = result + "&";
+            result += "&";
         }
 
         switch (type.basicType) {
             case BasicValType.VTP_INT:
-                result = result + "int";
+                result += "int";
                 break;
             case BasicValType.VTP_REAL:
-                result = result + "real";
+                result += "real";
                 break;
             case BasicValType.VTP_STRING:
-                result = result + "string";
+                result += "string";
                 break;
             default:
-                result = result + "???";
+                result += "???";
         }
 
         for (int i = 0; i < type.arrayLevel; i++) {
-            result = result + "()";
+            result += "()";
         }
 
         return result;
     }
 
-    String TypeString(int type) {
+    String getTypeString(int type) {
         String result = "";
 
         switch (type) {
             case BasicValType.VTP_INT:
-                result = result + "int";
+                result += "int";
                 break;
             case BasicValType.VTP_REAL:
-                result = result + "real";
+                result += "real";
                 break;
             case BasicValType.VTP_STRING:
-                result = result + "string";
+                result += "string";
                 break;
             default:
-                result = result + "???";
+                result += "???";
         }
 
         return result;
@@ -143,48 +139,51 @@ public class ReferenceWindow {
 
                 // Build description string
                 String line = "";
-                if (spec.isFunction())                                      // Return type
+                if (spec.isFunction()) // Return type
                 {
-                    line = line + TypeString(spec.getReturnType()) + " ";
+                    line = line + getTypeString(spec.getReturnType()) + " ";
                 }
-                line = line + name;                                         // Function name
-                if (spec.hasBrackets())                                        // Opening bracket
+                line += name; // Function name
+                if (spec.hasBrackets()) // Opening bracket
                 {
-                    line = line + "(";
+                    line += "(";
                 } else {
-                    line = line + " ";
+                    line += " ";
                 }
                 boolean needComma = false;
                 Vector<ValType> params = spec.getParamTypes().getParams();
                 if (params != null) {
                     for (ValType type : params) {
                         if (needComma) {
-                            line = line + ", ";
+                            line += ", ";
                         }
-                        line = line + TypeString(type);
+                        line += getTypeString(type);
                         needComma = true;
                     }
                 }
                 if (spec.hasBrackets()) {
-                    line = line + ")";
+                    line += ")";
                 }
 
                 // Store description string
                 text += line + '\n';
             }
         }
-        mFunctionPane.setText(text);
-        mFunctionPane.setCaretPosition(0);
+        functionPane.setText(text);
+        functionPane.setCaretPosition(0);
         // Populate constants
         text = "";
         for (String key : comp.getConstants().keySet()) {
 
             // Build description string
-            String line = key + " = (" + TypeString(comp.getConstants().get(key).getType()) + ") " + comp.getConstants().get(key).ToString();
+            String line = key
+                    + " = ("
+                    + getTypeString(comp.getConstants().get(key).getType())
+                    + ") "
+                    + comp.getConstants().get(key).toString();
             text += line + '\n';
         }
-        mConstantPane.setText(text);
-        mConstantPane.setCaretPosition(0);
+        constantPane.setText(text);
+        constantPane.setCaretPosition(0);
     }
-
 }

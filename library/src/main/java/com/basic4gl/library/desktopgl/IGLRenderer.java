@@ -5,5 +5,6 @@ package com.basic4gl.library.desktopgl;
  */
 public interface IGLRenderer {
     void setWindow(GLWindow window);
+
     void setTextGrid(GLTextGrid text);
 }

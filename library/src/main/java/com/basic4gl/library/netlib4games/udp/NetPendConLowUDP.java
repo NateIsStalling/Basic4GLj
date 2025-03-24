@@ -2,39 +2,47 @@ package com.basic4gl.library.netlib4games.udp;
 
 import com.basic4gl.library.netlib4games.NetSimplePacket;
 import com.basic4gl.library.netlib4games.internal.Assert;
-
 import java.net.InetSocketAddress;
 
 /**
  * A pending NetConLowUDP connection.
  */
 public class NetPendConLowUDP {
-    /**
-     * Sender address
-     */
-    InetSocketAddress addr;
+    private final InetSocketAddress address;
 
-    /**
-     * Connection request string
-     */
-    String requestString;
+    private final String requestString;
 
-    /**
-     * Initial packet
-     */
-    NetSimplePacket packet;
+    private final NetSimplePacket packet;
 
-    public NetPendConLowUDP(
-            InetSocketAddress addr,
-            String requestString,
-            NetSimplePacket packet) {
+    public NetPendConLowUDP(InetSocketAddress address, String requestString, NetSimplePacket packet) {
         Assert.assertTrue(packet != null);
-        this.addr = addr;
+        this.address = address;
         this.requestString = requestString;
         this.packet = packet;
     }
 
     public void dispose() {
         packet.dispose();
+    }
+
+    /**
+     * Sender address
+     */
+    public InetSocketAddress getAddress() {
+        return address;
+    }
+
+    /**
+     * Connection request string
+     */
+    public String getRequestString() {
+        return requestString;
+    }
+
+    /**
+     * Initial packet
+     */
+    public NetSimplePacket getPacket() {
+        return packet;
     }
 }

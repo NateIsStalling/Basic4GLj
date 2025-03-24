@@ -1,7 +1,6 @@
 package com.basic4gl.desktop.util;
 
 import com.formdev.flatlaf.util.SystemInfo;
-
 import java.awt.event.InputEvent;
 
 public class EditorUtil {
@@ -16,11 +15,11 @@ public class EditorUtil {
         int right = x + 1;
         while (right <= l.length
                 && ((l[right] >= 'a' && l[right] <= 'z')
-                || (l[right] >= 'A' && l[right] <= 'Z')
-                || (l[right] >= '0' && l[right] <= '9')
-                || l[right] == '_'
-                || l[right] == '#'
-                || l[right] == '$')) {
+                        || (l[right] >= 'A' && l[right] <= 'Z')
+                        || (l[right] >= '0' && l[right] <= '9')
+                        || l[right] == '_'
+                        || l[right] == '#'
+                        || l[right] == '$')) {
             right++;
         }
 
@@ -28,13 +27,13 @@ public class EditorUtil {
         int left = x;
         while (left > 0
                 && ((l[left] >= 'a' && l[left] <= 'z')
-                || (l[left] >= 'A' && l[left] <= 'Z')
-                || (l[left] >= '0' && l[left] <= '9')
-                || l[left] == '.'
-                || l[left] == '_'
-                || l[left] == '#'
-                || l[left] == '$'
-                || l[left] == ')')) {
+                        || (l[left] >= 'A' && l[left] <= 'Z')
+                        || (l[left] >= '0' && l[left] <= '9')
+                        || l[left] == '.'
+                        || l[left] == '_'
+                        || l[left] == '#'
+                        || l[left] == '$'
+                        || l[left] == ')')) {
 
             // Skip over brackets
             if (l[left] == ')') {
@@ -66,7 +65,7 @@ public class EditorUtil {
 
         // Return result
         if (left < right) {
-            //TODO Possibly wrong second parameter
+            // TODO Possibly wrong second parameter
             return line.substring(left, right - left);
         } else {
             return "";

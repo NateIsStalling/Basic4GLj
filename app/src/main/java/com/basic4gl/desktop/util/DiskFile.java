@@ -1,120 +1,119 @@
 package com.basic4gl.desktop.util;
 
+import com.basic4gl.compiler.util.ISourceFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.*;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 
-import com.basic4gl.compiler.util.ISourceFile;
-
 /**
  * Disk file implementation of ISourceFile
  */
 public class DiskFile implements ISourceFile {
-	FileInputStream mFile;
-	FileChannel mChannel;
+    private FileInputStream fileInputStream;
+    private FileChannel channel;
 
-	ByteBuffer mBuffer;
-	String mFilename;
+    private ByteBuffer buffer;
+    private final String filename;
 
-	long mSize;
-	int lineNo;
+    private long size;
+    private int lineNo;
 
-	public DiskFile(String filename) {
-		mFilename = filename;
-		if (new File(filename).exists()){
-			try {
+    public DiskFile(String filename) {
+        this.filename = filename;
+        if (new File(filename).exists()) {
+            try {
 
-				mFile = new FileInputStream(mFilename);
-				mChannel = mFile.getChannel();
-				mSize = mChannel.size();
+                fileInputStream = new FileInputStream(this.filename);
+                channel = fileInputStream.getChannel();
+                size = channel.size();
 
-				mBuffer = ByteBuffer.allocate((int) mSize);
-				mChannel.read(mBuffer);
+                buffer = ByteBuffer.allocate((int) size);
+                channel.read(buffer);
 
-				mChannel.close();
-				mFile.close();
+                channel.close();
+                fileInputStream.close();
 
-				mBuffer.rewind();
+                buffer.rewind();
 
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				mChannel = null;
-				mFile = null;
-			}
-	} else {
-		mChannel = null;
-		mFile = null;
-	}
-		lineNo = 0;
-	}
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                channel = null;
+                fileInputStream = null;
+            }
+        } else {
+            channel = null;
+            fileInputStream = null;
+        }
+        lineNo = 0;
+    }
 
-	public boolean Fail() {
-		return (mFile == null);
-	}
+    public boolean hasError() {
+        return (fileInputStream == null);
+    }
 
-	// ISourceFile methods
-	@Override
-	public String getFilename() {
-		return mFilename;
-	}
+    // ISourceFile methods
+    @Override
+    public String getFilename() {
+        return filename;
+    }
 
-	@Override
-	public int getLineNumber() {
-		return lineNo;
-	}
+    @Override
+    public int getLineNumber() {
+        return lineNo;
+    }
 
-	@Override
-	public String getNextLine() {
-		if (!isEof()) {
-			lineNo++;
-			byte[] lineBuffer = new byte[65536];
-			boolean crFlag = false; //Carriage return flag
-			byte b = 0;
-			int i = 0;
+    @Override
+    public String getNextLine() {
+        if (!isEof()) {
+            lineNo++;
+            byte[] lineBuffer = new byte[65536];
+            boolean crFlag = false; // Carriage return flag
+            byte b = 0;
+            int i = 0;
 
-			//Parse mBuffer until it reaches a new line character
-			do{
-				b = mBuffer.get();
-				crFlag = (b == '\r'); //Set return character flag
+            // Parse mBuffer until it reaches a new line character
+            do {
+                b = buffer.get();
+                crFlag = (b == '\r'); // Set return character flag
 
-				if (b != '\n' && !crFlag) {
+                if (b != '\n' && !crFlag) {
                     lineBuffer[i] = b;
                 }
 
-				//Check if return character is followed by a new line character 
-				if (crFlag){
-					b = mBuffer.get();
-					//If return character was not followed by a new line char or null char
-					//then reset the buffer's position to before the last byte read
-					if (b != '\n' && b != 0) {
-                        mBuffer.position(mBuffer.position() - 1);
+                // Check if return character is followed by a new line character
+                if (crFlag) {
+                    b = buffer.get();
+                    // If return character was not followed by a new line char or null char
+                    // then reset the buffer's position to before the last byte read
+                    if (b != '\n' && b != 0) {
+                        buffer.position(buffer.position() - 1);
                     }
-				}
-				i++;
-			}while (mBuffer.hasRemaining() && b != '\n' && b != 0 && !crFlag);
+                }
+                i++;
+            } while (buffer.hasRemaining() && b != '\n' && b != 0 && !crFlag);
 
-			return new String(Arrays.copyOfRange(lineBuffer, 0, i));
-		} else {
+            return new String(Arrays.copyOfRange(lineBuffer, 0, i));
+        } else {
             return "";
         }
-	}
+    }
 
-	@Override
-	public boolean isEof() {
-		return Fail() || !mBuffer.hasRemaining();
-	}
+    @Override
+    public boolean isEof() {
+        return hasError() || !buffer.hasRemaining();
+    }
 
-	@Override
-	public void release() {
-		try {
+    @Override
+    public void release() {
+        try {
 
-			this.finalize();
-		} catch (Throwable e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+            this.finalize();
+        } catch (Throwable e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 }

@@ -46,13 +46,11 @@ public class NetPacketHeaderL2 {
     private final ByteBuffer buffer;
 
     public NetPacketHeaderL2() {
-        this.buffer = ByteBuffer.wrap(new byte[SIZE])
-                .order(BYTE_ORDER);
+        this.buffer = ByteBuffer.wrap(new byte[SIZE]).order(BYTE_ORDER);
     }
 
     public NetPacketHeaderL2(byte[] buffer) {
-        this.buffer = ByteBuffer.wrap(buffer)
-                .order(BYTE_ORDER);
+        this.buffer = ByteBuffer.wrap(buffer).order(BYTE_ORDER);
     }
 
     public byte[] getBuffer() {
