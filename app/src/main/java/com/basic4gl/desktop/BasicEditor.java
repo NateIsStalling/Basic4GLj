@@ -54,9 +54,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     // Editor state
     private ApMode mode = ApMode.AP_STOPPED;
 
-    private List<String> watchList = new ArrayList<>();
+    private final List<String> watchList = new ArrayList<>();
 
-    private FileManager fileManager;
+    private final FileManager fileManager;
 
     private String libraryPath;
 
@@ -130,7 +130,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
             i++;
         }
         // Set default target
-        if (builders.size() > 0) {
+        if (!builders.isEmpty()) {
             currentBuilder = 0;
         }
 

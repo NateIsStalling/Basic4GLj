@@ -14,17 +14,15 @@ import javax.swing.*;
  */
 public class ReferenceWindow {
     private static final String TITLE = "Function Reference";
-    private JFrame mFrame;
+    private final JFrame frame;
 
-    private JTextPane mFunctionPane;
-    private JTextPane mConstantPane;
-    private JScrollPane mFunctionScrollPane;
-    private JScrollPane mConstantScrollPane;
+    private final JTextPane functionPane;
+    private final JTextPane constantPane;
 
     public ReferenceWindow(Frame parent) {
-        mFrame = new JFrame(TITLE);
+        frame = new JFrame(TITLE);
 
-        mFrame.setResizable(true);
+        frame.setResizable(true);
 
         JPanel panel;
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -48,33 +46,33 @@ public class ReferenceWindow {
         label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 0));
         panel.add(label, BorderLayout.NORTH);
 
-        mFunctionPane = new JTextPane();
-        mFunctionPane.setEditable(false);
-        mFunctionScrollPane = new JScrollPane(mFunctionPane);
-        panel.add(mFunctionScrollPane, BorderLayout.CENTER);
+        functionPane = new JTextPane();
+        functionPane.setEditable(false);
+        JScrollPane functionScrollPane = new JScrollPane(functionPane);
+        panel.add(functionScrollPane, BorderLayout.CENTER);
 
         tabbedPane.addTab("Functions", panel);
 
         // Setup Constants tab
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        mConstantPane = new JTextPane();
-        mConstantPane.setEditable(false);
-        mConstantScrollPane = new JScrollPane(mConstantPane);
-        panel.add(mConstantScrollPane, BorderLayout.CENTER);
+        constantPane = new JTextPane();
+        constantPane.setEditable(false);
+        JScrollPane constantScrollPane = new JScrollPane(constantPane);
+        panel.add(constantScrollPane, BorderLayout.CENTER);
 
         tabbedPane.addTab("Constants", panel);
 
-        mFrame.add(tabbedPane);
+        frame.add(tabbedPane);
 
-        mFrame.pack();
-        mFrame.setSize(new Dimension(464, 346));
-        mFrame.setLocationRelativeTo(parent);
+        frame.pack();
+        frame.setSize(new Dimension(464, 346));
+        frame.setLocationRelativeTo(parent);
     }
 
     public void setVisible(boolean visible) {
-        if (mFrame != null) {
-            mFrame.setVisible(visible);
+        if (frame != null) {
+            frame.setVisible(visible);
         }
     }
 
@@ -171,8 +169,8 @@ public class ReferenceWindow {
                 text += line + '\n';
             }
         }
-        mFunctionPane.setText(text);
-        mFunctionPane.setCaretPosition(0);
+        functionPane.setText(text);
+        functionPane.setCaretPosition(0);
         // Populate constants
         text = "";
         for (String key : comp.getConstants().keySet()) {
@@ -185,7 +183,7 @@ public class ReferenceWindow {
                     + comp.getConstants().get(key).toString();
             text += line + '\n';
         }
-        mConstantPane.setText(text);
-        mConstantPane.setCaretPosition(0);
+        constantPane.setText(text);
+        constantPane.setCaretPosition(0);
     }
 }

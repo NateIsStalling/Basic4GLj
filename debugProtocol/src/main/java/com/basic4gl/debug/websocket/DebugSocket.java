@@ -16,17 +16,17 @@ import javax.websocket.server.ServerEndpoint;
 
 @ServerEndpoint(value = "/debug/")
 public class DebugSocket {
-    private static ILogger logger = new ConsoleLogger();
+    private static final ILogger logger = new ConsoleLogger();
 
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
-    private static Map<UUID, Session> sessionRepository = new HashMap<>();
+    private static final Map<UUID, Session> sessionRepository = new HashMap<>();
 
-    private static ArrayList<DebugCommand> initializeCommandsQueue = new ArrayList<>();
+    private static final ArrayList<DebugCommand> initializeCommandsQueue = new ArrayList<>();
 
     private static boolean configurationDone = false;
 
-    private CountDownLatch closureLatch = new CountDownLatch(1);
+    private final CountDownLatch closureLatch = new CountDownLatch(1);
 
     private Session session;
 
@@ -35,11 +35,11 @@ public class DebugSocket {
     private DebugCommandFactory adapter;
 
     @OnOpen
-    public void onWebSocketConnect(Session sess) {
+    public void onWebSocketConnect(Session session) {
         UUID sessionId = UUID.randomUUID();
-        sessionRepository.put(sessionId, sess);
+        sessionRepository.put(sessionId, session);
 
-        this.session = sess;
+        this.session = session;
         this.sessionId = sessionId;
 
         this.adapter = new DebugCommandFactory(new Gson());
@@ -47,11 +47,11 @@ public class DebugSocket {
         // send any initialization events to client if configuration is done
         if (configurationDone) {
             for (DebugCommand command : initializeCommandsQueue) {
-                sendClient(session, gson.toJson(command));
+                sendClient(this.session, gson.toJson(command));
             }
         }
 
-        logger.log("Socket Connected: " + sess);
+        logger.log("Socket Connected: " + session);
     }
 
     @OnMessage

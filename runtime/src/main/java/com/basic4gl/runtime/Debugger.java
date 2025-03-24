@@ -8,15 +8,15 @@ import com.basic4gl.runtime.util.SourceUserBreakPt;
 import java.util.*;
 
 public class Debugger extends IVMDebugger {
-    private Vector<SourceUserBreakPt> mUserBreakPts = new Vector<>();
-    private ILineNumberMapping mMapping;
+    private final Vector<SourceUserBreakPt> userBreakPoints = new Vector<>();
+    private final ILineNumberMapping lineNumberMapping;
 
     // Return breakpoint position or mUserBreakPts.end() if not found.
     SourceUserBreakPt findBreakPoint(String filename, int lineNo) {
 
         // Search for matching breakpt
         // Stop when end is reached or breakpt found
-        for (SourceUserBreakPt pt : mUserBreakPts) {
+        for (SourceUserBreakPt pt : userBreakPoints) {
             if (pt.sourceFile.equals(filename) && pt.lineNo == lineNo) {
                 return pt;
             }
@@ -25,16 +25,16 @@ public class Debugger extends IVMDebugger {
     }
 
     public Debugger(ILineNumberMapping mapping) {
-        mMapping = mapping;
+        lineNumberMapping = mapping;
     }
 
     // UI interface
     public void clearUserBreakPoints() {
-        mUserBreakPts.clear();
+        userBreakPoints.clear();
     }
 
     public void clearUserBreakPoints(String filename) {
-        Iterator<SourceUserBreakPt> i = mUserBreakPts.iterator();
+        Iterator<SourceUserBreakPt> i = userBreakPoints.iterator();
         while (i.hasNext()) {
             SourceUserBreakPt breakPt = i.next();
             if (breakPt.sourceFile.equals(filename)) {
@@ -45,12 +45,12 @@ public class Debugger extends IVMDebugger {
 
     public void addUserBreakPoint(String filename, int lineNo) {
         if (!isUserBreakPoint(filename, lineNo)) {
-            mUserBreakPts.add(new SourceUserBreakPt(filename, lineNo));
+            userBreakPoints.add(new SourceUserBreakPt(filename, lineNo));
         }
     }
 
     public void removeUserBreakPoint(String filename, int lineNo) {
-        mUserBreakPts.remove(findBreakPoint(filename, lineNo));
+        userBreakPoints.remove(findBreakPoint(filename, lineNo));
     }
 
     public boolean toggleUserBreakPoint(String filename, int lineNo) {
@@ -77,7 +77,7 @@ public class Debugger extends IVMDebugger {
     public void insertDeleteLines(String filename, int fileLineNo, int delta) {
 
         // Move or remove user breakpoints
-        for (SourceUserBreakPt i : mUserBreakPts) {
+        for (SourceUserBreakPt i : userBreakPoints) {
             if (i.sourceFile.equals(filename)) {
 
                 // Breakpoints before modified line(s) are unaffected
@@ -89,7 +89,7 @@ public class Debugger extends IVMDebugger {
                         // Delete
                         // Is breakpoint on a deleted line?
                         if (i.lineNo < fileLineNo - delta) {
-                            mUserBreakPts.remove(i);
+                            userBreakPoints.remove(i);
                         } else {
                             i.lineNo += delta;
                         }
@@ -101,7 +101,7 @@ public class Debugger extends IVMDebugger {
 
     // IVMDebugger methods
     public int getUserBreakPointCount() {
-        return mUserBreakPts.size();
+        return userBreakPoints.size();
     }
 
     public int getUserBreakPointLine(int index) {
@@ -109,6 +109,7 @@ public class Debugger extends IVMDebugger {
         assertTrue(index < getUserBreakPointCount());
 
         // Find breakpoint and convert to main line number
-        return mMapping.getMainFromSource(mUserBreakPts.get(index).sourceFile, mUserBreakPts.get(index).lineNo);
+        return lineNumberMapping.getMainFromSource(
+                userBreakPoints.get(index).sourceFile, userBreakPoints.get(index).lineNo);
     }
 }

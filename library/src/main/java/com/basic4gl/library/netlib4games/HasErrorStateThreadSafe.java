@@ -9,23 +9,23 @@ public class HasErrorStateThreadSafe extends HasErrorState {
     /**
      * Lock object
      */
-    private final ThreadLock m_lock;
+    private final ThreadLock threadLock;
 
     /**
      * True if we own it (and will free it on destruction)
      */
-    private final boolean m_ownLock;
+    private final boolean ownLock;
 
     public HasErrorStateThreadSafe() {
 
         // Create own threadlock
-        m_lock = new ThreadLock();
-        m_ownLock = true;
+        threadLock = new ThreadLock();
+        ownLock = true;
     }
 
     public void dispose() {
-        if (m_ownLock) {
-            m_lock.dispose();
+        if (ownLock) {
+            threadLock.dispose();
         }
     }
 
@@ -45,11 +45,11 @@ public class HasErrorStateThreadSafe extends HasErrorState {
      * and reading the string with getError.
      */
     void lockError() {
-        m_lock.lock();
+        threadLock.lock();
     }
 
     void unlockError() {
-        m_lock.unlock();
+        threadLock.unlock();
     }
 
     // HasErrorState methods

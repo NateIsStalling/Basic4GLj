@@ -1020,7 +1020,7 @@ public class MainWindow
         fileManager.setRunDirectory(fileManager.getAppDirectory() + "\\Programs");
 
         // Clear DLLs, breakpoints, bookmarks etc
-        // m_dlls.Clear();
+        // this.dlls.Clear();
         basicEditor.debugger.clearUserBreakPoints();
 
         // Refresh UI

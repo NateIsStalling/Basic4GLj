@@ -21,29 +21,29 @@ public class GLTextGrid extends HasErrorState {
     public static final byte DRAW_TEXT = 1;
     private static final double OFFSET = 0.000;
     // GLuint
-    private int m_texture;
+    private int texture;
 
     /**
      * Character set image. Because OpenGL context keeps getting re-created,
      * we need to keep loading it into our texture!
      */
-    private Image m_image; //
+    private Image image; //
 
-    private int m_texRows, m_texCols; // Rows and columns in texture
-    private double m_charXSize, m_charYSize; // Character size in texture coordinates
-    private int m_rows, m_cols; // Rows and columns in grid
-    private char[] m_chars; // Character grid
+    private int textureRows, textureColumns; // Rows and columns in texture
+    private double charXSize, charYSize; // Character size in texture coordinates
+    private int rows, columns; // Rows and columns in grid
+    private char[] chars; // Character grid
     // unsigned long *
-    private ByteBuffer m_colours; // Colour grid
+    private ByteBuffer colours; // Colour grid
     // GLuint *
-    private int[] m_textures; // Texture handle grid
-    private int m_cx, m_cy; // Cursor position
-    private boolean m_showCursor;
+    private int[] textures; // Texture handle grid
+    private int cursorX, cursorY; // Cursor position
+    private boolean showCursor;
     // unsigned
-    private long m_currentColour; // Current colour
+    private long currentColour; // Current colour
     // GLuint
-    private int m_currentTexture; // Current texture font
-    private boolean m_scroll;
+    private int currentTexture; // Current texture font
+    private boolean scroll;
 
     public static long makeColour(short r, short g, short b) {
         return makeColour(r, g, b, (short) 255);
@@ -54,26 +54,26 @@ public class GLTextGrid extends HasErrorState {
     }
 
     GLTextGrid(String texFile, FileOpener files, int rows, int cols, int texRows, int texCols) {
-        m_rows = rows;
-        m_cols = cols;
-        m_texRows = texRows;
-        m_texCols = texCols;
-        assertTrue(m_rows > 0);
-        assertTrue(m_cols > 0);
-        assertTrue(m_texRows > 0);
-        assertTrue(m_texCols > 0);
+        this.rows = rows;
+        columns = cols;
+        textureRows = texRows;
+        textureColumns = texCols;
+        assertTrue(this.rows > 0);
+        assertTrue(columns > 0);
+        assertTrue(textureRows > 0);
+        assertTrue(textureColumns > 0);
 
         // Initialise defaults
-        m_showCursor = false;
-        m_cx = 0;
-        m_cy = 0;
-        m_texture = 0;
-        m_chars = null;
-        m_colours = null;
-        m_textures = null;
-        m_currentColour = makeColour((short) 220, (short) 220, (short) 255);
-        m_currentTexture = 0;
-        m_scroll = true;
+        showCursor = false;
+        cursorX = 0;
+        cursorY = 0;
+        texture = 0;
+        chars = null;
+        colours = null;
+        textures = null;
+        currentColour = makeColour((short) 220, (short) 220, (short) 255);
+        currentTexture = 0;
+        scroll = true;
 
         // Load charset texture
         glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -82,21 +82,21 @@ public class GLTextGrid extends HasErrorState {
         IntBuffer w = BufferUtils.createIntBuffer(1);
         IntBuffer h = BufferUtils.createIntBuffer(1);
         IntBuffer comp = BufferUtils.createIntBuffer(1);
-        m_image = LoadImage.loadImage(texFile);
-        if (m_image == null || m_image.getPixels() == null) {
+        image = LoadImage.loadImage(texFile);
+        if (image == null || image.getPixels() == null) {
             setError("Error loading bitmap: " + texFile);
             return;
         }
         uploadCharsetTexture();
 
         // Calculate character size (in texture coordinates)
-        m_charXSize = 1.0 / m_texCols;
-        m_charYSize = 1.0 / m_texRows;
+        charXSize = 1.0 / textureColumns;
+        charYSize = 1.0 / textureRows;
 
         // Allocate character map
-        m_chars = new char[m_rows * m_cols];
-        m_colours = BufferUtils.createByteBuffer(m_rows * m_cols * (Long.SIZE / Byte.SIZE));
-        m_textures = new int[m_rows * m_cols];
+        chars = new char[this.rows * columns];
+        colours = BufferUtils.createByteBuffer(this.rows * columns * (Long.SIZE / Byte.SIZE));
+        textures = new int[this.rows * columns];
         clear();
 
         // TODO 12/16/2020 - glDisable may be needed; GLTextGrid seems to be causing issues with
@@ -184,26 +184,26 @@ public class GLTextGrid extends HasErrorState {
 
         // Iterate through character map
         int index = 0;
-        double xStep = 2.0 / m_cols, // Character size on screen in screen coordinates
-                yStep = 2.0 / m_rows;
+        double xStep = 2.0 / columns, // Character size on screen in screen coordinates
+                yStep = 2.0 / rows;
         int lastTex = 0;
 
-        for (int y = 0; y < m_rows; y++) {
-            for (int x = 0; x < m_cols; x++) {
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < columns; x++) {
 
                 // Get current and previous character
-                char c = m_chars[index];
-                m_colours.position(index * (Long.SIZE / Byte.SIZE));
-                int tex = m_textures[index];
+                char c = chars[index];
+                colours.position(index * (Long.SIZE / Byte.SIZE));
+                int tex = textures[index];
 
                 // Redraw character if changed
                 // Find character 2D position in texture
                 if (c != ' ') {
-                    int charx = c % m_texCols;
-                    int chary = c / m_texCols;
+                    int charx = c % textureColumns;
+                    int chary = c / textureColumns;
 
                     // Convert to texture coordinates
-                    double tx = charx * m_charXSize + OFFSET, ty = 1.0 - (chary + 1) * m_charYSize + OFFSET;
+                    double tx = charx * charXSize + OFFSET, ty = 1.0 - (chary + 1) * charYSize + OFFSET;
 
                     // Find screen coordinates
                     double screenX = x * xStep - 1.0, screenY = 1.0 - (y + 1) * yStep;
@@ -215,15 +215,15 @@ public class GLTextGrid extends HasErrorState {
                     }
 
                     // Write character
-                    glColor4ubv(m_colours);
+                    glColor4ubv(colours);
                     glBegin(GL_QUADS);
                     glTexCoord2d(tx, ty);
                     glVertex2d(screenX, screenY);
-                    glTexCoord2d(tx + m_charXSize, ty);
+                    glTexCoord2d(tx + charXSize, ty);
                     glVertex2d(screenX + xStep, screenY);
-                    glTexCoord2d(tx + m_charXSize, ty + m_charYSize);
+                    glTexCoord2d(tx + charXSize, ty + charYSize);
                     glVertex2d(screenX + xStep, screenY + yStep);
-                    glTexCoord2d(tx, ty + m_charYSize);
+                    glTexCoord2d(tx, ty + charYSize);
                     glVertex2d(screenX, screenY + yStep);
                     glEnd();
                 }
@@ -238,12 +238,12 @@ public class GLTextGrid extends HasErrorState {
     public void uploadCharsetTexture() {
         IntBuffer tempTexture =
                 BufferUtils.createByteBuffer(Integer.SIZE / Byte.SIZE).asIntBuffer();
-        tempTexture.put(m_texture);
+        tempTexture.put(texture);
         tempTexture.rewind();
         // Upload the character set texture into OpenGL
         glGenTextures(tempTexture);
-        m_texture = tempTexture.get(0);
-        glBindTexture(GL_TEXTURE_2D, m_texture);
+        texture = tempTexture.get(0);
+        glBindTexture(GL_TEXTURE_2D, texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 
@@ -251,12 +251,12 @@ public class GLTextGrid extends HasErrorState {
         //GLU deprecated
 
         gluBuild2DMipmaps ( GL_TEXTURE_2D,
-        		(m_image.getFormat () & 0xffff) == corona::PF_R8G8B8 ? 3 : 4,
-        		m_image.getWidth (),
-        		m_image.getHeight (),
-        		ImageFormat (m_image),
+        		(this.image.getFormat() & 0xffff) == corona::PF_R8G8B8 ? 3 : 4,
+        		this.image.getWidth(),
+        		this.image.getHeight(),
+        		ImageFormat (this.image),
         		GL_UNSIGNED_BYTE,
-        		m_image.getPixels ());*/
+        		this.image.getPixels ());*/
         // Create a new texture object in memory and bind it
         // Upload the texture data and generate mip maps (for scaling)
         // TODO get image format properly; currently hard coded as GL_RGBA
@@ -264,43 +264,43 @@ public class GLTextGrid extends HasErrorState {
                 GL11.GL_TEXTURE_2D,
                 0,
                 GL_RGBA,
-                m_image.getWidth(),
-                m_image.getHeight(),
+                image.getWidth(),
+                image.getHeight(),
                 0,
                 GL_RGBA,
                 GL11.GL_UNSIGNED_BYTE,
-                m_image.getPixels());
+                image.getPixels());
         GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         //        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-        m_currentTexture = m_texture;
+        currentTexture = texture;
     }
 
     public void resize(int rows, int cols) {
         assertTrue(rows > 0);
         assertTrue(cols > 0);
 
-        m_rows = rows;
-        m_cols = cols;
+        this.rows = rows;
+        columns = cols;
 
         // Reallocate text grid
-        m_chars = null;
-        m_chars = new char[m_rows * m_cols];
+        chars = null;
+        chars = new char[this.rows * columns];
 
-        m_colours = null;
-        m_colours = BufferUtils.createByteBuffer(m_rows * m_cols * (Long.SIZE / Byte.SIZE));
+        colours = null;
+        colours = BufferUtils.createByteBuffer(this.rows * columns * (Long.SIZE / Byte.SIZE));
 
-        m_textures = null;
-        m_textures = new int[m_rows * m_cols];
+        textures = null;
+        textures = new int[this.rows * columns];
 
         clear();
     }
 
     public int getRows() {
-        return m_rows;
+        return rows;
     }
 
     public int getColumns() {
-        return m_cols;
+        return columns;
     }
 
     // Drawing
@@ -315,27 +315,27 @@ public class GLTextGrid extends HasErrorState {
 
         // Move rows up
         int x, y;
-        for (y = 1; y < m_rows; y++) {
-            for (x = 0; x < m_cols; x++) {
-                m_chars[((y - 1) * m_cols) + x] = m_chars[(y * m_cols) + x];
+        for (y = 1; y < rows; y++) {
+            for (x = 0; x < columns; x++) {
+                chars[((y - 1) * columns) + x] = chars[(y * columns) + x];
             }
         }
         // Clear bottom line
-        Arrays.fill(m_chars, (m_rows - 1) * m_cols, ((m_rows - 1) * m_cols) + m_cols, ' ');
+        Arrays.fill(chars, (rows - 1) * columns, ((rows - 1) * columns) + columns, ' ');
 
         // Do the same to the colour map
-        m_colours.rewind();
-        LongBuffer col = m_colours.asLongBuffer();
-        for (y = 1; y < m_rows; y++) {
-            for (x = 0; x < m_cols; x++) {
-                col.put(((y - 1) * m_cols) + x, col.get((y * m_cols) + x));
+        colours.rewind();
+        LongBuffer col = colours.asLongBuffer();
+        for (y = 1; y < rows; y++) {
+            for (x = 0; x < columns; x++) {
+                col.put(((y - 1) * columns) + x, col.get((y * columns) + x));
             }
         }
 
         // And the texture line
-        for (y = 1; y < m_rows; y++) {
-            for (x = 0; x < m_cols; x++) {
-                m_textures[((y - 1) * m_cols) + x] = m_textures[(y * m_cols) + y];
+        for (y = 1; y < rows; y++) {
+            for (x = 0; x < columns; x++) {
+                textures[((y - 1) * columns) + x] = textures[(y * columns) + y];
             }
         }
 
@@ -344,56 +344,56 @@ public class GLTextGrid extends HasErrorState {
     }
 
     public boolean getScroll() {
-        return m_scroll;
+        return scroll;
     }
 
     public void setScroll(boolean scroll) {
-        m_scroll = scroll;
+        this.scroll = scroll;
     }
 
     // Cursor commands
     public int getCursorX() {
-        return m_cx;
+        return cursorX;
     }
 
     public int getCursorY() {
-        return m_cy;
+        return cursorY;
     }
 
     public void showCursor() {
-        m_showCursor = true;
+        showCursor = true;
     }
 
     public void hideCursor() {
-        m_showCursor = false;
+        showCursor = false;
     }
 
     public void setCursorPosition(int x, int y) {
         if (x < 0) {
             x = 0;
         }
-        if (x >= m_cols) {
-            x = m_cols - 1;
+        if (x >= columns) {
+            x = columns - 1;
         }
         if (y < 0) {
             y = 0;
         }
-        if (y >= m_rows) {
-            y = m_rows - 1;
+        if (y >= rows) {
+            y = rows - 1;
         }
-        m_cx = x;
-        m_cy = y;
+        cursorX = x;
+        cursorY = y;
     }
 
     public void cursorUp() {
-        if (--m_cy < 0) {
-            m_cy = 0;
+        if (--cursorY < 0) {
+            cursorY = 0;
         }
     }
 
     public void cursorDown() {
-        if (++m_cy >= m_rows) {
-            if (m_scroll) {
+        if (++cursorY >= rows) {
+            if (scroll) {
                 scrollUp();
             } else {
                 cursorUp();
@@ -402,13 +402,13 @@ public class GLTextGrid extends HasErrorState {
     }
 
     public void cursorLeft() {
-        if (--m_cx < 0) {
-            m_cx = 0;
+        if (--cursorX < 0) {
+            cursorX = 0;
         }
     }
 
     public void newLine() {
-        m_cx = 0;
+        cursorX = 0;
         cursorDown();
     }
 
@@ -417,45 +417,45 @@ public class GLTextGrid extends HasErrorState {
     }
 
     public void cursorRight(int dist) {
-        m_cx += dist;
-        while (m_cx >= m_cols) {
-            m_cx -= m_cols;
+        cursorX += dist;
+        while (cursorX >= columns) {
+            cursorX -= columns;
             cursorDown();
         }
     }
 
     // Insert/delete space
     public void delete() {
-        m_colours.rewind();
-        LongBuffer col = m_colours.asLongBuffer();
+        colours.rewind();
+        LongBuffer col = colours.asLongBuffer();
 
         // Shift text to the left
-        int lineOffset = m_cy * m_cols;
-        for (int x = m_cx; x < m_cols - 1; x++) {
-            m_chars[lineOffset + x] = m_chars[lineOffset + x + 1];
+        int lineOffset = cursorY * columns;
+        for (int x = cursorX; x < columns - 1; x++) {
+            chars[lineOffset + x] = chars[lineOffset + x + 1];
             col.put(lineOffset + x, col.get(lineOffset + x + 1));
         }
 
         // Insert space on the right
-        m_chars[lineOffset + m_cols - 1] = ' ';
+        chars[lineOffset + columns - 1] = ' ';
     }
 
     public boolean insert() {
-        m_colours.rewind();
-        LongBuffer col = m_colours.asLongBuffer();
+        colours.rewind();
+        LongBuffer col = colours.asLongBuffer();
 
         // Room to insert a space?
-        int lineOffset = m_cy * m_cols;
-        if (m_chars[lineOffset + m_cols - 1] <= ' ') {
+        int lineOffset = cursorY * columns;
+        if (chars[lineOffset + columns - 1] <= ' ') {
 
             // Shift text to the right
-            for (int x = m_cols - 1; x > m_cx; x--) {
-                m_chars[lineOffset + x] = m_chars[lineOffset + x - 1];
+            for (int x = columns - 1; x > cursorX; x--) {
+                chars[lineOffset + x] = chars[lineOffset + x - 1];
                 col.put(lineOffset + x, col.get(lineOffset + x - 1));
             }
 
             // Insert space
-            m_chars[lineOffset + m_cx] = ' ';
+            chars[lineOffset + cursorX] = ' ';
 
             return true;
         } else {
@@ -464,8 +464,8 @@ public class GLTextGrid extends HasErrorState {
     }
 
     public boolean backspace() {
-        if (m_cx > 0) {
-            --m_cx;
+        if (cursorX > 0) {
+            --cursorX;
             delete();
             return true;
         } else {
@@ -477,7 +477,7 @@ public class GLTextGrid extends HasErrorState {
     public void clear() {
 
         // Clear character map
-        Arrays.fill(m_chars, ' ');
+        Arrays.fill(chars, ' ');
 
         // Move cursor home
         setCursorPosition(0, 0);
@@ -490,32 +490,32 @@ public class GLTextGrid extends HasErrorState {
         while (len > 0) {
 
             // Determine length of next substring
-            int subLen = m_cols - m_cx;
+            int subLen = columns - cursorX;
             if (subLen > len) {
                 subLen = len;
             }
 
             // Write out bit
-            int offset = m_cy * m_cols + m_cx;
+            int offset = cursorY * columns + cursorX;
             if (subLen > 0) {
                 // TODO properly set characters
                 for (int i = 0; i < subLen; i++) {
-                    m_chars[offset + i] = s.charAt(index + i);
+                    chars[offset + i] = s.charAt(index + i);
                 }
-                // Arrays.fill(m_chars, offset, subLen ,s.charAt(index));
+                // Arrays.fill(this.chars, offset, subLen ,s.charAt(index));
                 index += subLen;
                 len -= subLen;
             }
 
             // Set colours and textures
             int x;
-            m_colours.rewind();
-            LongBuffer col = m_colours.asLongBuffer();
+            colours.rewind();
+            LongBuffer col = colours.asLongBuffer();
             for (x = 0; x < subLen; x++) {
-                col.put(offset + x, m_currentColour);
+                col.put(offset + x, currentColour);
             }
             for (x = 0; x < subLen; x++) {
-                m_textures[offset + x] = m_currentTexture;
+                textures[offset + x] = currentTexture;
             }
 
             // Advance cursor
@@ -526,7 +526,7 @@ public class GLTextGrid extends HasErrorState {
     public void clearLine() {
 
         // Clear the current line
-        Arrays.fill(m_chars, m_cy * m_cols, (m_cy * m_cols) + m_cols, ' ');
+        Arrays.fill(chars, cursorY * columns, (cursorY * columns) + columns, ' ');
     }
 
     public void clearRegion(int x1, int y1, int x2, int y2) {
@@ -538,76 +538,76 @@ public class GLTextGrid extends HasErrorState {
         if (y1 < 0) {
             y1 = 0;
         }
-        if (x2 >= m_cols) {
-            x2 = m_cols - 1;
+        if (x2 >= columns) {
+            x2 = columns - 1;
         }
-        if (y2 >= m_rows) {
-            y2 = m_rows - 1;
+        if (y2 >= rows) {
+            y2 = rows - 1;
         }
         if (x2 >= x1 && y2 >= y1)
 
         // Clear it
         {
             for (int y = y1; y <= y2; y++) {
-                Arrays.fill(m_chars, y * m_cols + x1, (y * m_cols + x1) + x2 - x1 + 1, ' ');
+                Arrays.fill(chars, y * columns + x1, (y * columns + x1) + x2 - x1 + 1, ' ');
             }
         }
     }
 
     // Reading commands
     public char getTextAt(int x, int y) {
-        if (x < 0 || x >= m_cols || y < 0 || y >= m_rows) {
+        if (x < 0 || x >= columns || y < 0 || y >= rows) {
             return 0;
         } else {
-            return m_chars[y * m_cols + x];
+            return chars[y * columns + x];
         }
     }
 
     // unsigned
     public long getColourAt(int x, int y) {
-        m_colours.rewind();
-        LongBuffer col = m_colours.asLongBuffer();
-        if (x < 0 || x >= m_cols || y < 0 || y >= m_rows) {
-            return m_currentColour;
+        colours.rewind();
+        LongBuffer col = colours.asLongBuffer();
+        if (x < 0 || x >= columns || y < 0 || y >= rows) {
+            return currentColour;
         } else {
-            return col.get(y * m_cols + x);
+            return col.get(y * columns + x);
         }
     }
 
     // GLuint
     public int getTextureAt(int x, int y) {
-        if (x < 0 || x >= m_cols || y < 0 || y >= m_rows) {
-            return m_currentTexture;
+        if (x < 0 || x >= columns || y < 0 || y >= rows) {
+            return currentTexture;
         } else {
-            return m_textures[y * m_cols + x];
+            return textures[y * columns + x];
         }
     }
 
     // Colour commands
     // unsigned
     public long getColour() {
-        return m_currentColour;
+        return currentColour;
     }
 
     // SetColour (unsigned long col)
     public void setColour(long col) {
-        m_currentColour = col;
+        currentColour = col;
     }
 
     // Texture commands
     // GLuint
     public int getTexture() {
-        return m_currentTexture;
+        return currentTexture;
     }
 
     // SetTexture (GLuint tex)
     public void setTexture(int tex) {
-        m_currentTexture = tex;
+        currentTexture = tex;
     }
 
     // GLuint
     public int getDefaultTexture() {
-        return m_texture;
+        return texture;
     }
 
     // Input commands
@@ -620,14 +620,14 @@ public class GLTextGrid extends HasErrorState {
     public String getString(GLWindow window) {
 
         assertTrue(window != null);
-        m_colours.rewind();
-        LongBuffer col = m_colours.asLongBuffer();
+        colours.rewind();
+        LongBuffer col = colours.asLongBuffer();
 
         // Record leftmost cursor position
         // Cursor can not be moved further left than that point
-        int left = m_cx;
-        boolean saveCursor = m_showCursor;
-        m_showCursor = true;
+        int left = cursorX;
+        boolean saveCursor = showCursor;
+        showCursor = true;
 
         // Perform UI
         boolean done = false;
@@ -658,20 +658,20 @@ public class GLTextGrid extends HasErrorState {
             }
             switch (sc) {
                 case GLFW_KEY_LEFT:
-                    if (m_cx > left) {
-                        m_cx--;
+                    if (cursorX > left) {
+                        cursorX--;
                     }
                     break;
                 case GLFW_KEY_RIGHT:
-                    if (m_cx < m_cols - 1) {
-                        m_cx++;
+                    if (cursorX < columns - 1) {
+                        cursorX++;
                     }
                     break;
                 case GLFW_KEY_DELETE:
                     delete();
                     break;
                 case GLFW_KEY_BACKSPACE:
-                    if (m_cx > left) {
+                    if (cursorX > left) {
                         backspace();
                     }
                     break;
@@ -680,11 +680,11 @@ public class GLTextGrid extends HasErrorState {
                 done = true;
             }
             if (c >= ' ') {
-                if (m_cx < m_cols - 1 && insert()) {
-                    m_chars[m_cy * m_cols + m_cx] = (char) c;
-                    col.put(m_cy * m_cols + m_cx, m_currentColour);
-                    m_textures[m_cy * m_cols + m_cx] = m_currentTexture;
-                    m_cx++;
+                if (cursorX < columns - 1 && insert()) {
+                    chars[cursorY * columns + cursorX] = (char) c;
+                    col.put(cursorY * columns + cursorX, currentColour);
+                    textures[cursorY * columns + cursorX] = currentTexture;
+                    cursorX++;
                 }
             }
             // Go easy on the processor
@@ -700,24 +700,24 @@ public class GLTextGrid extends HasErrorState {
             return "";
         }
         // Extract string
-        int lineOffset = m_cy * m_cols;
-        int right = m_cols;
-        while (right > left && m_chars[lineOffset + right - 1] <= ' ') // Trim spaces from right
+        int lineOffset = cursorY * columns;
+        int right = columns;
+        while (right > left && chars[lineOffset + right - 1] <= ' ') // Trim spaces from right
         {
             right--;
         }
-        while (left < right && m_chars[lineOffset + left] <= ' ') // Trim spaces from left
+        while (left < right && chars[lineOffset + left] <= ' ') // Trim spaces from left
         {
             left++;
         }
         String result = "";
         for (int i = left; i < right; i++) {
-            result += m_chars[lineOffset + i];
+            result += chars[lineOffset + i];
         }
 
         // Restore cursor, perform newline and update screen
         newLine();
-        m_showCursor = saveCursor;
+        showCursor = saveCursor;
         glClear(GL_COLOR_BUFFER_BIT);
         draw((byte) 0xff);
         window.swapBuffers();
@@ -729,8 +729,8 @@ public class GLTextGrid extends HasErrorState {
      * release image from memory
      */
     void destroy() {
-        /*if (m_image != null)
-        	stbi_image_free(m_image.getPixels());
-        m_image = null;*/
+        /*if (this.image != null)
+        	stbi_image_free(this.image.getPixels());
+        this.image = null;*/
     }
 }

@@ -16,15 +16,15 @@ import javax.websocket.*;
 
 @ClientEndpoint
 public class DebugClientSocket {
-    private static ILogger logger = new ConsoleLogger();
+    private static final ILogger logger = new ConsoleLogger();
 
-    private CountDownLatch closureLatch = new CountDownLatch(1);
+    private final CountDownLatch closureLatch = new CountDownLatch(1);
     private Session session;
     private DebugCommandFactory commandFactory;
     private CallbackFactory callbackFactory;
 
-    private IDebugCommandListener commandListener;
-    private IDebugCallbackListener callbackListener;
+    private final IDebugCommandListener commandListener;
+    private final IDebugCallbackListener callbackListener;
 
     public DebugClientSocket(IDebugCommandListener commandListener, IDebugCallbackListener callbackListener) {
         this.commandListener = commandListener;

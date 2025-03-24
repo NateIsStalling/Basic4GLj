@@ -14,8 +14,8 @@ import java.util.Vector;
  * Used to store structure definitions, and operate on data types
  */
 public class TypeLibrary implements Streamable {
-    private Vector<StructureField> fields;
-    private Vector<Structure> structures;
+    private final Vector<StructureField> fields;
+    private final Vector<Structure> structures;
 
     public TypeLibrary() {
         fields = new Vector<>();

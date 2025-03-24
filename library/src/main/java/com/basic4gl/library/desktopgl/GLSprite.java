@@ -38,7 +38,7 @@ public class GLSprite extends GLBasicSprite {
     protected void checkFrame() {
 
         // An obscure bug which I haven't tracked down yet occasionally causes
-        // m_frame to go to +INF, which causes an infinite loop.
+        // this.frame to go to +INF, which causes an infinite loop.
         // Workaround for now is to reset it to 0 when goes out (sane) range.
         if (frame < -10000 || frame > 10000) {
             frame = 0;

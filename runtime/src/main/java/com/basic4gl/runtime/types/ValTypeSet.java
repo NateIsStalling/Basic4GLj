@@ -14,7 +14,7 @@ import java.util.Vector;
  */
 public class ValTypeSet implements Streamable {
 
-    private Vector<ValType> valTypes;
+    private final Vector<ValType> valTypes;
 
     public ValTypeSet() {
         valTypes = new Vector<>();

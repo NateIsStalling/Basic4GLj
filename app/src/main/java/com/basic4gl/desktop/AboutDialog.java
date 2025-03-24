@@ -12,21 +12,21 @@ import javax.swing.border.EmptyBorder;
  * Created by Nate on 1/12/2015.
  */
 public class AboutDialog {
-    private JDialog mDialog;
+    private final JDialog dialog;
 
     public AboutDialog(Frame parent) {
         Locale locale = new Locale("en", "US");
         ResourceBundle resources = ResourceBundle.getBundle("build", locale);
 
-        mDialog = new JDialog(parent);
+        dialog = new JDialog(parent);
 
-        mDialog.setTitle("About");
+        dialog.setTitle("About");
 
-        mDialog.setResizable(false);
-        mDialog.setModal(true);
+        dialog.setResizable(false);
+        dialog.setModal(true);
 
         JPanel mainPanel = new JPanel();
-        mDialog.add(mainPanel);
+        dialog.add(mainPanel);
         GridLayout mainLayout = new GridLayout(2, 1);
         mainPanel.setLayout(mainLayout);
 
@@ -72,9 +72,9 @@ public class AboutDialog {
         }
         mainPanel.add(scrollLicenses);
         // JScrollPane scrollPane = new ScrollPane(textLicenses);
-        mDialog.pack();
-        mDialog.setSize(new Dimension(360, 320));
-        mDialog.setLocationRelativeTo(parent);
-        mDialog.setVisible(true);
+        dialog.pack();
+        dialog.setSize(new Dimension(360, 320));
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
     }
 }

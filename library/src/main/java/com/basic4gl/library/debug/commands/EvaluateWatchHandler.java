@@ -19,16 +19,16 @@ public class EvaluateWatchHandler {
 
     static final String DEFAULT_VALUE = "???";
 
-    private final TomBasicCompiler mComp;
-    private final TomVM mVM;
-    private final IVMDriver mVMDriver;
-    private final Gson mGson;
+    private final TomBasicCompiler compiler;
+    private final TomVM vm;
+    private final IVMDriver vmDriver;
+    private final Gson gson;
 
-    public EvaluateWatchHandler(IVMDriver vmDriver, TomBasicCompiler comp, TomVM vm, Gson gson) {
-        mVMDriver = vmDriver;
-        mComp = comp;
-        mVM = vm;
-        mGson = gson;
+    public EvaluateWatchHandler(IVMDriver vmDriver, TomBasicCompiler compiler, TomVM vm, Gson gson) {
+        this.vmDriver = vmDriver;
+        this.compiler = compiler;
+        this.vm = vm;
+        this.gson = gson;
     }
 
     public void handle(String watch, String context, int requestId, Session session) {
@@ -38,7 +38,7 @@ public class EvaluateWatchHandler {
         callback.setRequestId(requestId);
         callback.setResult(result);
 
-        String json = mGson.toJson(callback);
+        String json = gson.toJson(callback);
         message(session, json);
     }
 
@@ -59,7 +59,7 @@ public class EvaluateWatchHandler {
         //        }
 
         // Save virtual machine state
-        VMState state = mVM.getState();
+        VMState state = vm.getState();
         // TODO sync editor UI state
         //        mHost.pushApplicationState();
         try {
@@ -67,56 +67,56 @@ public class EvaluateWatchHandler {
             // Setup compiler "in function" state to match the the current VM user
             // stack state.
             int currentFunction;
-            if (mVM.getCurrentUserFrame() < 0 || mVM.getUserCallStack().lastElement().userFuncIndex < 0) {
+            if (vm.getCurrentUserFrame() < 0 || vm.getUserCallStack().lastElement().userFuncIndex < 0) {
                 currentFunction = -1;
             } else {
-                currentFunction = mVM.getUserCallStack().get(mVM.getCurrentUserFrame()).userFuncIndex;
+                currentFunction = vm.getUserCallStack().get(vm.getCurrentUserFrame()).userFuncIndex;
             }
 
             boolean inFunction = currentFunction >= 0;
 
             // Compile watch expression
             // This also gives us the expression result type
-            int codeStart = mVM.getInstructionCount();
+            int codeStart = vm.getInstructionCount();
             ValType valType = new ValType();
             // TODO Possibly means to pass parameters by ref
-            if (!mComp.tempCompileExpression(watch, valType, inFunction, currentFunction)) {
-                return mComp.getError();
+            if (!compiler.tempCompileExpression(watch, valType, inFunction, currentFunction)) {
+                return compiler.getError();
             }
 
             boolean canCallFunc = canCallFunc(context);
             if (!canCallFunc) {
                 // Expressions aren't allowed to call functions for mouse-over hints.
                 // Scan compiled code for OP_CALL_FUNC or OP_CALL_OPERATOR_FUNC
-                for (int i = codeStart; i < mVM.getInstructionCount(); i++) {
-                    if (mVM.getInstruction(i).opCode == OpCode.OP_CALL_FUNC
-                            || mVM.getInstruction(i).opCode == OpCode.OP_CALL_OPERATOR_FUNC
-                            || mVM.getInstruction(i).opCode == OpCode.OP_CALL_DLL
-                            || mVM.getInstruction(i).opCode == OpCode.OP_CREATE_USER_FRAME) {
+                for (int i = codeStart; i < vm.getInstructionCount(); i++) {
+                    if (vm.getInstruction(i).opCode == OpCode.OP_CALL_FUNC
+                            || vm.getInstruction(i).opCode == OpCode.OP_CALL_OPERATOR_FUNC
+                            || vm.getInstruction(i).opCode == OpCode.OP_CALL_DLL
+                            || vm.getInstruction(i).opCode == OpCode.OP_CREATE_USER_FRAME) {
                         return "Mouse hints can't call functions. Use watch instead.";
                     }
                 }
             }
 
             // Run compiled code
-            mVM.gotoInstruction(codeStart);
+            vm.gotoInstruction(codeStart);
 
             continueApplication();
 
             // Error occurred?
-            if (mVM.hasError()) {
-                return mVM.getError();
+            if (vm.hasError()) {
+                return vm.getError();
             }
 
             // Execution didn't finish?
-            if (!mVM.isDone()) {
+            if (!vm.isDone()) {
                 return DEFAULT_VALUE;
             }
 
             // Convert expression result to string
             return displayVariable(valType);
         } finally {
-            mVM.setState(state);
+            vm.setState(state);
             // TODO sync editor UI state
             // mHost.restoreHostState();
             // TODO Add VM viewer
@@ -131,7 +131,7 @@ public class EvaluateWatchHandler {
 
             // Run the virtual machine for a certain number of steps
             // TODO Continue
-            mVM.continueVM(GB_STEPS_UNTIL_REFRESH);
+            vm.continueVM(GB_STEPS_UNTIL_REFRESH);
 
             // Process windows messages (to keep application responsive)
             // Application.ProcessMessages ();
@@ -141,17 +141,17 @@ public class EvaluateWatchHandler {
             // when in full screen mode. Useful for debugging.)
             //    mVM.Pause ();
         } while ( // mMode == ApMode.AP_RUNNING
-        !mVM.hasError() && !mVM.isDone() && !mVM.isPaused() && !mVMDriver.isClosing());
+        !vm.hasError() && !vm.isDone() && !vm.isPaused() && !vmDriver.isClosing());
     }
 
     private String displayVariable(ValType valType) {
         if (valType.matchesType(BasicValType.VTP_STRING)) { // String is special case.
-            return "\"" + mVM.getRegString() + "\""; // Stored in string register.
+            return "\"" + vm.getRegString() + "\""; // Stored in string register.
         } else {
             String temp;
             try {
                 Mutable<Integer> maxChars = new Mutable<>(TomVM.DATA_TO_STRING_MAX_CHARS);
-                temp = mVM.valToString(mVM.getReg(), valType, maxChars);
+                temp = vm.valToString(vm.getReg(), valType, maxChars);
             } catch (Exception ex) {
 
                 // Floating point errors can be raised when converting floats to string

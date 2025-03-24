@@ -25,16 +25,16 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 public class MultiHeaderGutter extends JPanel {
     public static final Color DEFAULT_ACTIVE_LINE_RANGE_COLOR = new Color(51, 153, 255);
     private RTextArea textArea;
-    private JPanel headerArea;
+    private final JPanel headerArea;
     private LineNumberList lineNumberList;
     private Color lineNumberColor;
     private int lineNumberingStartIndex;
     private Font lineNumberFont;
     private List<IconRowHeader> iconAreas;
-    private List<Boolean> autoHideIconArea = new ArrayList<>();
+    private final List<Boolean> autoHideIconArea = new ArrayList<>();
     private boolean iconRowHeaderInheritsGutterBackground;
     private FoldIndicator foldIndicator;
-    private MultiHeaderGutter.TextAreaListener listener = new MultiHeaderGutter.TextAreaListener();
+    private final MultiHeaderGutter.TextAreaListener listener = new MultiHeaderGutter.TextAreaListener();
 
     public MultiHeaderGutter(RTextArea textArea) {
         this.lineNumberColor = Color.gray;
@@ -410,7 +410,7 @@ public class MultiHeaderGutter extends JPanel {
             if (this.iconAreas == null) {
                 this.iconAreas = new ArrayList<>();
             }
-            if (this.iconAreas.size() != 0) {
+            if (!this.iconAreas.isEmpty()) {
                 for (IconRowHeader iconArea : this.iconAreas) {
                     iconArea.setTextArea(textArea);
                 }

@@ -1010,7 +1010,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 e.printStackTrace();
                 exception = e;
             }
-            findFileHandle = findFileCollection.size() > 0 ? 0 : -1;
+            findFileHandle = !findFileCollection.isEmpty() ? 0 : -1;
 
             // Return filename
             if (findFileHandle != -1 && exception == null) {

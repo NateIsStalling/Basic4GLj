@@ -19,13 +19,15 @@ import org.lwjgl.opengl.GL11;
  * Created by Nate on 11/4/2015.
  */
 public class Image {
-    private static final int PCX_BYTES_PER_PIXEL =
-            3; // PCX image parser does not support transparency; see PCXImageParser.getImageInfo()
+    /**
+     * PCX image parser does not support transparency; see PCXImageParser.getImageInfo()
+     */
+    private static final int PCX_BYTES_PER_PIXEL = 3;
 
-    private ByteBuffer mData;
-    private int mWidth, mHeight;
-    private int mFormat;
-    private int mBPP;
+    private ByteBuffer data;
+    private int width, height;
+    private int format;
+    private int bpp;
 
     public Image(String filename) {
         IntBuffer w = BufferUtils.createIntBuffer(1);
@@ -53,97 +55,97 @@ public class Image {
                     errorMessage = e.getMessage();
                 }
             } else {
-                mData = stbi_load(filename, w, h, comp, 0);
+                data = stbi_load(filename, w, h, comp, 0);
 
-                mWidth = w.get(0);
-                mHeight = h.get(0);
-                mBPP = comp.get(0);
-                if (mData == null) {
+                width = w.get(0);
+                height = h.get(0);
+                bpp = comp.get(0);
+                if (data == null) {
                     errorMessage = stbi_failure_reason();
                 }
             }
 
-            mFormat = mBPP == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
+            format = bpp == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
 
-            if (mData == null) {
+            if (data == null) {
                 System.out.println("Failed to load image: " + filename);
                 System.out.println(errorMessage);
             } else {
                 // There's an issue with loading images upside down
                 // So here we change the order of the bytes to flip the image that we just loaded
-                ByteBuffer temp = ByteBuffer.allocateDirect(mData.capacity());
-                mData.rewind(); // copy from the beginning
+                ByteBuffer temp = ByteBuffer.allocateDirect(data.capacity());
+                data.rewind(); // copy from the beginning
                 temp.rewind();
-                for (int dy = 0; dy < mHeight; dy++) {
-                    temp.position(dy * mWidth * mBPP);
-                    mData.position((mHeight - dy - 1) * mWidth * mBPP);
-                    for (int dx = 0; dx < mWidth * mBPP; dx++) {
-                        temp.put(mData.get());
+                for (int dy = 0; dy < height; dy++) {
+                    temp.position(dy * width * bpp);
+                    data.position((height - dy - 1) * width * bpp);
+                    for (int dx = 0; dx < width * bpp; dx++) {
+                        temp.put(data.get());
                     }
                 }
                 temp.rewind();
-                mData = temp;
+                data = temp;
             }
         }
     }
 
     public Image(int width, int height, int bpp) {
-        mWidth = width;
-        mHeight = height;
-        mBPP = bpp;
-        mFormat = mBPP == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
-        mData = BufferUtils.createByteBuffer(width * height * bpp);
+        this.width = width;
+        this.height = height;
+        this.bpp = bpp;
+        format = this.bpp == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
+        data = BufferUtils.createByteBuffer(width * height * bpp);
     }
 
     public Image(Image image) {
-        mData = clone(image.mData);
+        data = clone(image.data);
 
-        if (mData == null) {
+        if (data == null) {
             System.out.println("Failed to load image: " + stbi_failure_reason());
         }
-        mWidth = image.mWidth;
-        mHeight = image.mHeight;
-        mBPP = image.mBPP;
-        mFormat = mBPP == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
+        width = image.width;
+        height = image.height;
+        bpp = image.bpp;
+        format = bpp == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
     }
 
     public Image(Image image, int bpp) {
         IntBuffer w = BufferUtils.createIntBuffer(1);
         IntBuffer h = BufferUtils.createIntBuffer(1);
         IntBuffer comp = BufferUtils.createIntBuffer(1);
-        image.mData.rewind();
-        mData = stbi_load_from_memory(image.mData, w, h, comp, bpp);
+        image.data.rewind();
+        data = stbi_load_from_memory(image.data, w, h, comp, bpp);
 
-        if (mData == null) {
+        if (data == null) {
             System.out.println("Failed to load image: " + stbi_failure_reason());
         }
-        mWidth = w.get(0);
-        mHeight = h.get(0);
-        mBPP = comp.get(0);
-        mFormat = mBPP == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
+        width = w.get(0);
+        height = h.get(0);
+        this.bpp = comp.get(0);
+        format = this.bpp == 3 ? GL11.GL_RGB : GL11.GL_RGBA;
     }
 
     public ByteBuffer getPixels() {
-        if (mData != null) {
-            mData.rewind();
+        if (data != null) {
+            data.rewind();
         }
-        return mData;
+        return data;
     }
 
     public int getWidth() {
-        return mWidth;
+        return width;
     }
 
     public int getHeight() {
-        return mHeight;
+        return height;
     }
 
     public int getBPP() {
-        return mBPP;
+        return bpp;
     }
 
     public int getFormat() {
-        return mFormat;
+        return format;
     }
 
     private static ByteBuffer clone(ByteBuffer original) {
@@ -167,25 +169,25 @@ public class Image {
         int[] pixels = new int[image.getWidth() * image.getHeight()];
         image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
 
-        mData = ByteBuffer.allocateDirect(image.getWidth() * image.getHeight() * bpp);
+        data = ByteBuffer.allocateDirect(image.getWidth() * image.getHeight() * bpp);
 
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 int pixel = pixels[y * image.getWidth() + x];
-                mData.put((byte) ((pixel >> 16) & 0xFF)); // Red component
-                mData.put((byte) ((pixel >> 8) & 0xFF)); // Green component
-                mData.put((byte) (pixel & 0xFF)); // Blue component
+                data.put((byte) ((pixel >> 16) & 0xFF)); // Red component
+                data.put((byte) ((pixel >> 8) & 0xFF)); // Green component
+                data.put((byte) (pixel & 0xFF)); // Blue component
 
                 if (bpp == 4) {
-                    mData.put((byte) ((pixel >> 24) & 0xFF)); // Alpha component. Only for RGBA
+                    data.put((byte) ((pixel >> 24) & 0xFF)); // Alpha component. Only for RGBA
                 }
             }
         }
 
-        mData.flip();
+        data.flip();
 
-        mWidth = image.getWidth();
-        mHeight = image.getHeight();
-        mBPP = bpp;
+        width = image.getWidth();
+        height = image.getHeight();
+        this.bpp = bpp;
     }
 }

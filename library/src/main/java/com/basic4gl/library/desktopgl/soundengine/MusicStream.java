@@ -33,7 +33,7 @@ public class MusicStream extends HasErrorState implements Runnable {
                     // Look for command
                     MusicStreamCommand cmd = new MusicStreamCommand();
                     commandQueueLock.lock();
-                    if (commandQueue.size() > 0) {
+                    if (!commandQueue.isEmpty()) {
 
                         // Extract command
                         cmd = commandQueue.get(0);

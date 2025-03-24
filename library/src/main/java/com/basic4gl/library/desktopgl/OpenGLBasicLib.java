@@ -1729,7 +1729,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
             Vector<Integer> texs = OpenGLBasicLib.loadTexStrip(vm.getStringParam(1));
 
             // Convert to array and return
-            if (texs.size() > 0) {
+            if (!texs.isEmpty()) {
                 int[] array = new int[texs.size()];
                 for (int i = 0; i < texs.size(); i++) {
                     array[i] = texs.get(i);
@@ -1752,7 +1752,7 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
                     OpenGLBasicLib.loadTexStrip(vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1));
 
             // Convert to array and return
-            if (texs.size() > 0) {
+            if (!texs.isEmpty()) {
                 Integer[] array = new Integer[texs.size()];
                 for (int i = 0; i < texs.size(); i++) {
                     array[i] = texs.get(i);

@@ -5,11 +5,8 @@ import com.basic4gl.runtime.TomVM;
 
 public class StepHandler extends ContinueHandler {
 
-    private final TomVM mVM;
-
     public StepHandler(DebuggerCallbackMessage message, TomVM vm) {
         super(vm, message);
-        mVM = vm;
     }
 
     // Debugging
@@ -26,13 +23,13 @@ public class StepHandler extends ContinueHandler {
         // Patch in temp breakpoints
         switch (type) {
             case 1:
-                mVM.addStepBreakPoints(false);
+                vm.addStepBreakPoints(false);
                 break; // Step over
             case 2:
-                mVM.addStepBreakPoints(true);
+                vm.addStepBreakPoints(true);
                 break; // Step into
             case 3:
-                if (!mVM.addStepOutBreakPoint()) // Step out
+                if (!vm.addStepOutBreakPoint()) // Step out
                 {
                     return; // (No gosub to step out of)
                 }

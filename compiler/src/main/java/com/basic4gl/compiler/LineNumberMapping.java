@@ -39,7 +39,7 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
         // Is source line valid and does it correspond to a line inside the
         // specified file?
         if (lineNo >= 0 && lineNo < mapping.size() && mapping.get(lineNo).getFileIndex() == fileIndex) {
-            return mapping.get(lineNo).getFileLineNo();
+            return mapping.get(lineNo).getFileLineNumber();
         } else {
             return -1;
         }
@@ -85,7 +85,7 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
 
             // Return filename and line number
             filename.set(filenames.get(mapping.get(lineNo).getFileIndex()));
-            fileLineNo.set(mapping.get(lineNo).getFileLineNo());
+            fileLineNo.set(mapping.get(lineNo).getFileLineNumber());
         } else {
 
             // Invalid source line

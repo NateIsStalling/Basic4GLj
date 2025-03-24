@@ -42,7 +42,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // DLL manager
     // TODO Reimplement libraries
-    // PluginDLLManager m_plugins;
+    // PluginDLLManager plugins;
 
     // Settings
     private final boolean isCaseSensitive;
@@ -444,7 +444,7 @@ public class TomBasicCompiler extends HasErrorState {
     public TomBasicCompiler(TomVM vm, boolean caseSensitive) {
         this.vm = vm;
         // TODO Reimplement libraries
-        // m_plugins = plugins;
+        // this.plugins = plugins;
         isCaseSensitive = caseSensitive;
         syntax = LanguageSyntax.LS_BASIC4GL;
 
@@ -645,8 +645,8 @@ public class TomBasicCompiler extends HasErrorState {
     // TODO Reimplement libraries
     /*
      * void InitPlugins() {
-     * m_plugins.StructureManager().AddVMStructures(mVM.DataTypes());
-     * m_plugins.CreateVMFunctionSpecs(); }
+     * this.plugins.StructureManager().AddVMStructures(mVM.DataTypes());
+     * this.plugins.CreateVMFunctionSpecs(); }
      */
 
     boolean getToken() {
@@ -694,7 +694,7 @@ public class TomBasicCompiler extends HasErrorState {
                 // Try plugin DLL constants next
                 // TODO Reimplement libraries
                 // if (!isConstant)
-                // isConstant = m_plugins.FindConstant(m_token.m_text,
+                // isConstant = this.plugins.FindConstant(this.token.getText(),
                 // constant);
 
                 // Otherwise try program constants
@@ -836,7 +836,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     public boolean isFunction(String name) {
         // TODO Reimplement libraries
-        return isBuiltinFunction(name); // || m_plugins.IsPluginFunction(name);
+        return isBuiltinFunction(name); // || this.plugins.IsPluginFunction(name);
     }
 
     public TomVM getVM() {
@@ -853,7 +853,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // TODO Reimplement libraries
     // public PluginDLLManager Plugins() {
-    // return m_plugins;
+    // return this.plugins;
     // }
 
     // Constants
@@ -888,9 +888,9 @@ public class TomBasicCompiler extends HasErrorState {
     // Functions
     public boolean isBuiltinFunction(String name) {
         return functionIndex.containsKey(name.toLowerCase());
-        // Multimap<String,Integer>.iterator i = m_functionIndex.find
+        // Multimap<String,Integer>.iterator i = this.functionIndex.find
         // (LowerCase (name));
-        // return i != m_functionIndex.lastElement() && i.first == LowerCase
+        // return i != this.functionIndex.lastElement() && i.first == LowerCase
         // (name);
     }
 
@@ -946,7 +946,7 @@ public class TomBasicCompiler extends HasErrorState {
         // Check DLL constants
         // TODO Reimplement libraries
         // Constant compConst = new Constant();
-        // return (m_plugins.FindConstant(text, compConst));
+        // return (this.plugins.FindConstant(text, compConst));
         return false; // Remove line after libraries are reimplemented
     }
 
@@ -1009,7 +1009,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     UserFunc getCurrentUserFunction() {
         // Return function currently being declared
-        assertTrue(vm.getUserFunctions().size() > 0);
+        assertTrue(!vm.getUserFunctions().isEmpty());
         assertTrue(currentFunction >= 0);
         assertTrue(currentFunction < vm.getUserFunctions().size());
         return vm.getUserFunctions().get(currentFunction);
@@ -1017,11 +1017,11 @@ public class TomBasicCompiler extends HasErrorState {
 
     UserFuncPrototype getCurrentUserFunctionPrototype() {
         // Return prototype of function currently being declared
-        assertTrue(vm.getUserFunctionPrototypes().size() > 0);
-        assertTrue(getCurrentUserFunction().mPrototypeIndex >= 0);
-        assertTrue(getCurrentUserFunction().mPrototypeIndex
+        assertTrue(!vm.getUserFunctionPrototypes().isEmpty());
+        assertTrue(getCurrentUserFunction().prototypeIndex >= 0);
+        assertTrue(getCurrentUserFunction().prototypeIndex
                 < vm.getUserFunctionPrototypes().size());
-        return vm.getUserFunctionPrototypes().get(getCurrentUserFunction().mPrototypeIndex);
+        return vm.getUserFunctionPrototypes().get(getCurrentUserFunction().prototypeIndex);
     }
 
     private boolean compileBindCodeInternal() {
@@ -1197,7 +1197,7 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Look for function that is declared, but not yet implemented
         for (String key : localUserFunctionIndex.keySet()) {
-            if (!vm.getUserFunctions().get(localUserFunctionIndex.get(key)).mImplemented) {
+            if (!vm.getUserFunctions().get(localUserFunctionIndex.get(key)).implemented) {
                 setError((String) "Function/sub '" + key + "' was DECLAREd, but not implemented");
                 return false;
             }
@@ -1897,7 +1897,7 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Determine variable type
         char last = '\0';
-        if (name.get().length() > 0) {
+        if (!name.get().isEmpty()) {
             last = name.get().charAt(name.get().length() - 1);
         }
         if (type.get().basicType == BasicValType.VTP_UNDEFINED) {
@@ -4141,7 +4141,7 @@ public class TomBasicCompiler extends HasErrorState {
 
             // Determine constant type from last character of constant name
             Integer type = BasicValType.VTP_UNDEFINED;
-            if (name.length() > 0) {
+            if (!name.isEmpty()) {
                 char last = name.charAt(name.length() - 1);
                 if (last == '$') {
                     type = BasicValType.VTP_STRING;
@@ -5345,21 +5345,21 @@ public class TomBasicCompiler extends HasErrorState {
                     currentFunction = localUserFunctionIndex.get(name);
 
                     // Must not be already implemented
-                    if (functions.get(currentFunction).mImplemented) {
+                    if (functions.get(currentFunction).implemented) {
                         setError("'" + name + "' has already been used as a function/subroutine name");
                         return false;
                     }
 
                     // Function prototypes must match
-                    if (!userFuncPrototype.matches(prototypes.get(functions.get(currentFunction).mPrototypeIndex))) {
+                    if (!userFuncPrototype.matches(prototypes.get(functions.get(currentFunction).prototypeIndex))) {
                         setError((String) "Function/subroutine does not match how it was DECLAREd");
                         return false;
                     }
 
                     // Save updated function spec
                     // Function starts at next offset
-                    functions.get(currentFunction).mImplemented = true;
-                    functions.get(currentFunction).mProgramOffset = vm.getInstructionCount();
+                    functions.get(currentFunction).implemented = true;
+                    functions.get(currentFunction).programOffset = vm.getInstructionCount();
                 } else {
 
                     // Completely new function
@@ -5469,7 +5469,7 @@ public class TomBasicCompiler extends HasErrorState {
             prototypeIndex = runtimeFunctions.get(index).getPrototypeIndex();
         } else {
             index = visibleUserFunctionIndex.get(name);
-            prototypeIndex = vm.getUserFunctions().get(index).mPrototypeIndex;
+            prototypeIndex = vm.getUserFunctions().get(index).prototypeIndex;
         }
         UserFuncPrototype prototype = vm.getUserFunctionPrototypes().get(prototypeIndex);
 

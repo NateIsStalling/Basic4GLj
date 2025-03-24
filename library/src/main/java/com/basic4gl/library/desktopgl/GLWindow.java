@@ -77,77 +77,75 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         }
     }
 
-    protected long m_window;
-
-    // long    m_HWnd;             // Window handle
-    protected boolean m_active; // True if window is active
-    protected boolean m_focused; // True if window has focus
-    protected boolean m_visible; // True if window is visible
-    protected boolean m_fullScreen; // True if fullscreen mode
-    protected boolean m_border; // True if window has border (windowed mode only)
-    protected boolean m_allowResizing; // True if window can be dragged and resized
-    protected boolean m_fitToWorkArea; // True if window should be fitted to the desktop work area
-    protected int m_width, m_height;
-    protected int m_bpp; // (Fullscreen mode only)
-    protected boolean m_stencil; // True to enable stencil buffer
-    protected String m_title; // Window title
-    protected double m_fov, m_fovX, m_nearClip, m_farClip;
-    // DEVMODE m_screenSettings;    // Screen settings for fullscreen mode
-    protected boolean m_closing;
-    // TODO Possibly use Map structure instead of array for m_keyDown if it'd use less memory
+    protected long window; // Window handle (m_HWnd in original source)
+    protected boolean active; // True if window is active
+    protected boolean focused; // True if window has focus
+    protected boolean visible; // True if window is visible
+    protected boolean fullScreen; // True if fullscreen mode
+    protected boolean showBorder; // True if window has border (windowed mode only)
+    protected boolean allowResizing; // True if window can be dragged and resized
+    protected boolean fitToWorkArea; // True if window should be fitted to the desktop work area
+    protected int width, height;
+    protected int bpp; // (Fullscreen mode only)
+    protected boolean stencil; // True to enable stencil buffer
+    protected String title; // Window title
+    protected double fov, fovX, nearClip, farClip;
+    // DEVMODE screenSettings;    // Screen settings for fullscreen mode
+    protected boolean closing;
+    // TODO Possibly use Map structure instead of array for this.keyDown if it'd use less memory
     // Character.MAX_VALUE is used for array size to support GLFW keycodes that are in the 256+ range
-    protected byte[] m_keyDown = new byte[Character.MAX_VALUE]; // Tracks key states
-    protected int[] m_keyBuffer = new int[GLWINDOWKEYBUFFER]; // Queues key presses
-    protected int[] m_scanKeyBuffer = new int[GLWINDOWKEYBUFFER]; // Queuse scan keys
-    protected int m_bufStart, m_bufEnd, m_scanBufStart, m_scanBufEnd;
-    protected boolean m_dontPaint; // If false (default), WM_PAINT messages will cause a SwapBuffers () call.
+    protected byte[] keyDown = new byte[Character.MAX_VALUE]; // Tracks key states
+    protected int[] keyBuffer = new int[GLWINDOWKEYBUFFER]; // Queues key presses
+    protected int[] scanKeyBuffer = new int[GLWINDOWKEYBUFFER]; // Queuse scan keys
+    protected int bufferStart, bufferEnd, scanBufferStart, scanBufferEnd;
+    protected boolean dontPaint; // If false (default), WM_PAINT messages will cause a swapBuffers () call.
     // Otherwise they wontException e
-    protected boolean m_painting;
-    protected boolean m_pausePressed;
-    protected int m_mouseX, m_mouseY;
-    protected boolean[] m_mouseButton = new boolean[3]; // 0 = Left, 1 = Right, 2 = Middle
-    protected int m_mouseWheel, m_mouseWheelDelta;
-    protected boolean m_mouseCentred;
+    protected boolean painting;
+    protected boolean pausePressed;
+    protected int mouseX, mouseY;
+    protected boolean[] mouseButton = new boolean[3]; // 0 = Left, 1 = Right, 2 = Middle
+    protected int mouseWheel, mouseWheelDelta;
+    protected boolean mouseCentred;
     // Used to detect the first time someone uses the MouseXD() or MouseYD() methods.
     // These methods work by placing the mouse cursor in the middle of the
     // window and measuring the distance it moves from that point.
     // On the first call they simply place the cursor in the centre and
     // return 0.
-    protected boolean m_showingCursor;
-    protected ResetGLModeType m_resetGLMode;
+    protected boolean showingCursor;
+    protected ResetGLModeType resetGLMode;
 
     void incStart() {
-        m_bufStart = (++m_bufStart) % GLWINDOWKEYBUFFER;
+        bufferStart = (++bufferStart) % GLWINDOWKEYBUFFER;
     }
 
     void incEnd() {
-        m_bufEnd = (++m_bufEnd) % GLWINDOWKEYBUFFER;
+        bufferEnd = (++bufferEnd) % GLWINDOWKEYBUFFER;
     }
 
     void incScanStart() {
-        m_scanBufStart = (++m_scanBufStart) % GLWINDOWKEYBUFFER;
+        scanBufferStart = (++scanBufferStart) % GLWINDOWKEYBUFFER;
     }
 
     void incScanEnd() {
-        m_scanBufEnd = (++m_scanBufEnd) % GLWINDOWKEYBUFFER;
+        scanBufferEnd = (++scanBufferEnd) % GLWINDOWKEYBUFFER;
     }
 
     void positionMouse() {
         // TODO without AWT!
         //        try {
-        //            new Robot().mouseMove(m_mouseX, m_mouseY);
+        //            new Robot().mouseMove(this.mouseX, this.mouseY);
         //        } catch (AWTException e) {
         //            e.printStackTrace();
         //        }
     }
 
     void bufferScanKey(int key) {
-        int end = m_scanBufEnd;
+        int end = scanBufferEnd;
         incScanEnd();
-        if (m_scanBufEnd != m_scanBufStart) {
-            m_scanKeyBuffer[end] = key;
+        if (scanBufferEnd != scanBufferStart) {
+            scanKeyBuffer[end] = key;
         } else {
-            m_scanBufEnd = end;
+            scanBufferEnd = end;
         }
     }
 
@@ -166,8 +164,8 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
             width = 10;
         }
 
-        m_width = width;
-        m_height = height;
+        this.width = width;
+        this.height = height;
 
         if (height == 0) // Prevent A Divide By Zero By
         {
@@ -175,18 +173,18 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         }
 
         // Calculate the field of view on the XZ plane
-        m_fovX = (180.0 / M_PI)
+        fovX = (180.0 / M_PI)
                 * 2.0
-                * Math.atan(((double) width / (double) height) * Math.tan(m_fov / 2.0 * (M_PI / 180.0)));
+                * Math.atan(((double) width / (double) height) * Math.tan(fov / 2.0 * (M_PI / 180.0)));
 
-        /*    m_width = width;
-        m_height = height;
-        glViewport(0,0,m_width,m_height);  					// Reset The Current Viewport
+        /*    this.width = width;
+        this.height = height;
+        glViewport(0,0,this.width,this.height);  					// Reset The Current Viewport
         glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
         glLoadIdentity();									// Reset The Projection Matrix
 
         // Calculate The Aspect Ratio Of The Window
-        gluPerspective(m_fov,(GLfloat)m_width/(GLfloat)m_height, m_nearClip, m_farClip);
+        gluPerspective(this.fov,(GLfloat)this.width/(GLfloat)this.height, this.nearClip, this.farClip);
 
         glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
         glLoadIdentity();									// Reset The Modelview Matrix*/
@@ -206,9 +204,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         	ReleaseDC(m_HWnd,m_HDC);
         	m_HDC = 0;
         }*/
-        if (m_window != 0) {
-            glfwDestroyWindow(m_window);
-            m_window = 0;
+        if (window != 0) {
+            glfwDestroyWindow(window);
+            window = 0;
         }
     }
 
@@ -225,18 +223,18 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     }
 
     protected void doShowCursor() {
-        if (!m_showingCursor) {
+        if (!showingCursor) {
             // TODO Show cursor
             // ShowCursor(true);
-            m_showingCursor = true;
+            showingCursor = true;
         }
     }
 
     protected void doHideCursor() {
-        if (m_showingCursor && (m_fullScreen || m_mouseCentred)) {
+        if (showingCursor && (fullScreen || mouseCentred)) {
             // TODO hide cursor
             // ShowCursor(false);
-            m_showingCursor = false;
+            showingCursor = false;
         }
     }
 
@@ -275,38 +273,38 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
             boolean fitToWorkArea,
             ResetGLModeType resetGLMode) {
 
-        m_resetGLMode = resetGLMode;
+        this.resetGLMode = resetGLMode;
 
         // Null default values
         // If constructor is aborted, then destructor wont try to deallocate garbage handles.
-        m_active = false;
-        m_focused = false;
-        m_visible = false;
-        m_closing = false;
-        m_bufStart = 0;
-        m_bufEnd = 0;
-        m_scanBufStart = 0;
-        m_scanBufEnd = 0;
-        m_showingCursor = true;
+        active = false;
+        focused = false;
+        visible = false;
+        closing = false;
+        bufferStart = 0;
+        bufferEnd = 0;
+        scanBufferStart = 0;
+        scanBufferEnd = 0;
+        showingCursor = true;
 
         // Clear key buffers
         clearKeyBuffers();
 
         // Defaults
-        m_fov = 60.0;
-        m_nearClip = 1.0;
-        m_farClip = 1000.0;
-        m_painting = false;
-        m_dontPaint = false;
-        m_pausePressed = false;
-        m_mouseX = 0;
-        m_mouseY = 0;
-        m_mouseButton[0] = false;
-        m_mouseButton[1] = false;
-        m_mouseButton[2] = false;
-        m_mouseWheel = 0;
-        m_mouseWheelDelta = 0;
-        m_mouseCentred = false;
+        fov = 60.0;
+        nearClip = 1.0;
+        farClip = 1000.0;
+        painting = false;
+        dontPaint = false;
+        pausePressed = false;
+        mouseX = 0;
+        mouseY = 0;
+        mouseButton[0] = false;
+        mouseButton[1] = false;
+        mouseButton[2] = false;
+        mouseWheel = 0;
+        mouseWheelDelta = 0;
+        mouseCentred = false;
         /*
         m_HInstance = GetModuleHandle(NULL);                // Grab An Instance For Our Window
 
@@ -359,7 +357,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         } catch (Exception e) {
             e.printStackTrace();
         }
-        m_dontPaint = false;
+        dontPaint = false;
 
         // Intialise matrices
         try {
@@ -1057,7 +1055,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         // Get frame buffer size to support high resolution/retina displays
         IntBuffer w = BufferUtils.createIntBuffer(1);
         IntBuffer h = BufferUtils.createIntBuffer(1);
-        glfwGetFramebufferSize(m_window, w, h);
+        glfwGetFramebufferSize(window, w, h);
         int width = w.get(0);
         int height = h.get(0);
 
@@ -1066,13 +1064,13 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         resizeGLScene(width, height); // Projection matrix
 
         // TODO should this be m_width, m_height
-        GL11.glViewport(0, 0, m_width, m_height); // Reset The Current Viewport
+        GL11.glViewport(0, 0, this.width, this.height); // Reset The Current Viewport
         //        System.out.println("oops "+ width + ", " + height);
 
         // Set some default OpenGL matrices. Basic 3D perspective projection
         GL11.glMatrixMode(GL11.GL_PROJECTION); // Select The Projection Matrix
         GL11.glLoadIdentity(); // Reset The Projection Matrix
-        perspectiveGL(m_fov, (float) m_width / (float) m_height, m_nearClip, m_farClip);
+        perspectiveGL(fov, (float) this.width / (float) this.height, nearClip, farClip);
 
         GL11.glMatrixMode(GL11.GL_MODELVIEW); // Select The Modelview Matrix
         GL11.glLoadIdentity(); // Reset The Modelview Matrix
@@ -1146,15 +1144,15 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
             boolean fitToWorkArea) {
 
         // Save window settings
-        m_fullScreen = fullScreen;
-        m_border = border;
-        m_width = width;
-        m_height = height;
-        m_bpp = bpp;
-        m_title = title;
-        m_allowResizing = allowResizing;
-        m_fitToWorkArea = fitToWorkArea;
-        m_stencil = stencil;
+        this.fullScreen = fullScreen;
+        showBorder = border;
+        this.width = width;
+        this.height = height;
+        this.bpp = bpp;
+        this.title = title;
+        this.allowResizing = allowResizing;
+        this.fitToWorkArea = fitToWorkArea;
+        this.stencil = stencil;
 
         // Delete existing window
         killWindow();
@@ -1354,51 +1352,51 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
     // Settings
     public int getWidth() {
-        return m_width;
+        return width;
     }
 
     public int getHeight() {
-        return m_height;
+        return height;
     }
 
     public int getBpp() {
-        return m_bpp;
+        return bpp;
     }
 
     public boolean isFullScreen() {
-        return m_fullScreen;
+        return fullScreen;
     }
 
     // return double&
     public double getFOV() {
-        return m_fov;
+        return fov;
     }
 
     public double getFOVX() {
-        return m_fovX;
+        return fovX;
     }
 
     // return double&
     public double getNearClip() {
-        return m_nearClip;
+        return nearClip;
     }
 
     // return double&
     public double getFarClip() {
-        return m_farClip;
+        return farClip;
     }
 
     public String getTitle() {
-        return m_title;
+        return title;
     }
 
     public ResetGLModeType getResetGLModeType() {
-        return m_resetGLMode;
+        return resetGLMode;
     }
 
     // Active state
     public boolean isActive() {
-        return m_active;
+        return active;
     }
 
     /*
@@ -1412,7 +1410,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     }*/
 
     public boolean isFocused() {
-        return m_focused;
+        return focused;
     }
 
     /*
@@ -1445,12 +1443,12 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     @Override
     public void hide() {
         doShowCursor();
-        if (!m_visible) {
+        if (!visible) {
             return;
         }
-        glfwHideWindow(m_window); // Hide the window
+        glfwHideWindow(window); // Hide the window
         // ProcessWindowsMessages ();
-        m_visible = false;
+        visible = false;
         // TODO Exit fullscreen mode
         // if (m_fullScreen)									// Are We In Fullscreen Mode?
         //    glfwChangeDisplaySettings(null,0);					// If So Switch Back To The Desktop
@@ -1458,16 +1456,16 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
     @Override
     public boolean isVisible() {
-        return m_visible;
+        return visible;
     }
 
     @Override
     public boolean isClosing() {
-        return m_closing;
+        return closing;
     }
 
     public void setClosing(boolean value) {
-        m_closing = value;
+        closing = value;
     }
 
     // Keyboard handling
@@ -1482,12 +1480,12 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         // processWindowsMessages ();
 
         // Check for buffered keypress
-        if (m_bufStart == m_bufEnd) {
+        if (bufferStart == bufferEnd) {
             return 0;
         }
 
         // Extract and return it
-        int result = m_keyBuffer[m_bufStart];
+        int result = keyBuffer[bufferStart];
         incStart();
         return result;
     }
@@ -1498,12 +1496,12 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         // ProcessWindowsMessages ();
 
         // Check for buffered keypress
-        if (m_scanBufStart == m_scanBufEnd) {
+        if (scanBufferStart == scanBufferEnd) {
             return 0;
         }
 
         // Extract and return it
-        int result = m_scanKeyBuffer[m_scanBufStart];
+        int result = scanKeyBuffer[scanBufferStart];
         incScanStart();
         return result;
     }
@@ -1511,22 +1509,22 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     public void clearKeyBuffers() {
 
         // Clear key states
-        for (int i = 0; i < m_keyDown.length; i++)
+        for (int i = 0; i < keyDown.length; i++)
         // TODO determine correct default value; 'false' was used in original source
         {
-            m_keyDown[i] = 0;
+            keyDown[i] = 0;
         }
 
         // Clear key buffer
-        m_bufStart = 0;
-        m_bufEnd = 0;
-        m_scanBufStart = 0;
-        m_scanBufEnd = 0;
+        bufferStart = 0;
+        bufferEnd = 0;
+        scanBufferStart = 0;
+        scanBufferEnd = 0;
     }
 
     public boolean isKeyDown(char i) {
         // ProcessWindowsMessages();
-        return m_keyDown[i] != 0;
+        return keyDown[i] != 0;
     }
 
     public void fakeScanKey(int scanCode, int bitmask, boolean down) {
@@ -1534,7 +1532,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
         // Fake a key press/release
         // TODO confirm mask works properly
-        boolean wasDown = (m_keyDown[scanCode] & bitmask) != 0;
+        boolean wasDown = (keyDown[scanCode] & bitmask) != 0;
 
         // Add a keypress to buffer (if necessary)
         if (down && !wasDown) {
@@ -1543,15 +1541,15 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
         // Toggle key bitmask
         if (down) {
-            m_keyDown[scanCode] |= bitmask;
+            keyDown[scanCode] |= bitmask;
         } else {
-            m_keyDown[scanCode] &= ~bitmask;
+            keyDown[scanCode] &= ~bitmask;
         }
     }
 
     // Display screen
     void swapBuffers() {
-        glfwSwapBuffers(m_window); // DisplayManager
+        glfwSwapBuffers(window); // DisplayManager
     }
 
     // virtual
@@ -1605,12 +1603,12 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     // Mouse
     public int getMouseX() {
         // ProcessWindowsMessages();
-        return m_mouseX;
+        return mouseX;
     }
 
     public int getMouseY() {
         // ProcessWindowsMessages();
-        return m_mouseY;
+        return mouseY;
     }
 
     public int getMouseXD() {
@@ -1618,25 +1616,25 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         // Read any pending windows messages
         // ProcessWindowsMessages ();
 
-        if (!m_focused) {
+        if (!focused) {
             return 0;
         }
 
-        if (!m_mouseCentred) {
-            m_mouseX = m_width / 2;
-            m_mouseY = m_height / 2;
+        if (!mouseCentred) {
+            mouseX = width / 2;
+            mouseY = height / 2;
             positionMouse();
-            m_mouseCentred = true;
+            mouseCentred = true;
             doHideCursor();
             return 0;
         }
 
         // Calculate how far mouse has moved from centre
-        int centre = m_width / 2;
-        int result = m_mouseX - centre;
+        int centre = width / 2;
+        int result = mouseX - centre;
 
         // Recentre cursor x
-        m_mouseX = centre;
+        mouseX = centre;
         positionMouse();
 
         // Return result
@@ -1648,25 +1646,25 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         // Read any pending windows messages
         // ProcessWindowsMessages ();
 
-        if (!m_focused) {
+        if (!focused) {
             return 0;
         }
 
-        if (!m_mouseCentred) {
-            m_mouseX = m_width / 2;
-            m_mouseY = m_height / 2;
+        if (!mouseCentred) {
+            mouseX = width / 2;
+            mouseY = height / 2;
             positionMouse();
-            m_mouseCentred = true;
+            mouseCentred = true;
             doHideCursor();
             return 0;
         }
 
         // Calculate how far mouse has moved from centre
-        int centre = m_height / 2;
-        int result = m_mouseY - centre;
+        int centre = height / 2;
+        int result = mouseY - centre;
 
         // Recentre cursor y
-        m_mouseY = centre;
+        mouseY = centre;
         positionMouse();
 
         // Return result
@@ -1677,27 +1675,27 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         assertTrue(index >= 0);
         assertTrue(index < 3);
         // ProcessWindowsMessages();
-        return m_mouseButton[index];
+        return mouseButton[index];
     }
 
     public int getMouseWheel() {
-        int result = m_mouseWheel;
-        m_mouseWheel = 0;
+        int result = mouseWheel;
+        mouseWheel = 0;
         return result;
     }
 
     // Misc
     public boolean dontPaint() {
-        return m_dontPaint;
+        return dontPaint;
     }
 
     public void setDontPaint(boolean dontPaint) {
-        m_dontPaint = dontPaint;
+        this.dontPaint = dontPaint;
     }
 
     public boolean pausePressed() {
-        boolean result = m_pausePressed;
-        m_pausePressed = false;
+        boolean result = pausePressed;
+        pausePressed = false;
         return result;
     }
 

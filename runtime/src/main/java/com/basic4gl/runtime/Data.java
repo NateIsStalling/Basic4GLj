@@ -16,7 +16,7 @@ import java.util.*;
  * -------------------------------------------------------------------------
  * 1 Temporary data (allocated during expression
  * : evaluation. Grows downward)
- * m_tempData - 1
+ * {@link #tempData} - 1
  * -------------------------------------------------------------------------
  * {@link #tempData}
  * : Unused stack/temp space
@@ -31,22 +31,22 @@ import java.util.*;
  * {@link #size()}-1
  * -------------------------------------------------------------------------
  *
- * Stack overflow occurs when m_tempData > m_stackTop.
- * Out of memory occurs when size() > m_maxDataSize.
+ * Stack overflow occurs when {@link #tempData} > {@link #stackTop}.
+ * Out of memory occurs when size() > {@link #maxDataSize}.
  */
 public class Data {
 
-    private Vector<Value> data;
+    private final Vector<Value> data;
     private int tempData;
     private int stackTop;
-    private int permanent;
+    private final int permanent;
 
     /**
      * Maximum # of permanent data values that can be stored.
      * Note: Caller must be sure to call {@link #hasRoomFor(int)} before calling {@link #allocate(int)} to
      * ensure there is room for the data.
      */
-    private int maxDataSize;
+    private final int maxDataSize;
 
     /**
      * Temp data below this point will NOT be
@@ -74,7 +74,7 @@ public class Data {
 
         // Ensure the maxDataSize is less than the maximum # elements supported
         // by the vector.
-        // TODO Test different max sizes; previously mData.max_size()
+        // TODO Test different max sizes; previously this.data.max_size()
         if (maxDataSize > Integer.MAX_VALUE) {
             maxDataSize = Integer.MAX_VALUE;
         }

@@ -12,7 +12,7 @@ import java.nio.file.Paths;
  */
 public class FileOpener extends HasErrorState {
     private String parentDirectory;
-    private EmbeddedFiles embeddedFiles;
+    private final EmbeddedFiles embeddedFiles;
 
     public FileOpener(String parent) {
         parent = FileUtil.separatorsToSystem(parent);

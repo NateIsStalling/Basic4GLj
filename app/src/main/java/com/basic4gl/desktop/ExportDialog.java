@@ -321,55 +321,55 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
     }
 
     private class ExportWorker extends SwingWorker<Object, CallbackMessage> {
-        private Builder mBuilder;
-        private File mDest;
-        private ExportCallback mCallback;
-        private CallbackMessage mMessage;
+        private final Builder builder;
+        private final File dest;
+        private final ExportCallback exportCallback;
+        private CallbackMessage callbackMessage;
 
         public ExportWorker(Builder builder, File dest, ExportCallback callback) {
-            mBuilder = builder;
-            mDest = dest;
-            mCallback = callback;
+            this.builder = builder;
+            this.dest = dest;
+            exportCallback = callback;
         }
 
         @Override
         protected void done() {
             int success;
-            if (mCallback != null) {
-                publish(mMessage);
+            if (exportCallback != null) {
+                publish(callbackMessage);
             }
         }
 
         @Override
         protected void process(java.util.List<CallbackMessage> chunks) {
             for (CallbackMessage message : chunks) {
-                mCallback.message(message);
+                exportCallback.message(message);
             }
         }
 
         @Override
         protected Object doInBackground() throws Exception {
-            mMessage = new CallbackMessage(CallbackMessage.WORKING, "");
+            callbackMessage = new CallbackMessage(CallbackMessage.WORKING, "");
 
             if (!compile()) {
-                mMessage.setMessage(CallbackMessage.FAILED, compiler.getError());
+                callbackMessage.setMessage(CallbackMessage.FAILED, compiler.getError());
                 return null; // TODO Throw error
             }
             // Export to file
-            FileOutputStream stream = new FileOutputStream(mDest);
+            FileOutputStream stream = new FileOutputStream(dest);
 
             try {
-                boolean success = mBuilder.export(mDest.getName(), stream, mCallback);
+                boolean success = builder.export(dest.getName(), stream, exportCallback);
 
                 if (success) {
-                    mMessage.setMessage(CallbackMessage.SUCCESS, "Exported successful");
+                    callbackMessage.setMessage(CallbackMessage.SUCCESS, "Exported successful");
                 } else {
-                    mMessage.setMessage(CallbackMessage.FAILED, "Export failed");
+                    callbackMessage.setMessage(CallbackMessage.FAILED, "Export failed");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
 
-                mMessage.setMessage(CallbackMessage.FAILED, e.getMessage());
+                callbackMessage.setMessage(CallbackMessage.FAILED, e.getMessage());
             }
 
             return null;
@@ -379,7 +379,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         private boolean compile() {
 
             if (fileEditors.isEmpty()) {
-                mMessage.setMessage(CallbackMessage.FAILED, "No files are open");
+                callbackMessage.setMessage(CallbackMessage.FAILED, "No files are open");
                 return false;
             }
 
@@ -388,7 +388,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
             // Load code into preprocessor; may be unnecessary
             if (!loadProgramIntoCompiler()) {
-                mMessage.setMessage(CallbackMessage.FAILED, preprocessor.getError());
+                callbackMessage.setMessage(CallbackMessage.FAILED, preprocessor.getError());
                 return false;
             }
 
@@ -398,14 +398,14 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
             // Return result
             if (compiler.hasError()) {
-                mMessage.setMessage(CallbackMessage.FAILED, compiler.getError());
+                callbackMessage.setMessage(CallbackMessage.FAILED, compiler.getError());
                 return false;
             }
 
             // Reset Virtual machine
             // mVM.Reset ();
 
-            mMessage.setMessage(CallbackMessage.WORKING, "User's code compiled");
+            callbackMessage.setMessage(CallbackMessage.WORKING, "User's code compiled");
             return true;
         }
 

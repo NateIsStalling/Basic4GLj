@@ -86,7 +86,7 @@ public class Value implements Streamable {
         if (isInt) {
             stream.writeInt(intVal);
         } else
-        // stream.write(ByteBuffer.allocate(4).putFloat(m_realVal).array());
+        // stream.write(ByteBuffer.allocate(4).putFloat(realVal).array());
         {
             stream.writeFloat(realVal);
         }

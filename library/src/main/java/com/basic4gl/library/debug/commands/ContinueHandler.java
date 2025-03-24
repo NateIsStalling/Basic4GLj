@@ -6,16 +6,16 @@ import com.basic4gl.runtime.TomVM;
 
 public class ContinueHandler {
 
-    public final DebuggerCallbackMessage mMessage;
-    public final TomVM mVM;
+    protected final DebuggerCallbackMessage callbackMessage;
+    protected final TomVM vm;
 
     public ContinueHandler(TomVM vm, DebuggerCallbackMessage message) {
-        mMessage = message;
-        mVM = vm;
+        callbackMessage = message;
+        this.vm = vm;
     }
 
     public void handle() {
-        mVM.clearTempBreakPoints();
+        vm.clearTempBreakPoints();
         doContinue();
     }
 
@@ -34,7 +34,7 @@ public class ContinueHandler {
         refreshEditorRunningState();
         //
         showGLWindow();
-        final DebuggerCallbackMessage message = mMessage;
+        final DebuggerCallbackMessage message = callbackMessage;
         // TODO this is specifically gross;
         // the pause/resume was previously managed from separate threads
         // when the GLWindow was launched in a new thread instead of separate process

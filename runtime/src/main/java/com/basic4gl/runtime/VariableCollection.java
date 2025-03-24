@@ -95,9 +95,9 @@ public class VariableCollection implements Streamable {
         }
     }
 
-    private Vector<Variable> variables;
-    private Data data;
-    private TypeLibrary types;
+    private final Vector<Variable> variables;
+    private final Data data;
+    private final TypeLibrary types;
 
     public VariableCollection(Data data, TypeLibrary types) {
         this.data = data;

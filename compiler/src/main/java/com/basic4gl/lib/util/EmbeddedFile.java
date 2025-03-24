@@ -11,8 +11,8 @@ import java.nio.charset.Charset;
  * A single file, embedded into the executable
  */
 public class EmbeddedFile {
-    private String filename;
-    private int length;
+    private final String filename;
+    private final int length;
     private FileInputStream data;
 
     public EmbeddedFile() {
@@ -47,7 +47,7 @@ public class EmbeddedFile {
 
         // Save pointer to data
         rawData.position(rawData.position() + offset.get());
-        // m_data = rawData.position() + offset.get();
+        // this.data = rawData.position() + offset.get();
         offset.put(0, offset.get(0) + length);
     }
 

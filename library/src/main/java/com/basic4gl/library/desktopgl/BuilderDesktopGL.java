@@ -21,12 +21,12 @@ import java.util.zip.ZipOutputStream;
  */
 public class BuilderDesktopGL extends Builder {
 
-    private GLTextGridWindow mTarget;
-    private FileOpener mFiles;
+    private GLTextGridWindow target;
+    private FileOpener files;
 
     public static Library getInstance(TomBasicCompiler compiler) {
         BuilderDesktopGL instance = new BuilderDesktopGL();
-        instance.mTarget = (GLTextGridWindow) GLTextGridWindow.getInstance(compiler);
+        instance.target = (GLTextGridWindow) GLTextGridWindow.getInstance(compiler);
         return instance;
     }
 
@@ -42,17 +42,17 @@ public class BuilderDesktopGL extends Builder {
 
     @Override
     public Configuration getSettings() {
-        return mTarget.getSettings();
+        return target.getSettings();
     }
 
     @Override
     public Configuration getConfiguration() {
-        return mTarget.getConfiguration();
+        return target.getConfiguration();
     }
 
     @Override
     public void setConfiguration(Configuration config) {
-        mTarget.setConfiguration(config);
+        target.setConfiguration(config);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class BuilderDesktopGL extends Builder {
         List<String> dependencies;
 
         // Generate class path
-        dependencies = mTarget.getClassPathObjects();
+        dependencies = this.target.getClassPathObjects();
         i = 0;
         if (dependencies != null) {
             for (String dependency : dependencies) {
@@ -83,7 +83,7 @@ public class BuilderDesktopGL extends Builder {
         }
 
         // Add external dependencies
-        dependencies = mTarget.getDependencies();
+        dependencies = this.target.getDependencies();
         if (dependencies != null) {
             // pre-validate
             for (String dependency : dependencies) {
@@ -166,7 +166,7 @@ public class BuilderDesktopGL extends Builder {
 
             manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, classpath);
             manifest.getMainAttributes()
-                    .put(Attributes.Name.MAIN_CLASS, mTarget.getClass().getName());
+                    .put(Attributes.Name.MAIN_CLASS, this.target.getClass().getName());
 
             zipEntry = new ZipEntry(jar.getName());
             zipEntry.setTime(System.currentTimeMillis());
@@ -197,16 +197,16 @@ public class BuilderDesktopGL extends Builder {
             Exporter.addSource(files, excludeRegex, target);
 
             // Save VM's initial state to Jar
-            mTarget.reset();
+            this.target.reset();
             jarEntry = new JarEntry(GLTextGridWindow.STATE_FILE);
             target.putNextEntry(jarEntry);
-            mTarget.saveState(target);
+            this.target.saveState(target);
             target.closeEntry();
 
             // Serialize the build configuration and add to Jar
             jarEntry = new JarEntry(GLTextGridWindow.CONFIG_FILE);
             target.putNextEntry(jarEntry);
-            mTarget.saveConfiguration(target);
+            this.target.saveConfiguration(target);
             target.closeEntry();
 
             // TODO Implement embedding resources
@@ -244,12 +244,12 @@ public class BuilderDesktopGL extends Builder {
 
     @Override
     public Target getTarget() {
-        return mTarget;
+        return target;
     }
 
     @Override
     public IVMDriver getVMDriver() {
-        return mTarget;
+        return target;
     }
 
     @Override
@@ -295,8 +295,8 @@ public class BuilderDesktopGL extends Builder {
 
     @Override
     public void init(FileOpener files) {
-        mFiles = files;
-        mTarget.init(files);
+        this.files = files;
+        target.init(files);
     }
 
     @Override
@@ -311,36 +311,36 @@ public class BuilderDesktopGL extends Builder {
 
     @Override
     public String getConfigFilePathCommandLineOption() {
-        return mTarget.getConfigFilePathCommandLineOption();
+        return target.getConfigFilePathCommandLineOption();
     }
 
     @Override
     public String getLineMappingFilePathCommandLineOption() {
-        return mTarget.getLineMappingFilePathCommandLineOption();
+        return target.getLineMappingFilePathCommandLineOption();
     }
 
     @Override
     public String getLogFilePathCommandLineOption() {
-        return mTarget.getLogFilePathCommandLineOption();
+        return target.getLogFilePathCommandLineOption();
     }
 
     @Override
     public String getParentDirectoryCommandLineOption() {
-        return mTarget.getParentDirectoryCommandLineOption();
+        return target.getParentDirectoryCommandLineOption();
     }
 
     @Override
     public String getProgramFilePathCommandLineOption() {
-        return mTarget.getProgramFilePathCommandLineOption();
+        return target.getProgramFilePathCommandLineOption();
     }
 
     @Override
     public String getDebuggerPortCommandLineOption() {
-        return mTarget.getDebuggerPortCommandLineOption();
+        return target.getDebuggerPortCommandLineOption();
     }
 
     @Override
     public String getSandboxModeEnabledOption() {
-        return mTarget.getSandboxModeEnabledOption();
+        return target.getSandboxModeEnabledOption();
     }
 }

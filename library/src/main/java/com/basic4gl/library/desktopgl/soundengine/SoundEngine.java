@@ -16,12 +16,12 @@ import org.lwjgl.openal.*;
 public class SoundEngine extends HasErrorState {
 
     private boolean initialized = false;
-    private int voiceCount;
+    private final int voiceCount;
 
     // original source used an uint collection to track AL voice handles;
     // track Sound wrapper objects instead here
     private Sound[] voiceSources;
-    private List<Integer> queue = new ArrayList<>(); // Queued voices. Each entry indexes into voices array.
+    private final List<Integer> queue = new ArrayList<>(); // Queued voices. Each entry indexes into voices array.
 
     public SoundEngine(int voiceCount) {
         assertTrue(voiceCount > 0);

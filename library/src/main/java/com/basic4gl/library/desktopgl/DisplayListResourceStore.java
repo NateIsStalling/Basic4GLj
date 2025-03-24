@@ -13,7 +13,7 @@ import java.util.Map;
 public class DisplayListResourceStore extends IntHandleResources {
 
     // Maps base to count
-    private Map<Integer, Integer> countMap = new HashMap<>();
+    private final Map<Integer, Integer> countMap = new HashMap<>();
 
     protected void deleteHandle(int handle) {
         glDeleteLists(handle, countMap.get(handle));

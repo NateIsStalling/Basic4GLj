@@ -24,11 +24,11 @@ import org.eclipse.jetty.util.component.LifeCycle;
 
 public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugCommandListener, IDebugCallbackListener {
 
-    private final DebuggerCallbackMessage mMessage;
-    private final Debugger mDebugger;
-    private final IVMDriver mVMDriver;
-    private final TomBasicCompiler mComp;
-    private final TomVM mVM;
+    private final DebuggerCallbackMessage callbackMessage;
+    private final Debugger debugger;
+    private final IVMDriver vmDriver;
+    private final TomBasicCompiler compiler;
+    private final TomVM vm;
 
     private final Gson gson = new Gson();
 
@@ -37,11 +37,11 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
 
     public DebuggerCommandAdapter(
             DebuggerCallbackMessage message, Debugger debugger, IVMDriver vmDriver, TomBasicCompiler comp, TomVM vm) {
-        mMessage = message;
-        mDebugger = debugger;
-        mVMDriver = vmDriver;
-        mComp = comp;
-        mVM = vm;
+        callbackMessage = message;
+        this.debugger = debugger;
+        this.vmDriver = vmDriver;
+        compiler = comp;
+        this.vm = vm;
     }
 
     public void connect(URI debugSocketUri) {
@@ -146,7 +146,7 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
 
     @Override
     public void onDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
-        synchronized (mMessage) {
+        synchronized (callbackMessage) {
             com.basic4gl.lib.util.VMStatus vmStatus = null;
             if (callback.getVMStatus() != null) {
                 vmStatus = new com.basic4gl.lib.util.VMStatus(
@@ -154,14 +154,14 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
                         callback.getVMStatus().hasError(),
                         callback.getVMStatus().getError());
             }
-            mMessage.setMessage(callback.getStatus(), callback.getText(), vmStatus);
+            callbackMessage.setMessage(callback.getStatus(), callback.getText(), vmStatus);
             InstructionPosition instructionPosition = null;
             if (callback.getSourcePosition() != null) {
                 instructionPosition =
                         new InstructionPosition(callback.getSourcePosition().line, callback.getSourcePosition().column);
             }
-            mMessage.setInstructionPosition(instructionPosition);
-            mMessage.notify();
+            callbackMessage.setInstructionPosition(instructionPosition);
+            callbackMessage.notify();
         }
     }
 
@@ -174,33 +174,33 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
 
         switch (command.getCommand()) {
             case ContinueCommand.COMMAND:
-                ContinueHandler continueHandler = new ContinueHandler(mVM, mMessage);
+                ContinueHandler continueHandler = new ContinueHandler(vm, callbackMessage);
                 continueHandler.handle();
                 break;
             case EvaluateWatchCommand.COMMAND:
                 EvaluateWatchCommand c = (EvaluateWatchCommand) command;
-                EvaluateWatchHandler evaluateWatchHandler = new EvaluateWatchHandler(mVMDriver, mComp, mVM, gson);
+                EvaluateWatchHandler evaluateWatchHandler = new EvaluateWatchHandler(vmDriver, compiler, vm, gson);
                 evaluateWatchHandler.handle(c.watch, c.context, c.getId(), session);
                 break;
             case PauseCommand.COMMAND:
-                PauseHandler pauseHandler = new PauseHandler(mVM);
+                PauseHandler pauseHandler = new PauseHandler(vm);
                 pauseHandler.pause();
                 break;
             case ResumeCommand.COMMAND:
-                continueHandler = new ContinueHandler(mVM, mMessage);
+                continueHandler = new ContinueHandler(vm, callbackMessage);
                 continueHandler.handle();
                 break;
             case StackTraceCommand.COMMAND:
-                StackTraceCommandHandler stackTraceCommandHandler = new StackTraceCommandHandler(mVM, gson);
+                StackTraceCommandHandler stackTraceCommandHandler = new StackTraceCommandHandler(vm, gson);
                 stackTraceCommandHandler.handle(session);
                 break;
             case StepCommand.COMMAND:
                 StepCommand stepCommand = (StepCommand) command;
-                StepHandler handler = new StepHandler(mMessage, mVM);
+                StepHandler handler = new StepHandler(callbackMessage, vm);
                 handler.doStep(stepCommand.stepType);
                 break;
             case StopCommand.COMMAND:
-                StopHandler stopHandler = new StopHandler(mVMDriver);
+                StopHandler stopHandler = new StopHandler(vmDriver);
                 stopHandler.stop();
                 break;
             case DisconnectCommand.COMMAND:
@@ -208,15 +208,15 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
                 break;
             case SetBreakpointsCommand.COMMAND:
                 SetBreakpointsCommand setBreakpointsCommand = (SetBreakpointsCommand) command;
-                SetBreakpointsHandler setBreakpointsHandler = new SetBreakpointsHandler(mDebugger, mVM);
+                SetBreakpointsHandler setBreakpointsHandler = new SetBreakpointsHandler(debugger, vm);
                 setBreakpointsHandler.handle(setBreakpointsCommand);
                 break;
             case TerminateCommand.COMMAND:
-                mVMDriver.terminate();
+                vmDriver.terminate();
                 break;
             case ToggleBreakpointCommand.COMMAND:
                 ToggleBreakpointCommand toggleBreakpointCommand = (ToggleBreakpointCommand) command;
-                ToggleBreakPointHandler toggleBreakPointHandler = new ToggleBreakPointHandler(mDebugger, mVM);
+                ToggleBreakPointHandler toggleBreakPointHandler = new ToggleBreakPointHandler(debugger, vm);
                 toggleBreakPointHandler.toggleBreakPoint(
                         toggleBreakpointCommand.filename, toggleBreakpointCommand.line);
                 break;

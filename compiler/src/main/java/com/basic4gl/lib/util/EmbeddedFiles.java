@@ -14,9 +14,9 @@ import java.util.Map;
  */
 public class EmbeddedFiles {
     private String parentDirectory; // Parent directory
-    //    private Map<String,EmbeddedFile> m_files = new HashMap<>();
+    //    private Map<String,EmbeddedFile> files = new HashMap<>();
 
-    private Map<String, File> tempFiles = new HashMap<>();
+    private final Map<String, File> tempFiles = new HashMap<>();
 
     public URL getResource(String filename) {
         return this.getClass().getClassLoader().getResource(filename);
@@ -41,10 +41,12 @@ public class EmbeddedFiles {
         return null;
     }
 
-    public FileInputStream openOrLoad(
-            String filename) // Opens file. Falls back to disk if not present. Returns NULL if not present OR
-                // on disk
-            {
+    /**
+     * Opens file. Falls back to disk if not present. Returns NULL if not present OR on disk
+     * @param filename
+     * @return
+     */
+    public FileInputStream openOrLoad(String filename) {
 
         // Try embedded files first
         FileInputStream result = open(filename);
@@ -66,11 +68,21 @@ public class EmbeddedFiles {
 
     // Routines
 
-    // Copy a InputStream into a OutputStream
+    /**
+     * Copy a InputStream into a OutputStream
+     * @param src
+     * @param dst
+     */
     public static void copyStream(InputStream src, OutputStream dst) {
         copyStream(src, dst, -1);
     }
 
+    /**
+     * Copy a InputStream into a OutputStream
+     * @param src
+     * @param dst
+     * @param len
+     */
     public static void copyStream(InputStream src, OutputStream dst, long len) {
 
         // Copy stream to stream
@@ -98,7 +110,13 @@ public class EmbeddedFiles {
         }
     }
 
-    // Create embedded representation of stream
+    /**
+     * Create embedded representation of stream
+     * @param parent
+     * @param filename
+     * @param stream
+     * @return
+     */
     static boolean embedFile(String parent, String filename, OutputStream stream) {
 
         // Open file

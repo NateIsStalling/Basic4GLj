@@ -24,7 +24,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
     private java.util.List<Integer> builders; // Indexes of libraries that can be launch targets
     private int currentBuilder; // Index value of target
 
-    private ConfigurationFormPanel configPane;
+    private final ConfigurationFormPanel configPane;
 
     private final IConfigurableAppSettings appSettings;
 

@@ -7,34 +7,34 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ThreadLock {
-    private int m_lockCount;
-    private final ReentrantLock m_lock;
+    private int lockCount;
+    private final ReentrantLock lock;
 
     public ThreadLock() {
-        m_lockCount = (0);
-        m_lock = new ReentrantLock();
+        lockCount = (0);
+        lock = new ReentrantLock();
     }
 
     public void dispose() {
-        m_lock.notifyAll();
-        m_lock.unlock();
+        lock.notifyAll();
+        lock.unlock();
     }
 
     // Member access
     public ReentrantLock getLockHandle() {
-        return m_lock;
+        return lock;
     }
 
     // Methods
     public boolean lock(long timeout) {
         boolean result = false;
         try {
-            result = m_lock.tryLock(timeout, TimeUnit.MILLISECONDS);
+            result = lock.tryLock(timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             return false;
         }
         if (result) {
-            m_lockCount++;
+            lockCount++;
         }
         return result;
     }
@@ -44,7 +44,7 @@ public class ThreadLock {
     }
 
     public void unlock() {
-        m_lockCount--;
-        m_lock.unlock();
+        lockCount--;
+        lock.unlock();
     }
 }

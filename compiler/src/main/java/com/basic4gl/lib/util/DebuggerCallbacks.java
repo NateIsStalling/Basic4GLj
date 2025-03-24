@@ -8,10 +8,10 @@ import com.basic4gl.runtime.TomVM;
  * Created by Nate on 11/23/2015.
  */
 public abstract class DebuggerCallbacks {
-    private final DebuggerTaskCallback mCallback;
-    private final DebuggerCallbackMessage mMessage;
-    private final TomVM mVM;
-    private final IVMDriver mDriver;
+    private final DebuggerTaskCallback taskCallback;
+    private final DebuggerCallbackMessage callbackMessage;
+    private final TomVM vm;
+    private final IVMDriver vmDriver;
 
     protected DebuggerCallbacks(
             DebuggerTaskCallback callback,
@@ -20,10 +20,10 @@ public abstract class DebuggerCallbacks {
             // TODO circular dependency with start???
             IVMDriver driver) {
 
-        mCallback = callback;
-        mMessage = message;
-        mVM = vm;
-        mDriver = driver;
+        taskCallback = callback;
+        callbackMessage = message;
+        this.vm = vm;
+        vmDriver = driver;
     }
 
     /**
@@ -37,35 +37,35 @@ public abstract class DebuggerCallbacks {
     public abstract void onPostLoad();
 
     public DebuggerCallbackMessage getMessage() {
-        return mMessage;
+        return callbackMessage;
     }
 
     public void setMessage(DebuggerCallbackMessage mMessage) {
-        this.mMessage.setMessage(mMessage);
+        this.callbackMessage.setMessage(mMessage);
     }
 
     public void pause(String message) {
         InstructionPosition instructionPosition = null;
-        if (mVM.isIPValid()) {
-            instructionPosition = mVM.getIPInSourceCode();
+        if (vm.isIPValid()) {
+            instructionPosition = vm.getIPInSourceCode();
         }
-        VMStatus vmStatus = new VMStatus(mVM.isDone(), mVM.hasError(), mVM.getError());
-        mMessage.setMessage(CallbackMessage.PAUSED, message, vmStatus);
-        mMessage.setInstructionPosition(instructionPosition);
+        VMStatus vmStatus = new VMStatus(vm.isDone(), vm.hasError(), vm.getError());
+        callbackMessage.setMessage(CallbackMessage.PAUSED, message, vmStatus);
+        callbackMessage.setInstructionPosition(instructionPosition);
 
-        mCallback.message(mMessage);
+        taskCallback.message(callbackMessage);
         try {
             // Wait for IDE to unpause the application
-            while (mMessage.status == CallbackMessage.PAUSED) {
+            while (callbackMessage.status == CallbackMessage.PAUSED) {
                 // Go easy on the processor
                 Thread.sleep(10);
 
                 // Keep driver responsive while paused
-                mDriver.handleEvents();
+                vmDriver.handleEvents();
                 //                mMessage.wait(100);
 
                 // Check if program was stopped while paused
-                if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.isDone() || mDriver.isClosing()) {
+                if (Thread.currentThread().isInterrupted() || vm.hasError() || vm.isDone() || vmDriver.isClosing()) {
                     break;
                 }
             }
@@ -74,22 +74,22 @@ public abstract class DebuggerCallbacks {
     }
 
     public void message() {
-        mCallback.message(mMessage);
+        taskCallback.message(callbackMessage);
     }
 
     public void message(DebuggerCallbackMessage message) {
-        mMessage.setMessage(message);
-        mCallback.message(message);
+        callbackMessage.setMessage(message);
+        taskCallback.message(message);
     }
 
     public void message(CallbackMessage message) {
         DebuggerCallbackMessage debuggerCallbackMessage = null;
 
         if (message != null) {
-            VMStatus vmStatus = new VMStatus(mVM.isDone(), mVM.hasError(), mVM.getError());
+            VMStatus vmStatus = new VMStatus(vm.isDone(), vm.hasError(), vm.getError());
             debuggerCallbackMessage = new DebuggerCallbackMessage(message.getStatus(), message.getText(), vmStatus);
         }
-        mMessage.setMessage(debuggerCallbackMessage);
-        mCallback.message(debuggerCallbackMessage);
+        callbackMessage.setMessage(debuggerCallbackMessage);
+        taskCallback.message(debuggerCallbackMessage);
     }
 }

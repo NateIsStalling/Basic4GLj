@@ -15,25 +15,25 @@ import com.basic4gl.library.netlib4games.internal.Assert;
 public class NetTimingBufferL2 {
     static final int NET_L2TIMINGBUFFERSIZE = 25;
 
-    private final long[] m_receivedIndex = new long[NET_L2TIMINGBUFFERSIZE];
-    private final long[] m_sortedIndex = new long[NET_L2TIMINGBUFFERSIZE];
-    private int m_receivedPos;
-    private boolean m_bufferFull;
+    private final long[] receivedIndex = new long[NET_L2TIMINGBUFFERSIZE];
+    private final long[] sortedIndex = new long[NET_L2TIMINGBUFFERSIZE];
+    private int receivedPos;
+    private boolean bufferFull;
 
     public NetTimingBufferL2() {
-        m_bufferFull = false;
-        m_receivedPos = 0;
+        bufferFull = false;
+        receivedPos = 0;
     }
 
     private int getSortedPosition(long difference) {
 
         // Binary search for insert position
         int bottom = 0;
-        int top = m_bufferFull ? NET_L2TIMINGBUFFERSIZE : m_receivedPos;
+        int top = bufferFull ? NET_L2TIMINGBUFFERSIZE : receivedPos;
 
         while (top > bottom) {
             int mid = (top + bottom) >> 1;
-            if (difference > m_sortedIndex[mid]) {
+            if (difference > sortedIndex[mid]) {
                 bottom = mid + 1;
             } else {
                 top = mid;
@@ -43,18 +43,18 @@ public class NetTimingBufferL2 {
     }
 
     public void clear() {
-        m_bufferFull = false;
-        m_receivedPos = 0;
+        bufferFull = false;
+        receivedPos = 0;
     }
 
     public void logDifference(long difference) {
 
         // If buffer is full, then remove the oldest time
         int removePos;
-        if (m_bufferFull) {
-            removePos = getSortedPosition(m_receivedIndex[m_receivedPos]);
+        if (bufferFull) {
+            removePos = getSortedPosition(receivedIndex[receivedPos]);
         } else {
-            removePos = m_receivedPos;
+            removePos = receivedPos;
         }
 
         // Find index to insert new time
@@ -62,33 +62,33 @@ public class NetTimingBufferL2 {
 
         // Move items over
         if (insertPos < removePos) {
-            System.arraycopy(m_sortedIndex, insertPos + 1, m_sortedIndex, insertPos, removePos - insertPos);
+            System.arraycopy(sortedIndex, insertPos + 1, sortedIndex, insertPos, removePos - insertPos);
         } else if (insertPos > removePos) {
             insertPos--;
             if (insertPos > removePos) {
-                System.arraycopy(m_sortedIndex, removePos, m_sortedIndex, removePos + 1, insertPos - removePos);
+                System.arraycopy(sortedIndex, removePos, sortedIndex, removePos + 1, insertPos - removePos);
             }
         }
 
         // Insert into indices
-        m_sortedIndex[insertPos] = difference;
-        m_receivedIndex[m_receivedPos] = difference;
+        sortedIndex[insertPos] = difference;
+        receivedIndex[receivedPos] = difference;
 
         // Advanced received pointer
-        m_receivedPos++;
-        if (m_receivedPos >= NET_L2TIMINGBUFFERSIZE) {
-            m_receivedPos = 0;
-            m_bufferFull = true;
+        receivedPos++;
+        if (receivedPos >= NET_L2TIMINGBUFFERSIZE) {
+            receivedPos = 0;
+            bufferFull = true;
         }
     }
 
     public long getDifference(int i) {
-        Assert.assertTrue(m_bufferFull);
+        Assert.assertTrue(bufferFull);
         Assert.assertTrue(i < NET_L2TIMINGBUFFERSIZE);
-        return m_sortedIndex[i];
+        return sortedIndex[i];
     }
 
     public boolean isBufferFull() {
-        return m_bufferFull;
+        return bufferFull;
     }
 }

@@ -22,7 +22,7 @@ public class Sound extends HasErrorState {
 
     public static SoundSystem system;
 
-    private String sourceName;
+    private final String sourceName;
     private boolean toLoop;
 
     public static void init() {

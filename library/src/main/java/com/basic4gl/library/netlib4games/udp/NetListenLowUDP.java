@@ -26,22 +26,22 @@ import java.util.Set;
 public class NetListenLowUDP extends NetListenLow implements Runnable {
 
     // Listen socket
-    //    DatagramSocket m_socket;
-    private DatagramChannel m_channel;
-    private InetSocketAddress m_addr;
-    private int m_port;
-    private int m_maxPacketSize;
+    //    DatagramSocket socket;
+    private DatagramChannel channel;
+    private InetSocketAddress address;
+    private final int port;
+    private int maxPacketSize;
 
     private ByteBuffer socketBuffer;
 
     // Incoming connection requests
-    private List<NetPendConLowUDP> m_pending = new ArrayList<>();
+    private final List<NetPendConLowUDP> pending = new ArrayList<>();
 
-    // All connections sharing m_socket
-    private List<NetConLowUDP> m_connections = new ArrayList<>();
+    // All connections sharing socket
+    private final List<NetConLowUDP> connections = new ArrayList<>();
 
     // Thread handling
-    private Thread m_socketServiceThread;
+    private final Thread socketServiceThread;
     private final Object connectionLock = new Object();
 
     /**
@@ -52,9 +52,9 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
      */
     public NetListenLowUDP(int port) {
         super();
-        m_port = port;
+        this.port = port;
         socketBuffer = null;
-        m_channel = null;
+        channel = null;
 
         netLog("Create UDP listener, port " + port);
 
@@ -62,16 +62,16 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
         openSocket();
 
         // Start service thread
-        m_socketServiceThread = new Thread(NetListenLowUDP.class.getName());
-        m_socketServiceThread.start(this);
-        m_socketServiceThread.raisePriority();
+        socketServiceThread = new Thread(NetListenLowUDP.class.getName());
+        socketServiceThread.start(this);
+        socketServiceThread.raisePriority();
     }
 
     public void dispose() {
         netLog("Delete UDP listener");
 
         // Close down the thread
-        m_socketServiceThread.terminate();
+        socketServiceThread.terminate();
 
         // Close the socket
         closeSocket();
@@ -85,11 +85,11 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
             return null;
         }
         // Find connection whose address matches addr
-        Iterator<NetConLowUDP> connectionIter = m_connections.iterator();
+        Iterator<NetConLowUDP> connectionIter = connections.iterator();
         while (connectionIter.hasNext()) {
             NetConLowUDP i = connectionIter.next();
-            if ((i).m_addr.getPort() == addr.getPort()
-                    && (i).m_addr.getHostString().equals(addr.getHostString())) {
+            if ((i).address.getPort() == addr.getPort()
+                    && (i).address.getHostString().equals(addr.getHostString())) {
                 return i;
             }
         }
@@ -100,7 +100,7 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
     boolean isPending(InetSocketAddress addr) {
 
         // Find a pending connection whose address matches addr
-        Iterator<NetPendConLowUDP> it = m_pending.iterator();
+        Iterator<NetPendConLowUDP> it = pending.iterator();
         while (it.hasNext()) {
             NetPendConLowUDP i = it.next();
             if ((i).getAddress().getPort() == addr.getPort()
@@ -113,95 +113,95 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
     }
 
     void openSocket() {
-        Assert.assertTrue(m_channel == null);
+        Assert.assertTrue(channel == null);
 
         // Porting Note - Original had additional handling to ensure winsock is running
 
         // Create socket
         try {
-            m_channel = DatagramChannel.open(StandardProtocolFamily.INET)
+            channel = DatagramChannel.open(StandardProtocolFamily.INET)
                     .setOption(StandardSocketOptions.SO_REUSEADDR, true);
-            m_channel.configureBlocking(false);
+            channel.configureBlocking(false);
         } catch (IOException e) {
             setError("Unable to create UDP socket");
-            m_channel = null;
+            channel = null;
             return;
         }
 
         // Bind to address
         try {
-            m_addr = new InetSocketAddress(m_port);
-            m_channel.socket().bind(m_addr);
+            address = new InetSocketAddress(port);
+            channel.socket().bind(address);
 
-            netLog(" to bind to port " + m_addr.toString());
+            netLog(" to bind to port " + address.toString());
         } catch (IOException e) {
             e.printStackTrace();
-            netLog("Unable to bind to port " + (m_port));
-            setError("Unable to bind to port " + (m_port));
+            netLog("Unable to bind to port " + (port));
+            setError("Unable to bind to port " + (port));
             try {
 
-                m_channel.close();
+                channel.close();
             } catch (IOException e2) {
                 e2.printStackTrace();
             }
-            m_channel = null;
+            channel = null;
             return;
         }
 
         // Get the maximum packet size
         try {
-            m_maxPacketSize = Math.min(
-                    m_channel.socket().getSendBufferSize(), m_channel.socket().getReceiveBufferSize());
+            maxPacketSize = Math.min(
+                    channel.socket().getSendBufferSize(), channel.socket().getReceiveBufferSize());
         } catch (SocketException e) {
             setError("Unable to determine maximum UDP packet size");
             try {
 
-                m_channel.close();
+                channel.close();
             } catch (IOException e2) {
                 e2.printStackTrace();
             }
-            m_channel = null;
+            channel = null;
             return;
         }
 
-        netLog("Maximum UDP packet size: " + m_maxPacketSize);
+        netLog("Maximum UDP packet size: " + maxPacketSize);
     }
 
     void closeSocket() {
         // Close the socket
-        if (m_channel != null) {
+        if (channel != null) {
             try {
 
-                m_channel.close();
+                channel.close();
             } catch (IOException e2) {
                 e2.printStackTrace();
             }
-            m_channel = null;
+            channel = null;
         }
 
         // Close all connections using the socket
-        Iterator<NetConLowUDP> it = m_connections.iterator();
+        Iterator<NetConLowUDP> it = connections.iterator();
         while (it.hasNext()) {
             NetConLowUDP connection = it.next();
             connection.freeNotify(this);
         }
-        m_connections.clear();
+        connections.clear();
     }
 
     @Override
     public void run() {
         try {
-            while (!m_socketServiceThread.isTerminating()) {
+            while (!socketServiceThread.isTerminating()) {
                 try {
                     // Get temp buffer for data
                     if (socketBuffer == null) {
-                        socketBuffer = ByteBuffer.allocate(m_maxPacketSize);
+                        socketBuffer = ByteBuffer.allocate(maxPacketSize);
                     }
 
                     // Read in packet
                     InetSocketAddress clientAddress = null;
                     try (Selector selector = Selector.open()) {
-                        DatagramChannel channel = m_channel;
+                        DatagramChannel channel = this.channel;
                         channel.register(selector, SelectionKey.OP_READ);
 
                         selector.select(SOCKET_TIMEOUT_MILLIS);
@@ -247,7 +247,7 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
                                     netLog("Create pending UDP connection");
 
                                     // If there is no existing pending connection then create one
-                                    m_pending.add(new NetPendConLowUDP(clientAddress, requestStringBuffer[0], packet));
+                                    pending.add(new NetPendConLowUDP(clientAddress, requestStringBuffer[0], packet));
                                 } else {
 
                                     // Unknown packet. Ignore it
@@ -295,14 +295,14 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
 
         // Remove connection from list
         synchronized (connectionLock) {
-            m_connections.remove(connection);
+            connections.remove(connection);
         }
     }
 
     public boolean isConnectionPending() {
         boolean result;
         synchronized (connectionLock) {
-            result = !m_pending.isEmpty();
+            result = !pending.isEmpty();
         }
         return result;
     }
@@ -312,13 +312,13 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
         String result;
         synchronized (connectionLock) {
             Assert.assertTrue(isConnectionPending());
-            result = m_pending.get(0).getRequestString();
+            result = pending.get(0).getRequestString();
         }
         return result;
     }
 
     public NetConLow acceptConnection() {
-        Assert.assertTrue(!m_pending.isEmpty());
+        Assert.assertTrue(!pending.isEmpty());
 
         netLog("Accept UDP connection");
         NetPendConLowUDP pendConnection;
@@ -326,12 +326,12 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
         synchronized (connectionLock) {
 
             // Extract connection request
-            pendConnection = m_pending.get(0);
-            m_pending.remove(0);
+            pendConnection = pending.get(0);
+            pending.remove(0);
 
             // Create a connection, and add to list
-            connection = new NetConLowUDP(m_channel, pendConnection.getAddress(), m_maxPacketSize, this);
-            m_connections.add(connection);
+            connection = new NetConLowUDP(channel, pendConnection.getAddress(), maxPacketSize, this);
+            connections.add(connection);
 
             // Queue first packet
             connection.queuePendingPacket(
@@ -345,7 +345,7 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
     }
 
     public void rejectConnection() {
-        Assert.assertTrue(!m_pending.isEmpty());
+        Assert.assertTrue(!pending.isEmpty());
 
         netLog("Reject UDP connection");
 
@@ -353,8 +353,8 @@ public class NetListenLowUDP extends NetListenLow implements Runnable {
 
         synchronized (connectionLock) {
             // Extract connection request
-            pendConnection = m_pending.get(0);
-            m_pending.remove(0);
+            pendConnection = pending.get(0);
+            pending.remove(0);
         }
 
         // Delete request

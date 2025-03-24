@@ -26,31 +26,31 @@ import org.lwjgl.opengl.GL;
 public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCommandLineOptions {
 
     // Libraries
-    private java.util.List<Library> mLibraries;
-    private IServiceCollection mServices;
+    private java.util.List<Library> libraries;
+    private IServiceCollection services;
     private static GLTextGridWindow instance;
 
-    private FileOpener mFiles;
+    private FileOpener fileOpener;
 
-    private TomBasicCompiler mComp;
-    private TomVM mVM;
+    private TomBasicCompiler compiler;
+    private TomVM vm;
     private String[] programArgs;
-    private DebuggerCallbacks mDebugger;
+    private DebuggerCallbacks debuggerCallbacks;
     private DebuggerCommandAdapter debuggerAdapter;
 
     private CountDownLatch completionLatch;
     //	private TaskCallback mCallbacks;
-    private DebuggerCallbackMessage mMessage;
-    private CallbackMessage mUpdates;
+    private DebuggerCallbackMessage debuggerCallbackMessage;
+    private CallbackMessage updatesCallback;
 
     // We need to strongly reference callback instances.
     private GLFWErrorCallback errorCallback;
     private GLFWKeyCallback keyCallback;
     private GLFWCharCallback charCallback;
 
-    private boolean mClosing;
+    private boolean isClosing;
 
-    private GLTextGrid mTextGrid;
+    private GLTextGrid textGrid;
 
     private IAppSettings appSettings; // common settings for all libraries
     private Configuration configuration; // runtime configuration for this library
@@ -92,14 +92,14 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     static final String DEBUGGER_PORT_OPTION = "d";
     static final String SAFE_MODE_OPTION = "s";
 
-    private String mCharset = "charset.png"; // Default charset texture
+    private String charsetPath = "charset.png"; // Default charset texture
 
     public void setCharsetPath(String path) {
-        mCharset = path;
+        charsetPath = path;
     }
 
     public String getCharsetPath() {
-        return mCharset;
+        return charsetPath;
     }
 
     public GLTextGridWindow() {
@@ -117,8 +117,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
     public static Library getInstance(TomBasicCompiler compiler) {
         GLTextGridWindow instance = new GLTextGridWindow();
-        instance.mComp = compiler;
-        instance.mVM = compiler.getVM();
+        instance.compiler = compiler;
+        instance.vm = compiler.getVM();
         return instance;
     }
 
@@ -351,43 +351,43 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
         // Initialize file opener
         System.out.println("par: " + currentDirectory);
-        instance.mFiles = new FileOpener(""); // TODO load embedded files
-        instance.mFiles.setParentDirectory(currentDirectory);
+        instance.fileOpener = new FileOpener(""); // TODO load embedded files
+        instance.fileOpener.setParentDirectory(currentDirectory);
 
-        instance.mComp = new TomBasicCompiler(new TomVM(debugger));
-        instance.mVM = instance.mComp.getVM();
-        instance.mServices = new ServiceCollection();
-        instance.mLibraries = new ArrayList<>();
+        instance.compiler = new TomBasicCompiler(new TomVM(debugger));
+        instance.vm = instance.compiler.getVM();
+        instance.services = new ServiceCollection();
+        instance.libraries = new ArrayList<>();
 
         // TODO Load libraries dynamically
         // TODO Save/Load list of libraries in order they should be added
-        instance.mLibraries.add(new com.basic4gl.library.standard.Standard());
-        instance.mLibraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
-        instance.mLibraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
-        instance.mLibraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
-        instance.mLibraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
-        instance.mLibraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
-        instance.mLibraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
-        instance.mLibraries.add(new com.basic4gl.library.standard.TrigBasicLib());
-        instance.mLibraries.add(new com.basic4gl.library.standard.FileIOBasicLib());
-        instance.mLibraries.add(new com.basic4gl.library.standard.NetBasicLib());
-        instance.mLibraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
-        instance.mLibraries.add(new com.basic4gl.library.standard.TomCompilerBasicLib());
+        instance.libraries.add(new com.basic4gl.library.standard.Standard());
+        instance.libraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
+        instance.libraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
+        instance.libraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
+        instance.libraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
+        instance.libraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
+        instance.libraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
+        instance.libraries.add(new com.basic4gl.library.standard.TrigBasicLib());
+        instance.libraries.add(new com.basic4gl.library.standard.FileIOBasicLib());
+        instance.libraries.add(new com.basic4gl.library.standard.NetBasicLib());
+        instance.libraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
+        instance.libraries.add(new com.basic4gl.library.standard.TomCompilerBasicLib());
 
         // Register library functions
-        for (Library lib : instance.mLibraries) {
-            lib.init(instance.mComp, instance.mServices); // Allow libraries to register function overloads
+        for (Library lib : instance.libraries) {
+            lib.init(instance.compiler, instance.services); // Allow libraries to register function overloads
             if (lib instanceof IFileAccess) {
                 // Allows libraries to read from directories
-                ((IFileAccess) lib).init(instance.mFiles);
+                ((IFileAccess) lib).init(instance.fileOpener);
             }
             if (lib instanceof FunctionLibrary) {
-                instance.mComp.addConstants(((FunctionLibrary) lib).constants());
-                instance.mComp.addFunctions(lib, ((FunctionLibrary) lib).specs());
+                instance.compiler.addConstants(((FunctionLibrary) lib).constants());
+                instance.compiler.addFunctions(lib, ((FunctionLibrary) lib).specs());
             }
         }
 
-        instance.mFiles.setParentDirectory(currentDirectory);
+        instance.fileOpener.setParentDirectory(currentDirectory);
 
         try {
             System.out.println(stateFile);
@@ -404,28 +404,29 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
         }
 
         // Initialize window and setup VM
-        instance.mVM.pause();
-        instance.mVM.resetVM();
+        instance.vm.pause();
+        instance.vm.resetVM();
         instance.activate();
 
         // TODO this message has too much power
-        instance.mMessage = new DebuggerCallbackMessage(CallbackMessage.WORKING, "", null);
+        instance.debuggerCallbackMessage = new DebuggerCallbackMessage(CallbackMessage.WORKING, "", null);
 
         if (debugServerPort != null) {
 
             URI debugServerUri = URI.create("ws://localhost:" + debugServerPort + "/debug/");
 
-            instance.debuggerAdapter =
-                    new DebuggerCommandAdapter(instance.mMessage, debugger, instance, instance.mComp, instance.mVM);
+            instance.debuggerAdapter = new DebuggerCommandAdapter(
+                    instance.debuggerCallbackMessage, debugger, instance, instance.compiler, instance.vm);
 
             instance.debuggerAdapter.connect(debugServerUri);
 
-            instance.mDebugger =
-                    new DebuggerCallbacks(instance.debuggerAdapter, instance.mMessage, instance.mVM, instance) {
+            instance.debuggerCallbacks =
+                    new DebuggerCallbacks(
+                            instance.debuggerAdapter, instance.debuggerCallbackMessage, instance.vm, instance) {
                         @Override
                         public void onPreLoad() {
                             // say hi
-                            instance.debuggerAdapter.message(instance.mMessage);
+                            instance.debuggerAdapter.message(instance.debuggerCallbackMessage);
                         }
 
                         @Override
@@ -459,16 +460,16 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
         if (debuggerAdapter != null) {
             debuggerAdapter.stop();
         }
-        mServices.clear();
+        services.clear();
     }
 
     @Override
     public void init(FileOpener files) {
-        mFiles = files;
+        fileOpener = files;
     }
 
     public void pause() {
-        mVM.pause();
+        vm.pause();
     }
 
     @Override
@@ -476,7 +477,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
     @Override
     public void activate() {
-        mClosing = false;
+        isClosing = false;
 
         // Get settings
         if (configuration == null) {
@@ -487,25 +488,25 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     @Override
     public void start() {
         System.out.println("Running...");
-        if (mVM == null) {
+        if (vm == null) {
             return; // TODO Throw exception
         }
         try {
-            if (mDebugger != null) {
-                mDebugger.onPreLoad();
+            if (debuggerCallbacks != null) {
+                debuggerCallbacks.onPreLoad();
             }
-            mCharset = mFiles.getFilenameForRead("charset.png", false);
-            if (mDebugger != null) {
-                mDebugger.onPostLoad();
+            charsetPath = fileOpener.getFilenameForRead("charset.png", false);
+            if (debuggerCallbacks != null) {
+                debuggerCallbacks.onPostLoad();
             }
             onPreExecute();
             // Initialize libraries
-            for (Library lib : mComp.getLibraries()) {
+            for (Library lib : compiler.getLibraries()) {
                 initLibrary(lib);
             }
             // Debugger is not attached
-            if (mDebugger == null) {
-                while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
+            if (debuggerCallbacks == null) {
+                while (!Thread.currentThread().isInterrupted() && !vm.hasError() && !vm.isDone() && !isClosing()) {
                     // Continue to next OpCode
                     driveVM(TomVM.VM_STEPS);
 
@@ -515,34 +516,34 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
                 } // Program completed
             } else // Debugger is attached
             {
-                while (!Thread.currentThread().isInterrupted() && !mVM.hasError() && !mVM.isDone() && !isClosing()) {
+                while (!Thread.currentThread().isInterrupted() && !vm.hasError() && !vm.isDone() && !isClosing()) {
                     // Run the virtual machine for a certain number of steps
-                    mVM.patchIn();
+                    vm.patchIn();
 
-                    if (mVM.isPaused()) {
+                    if (vm.isPaused()) {
                         // Breakpoint reached or paused by debugger
                         System.out.println("VM paused");
 
-                        mDebugger.pause("Reached breakpoint");
+                        debuggerCallbacks.pause("Reached breakpoint");
 
                         // Resume running
-                        if (mDebugger.getMessage().getStatus() == CallbackMessage.WORKING) {
+                        if (debuggerCallbacks.getMessage().getStatus() == CallbackMessage.WORKING) {
                             // Kick the virtual machine over the next op-code before patching in the breakpoints.
                             // otherwise we would never get past a breakpoint once we hit it, because we would
                             // keep on hitting it immediately and returning.
-                            mDebugger.message(driveVM(1));
+                            debuggerCallbacks.message(driveVM(1));
 
                             // Run the virtual machine for a certain number of steps
-                            mVM.patchIn();
+                            vm.patchIn();
                         }
                         // Check if program was stopped while paused
-                        if (Thread.currentThread().isInterrupted() || mVM.hasError() || mVM.isDone() || isClosing()) {
+                        if (Thread.currentThread().isInterrupted() || vm.hasError() || vm.isDone() || isClosing()) {
                             break;
                         }
                     }
 
                     // Continue to next OpCode
-                    mDebugger.message(driveVM(TomVM.VM_STEPS));
+                    debuggerCallbacks.message(driveVM(TomVM.VM_STEPS));
 
                     // Poll for window events. The key callback above will only be
                     // invoked during this call.
@@ -552,35 +553,35 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
             // Perform debugger callbacks
             int success;
-            if (mDebugger != null) {
-                success = !mVM.hasError() ? CallbackMessage.SUCCESS : CallbackMessage.FAILED;
+            if (debuggerCallbacks != null) {
+                success = !vm.hasError() ? CallbackMessage.SUCCESS : CallbackMessage.FAILED;
 
-                VMStatus vmStatus = new VMStatus(mVM.isDone(), mVM.hasError(), mVM.getError());
+                VMStatus vmStatus = new VMStatus(vm.isDone(), vm.hasError(), vm.getError());
 
                 DebuggerCallbackMessage message = new DebuggerCallbackMessage(
-                        success, success == CallbackMessage.SUCCESS ? "Program completed" : mVM.getError(), vmStatus);
+                        success, success == CallbackMessage.SUCCESS ? "Program completed" : vm.getError(), vmStatus);
 
                 // Set instruction position for editor to place cursor at error
-                if (mVM.hasError()) {
-                    InstructionPosition ip = mVM.getIPInSourceCode();
+                if (vm.hasError()) {
+                    InstructionPosition ip = vm.getIPInSourceCode();
                     message.setInstructionPosition(ip);
                 }
 
-                mDebugger.message(message);
+                debuggerCallbacks.message(message);
             }
             //
             //				glMatrixMode(GL_MODELVIEW);
             //				glLoadIdentity();
             //
             //				//Calculate the aspect ratio of the window
-            //				perspectiveGL(90.0f,(float)m_width/(float)m_height,0.1f,100.0f);
+            //				perspectiveGL(90.0f,(float)this.width/(float)this.height,0.1f,100.0f);
             //
             //				glShadeModel(GL_SMOOTH);
             //				glClearDepth(1.0f);                         // Depth Buffer Setup
             //				glEnable(GL_DEPTH_TEST);                        // Enables Depth Testing
             //				glDepthFunc(GL_LEQUAL);                         // The Type Of Depth Test To Do
             // Keep window responsive until closed
-            while (!Thread.currentThread().isInterrupted() && m_window != 0 && !isClosing()) {
+            while (!Thread.currentThread().isInterrupted() && window != 0 && !isClosing()) {
                 // System.out.println("idle");
                 try {
                     // Go easy on the processor
@@ -597,7 +598,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
                     //						glVertex3f( 1.0f,-1.0f, 0.0f);//					' Bottom Right
                     //						glVertex3f(-0.5f,-1.0f, 0.0f);//					' Bottom Left
                     //						glEnd();
-                    //						glfwSwapBuffers(m_window);
+                    //						glfwSwapBuffers(this.window);
 
                     // Poll for window events. The key callback above will only be
                     // invoked during this call.
@@ -619,14 +620,14 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     @Override
     public void stop() {
         // Clear stepping breakpoints
-        mVM.clearTempBreakPoints();
+        vm.clearTempBreakPoints();
 
-        mVM.stop();
+        vm.stop();
     }
 
     @Override
     public void terminate() {
-        mClosing = true;
+        isClosing = true;
 
         stop();
     }
@@ -838,21 +839,21 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     @Override
     public void saveState(OutputStream stream) throws IOException {
         DataOutputStream output = new DataOutputStream(stream);
-        mComp.streamOut(output);
+        compiler.streamOut(output);
     }
 
     @Override
     public void loadState(InputStream stream) throws IOException {
         DataInputStream input = new DataInputStream(stream);
-        mComp.streamIn(input);
+        compiler.streamIn(input);
     }
 
     GLTextGrid getTextGrid() {
-        return mTextGrid;
+        return textGrid;
     }
 
     void setTextGrid(GLTextGrid grid) {
-        mTextGrid = grid;
+        textGrid = grid;
     }
 
     public CallbackMessage driveVM(int steps) {
@@ -861,7 +862,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
         // Execute a number of VM steps
         try {
-            mVM.continueVM(steps);
+            vm.continueVM(steps);
 
         } catch (Exception e) {
             // TODO get error type
@@ -890,17 +891,17 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             // All other exceptions will stop the program.
             default:*/
             e.printStackTrace();
-            mVM.miscError("An exception occured!");
+            vm.miscError("An exception occured!");
         }
 
         // Check for error
-        if (mVM.hasError() || mVM.isDone() || isClosing()) {
+        if (vm.hasError() || vm.isDone() || isClosing()) {
             int success;
-            if (mDebugger != null) {
-                success = !mVM.hasError() ? CallbackMessage.SUCCESS : CallbackMessage.FAILED;
+            if (debuggerCallbacks != null) {
+                success = !vm.hasError() ? CallbackMessage.SUCCESS : CallbackMessage.FAILED;
 
                 return new CallbackMessage(
-                        success, success == CallbackMessage.SUCCESS ? "Program completed" : mVM.getError());
+                        success, success == CallbackMessage.SUCCESS ? "Program completed" : vm.getError());
             }
 
             if (isClosing() || isFullscreen()) {
@@ -920,21 +921,21 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             ((IVMDriverAccess) lib).init(this);
         }
         if (lib instanceof IFileAccess) {
-            ((IFileAccess) lib).init(mFiles);
+            ((IFileAccess) lib).init(fileOpener);
         }
         if (lib instanceof IGLRenderer) {
-            ((IGLRenderer) lib).setTextGrid(mTextGrid);
+            ((IGLRenderer) lib).setTextGrid(textGrid);
             ((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
         }
 
-        lib.init(mVM, mServices, appSettings, programArgs);
+        lib.init(vm, services, appSettings, programArgs);
     }
 
     public boolean handleEvents() {
 
         // Notify debugger process is still alive
         if (debuggerAdapter != null) {
-            debuggerAdapter.message(mMessage);
+            debuggerAdapter.message(debuggerCallbackMessage);
         }
 
         // Keep window responsive during loops
@@ -956,16 +957,16 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
         resetGL();
 
         // Initialize Sprite Engine
-        mTextGrid = new GLSpriteEngine(mCharset, mFiles, 25, 40, 16, 16);
-        if (mTextGrid.hasError()) {
-            mVM.setError(mTextGrid.getError());
+        textGrid = new GLSpriteEngine(charsetPath, fileOpener, 25, 40, 16, 16);
+        if (textGrid.hasError()) {
+            vm.setError(textGrid.getError());
         }
     }
 
     public void onPostExecute() {
-        //		glfwSwapBuffers(m_window); // swap the color buffers
+        //		glfwSwapBuffers(this.window); // swap the color buffers
         // Keep window responsive until closed
-        while (!Thread.currentThread().isInterrupted() && m_window != 0 && !isClosing()) {
+        while (!Thread.currentThread().isInterrupted() && window != 0 && !isClosing()) {
             try {
                 // Go easy on the processor
                 Thread.sleep(10);
@@ -983,7 +984,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
         synchronized (GLTextGridWindow.this) {
             // TODO 12/2022 consolidate below; moved from main editor worker thread
             // mDLLs.ProgramEnd();
-            mVM.clearResources();
+            vm.clearResources();
 
             // Inform libraries
             // StopTomSoundBasicLib();
@@ -991,7 +992,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             // TODO 12/2022 consolidate with above
 
             // Do any library cleanup
-            for (Library lib : mLibraries) {
+            for (Library lib : libraries) {
                 System.out.println("cleanup " + lib.name());
                 lib.cleanup();
             }
@@ -1000,11 +1001,11 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
             // Free text grid image
             System.out.println("destroy textgrid");
-            mTextGrid.destroy();
+            textGrid.destroy();
 
             // Release window and window callbacks
             System.out.println("destroy window");
-            glfwDestroyWindow(m_window);
+            glfwDestroyWindow(window);
 
             System.out.println("destroy callbacks");
             keyCallback.free();
@@ -1021,7 +1022,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             errorCallback = null; // .release();
             // Clear pointer to window
             // An access violation will occur next time this window is launched if this isn't cleared
-            m_window = 0;
+            window = 0;
         }
         System.out.println("exit");
     }
@@ -1029,15 +1030,15 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     public void recreateGLContext() {
         super.recreateGLContext();
 
-        if (mTextGrid != null) {
-            mTextGrid.uploadCharsetTexture();
+        if (textGrid != null) {
+            textGrid.uploadCharsetTexture();
         }
     }
 
     public boolean isClosing() {
         try {
             synchronized (this) {
-                return mClosing || (m_window != 0 && glfwWindowShouldClose(m_window));
+                return isClosing || (window != 0 && glfwWindowShouldClose(window));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1048,7 +1049,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     public boolean isVisible() {
         try {
             synchronized (this) {
-                return m_window != 0 && !glfwWindowShouldClose(m_window);
+                return window != 0 && !glfwWindowShouldClose(window);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1059,8 +1060,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     private void init() {
         synchronized (GLTextGridWindow.this) {
             // C++ source code for reference
-            // m_glWin = null;
-            // m_glText = null;
+            // this.glWin = null;
+            // this.glText = null;
 
             // Default settings
             // boolean fullScreen = false, border = true;
@@ -1069,11 +1070,11 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
             // Create window
             /*
-            m_glWin = new glTextGridWindow ( fullScreen, border, width, height,
+            this.glWin = new glTextGridWindow ( fullScreen, border, width, height,
             bpp, "Basic4GL", resetGLMode);
 
-            // Check for errors if (m_glWin.Error ()) { MessageDlg ( (AnsiString)
-            m_glWin.GetError().c_str(), mtError, TMsgDlgButtons() << mbOK, 0);
+            // Check for errors if (this.glWin.Error ()) { MessageDlg ( (AnsiString)
+            this.glWin.GetError().c_str(), mtError, TMsgDlgButtons() << mbOK, 0);
             Application.Terminate (); return; } m_glWin.Hide ();
 
             // Create OpenGL text grid m_glText = new glSpriteEngine (
@@ -1085,8 +1086,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             m_glWin.SetTextGrid (m_glText);
             */
             String title = configuration.getValue(SETTING_TITLE);
-            m_width = Integer.valueOf(configuration.getValue(SETTING_WIDTH));
-            m_height = Integer.valueOf(configuration.getValue(SETTING_HEIGHT));
+            width = Integer.valueOf(configuration.getValue(SETTING_WIDTH));
+            height = Integer.valueOf(configuration.getValue(SETTING_HEIGHT));
 
             boolean resizable = Boolean.valueOf(configuration.getValue(SETTING_RESIZABLE));
             int mode = Integer.valueOf(configuration.getValue(SETTING_SCREEN_MODE));
@@ -1107,8 +1108,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             glfwWindowHint(GLFW_SCALE_TO_MONITOR, GL_TRUE); // handle monitor resolution scaling
 
             // Create the window
-            m_window = glfwCreateWindow(m_width, m_height, title, NULL, NULL);
-            if (m_window == NULL) {
+            window = glfwCreateWindow(width, height, title, NULL, NULL);
+            if (window == NULL) {
                 throw new RuntimeException("Failed to create the GLFW window");
             }
 
@@ -1127,7 +1128,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
             // Setup a key callback. It will be called every time a key is pressed, repeated or released.
             glfwSetKeyCallback(
-                    m_window,
+                    window,
                     keyCallback = new GLFWKeyCallback() {
                         @Override
                         public void invoke(long window, int key, int scancode, int action, int mods) {
@@ -1139,34 +1140,34 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
                             }
                             if (action == GLFW_PRESS) {
                                 if (key == GLFW_KEY_PAUSE) {
-                                    m_pausePressed = true;
+                                    pausePressed = true;
                                 } else {
-                                    m_keyDown[key] |= 1;
+                                    keyDown[key] |= 1;
                                     bufferScanKey((char) key);
                                 }
                             } else if (action == GLFW_RELEASE) {
-                                m_keyDown[key] &= ~1;
+                                keyDown[key] &= ~1;
                             }
                         }
                     });
             // Setup a character key callback
             glfwSetCharCallback(
-                    m_window,
+                    window,
                     charCallback = new GLFWCharCallback() {
                         @Override
                         public void invoke(long window, int codepoint) {
 
                             if (codepoint == 27) // Esc closes window
                             {
-                                m_closing = true;
+                                closing = true;
                             }
 
-                            int end = m_bufEnd;
+                            int end = bufferEnd;
                             incEnd(); // Check for room in buffer
-                            if (m_bufEnd != m_bufStart) {
-                                m_keyBuffer[end] = (char) codepoint;
+                            if (bufferEnd != bufferStart) {
+                                keyBuffer[end] = (char) codepoint;
                             } else {
-                                m_bufEnd = end; // No room. Restore buffer pointers
+                                bufferEnd = end; // No room. Restore buffer pointers
                             }
                         }
                     });
@@ -1174,7 +1175,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             // Get the resolution of the primary monitor
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             // Center our window
-            glfwSetWindowPos(m_window, (vidmode.width() - m_width) / 2, (vidmode.height() - m_height) / 2);
+            glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
             // Get the thread stack and push a new frame
             //			try ( MemoryStack stack = stackPush() ) {
             //				IntBuffer pWidth = stack.mallocInt(1); // int*
@@ -1188,19 +1189,19 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             //
             //				// Center the window
             //				glfwSetWindowPos(
-            //						m_window,
+            //						this.window,
             //						(vidmode.width() - pWidth.get(0)) / 2,
             //						(vidmode.height() - pHeight.get(0)) / 2
             //				);
             //			} // the stack frame is popped automatically
 
             // Make the OpenGL context current
-            glfwMakeContextCurrent(m_window);
+            glfwMakeContextCurrent(window);
             // Enable v-sync
             glfwSwapInterval(1);
 
             // Make the window visible
-            glfwShowWindow(m_window);
+            glfwShowWindow(window);
             //			int err = glGetError();
             //			System.out.println(err);
         }

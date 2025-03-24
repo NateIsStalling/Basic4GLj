@@ -28,13 +28,13 @@ public class Preprocessor extends HasErrorState {
 
     // Stack of currently opened files.
     // openFiles.back() is the current file being parsed
-    private Vector<ISourceFile> openFiles = new Vector<>();
+    private final Vector<ISourceFile> openFiles = new Vector<>();
 
     // Filenames of visited source files. (To prevent circular includes)
-    private List<String> visitedFiles = new ArrayList<>();
+    private final List<String> visitedFiles = new ArrayList<>();
 
     // Source file <=> Processed file mapping
-    private LineNumberMapping lineNumberMap = new LineNumberMapping();
+    private final LineNumberMapping lineNumberMap = new LineNumberMapping();
 
     void closeAll() {
 

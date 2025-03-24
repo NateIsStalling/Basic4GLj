@@ -11,10 +11,10 @@ import com.basic4gl.library.netlib4games.internal.Assert;
 public class NetOutPacketL1 {
     private long due;
 
-    private long id;
-    private boolean reliable;
-    private boolean resent;
-    private NetSimplePacket packet;
+    private final long id;
+    private final boolean reliable;
+    private final boolean resent;
+    private final NetSimplePacket packet;
 
     NetOutPacketL1(long due, NetSimplePacket packet) {
         Assert.assertTrue(packet != null);

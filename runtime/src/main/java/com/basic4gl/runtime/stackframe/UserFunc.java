@@ -9,9 +9,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class UserFunc implements Streamable {
-    public int mPrototypeIndex;
-    public boolean mImplemented;
-    public int mProgramOffset;
+    public int prototypeIndex;
+    public boolean implemented;
+    public int programOffset;
 
     public UserFunc() {}
 
@@ -20,25 +20,25 @@ public class UserFunc implements Streamable {
     }
 
     public UserFunc(int prototypeIndex, boolean implemented, int programOffset) {
-        mPrototypeIndex = prototypeIndex;
-        mImplemented = implemented;
-        mProgramOffset = programOffset;
+        this.prototypeIndex = prototypeIndex;
+        this.implemented = implemented;
+        this.programOffset = programOffset;
     }
 
     public void streamOut(DataOutputStream stream) throws IOException {
         // Assume program is complete, i.e all functions are implemented, before
         // streaming occurs.
-        assertTrue(mImplemented);
+        assertTrue(implemented);
 
-        Streaming.writeLong(stream, mPrototypeIndex);
-        Streaming.writeLong(stream, mProgramOffset);
+        Streaming.writeLong(stream, prototypeIndex);
+        Streaming.writeLong(stream, programOffset);
     }
 
     public boolean streamIn(DataInputStream stream) throws IOException {
-        mPrototypeIndex = (int) Streaming.readLong(stream);
-        mProgramOffset = (int) Streaming.readLong(stream);
+        prototypeIndex = (int) Streaming.readLong(stream);
+        programOffset = (int) Streaming.readLong(stream);
 
-        mImplemented = true;
+        implemented = true;
 
         return true;
     }

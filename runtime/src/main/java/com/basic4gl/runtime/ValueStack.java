@@ -9,8 +9,8 @@ import java.util.Vector;
  * function parameters.
  */
 public class ValueStack {
-    private Vector<Value> data;
-    private Store<String> strings;
+    private final Vector<Value> data;
+    private final Store<String> strings;
 
     public ValueStack(Store<String> strings) {
         this.strings = strings;

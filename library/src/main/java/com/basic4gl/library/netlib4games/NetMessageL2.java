@@ -6,13 +6,13 @@ import com.basic4gl.library.netlib4games.internal.Assert;
  * Layer 2 network message
  */
 public class NetMessageL2 {
-    private int channel;
-    private boolean reliable;
-    private boolean ordered;
+    private final int channel;
+    private final boolean reliable;
+    private final boolean ordered;
     private boolean smoothed;
-    private int messageIndex; // unsigned long
-    private int reliableIndex; // unsigned long
-    private int packetCount;
+    private final int messageIndex; // unsigned long
+    private final int reliableIndex; // unsigned long
+    private final int packetCount;
     private long tickCount;
     private int receivedCount;
     private int dataSize;

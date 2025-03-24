@@ -52,7 +52,7 @@ public class GLSpriteEngine extends GLTextGrid {
     }
 
     // Sprites
-    private GLSpriteList sprites = new GLSpriteList();
+    private final GLSpriteList sprites = new GLSpriteList();
 
     // Camera settings
     private float width, height, fov;
@@ -81,7 +81,7 @@ public class GLSpriteEngine extends GLTextGrid {
         // Apply camera transformations
         float[] m1 = new float[16], m2 = new float[16];
 
-        //        System.out.println("width "+ m_width + ", " + m_height);
+        //        System.out.println("width "+ this.width + ", " + this.height);
         // Scale in window dimensions
         glScalef(1.0f / width, 1.0f / height, 1);
         TrigBasicLib.scale(width, height, 1);

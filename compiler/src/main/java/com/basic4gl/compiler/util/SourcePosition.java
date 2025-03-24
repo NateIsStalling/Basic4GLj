@@ -6,32 +6,32 @@ import java.io.Serializable;
  * Source file and line number before pre-processing
  */
 public class SourcePosition implements Serializable {
-    private int mFileIndex;
-    private int mFileLineNo;
+    private int fileIndex;
+    private int fileLineNumber;
 
     public SourcePosition(int fileIndex, int fileLineNo) {
-        mFileIndex = fileIndex;
-        mFileLineNo = fileLineNo;
+        this.fileIndex = fileIndex;
+        fileLineNumber = fileLineNo;
     }
 
     public SourcePosition(SourcePosition c) {
-        mFileIndex = c.mFileIndex;
-        mFileLineNo = c.mFileLineNo;
+        fileIndex = c.fileIndex;
+        fileLineNumber = c.fileLineNumber;
     }
 
     public int getFileIndex() {
-        return mFileIndex;
+        return fileIndex;
     }
 
-    public int getFileLineNo() {
-        return mFileLineNo;
+    public int getFileLineNumber() {
+        return fileLineNumber;
     }
 
     public void setFileIndex(int fileIndex) {
-        mFileIndex = fileIndex;
+        this.fileIndex = fileIndex;
     }
 
-    public void setFileLineNo(int fileLineNo) {
-        mFileLineNo = fileLineNo;
+    public void setFileLineNumber(int fileLineNo) {
+        fileLineNumber = fileLineNo;
     }
 }

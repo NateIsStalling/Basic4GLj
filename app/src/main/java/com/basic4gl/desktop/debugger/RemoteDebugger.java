@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RemoteDebugger implements IDebugger {
-    private DebugClientAdapter adapter;
+    private final DebugClientAdapter adapter;
 
     public RemoteDebugger(DebugClientAdapter adapter) {
         this.adapter = adapter;

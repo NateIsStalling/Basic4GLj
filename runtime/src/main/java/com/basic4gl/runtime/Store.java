@@ -71,7 +71,7 @@ public class Store<T> {
             // Reuse previously freed index
             index = freeList.get(0);
             freeList.remove(0);
-            // index = 0; possible porting mistake, my bad.. the index = m_freeList.get(0) should be
+            // index = 0; possible porting mistake, my bad.. the index = this.freeList.get(0) should be
             // correct
 
             // Initialise element

@@ -14,7 +14,7 @@ import java.util.Stack;
 import javax.swing.JScrollPane;
 
 public class RMultiHeaderScrollPane extends JScrollPane {
-    private MultiHeaderGutter gutter;
+    private final MultiHeaderGutter gutter;
 
     public RMultiHeaderScrollPane() {
         this((Component) null, true);

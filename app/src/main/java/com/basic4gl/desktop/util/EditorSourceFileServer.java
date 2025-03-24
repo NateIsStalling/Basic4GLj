@@ -8,10 +8,10 @@ import java.io.File;
  * Created by Nate on 2/26/2015.
  */
 public class EditorSourceFileServer implements ISourceFileServer {
-    private IFileManager mFileManager;
+    private final IFileManager fileManager;
 
     public EditorSourceFileServer(IFileManager fileManager) {
-        mFileManager = fileManager;
+        this.fileManager = fileManager;
     }
 
     @Override
@@ -19,9 +19,9 @@ public class EditorSourceFileServer implements ISourceFileServer {
 
         // Search for editor with matching filename.
         // Construct an EditorSourceFile object if found.
-        for (int i = 0; i < mFileManager.editorCount(); i++) {
-            if (new File(mFileManager.getFilename(i)).getAbsolutePath().equals(filename)) {
-                return new EditorSourceFile(mFileManager.getEditor(i), filename);
+        for (int i = 0; i < fileManager.editorCount(); i++) {
+            if (new File(fileManager.getFilename(i)).getAbsolutePath().equals(filename)) {
+                return new EditorSourceFile(fileManager.getEditor(i), filename);
             }
         }
         return null;

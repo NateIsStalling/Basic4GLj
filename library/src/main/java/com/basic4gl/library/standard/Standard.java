@@ -173,7 +173,7 @@ public class Standard implements FunctionLibrary {
                 c += i;
                 i = 0;
             }
-            if (c > 0 && s.length() > 0 && i < s.length()) {
+            if (c > 0 && !s.isEmpty() && i < s.length()) {
                 if (i + c > s.length()) {
                     c = s.length() - i;
                 }

@@ -9,16 +9,16 @@ import java.util.Vector;
 import javax.websocket.Session;
 
 public class StackTraceCommandHandler {
-    private final TomVM mVM;
-    private final Gson mGson;
+    private final TomVM vm;
+    private final Gson gson;
 
     public StackTraceCommandHandler(TomVM vm, Gson gson) {
-        mVM = vm;
-        mGson = gson;
+        this.vm = vm;
+        this.gson = gson;
     }
 
     public void handle(Session session) {
-        Vector<UserFuncStackFrame> callStack = mVM.getUserCallStack();
+        Vector<UserFuncStackFrame> callStack = vm.getUserCallStack();
         StackTraceCallback callback = new StackTraceCallback();
 
         for (UserFuncStackFrame stackFrame : callStack) {
@@ -36,7 +36,7 @@ public class StackTraceCommandHandler {
 
         callback.totalFrames = callback.stackFrames.size();
 
-        String json = mGson.toJson(callback);
+        String json = gson.toJson(callback);
         message(session, json);
     }
 

@@ -10,27 +10,27 @@ import javax.swing.*;
 
 public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallbackListener, IDebugger {
 
-    private final IFileProvider mFiles;
+    private final IFileProvider files;
 
     private RemoteDebugger remoteDebugger;
 
-    private DebuggerTaskCallback mCallbacks;
-    private CountDownLatch mCompletionLatch;
+    private DebuggerTaskCallback debuggerTaskCallback;
+    private CountDownLatch completionLatch;
 
     public VmWorker(IFileProvider fileOpener) {
-        mFiles = fileOpener;
+        files = fileOpener;
     }
 
     public void setCompletionLatch(CountDownLatch latch) {
-        mCompletionLatch = latch;
+        completionLatch = latch;
     }
 
     public CountDownLatch getCompletionLatch() {
-        return mCompletionLatch;
+        return completionLatch;
     }
 
     public void setCallbacks(DebuggerTaskCallback callbacks) {
-        mCallbacks = callbacks;
+        debuggerTaskCallback = callbacks;
     }
 
     @Override
@@ -38,24 +38,24 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
         super.process(chunks);
         for (Object message : chunks) {
             if (message instanceof DebuggerCallbackMessage) {
-                mCallbacks.message((DebuggerCallbackMessage) message);
+                debuggerTaskCallback.message((DebuggerCallbackMessage) message);
             } else {
-                mCallbacks.messageObject(message);
+                debuggerTaskCallback.messageObject(message);
             }
         }
     }
 
     @Override
     protected Object doInBackground() throws Exception {
-        //        IVMDriver driver = mBuilder.getVMDriver();
+        //        IVMDriver driver = this.builder.getVMDriver();
         boolean noError;
         DebugClientAdapter adapter = null;
 
         System.out.println("Running...");
         try {
-            mFiles.useAppDirectory();
+            files.useAppDirectory();
             //            driver.onPreExecute();
-            mFiles.useCurrentDirectory();
+            files.useCurrentDirectory();
 
             // Initialize libraries
             //            for (Library lib : mComp.getLibraries()) {
@@ -66,7 +66,7 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
             adapter.connect();
             remoteDebugger = new RemoteDebugger(adapter);
 
-            mCallbacks.onDebuggerConnected();
+            debuggerTaskCallback.onDebuggerConnected();
 
             // Debugger is attached
             while (!this.isCancelled()
@@ -96,11 +96,11 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
             adapter.stop();
             remoteDebugger = null;
 
-            mCallbacks.onDebuggerDisconnected();
+            debuggerTaskCallback.onDebuggerDisconnected();
             //            driver.onFinally();
             // Confirm this thread has completed before a new one can be executed
-            if (mCompletionLatch != null) {
-                mCompletionLatch.countDown();
+            if (completionLatch != null) {
+                completionLatch.countDown();
             }
         }
         return null;
@@ -132,7 +132,7 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
     }
 
     public void onDisconnected() {
-        mCallbacks.onDebuggerDisconnected();
+        debuggerTaskCallback.onDebuggerDisconnected();
     }
 
     @Override
