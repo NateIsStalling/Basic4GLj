@@ -5946,13 +5946,19 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public static final class WrapglColor3ub implements Function {
+    public final class WrapglColor3ub implements Function {
 
         public void run(TomVM vm) {
-            glColor3ub(
-                    vm.getIntParam(3).byteValue(),
-                    vm.getIntParam(2).byteValue(),
-                    vm.getIntParam(1).byteValue());
+            // glColor3ub crashes on macOS - remap parameters to glColor3ubv
+            byteBuffer16.rewind();
+            byteBuffer16.put(vm.getIntParam(3).byteValue());
+            byteBuffer16.put(vm.getIntParam(2).byteValue());
+            byteBuffer16.put(vm.getIntParam(1).byteValue());
+
+            byteBuffer16.rewind();
+            glColor3ubv(byteBuffer16);
+
+            byteBuffer16.rewind();
         }
     }
 
@@ -6352,14 +6358,20 @@ public class GLBasicLib_gl implements FunctionLibrary {
         }
     }
 
-    public static final class WrapglColor4ub implements Function {
+    public final class WrapglColor4ub implements Function {
 
         public void run(TomVM vm) {
-            glColor4ub(
-                    vm.getIntParam(4).byteValue(),
-                    vm.getIntParam(3).byteValue(),
-                    vm.getIntParam(2).byteValue(),
-                    vm.getIntParam(1).byteValue());
+            // glColor4ub crashes on macOS - remap parameters to glColor4ubv
+            byteBuffer16.rewind();
+            byteBuffer16.put(vm.getIntParam(4).byteValue());
+            byteBuffer16.put(vm.getIntParam(3).byteValue());
+            byteBuffer16.put(vm.getIntParam(2).byteValue());
+            byteBuffer16.put(vm.getIntParam(1).byteValue());
+
+            byteBuffer16.rewind();
+            glColor4ubv(byteBuffer16);
+
+            byteBuffer16.rewind();
         }
     }
 
