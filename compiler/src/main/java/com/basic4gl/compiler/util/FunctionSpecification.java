@@ -13,6 +13,7 @@ public class FunctionSpecification {
     private boolean isFunction;
     private ValType returnType;
     private boolean timeshare;
+    private boolean conditionalTimeshare;
     private int index;
     private boolean freeTempData;
     private ParamValidationCallback paramValidationCallback;
@@ -30,14 +31,16 @@ public class FunctionSpecification {
             boolean isFunction,
             int returnType,
             boolean timeshare,
+            boolean conditionalTimeshare,
             boolean freeTempData,
             ParamValidationCallback paramValidationCallback) {
         this.functionClass = functionClass;
         this.paramTypes = paramTypes;
-        hasBrackets = brackets;
+        this.hasBrackets = brackets;
         this.isFunction = isFunction;
         this.returnType = new ValType(returnType);
         this.timeshare = timeshare;
+        this.conditionalTimeshare = conditionalTimeshare;
         this.freeTempData = freeTempData;
         this.paramValidationCallback = paramValidationCallback;
     }
@@ -49,6 +52,7 @@ public class FunctionSpecification {
             boolean isFunction,
             ValType returnType,
             boolean timeshare,
+            boolean conditionalTimeshare,
             boolean freeTempData,
             ParamValidationCallback paramValidationCallback) {
         this.functionClass = functionClass;
@@ -57,6 +61,7 @@ public class FunctionSpecification {
         this.isFunction = isFunction;
         this.returnType = returnType;
         this.timeshare = timeshare;
+        this.conditionalTimeshare = conditionalTimeshare;
         this.freeTempData = freeTempData;
         this.paramValidationCallback = paramValidationCallback;
     }
@@ -67,6 +72,7 @@ public class FunctionSpecification {
         hasBrackets = spec.hasBrackets;
         returnType = spec.returnType;
         timeshare = spec.timeshare;
+        conditionalTimeshare = spec.conditionalTimeshare;
         index = spec.index;
         freeTempData = spec.freeTempData;
         paramValidationCallback = spec.paramValidationCallback;
@@ -131,6 +137,18 @@ public class FunctionSpecification {
 
     public void setTimeshare(boolean timeshare) {
         this.timeshare = timeshare;
+    }
+
+    /**
+     * True if virtual machine should check the timeshare flag
+     * and if set perform a timesharing break immediately after returning.
+     */
+    public boolean getConditionalTimeshare() {
+        return timeshare;
+    }
+
+    public void setConditionalTimeshare(boolean conditionalTimeshare) {
+        this.conditionalTimeshare = conditionalTimeshare;
     }
 
     /**

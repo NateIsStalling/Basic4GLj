@@ -177,6 +177,11 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
                 ContinueHandler continueHandler = new ContinueHandler(vm, callbackMessage);
                 continueHandler.handle();
                 break;
+            case DisassembleCommand.COMMAND:
+                DisassembleCommand disassembleCommand = (DisassembleCommand) command;
+                DisassembleHandler disassembleHandler = new DisassembleHandler(debugger, vm);
+                disassembleHandler.handle(disassembleCommand);
+                break;
             case EvaluateWatchCommand.COMMAND:
                 EvaluateWatchCommand c = (EvaluateWatchCommand) command;
                 EvaluateWatchHandler evaluateWatchHandler = new EvaluateWatchHandler(vmDriver, compiler, vm, gson);

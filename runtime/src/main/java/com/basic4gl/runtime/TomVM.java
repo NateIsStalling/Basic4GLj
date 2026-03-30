@@ -2938,4 +2938,8 @@ public class TomVM extends HasErrorState implements Streamable {
         assertTrue(isIPValid());
         return codeInstructions.get(ip).opCode == OpCode.OP_END_CALLBACK; // Reached end callback opcode?
     }
+
+    public Instruction[] getInstructions() {
+        return codeInstructions.toArray(new Instruction[0]);
+    }
 }

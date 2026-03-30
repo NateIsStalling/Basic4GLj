@@ -1,4 +1,4 @@
-package com.basic4gl.lib.util;
+package com.basic4gl.compiler.plugin.sdk.opengl;
 
 /**
  * Created by Nate on 11/2/2015.

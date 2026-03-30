@@ -1,6 +1,6 @@
 package com.basic4gl.library.desktopgl;
 
-import com.basic4gl.lib.util.IB4GLOpenGLText;
+import com.basic4gl.library.plugin.sdk.opengl.IB4GLOpenGLText;
 
 /**
  * Interface for DLLs

@@ -12,6 +12,7 @@ import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
 import com.basic4gl.desktop.util.*;
+import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.lib.util.EditorAppSettings;
 import com.basic4gl.lib.util.IConfigurableAppSettings;
 import com.basic4gl.runtime.Debugger;
@@ -101,6 +102,7 @@ public class MainWindow
     private final JMenuItem stepOverMenuItem = new JMenuItem("Step Over");
     private final JMenuItem stepIntoMenuItem = new JMenuItem("Step Into");
     private final JMenuItem stepOutOfMenuItem = new JMenuItem("Step Out of");
+    private final JMenuItem viewVirtualMachineMenuItem = new JMenuItem("View Virtual Machine");
 
     // Toolbar Buttons
     private final JButton newButton = new JButton(createImageIcon(ICON_NEW));
@@ -293,6 +295,8 @@ public class MainWindow
         breakpointSubMenu.add(toggleBreakpointMenuItem);
         debugMenu.add(new JSeparator());
         debugMenu.add(debugMenuItem);
+        debugMenu.add(new JSeparator());
+        debugMenu.add(viewVirtualMachineMenuItem);
 
         appMenu.add(runMenuItem);
         appMenu.add(new JSeparator());
@@ -390,7 +394,10 @@ public class MainWindow
             isDelayScreenSwitchEnabled = true;
             basicEditor.actionStepOutOf();
         });
-
+        viewVirtualMachineMenuItem.addActionListener(e -> {
+            VirtualMachineViewDialog dialog = new VirtualMachineViewDialog(frame);
+            dialog.setVisible(true);
+        });
         toggleBookmarkMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, toolkit.getMenuShortcutKeyMask()));
         toggleBookmarkMenuItem.addActionListener(e -> {
             int i = tabControl.getSelectedIndex();

@@ -1,4 +1,4 @@
-package com.basic4gl.lib.util;
+package com.basic4gl.compiler.plugin.sdk.standard;
 
 /**
  * Interface to the Basic4GL text mechanism.

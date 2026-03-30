@@ -1,4 +1,4 @@
-package com.basic4gl.lib.util;
+package com.basic4gl.compiler.plugin.sdk.standard;
 
 /**
  * Used to access files from a plugin.

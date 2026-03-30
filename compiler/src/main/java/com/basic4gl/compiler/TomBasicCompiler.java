@@ -42,22 +42,39 @@ public class TomBasicCompiler extends HasErrorState {
 
     // DLL manager
     // TODO Reimplement libraries
-    // PluginDLLManager plugins;
+     PluginDLLManager plugins;
 
     // Settings
     private final boolean isCaseSensitive;
-    private final Map<String, Operator> unaryOperators; // Recognised operators. Unary have one operand (e.g NOT x)
-    private final Map<String, Operator> binaryOperators; // Binary have to (e.g. x + y)
+    /**
+     * Recognised operators. Unary have one operand (e.g NOT x)
+     */
+    private final Map<String, Operator> unaryOperators;
+    /**
+     * Binary have to (e.g. x + y)
+     */
+    private final Map<String, Operator> binaryOperators;
     private final ArrayList<String> reservedWords;
-    private final Map<String, Constant> constants; // Permanent constants.
-    private final Map<String, Constant> programConstants; // Constants declared using the const command.
+    /**
+     * Permanent constants.
+     */
+    private final Map<String, Constant> constants;
+    /**
+     * Constants declared using the const command.
+     */
+    private final Map<String, Constant> programConstants;
 
     private final Vector<Library> libraries = new Vector<>();
     private final Vector<FunctionSpecification> functions;
-    private final Map<String, List<Integer>>
-            functionIndex; // Maps function name to index of function (in mFunctions array)
+    /**
+     * Maps function name to index of function (in functions array)
+     */
+    private final Map<String, List<Integer>> functionIndex;
     private LanguageSyntax syntax;
-    private String symbolPrefix = ""; // Prefix all symbols with this text
+    /**
+     * Prefix all symbols with this text
+     */
+    private String symbolPrefix = "";
 
     // Compiler state
     private ValType regType, reg2Type;
@@ -74,43 +91,73 @@ public class TomBasicCompiler extends HasErrorState {
 
     private final Map<String, Label> labels;
     private final Map<Integer, String> labelIndex;
-    private final Vector<Jump> jumps; // Jumps to fix up
-    private final Vector<Jump> resets; // Resets to fix up
-    private final Vector<FlowControl> flowControls; // Flow control structure stack
+    /**
+     * Jumps to fix up
+     */
+    private final Vector<Jump> jumps;
+    /**
+     * Resets to fix up
+     */
+    private final Vector<Jump> resets;
+    /**
+     * Flow control structure stack
+     */
+    private final Vector<FlowControl> flowControls;
     private Token token;
-    private boolean needColon; // True if next instruction must be separated by a
-    // colon (or newline)
-    private boolean freeTempData; // True if need to generate code to free temporary
-    // data before the next instruction
+    /**
+     * True if next instruction must be separated by a colon (or newline)
+     */
+    private boolean needColon;
+    /**
+     * True if need to generate code to free temporary data before the next instruction
+     */
+    private boolean freeTempData;
     private int lastLine, lastCol;
     private boolean inFunction;
     private final InstructionPosition functionStart;
     private int functionJumpOver;
-    private final Map<String, Integer> globalUserFunctionIndex; // Maps function name to
-    // index of function
-    private final Map<String, Integer> localUserFunctionIndex; // Local user function index
-    // (for the current code
-    // block being compiled)
-    private Map<String, Integer> visibleUserFunctionIndex; // Combines local and
-    // global (where a local
-    // function overrides a
-    // global one of the
-    // same name)
-    private final Map<Integer, String> userFunctionReverseIndex; // Index->Name lookup. For
-    // debug views.
-    private int currentFunction; // Index of current active user function. Usually
-    // this will be the last in the vm.UserFunctions()
-    // vector,
-    // can be different in special cases (e.g. when compiler is called from
-    // debugger to evaluate an expression).
-    private UserFuncPrototype userFuncPrototype; // Prototype of function being
-    // declared.
+    /**
+     * Maps function name to index of function
+     */
+    private final Map<String, Integer> globalUserFunctionIndex;
+    /**
+     * Local user function index (for the current code block being compiled)
+     */
+    private final Map<String, Integer> localUserFunctionIndex;
+
+    /**
+     * Combines local and global (where a local function overrides a global one of the same name)
+     */
+    private Map<String, Integer> visibleUserFunctionIndex;
+
+    /**
+     * Index->Name lookup. For debug views.
+     */
+    private final Map<Integer, String> userFunctionReverseIndex;
+    /**
+     * Index of current active user function.
+     * Usually this will be the last in the vm.getUserFunctions() vector;
+     * can be different in special cases (e.g. when compiler is called from debugger to evaluate an expression).
+     */
+    private int currentFunction; //
+
+    /**
+     * Prototype of function being declared.
+     */
+    private UserFuncPrototype userFuncPrototype;
+
     private final Vector<com.basic4gl.compiler.RuntimeFunction> runtimeFunctions;
     private final Map<String, Integer> runtimeFunctionIndex;
 
     // Language extension
-    private final Vector<UnaryOperatorExtension> unaryOperatorExtensions; // Unary operator extensions
-    private final Vector<BinaryOperatorExtension> binaryOperatorExtensions; // Binary operator extensions
+    /**
+     * Unary operator extensions
+     */
+    private final Vector<UnaryOperatorExtension> unaryOperatorExtensions;
+    /**
+     * Binary operator extensions
+     */
+    private final Vector<BinaryOperatorExtension> binaryOperatorExtensions;
 
     public List<String> getReservedWords() {
         return reservedWords;
@@ -430,21 +477,14 @@ public class TomBasicCompiler extends HasErrorState {
         }
     }
 
-    // TODO Reimplement libraries
-    // public TomBasicCompiler(TomVM vm, PluginDLLManager plugins) {
-    // this(vm, plugins, false);
-    // }
-    public TomBasicCompiler(TomVM vm) {
-        this(vm, false);
+    public TomBasicCompiler(TomVM vm, PluginDLLManager plugins) {
+        this(vm, plugins, false);
     }
 
-    // TODO Reimplement libraries
-    // public TomBasicCompiler(TomVM vm, PluginDLLManager plugins,
-    // boolean caseSensitive) {
-    public TomBasicCompiler(TomVM vm, boolean caseSensitive) {
+    public TomBasicCompiler(TomVM vm, PluginDLLManager plugins, boolean caseSensitive) {
         this.vm = vm;
-        // TODO Reimplement libraries
-        // this.plugins = plugins;
+        this.plugins = plugins;
+
         isCaseSensitive = caseSensitive;
         syntax = LanguageSyntax.LS_BASIC4GL;
 
@@ -943,11 +983,9 @@ public class TomBasicCompiler extends HasErrorState {
             return true;
         }
 
-        // Check DLL constants
-        // TODO Reimplement libraries
-        // Constant compConst = new Constant();
-        // return (this.plugins.FindConstant(text, compConst));
-        return false; // Remove line after libraries are reimplemented
+        // Check Plugin constants
+         Constant compConst = new Constant();
+         return (this.plugins.FindConstant(text, compConst));
     }
 
     public boolean isBinaryOperator(String text) {
@@ -3798,8 +3836,9 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Find plugin DLL functions
         // TODO Reimplement libraries
-        // m_plugins.FindFunctions(m_token.m_text, functions, functionCount,
-        // TC_MAXOVERLOADEDFUNCTIONS);
+        Mutable<Integer> functionCountRef = new Mutable<>(functionCount);
+        plugins.findFunctions(token.getText(), functions, functionCountRef, TC_MAXOVERLOADEDFUNCTIONS);
+        functionCount = functionCountRef.get();
 
         // No functions?
         if (functionCount == 0) {
@@ -5752,9 +5791,8 @@ public class TomBasicCompiler extends HasErrorState {
     public boolean streamIn(DataInputStream stream) {
         try {
 
-            // TODO Reimplement Libraries
             // Unload any plugins
-            // m_plugins.Clear();
+             plugins.Clear();
 
             // Clear current program (if any)
             clearProgram();
