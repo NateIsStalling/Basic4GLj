@@ -2,6 +2,7 @@ package com.basic4gl.compiler.plugin;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class PluginJARManager extends PluginManager {
             // Filter to JARs
             if (lib instanceof PluginJAR) {
                 PluginJAR jar = (PluginJAR) lib;
-                if (jar.Filename().equals(lcase)) {
+                if (jar.getFilename().equals(lcase)) {
                     return lib;
                 }
             }
@@ -37,8 +38,8 @@ public class PluginJARManager extends PluginManager {
         super(isStandaloneExe);
         this.directory = directory;
         // Postfix a closing slash if necessary
-        if (directory != "" && directory[directory.length() - 1] != '\\')
-            directory += '\\';
+        if (directory != "" && directory[directory.length() - 1] != File.separatorChar)
+            directory += File.separatorChar;
     }
 
     /// Iterate loaded JARs
@@ -180,10 +181,10 @@ public class PluginJARManager extends PluginManager {
         for (int i = 0; i < plugins.size(); i++) {
             if (plugins.get(i) instanceof PluginJAR) {
                 PluginJAR jar = (PluginJAR) (plugins.get(i));
-                String filename = jar.FileDetails().getFilename();
+                String filename = jar.getFileDetails().getFilename();
                 writeString(stream, filename);
-                writeLong(stream, jar.FileDetails().getVersion().getMajorVersion());
-                writeLong(stream, jar.FileDetails().getVersion().getMinorVersion());
+                writeLong(stream, jar.getFileDetails().getVersion().getMajorVersion());
+                writeLong(stream, jar.getFileDetails().getVersion().getMinorVersion());
             }
         }
     }
@@ -207,9 +208,9 @@ public class PluginJARManager extends PluginManager {
 
             // Check version number
             PluginJAR jar = find(filename);
-            if (!jar.FileDetails().getVersion().equals(version)) {
+            if (!jar.getFileDetails().getVersion().equals(version)) {
                 error = "Plugin JAR " + filename + " is the wrong version.\r\n" +
-                        "Version is " + jar.FileDetails().getVersion().toString() +
+                        "Version is " + jar.getFileDetails().getVersion().toString() +
                         ", expected " + version.toString();
                 return false;
             }

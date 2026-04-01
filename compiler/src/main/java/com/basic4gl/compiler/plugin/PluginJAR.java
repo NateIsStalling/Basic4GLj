@@ -23,7 +23,7 @@ public class PluginJAR extends PluginLibrary {
         filename = filename.toLowerCase();
 
         // Load JAR
-        handle = (int) LoadLibrary((path + filename).c_str());
+        handle = (int) LoadLibrary((path + filename));
         if (handle == null)
             return;
 
@@ -40,12 +40,14 @@ public class PluginJAR extends PluginLibrary {
 
         // Call init function to get plugin interface
         plugin = init();
-        if (plugin == null)
+        if (plugin == null) {
             return;
+        }
 
         // Inform plugin it has been loaded. Let it register its functions.
-        if (!plugin.Load(*static_cast<IJAR_Basic4GL_FunctionRegistry*>(this), isStandaloneExe))
-        return;
+        if (!plugin.load(this, isStandaloneExe)) {
+            return;
+        }
         completeFunction();
 
         // JAR successfully initialised
@@ -62,11 +64,11 @@ public class PluginJAR extends PluginLibrary {
     }
 
 
-    public String Filename() { return filename; }
-    public PluginJARFile FileDetails()    { return fileDetails; }
+    public String getFilename() { return filename; }
+    public PluginJARFile getFileDetails()    { return fileDetails; }
 
     /// Plugin description for error reporting etc
-    public String Description(){
+    public String getPluginDescription(){
         return fileDetails.getFilename();
     }
 
@@ -83,7 +85,7 @@ public class PluginJAR extends PluginLibrary {
             return super.getError();
     }
 
-    private boolean LoadFileDetails(HINSTANCE jar, PluginJARFile &details) {
+    private boolean LoadFileDetails(HINSTANCE jar, PluginJARFile details) {
         Assert.assertTrue(jar != null);
 
         // Find query function
@@ -92,10 +94,16 @@ public class PluginJAR extends PluginLibrary {
             return false;
 
         // Query the JAR for details
-        char detailStr[256];
+        char[] detailStr = new char[256];
         memset(detailStr, 0, 256);
-        details.version.major = 0;
-        details.version.minor = 0;
+        PluginVersion version = details.getVersion();
+        if (version == null) {
+            version = new PluginVersion();
+            details.setVersion(version);
+        }
+        version.setMajorVersion(0);
+        version.setMinorVersion(0);
+
         int version = query(detailStr, &details.version.major, &details.version.minor);
         details.description = detailStr;
 

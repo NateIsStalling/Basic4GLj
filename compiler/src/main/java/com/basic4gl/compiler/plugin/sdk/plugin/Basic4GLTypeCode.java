@@ -11,3 +11,4 @@ public final class Basic4GLTypeCode {
     public static final int DLL_BASIC4GL_STRING = 2;
     public static final int DLL_BASIC4GL_FUNCPTR = 3;
 }
+

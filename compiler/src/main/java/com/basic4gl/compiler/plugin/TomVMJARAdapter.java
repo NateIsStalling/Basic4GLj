@@ -226,7 +226,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             // Convert structures and arrays to by-reference
             if (currentType.getPointerLevel() == 0 &&
                     (currentType.getBaseType() > 0 || currentType.getArrayLevel() > 0)) {
-                currentType.setPointerLevel(1);
+                currentType.setPointerLevel((byte)1);
                 currentType.setByReference(true);
             }
         }
