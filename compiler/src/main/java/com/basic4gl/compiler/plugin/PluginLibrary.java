@@ -9,7 +9,6 @@ import com.basic4gl.runtime.util.Mutable;
 
 import java.util.*;
 
-import static com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLTypeCode.*;
 import static com.basic4gl.runtime.types.BasicValType.*;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
@@ -20,12 +19,12 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
  */
 public class PluginLibrary implements Basic4GLFunctionRegistry {
 
-    public static int getBasicValTypeFromPluginTypeCode(int typeCode) {
+    public static int getBasicValTypeFromPluginTypeCode(Basic4GLTypeCode typeCode) {
         return switch (typeCode) {
-            case DLL_BASIC4GL_INT -> VTP_INT;
-            case DLL_BASIC4GL_FLOAT -> VTP_REAL;
-            case DLL_BASIC4GL_STRING -> VTP_STRING;
-            case DLL_BASIC4GL_FUNCPTR -> VTP_UNTYPED_FUNC_PTR;
+            case INT -> VTP_INT;
+            case FLOAT -> VTP_REAL;
+            case STRING -> VTP_STRING;
+            case FUNCPTR -> VTP_UNTYPED_FUNC_PTR;
             default -> VTP_UNDEFINED;
         };
     }
@@ -85,6 +84,8 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         this.manager = manager;
         this.plugin = null;
         this.currentStructure = null;
+        this.currentSpec = new FunctionSpecification();
+        this.constants = new HashMap<>();
 
         // Set defaults
         definingFunc = false;
@@ -95,6 +96,8 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         this.manager = manager;
         this.plugin = plugin;
         this.currentStructure = null;
+        this.currentSpec = new FunctionSpecification();
+        this.constants = new HashMap<>();
 
         // Set defaults
         definingFunc = false;

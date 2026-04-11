@@ -1,9 +1,14 @@
 package com.basic4gl.compiler.plugin;
 
+import com.basic4gl.compiler.plugin.sdk.plugin.PlatformMetadataPolicy;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.nio.file.DirectoryStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
@@ -15,6 +20,7 @@ import static com.basic4gl.runtime.util.Streaming.*;
  */
 public class PluginJARManager extends PluginManager {
     private String directory;
+    private PlatformMetadataPolicy platformMetadataPolicy = PlatformMetadataPolicy.WARN_IDE_BLOCK_EXPORT;
 
     /// Find itor for JAR with filename
     private PluginLibrary findItor(String filename) {
@@ -36,10 +42,10 @@ public class PluginJARManager extends PluginManager {
 
     public PluginJARManager(String directory, boolean isStandaloneExe) {
         super(isStandaloneExe);
-        this.directory = directory;
+        this.directory = directory == null ? "" : directory;
         // Postfix a closing slash if necessary
-        if (directory != "" && directory[directory.length() - 1] != File.separatorChar)
-            directory += File.separatorChar;
+        if (!this.directory.isEmpty() && this.directory.charAt(this.directory.length() - 1) != File.separatorChar)
+            this.directory += File.separatorChar;
     }
 
     /// Iterate loaded JARs
@@ -59,41 +65,31 @@ public class PluginJARManager extends PluginManager {
     public Vector<PluginJARFile> getJARFiles() {
         Vector<PluginJARFile> result = new Vector<>();
 
-        // Scan directory for files
-        std::string searchPath = directory + "*.jar";
-        WIN32_FIND_DATA seekData;
-        HANDLE seekHandle = FindFirstFile(searchPath.c_str(), &seekData);
-        if (seekHandle == INVALID_HANDLE_VALUE)
+        Path dirPath = Path.of(directory);
+        if (!Files.isDirectory(dirPath)) {
             return result;
-
-        // Scan JAR files in directory and add to list
-        boolean foundFile = true;
-        while (foundFile) {
-
-            // Open the JAR and query it for details
-            HINSTANCE jar = LoadLibrary((directory + seekData.cFileName).c_str());
-            if (jar != null) {
-
-                // Query details from JAR
-                PluginJARFile details = new PluginJARFile();
-                details.setFilename(seekData.cFileName);
-                details.setLoaded(isLoaded(details.filename));
-                if (LoadFileDetails(jar, details)) {
-
-                    // Add JAR file entries
-                    result.add(details);
-                }
-
-                // Unload the JAR
-                FreeLibrary(jar);
-            }
-
-            // Find next JAR in directory
-            foundFile = FindNextFile(seekHandle, &seekData);
         }
 
-        // File search finished
-        FindClose(seekHandle);
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, "*.jar")) {
+            for (Path jarPath : stream) {
+                String filename = jarPath.getFileName().toString();
+                PluginJAR loadedJar = find(filename);
+
+                if (loadedJar != null) {
+                    result.add(loadedJar.getFileDetails());
+                    continue;
+                }
+
+                PluginJARFile details = new PluginJARFile();
+                details.setFilename(filename);
+                details.setLoaded(false);
+                details.setDescription(filename);
+                details.setVersion(new PluginVersion(0, 0));
+                result.add(details);
+            }
+        } catch (IOException e) {
+            error = "Failed to scan plugin directory '" + directory + "': " + e.getMessage();
+        }
 
         return result;
     }
@@ -105,6 +101,16 @@ public class PluginJARManager extends PluginManager {
 
     /// Return true if a JAR file is loaded
     public boolean isLoaded(String filename) { return find(filename) != null; }
+
+    public PlatformMetadataPolicy getPlatformMetadataPolicy() {
+        return platformMetadataPolicy;
+    }
+
+    public void setPlatformMetadataPolicy(PlatformMetadataPolicy platformMetadataPolicy) {
+        this.platformMetadataPolicy = platformMetadataPolicy == null
+                ? PlatformMetadataPolicy.WARN_IDE_BLOCK_EXPORT
+                : platformMetadataPolicy;
+    }
 
     /// Load JAR. Returns true if JAR loaded successfully, or false if an error
     /// occurred (use Error() to retrieve text).
