@@ -131,6 +131,8 @@ public class RemoteDebugger implements IDebugger {
         requestVariables(VariablesCommand.REF_REGISTERS, 0, 256);
         requestVariables(VariablesCommand.REF_HEAP, 0, 256);
         requestVariables(VariablesCommand.REF_STACK, 0, 256);
+        requestVariables(VariablesCommand.REF_TEMP, 0, 256);
+        requestVariables(VariablesCommand.REF_ALLOCATED_STRINGS, 0, 256);
     }
 
     @Override

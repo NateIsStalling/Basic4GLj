@@ -21,6 +21,10 @@ public class VariablesHandler {
     private static final String REFERENCE_VALUE = "[REFERENCE]";
     private static final String UNALLOCATED_VALUE = "[UNALLOCATED]";
     private static final String ERROR_VALUE = "[ERROR]";
+    private static final String KIND_HEAP = "heap";
+    private static final String KIND_STACK = "stack";
+    private static final String KIND_TEMP = "temp";
+    private static final String KIND_ALLOCATED_STRINGS = "allocatedStrings";
 
     private final TomVM vm;
     private final Gson gson;
@@ -44,6 +48,8 @@ public class VariablesHandler {
             case VariablesCommand.REF_REGISTERS -> buildRegisterVariables();
             case VariablesCommand.REF_HEAP -> buildHeapVariables(start, count);
             case VariablesCommand.REF_STACK -> buildStackVariables(start, count);
+            case VariablesCommand.REF_TEMP -> buildTempVariables(start, count);
+            case VariablesCommand.REF_ALLOCATED_STRINGS -> buildAllocatedStringVariables(start, count);
             case VariablesCommand.REF_GLOBALS -> buildGlobalVariables(start, count);
             default -> new ArrayList<>();
         };
@@ -90,40 +96,106 @@ public class VariablesHandler {
     }
 
     private List<Variable> buildHeapVariables(Integer start, Integer count) {
-        int begin = Math.max(0, start != null ? start : 0);
+        int heapBase = vm.getData().getPermanent();
+        int begin = heapBase + Math.max(0, start != null ? start : 0);
         int maxRows = count != null ? Math.max(0, count) : MAX_MEMORY_ROWS;
         int end = Math.min(vm.getData().size(), begin + maxRows);
 
         List<Variable> mapped = new ArrayList<>();
         for (int i = begin; i < end; i++) {
-            mapped.add(toVmRow(Integer.toString(i), vm.getData().data().get(i)));
+            mapped.add(toVmRow(Integer.toString(i), vm.getData().data().get(i), KIND_HEAP));
         }
         return mapped;
     }
 
     private List<Variable> buildStackVariables(Integer start, Integer count) {
-        int stackSize = vm.getStack().size();
+        int stackDataStart = vm.getData().getStackTop();
+        int stackDataEnd = vm.getData().getPermanent();
+        int stackDataSize = Math.max(0, stackDataEnd - stackDataStart);
         int begin = Math.max(0, start != null ? start : 0);
         int maxRows = count != null ? Math.max(0, count) : MAX_MEMORY_ROWS;
-        int end = Math.min(stackSize, begin + maxRows);
+        int end = Math.min(stackDataSize, begin + maxRows);
 
         List<Variable> mapped = new ArrayList<>();
         for (int offset = begin; offset < end; offset++) {
-            int stackIndex = stackSize - 1 - offset;
-            mapped.add(toVmRow(Integer.toString(stackIndex), vm.getStack().get(stackIndex)));
+            // Return top-most stack data first for easier scanning in the viewer.
+            int stackIndex = stackDataEnd - 1 - offset;
+            mapped.add(toVmRow(Integer.toString(stackIndex), vm.getData().data().get(stackIndex), KIND_STACK));
         }
         return mapped;
     }
 
+    private List<Variable> buildTempVariables(Integer start, Integer count) {
+        int tempStart = 1;
+        int tempEnd = vm.getData().getTempData();
+        int tempSize = Math.max(0, tempEnd - tempStart);
+        int begin = Math.max(0, start != null ? start : 0);
+        int maxRows = count != null ? Math.max(0, count) : MAX_MEMORY_ROWS;
+        int end = Math.min(tempSize, begin + maxRows);
+
+        List<Variable> mapped = new ArrayList<>();
+        for (int offset = begin; offset < end; offset++) {
+            int tempIndex = tempStart + offset;
+            mapped.add(toVmRow(Integer.toString(tempIndex), vm.getData().data().get(tempIndex), KIND_TEMP));
+        }
+        return mapped;
+    }
+
+    private List<Variable> buildAllocatedStringVariables(Integer start, Integer count) {
+        int begin = Math.max(0, start != null ? start : 0);
+        int maxRows = count != null ? Math.max(0, count) : MAX_MEMORY_ROWS;
+
+        List<Variable> mapped = new ArrayList<>();
+        int logicalIndex = 0;
+        int maxIndex = vm.getStringStore().getArray().size();
+        for (int i = 1; i < maxIndex && mapped.size() < maxRows; i++) {
+            if (!vm.getStringStore().isIndexStored(i)) {
+                continue;
+            }
+            if (logicalIndex < begin) {
+                logicalIndex++;
+                continue;
+            }
+
+            Variable variable = new Variable();
+            variable.name = Integer.toString(i);
+            variable.value = "";
+            variable.type = "string";
+            variable.evaluateName = vm.getString(i);
+            variable.variablesReference = 0;
+            setPresentationKind(variable, KIND_ALLOCATED_STRINGS);
+            applyLazyHintForLargePayload(variable, null);
+            mapped.add(variable);
+            logicalIndex++;
+        }
+
+        return mapped;
+    }
+
     private Variable toVmRow(String name, Value value) {
+        return toVmRow(name, value, null);
+    }
+
+    private Variable toVmRow(String name, Value value, String kind) {
         Variable variable = new Variable();
         variable.name = name;
         variable.value = Integer.toString(value.getIntVal());
         variable.type = Float.toString(value.getRealVal());
         variable.evaluateName = lookupString(value.getIntVal());
         variable.variablesReference = 0;
+        setPresentationKind(variable, kind);
         applyLazyHintForLargePayload(variable, null);
         return variable;
+    }
+
+    private void setPresentationKind(Variable variable, String kind) {
+        if (kind == null || kind.trim().isEmpty()) {
+            return;
+        }
+        if (variable.presentationHint == null) {
+            variable.presentationHint = new VariablePresentationHint();
+        }
+        variable.presentationHint.kind = kind;
     }
 
     private void applyLazyHintForLargePayload(Variable variable, VariableCollection.Variable vmVariable) {
@@ -199,7 +271,7 @@ public class VariablesHandler {
             try {
                 session.getBasicRemote().sendText(json);
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException("Failed to send variables callback", e);
             }
         }
     }

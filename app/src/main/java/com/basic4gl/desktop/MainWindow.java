@@ -1503,6 +1503,13 @@ public class MainWindow
     }
 
     @Override
+    public void updateVmViewError(String scope, String message) {
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.showError(scope, message);
+        }
+    }
+
+    @Override
     public void refreshWatchList() {
         // Clear debug controls
         watchListModel.clear();

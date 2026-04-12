@@ -125,7 +125,7 @@ public class DisassembleHandler {
             try {
                 session.getBasicRemote().sendText(json);
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException("Failed to send disassembly callback", e);
             }
         }
     }

@@ -3,6 +3,7 @@ package com.basic4gl.desktop;
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
+import com.basic4gl.debug.protocol.callbacks.ErrorCallback;
 import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
@@ -481,6 +482,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_REGISTERS, 0, VARIABLES_PAGE_SIZE);
         queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_HEAP, 0, VARIABLES_PAGE_SIZE);
         queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK, 0, VARIABLES_PAGE_SIZE);
+        queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_TEMP, 0, VARIABLES_PAGE_SIZE);
+        queueVariablesPage(
+                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS, 0, VARIABLES_PAGE_SIZE);
     }
 
     private void queueVariablesPage(int reference, int start, int count) {
@@ -553,6 +557,102 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         merged.setInstructions(disassemblyPages.toArray(new DisassembledInstruction[0]));
         presenter.updateVmViewDisassembly(merged);
         return true;
+    }
+
+    private boolean handleErrorCallback(ErrorCallback callback) {
+        if (callback == null) {
+            return false;
+        }
+
+        int requestId = callback.getRequestId();
+        String detail = "Debug request failed";
+        if (callback.error != null && callback.error.format != null && !callback.error.format.trim().isEmpty()) {
+            detail = callback.error.format;
+        }
+
+        String vmViewExpression = vmViewEvaluateRequests.remove(requestId);
+        if (vmViewExpression != null) {
+            presenter.updateVmViewVariableValue(vmViewExpression, "[ERROR] " + detail);
+            presenter.updateVmViewError("variables", detail);
+            return true;
+        }
+
+        String watch = evaluateRequests.remove(requestId);
+        if (watch != null) {
+            presenter.updateEvaluateWatch(watch, "[ERROR] " + detail);
+            presenter.setCompilerStatus(detail);
+            return true;
+        }
+
+        VariablesPageRequest variableRequest = pendingVariableRequests.remove(requestId);
+        if (variableRequest != null) {
+            variablePagesByReference.remove(variableRequest.reference);
+            presenter.updateVmViewError(
+                    variableScope(variableRequest.reference),
+                    detail + " " + formatOneBasedRange(variableRequest.start, variableRequest.count));
+            return true;
+        }
+
+        DisassemblyPageRequest disassemblyRequest = pendingDisassemblyRequests.remove(requestId);
+        if (disassemblyRequest != null) {
+            disassemblyPages.clear();
+            presenter.updateVmViewError(
+                    "code",
+                    detail + " "
+                            + formatOneBasedRange(
+                                    disassemblyRequest.instructionOffset, disassemblyRequest.instructionCount));
+            return true;
+        }
+
+        String inferredScope = inferVmScope(detail);
+        if (inferredScope != null) {
+            presenter.updateVmViewError(inferredScope, detail);
+            return true;
+        }
+
+        presenter.setCompilerStatus(detail);
+        return true;
+    }
+
+    private String variableScope(int reference) {
+        switch (reference) {
+            case com.basic4gl.debug.protocol.commands.VariablesCommand.REF_HEAP:
+                return "heap";
+            case com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK:
+                return "stack";
+            case com.basic4gl.debug.protocol.commands.VariablesCommand.REF_TEMP:
+                return "temp";
+            case com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS:
+                return "allocatedStrings";
+            case com.basic4gl.debug.protocol.commands.VariablesCommand.REF_REGISTERS:
+                return "registers";
+            case com.basic4gl.debug.protocol.commands.VariablesCommand.REF_GLOBALS:
+            default:
+                return "variables";
+        }
+    }
+
+    private String inferVmScope(String detail) {
+        if (detail == null) {
+            return null;
+        }
+        String normalized = detail.toLowerCase(Locale.ROOT);
+        if (normalized.contains("(stacktrace)")) {
+            return "callStack";
+        }
+        if (normalized.contains("(disassemble)")) {
+            return "code";
+        }
+        if (normalized.contains("(variables)")) {
+            return "variables";
+        }
+        return null;
+    }
+
+    private String formatOneBasedRange(int start, int count) {
+        int first = Math.max(1, start + 1);
+        int last = Math.max(first, start + Math.max(1, count));
+        return "[" + first + " - " + last + "]";
     }
 
     public void refreshWatchList() {
@@ -775,6 +875,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
                 }
                 String watch = evaluateRequests.get(requestId);
                 presenter.updateEvaluateWatch(watch, callback.getResult());
+            }
+
+            if (message instanceof ErrorCallback) {
+                handleErrorCallback((ErrorCallback) message);
             }
         }
 

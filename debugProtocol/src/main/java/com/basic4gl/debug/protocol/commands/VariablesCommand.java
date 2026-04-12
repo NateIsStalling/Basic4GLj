@@ -10,6 +10,8 @@ public class VariablesCommand extends DebugCommand {
     public static final int REF_REGISTERS = 2;
     public static final int REF_HEAP = 3;
     public static final int REF_STACK = 4;
+    public static final int REF_TEMP = 5;
+    public static final int REF_ALLOCATED_STRINGS = 6;
 
     public VariablesArguments arguments;
 

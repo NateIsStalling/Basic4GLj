@@ -8,6 +8,13 @@ public class Callback extends ProtocolMessage {
 
     protected int requestId;
 
+    /**
+     * Outcome of the command.
+     * If true, the command was successful and the callback contains the expected data.
+     * If false, the command failed and the callback may contain an ErrorCallback
+     */
+    protected boolean success = true;
+
     public Callback() {
         super(TYPE);
     }
@@ -23,5 +30,17 @@ public class Callback extends ProtocolMessage {
 
     public void setRequestId(int requestId) {
         this.requestId = requestId;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getCommand() {
+        return command;
     }
 }

@@ -13,21 +13,45 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineView {
+    private static final Pattern RANGE_PATTERN = Pattern.compile("\\[(\\d+\\s*-\\s*\\d+)\\]");
+    public static final String SCOPE_CODE = "code";
+    public static final String SCOPE_CALL_STACK = "callStack";
+    public static final String SCOPE_VARIABLES = "variables";
+    public static final String SCOPE_REGISTERS = "registers";
+    public static final String SCOPE_HEAP = "heap";
+    public static final String SCOPE_STACK = "stack";
+    public static final String SCOPE_TEMP = "temp";
+    public static final String SCOPE_ALLOCATED_STRINGS = "allocatedStrings";
+
     public interface SeeValueHandler {
         void onSeeValueRequested(String expression);
     }
+
+    private static final Color ERROR_ROW_BG = new Color(242, 242, 242);
+    private static final Color ERROR_ROW_FG = new Color(120, 120, 120);
 
     private final DefaultTableModel codeTableModel;
     private final DefaultTableModel callStackTableModel;
     private final DefaultTableModel variablesTableModel;
     private final DefaultTableModel heapTableModel;
     private final DefaultTableModel stackTableModel;
+    private final DefaultTableModel tempTableModel;
+    private final DefaultTableModel allocatedStringsTableModel;
     private final JTable variablesTable;
     private JTable codeTable;
     private final JTextArea variableDataTextArea;
     private final JButton seeValueButton;
+    private final JLabel codeStatusLabel;
+    private final JLabel callStackStatusLabel;
+    private final JLabel variablesStatusLabel;
+    private final JLabel heapStatusLabel;
+    private final JLabel stackStatusLabel;
+    private final JLabel tempStatusLabel;
+    private final JLabel allocatedStringsStatusLabel;
     private final JTextField reg1IntegerField;
     private final JTextField reg1FloatField;
     private final JTextField reg1StringField;
@@ -100,6 +124,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         variablesTable = new JTable(variablesTableModel);
         variablesTable.setFillsViewportHeight(true);
         variablesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        applyMutedErrorRowRenderer(variablesTable);
         variableDataTextArea = new JTextArea(6, 20);
         variableDataTextArea.setEditable(false);
         variableDataTextArea.setLineWrap(true);
@@ -124,17 +149,41 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
                 return false;
             }
         };
+        tempTableModel = new DefaultTableModel(new Object[] {"Index", "Integer", "Floating Pt", "String"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        allocatedStringsTableModel =
+                new DefaultTableModel(new Object[] {"Index", "Integer", "Floating Pt", "String"}, 0) {
+                    @Override
+                    public boolean isCellEditable(int row, int column) {
+                        return false;
+                    }
+                };
+
+        codeStatusLabel = createSectionStatusLabel();
+        callStackStatusLabel = createSectionStatusLabel();
+        variablesStatusLabel = createSectionStatusLabel();
+        heapStatusLabel = createSectionStatusLabel();
+        stackStatusLabel = createSectionStatusLabel();
+        tempStatusLabel = createSectionStatusLabel();
+        allocatedStringsStatusLabel = createSectionStatusLabel();
 
         topSection.add(createCodeGroup(codeTableModel));
-        topSection.add(createGroupWithTable("Call stack", callStackTableModel));
+        topSection.add(createGroupWithTable("Call stack", callStackTableModel, callStackStatusLabel));
         topSection.add(createVariablesGroup());
 
         contentPanel.add(topSection);
 
-        // === Bottom GroupBox Section (Heap, Stack) ===
-        JPanel bottomSection = new JPanel(new GridLayout(1, 2));
-        bottomSection.add(createGroupWithTable("Heap", heapTableModel));
-        bottomSection.add(createGroupWithTable("Stack", stackTableModel));
+        // === Bottom GroupBox Section (Heap, Stack, Temp, Allocated Strings) ===
+        JPanel bottomSection = new JPanel(new GridLayout(2, 2));
+        bottomSection.add(createGroupWithTable("Heap", heapTableModel, heapStatusLabel));
+        bottomSection.add(createGroupWithTable("Stack", stackTableModel, stackStatusLabel));
+        bottomSection.add(createGroupWithTable("Temp", tempTableModel, tempStatusLabel));
+        bottomSection.add(createGroupWithTable(
+                "Allocated Strings", allocatedStringsTableModel, allocatedStringsStatusLabel));
 
         contentPanel.add(bottomSection);
 
@@ -150,15 +199,23 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         return field;
     }
 
-    private JPanel createGroupWithTable(String title, DefaultTableModel model) {
+    private JLabel createSectionStatusLabel() {
+        JLabel label = new JLabel("");
+        label.setForeground(new Color(170, 0, 0));
+        return label;
+    }
+
+    private JPanel createGroupWithTable(String title, DefaultTableModel model, JLabel statusLabel) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder(title));
 
         JTable table = new JTable(model);
         table.setFillsViewportHeight(true);
+        applyMutedErrorRowRenderer(table);
 
         JScrollPane scrollPane = new JScrollPane(table);
         panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(statusLabel, BorderLayout.SOUTH);
         return panel;
     }
 
@@ -181,6 +238,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         splitPane.setOneTouchExpandable(true);
 
         panel.add(splitPane, BorderLayout.CENTER);
+        panel.add(variablesStatusLabel, BorderLayout.SOUTH);
         return panel;
     }
 
@@ -204,6 +262,9 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
                 if (row == highlightedCodeRow) {
                     component.setBackground(new Color(255, 220, 220));
                     component.setForeground(Color.BLACK);
+                } else if (isErrorRow(table, row)) {
+                    component.setBackground(ERROR_ROW_BG);
+                    component.setForeground(ERROR_ROW_FG);
                 } else if (isSelected) {
                     component.setBackground(table.getSelectionBackground());
                     component.setForeground(table.getSelectionForeground());
@@ -216,12 +277,52 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         });
         JScrollPane tablePane = new JScrollPane(codeTable);
         codePanel.add(tablePane);
+        codePanel.add(codeStatusLabel);
 
         return codePanel;
     }
 
+    private void applyMutedErrorRowRenderer(JTable table) {
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (isErrorRow(table, row)) {
+                    component.setBackground(ERROR_ROW_BG);
+                    component.setForeground(ERROR_ROW_FG);
+                } else if (isSelected) {
+                    component.setBackground(table.getSelectionBackground());
+                    component.setForeground(table.getSelectionForeground());
+                } else {
+                    component.setBackground(table.getBackground());
+                    component.setForeground(table.getForeground());
+                }
+                return component;
+            }
+        });
+    }
+
+    private boolean isErrorRow(JTable table, int row) {
+        if (table == null || row < 0 || row >= table.getRowCount()) {
+            return false;
+        }
+        for (int col = 0; col < table.getColumnCount(); col++) {
+            Object value = table.getValueAt(row, col);
+            if (value == null) {
+                continue;
+            }
+            String text = value.toString();
+            if ("!".equals(text) || text.contains("[ERROR]")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void updateCallStack(StackTraceCallback callback) {
+        callStackStatusLabel.setText("");
         callStackTableModel.setRowCount(0);
         if (callback == null || callback.stackFrames == null) {
             return;
@@ -234,6 +335,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
 
     @Override
     public void updateDisassembly(DisassembleCallback callback) {
+        codeStatusLabel.setText("");
         codeTableModel.setRowCount(0);
         highlightedCodeRow = -1;
         if (callback == null || callback.getInstructions() == null) {
@@ -332,6 +434,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
 
     @Override
     public void updateVariables(VariablesCallback callback) {
+        variablesStatusLabel.setText("");
         if (callback == null || callback.getVariables() == null || callback.getVariables().length == 0) {
             return;
         }
@@ -439,6 +542,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
     }
 
     private void updateRegisterFields(Variable[] variables) {
+        variablesStatusLabel.setText("");
         reg1IntegerField.setText(variables[0].value != null ? variables[0].value : "");
         reg1FloatField.setText(variables[0].type != null ? variables[0].type : "");
         reg1StringField.setText(variables[0].evaluateName != null ? variables[0].evaluateName : "");
@@ -458,7 +562,14 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
     }
 
     private void updateMemoryTable(Variable[] variables) {
-        DefaultTableModel model = isStackPayload(variables) ? stackTableModel : heapTableModel;
+        String scope = getMemoryScope(variables);
+        DefaultTableModel model = getMemoryTableModel(scope);
+        clearMemoryScopeStatus(scope);
+
+        if (model == null) {
+            return;
+        }
+
         model.setRowCount(0);
         for (Variable variable : variables) {
             model.addRow(new Object[] {
@@ -470,13 +581,55 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         }
     }
 
-    private boolean isStackPayload(Variable[] variables) {
-        if (variables.length < 2) {
-            return false;
+    private String getMemoryScope(Variable[] variables) {
+        if (variables.length > 0 && variables[0] != null && variables[0].presentationHint != null) {
+            String kind = variables[0].presentationHint.kind;
+            if (SCOPE_HEAP.equals(kind)
+                    || SCOPE_STACK.equals(kind)
+                    || SCOPE_TEMP.equals(kind)
+                    || SCOPE_ALLOCATED_STRINGS.equals(kind)) {
+                return kind;
+            }
         }
-        Integer first = parseInteger(variables[0].name);
-        Integer second = parseInteger(variables[1].name);
-        return first != null && second != null && first > second;
+
+        // Fallback compatibility heuristic for older payloads that didn't include a scope kind.
+        if (variables.length >= 2) {
+            Integer first = parseInteger(variables[0].name);
+            Integer second = parseInteger(variables[1].name);
+            if (first != null && second != null && first > second) {
+                return SCOPE_STACK;
+            }
+        }
+        return SCOPE_HEAP;
+    }
+
+    private DefaultTableModel getMemoryTableModel(String scope) {
+        if (SCOPE_STACK.equals(scope)) {
+            return stackTableModel;
+        }
+        if (SCOPE_TEMP.equals(scope)) {
+            return tempTableModel;
+        }
+        if (SCOPE_ALLOCATED_STRINGS.equals(scope)) {
+            return allocatedStringsTableModel;
+        }
+        return heapTableModel;
+    }
+
+    private void clearMemoryScopeStatus(String scope) {
+        if (SCOPE_STACK.equals(scope)) {
+            stackStatusLabel.setText("");
+            return;
+        }
+        if (SCOPE_TEMP.equals(scope)) {
+            tempStatusLabel.setText("");
+            return;
+        }
+        if (SCOPE_ALLOCATED_STRINGS.equals(scope)) {
+            allocatedStringsStatusLabel.setText("");
+            return;
+        }
+        heapStatusLabel.setText("");
     }
 
     private boolean isInteger(String value) {
@@ -489,6 +642,69 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    public void showError(String scope, String message) {
+        String detail = message != null && !message.trim().isEmpty() ? message : "Unknown VM viewer error";
+        String rangeLabel = extractRangeLabel(detail);
+
+        if (SCOPE_CODE.equals(scope)) {
+            codeStatusLabel.setText(detail);
+            appendPlaceholderRow(codeTableModel, new Object[] {"!", rangeLabel, "[ERROR]", detail, ""});
+            return;
+        }
+
+        if (SCOPE_CALL_STACK.equals(scope)) {
+            callStackStatusLabel.setText(detail);
+            appendPlaceholderRow(callStackTableModel, new Object[] {"[ERROR] " + rangeLabel, detail, 0});
+            return;
+        }
+
+        if (SCOPE_HEAP.equals(scope)) {
+            heapStatusLabel.setText(detail);
+            appendPlaceholderRow(heapTableModel, new Object[] {rangeLabel, "[ERROR]", "", detail});
+            return;
+        }
+
+        if (SCOPE_STACK.equals(scope)) {
+            stackStatusLabel.setText(detail);
+            appendPlaceholderRow(stackTableModel, new Object[] {rangeLabel, "[ERROR]", "", detail});
+            return;
+        }
+
+        if (SCOPE_TEMP.equals(scope)) {
+            tempStatusLabel.setText(detail);
+            appendPlaceholderRow(tempTableModel, new Object[] {rangeLabel, "[ERROR]", "", detail});
+            return;
+        }
+
+        if (SCOPE_ALLOCATED_STRINGS.equals(scope)) {
+            allocatedStringsStatusLabel.setText(detail);
+            appendPlaceholderRow(allocatedStringsTableModel, new Object[] {rangeLabel, "[ERROR]", "", detail});
+            return;
+        }
+
+        // Variables + registers default to variable panel status.
+        variablesStatusLabel.setText(detail);
+        appendPlaceholderRow(variablesTableModel, new Object[] {"[ERROR] " + rangeLabel, detail, ""});
+    }
+
+    private void appendPlaceholderRow(DefaultTableModel model, Object[] row) {
+        if (model == null) {
+            return;
+        }
+        model.addRow(row);
+    }
+
+    private String extractRangeLabel(String detail) {
+        if (detail == null) {
+            return "[? - ?]";
+        }
+        Matcher matcher = RANGE_PATTERN.matcher(detail);
+        if (matcher.find()) {
+            return "[" + matcher.group(1) + "]";
+        }
+        return "[? - ?]";
     }
 
     @Override

@@ -47,7 +47,7 @@ public class EvaluateWatchHandler {
             try {
                 session.getBasicRemote().sendText(json);
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException("Failed to send evaluate-watch callback", e);
             }
         }
     }

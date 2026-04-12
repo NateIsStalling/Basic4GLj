@@ -33,6 +33,8 @@ interface IEditorPresenter {
 
     void updateVmViewVariableValue(String expression, String result);
 
+    void updateVmViewError(String scope, String message);
+
     void refreshWatchList();
 
     void setRecentItems(List<File> files);

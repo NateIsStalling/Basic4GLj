@@ -15,6 +15,14 @@ public class CallbackFactory {
 
         try {
             callback = gson.fromJson(commandJson, Callback.class);
+            if (!callback.success) {
+                try {
+                    return gson.fromJson(commandJson, ErrorCallback.class);
+                } catch (Exception e) {
+                    return new ErrorCallback();
+                }
+            }
+
             if (!Objects.equals(callback.type, Callback.TYPE)) {
                 return null;
             }
