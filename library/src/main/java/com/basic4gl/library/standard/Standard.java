@@ -1,10 +1,10 @@
 package com.basic4gl.library.standard;
 
-import com.basic4gl.compiler.Constant;
-import com.basic4gl.compiler.ParamTypeList;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.FunctionSpecification;
-import com.basic4gl.compiler.util.ParamValidationCallback;
+import com.basic4gl.runtime.types.FunctionSpecification;
+import com.basic4gl.runtime.types.ParamValidationCallback;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;

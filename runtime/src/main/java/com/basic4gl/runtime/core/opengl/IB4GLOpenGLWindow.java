@@ -1,4 +1,4 @@
-package com.basic4gl.compiler.plugin.sdk.opengl;
+package com.basic4gl.runtime.core.opengl;
 
 /**
  * Interface to the OpenGL window.

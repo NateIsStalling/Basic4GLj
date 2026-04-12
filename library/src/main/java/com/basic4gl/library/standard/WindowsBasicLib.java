@@ -1,9 +1,9 @@
 package com.basic4gl.library.standard;
 
-import com.basic4gl.compiler.Constant;
-import com.basic4gl.compiler.ParamTypeList;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.FunctionSpecification;
+import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;

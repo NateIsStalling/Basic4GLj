@@ -1,13 +1,11 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
-import com.basic4gl.runtime.plugin.Basic4GLObjectStore;
-import com.basic4gl.runtime.plugin.Basic4GLObjectStoreListener;
 import com.basic4gl.runtime.Store;
 
 /**
  * A resource store for plugin libraries
  */
-public class PluginJARObjectStore implements Basic4GLObjectStore {
+public class PluginObjectStore implements Basic4GLObjectStore {
     private final Store<Object> store;
     private final Basic4GLObjectStoreListener callback;
 
@@ -17,7 +15,7 @@ public class PluginJARObjectStore implements Basic4GLObjectStore {
         if (callback != null)
             callback.onObjectRemoved(this, object);
     }
-    public PluginJARObjectStore(Basic4GLObjectStoreListener callback) {
+    public PluginObjectStore(Basic4GLObjectStoreListener callback) {
         store = new Store<>(null);
         this.callback = callback;
         store.clear();			// Required to allocate single blank object

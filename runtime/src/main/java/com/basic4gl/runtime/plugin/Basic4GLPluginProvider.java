@@ -1,4 +1,4 @@
-package com.basic4gl.compiler.plugin.sdk.plugin;
+package com.basic4gl.runtime.plugin;
 
 /**
  * Service provider entry point for a Basic4GL plugin JAR.

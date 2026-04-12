@@ -1,4 +1,4 @@
-package com.basic4gl.compiler.plugin.sdk.opengl;
+package com.basic4gl.runtime.core.opengl;
 
 /**
  * Created by Nate on 11/2/2015.

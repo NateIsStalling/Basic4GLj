@@ -1,4 +1,4 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
 import com.basic4gl.runtime.types.TypeLibrary;
 import com.basic4gl.runtime.types.ValType;
@@ -7,7 +7,7 @@ import com.basic4gl.runtime.util.Assert;
 import java.util.Locale;
 import java.util.Vector;
 
-import static com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING;
+import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 public class PluginStructure {

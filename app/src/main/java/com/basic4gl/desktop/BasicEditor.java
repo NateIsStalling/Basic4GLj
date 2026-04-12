@@ -358,12 +358,12 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     public void setMode(ApMode mode, VMStatus vmStatus) {
 
         // Set the mMode parameter.
-        // Handles sending the appropriate notifications to the plugin DLLs,
+        // Handles sending the appropriate notifications to the plugins,
         // updating the UI and status messages.
         if (this.mode != mode) {
             String statusMsg = "";
 
-            // Send appropriate notifications to libraries and plugin DLLs
+            // Send appropriate notifications to libraries and plugins
             if (mode == ApMode.AP_RUNNING) {
                 if (this.mode == ApMode.AP_STOPPED) {
                     // if (!mDLLs.ProgramStart()) {

@@ -4,11 +4,11 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import com.basic4gl.compiler.FlowControl.FlowControlType;
 import com.basic4gl.compiler.Token.TokenType;
-import com.basic4gl.compiler.plugin.ExtendedFunctionSpecification;
-import com.basic4gl.compiler.plugin.PluginJARManager;
+import com.basic4gl.runtime.plugin.ExtendedFunctionSpecification;
 import com.basic4gl.compiler.util.*;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.runtime.*;
+import com.basic4gl.runtime.plugin.PluginManager;
 import com.basic4gl.runtime.stackframe.RuntimeFunction;
 import com.basic4gl.runtime.stackframe.UserFunc;
 import com.basic4gl.runtime.stackframe.UserFuncPrototype;
@@ -43,8 +43,7 @@ public class TomBasicCompiler extends HasErrorState {
     private final Parser parser;
 
     // DLL manager
-    // TODO Reimplement libraries
-     PluginJARManager plugins;
+     PluginManager plugins;
 
     // Settings
     private final boolean isCaseSensitive;
@@ -479,11 +478,11 @@ public class TomBasicCompiler extends HasErrorState {
         }
     }
 
-    public TomBasicCompiler(TomVM vm, PluginJARManager plugins) {
+    public TomBasicCompiler(TomVM vm, PluginManager plugins) {
         this(vm, plugins, false);
     }
 
-    public TomBasicCompiler(TomVM vm, PluginJARManager plugins, boolean caseSensitive) {
+    public TomBasicCompiler(TomVM vm, PluginManager plugins, boolean caseSensitive) {
         this.vm = vm;
         this.plugins = plugins;
 
@@ -644,8 +643,8 @@ public class TomBasicCompiler extends HasErrorState {
         labels.clear();
         labelIndex.clear();
         currentFunction = -1;
-        // TODO Reimplement libraries
-        // InitPlugins();
+
+        initPlugins();
         runtimeFunctions.clear();
     }
 
@@ -684,12 +683,10 @@ public class TomBasicCompiler extends HasErrorState {
         return true;
     }
 
-    // TODO Reimplement libraries
-    /*
-     * void InitPlugins() {
-     * this.plugins.StructureManager().AddVMStructures(mVM.DataTypes());
-     * this.plugins.CreateVMFunctionSpecs(); }
-     */
+    void initPlugins() {
+        this.plugins.getStructureManager().addVMStructures(vm.getDataTypes());
+        this.plugins.createVMFunctionSpecs();
+    }
 
     boolean getToken() {
         return getToken(false, false);
@@ -733,12 +730,11 @@ public class TomBasicCompiler extends HasErrorState {
                 constant = constants.get(token.getText());
                 isConstant = (constant != null);
 
-                // Try plugin DLL constants next
-                // TODO Reimplement libraries
-                // if (!isConstant)
-                // isConstant = this.plugins.FindConstant(this.token.getText(),
-                // constant);
-
+                // Try plugin constants next
+                if (!isConstant) {
+                    constant = this.plugins.findConstant(this.token.getText());
+                    isConstant = (constant != null);
+                }
                 // Otherwise try program constants
                 if (!isConstant) {
                     constant = programConstants.get(token.getText());
@@ -877,8 +873,7 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     public boolean isFunction(String name) {
-        // TODO Reimplement libraries
-        return isBuiltinFunction(name); // || this.plugins.IsPluginFunction(name);
+        return isBuiltinFunction(name) || this.plugins.isPluginFunction(name);
     }
 
     public TomVM getVM() {
@@ -893,10 +888,9 @@ public class TomBasicCompiler extends HasErrorState {
         return isCaseSensitive;
     }
 
-    // TODO Reimplement libraries
-    // public PluginDLLManager Plugins() {
-    // return this.plugins;
-    // }
+     public PluginManager getPlugins() {
+        return this.plugins;
+     }
 
     // Constants
     public void addConstant(String name, Constant c) {
@@ -930,10 +924,6 @@ public class TomBasicCompiler extends HasErrorState {
     // Functions
     public boolean isBuiltinFunction(String name) {
         return functionIndex.containsKey(name.toLowerCase());
-        // Multimap<String,Integer>.iterator i = this.functionIndex.find
-        // (LowerCase (name));
-        // return i != this.functionIndex.lastElement() && i.first == LowerCase
-        // (name);
     }
 
     public boolean isUserFunction(String name) {
@@ -3837,7 +3827,6 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Find plugin functions
-        // TODO Reimplement libraries
         Mutable<Integer> functionCountRef = new Mutable<>(functionCount);
         plugins.findFunctions(token.getText(), functions, functionCountRef, TC_MAXOVERLOADEDFUNCTIONS);
         functionCount = functionCountRef.get();
@@ -3847,10 +3836,8 @@ public class TomBasicCompiler extends HasErrorState {
 
             if (found) {
                 // We found some functions, but discarded them all. This would
-                // only
-                // ever happen if we required a return value, but none of the
-                // functions
-                // return one.
+                // only ever happen if we required a return value,
+                // but none of the functions return one.
                 setError(token.getText() + " does not return a value");
                 return false;
             } else {

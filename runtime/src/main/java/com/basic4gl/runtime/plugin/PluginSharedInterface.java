@@ -1,9 +1,9 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
 /**
  * Tracks shared interfaces registered by plugins
  */
-public class PluginJARSharedInterface {
+public class PluginSharedInterface {
     /**
      * Interface
      */
@@ -13,15 +13,15 @@ public class PluginJARSharedInterface {
      */
     private final PluginLibrary owner;
 
-    public PluginJARSharedInterface(Object intf, PluginLibrary owner) {
+    public PluginSharedInterface(Object intf, PluginLibrary owner) {
         this.intf = intf;
         this.owner = owner;
     }
-    public PluginJARSharedInterface(PluginJARSharedInterface s) {
+    public PluginSharedInterface(PluginSharedInterface s) {
         this.intf = s.intf;
         this.owner = s.owner;
     }
-    public PluginJARSharedInterface() {
+    public PluginSharedInterface() {
         this.intf = null;
         this.owner = null;
     }

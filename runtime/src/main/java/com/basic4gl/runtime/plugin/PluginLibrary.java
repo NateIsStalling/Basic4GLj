@@ -1,8 +1,7 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
 import com.basic4gl.runtime.types.Constant;
 import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.plugin.*;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.ValType;
@@ -343,7 +342,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     public Basic4GLObjectStore createObjectStore(Basic4GLObjectStoreListener listener) {
 
         // Create object store
-        Basic4GLObjectStore store = new PluginJARObjectStore(listener);
+        Basic4GLObjectStore store = new PluginObjectStore(listener);
 
         // Register it
         objectStores.add(store);

@@ -1,5 +1,6 @@
-package com.basic4gl.runtime.plugin;
+package com.basic4gl.library.plugin;
 
+import com.basic4gl.runtime.plugin.*;
 import com.basic4gl.runtime.util.Streaming;
 
 import java.io.DataInputStream;
@@ -38,12 +39,9 @@ public class PluginJARManager extends PluginManager {
         return null;
     }
 
-    public PluginJARManager(String directory, boolean isStandaloneExe) {
+    public PluginJARManager(boolean isStandaloneExe) {
         super(isStandaloneExe);
-        this.directory = directory == null ? "" : directory;
-        // Postfix a closing slash if necessary
-        if (!this.directory.isEmpty() && this.directory.charAt(this.directory.length() - 1) != File.separatorChar)
-            this.directory += File.separatorChar;
+        this.directory = "";
     }
 
     /// Iterate loaded JARs
@@ -220,5 +218,12 @@ public class PluginJARManager extends PluginManager {
             }
         }
         return true;
+    }
+
+    public void setDirectory(String directory) {
+        this.directory = directory == null ? "" : directory;
+        // Postfix a closing slash if necessary
+        if (!this.directory.isEmpty() && this.directory.charAt(this.directory.length() - 1) != File.separatorChar)
+            this.directory += File.separatorChar;
     }
 }

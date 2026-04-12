@@ -1,6 +1,5 @@
 package com.basic4gl.library.debug.commands;
 
-import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.commands.DisassembleCommand;
@@ -11,6 +10,7 @@ import com.basic4gl.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.OpCode;
+import com.basic4gl.runtime.util.ILineNumberMapping;
 import com.basic4gl.runtime.util.Mutable;
 import com.google.gson.Gson;
 
@@ -24,13 +24,14 @@ public class DisassembleHandler {
     private final TomBasicCompiler compiler;
     private final TomVM vm;
     private final Gson gson;
-    private final LineNumberMapping lineNumberMapping;
 
-    public DisassembleHandler(Debugger debugger, TomBasicCompiler compiler, TomVM vm, LineNumberMapping lineNumberMapping, Gson gson) {
+    private final ILineNumberMapping lineNumberMapping;
+
+    public DisassembleHandler(Debugger debugger, TomBasicCompiler compiler, TomVM vm, Gson gson) {
         this.debugger = debugger;
         this.compiler = compiler;
         this.vm = vm;
-        this.lineNumberMapping = lineNumberMapping;
+        this.lineNumberMapping = debugger.getLineNumberMapping();
         this.gson = gson;
     }
 
@@ -41,6 +42,7 @@ public class DisassembleHandler {
                     Instruction data = vmInstructions[ip];
                     DisassembledInstruction result = new DisassembledInstruction();
                     result.instruction = OpCode.vmOpCodeName(data.opCode);
+                    result.symbol = getOpCodeData(data);
                     result.instructionBytes = Integer.toHexString(data.opCode);
                     result.address = String.valueOf(ip);
                     result.line = data.sourceLine;
@@ -97,7 +99,7 @@ public class DisassembleHandler {
             }
             case OP_CALL_DLL: {
                 int index = i.value.getIntVal();
-                return vm.getPlugins().FunctionName(index >> 24, index & 0x00ffffff) + "()";
+                return vm.getPlugins().getFunctionName(index >> 24, index & 0x00ffffff) + "()";
             }
             case OP_COPY:
             case OP_ALLOC: {

@@ -1,4 +1,4 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
 import java.util.Locale;
 
@@ -7,7 +7,7 @@ public class PluginStructureField {
     private PluginDataType dataType;
 
     // Constructor
-    PluginStructureField(String fieldName, PluginDataType dataType) {
+    public PluginStructureField(String fieldName, PluginDataType dataType) {
         this.fieldName = fieldName.toLowerCase(Locale.getDefault());
         this.dataType = dataType;
     }

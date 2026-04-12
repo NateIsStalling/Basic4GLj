@@ -1,12 +1,8 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
-import com.basic4gl.runtime.plugin.PluginDataType;
-import com.basic4gl.runtime.plugin.PluginStructure;
-import com.basic4gl.runtime.plugin.PluginStructureManager;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Assert;
 import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
-import com.basic4gl.runtime.plugin.Basic4GLRuntime;
 import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.Value;
@@ -24,7 +20,7 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
 /**
  * Adapts the Basic4GLRuntime interface to a TomVM virtual machine.
  */
-public class TomVMJARAdapter implements Basic4GLRuntime {
+public class TomVMPluginAdapter implements Basic4GLRuntime {
     private static final int POINTER_SIZE_BYTES = Integer.BYTES;
 
     private TomVM  vm;
@@ -584,7 +580,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
         }
 
 
-    public TomVMJARAdapter(TomVM vm, PluginStructureManager structureManager) {
+    public TomVMPluginAdapter(TomVM vm, PluginStructureManager structureManager) {
         this.vm = vm;
         this.structureManager = structureManager;
     }

@@ -179,8 +179,8 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
                 break;
             case DisassembleCommand.COMMAND:
                 DisassembleCommand disassembleCommand = (DisassembleCommand) command;
-                DisassembleHandler disassembleHandler = new DisassembleHandler(debugger, vm);
-                disassembleHandler.handle(disassembleCommand);
+                DisassembleHandler disassembleHandler = new DisassembleHandler(debugger, compiler, vm, gson);
+                disassembleHandler.handle(disassembleCommand, disassembleCommand.getId(), session);
                 break;
             case EvaluateWatchCommand.COMMAND:
                 EvaluateWatchCommand c = (EvaluateWatchCommand) command;
@@ -224,6 +224,11 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
                 ToggleBreakPointHandler toggleBreakPointHandler = new ToggleBreakPointHandler(debugger, vm);
                 toggleBreakPointHandler.toggleBreakPoint(
                         toggleBreakpointCommand.filename, toggleBreakpointCommand.line);
+                break;
+            case VariablesCommand.COMMAND:
+                VariablesCommand variablesCommand = (VariablesCommand) command;
+                VariablesHandler variablesHandler = new VariablesHandler();
+                variablesHandler.handle(variablesCommand);
                 break;
             default:
                 System.out.println("Ignored unsupported command: " + command.getCommand());

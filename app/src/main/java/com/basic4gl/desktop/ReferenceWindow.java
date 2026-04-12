@@ -1,7 +1,7 @@
 package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.FunctionSpecification;
+import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.ValType;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;

@@ -1,9 +1,11 @@
 package com.basic4gl.runtime;
 
-import static com.basic4gl.runtime.types.OpCode.OP_COND_TIMESHARE;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import com.basic4gl.runtime.VariableCollection.Variable;
+import com.basic4gl.runtime.plugin.Basic4GLRuntime;
+import com.basic4gl.runtime.plugin.PluginManager;
+import com.basic4gl.runtime.plugin.TomVMPluginAdapter;
 import com.basic4gl.runtime.stackframe.*;
 import com.basic4gl.runtime.types.*;
 import com.basic4gl.runtime.util.*;
@@ -110,10 +112,9 @@ public class TomVM extends HasErrorState implements Streamable {
     private final Vector<StackDestructor> stackDestructors;
     private final Vector<StackDestructor> tempDestructors;
 
-    // Plugin DLLs
-    // TODO Reimplement libraries
-    // PluginDLLManager plugins;
-    // IDLL_Basic4GL_Runtime pluginRuntime;
+    // Plugins
+    private final PluginManager plugins;
+    private final Basic4GLRuntime pluginRuntime;
 
     // Debugger
     private final IVMDebugger debugger;
@@ -186,16 +187,11 @@ public class TomVM extends HasErrorState implements Streamable {
      */
     private boolean timeshare;
 
-    // TODO Reimplement libraries
-    // public TomVM(PluginDLLManager plugins, IVMDebugger debugger) {
-    public TomVM(IVMDebugger debugger) {
-        this(debugger, MAX_DATA, MAX_STACK);
+    public TomVM(PluginManager plugins, IVMDebugger debugger) {
+        this(plugins, debugger, MAX_DATA, MAX_STACK);
     }
 
-    // TODO Reimplement libraries
-    // public TomVM(PluginDLLManager plugins, IVMDebugger debugger,
-    //		int maxDataSize, int maxStackSize) {
-    public TomVM(IVMDebugger debugger, int maxDataSize, int maxStackSize) {
+    public TomVM(PluginManager plugins, IVMDebugger debugger, int maxDataSize, int maxStackSize) {
         this.debugger = debugger;
 
         data = new Data(maxDataSize, maxStackSize);
@@ -227,11 +223,11 @@ public class TomVM extends HasErrorState implements Streamable {
         tempBreakPoints = new ArrayList<>();
 
         initFunctions = new Vector<>();
-        // TODO Reimplement libraries
-        // this.plugins = plugins;
-        // Create plugin runtime
-        // this.pluginRuntime = new TomVMDLLAdapter(this,
-        //		this.plugins.StructureManager());
+
+         this.plugins = plugins;
+         // Create plugin runtime
+         this.pluginRuntime = new TomVMPluginAdapter(this,
+        		this.plugins.getStructureManager());
 
         clearProgram();
     }
@@ -240,6 +236,9 @@ public class TomVM extends HasErrorState implements Streamable {
      * New program
      */
     public void clearProgram() {
+        // Cancel any long running function
+        cancelLongRunningFunction();
+
         // Clear variables, data and data types
         clearVariables();
         variables.clear();
@@ -1004,12 +1003,11 @@ public class TomVM extends HasErrorState implements Streamable {
 
                 case OpCode.OP_CALL_DLL: {
 
-                    // Call plugin DLL function
-                    // TODO Reimplement libraries
-                    // int index = instruction.mValue.getIntVal();
-                    // this.plugins.GetPluginDLL(index >> 24)
-                    //		.GetFunction(index & 0x00ffffff).Run(this.pluginRuntime);
-                    setError(ERR_DLL_NOT_IMPLEMENTED); // Remove line when libraries are implemented
+                    // Call plugin function
+                    int index = instruction.value.getIntVal();
+                    this.plugins.getLoadedLibraries().get(index >> 24)
+                        .getFunction(index & 0x00ffffff).run(this.pluginRuntime);
+
                     if (!hasError()) {
                         ip++; // Proceed to next instruction
                         continue step;
@@ -2496,13 +2494,11 @@ public class TomVM extends HasErrorState implements Streamable {
         Streaming.writeString(stream, STREAM_HEADER);
         Streaming.writeLong(stream, STREAM_VERSION);
 
-        // Plugin DLLs
-        // TODO Reimplement libraries
-        // this.plugins.StreamOut(stream);
+        // Plugins
+         this.plugins.streamOut(stream);
 
         // Variables
-        variables.streamOut(stream); // Note: mVariables automatically
-        // streams out mDataTypes
+        variables.streamOut(stream); // Note: `variables` automatically streams out `dataTypes`
 
         // String constants
         Streaming.writeLong(stream, stringConstants.size());
@@ -2553,18 +2549,15 @@ public class TomVM extends HasErrorState implements Streamable {
             return false;
         }
 
-        // Plugin DLLs
-        // TODO Reimplement libraries
-        /*
-        if (!this.plugins.StreamIn(stream)) {
-        	setError(this.plugins.Error());
+        // Plugins
+        if (!this.plugins.streamIn(stream)) {
+        	setError(this.plugins.getError());
         	return false;
         }
 
         // Register plugin structures and functions in VM
-        this.plugins.StructureManager().AddVMStructures(DataTypes());
-        this.plugins.CreateVMFunctionSpecs();
-        */
+        this.plugins.getStructureManager().addVMStructures(getDataTypes());
+        this.plugins.createVMFunctionSpecs();
 
         // Variables
         variables.streamIn(stream);
@@ -2961,9 +2954,9 @@ public class TomVM extends HasErrorState implements Streamable {
         this.resources.add(resources);
     }
 
-    // Plugin DLLs
-    // TODO Reimplement libraries
-    /*PluginDLLManager& Plugins() { return m_plugins; }*/
+    // Plugins
+    public PluginManager getPlugins() { return plugins; }
+
     // Builtin/plugin function callback support
     public boolean isEndCallback() {
         assertTrue(isIPValid());

@@ -1,4 +1,4 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.TypeLibrary;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import static com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLExtendedTypeCode.*;
+import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.*;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 /**

@@ -24,6 +24,8 @@ public class DebugCommandFactory {
                     return gson.fromJson(commandJson, ConfigurationDoneCommand.class);
                 case ContinueCommand.COMMAND:
                     return gson.fromJson(commandJson, DebugCommand.class);
+                case DisassembleCommand.COMMAND:
+                    return gson.fromJson(commandJson, DisassembleCommand.class);
                 case EvaluateWatchCommand.COMMAND:
                     return gson.fromJson(commandJson, EvaluateWatchCommand.class);
                 case InitializeCommand.COMMAND:
@@ -48,6 +50,8 @@ public class DebugCommandFactory {
                     return gson.fromJson(commandJson, ToggleBreakpointCommand.class);
                 case TerminateCommand.COMMAND:
                     return gson.fromJson(commandJson, TerminateCommand.class);
+                case VariablesCommand.COMMAND:
+                    return gson.fromJson(commandJson, VariablesCommand.class);
                 default:
                     return gson.fromJson(commandJson, UnsupportedCommand.class);
             }

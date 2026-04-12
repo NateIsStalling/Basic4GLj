@@ -17,6 +17,12 @@ public class FileManager implements IFileManager {
     private String fileDirectory; // File I/O in this directory
     private String runDirectory; // Basic4GL programs are run in this directory
 
+    private final IFileManagerListener listener;
+
+    public FileManager(IFileManagerListener listener) {
+        this.listener = listener;
+    }
+
     @Override
     public int editorCount() {
         return fileEditors.size();
@@ -33,6 +39,9 @@ public class FileManager implements IFileManager {
 
     public void setCurrentDirectory(String path) {
         currentDirectory = path;
+        if (listener != null) {
+            listener.onCurrentDirectoryChanged(path);
+        }
     }
 
     public String getCurrentDirectory() {

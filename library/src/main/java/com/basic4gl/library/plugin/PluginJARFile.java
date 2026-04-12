@@ -1,4 +1,6 @@
-package com.basic4gl.runtime.plugin;
+package com.basic4gl.library.plugin;
+
+import com.basic4gl.runtime.plugin.PluginVersion;
 
 /**
  * File details of a plugin JAR.

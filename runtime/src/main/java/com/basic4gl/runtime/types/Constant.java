@@ -1,6 +1,5 @@
-package com.basic4gl.compiler;
+package com.basic4gl.runtime.types;
 
-import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import java.io.DataInputStream;

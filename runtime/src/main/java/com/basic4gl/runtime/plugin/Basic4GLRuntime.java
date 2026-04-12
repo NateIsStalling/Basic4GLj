@@ -1,14 +1,14 @@
-package com.basic4gl.compiler.plugin.sdk.plugin;
+package com.basic4gl.runtime.plugin;
 
 import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
 
 import java.nio.ByteBuffer;
 
 /**
- * The main interface to Basic4GL for runtime functions in DLLs. This interface
+ * The main interface to Basic4GL for runtime functions in plugins. This interface
  * is passed to runtime functions when they are called, and is used to perform
  * necessary services such as fetching function parameters, setting return
- * values and converting between Basic4GL and standard C/C++ formats.
+ * values and converting between Basic4GL and standard C/C++/Java formats.
  */
 public interface Basic4GLRuntime {
 

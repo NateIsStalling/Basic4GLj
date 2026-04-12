@@ -15,8 +15,10 @@ import com.basic4gl.desktop.util.*;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.lib.util.EditorAppSettings;
 import com.basic4gl.lib.util.IConfigurableAppSettings;
+import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
+import com.basic4gl.runtime.plugin.PluginManager;
 import com.basic4gl.runtime.util.Mutable;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
@@ -45,6 +47,7 @@ public class MainWindow
                 ITabProvider,
                 IToggleBreakpointListener,
                 IFileEditorActionListener,
+                IFileManagerListener,
                 EmptyTabPanel.IEmptyTabPanelListener {
 
     private final CaretListener TrackCaretPosition = new CaretListener() {
@@ -131,6 +134,7 @@ public class MainWindow
     private final IConfigurableAppSettings appSettings = new EditorAppSettings();
     private BasicEditor basicEditor;
     private FileManager fileManager;
+    private PluginJARManager plugins;
 
     private IncludeLinkGenerator linkGenerator = new IncludeLinkGenerator(this);
 
@@ -638,11 +642,12 @@ public class MainWindow
         atmf.putMapping("text/basic4gl", "com.basic4gl.desktop.editor.BasicTokenMaker");
 
         // mDLLs(GetCurrentDir().c_str(), false)
-        fileManager = new FileManager();
+        fileManager = new FileManager(this);
+        plugins = new PluginJARManager(false);
         Preprocessor preprocessor = new Preprocessor(2, new EditorSourceFileServer(fileManager), new DiskFileServer());
         Debugger debugger = new Debugger(preprocessor.getLineNumberMap());
-        TomVM vm = new TomVM(debugger);
-        TomBasicCompiler comp = new TomBasicCompiler(vm);
+        TomVM vm = new TomVM(plugins, debugger);
+        TomBasicCompiler comp = new TomBasicCompiler(vm, plugins);
         basicEditor = new BasicEditor(outputBinPath, fileManager, this, appSettings, preprocessor, debugger, comp);
 
         // TODO Confirm this doesn't break if app is ever signed
@@ -1026,8 +1031,8 @@ public class MainWindow
         // Reset default run directory to programs folder
         fileManager.setRunDirectory(fileManager.getAppDirectory() + "\\Programs");
 
-        // Clear DLLs, breakpoints, bookmarks etc
-        // this.dlls.Clear();
+        // Clear plugins, breakpoints, bookmarks etc
+        this.plugins.clear();
         basicEditor.debugger.clearUserBreakPoints();
 
         // Refresh UI
@@ -1539,5 +1544,13 @@ public class MainWindow
     @Override
     public void onOpenClick(File file) {
         actionOpen(file);
+    }
+
+    @Override
+    public void onCurrentDirectoryChanged(String directory) {
+        if (plugins != null) {
+            // TODO review whether plugins should be notified of current directory changes, or if they should just use a configured directory for loading/saving plugins
+            plugins.setDirectory(directory);
+        }
     }
 }

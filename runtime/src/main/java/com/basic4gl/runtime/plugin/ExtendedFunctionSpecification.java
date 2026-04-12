@@ -1,6 +1,6 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
-import com.basic4gl.compiler.util.FunctionSpecification;
+import com.basic4gl.runtime.types.FunctionSpecification;
 
 /**
  * Extended function specification including information about where the

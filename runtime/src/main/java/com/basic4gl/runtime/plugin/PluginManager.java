@@ -1,10 +1,6 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
 import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.plugin.Basic4GLPlugin;
-import com.basic4gl.runtime.plugin.ExtendedFunctionSpecification;
-import com.basic4gl.runtime.plugin.PluginStructure;
-import com.basic4gl.runtime.plugin.PluginStructureManager;
 import com.basic4gl.runtime.util.Mutable;
 
 import java.io.DataInputStream;
@@ -17,8 +13,8 @@ public class PluginManager
 {
 
     protected Vector<PluginLibrary> plugins = new Vector<>();
-    protected  String error;
-    protected HashMap< String, PluginJARSharedInterface> sharedInterfaces = new HashMap<>();
+    protected String error;
+    protected HashMap< String, PluginSharedInterface> sharedInterfaces = new HashMap<>();
     protected boolean isStandaloneExe;
 
     // Data structures defined by plugins
@@ -59,7 +55,7 @@ public class PluginManager
         return true;
     }
 
-    // DLL loading/unloading
+    // Plugin loading/unloading
 
     /// Iterate loaded libraries
     public Vector<PluginLibrary> getLoadedLibraries() { return plugins; }
@@ -70,7 +66,7 @@ public class PluginManager
     /// Unload all files
     public void clear(){
 
-        // Unload all DLLs
+        // Unload all plugins
         for (PluginLibrary library : plugins) {
             library.dispose();
         }
@@ -79,7 +75,7 @@ public class PluginManager
         plugins.clear();
     }
 
-    // Find DLL by name
+    // Find Plugin by name
 
     /// Return true if name matches a DLL function
     public boolean isPluginFunction(String name){
@@ -139,7 +135,7 @@ public class PluginManager
     }
 
 
-    // DLL events
+    // Plugin events
 
     /**
      *
@@ -210,7 +206,7 @@ public class PluginManager
         String key = getSharedInterfaceKey(name, major, minor);
 
         // Save interface to key
-        sharedInterfaces.put(key, new PluginJARSharedInterface(intf, owner));
+        sharedInterfaces.put(key, new PluginSharedInterface(intf, owner));
     }
 
     public Object fetchInterface(
@@ -227,7 +223,7 @@ public class PluginManager
             return null;
         }
 
-        PluginJARSharedInterface obj = sharedInterfaces.get(key);
+        PluginSharedInterface obj = sharedInterfaces.get(key);
 
         // Add a dependency between the requester and the owner.
     if (requester != null && obj.getOwner() != null) {
@@ -266,8 +262,8 @@ public class PluginManager
     }
 
 
-     void streamOut(DataOutputStream stream) throws IOException {}
-     boolean streamIn(DataInputStream stream) throws IOException {
+     public void streamOut(DataOutputStream stream) throws IOException {}
+     public boolean streamIn(DataInputStream stream) throws IOException {
          return true;
      }
 };

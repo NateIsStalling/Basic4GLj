@@ -1,4 +1,4 @@
-package com.basic4gl.compiler.plugin.sdk.plugin;
+package com.basic4gl.runtime.plugin;
 
 import java.util.Collections;
 import java.util.HashSet;
