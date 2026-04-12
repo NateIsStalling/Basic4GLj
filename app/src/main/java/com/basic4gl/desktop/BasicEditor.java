@@ -5,6 +5,7 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.ErrorCallback;
 import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
+import com.basic4gl.debug.protocol.callbacks.ReadMemoryCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.debug.protocol.types.DisassembledInstruction;
@@ -22,6 +23,8 @@ import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.InstructionPosition;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
@@ -31,12 +34,20 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     private static final int MEMORY_VARIABLES_PAGE_SIZE = 64;
     private static final int STRING_VARIABLES_PAGE_SIZE = 64;
     private static final int DISASSEMBLY_PAGE_SIZE = 200;
+    private static final int HEAP_MEMORY_PAGE_WORDS = 4096;
+    private static final int HEAP_MEMORY_PAGE_BYTES = HEAP_MEMORY_PAGE_WORDS * 4;
 
     private final IEditorPresenter presenter;
     private final Map<Integer, String> evaluateRequests = new HashMap<>();
     private final Map<Integer, String> vmViewEvaluateRequests = new HashMap<>();
     private final Map<Integer, VariablesPageRequest> pendingVariableRequests = new HashMap<>();
     private final Map<Integer, List<Variable>> variablePagesByReference = new HashMap<>();
+    private final Map<Integer, Integer> activeVariableRootRequestByReference = new HashMap<>();
+    private final Map<Integer, ReadMemoryPageRequest> pendingReadMemoryRequests = new HashMap<>();
+    private final List<Byte> heapMemoryPages = new ArrayList<>();
+    private final Map<Integer, String> allocatedStringsByIndex = new HashMap<>();
+    private Integer activeReadMemoryRootRequestId = null;
+    private String activeReadMemoryReference = null;
     private final Map<Integer, DisassemblyPageRequest> pendingDisassemblyRequests = new HashMap<>();
     private final List<DisassembledInstruction> disassemblyPages = new ArrayList<>();
     private Integer activeDisassemblyRootRequestId = null;
@@ -438,6 +449,14 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         pendingDisassemblyRequests.clear();
         disassemblyPages.clear();
         activeDisassemblyRootRequestId = null;
+        pendingVariableRequests.clear();
+        variablePagesByReference.clear();
+        activeVariableRootRequestByReference.clear();
+        pendingReadMemoryRequests.clear();
+        heapMemoryPages.clear();
+        allocatedStringsByIndex.clear();
+        activeReadMemoryRootRequestId = null;
+        activeReadMemoryReference = null;
     }
 
     public void show(DebuggerTaskCallback callbacks) {
@@ -488,44 +507,108 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     public void refreshVariables() {
         pendingVariableRequests.clear();
         variablePagesByReference.clear();
-        queueVariablesPage(
+        activeVariableRootRequestByReference.clear();
+        pendingReadMemoryRequests.clear();
+        heapMemoryPages.clear();
+        allocatedStringsByIndex.clear();
+        activeReadMemoryRootRequestId = null;
+        activeReadMemoryReference = null;
+
+        int globalsRoot = queueVariablesPage(
                 com.basic4gl.debug.protocol.commands.VariablesCommand.REF_GLOBALS,
                 0,
-                GLOBAL_VARIABLES_PAGE_SIZE);
-        queueVariablesPage(
+                GLOBAL_VARIABLES_PAGE_SIZE,
+                null);
+        if (globalsRoot > 0) {
+            activeVariableRootRequestByReference.put(
+                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_GLOBALS,
+                    globalsRoot);
+        }
+
+        int registersRoot = queueVariablesPage(
                 com.basic4gl.debug.protocol.commands.VariablesCommand.REF_REGISTERS,
                 0,
-                GLOBAL_VARIABLES_PAGE_SIZE);
-        queueVariablesPage(
-                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_HEAP,
-                0,
-                MEMORY_VARIABLES_PAGE_SIZE);
-        queueVariablesPage(
+                GLOBAL_VARIABLES_PAGE_SIZE,
+                null);
+        if (registersRoot > 0) {
+            activeVariableRootRequestByReference.put(
+                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_REGISTERS,
+                    registersRoot);
+        }
+
+        refreshHeapMemory();
+
+        int stackRoot = queueVariablesPage(
                 com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK,
                 0,
-                MEMORY_VARIABLES_PAGE_SIZE);
-        queueVariablesPage(
+                MEMORY_VARIABLES_PAGE_SIZE,
+                null);
+        if (stackRoot > 0) {
+            activeVariableRootRequestByReference.put(
+                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK,
+                    stackRoot);
+        }
+
+        int tempRoot = queueVariablesPage(
                 com.basic4gl.debug.protocol.commands.VariablesCommand.REF_TEMP,
                 0,
-                MEMORY_VARIABLES_PAGE_SIZE);
-        queueVariablesPage(
+                MEMORY_VARIABLES_PAGE_SIZE,
+                null);
+        if (tempRoot > 0) {
+            activeVariableRootRequestByReference.put(
+                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_TEMP,
+                    tempRoot);
+        }
+
+        int allocatedStringsRoot = queueVariablesPage(
                 com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS,
                 0,
-                STRING_VARIABLES_PAGE_SIZE);
+                STRING_VARIABLES_PAGE_SIZE,
+                null);
+        if (allocatedStringsRoot > 0) {
+            activeVariableRootRequestByReference.put(
+                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS,
+                    allocatedStringsRoot);
+        }
     }
 
-    private void queueVariablesPage(int reference, int start, int count) {
+    private void refreshHeapMemory() {
+        pendingReadMemoryRequests.clear();
+        heapMemoryPages.clear();
+        activeReadMemoryRootRequestId = null;
+        activeReadMemoryReference = null;
+
+        int heapBase = compiler.getVM().getData().getPermanent();
+        String memoryReference = Integer.toString(heapBase);
+        int rootRequestId = queueReadMemoryPage(memoryReference, 0, HEAP_MEMORY_PAGE_BYTES, null);
+        if (rootRequestId > 0) {
+            activeReadMemoryRootRequestId = rootRequestId;
+            activeReadMemoryReference = memoryReference;
+        }
+    }
+
+    private int queueVariablesPage(int reference, int start, int count, Integer rootRequestId) {
         int requestId = vmWorker.requestVariables(reference, start, count);
         if (requestId <= 0) {
-            return;
+            return 0;
         }
-        pendingVariableRequests.put(requestId, new VariablesPageRequest(reference, start, count));
+        int ownerRequestId = rootRequestId != null ? rootRequestId : requestId;
+        pendingVariableRequests.put(requestId, new VariablesPageRequest(reference, start, count, ownerRequestId));
+        return requestId;
     }
 
     private boolean handlePagedVariablesCallback(VariablesCallback callback) {
         VariablesPageRequest pageRequest = pendingVariableRequests.remove(callback.getRequestId());
         if (pageRequest == null) {
+            if (!activeVariableRootRequestByReference.isEmpty()) {
+                return true;
+            }
             return false;
+        }
+
+        Integer activeRoot = activeVariableRootRequestByReference.get(pageRequest.reference);
+        if (activeRoot == null || pageRequest.rootRequestId != activeRoot) {
+            return true;
         }
 
         Variable[] page = callback.getVariables() != null ? callback.getVariables() : new Variable[0];
@@ -533,16 +616,170 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         aggregate.addAll(Arrays.asList(page));
 
         if (page.length >= pageRequest.count) {
-            queueVariablesPage(pageRequest.reference, pageRequest.start + pageRequest.count, pageRequest.count);
+            queueVariablesPage(
+                    pageRequest.reference,
+                    pageRequest.start + pageRequest.count,
+                    pageRequest.count,
+                    pageRequest.rootRequestId);
             return true;
         }
 
         VariablesCallback merged = new VariablesCallback();
         merged.setRequestId(callback.getRequestId());
         merged.setVariables(aggregate.toArray(new Variable[0]));
+
+        if (pageRequest.reference
+                == com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS) {
+            updateAllocatedStringCache(aggregate);
+        }
+
         presenter.updateVmViewVariables(merged);
         variablePagesByReference.remove(pageRequest.reference);
+        activeVariableRootRequestByReference.remove(pageRequest.reference);
+
+        // Heap string-column values depend on current string-store allocations.
+        if (pageRequest.reference
+                == com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS) {
+            refreshHeapMemory();
+        }
         return true;
+    }
+
+    private int queueReadMemoryPage(String memoryReference, int offsetBytes, int countBytes, Integer rootRequestId) {
+        int requestId = vmWorker.requestReadMemory(memoryReference, offsetBytes, countBytes);
+        if (requestId <= 0) {
+            return 0;
+        }
+        int ownerRequestId = rootRequestId != null ? rootRequestId : requestId;
+        pendingReadMemoryRequests.put(
+                requestId,
+                new ReadMemoryPageRequest(memoryReference, offsetBytes, countBytes, ownerRequestId));
+        return requestId;
+    }
+
+    private boolean handlePagedReadMemoryCallback(ReadMemoryCallback callback) {
+        ReadMemoryPageRequest pageRequest = pendingReadMemoryRequests.remove(callback.getRequestId());
+        if (pageRequest == null) {
+            if (activeReadMemoryRootRequestId != null) {
+                return true;
+            }
+            return false;
+        }
+
+        if (activeReadMemoryRootRequestId == null
+                || pageRequest.rootRequestId != activeReadMemoryRootRequestId
+                || !Objects.equals(pageRequest.memoryReference, activeReadMemoryReference)) {
+            return true;
+        }
+
+        byte[] pageBytes = decodeReadMemoryData(callback.getData());
+        for (byte b : pageBytes) {
+            heapMemoryPages.add(b);
+        }
+
+        int unreadableBytes = callback.getUnreadableBytes() != null ? Math.max(0, callback.getUnreadableBytes()) : 0;
+        if (unreadableBytes == 0 && pageBytes.length >= pageRequest.countBytes) {
+            queueReadMemoryPage(
+                    pageRequest.memoryReference,
+                    pageRequest.offsetBytes + pageRequest.countBytes,
+                    pageRequest.countBytes,
+                    pageRequest.rootRequestId);
+            return true;
+        }
+
+        VariablesCallback mapped = new VariablesCallback();
+        mapped.setRequestId(callback.getRequestId());
+        mapped.setVariables(mapHeapMemoryToVariables(heapMemoryPages, pageRequest.memoryReference));
+        presenter.updateVmViewVariables(mapped);
+
+        heapMemoryPages.clear();
+        activeReadMemoryRootRequestId = null;
+        activeReadMemoryReference = null;
+        return true;
+    }
+
+    private Variable[] mapHeapMemoryToVariables(List<Byte> bytes, String memoryReference) {
+        int heapBase = parseMemoryAddress(memoryReference, compiler.getVM().getData().getPermanent());
+        int rowCount = bytes.size() / 4;
+        Variable[] mapped = new Variable[rowCount];
+        ByteBuffer buffer = ByteBuffer.allocate(bytes.size()).order(ByteOrder.LITTLE_ENDIAN);
+        for (byte b : bytes) {
+            buffer.put(b);
+        }
+        buffer.flip();
+
+        for (int row = 0; row < rowCount; row++) {
+            int index = heapBase + row;
+            int intValue = buffer.getInt();
+
+            Variable variable = new Variable();
+            variable.name = Integer.toString(index);
+            variable.value = Integer.toString(intValue);
+            variable.type = Float.toString(Float.intBitsToFloat(intValue));
+            variable.evaluateName = resolveAllocatedStringAtIntIndex(intValue);
+            variable.variablesReference = 0;
+            variable.presentationHint = new com.basic4gl.debug.protocol.types.VariablePresentationHint();
+            variable.presentationHint.kind = "heap";
+            mapped[row] = variable;
+        }
+
+        return mapped;
+    }
+
+    private byte[] decodeReadMemoryData(String encodedData) {
+        if (encodedData == null || encodedData.isEmpty()) {
+            return new byte[0];
+        }
+        try {
+            return Base64.getDecoder().decode(encodedData);
+        } catch (IllegalArgumentException ex) {
+            return new byte[0];
+        }
+    }
+
+    private int parseMemoryAddress(String memoryReference, int defaultAddress) {
+        if (memoryReference == null || memoryReference.trim().isEmpty()) {
+            return defaultAddress;
+        }
+        try {
+            return Integer.parseInt(memoryReference.trim());
+        } catch (NumberFormatException ex) {
+            return defaultAddress;
+        }
+    }
+
+    private String resolveAllocatedStringAtIntIndex(int intValue) {
+        // Heap "String" column maps through the latest allocated-strings table snapshot.
+        if (intValue <= 0) {
+            return "";
+        }
+        return allocatedStringsByIndex.getOrDefault(intValue, "");
+    }
+
+    private void updateAllocatedStringCache(List<Variable> allocatedStringRows) {
+        allocatedStringsByIndex.clear();
+        for (Variable row : allocatedStringRows) {
+            if (row == null || row.name == null) {
+                continue;
+            }
+            try {
+                int index = Integer.parseInt(row.name.trim());
+                if (index <= 0) {
+                    continue;
+                }
+                allocatedStringsByIndex.put(index, row.evaluateName != null ? row.evaluateName : "");
+            } catch (NumberFormatException ignored) {
+                // Ignore rows that do not carry a numeric string-store index.
+            }
+        }
+    }
+
+    private String formatReadMemoryRange(ReadMemoryPageRequest request) {
+        int heapBase = parseMemoryAddress(request.memoryReference, compiler.getVM().getData().getPermanent());
+        int startAddress = heapBase + Math.max(0, request.offsetBytes / 4);
+        int wordCount = Math.max(1, request.countBytes / 4);
+        int endAddress = startAddress + wordCount - 1;
+        return "[" + startAddress + " - " + endAddress + "]";
     }
 
     private int queueDisassemblyPage(int instructionOffset, int instructionCount, Integer rootRequestId) {
@@ -628,7 +865,12 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
         VariablesPageRequest variableRequest = pendingVariableRequests.remove(requestId);
         if (variableRequest != null) {
+            Integer activeRoot = activeVariableRootRequestByReference.get(variableRequest.reference);
+            if (activeRoot == null || variableRequest.rootRequestId != activeRoot) {
+                return true;
+            }
             variablePagesByReference.remove(variableRequest.reference);
+            activeVariableRootRequestByReference.remove(variableRequest.reference);
             String scope = variableScope(variableRequest.reference);
             presenter.updateVmViewError(
                     scope,
@@ -649,6 +891,18 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
             return true;
         }
 
+        ReadMemoryPageRequest readMemoryRequest = pendingReadMemoryRequests.remove(requestId);
+        if (readMemoryRequest != null) {
+            if (activeReadMemoryRootRequestId != null
+                    && readMemoryRequest.rootRequestId == activeReadMemoryRootRequestId) {
+                heapMemoryPages.clear();
+                activeReadMemoryRootRequestId = null;
+                activeReadMemoryReference = null;
+                presenter.updateVmViewError("heap", detail + " " + formatReadMemoryRange(readMemoryRequest));
+            }
+            return true;
+        }
+
         String inferredScope = inferVmScope(detail);
         if (inferredScope != null) {
             presenter.updateVmViewError(inferredScope, detail);
@@ -661,8 +915,6 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
     private String variableScope(int reference) {
         switch (reference) {
-            case com.basic4gl.debug.protocol.commands.VariablesCommand.REF_HEAP:
-                return "heap";
             case com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK:
                 return "stack";
             case com.basic4gl.debug.protocol.commands.VariablesCommand.REF_TEMP:
@@ -697,13 +949,6 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     private String formatRangeForScope(String scope, int reference, int start, int count) {
         int safeStart = Math.max(0, start);
         int safeCount = Math.max(1, count);
-
-        if ("heap".equals(scope)) {
-            int heapBase = compiler.getVM().getData().getPermanent();
-            int first = heapBase + safeStart;
-            int last = first + safeCount - 1;
-            return "[" + first + " - " + last + "]";
-        }
 
         if ("temp".equals(scope)) {
             int first = 1 + safeStart;
@@ -945,6 +1190,11 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
                 }
             }
 
+            if (message instanceof ReadMemoryCallback) {
+                ReadMemoryCallback callback = (ReadMemoryCallback) message;
+                handlePagedReadMemoryCallback(callback);
+            }
+
             if (message instanceof EvaluateWatchCallback) {
                 EvaluateWatchCallback callback = (EvaluateWatchCallback) message;
                 int requestId = callback.getRequestId();
@@ -999,11 +1249,13 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         private final int reference;
         private final int start;
         private final int count;
+        private final int rootRequestId;
 
-        private VariablesPageRequest(int reference, int start, int count) {
+        private VariablesPageRequest(int reference, int start, int count, int rootRequestId) {
             this.reference = reference;
             this.start = start;
             this.count = count;
+            this.rootRequestId = rootRequestId;
         }
     }
 
@@ -1015,6 +1267,20 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         private DisassemblyPageRequest(int instructionOffset, int instructionCount, int rootRequestId) {
             this.instructionOffset = instructionOffset;
             this.instructionCount = instructionCount;
+            this.rootRequestId = rootRequestId;
+        }
+    }
+
+    private static class ReadMemoryPageRequest {
+        private final String memoryReference;
+        private final int offsetBytes;
+        private final int countBytes;
+        private final int rootRequestId;
+
+        private ReadMemoryPageRequest(String memoryReference, int offsetBytes, int countBytes, int rootRequestId) {
+            this.memoryReference = memoryReference;
+            this.offsetBytes = offsetBytes;
+            this.countBytes = countBytes;
             this.rootRequestId = rootRequestId;
         }
     }

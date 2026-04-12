@@ -249,6 +249,11 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
                     EvaluateWatchHandler evaluateWatchHandler = new EvaluateWatchHandler(vmDriver, compiler, vm, gson);
                     evaluateWatchHandler.handle(c.watch, c.context, c.getId(), session);
                     break;
+                case ReadMemoryCommand.COMMAND:
+                    ReadMemoryCommand readMemoryCommand = (ReadMemoryCommand) command;
+                    ReadMemoryHandler readMemoryHandler = new ReadMemoryHandler(vm, gson);
+                    readMemoryHandler.handle(readMemoryCommand, readMemoryCommand.getId(), session);
+                    break;
                 case PauseCommand.COMMAND:
                     PauseHandler pauseHandler = new PauseHandler(vm);
                     pauseHandler.pause();

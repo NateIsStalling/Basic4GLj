@@ -28,6 +28,8 @@ public class DebugCommandFactory {
                     return gson.fromJson(commandJson, DisassembleCommand.class);
                 case EvaluateWatchCommand.COMMAND:
                     return gson.fromJson(commandJson, EvaluateWatchCommand.class);
+                case ReadMemoryCommand.COMMAND:
+                    return gson.fromJson(commandJson, ReadMemoryCommand.class);
                 case InitializeCommand.COMMAND:
                     return gson.fromJson(commandJson, InitializeCommand.class);
                 case PauseCommand.COMMAND:

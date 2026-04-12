@@ -21,7 +21,6 @@ public class VariablesHandler {
     private static final String REFERENCE_VALUE = "[REFERENCE]";
     private static final String UNALLOCATED_VALUE = "[UNALLOCATED]";
     private static final String ERROR_VALUE = "[ERROR]";
-    private static final String KIND_HEAP = "heap";
     private static final String KIND_STACK = "stack";
     private static final String KIND_TEMP = "temp";
     private static final String KIND_ALLOCATED_STRINGS = "allocatedStrings";
@@ -46,7 +45,6 @@ public class VariablesHandler {
 
         List<Variable> mapped = switch (reference) {
             case VariablesCommand.REF_REGISTERS -> buildRegisterVariables();
-            case VariablesCommand.REF_HEAP -> buildHeapVariables(start, count);
             case VariablesCommand.REF_STACK -> buildStackVariables(start, count);
             case VariablesCommand.REF_TEMP -> buildTempVariables(start, count);
             case VariablesCommand.REF_ALLOCATED_STRINGS -> buildAllocatedStringVariables(start, count);
@@ -62,13 +60,11 @@ public class VariablesHandler {
     }
 
     private List<Variable> buildGlobalVariables(Integer start, Integer count) {
-        int begin = Math.max(0, start != null ? start : 0);
-        int maxRows = count != null ? Math.max(0, count) : MAX_MEMORY_ROWS;
         List<VariableCollection.Variable> globals = vm.getVariables().getVariables();
-        int end = Math.min(globals.size(), begin + maxRows);
+        PageWindow window = buildPageWindow(start, count, globals.size(), MAX_MEMORY_ROWS);
 
         List<Variable> mapped = new ArrayList<>();
-        for (int i = begin; i < end; i++) {
+        for (int i = window.begin; i < window.end; i++) {
             VariableCollection.Variable vmVariable = globals.get(i);
             Variable variable = new Variable();
             variable.name = vmVariable.name;
@@ -95,29 +91,14 @@ public class VariablesHandler {
         return mapped;
     }
 
-    private List<Variable> buildHeapVariables(Integer start, Integer count) {
-        int heapBase = vm.getData().getPermanent();
-        int begin = heapBase + Math.max(0, start != null ? start : 0);
-        int maxRows = count != null ? Math.max(0, count) : MAX_MEMORY_ROWS;
-        int end = Math.min(vm.getData().size(), begin + maxRows);
-
-        List<Variable> mapped = new ArrayList<>();
-        for (int i = begin; i < end; i++) {
-            mapped.add(toVmRow(Integer.toString(i), vm.getData().data().get(i), KIND_HEAP));
-        }
-        return mapped;
-    }
-
     private List<Variable> buildStackVariables(Integer start, Integer count) {
         int stackDataStart = vm.getData().getStackTop();
         int stackDataEnd = vm.getData().getPermanent();
         int stackDataSize = Math.max(0, stackDataEnd - stackDataStart);
-        int begin = Math.max(0, start != null ? start : 0);
-        int maxRows = count != null ? Math.max(0, count) : MAX_MEMORY_ROWS;
-        int end = Math.min(stackDataSize, begin + maxRows);
+        PageWindow window = buildPageWindow(start, count, stackDataSize, MAX_MEMORY_ROWS);
 
         List<Variable> mapped = new ArrayList<>();
-        for (int offset = begin; offset < end; offset++) {
+        for (int offset = window.begin; offset < window.end; offset++) {
             // Return top-most stack data first for easier scanning in the viewer.
             int stackIndex = stackDataEnd - 1 - offset;
             mapped.add(toVmRow(Integer.toString(stackIndex), vm.getData().data().get(stackIndex), KIND_STACK));
@@ -129,12 +110,10 @@ public class VariablesHandler {
         int tempStart = 1;
         int tempEnd = vm.getData().getTempData();
         int tempSize = Math.max(0, tempEnd - tempStart);
-        int begin = Math.max(0, start != null ? start : 0);
-        int maxRows = count != null ? Math.max(0, count) : MAX_MEMORY_ROWS;
-        int end = Math.min(tempSize, begin + maxRows);
+        PageWindow window = buildPageWindow(start, count, tempSize, MAX_MEMORY_ROWS);
 
         List<Variable> mapped = new ArrayList<>();
-        for (int offset = begin; offset < end; offset++) {
+        for (int offset = window.begin; offset < window.end; offset++) {
             int tempIndex = tempStart + offset;
             mapped.add(toVmRow(Integer.toString(tempIndex), vm.getData().data().get(tempIndex), KIND_TEMP));
         }
@@ -143,7 +122,7 @@ public class VariablesHandler {
 
     private List<Variable> buildAllocatedStringVariables(Integer start, Integer count) {
         int begin = Math.max(0, start != null ? start : 0);
-        int maxRows = count != null ? Math.max(0, count) : MAX_MEMORY_ROWS;
+        int maxRows = normalizePageSize(count, MAX_MEMORY_ROWS);
 
         List<Variable> mapped = new ArrayList<>();
         int logicalIndex = 0;
@@ -251,7 +230,6 @@ public class VariablesHandler {
         if (valueType.isBasicType() || valueType.pointerLevel > 0) {
             value = vm.getData().data().get(vmVariable.dataIndex);
         } else {
-            value = new Value(vmVariable.dataIndex);
             valueType.pointerLevel = 1;
             valueType.isByRef = true;
             // TODO: Needing to review why valToString is slow for structured variables. Defer to lazy loading for now
@@ -273,6 +251,31 @@ public class VariablesHandler {
             } catch (Exception e) {
                 throw new RuntimeException("Failed to send variables callback", e);
             }
+        }
+    }
+
+    private int normalizePageSize(Integer requestedCount, int defaultLimit) {
+        if (requestedCount == null) {
+            return defaultLimit;
+        }
+        return Math.min(Math.max(0, requestedCount), defaultLimit);
+    }
+
+    private PageWindow buildPageWindow(Integer requestedStart, Integer requestedCount, int size, int defaultLimit) {
+        int safeSize = Math.max(0, size);
+        int begin = Math.min(Math.max(0, requestedStart != null ? requestedStart : 0), safeSize);
+        int pageSize = normalizePageSize(requestedCount, defaultLimit);
+        int end = Math.min(safeSize, begin + pageSize);
+        return new PageWindow(begin, end);
+    }
+
+    private static class PageWindow {
+        final int begin;
+        final int end;
+
+        PageWindow(int begin, int end) {
+            this.begin = begin;
+            this.end = end;
         }
     }
 }

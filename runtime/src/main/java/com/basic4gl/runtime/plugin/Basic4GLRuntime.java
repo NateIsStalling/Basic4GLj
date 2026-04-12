@@ -24,7 +24,7 @@ public interface Basic4GLRuntime {
      * crash.
      *
      * Basic4GL has just 3 basic types:
-     * int, float (called "real" in Basic4gl documentation) and string (char*)
+     * int, float (called "real" in Basic4gl documentation) and string (char[])
      */
     int getIntParam(int index);
     float getFloatParam(int index);

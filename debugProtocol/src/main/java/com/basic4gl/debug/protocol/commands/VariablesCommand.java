@@ -8,7 +8,7 @@ public class VariablesCommand extends DebugCommand {
     // VM-specific references used by the adapter to expose debugger views via DAP variables.
     public static final int REF_GLOBALS = 1;
     public static final int REF_REGISTERS = 2;
-    public static final int REF_HEAP = 3;
+    // NOTE: reference id 3 was previously heap and is intentionally unused.
     public static final int REF_STACK = 4;
     public static final int REF_TEMP = 5;
     public static final int REF_ALLOCATED_STRINGS = 6;

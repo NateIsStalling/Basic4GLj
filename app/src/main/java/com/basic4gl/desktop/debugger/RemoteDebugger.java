@@ -129,7 +129,6 @@ public class RemoteDebugger implements IDebugger {
     public void refreshVariables() {
         requestVariables(VariablesCommand.REF_GLOBALS, 0, 128);
         requestVariables(VariablesCommand.REF_REGISTERS, 0, 128);
-        requestVariables(VariablesCommand.REF_HEAP, 0, 64);
         requestVariables(VariablesCommand.REF_STACK, 0, 64);
         requestVariables(VariablesCommand.REF_TEMP, 0, 64);
         requestVariables(VariablesCommand.REF_ALLOCATED_STRINGS, 0, 64);
@@ -138,6 +137,12 @@ public class RemoteDebugger implements IDebugger {
     @Override
     public int requestVariables(int variablesReference, Integer start, Integer count) {
         DebugCommand command = new VariablesCommand(variablesReference, start, count);
+        return adapter.message(command);
+    }
+
+    @Override
+    public int requestReadMemory(String memoryReference, Integer offset, int count) {
+        DebugCommand command = new ReadMemoryCommand(memoryReference, offset, count);
         return adapter.message(command);
     }
 }

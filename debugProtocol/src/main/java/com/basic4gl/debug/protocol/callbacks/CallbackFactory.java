@@ -34,6 +34,8 @@ public class CallbackFactory {
                     return gson.fromJson(commandJson, EvaluateWatchCallback.class);
                 case DisassembleCallback.COMMAND:
                     return gson.fromJson(commandJson, DisassembleCallback.class);
+                case ReadMemoryCallback.COMMAND:
+                    return gson.fromJson(commandJson, ReadMemoryCallback.class);
                 case VariablesCallback.COMMAND:
                     return gson.fromJson(commandJson, VariablesCallback.class);
             }

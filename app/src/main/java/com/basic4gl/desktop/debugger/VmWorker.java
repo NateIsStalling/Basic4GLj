@@ -258,4 +258,12 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
         }
         return 0;
     }
+
+    @Override
+    public int requestReadMemory(String memoryReference, Integer offset, int count) {
+        if (remoteDebugger != null) {
+            return remoteDebugger.requestReadMemory(memoryReference, offset, count);
+        }
+        return 0;
+    }
 }

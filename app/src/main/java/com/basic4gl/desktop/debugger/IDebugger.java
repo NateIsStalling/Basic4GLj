@@ -37,4 +37,6 @@ public interface IDebugger {
     void refreshVariables();
 
     int requestVariables(int variablesReference, Integer start, Integer count);
+
+    int requestReadMemory(String memoryReference, Integer offset, int count);
 }
