@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VariablesHandler {
-    private static final int MAX_MEMORY_ROWS = 256;
+    private static final int MAX_MEMORY_ROWS = 128;
     private static final int MAX_VARIABLE_TEXT_CHARS = 500;
     private static final String TRUNCATED_SUFFIX = "... [truncated]";
     private static final String REFERENCE_VALUE = "[REFERENCE]";

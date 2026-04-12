@@ -1,5 +1,8 @@
 package com.basic4gl.desktop.vmview;
 
+import static com.basic4gl.desktop.Theme.*;
+import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
@@ -18,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineView {
-    private static final Pattern RANGE_PATTERN = Pattern.compile("\\[(\\d+\\s*-\\s*\\d+)\\]");
+    private static final Pattern RANGE_PATTERN = Pattern.compile("\\[(\\d+\\s*-\\s*\\d+)]");
     public static final String SCOPE_CODE = "code";
     public static final String SCOPE_CALL_STACK = "callStack";
     public static final String SCOPE_VARIABLES = "variables";
@@ -27,10 +30,6 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
     public static final String SCOPE_STACK = "stack";
     public static final String SCOPE_TEMP = "temp";
     public static final String SCOPE_ALLOCATED_STRINGS = "allocatedStrings";
-
-    public interface SeeValueHandler {
-        void onSeeValueRequested(String expression);
-    }
 
     private static final Color ERROR_ROW_BG = new Color(242, 242, 242);
     private static final Color ERROR_ROW_FG = new Color(120, 120, 120);
@@ -45,7 +44,12 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
     private final JTable variablesTable;
     private JTable codeTable;
     private final JTextArea variableDataTextArea;
+    private final JLabel seeValueLabel;
     private final JButton seeValueButton;
+    private final JButton playPauseButton;
+    private final JButton stepButton;
+    private final JButton stepOverButton;
+    private final JButton stepOutButton;
     private final JLabel codeStatusLabel;
     private final JLabel callStackStatusLabel;
     private final JLabel variablesStatusLabel;
@@ -65,13 +69,17 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
     private int highlightedCodeRow = -1;
     private final java.util.List<Variable> currentVariables = new ArrayList<>();
     private final Map<String, String> resolvedVariableValues = new HashMap<>();
-    private SeeValueHandler seeValueHandler;
+    private VariableWatchListener variableWatchListener;
+    private DebugControlsListener debugControlsListener;
 
     public VirtualMachineViewDialog(Frame parent) {
-        setTitle("Dialog");
+        setTitle("Virtual Machine View");
         setSize(1070, 712);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
+        if (parent != null) {
+            setLocationRelativeTo(parent);
+        }
 
         // === Registers Section ===
         JPanel registerPanel = new JPanel(new GridLayout(3, 4));
@@ -102,7 +110,11 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         contentPanel.add(registerPanel);
 
         // === Top GroupBox Section (Code, Call stack, Variables) ===
-        JPanel topSection = new JPanel(new GridLayout(1, 3));
+        JPanel topSection = new JPanel(new GridBagLayout());
+        GridBagConstraints topConstraints = new GridBagConstraints();
+        topConstraints.gridy = 0;
+        topConstraints.fill = GridBagConstraints.BOTH;
+        topConstraints.weighty = 1.0;
 
         codeTableModel = new DefaultTableModel(new Object[] {"Address", "Instruction", "Symbol", "Source"}, 0) {
             @Override
@@ -110,7 +122,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
                 return false;
             }
         };
-        callStackTableModel = new DefaultTableModel(new Object[] {"Name", "Source", "Line"}, 0) {
+        callStackTableModel = new DefaultTableModel(new Object[] {"Name"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -130,7 +142,41 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         variableDataTextArea.setEditable(false);
         variableDataTextArea.setLineWrap(true);
         variableDataTextArea.setWrapStyleWord(true);
+        seeValueLabel = new JLabel(" Pending Evaluation:");
+        seeValueLabel.setVisible(false);
         seeValueButton = new JButton("See Value");
+        playPauseButton = new JButton(createImageIcon(ICON_PLAY));
+        playPauseButton.setToolTipText("Play/Pause");
+        playPauseButton.addActionListener(e -> {
+            if (debugControlsListener != null) {
+                debugControlsListener.onPlayPauseRequested();
+            }
+        });
+
+        stepButton = new JButton(createImageIcon(ICON_STEP_IN));
+        stepButton.setToolTipText("Step");
+        stepButton.addActionListener(e -> {
+            if (debugControlsListener != null) {
+                debugControlsListener.onStepRequested();
+            }
+        });
+
+        stepOverButton = new JButton(createImageIcon(ICON_STEP_OVER));
+        stepOverButton.setToolTipText("Step Over");
+        stepOverButton.addActionListener(e -> {
+            if (debugControlsListener != null) {
+                debugControlsListener.onStepOverRequested();
+            }
+        });
+
+        stepOutButton = new JButton(createImageIcon(ICON_STEP_OUT));
+        stepOutButton.setToolTipText("Step Out");
+        stepOutButton.addActionListener(e -> {
+            if (debugControlsListener != null) {
+                debugControlsListener.onStepOutRequested();
+            }
+        });
+
         seeValueButton.setEnabled(false);
         seeValueButton.addActionListener(e -> requestSeeValueForSelection());
         variablesTable.getSelectionModel().addListSelectionListener(e -> {
@@ -172,9 +218,17 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         tempStatusLabel = createSectionStatusLabel();
         allocatedStringsStatusLabel = createSectionStatusLabel();
 
-        topSection.add(createCodeGroup(codeTableModel));
-        topSection.add(createGroupWithTable("Call stack", callStackTableModel, callStackStatusLabel));
-        topSection.add(createVariablesGroup());
+        topConstraints.gridx = 0;
+        topConstraints.weightx = 3.0;
+        topSection.add(createCodeGroup(codeTableModel), topConstraints);
+
+        topConstraints.gridx = 1;
+        topConstraints.weightx = 1.0;
+        topSection.add(createGroupWithTable("Call stack", callStackTableModel, callStackStatusLabel), topConstraints);
+
+        topConstraints.gridx = 2;
+        topConstraints.weightx = 2.0;
+        topSection.add(createVariablesGroup(), topConstraints);
 
         contentPanel.add(topSection);
 
@@ -230,16 +284,18 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
 
         JPanel detailPanel = new JPanel(new BorderLayout());
         detailPanel.add(detailScrollPane, BorderLayout.CENTER);
-        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        actionPanel.add(seeValueLabel);
         actionPanel.add(seeValueButton);
         detailPanel.add(actionPanel, BorderLayout.SOUTH);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, detailPanel);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tableScrollPane, detailPanel);
         splitPane.setResizeWeight(0.7);
         splitPane.setOneTouchExpandable(true);
 
         panel.add(splitPane, BorderLayout.CENTER);
         panel.add(variablesStatusLabel, BorderLayout.SOUTH);
+
         return panel;
     }
 
@@ -248,10 +304,14 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         codePanel.setLayout(new BoxLayout(codePanel, BoxLayout.Y_AXIS));
         codePanel.setBorder(BorderFactory.createTitledBorder("Code"));
 
-        JButton stepButton = new JButton("Step");
-        stepButton.setIcon(new ImageIcon("icons/Images/StepOver2.png")); // Make sure the path is correct
-        stepButton.setPreferredSize(new Dimension(100, 40));
-        codePanel.add(stepButton);
+        JToolBar debugToolBar = new JToolBar();
+        debugToolBar.setFloatable(false);
+        debugToolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
+        debugToolBar.add(playPauseButton);
+        debugToolBar.add(stepButton);
+        debugToolBar.add(stepOverButton);
+        debugToolBar.add(stepOutButton);
+        codePanel.add(debugToolBar);
 
         codeTable = new JTable(model);
         codeTable.setFillsViewportHeight(true);
@@ -277,7 +337,9 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
             }
         });
         JScrollPane tablePane = new JScrollPane(codeTable);
+        tablePane.setAlignmentX(Component.LEFT_ALIGNMENT);
         codePanel.add(tablePane);
+        codeStatusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         codePanel.add(codeStatusLabel);
 
         return codePanel;
@@ -330,7 +392,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         }
 
         for (StackFrame frame : callback.stackFrames) {
-            callStackTableModel.addRow(new Object[] {frame.name, frame.source, frame.line});
+            callStackTableModel.addRow(new Object[] {frame.name});
         }
     }
 
@@ -491,12 +553,14 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         if (row < 0) {
             variableDataTextArea.setText("");
             seeValueButton.setEnabled(false);
+            seeValueLabel.setVisible(false);
             return;
         }
 
         if (row >= currentVariables.size()) {
             variableDataTextArea.setText("");
             seeValueButton.setEnabled(false);
+            seeValueLabel.setVisible(false);
             return;
         }
 
@@ -512,17 +576,21 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         }
 
         boolean isLazy = variable.presentationHint != null && Boolean.TRUE.equals(variable.presentationHint.lazy);
-        seeValueButton.setEnabled(isLazy && expression != null && seeValueHandler != null);
-        String lazyText = isLazy ? "yes" : "no";
+        seeValueLabel.setVisible(isLazy);
+        seeValueButton.setEnabled(isLazy && expression != null && variableWatchListener != null);
 
-        variableDataTextArea.setText("Name: " + name + "\nType: " + type + "\nLazy: " + lazyText
+        variableDataTextArea.setText("Name: " + name + "\nType: " + type
                 + "\n\nValue:\n" + displayedValue);
         variableDataTextArea.setCaretPosition(0);
     }
 
-    public void setSeeValueHandler(SeeValueHandler seeValueHandler) {
-        this.seeValueHandler = seeValueHandler;
+    public void setSeeValueHandler(VariableWatchListener variableWatchListener) {
+        this.variableWatchListener = variableWatchListener;
         updateVariableDataPaneFromSelection();
+    }
+
+    public void setDebugControlsHandler(DebugControlsListener debugControlsListener) {
+        this.debugControlsListener = debugControlsListener;
     }
 
     public void applySeeValueResult(String expression, String value) {
@@ -535,14 +603,14 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
 
     private void requestSeeValueForSelection() {
         int row = variablesTable.getSelectedRow();
-        if (row < 0 || row >= currentVariables.size() || seeValueHandler == null) {
+        if (row < 0 || row >= currentVariables.size() || variableWatchListener == null) {
             return;
         }
         String expression = getExpression(currentVariables.get(row));
         if (expression == null) {
             return;
         }
-        seeValueHandler.onSeeValueRequested(expression);
+        variableWatchListener.onSeeValueRequested(expression);
     }
 
     private String getExpression(Variable variable) {
@@ -617,6 +685,9 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
 
         // Fallback compatibility heuristic for older payloads that didn't include a scope kind.
         if (variables.length >= 2) {
+            if (variables[0] == null || variables[1] == null) {
+                return SCOPE_HEAP;
+            }
             Integer first = parseInteger(variables[0].name);
             Integer second = parseInteger(variables[1].name);
             if (first != null && second != null && first > second) {
@@ -673,7 +744,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
 
         if (SCOPE_CODE.equals(scope)) {
             codeStatusLabel.setText(detail);
-            appendPlaceholderRow(codeTableModel, new Object[] {"!", rangeLabel, "[ERROR]", detail, ""});
+            insertPlaceholderRow(codeTableModel, scope, rangeLabel, new Object[] {"!", rangeLabel, "[ERROR]", detail, ""});
             return;
         }
 
@@ -685,25 +756,29 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
 
         if (SCOPE_HEAP.equals(scope)) {
             heapStatusLabel.setText(detail);
-            appendPlaceholderRow(heapTableModel, new Object[] {rangeLabel, "[ERROR]", "", detail});
+            insertPlaceholderRow(heapTableModel, scope, rangeLabel, new Object[] {rangeLabel, "[ERROR]", "", detail});
             return;
         }
 
         if (SCOPE_STACK.equals(scope)) {
             stackStatusLabel.setText(detail);
-            appendPlaceholderRow(stackTableModel, new Object[] {rangeLabel, "[ERROR]", "", detail});
+            insertPlaceholderRow(stackTableModel, scope, rangeLabel, new Object[] {rangeLabel, "[ERROR]", "", detail});
             return;
         }
 
         if (SCOPE_TEMP.equals(scope)) {
             tempStatusLabel.setText(detail);
-            appendPlaceholderRow(tempTableModel, new Object[] {rangeLabel, "[ERROR]", "", detail});
+            insertPlaceholderRow(tempTableModel, scope, rangeLabel, new Object[] {rangeLabel, "[ERROR]", "", detail});
             return;
         }
 
         if (SCOPE_ALLOCATED_STRINGS.equals(scope)) {
             allocatedStringsStatusLabel.setText(detail);
-            appendPlaceholderRow(allocatedStringsTableModel, new Object[] {rangeLabel, "[ERROR]", "", detail});
+            insertPlaceholderRow(
+                    allocatedStringsTableModel,
+                    scope,
+                    rangeLabel,
+                    new Object[] {rangeLabel, "[ERROR]", "", detail});
             return;
         }
 
@@ -717,6 +792,80 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
             return;
         }
         model.addRow(row);
+    }
+
+    private void insertPlaceholderRow(DefaultTableModel model, String scope, String rangeLabel, Object[] row) {
+        if (model == null) {
+            return;
+        }
+        Integer rangeStart = parseRangeStart(rangeLabel);
+        if (rangeStart == null) {
+            model.addRow(row);
+            return;
+        }
+
+        int insertAt = model.getRowCount();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            Integer rowRangeStart = parseRangeStart(String.valueOf(model.getValueAt(i, 0)));
+            Integer rowAddress = parseAddressCell(model, i, scope);
+            Integer key = rowRangeStart != null ? rowRangeStart : rowAddress;
+            if (key == null) {
+                continue;
+            }
+
+            if (SCOPE_STACK.equals(scope)) {
+                if (rangeStart > key) {
+                    insertAt = i;
+                    break;
+                }
+            } else {
+                if (rangeStart < key) {
+                    insertAt = i;
+                    break;
+                }
+            }
+        }
+        model.insertRow(insertAt, row);
+    }
+
+    private Integer parseRangeStart(String label) {
+        if (label == null) {
+            return null;
+        }
+        Matcher matcher = RANGE_PATTERN.matcher(label);
+        if (!matcher.find()) {
+            return null;
+        }
+        String text = matcher.group(1);
+        int dash = text.indexOf('-');
+        if (dash < 0) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(text.substring(0, dash).trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private Integer parseAddressCell(DefaultTableModel model, int row, String scope) {
+        int column = 0;
+        if (row < 0 || row >= model.getRowCount()) {
+            return null;
+        }
+        Object value = model.getValueAt(row, column);
+        if (value == null) {
+            return null;
+        }
+        String text = value.toString();
+        if (text.contains("[")) {
+            return parseRangeStart(text);
+        }
+        try {
+            return Integer.parseInt(text.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private String extractRangeLabel(String detail) {
@@ -733,5 +882,9 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
     @Override
     public void setVmRunning(boolean running) {
         statusLabel.setText(running ? "VM: running" : "VM: stopped/paused");
+        playPauseButton.setIcon(createImageIcon(running ? ICON_PAUSE : ICON_PLAY));
+        stepButton.setEnabled(!running);
+        stepOverButton.setEnabled(!running);
+        stepOutButton.setEnabled(!running);
     }
 }

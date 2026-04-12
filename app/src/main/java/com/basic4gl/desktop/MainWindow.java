@@ -14,13 +14,13 @@ import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
 import com.basic4gl.desktop.util.*;
+import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.lib.util.EditorAppSettings;
 import com.basic4gl.lib.util.IConfigurableAppSettings;
 import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.plugin.PluginManager;
 import com.basic4gl.runtime.util.Mutable;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
@@ -407,6 +407,27 @@ public class MainWindow
             if (virtualMachineViewDialog == null || !virtualMachineViewDialog.isDisplayable()) {
                 virtualMachineViewDialog = new VirtualMachineViewDialog(frame);
                 virtualMachineViewDialog.setSeeValueHandler(expression -> basicEditor.evaluateVmViewVariable(expression));
+                virtualMachineViewDialog.setDebugControlsHandler(new DebugControlsListener() {
+                    @Override
+                    public void onPlayPauseRequested() {
+                        basicEditor.actionPlayPause();
+                    }
+
+                    @Override
+                    public void onStepRequested() {
+                        basicEditor.actionStepInto();
+                    }
+
+                    @Override
+                    public void onStepOverRequested() {
+                        basicEditor.actionStep();
+                    }
+
+                    @Override
+                    public void onStepOutRequested() {
+                        basicEditor.actionStepOutOf();
+                    }
+                });
             }
             if (lastSourceRow >= 0) {
                 virtualMachineViewDialog.setCurrentSourcePosition(lastSourceRow, lastSourceColumn);

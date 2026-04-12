@@ -27,7 +27,9 @@ import java.util.concurrent.CountDownLatch;
 
 public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider {
 
-    private static final int VARIABLES_PAGE_SIZE = 256;
+    private static final int GLOBAL_VARIABLES_PAGE_SIZE = 128;
+    private static final int MEMORY_VARIABLES_PAGE_SIZE = 64;
+    private static final int STRING_VARIABLES_PAGE_SIZE = 64;
     private static final int DISASSEMBLY_PAGE_SIZE = 200;
 
     private final IEditorPresenter presenter;
@@ -486,13 +488,30 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     public void refreshVariables() {
         pendingVariableRequests.clear();
         variablePagesByReference.clear();
-        queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_GLOBALS, 0, VARIABLES_PAGE_SIZE);
-        queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_REGISTERS, 0, VARIABLES_PAGE_SIZE);
-        queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_HEAP, 0, VARIABLES_PAGE_SIZE);
-        queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK, 0, VARIABLES_PAGE_SIZE);
-        queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_TEMP, 0, VARIABLES_PAGE_SIZE);
         queueVariablesPage(
-                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS, 0, VARIABLES_PAGE_SIZE);
+                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_GLOBALS,
+                0,
+                GLOBAL_VARIABLES_PAGE_SIZE);
+        queueVariablesPage(
+                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_REGISTERS,
+                0,
+                GLOBAL_VARIABLES_PAGE_SIZE);
+        queueVariablesPage(
+                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_HEAP,
+                0,
+                MEMORY_VARIABLES_PAGE_SIZE);
+        queueVariablesPage(
+                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK,
+                0,
+                MEMORY_VARIABLES_PAGE_SIZE);
+        queueVariablesPage(
+                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_TEMP,
+                0,
+                MEMORY_VARIABLES_PAGE_SIZE);
+        queueVariablesPage(
+                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS,
+                0,
+                STRING_VARIABLES_PAGE_SIZE);
     }
 
     private void queueVariablesPage(int reference, int start, int count) {
@@ -610,9 +629,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         VariablesPageRequest variableRequest = pendingVariableRequests.remove(requestId);
         if (variableRequest != null) {
             variablePagesByReference.remove(variableRequest.reference);
+            String scope = variableScope(variableRequest.reference);
             presenter.updateVmViewError(
-                    variableScope(variableRequest.reference),
-                    detail + " " + formatOneBasedRange(variableRequest.start, variableRequest.count));
+                    scope,
+                    detail + " " + formatRangeForScope(scope, variableRequest.reference, variableRequest.start, variableRequest.count));
             return true;
         }
 
@@ -625,9 +645,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
             }
             presenter.updateVmViewError(
                     "code",
-                    detail + " "
-                            + formatOneBasedRange(
-                                    disassemblyRequest.instructionOffset, disassemblyRequest.instructionCount));
+                    detail + " " + formatCodeRange(disassemblyRequest.instructionOffset, disassemblyRequest.instructionCount));
             return true;
         }
 
@@ -676,9 +694,44 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         return null;
     }
 
-    private String formatOneBasedRange(int start, int count) {
-        int first = Math.max(1, start + 1);
-        int last = Math.max(first, start + Math.max(1, count));
+    private String formatRangeForScope(String scope, int reference, int start, int count) {
+        int safeStart = Math.max(0, start);
+        int safeCount = Math.max(1, count);
+
+        if ("heap".equals(scope)) {
+            int heapBase = compiler.getVM().getData().getPermanent();
+            int first = heapBase + safeStart;
+            int last = first + safeCount - 1;
+            return "[" + first + " - " + last + "]";
+        }
+
+        if ("temp".equals(scope)) {
+            int first = 1 + safeStart;
+            int last = first + safeCount - 1;
+            return "[" + first + " - " + last + "]";
+        }
+
+        if ("stack".equals(scope)) {
+            int stackEnd = compiler.getVM().getData().getPermanent();
+            int first = stackEnd - 1 - safeStart;
+            int last = first - safeCount + 1;
+            return "[" + first + " - " + last + "]";
+        }
+
+        if (reference == com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS) {
+            int first = safeStart + 1;
+            int last = first + safeCount - 1;
+            return "[" + first + " - " + last + "]";
+        }
+
+        int first = Math.max(1, safeStart + 1);
+        int last = first + safeCount - 1;
+        return "[" + first + " - " + last + "]";
+    }
+
+    private String formatCodeRange(int instructionOffset, int instructionCount) {
+        int first = Math.max(0, instructionOffset);
+        int last = first + Math.max(1, instructionCount) - 1;
         return "[" + first + " - " + last + "]";
     }
 

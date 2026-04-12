@@ -127,12 +127,12 @@ public class RemoteDebugger implements IDebugger {
 
     @Override
     public void refreshVariables() {
-        requestVariables(VariablesCommand.REF_GLOBALS, 0, 256);
-        requestVariables(VariablesCommand.REF_REGISTERS, 0, 256);
-        requestVariables(VariablesCommand.REF_HEAP, 0, 256);
-        requestVariables(VariablesCommand.REF_STACK, 0, 256);
-        requestVariables(VariablesCommand.REF_TEMP, 0, 256);
-        requestVariables(VariablesCommand.REF_ALLOCATED_STRINGS, 0, 256);
+        requestVariables(VariablesCommand.REF_GLOBALS, 0, 128);
+        requestVariables(VariablesCommand.REF_REGISTERS, 0, 128);
+        requestVariables(VariablesCommand.REF_HEAP, 0, 64);
+        requestVariables(VariablesCommand.REF_STACK, 0, 64);
+        requestVariables(VariablesCommand.REF_TEMP, 0, 64);
+        requestVariables(VariablesCommand.REF_ALLOCATED_STRINGS, 0, 64);
     }
 
     @Override
