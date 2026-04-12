@@ -145,6 +145,8 @@ public class MainWindow
     // Debugging
     private boolean isDebugMode = false;
     private VirtualMachineViewDialog virtualMachineViewDialog;
+    private int lastSourceRow = -1;
+    private int lastSourceColumn = -1;
 
     // Set when stepping. Delays switching to the output window for the first 1000 op-codes.
     // (To prevent excessive screen mode switches when debugging full-screen programs.)
@@ -405,6 +407,9 @@ public class MainWindow
             if (virtualMachineViewDialog == null || !virtualMachineViewDialog.isDisplayable()) {
                 virtualMachineViewDialog = new VirtualMachineViewDialog(frame);
                 virtualMachineViewDialog.setSeeValueHandler(expression -> basicEditor.evaluateVmViewVariable(expression));
+            }
+            if (lastSourceRow >= 0) {
+                virtualMachineViewDialog.setCurrentSourcePosition(lastSourceRow, lastSourceColumn);
             }
             virtualMachineViewDialog.setVmRunning(basicEditor.getMode() == ApMode.AP_RUNNING);
             virtualMachineViewDialog.setVisible(true);
@@ -1121,6 +1126,8 @@ public class MainWindow
 
     @Override
     public void placeCursorAtProcessed(final int row, int col) {
+        lastSourceRow = row;
+        lastSourceColumn = col;
 
         // Place cursor at position corresponding to row, col in post-processed file.
         // Find corresponding source position

@@ -37,6 +37,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     private final Map<Integer, List<Variable>> variablePagesByReference = new HashMap<>();
     private final Map<Integer, DisassemblyPageRequest> pendingDisassemblyRequests = new HashMap<>();
     private final List<DisassembledInstruction> disassemblyPages = new ArrayList<>();
+    private Integer activeDisassemblyRootRequestId = null;
 
     // Runtime settings
     private final IConfigurableAppSettings appSettings;
@@ -432,6 +433,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         vmWorker.setCompletionLatch(new CountDownLatch(1));
 
         callbackMessage.setMessage(new CallbackMessage(), null);
+        pendingDisassemblyRequests.clear();
+        disassemblyPages.clear();
+        activeDisassemblyRootRequestId = null;
     }
 
     public void show(DebuggerTaskCallback callbacks) {
@@ -472,7 +476,11 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     public void refreshDisassembly() {
         pendingDisassemblyRequests.clear();
         disassemblyPages.clear();
-        queueDisassemblyPage(0, DISASSEMBLY_PAGE_SIZE);
+        activeDisassemblyRootRequestId = null;
+        int rootRequestId = queueDisassemblyPage(0, DISASSEMBLY_PAGE_SIZE, null);
+        if (rootRequestId > 0) {
+            activeDisassemblyRootRequestId = rootRequestId;
+        }
     }
 
     public void refreshVariables() {
@@ -518,18 +526,29 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         return true;
     }
 
-    private void queueDisassemblyPage(int instructionOffset, int instructionCount) {
+    private int queueDisassemblyPage(int instructionOffset, int instructionCount, Integer rootRequestId) {
         int requestId = vmWorker.requestDisassembly(instructionOffset, instructionCount);
         if (requestId <= 0) {
-            return;
+            return 0;
         }
-        pendingDisassemblyRequests.put(requestId, new DisassemblyPageRequest(instructionOffset, instructionCount));
+        int ownerRequestId = rootRequestId != null ? rootRequestId : requestId;
+        pendingDisassemblyRequests.put(
+                requestId,
+                new DisassemblyPageRequest(instructionOffset, instructionCount, ownerRequestId));
+        return requestId;
     }
 
     private boolean handlePagedDisassemblyCallback(DisassembleCallback callback) {
         DisassemblyPageRequest pageRequest = pendingDisassemblyRequests.remove(callback.getRequestId());
         if (pageRequest == null) {
+            if (activeDisassemblyRootRequestId != null) {
+                return true;
+            }
             return false;
+        }
+
+        if (activeDisassemblyRootRequestId == null || pageRequest.rootRequestId != activeDisassemblyRootRequestId) {
+            return true;
         }
 
         DisassembledInstruction[] page =
@@ -548,13 +567,17 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         }
 
         if (!encounteredInvalid && page.length >= pageRequest.instructionCount) {
-            queueDisassemblyPage(pageRequest.instructionOffset + pageRequest.instructionCount, pageRequest.instructionCount);
+            queueDisassemblyPage(
+                    pageRequest.instructionOffset + pageRequest.instructionCount,
+                    pageRequest.instructionCount,
+                    pageRequest.rootRequestId);
             return true;
         }
 
         DisassembleCallback merged = new DisassembleCallback();
         merged.setRequestId(callback.getRequestId());
         merged.setInstructions(disassemblyPages.toArray(new DisassembledInstruction[0]));
+        activeDisassemblyRootRequestId = null;
         presenter.updateVmViewDisassembly(merged);
         return true;
     }
@@ -596,6 +619,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         DisassemblyPageRequest disassemblyRequest = pendingDisassemblyRequests.remove(requestId);
         if (disassemblyRequest != null) {
             disassemblyPages.clear();
+            if (activeDisassemblyRootRequestId != null
+                    && disassemblyRequest.rootRequestId == activeDisassemblyRootRequestId) {
+                activeDisassemblyRootRequestId = null;
+            }
             presenter.updateVmViewError(
                     "code",
                     detail + " "
@@ -930,10 +957,12 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     private static class DisassemblyPageRequest {
         private final int instructionOffset;
         private final int instructionCount;
+        private final int rootRequestId;
 
-        private DisassemblyPageRequest(int instructionOffset, int instructionCount) {
+        private DisassemblyPageRequest(int instructionOffset, int instructionCount, int rootRequestId) {
             this.instructionOffset = instructionOffset;
             this.instructionCount = instructionCount;
+            this.rootRequestId = rootRequestId;
         }
     }
 

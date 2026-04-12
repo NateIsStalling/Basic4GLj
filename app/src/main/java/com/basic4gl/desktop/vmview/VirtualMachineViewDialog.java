@@ -10,6 +10,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -103,7 +104,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         // === Top GroupBox Section (Code, Call stack, Variables) ===
         JPanel topSection = new JPanel(new GridLayout(1, 3));
 
-        codeTableModel = new DefaultTableModel(new Object[] {"#", "Address", "Instruction", "Symbol", "Source"}, 0) {
+        codeTableModel = new DefaultTableModel(new Object[] {"Address", "Instruction", "Symbol", "Source"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -351,10 +352,18 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
             DisassembledInstruction instruction = instructions[i];
             String source = "";
             if (instruction.location != null) {
-                source = instruction.location.path + ":" + (instruction.line != null ? instruction.line : "");
+                String sourceFileName = instruction.location.path;
+                try {
+                    File sourceFile = instruction.location.path != null ? new File(instruction.location.path) : null;
+                    sourceFileName = sourceFile != null ? sourceFile.getName() : "";
+                } catch (Exception ex) {
+                    // Ignore any issues with file parsing and just use the raw path.
+                    sourceFileName = instruction.location.path;
+                }
+                String lineInfo = instruction.line != null ? String.valueOf(instruction.line + 1) : "";
+                source = sourceFileName + ":" + lineInfo;
             }
             codeTableModel.addRow(new Object[] {
-                    i,
                     instruction.address,
                     instruction.instruction,
                     instruction.symbol,
@@ -367,13 +376,10 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         }
 
         if (codeTable != null) {
-            if (highlightedCodeRow >= 0) {
-                codeTable.setRowSelectionInterval(highlightedCodeRow, highlightedCodeRow);
-                Rectangle rectangle = codeTable.getCellRect(highlightedCodeRow, 0, true);
-                codeTable.scrollRectToVisible(rectangle);
-            } else {
-                codeTable.clearSelection();
+            if (highlightedCodeRow < 0) {
+                highlightedCodeRow = findBestRowForCurrentSource();
             }
+            selectAndScrollCodeRow(highlightedCodeRow);
             codeTable.repaint();
         }
     }
@@ -399,22 +405,39 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         if (codeTable == null) {
             return;
         }
-        highlightedCodeRow = -1;
+        highlightedCodeRow = findBestRowForCurrentSource();
+        selectAndScrollCodeRow(highlightedCodeRow);
+        codeTable.repaint();
+    }
+
+    private int findBestRowForCurrentSource() {
+        if (currentSourceLine < 0) {
+            return -1;
+        }
         for (int row = 0; row < codeTableModel.getRowCount(); row++) {
-            Object sourceValue = codeTableModel.getValueAt(row, 4);
+            Object sourceValue = codeTableModel.getValueAt(row, 3);
             Integer line = parseSourceLine(sourceValue != null ? sourceValue.toString() : null);
             if (line != null && line == currentSourceLine) {
-                highlightedCodeRow = row;
-                break;
+                return row;
             }
         }
+        return -1;
+    }
 
-        if (highlightedCodeRow >= 0) {
-            codeTable.setRowSelectionInterval(highlightedCodeRow, highlightedCodeRow);
-            Rectangle rectangle = codeTable.getCellRect(highlightedCodeRow, 0, true);
-            codeTable.scrollRectToVisible(rectangle);
+    private void selectAndScrollCodeRow(int row) {
+        if (codeTable == null) {
+            return;
         }
-        codeTable.repaint();
+        if (row < 0 || row >= codeTable.getRowCount()) {
+            codeTable.clearSelection();
+            return;
+        }
+
+        codeTable.setRowSelectionInterval(row, row);
+        SwingUtilities.invokeLater(() -> {
+            Rectangle rectangle = codeTable.getCellRect(row, 0, true);
+            codeTable.scrollRectToVisible(rectangle);
+        });
     }
 
     private Integer parseSourceLine(String source) {
