@@ -404,6 +404,7 @@ public class MainWindow
         viewVirtualMachineMenuItem.addActionListener(e -> {
             if (virtualMachineViewDialog == null || !virtualMachineViewDialog.isDisplayable()) {
                 virtualMachineViewDialog = new VirtualMachineViewDialog(frame);
+                virtualMachineViewDialog.setSeeValueHandler(expression -> basicEditor.evaluateVmViewVariable(expression));
             }
             virtualMachineViewDialog.setVmRunning(basicEditor.getMode() == ApMode.AP_RUNNING);
             virtualMachineViewDialog.setVisible(true);
@@ -1133,6 +1134,10 @@ public class MainWindow
 
         // Find (and show) corresponding editor frame
         if (r >= 0) {
+            if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+                virtualMachineViewDialog.setCurrentSourcePosition(r, c);
+            }
+
             int index = getTabIndex(file);
             if (index == -1) {
                 // Attempt to open tab
@@ -1408,43 +1413,61 @@ public class MainWindow
         // Clear debug controls
         gosubListModel.clear();
 
-        // Update call stack
-        gosubListModel.addElement("IP");
-
-        int totalFrames =
-                stackTraceCallback.stackFrames.size(); // callback.totalFrames may be larger if paging is enforced
-        for (int i2 = 0; i2 < totalFrames; i2++) {
-            StackFrame frame = stackTraceCallback.stackFrames.get(totalFrames - i2 - 1);
-
-            // User functions have positive indices
-            Integer userFuncIndex = NumberUtil.parseIntOrNull(frame.name);
-            if (userFuncIndex != null) {
-                if (userFuncIndex >= 0) {
-                    // TODO 12/2022 migrate GetUserFunctionName to LineNumberMapping and handle in the
-                    // DebugCommandAdapter;
-                    //  would like to rely on frame.name to align with Microsoft's DAP specification
-                    gosubListModel.addElement(basicEditor.compiler.getUserFunctionName(userFuncIndex) + "()");
-
-                    // Otherwise must be a gosub
-                } else {
-                    // TODO 12/2022 migrate DescribeStackCall to LineNumberMapping and handle in the
-                    // DebugCommandAdapter;
-                    //  would like to rely on frame.name to align with Microsoft's DAP specification
-                    Integer returnAddr = NumberUtil.parseIntOrNull(frame.instructionPointer);
-                    String gosubLabel = returnAddr != null ? basicEditor.compiler.describeStackCall(returnAddr) : "???";
-                    gosubListModel.addElement("gosub " + gosubLabel);
-                }
-            } else {
-                gosubListModel.addElement(frame.name);
-            }
+        for (String label : buildFriendlyCallStackLabels(stackTraceCallback)) {
+            gosubListModel.addElement(label);
         }
     }
 
     @Override
     public void updateVmViewCallStack(StackTraceCallback stackTraceCallback) {
         if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
-            virtualMachineViewDialog.updateCallStack(stackTraceCallback);
+            virtualMachineViewDialog.updateCallStack(toVmViewFriendlyCallStack(stackTraceCallback));
         }
+    }
+
+    private ArrayList<String> buildFriendlyCallStackLabels(StackTraceCallback stackTraceCallback) {
+        ArrayList<String> labels = new ArrayList<>();
+        labels.add("IP");
+
+        if (stackTraceCallback == null || stackTraceCallback.stackFrames == null) {
+            return labels;
+        }
+
+        int totalFrames = stackTraceCallback.stackFrames.size();
+        for (int i2 = 0; i2 < totalFrames; i2++) {
+            StackFrame frame = stackTraceCallback.stackFrames.get(totalFrames - i2 - 1);
+            labels.add(toFriendlyStackFrameLabel(frame));
+        }
+        return labels;
+    }
+
+    private String toFriendlyStackFrameLabel(StackFrame frame) {
+        // User functions have positive indices.
+        Integer userFuncIndex = NumberUtil.parseIntOrNull(frame.name);
+        if (userFuncIndex == null) {
+            return frame.name;
+        }
+
+        if (userFuncIndex >= 0) {
+            return basicEditor.compiler.getUserFunctionName(userFuncIndex) + "()";
+        }
+
+        Integer returnAddr = NumberUtil.parseIntOrNull(frame.instructionPointer);
+        String gosubLabel = returnAddr != null ? basicEditor.compiler.describeStackCall(returnAddr) : "???";
+        return "gosub " + gosubLabel;
+    }
+
+    private StackTraceCallback toVmViewFriendlyCallStack(StackTraceCallback stackTraceCallback) {
+        StackTraceCallback friendly = new StackTraceCallback();
+        for (String label : buildFriendlyCallStackLabels(stackTraceCallback)) {
+            StackFrame frame = new StackFrame();
+            frame.name = label;
+            frame.source = "";
+            frame.line = 0;
+            friendly.stackFrames.add(frame);
+        }
+        friendly.totalFrames = friendly.stackFrames.size();
+        return friendly;
     }
 
     @Override
@@ -1469,6 +1492,13 @@ public class MainWindow
                 watchListModel.setElementAt(watch + ": " + result, index);
             }
             index++;
+        }
+    }
+
+    @Override
+    public void updateVmViewVariableValue(String expression, String result) {
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.applySeeValueResult(expression, result);
         }
     }
 

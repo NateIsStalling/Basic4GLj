@@ -32,5 +32,9 @@ public interface IDebugger {
 
     void refreshDisassembly();
 
+    int requestDisassembly(Integer instructionOffset, int instructionCount);
+
     void refreshVariables();
+
+    int requestVariables(int variablesReference, Integer start, Integer count);
 }

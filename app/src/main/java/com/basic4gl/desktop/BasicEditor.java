@@ -6,6 +6,8 @@ import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
+import com.basic4gl.debug.protocol.types.DisassembledInstruction;
+import com.basic4gl.debug.protocol.types.Variable;
 import com.basic4gl.desktop.debugger.*;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
 import com.basic4gl.desktop.editor.FileEditor;
@@ -24,8 +26,16 @@ import java.util.concurrent.CountDownLatch;
 
 public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider {
 
+    private static final int VARIABLES_PAGE_SIZE = 256;
+    private static final int DISASSEMBLY_PAGE_SIZE = 200;
+
     private final IEditorPresenter presenter;
     private final Map<Integer, String> evaluateRequests = new HashMap<>();
+    private final Map<Integer, String> vmViewEvaluateRequests = new HashMap<>();
+    private final Map<Integer, VariablesPageRequest> pendingVariableRequests = new HashMap<>();
+    private final Map<Integer, List<Variable>> variablePagesByReference = new HashMap<>();
+    private final Map<Integer, DisassemblyPageRequest> pendingDisassemblyRequests = new HashMap<>();
+    private final List<DisassembledInstruction> disassemblyPages = new ArrayList<>();
 
     // Runtime settings
     private final IConfigurableAppSettings appSettings;
@@ -446,16 +456,103 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         return "???";
     }
 
+    public void evaluateVmViewVariable(String expression) {
+        if (expression == null || expression.trim().isEmpty()) {
+            return;
+        }
+        int requestId = vmWorker.evaluateWatch(expression, false);
+        vmViewEvaluateRequests.put(requestId, expression);
+    }
+
     public void refreshCallStack() {
         vmWorker.refreshCallStack();
     }
 
     public void refreshDisassembly() {
-        vmWorker.refreshDisassembly();
+        pendingDisassemblyRequests.clear();
+        disassemblyPages.clear();
+        queueDisassemblyPage(0, DISASSEMBLY_PAGE_SIZE);
     }
 
     public void refreshVariables() {
-        vmWorker.refreshVariables();
+        pendingVariableRequests.clear();
+        variablePagesByReference.clear();
+        queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_GLOBALS, 0, VARIABLES_PAGE_SIZE);
+        queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_REGISTERS, 0, VARIABLES_PAGE_SIZE);
+        queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_HEAP, 0, VARIABLES_PAGE_SIZE);
+        queueVariablesPage(com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK, 0, VARIABLES_PAGE_SIZE);
+    }
+
+    private void queueVariablesPage(int reference, int start, int count) {
+        int requestId = vmWorker.requestVariables(reference, start, count);
+        if (requestId <= 0) {
+            return;
+        }
+        pendingVariableRequests.put(requestId, new VariablesPageRequest(reference, start, count));
+    }
+
+    private boolean handlePagedVariablesCallback(VariablesCallback callback) {
+        VariablesPageRequest pageRequest = pendingVariableRequests.remove(callback.getRequestId());
+        if (pageRequest == null) {
+            return false;
+        }
+
+        Variable[] page = callback.getVariables() != null ? callback.getVariables() : new Variable[0];
+        List<Variable> aggregate = variablePagesByReference.computeIfAbsent(pageRequest.reference, key -> new ArrayList<>());
+        aggregate.addAll(Arrays.asList(page));
+
+        if (page.length >= pageRequest.count) {
+            queueVariablesPage(pageRequest.reference, pageRequest.start + pageRequest.count, pageRequest.count);
+            return true;
+        }
+
+        VariablesCallback merged = new VariablesCallback();
+        merged.setRequestId(callback.getRequestId());
+        merged.setVariables(aggregate.toArray(new Variable[0]));
+        presenter.updateVmViewVariables(merged);
+        variablePagesByReference.remove(pageRequest.reference);
+        return true;
+    }
+
+    private void queueDisassemblyPage(int instructionOffset, int instructionCount) {
+        int requestId = vmWorker.requestDisassembly(instructionOffset, instructionCount);
+        if (requestId <= 0) {
+            return;
+        }
+        pendingDisassemblyRequests.put(requestId, new DisassemblyPageRequest(instructionOffset, instructionCount));
+    }
+
+    private boolean handlePagedDisassemblyCallback(DisassembleCallback callback) {
+        DisassemblyPageRequest pageRequest = pendingDisassemblyRequests.remove(callback.getRequestId());
+        if (pageRequest == null) {
+            return false;
+        }
+
+        DisassembledInstruction[] page =
+                callback.getInstructions() != null ? callback.getInstructions() : new DisassembledInstruction[0];
+
+        boolean encounteredInvalid = false;
+        for (DisassembledInstruction instruction : page) {
+            if (instruction == null) {
+                continue;
+            }
+            if ("invalid".equals(instruction.presentationHint)) {
+                encounteredInvalid = true;
+                break;
+            }
+            disassemblyPages.add(instruction);
+        }
+
+        if (!encounteredInvalid && page.length >= pageRequest.instructionCount) {
+            queueDisassemblyPage(pageRequest.instructionOffset + pageRequest.instructionCount, pageRequest.instructionCount);
+            return true;
+        }
+
+        DisassembleCallback merged = new DisassembleCallback();
+        merged.setRequestId(callback.getRequestId());
+        merged.setInstructions(disassemblyPages.toArray(new DisassembledInstruction[0]));
+        presenter.updateVmViewDisassembly(merged);
+        return true;
     }
 
     public void refreshWatchList() {
@@ -655,16 +752,27 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
             }
 
             if (message instanceof DisassembleCallback) {
-                presenter.updateVmViewDisassembly((DisassembleCallback) message);
+                DisassembleCallback callback = (DisassembleCallback) message;
+                if (!handlePagedDisassemblyCallback(callback)) {
+                    presenter.updateVmViewDisassembly(callback);
+                }
             }
 
             if (message instanceof VariablesCallback) {
-                presenter.updateVmViewVariables((VariablesCallback) message);
+                VariablesCallback callback = (VariablesCallback) message;
+                if (!handlePagedVariablesCallback(callback)) {
+                    presenter.updateVmViewVariables(callback);
+                }
             }
 
             if (message instanceof EvaluateWatchCallback) {
                 EvaluateWatchCallback callback = (EvaluateWatchCallback) message;
                 int requestId = callback.getRequestId();
+                String vmViewExpression = vmViewEvaluateRequests.remove(requestId);
+                if (vmViewExpression != null) {
+                    presenter.updateVmViewVariableValue(vmViewExpression, callback.getResult());
+                    return;
+                }
                 String watch = evaluateRequests.get(requestId);
                 presenter.updateEvaluateWatch(watch, callback.getResult());
             }
@@ -701,6 +809,28 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         //                mPresenter.PlaceCursorAtProcessed(line.get(), col.get());
         //            }
         //        }
+    }
+
+    private static class VariablesPageRequest {
+        private final int reference;
+        private final int start;
+        private final int count;
+
+        private VariablesPageRequest(int reference, int start, int count) {
+            this.reference = reference;
+            this.start = start;
+            this.count = count;
+        }
+    }
+
+    private static class DisassemblyPageRequest {
+        private final int instructionOffset;
+        private final int instructionCount;
+
+        private DisassemblyPageRequest(int instructionOffset, int instructionCount) {
+            this.instructionOffset = instructionOffset;
+            this.instructionCount = instructionCount;
+        }
     }
 
     public void saveSettings() {

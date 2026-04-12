@@ -31,6 +31,8 @@ interface IEditorPresenter {
 
     void updateEvaluateWatch(String evaluatedWatch, String result);
 
+    void updateVmViewVariableValue(String expression, String result);
+
     void refreshWatchList();
 
     void setRecentItems(List<File> files);
