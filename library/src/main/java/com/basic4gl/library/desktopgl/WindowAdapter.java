@@ -1,6 +1,6 @@
 package com.basic4gl.library.desktopgl;
 
-import com.basic4gl.library.plugin.sdk.opengl.IB4GLOpenGLWindow;
+import com.basic4gl.compiler.plugin.sdk.opengl.IB4GLOpenGLWindow;
 
 /**
  * Interface for plugins

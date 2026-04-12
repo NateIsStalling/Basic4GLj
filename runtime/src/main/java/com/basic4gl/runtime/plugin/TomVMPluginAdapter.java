@@ -1,35 +1,74 @@
 package com.basic4gl.compiler.plugin;
 
-import com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLLongRunningFunction;
-import com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLRuntime;
+import com.basic4gl.runtime.plugin.PluginDataType;
+import com.basic4gl.runtime.plugin.PluginStructure;
+import com.basic4gl.runtime.plugin.PluginStructureManager;
+import com.basic4gl.runtime.types.BasicValType;
+import com.basic4gl.runtime.util.Assert;
+import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
+import com.basic4gl.runtime.plugin.Basic4GLRuntime;
+import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.Value;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Mutable;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
-import static com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLExtendedTypeCode.*;
+import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.*;
 import static com.basic4gl.runtime.TomVM.ARRAY_MAX_DIMENSIONS;
-import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 /**
  * Adapts the Basic4GLRuntime interface to a TomVM virtual machine.
  */
 public class TomVMJARAdapter implements Basic4GLRuntime {
+    private static final int POINTER_SIZE_BYTES = Integer.BYTES;
+
     private TomVM  vm;
     private PluginStructureManager structureManager;
 
     // Working
     private PluginDataType currentType;
 
+    private static PluginDataType copyPluginType(PluginDataType source) {
+        PluginDataType copy = new PluginDataType();
+        copy.setBaseType(source.getBaseType());
+        copy.setPointerLevel(source.getPointerLevel());
+        copy.setByReference(source.isByReference());
+        copy.setArrayLevel(source.getArrayLevel());
+        System.arraycopy(source.getArrayDims(), 0, copy.getArrayDims(), 0, ARRAY_MAX_DIMENSIONS);
+        copy.setStringSize(source.getStringSize());
+        return copy;
+    }
+
+    private static String readCString(ByteBuffer src, int maxBytes) {
+        byte[] raw = new byte[maxBytes];
+        src.get(raw);
+        int len = 0;
+        while (len < raw.length && raw[len] != 0) {
+            len++;
+        }
+        return new String(raw, 0, len, StandardCharsets.ISO_8859_1);
+    }
+
     private void ReadIntArray(
             int dataIndex,
             int[] dest,
             int dimensionCount,
             int[] dimensions) {
+        ReadIntArray(dataIndex, dest, 0, dimensionCount, dimensions, 0);
+    }
+
+    private void ReadIntArray(
+            int dataIndex,
+            int[] dest,
+            int destOffset,
+            int dimensionCount,
+            int[] dimensions,
+            int dimensionOffset) {
 
         // First two entries are the element count and size
         int elementCount = vm.getData().data().get(dataIndex).getIntVal();
@@ -44,29 +83,31 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             // Calculate # of elements in one entry in this dimension
             int destElements = 1;
             for (int d = 1; d < dimensionCount; d++)
-                destElements *= dimensions[d];
+                destElements *= dimensions[dimensionOffset + d];
 
             // Recursively copy sub dimensions
-            for (int i = 0; i < dimensions[0]; i++) {
+            for (int i = 0; i < dimensions[dimensionOffset]; i++) {
                 if (i < elementCount) {
                     ReadIntArray(
                             dataIndex + i * elementSize,
-                            &dest[i * destElements],
+                            dest,
+                            destOffset + i * destElements,
                             dimensionCount - 1,
-                    &dimensions[1]);
+                            dimensions,
+                            dimensionOffset + 1);
                 } else {
-                    memset( & dest[i * destElements], 0, destElements * sizeof( int));
+                    Arrays.fill(dest, destOffset + i * destElements, destOffset + (i + 1) * destElements, 0);
                 }
             }
         }
         else {
             // Down to lowest dimension.
             // Copy elements
-            for (int i = 0; i < dimensions[0]; i++)
+            for (int i = 0; i < dimensions[dimensionOffset]; i++)
                 if (i < elementCount) {
-                    dest[i] = vm.getData().data().get(dataIndex + i).getIntVal();
+                    dest[destOffset + i] = vm.getData().data().get(dataIndex + i).getIntVal();
                 } else {
-                    dest[i] = 0;
+                    dest[destOffset + i] = 0;
                     }
         }
     }
@@ -76,6 +117,16 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             float[] dest,
             int dimensionCount,
             int [] dimensions) {
+        ReadFloatArray(dataIndex, dest, 0, dimensionCount, dimensions, 0);
+    }
+
+    private void ReadFloatArray(
+            int dataIndex,
+            float[] dest,
+            int destOffset,
+            int dimensionCount,
+            int [] dimensions,
+            int dimensionOffset) {
 
             // First two entries are the element count and size
             int elementCount = vm.getData().data().get(dataIndex).getIntVal();
@@ -90,43 +141,55 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
                 // Calculate # of elements in one entry in this dimension
                 int destElements = 1;
                 for (int d = 1; d < dimensionCount; d++)
-                    destElements *= dimensions[d];
+                    destElements *= dimensions[dimensionOffset + d];
 
                 // Recursively copy sub dimensions
-                for (int i = 0; i < dimensions[0]; i++) {
+                for (int i = 0; i < dimensions[dimensionOffset]; i++) {
                     if (i < elementCount) {
                         ReadFloatArray(
                                 dataIndex + i * elementSize,
-                                & dest[i * destElements],
+                                dest,
+                                destOffset + i * destElements,
                                 dimensionCount - 1,
-				&dimensions[1]);
+				dimensions,
+                                dimensionOffset + 1);
                     }
 			else {
-                        memset( & dest[i * destElements], 0, destElements * sizeof( int));
+                        Arrays.fill(dest, destOffset + i * destElements, destOffset + (i + 1) * destElements, 0);
                     }
                 }
             }
             else {
                 // Down to lowest dimension.
                 // Copy elements
-                for (int i = 0; i < dimensions[0]; i++)
+                for (int i = 0; i < dimensions[dimensionOffset]; i++)
                     if (i < elementCount)
-                        dest[i] = vm.getData().data().get(dataIndex + i).getRealVal();
+                        dest[destOffset + i] = vm.getData().data().get(dataIndex + i).getRealVal();
                     else
-                        dest[i] = 0;
+                        dest[destOffset + i] = 0;
             }
     }
 
     private void WriteIntArray(
             int dataIndex,
-            IntBuffer src,
+            int[] src,
             int dimensionCount,
             int[] dimensions) {
+        WriteIntArray(dataIndex, src, 0, dimensionCount, dimensions, 0);
+    }
+
+    private void WriteIntArray(
+            int dataIndex,
+            int[] src,
+            int srcOffset,
+            int dimensionCount,
+            int[] dimensions,
+            int dimensionOffset) {
 
             // First two entries are the element count and size
             int elementCount = vm.getData().data().get(dataIndex).getIntVal();
             int elementSize = vm.getData().data().get(dataIndex + 1).getIntVal();
-            int min = elementCount < dimensions[0] ? elementCount : dimensions[0];
+            int min = Math.min(elementCount, dimensions[dimensionOffset]);
 
             // Move to start of array data
             dataIndex += 2;
@@ -137,22 +200,23 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
                 // Calculate # of elements in one entry in this dimension
                 int destElements = 1;
                 for (int d = 1; d < dimensionCount; d++)
-                    destElements *= dimensions[d];
+                    destElements *= dimensions[dimensionOffset + d];
 
                 for (int i = 0; i < min; i++) {
-                    src.position(i * destElements);
                     WriteIntArray(
                             dataIndex + i * elementSize,
                             src,
+                            srcOffset + i * destElements,
                             dimensionCount - 1,
-                &dimensions[1]);
+                            dimensions,
+                            dimensionOffset + 1);
                 }
             }
             else {
                 // Down to lowest dimension.
                 // Can copy elements
                 for (int i = 0; i < min; i++) {
-                    vm.getData().data().get(dataIndex + i).setIntVal(src[i]);
+                    vm.getData().data().get(dataIndex + i).setIntVal(src[srcOffset + i]);
                 }
             }
         }
@@ -162,12 +226,22 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             float[] src,
             int dimensionCount,
             int[] dimensions) {
+            WriteFloatArray(dataIndex, src, 0, dimensionCount, dimensions, 0);
+        }
+
+    private void WriteFloatArray(
+            int dataIndex,
+            float[] src,
+            int srcOffset,
+            int dimensionCount,
+            int[] dimensions,
+            int dimensionOffset) {
 
 
             // First two entries are the element count and size
             int elementCount = vm.getData().data().get(dataIndex).getIntVal();
             int elementSize = vm.getData().data().get(dataIndex + 1).getIntVal();
-            int min = elementCount < dimensions[0] ? elementCount : dimensions[0];
+            int min = Math.min(elementCount, dimensions[dimensionOffset]);
 
             // Move to start of array data
             dataIndex += 2;
@@ -178,21 +252,23 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
                 // Calculate # of elements in one entry in this dimension
                 int destElements = 1;
                 for (int d = 1; d < dimensionCount; d++)
-                    destElements *= dimensions[d];
+                    destElements *= dimensions[dimensionOffset + d];
 
                 for (int i = 0; i < min; i++) {
                     WriteFloatArray(
                             dataIndex + i * elementSize,
-                            & src[i * destElements],
+                            src,
+                            srcOffset + i * destElements,
                             dimensionCount - 1,
-			&dimensions[1]);
+                            dimensions,
+			dimensionOffset + 1);
                 }
             }
             else {
                 // Down to lowest dimension.
                 // Can copy elements
                 for (int i = 0; i < min; i++)
-                    vm.getData().data().get(dataIndex + i).setRealVal(src[i]);
+                    vm.getData().data().get(dataIndex + i).setRealVal(src[srcOffset + i]);
             }
         }
 
@@ -235,8 +311,8 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
     private void CArrayFromBasicArray(PluginDataType type, ByteBuffer cData, Mutable<Integer> basicDataIndex) {
 
 
-            assertTrue(type.getPointerLevel() == 0);
-            assertTrue(type.getArrayLevel() > 0);
+            Assert.assertTrue(type.getPointerLevel() == 0);
+            Assert.assertTrue(type.getArrayLevel() > 0);
 
             // Extract element info
             int basicCount = vm.getData().data().get(basicDataIndex.get()).getIntVal();
@@ -250,13 +326,13 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
                 count = type.getArrayDims()[type.getArrayLevel() - 1];
 
             // Get element type
-            PluginDataType elementType = new PluginDataType(type);
+            PluginDataType elementType = copyPluginType(type);
             elementType.makeIntoElementType();
 
             // Convert each element
             for (int i = 0; i < count; i++) {
                 int elementDataIndex = arrayStart + i * size;
-                CDataFromBasicData(elementType, cData, new Mutable<Integer>(elementDataIndex));
+                CDataFromBasicData(elementType, cData, new Mutable<>(elementDataIndex));
             }
 
             // Advance data index
@@ -273,9 +349,9 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
         }
     private void CValueFromBasicValue(PluginDataType type, ByteBuffer cData, Value value) {
 
-        assertTrue(type.getPointerLevel() == 0);
-        assertTrue(type.getArrayLevel() == 0);
-        assertTrue(type.getBaseType() < 0);
+        Assert.assertTrue(type.getPointerLevel() == 0);
+        Assert.assertTrue(type.getArrayLevel() == 0);
+        Assert.assertTrue(type.getBaseType() < 0);
 
             int strIndex, len;
             String str;
@@ -317,27 +393,26 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
                     str = vm.getString(strIndex);
 
                     // Copy characters
-                    len = str.length();
-                    if (len > type.getStringSize() - 1)
-                        len = type.getStringSize() - 1;
-                    memcpy(cData, str.c_str(), len);
-                    cData[len] = 0;                 // (Terminate string)
-                    cData += type.getStringSize();
+                    byte[] fixed = new byte[type.getStringSize()];
+                    byte[] encoded = str.getBytes(StandardCharsets.ISO_8859_1);
+                    len = Math.min(encoded.length, Math.max(0, type.getStringSize() - 1));
+                    System.arraycopy(encoded, 0, fixed, 0, len);
+                    cData.put(fixed);
                     break;
 
                 default:
-                    assertTrue(false);
+                    Assert.assertTrue(false);
             }
         }
     private void CValueFromBasicValue(PluginDataType type, ByteBuffer cData, Mutable<Integer> basicDataIndex) {
 
 
-            assertTrue(type.getPointerLevel() == 0);
-            assertTrue(type.getArrayLevel() == 0);
-            assertTrue(type.getBaseType() < 0);
+            Assert.assertTrue(type.getPointerLevel() == 0);
+            Assert.assertTrue(type.getArrayLevel() == 0);
+            Assert.assertTrue(type.getBaseType() < 0);
 
             if (type.getBaseType() == PLUGIN_BASIC4GL_EXT_PADDING)
-                cData += type.getStringSize();
+                cData.position(cData.position() + type.getStringSize());
             else {
                 CValueFromBasicValue(type, cData, vm.getData().data().get(basicDataIndex.get()));
                 basicDataIndex.set(basicDataIndex.get() + 1);
@@ -348,8 +423,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             if (type.getPointerLevel() > 0) {
 
                 // Note: We cannot convert pointers, so we just store NULL.
-        *((void**)cData) = NULL;
-                cData += sizeof(void*);
+                cData.put(new byte[POINTER_SIZE_BYTES]);
                 basicDataIndex.set(basicDataIndex.get() + 1);
             }
             else if (type.getArrayLevel() > 0) {
@@ -374,8 +448,8 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
     // Convert C data to basic data
     private void BasicArrayFromCArray(PluginDataType type, Mutable<Integer> basicDataIndex, ByteBuffer cData) {
 
-            assertTrue(type.getPointerLevel() == 0);
-            assertTrue(type.getArrayLevel() > 0);
+            Assert.assertTrue(type.getPointerLevel() == 0);
+            Assert.assertTrue(type.getArrayLevel() > 0);
 
             // Get array size
             int basicCount = vm.getData().data().get(basicDataIndex.get()).getIntVal();
@@ -389,13 +463,13 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
                 count = type.getArrayDims()[type.getArrayLevel() - 1];
 
             // Get element type
-            PluginDataType elementType = new PluginDataType(type);
+            PluginDataType elementType = copyPluginType(type);
             elementType.makeIntoElementType();
 
             // Convert each element
             for (int i = 0; i < count; i++) {
                 int elementDataIndex = arrayStart + i * size;
-                BasicDataFromCData(elementType, new Mutable<Integer>(elementDataIndex), cData);
+                BasicDataFromCData(elementType, new Mutable<>(elementDataIndex), cData);
             }
 
             // Advance data index
@@ -412,9 +486,9 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
         }
     private void BasicValueFromCValue(PluginDataType type, Value value, ByteBuffer cData) {
 
-            assertTrue(type.getPointerLevel() == 0);
-            assertTrue(type.getArrayLevel() == 0);
-            assertTrue(type.getBaseType() < 0);
+            Assert.assertTrue(type.getPointerLevel() == 0);
+            Assert.assertTrue(type.getArrayLevel() == 0);
+            Assert.assertTrue(type.getBaseType() < 0);
 
             int strIndex;
             switch (type.getBaseType()) {
@@ -461,22 +535,21 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
                     }
 
                     // Copy string to Basic4GL
-                    vm.setString(strIndex, cData);
-                    cData += type.getStringSize();
+                    vm.setString(strIndex, readCString(cData, type.getStringSize()));
                     break;
 
                 default:
-                    assertTrue(false);
+                    Assert.assertTrue(false);
             }
         }
     private void BasicValueFromCValue(PluginDataType type, Mutable<Integer> basicDataIndex, ByteBuffer cData) {
 
-            assertTrue(type.getPointerLevel() == 0);
-            assertTrue(type.getArrayLevel() == 0);
-            assertTrue(type.getBaseType() < 0);
+            Assert.assertTrue(type.getPointerLevel() == 0);
+            Assert.assertTrue(type.getArrayLevel() == 0);
+            Assert.assertTrue(type.getBaseType() < 0);
 
             if (type.getBaseType() == PLUGIN_BASIC4GL_EXT_PADDING)
-                cData += type.getStringSize();
+                cData.position(cData.position() + type.getStringSize());
             else {
                 BasicValueFromCValue(type, vm.getData().data().get(basicDataIndex.get()), cData);
                 basicDataIndex.set(basicDataIndex.get() + 1);
@@ -488,7 +561,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
 
                 // Note: We cannot convert pointers, so we just store NULL.
                 vm.getData().data().get(basicDataIndex.get()).setIntVal(0);
-                cData += sizeof(void*);
+                cData.position(cData.position() + POINTER_SIZE_BYTES);
                 basicDataIndex.set(basicDataIndex.get() + 1);
             }
             else if (type.getArrayLevel() > 0) {
@@ -548,7 +621,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             int dimension0Size,
         int... otherDimensions) {
 
-            assertTrue(dimensions < ARRAY_MAX_DIMENSIONS);
+            Assert.assertTrue(dimensions < ARRAY_MAX_DIMENSIONS);
             int[] dimensionArray = new int[ARRAY_MAX_DIMENSIONS];
             if (dimensions > 0)
             {
@@ -570,7 +643,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             int dimensions,
             int dimension0Size,
             int... otherDimensions) {
-            assertTrue(dimensions < ARRAY_MAX_DIMENSIONS);
+            Assert.assertTrue(dimensions < ARRAY_MAX_DIMENSIONS);
             int[] dimensionArray = new int[ARRAY_MAX_DIMENSIONS];
             if (dimensions > 0)
             {
@@ -590,7 +663,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             int index,
             int dimension) {
 
-            return ArrayDimensionSize(vm.getData(), vm.getIntParam(index), dimension);
+            return Data.getArrayDimensionSize(vm.getData(), vm.getIntParam(index), dimension);
         }
 
     // Array results
@@ -600,7 +673,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             int dimension0Size,
             int... otherDimensions) {
 
-            assertTrue(dimensions < ARRAY_MAX_DIMENSIONS);
+            Assert.assertTrue(dimensions < ARRAY_MAX_DIMENSIONS);
             int[] dimensionArray = new int[ARRAY_MAX_DIMENSIONS];
             if (dimensions > 0)
             {
@@ -612,10 +685,10 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             }
 
             // Allocate temporary array
-            int dataIndex = CreateTempArray(new ValType(VTP_INT), dimensions, dimensionArray);
+            int dataIndex = CreateTempArray(new ValType(BasicValType.VTP_INT), dimensions, dimensionArray);
 
             // Fill it with data
-            WriteIntArray(dataIndex, IntBuffer.wrap(array), dimensions, dimensionArray);
+            WriteIntArray(dataIndex, array, dimensions, dimensionArray);
 
             // Assign array to virtual machine register
             vm.getReg().setIntVal(dataIndex);
@@ -626,7 +699,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             int dimension0Size,
             int... otherDimensions) {
 
-            assertTrue(dimensions < ARRAY_MAX_DIMENSIONS);
+            Assert.assertTrue(dimensions < ARRAY_MAX_DIMENSIONS);
             int[] dimensionArray = new int[ARRAY_MAX_DIMENSIONS];
             if (dimensions > 0)
             {
@@ -638,7 +711,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             }
 
             // Allocate temporary array
-            int dataIndex = CreateTempArray(new ValType(VTP_INT), dimensions, dimensionArray);
+            int dataIndex = CreateTempArray(new ValType(BasicValType.VTP_INT), dimensions, dimensionArray);
 
             // Fill it with data
             WriteFloatArray(dataIndex, array, dimensions, dimensionArray);
@@ -663,7 +736,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             int dimension0Size,
             int... otherDimensions) {
 
-            assertTrue(dimensions < ARRAY_MAX_DIMENSIONS);
+            Assert.assertTrue(dimensions < ARRAY_MAX_DIMENSIONS);
             int[] dimensionArray = new int[ARRAY_MAX_DIMENSIONS];
             if (dimensions > 0)
             {
@@ -674,21 +747,21 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
                 }
             }
 
-            currentType.setArrayLevel(dimensions);
-            int *dimensionSize = dimensionArray;
+            currentType.setArrayLevel((byte) dimensions);
+            int dimensionSize = 0;
             for (int i = dimensions - 1; i >= 0; i--) {
-                currentType.getArrayDims()[i] = *dimensionSize;
+                currentType.getArrayDims()[i] = dimensionArray[dimensionSize];
                 dimensionSize++;
             }
         }
     public  void modTypeReference() {
 
             if (!currentType.isByReference()) {
-                currentType.setPointerLevel(currentType.getPointerLevel() + 1);
+                currentType.setPointerLevel((byte) (currentType.getPointerLevel() + 1));
                 currentType.setByReference(true);
             }
         }
-    public  void getParam(
+    public  Object getParam(
             int index,
             ByteBuffer dst) {
 
@@ -707,12 +780,13 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
                 int dataIndex = vm.getParam(index).getIntVal();
 
                 // Get dereferenced type
-                PluginDataType derefType = currentType;
+                PluginDataType derefType = copyPluginType(currentType);
                 derefType.deref();
 
                 // Convert data
-                CDataFromBasicData(derefType, dst, dataIndex);
+                CDataFromBasicData(derefType, dst, new Mutable<>(dataIndex));
             }
+            return null;
         }
     public  void setParam(
             int index,
@@ -733,11 +807,11 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
                 int dataIndex = vm.getParam(index).getIntVal();
 
                 // Get dereferenced type
-                PluginDataType derefType = currentType;
+                PluginDataType derefType = copyPluginType(currentType);
                 derefType.deref();
 
                 // Convert data
-                BasicDataFromCData(derefType, dataIndex, src);
+                BasicDataFromCData(derefType, new Mutable<>(dataIndex), src);
             }
         }
     public  void setReturnValue(
@@ -753,7 +827,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
 
                 // Special case! String values are written to RegString
                 if (currentType.getBaseType() == PLUGIN_BASIC4GL_EXT_STRING) {
-                    vm.setRegString( ( char*)src);
+                    vm.setRegString(readCString(src, currentType.getStringSize()));
                 } else {
                     BasicValueFromCValue(currentType, vm.getReg(), src);
                 }
@@ -763,7 +837,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
                 // Non simple.
 
                 // Get dereferenced type
-                PluginDataType derefType = currentType;
+                PluginDataType derefType = copyPluginType(currentType);
                 derefType.deref();
 
                 // Allocate temporary storage space for result.
@@ -772,7 +846,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
 
                 // Convert data and write to temp space
                 int dataIndex = returnDataIndex;
-                BasicDataFromCData(derefType, dataIndex, src);
+                BasicDataFromCData(derefType, new Mutable<>(dataIndex), src);
 
                 // Return reference to result data in register
                 vm.getReg().setIntVal(returnDataIndex);
@@ -781,21 +855,21 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
 
     // Direct data access
     public  int directGetInt(int memAddr) {
-        assertTrue(memAddr > 0);
-        assertTrue(memAddr < vm.getData().data().size());
+        Assert.assertTrue(memAddr > 0);
+        Assert.assertTrue(memAddr < vm.getData().data().size());
             return vm.getData().data().get(memAddr).getIntVal();
 
         }
     public  float directGetFloat(int memAddr) {
 
-        assertTrue(memAddr > 0);
-        assertTrue(memAddr < vm.getData().data().size());
+        Assert.assertTrue(memAddr > 0);
+        Assert.assertTrue(memAddr < vm.getData().data().size());
             return vm.getData().data().get(memAddr).getRealVal();
         }
-    public  char * DirectGetString(int memAddr, char* str, int maxLen) {
+    public  char[] directGetString(int memAddr, char[] str, int maxLen) {
 
-        assertTrue(memAddr > 0);
-        assertTrue(memAddr < vm.getData().data().size());
+        Assert.assertTrue(memAddr > 0);
+        Assert.assertTrue(memAddr < vm.getData().data().size());
             int index = vm.getData().data().get(memAddr).getIntVal();
             String s = vm.getString(index);
 
@@ -804,27 +878,27 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
             if (len > maxLen - 1)
                 len = maxLen - 1;
             for (int i = 0; i < len; i++) {
-                str[i] = s.c_str()[i];
+                str[i] = s.charAt(i);
             }
-            str[len] = 0;
+            str[len] = '\0';
 
             return str;
         }
     public  void directSetInt(int memAddr, int value) {
 
-        assertTrue(memAddr > 0);
-        assertTrue(memAddr < vm.getData().data().size());
+        Assert.assertTrue(memAddr > 0);
+        Assert.assertTrue(memAddr < vm.getData().data().size());
             vm.getData().data().get(memAddr).setIntVal(value);
         }
     public  void directSetFloat(int memAddr, float value) {
 
-        assertTrue(memAddr > 0);
-        assertTrue(memAddr < vm.getData().data().size());
+        Assert.assertTrue(memAddr > 0);
+        Assert.assertTrue(memAddr < vm.getData().data().size());
             vm.getData().data().get(memAddr).setRealVal(value);
         }
     public  void directSetString(int memAddr, String str) {
-        assertTrue(memAddr > 0);
-        assertTrue(memAddr < vm.getData().data().size());
+        Assert.assertTrue(memAddr > 0);
+        Assert.assertTrue(memAddr < vm.getData().data().size());
             Value dest = vm.getData().data().get(memAddr);
 
             // Allocate string space if necessary
@@ -838,11 +912,9 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
 
     // Long running functions
     public  void beginLongRunningFunction(Basic4GLLongRunningFunction handler) {
-
             vm.beginLongRunningFunction(handler);
         }
     public  void endLongRunningFunction() {
-
             vm.endLongRunningFunction();
         }
 
@@ -860,8 +932,7 @@ public class TomVMJARAdapter implements Basic4GLRuntime {
     /**
      * Conditional timesharing break
      */
-    public void  isTimeshareBreakRequired() {
-
-            vm.isTimeshareBreakRequired();
+    public void setTimeshareBreakRequired() {
+            vm.setTimeshareBreakRequired();
         }
 }

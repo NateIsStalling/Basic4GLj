@@ -1,6 +1,6 @@
 package com.basic4gl.compiler.plugin;
 
-import com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLPlugin;
+import com.basic4gl.runtime.plugin.Basic4GLPlugin;
 
 /**
  * Base class for local plugin libraries. Supplies some default functionality.

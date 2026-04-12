@@ -1,4 +1,4 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
 /**
  * File details of a plugin JAR.

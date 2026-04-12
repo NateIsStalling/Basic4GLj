@@ -100,7 +100,7 @@ public interface Basic4GLFunctionRegistry {
      *
      * @param dimensions
      */
-    void modReturnArray(int dimensions);
+    void modReturnArray(byte dimensions);
 
 
     /**
@@ -122,7 +122,7 @@ public interface Basic4GLFunctionRegistry {
      *
      * @param level
      */
-    void modReturnPointer(int level);
+    void modReturnPointer(byte level);
 
     /**
      * Modifies the last registered function to have no brackets.
@@ -184,7 +184,7 @@ public interface Basic4GLFunctionRegistry {
      *
      * @param dimensions
      */
-    void modParamArray(int dimensions);
+    void modParamArray(byte dimensions);
 
     /**
      * Convert the last parameter added into a pointer.
@@ -196,7 +196,7 @@ public interface Basic4GLFunctionRegistry {
      *
      * @param level
      */
-    void modParamPointer(int level);
+    void modParamPointer(byte level);
 
     /**
      * Convert the last parameter added into a reference parameter.
@@ -262,7 +262,7 @@ public interface Basic4GLFunctionRegistry {
      * @param dimensions
      * @param dimension1Size
      */
-    void modStrucFieldArray(int dimensions, int dimension1Size, int ...otherSizes);
+    void modStrucFieldArray(byte dimensions, int dimension1Size, int ...otherSizes);
 
     /**
      * Convert the last defined structure field into a pointer
@@ -273,7 +273,7 @@ public interface Basic4GLFunctionRegistry {
      *
      * @param level
      */
-    void modStrucFieldPointer(int level);
+    void modStrucFieldPointer(byte level);
 
     /**
      * Fetch structure (presumably registered by another plugin).

@@ -3,7 +3,6 @@ package com.basic4gl.library.debug.commands;
 import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
-import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
 import com.basic4gl.debug.protocol.commands.DisassembleCommand;
 import com.basic4gl.debug.protocol.types.DisassembledInstruction;
 import com.basic4gl.debug.protocol.types.Source;
@@ -12,7 +11,6 @@ import com.basic4gl.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.OpCode;
-import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Mutable;
 import com.google.gson.Gson;
 

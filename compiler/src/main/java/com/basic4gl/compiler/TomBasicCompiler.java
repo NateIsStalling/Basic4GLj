@@ -4,6 +4,8 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import com.basic4gl.compiler.FlowControl.FlowControlType;
 import com.basic4gl.compiler.Token.TokenType;
+import com.basic4gl.compiler.plugin.ExtendedFunctionSpecification;
+import com.basic4gl.compiler.plugin.PluginJARManager;
 import com.basic4gl.compiler.util.*;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.runtime.*;
@@ -42,7 +44,7 @@ public class TomBasicCompiler extends HasErrorState {
 
     // DLL manager
     // TODO Reimplement libraries
-     PluginDLLManager plugins;
+     PluginJARManager plugins;
 
     // Settings
     private final boolean isCaseSensitive;
@@ -477,11 +479,11 @@ public class TomBasicCompiler extends HasErrorState {
         }
     }
 
-    public TomBasicCompiler(TomVM vm, PluginDLLManager plugins) {
+    public TomBasicCompiler(TomVM vm, PluginJARManager plugins) {
         this(vm, plugins, false);
     }
 
-    public TomBasicCompiler(TomVM vm, PluginDLLManager plugins, boolean caseSensitive) {
+    public TomBasicCompiler(TomVM vm, PluginJARManager plugins, boolean caseSensitive) {
         this.vm = vm;
         this.plugins = plugins;
 
@@ -985,7 +987,7 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Check Plugin constants
          Constant compConst = new Constant();
-         return (this.plugins.FindConstant(text, compConst));
+         return (this.plugins.findConstant(text) != null);
     }
 
     public boolean isBinaryOperator(String text) {
@@ -3828,13 +3830,13 @@ public class TomBasicCompiler extends HasErrorState {
                 if (functions[functionCount] == null) {
                     functions[functionCount] = new ExtendedFunctionSpecification();
                 }
-                functions[functionCount].spec = spec;
-                functions[functionCount].builtin = true;
+                functions[functionCount].setSpecification(spec);
+                functions[functionCount].setBuiltin(true);
                 functionCount++;
             }
         }
 
-        // Find plugin DLL functions
+        // Find plugin functions
         // TODO Reimplement libraries
         Mutable<Integer> functionCountRef = new Mutable<>(functionCount);
         plugins.findFunctions(token.getText(), functions, functionCountRef, TC_MAXOVERLOADEDFUNCTIONS);
@@ -3867,7 +3869,7 @@ public class TomBasicCompiler extends HasErrorState {
         // (Therefore either all instances should have brackets, or all
         // instances
         // should have no brackets.)
-        boolean brackets = functions[0].spec.hasBrackets();
+        boolean brackets = functions[0].getSpecification().hasBrackets();
         if (syntax == LanguageSyntax.LS_TRADITIONAL && brackets) { // Special
             // brackets
             // rules
@@ -3882,7 +3884,7 @@ public class TomBasicCompiler extends HasErrorState {
             //
             // If one is found, then we require brackets. Otherwise we don't.
             for (int i = 0; i < functionCount && !brackets; i++) {
-                brackets = functions[i].spec.isFunction();
+                brackets = functions[i].getSpecification().isFunction();
             }
             // && functions.get(i).m_paramTypes.getParams().size() > 0; // Need to
             // rethink below loop before we can enable this
@@ -3913,7 +3915,7 @@ public class TomBasicCompiler extends HasErrorState {
             int src, dst;
             dst = 0;
             for (src = 0; src < functionCount; src++) {
-                if (functions[src].spec.getParamTypes().getParams().size() > count) {
+                if (functions[src].getSpecification().getParamTypes().getParams().size() > count) {
                     functions[dst++] = functions[src];
                 }
             }
@@ -3953,7 +3955,7 @@ public class TomBasicCompiler extends HasErrorState {
             int i;
             for (i = 0; i < functionCount && matchIndex < 0; i++) {
                 ValType type = new ValType(
-                        functions[i].spec.getParamTypes().getParams().get(count));
+                        functions[i].getSpecification().getParamTypes().getParams().get(count));
 
                 // Check for undefined type parameter
                 if (type.matchesType(BasicValType.VTP_UNDEFINED)) {
@@ -3961,7 +3963,7 @@ public class TomBasicCompiler extends HasErrorState {
                     // Function definition indicates whether parameter type is
                     // valid
                     // via a compiler time callback function.
-                    if (functions[i].spec.getParamValidationCallback().run(count, regType)) {
+                    if (functions[i].getSpecification().getParamValidationCallback().run(count, regType)) {
 
                         // Found "any type" match
                         matchIndex = i;
@@ -3988,7 +3990,7 @@ public class TomBasicCompiler extends HasErrorState {
                 clearError();
 
                 ValType type = new ValType(
-                        functions[matchIndex].spec.getParamTypes().getParams().get(count));
+                        functions[matchIndex].getSpecification().getParamTypes().getParams().get(count));
 
                 // Filter out all functions whose "count" parameter doesn't
                 // match "type".
@@ -4000,7 +4002,7 @@ public class TomBasicCompiler extends HasErrorState {
                         // parameter, then all other overloads must be an
                         // "any type"
                         // parameter.
-                        if (functions[src].spec.getParamValidationCallback().run(count, regType)) {
+                        if (functions[src].getSpecification().getParamValidationCallback().run(count, regType)) {
                             functions[dst++] = functions[src];
                         }
                     } else {
@@ -4010,7 +4012,7 @@ public class TomBasicCompiler extends HasErrorState {
                         // that
                         // same type.
                         if (functions[src]
-                                .spec
+                                .getSpecification()
                                 .getParamTypes()
                                 .getParams()
                                 .get(count)
@@ -4051,7 +4053,7 @@ public class TomBasicCompiler extends HasErrorState {
         int matchIndex = -1;
         int i;
         for (i = 0; i < functionCount && matchIndex < 0; i++) {
-            if (functions[i].spec.getParamTypes().getParams().size() == count) {
+            if (functions[i].getSpecification().getParamTypes().getParams().size() == count) {
                 matchIndex = i;
             }
         }
@@ -4078,11 +4080,11 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Generate code to call function
-        if (spec.builtin)
+        if (spec.isBuiltin())
 
         // Builtin function
         {
-            addInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(spec.spec.getIndex()));
+            addInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(spec.getSpecification().getIndex()));
         } else
 
         // DLL function
@@ -4093,13 +4095,13 @@ public class TomBasicCompiler extends HasErrorState {
             addInstruction(
                     OpCode.OP_CALL_DLL,
                     BasicValType.VTP_INT,
-                    new Value((spec.pluginIndex << 24) | (spec.spec.getIndex() & 0x00ffffff)));
+                    new Value((spec.getPluginIndex() << 24) | (spec.getSpecification().getIndex() & 0x00ffffff)));
         }
 
         // If function has return type, it will have changed the type in the
         // register
-        if (spec.spec.isFunction()) {
-            regType.setType(spec.spec.getReturnType());
+        if (spec.getSpecification().isFunction()) {
+            regType.setType(spec.getSpecification().getReturnType());
 
             // If data is too large to fit in the register, it will be returned
             // in the "temp" area. If the data contains strings, they will need
@@ -4115,7 +4117,7 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Note whether function has generated temporary data
-        freeTempData = freeTempData | spec.spec.getFreeTempData();
+        freeTempData = freeTempData | spec.getSpecification().getFreeTempData();
 
         // Generate code to clean up stack
         for (int i2 = 0; i2 < pushCount; i2++) {
@@ -4125,7 +4127,7 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Generate explicit timesharing break (if necessary)
-        if (spec.spec.getTimeshare()) {
+        if (spec.getSpecification().getTimeshare()) {
             addInstruction(OpCode.OP_TIMESHARE, BasicValType.VTP_INT, new Value());
         }
 
@@ -5792,7 +5794,7 @@ public class TomBasicCompiler extends HasErrorState {
         try {
 
             // Unload any plugins
-             plugins.Clear();
+             plugins.clear();
 
             // Clear current program (if any)
             clearProgram();

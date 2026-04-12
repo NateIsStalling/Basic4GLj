@@ -15,7 +15,7 @@ import com.basic4gl.compiler.util.FunctionSpecification;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.compiler.util.IVMDriverAccess;
 import com.basic4gl.lib.util.*;
-import com.basic4gl.library.plugin.sdk.standard.IB4GLCompiler;
+import com.basic4gl.compiler.plugin.sdk.standard.IB4GLCompiler;
 import com.basic4gl.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.Value;

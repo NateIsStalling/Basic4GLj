@@ -1,15 +1,16 @@
 package com.basic4gl.compiler.plugin;
 
-import com.basic4gl.compiler.Constant;
-import com.basic4gl.compiler.util.FunctionSpecification;
-import com.basic4gl.compiler.plugin.sdk.plugin.*;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.FunctionSpecification;
+import com.basic4gl.runtime.plugin.*;
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.ValType;
+import com.basic4gl.runtime.util.Assert;
 import com.basic4gl.runtime.util.Mutable;
 
 import java.util.*;
 
-import static com.basic4gl.runtime.types.BasicValType.*;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 /**
@@ -21,17 +22,17 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
 
     public static int getBasicValTypeFromPluginTypeCode(Basic4GLTypeCode typeCode) {
         return switch (typeCode) {
-            case INT -> VTP_INT;
-            case FLOAT -> VTP_REAL;
-            case STRING -> VTP_STRING;
-            case FUNCPTR -> VTP_UNTYPED_FUNC_PTR;
-            default -> VTP_UNDEFINED;
+            case INT -> BasicValType.VTP_INT;
+            case FLOAT -> BasicValType.VTP_REAL;
+            case STRING -> BasicValType.VTP_STRING;
+            case FUNCPTR -> BasicValType.VTP_UNTYPED_FUNC_PTR;
+            default -> BasicValType.VTP_UNDEFINED;
         };
     }
-    /// Main DLL manager
+    /// Main plugin manager
     private PluginManager manager;
 
-    // IDLL_Basic4GL_FunctionRegistry data
+    // region FunctionRegistry data
 
     /**
      * True if currently defining a function
@@ -42,18 +43,19 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
      */
     private Basic4GLFunction currentFunc;
     /**
-     * Current DLL runtime function being defined
+     * Current plugin runtime function being defined
      */
-    private FunctionSpecification currentSpec;
+    private final FunctionSpecification currentSpec;
     /**
      * Name of current function
      */
     private String             currentName;
+    // endregion
 
-    // DLL constants
-    private HashMap<String, Constant>         constants;
+    // Plugin constants
+    private final HashMap<String, Constant> constants;
 
-    // DLL functions
+    // Plugin functions
     private final Vector<Basic4GLFunction>  functions = new Vector<>();
     private final HashMap<String, List<Integer>> functionLookup = new HashMap<>();     // Maps function name to index
 
@@ -71,8 +73,11 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     // Structure building
     private PluginStructure currentStructure;
 
-    // DLL->DLL references
-    private final Set<PluginLibrary> referencingPlugins = new HashSet<>();                   // DLLs that reference this one
+    // Plugin->Plugin references
+    /**
+     * Plugins that reference this one
+     */
+    private final Set<PluginLibrary> referencingPlugins = new HashSet<>();
 
     /// Main plugin interface
     protected Basic4GLPlugin plugin;
@@ -152,7 +157,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         currentSpec.getParamTypes().getParams().clear();
         currentSpec.setBrackets(true);
         currentSpec.setFunction(false);
-        currentSpec.setReturnType(new ValType(VTP_INT));
+        currentSpec.setReturnType(new ValType(BasicValType.VTP_INT));
         currentSpec.setTimeshare( false);
         currentSpec.setConditionalTimeshare(false);
         currentSpec.setIndex(0);
@@ -231,7 +236,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
 
         // Set return type
         currentSpec.setFunction(true);
-        currentSpec.setReturnType(getBasicValTypeFromPluginTypeCode(typeCode));
+        currentSpec.setReturnType(new ValType(getBasicValTypeFromPluginTypeCode(typeCode)));
     }
     public  void registerArrayFunction(
 		String name,
@@ -244,7 +249,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
 
         // Set return type
         currentSpec.setFunction(true);
-        currentSpec.setReturnType(new ValType(getBasicValTypeFromPluginTypeCode(typeCode), dimensions, 1, true));
+        currentSpec.setReturnType(new ValType(getBasicValTypeFromPluginTypeCode(typeCode), (byte) dimensions, (byte) 1, true));
         currentSpec.setFreeTempData(true);
     }
     public  void registerStructureFunction(
@@ -282,12 +287,12 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         currentSpec.setConditionalTimeshare(true);
     }
     public  void addParam(Basic4GLTypeCode typeCode) {
-        currentSpec.getParamTypes().addParam( getBasicValTypeFromPluginTypeCode(typeCode));
+        currentSpec.getParamTypes().addParam( new ValType(getBasicValTypeFromPluginTypeCode(typeCode)));
     }
     public  void addArrayParam(
             Basic4GLTypeCode typeCode,
             int dimensions){
-        currentSpec.getParamTypes().addParam( new ValType(getBasicValTypeFromPluginTypeCode(typeCode), dimensions, 1, true));
+        currentSpec.getParamTypes().addParam( new ValType(getBasicValTypeFromPluginTypeCode(typeCode), (byte)dimensions, (byte) 1, true));
     }
     public  void addStrucParam(int handle){
         currentSpec.getParamTypes().addParam( new ValType(handle));
@@ -375,7 +380,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     }
     public  void  modStrucFieldArray(byte dimensions, int dimension1Size, int... otherSizes){
 
-        assertTrue(dimensions < TomVM.ARRAY_MAX_DIMENSIONS);
+        Assert.assertTrue(dimensions < TomVM.ARRAY_MAX_DIMENSIONS);
         int[] dimensionArray = new int[TomVM.ARRAY_MAX_DIMENSIONS];
         if (dimensions > 0)
         {
@@ -472,8 +477,8 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
 
     /// Retrieve function by index
     public Basic4GLFunction getFunction(int index) {
-        assertTrue(index >= 0);
-        assertTrue(index < count());
+        Assert.assertTrue(index >= 0);
+        Assert.assertTrue(index < count());
         return functions.get(index);
     }
 

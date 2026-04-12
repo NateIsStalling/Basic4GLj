@@ -1,4 +1,4 @@
-package com.basic4gl.compiler.plugin.sdk.plugin;
+package com.basic4gl.runtime.util;
 
 /**
  * Interface to a BASIC function that suspends Basic4GL execution until it completes.

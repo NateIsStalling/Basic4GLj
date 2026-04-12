@@ -2,6 +2,7 @@ package com.basic4gl.compiler.plugin;
 
 import com.basic4gl.runtime.types.TypeLibrary;
 import com.basic4gl.runtime.types.ValType;
+import com.basic4gl.runtime.util.Assert;
 
 import java.util.Locale;
 import java.util.Vector;
@@ -59,8 +60,8 @@ public class PluginStructure {
     // Field access
     public int getFieldCount() { return fields.size(); }
     public PluginStructureField getField(int index) {
-        assertTrue(index >= 0);
-        assertTrue(index < getFieldCount());
+        Assert.assertTrue(index >= 0);
+        Assert.assertTrue(index < getFieldCount());
         return fields.get(index);
     }
 

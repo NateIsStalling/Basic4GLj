@@ -1,6 +1,6 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
-import com.basic4gl.compiler.plugin.sdk.plugin.PlatformMetadataPolicy;
+import com.basic4gl.runtime.util.Streaming;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,8 +12,6 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
-
-import static com.basic4gl.runtime.util.Streaming.*;
 
 /**
  * Manages loading and maintaining plugin JARs
@@ -164,9 +162,9 @@ public class PluginJARManager extends PluginManager {
         }
 
         // Unregister all interfaces owned by this JAR
-        for (Iterator<Map.Entry<String, PluginJARSharedInterface>> it = sharedInterfaces.entrySet().iterator();
+        for (Iterator<Map.Entry<String, PluginSharedInterface>> it = sharedInterfaces.entrySet().iterator();
              it.hasNext(); ) {
-            Map.Entry<String, PluginJARSharedInterface> entry = it.next();
+            Map.Entry<String, PluginSharedInterface> entry = it.next();
             if (entry.getValue().getOwner() == jar) {
                 it.remove();
             }
@@ -183,14 +181,14 @@ public class PluginJARManager extends PluginManager {
 
     public void streamOut(DataOutputStream stream) throws IOException {
         // Write JAR filenames, and versions
-        writeLong(stream, plugins.size());
+        Streaming.writeLong(stream, plugins.size());
         for (int i = 0; i < plugins.size(); i++) {
             if (plugins.get(i) instanceof PluginJAR) {
                 PluginJAR jar = (PluginJAR) (plugins.get(i));
                 String filename = jar.getFileDetails().getFilename();
-                writeString(stream, filename);
-                writeLong(stream, jar.getFileDetails().getVersion().getMajorVersion());
-                writeLong(stream, jar.getFileDetails().getVersion().getMinorVersion());
+                Streaming.writeString(stream, filename);
+                Streaming.writeLong(stream, jar.getFileDetails().getVersion().getMajorVersion());
+                Streaming.writeLong(stream, jar.getFileDetails().getVersion().getMinorVersion());
             }
         }
     }
@@ -199,14 +197,14 @@ public class PluginJARManager extends PluginManager {
         // Clear out any existing plugins
         clear();
 
-        long count = readLong(stream);
+        long count = Streaming.readLong(stream);
         for (int i = 0; i < count; i++) {
 
             // Read file details
-            String filename = readString(stream);
+            String filename = Streaming.readString(stream);
             PluginVersion version = new PluginVersion();
-            version.setMajorVersion(readLong(stream));
-            version.setMinorVersion(readLong(stream));
+            version.setMajorVersion(Streaming.readLong(stream));
+            version.setMinorVersion(Streaming.readLong(stream));
 
             // Attempt to load JAR
             if (!loadJAR(filename))

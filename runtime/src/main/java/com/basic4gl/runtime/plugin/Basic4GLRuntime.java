@@ -1,5 +1,7 @@
 package com.basic4gl.compiler.plugin.sdk.plugin;
 
+import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -203,5 +205,5 @@ public interface Basic4GLRuntime {
     /// this will trigger a time sharing break after the function returns.
     /// This is useful for creating conditional timesharing breaks, when it
     /// is not known until runtime whether the break is required.
-    void  isTimeshareBreakRequired();
+    void setTimeshareBreakRequired();
 }

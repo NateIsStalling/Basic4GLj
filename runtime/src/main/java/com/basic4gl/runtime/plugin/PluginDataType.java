@@ -1,6 +1,7 @@
 package com.basic4gl.compiler.plugin;
 
 import com.basic4gl.runtime.TomVM;
+import com.basic4gl.runtime.util.Assert;
 
 import static com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING;
 import static com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_STRING;
@@ -48,13 +49,13 @@ public class PluginDataType {
 
 
     /// Convert array type into array element type
-    void makeIntoElementType() {
-        assertTrue(arrayLevel > 0);
+    public void makeIntoElementType() {
+        Assert.assertTrue(arrayLevel > 0);
         arrayLevel--;
     }
 
-    void deref() {
-        assertTrue(pointerLevel > 0);
+    public void deref() {
+        Assert.assertTrue(pointerLevel > 0);
         pointerLevel--;
         byReference = false;
     }

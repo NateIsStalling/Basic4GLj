@@ -1,6 +1,5 @@
-package com.basic4gl.compiler.plugin;
+package com.basic4gl.runtime.plugin;
 
-import com.basic4gl.compiler.plugin.sdk.plugin.*;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;

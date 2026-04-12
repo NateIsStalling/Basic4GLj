@@ -1,13 +1,15 @@
 package com.basic4gl.compiler.plugin;
 
-import com.basic4gl.compiler.Constant;
-import com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLPlugin;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.plugin.Basic4GLPlugin;
+import com.basic4gl.runtime.plugin.ExtendedFunctionSpecification;
+import com.basic4gl.runtime.plugin.PluginStructure;
+import com.basic4gl.runtime.plugin.PluginStructureManager;
 import com.basic4gl.runtime.util.Mutable;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -92,10 +94,10 @@ public class PluginManager
         return false;
     }
 
-    /// Find constant with a given name within all loaded DLLs
+    /// Find constant with a given name within all loaded plugins.
     public Constant findConstant(String name) {
 
-        // Search all DLLs for constant
+        // Search all plugins for constant
         for (int i = 0; i < plugins.size(); i++){
             Constant value = plugins.get(i).findConstant(name);
             if (value != null){
@@ -106,14 +108,14 @@ public class PluginManager
         return null;
     }
 
-    /// Find functions of a given name within all loaded DLLs and append to array
+    /// Find functions of a given name within all loaded plugins and append to array
     public void findFunctions(
             String name,
-            ArrayList<ExtendedFunctionSpecification> functions,
+            ExtendedFunctionSpecification[] functions,
             Mutable<Integer> count,
             int max){
 
-        // Pass call through to all loaded plugin dlls.
+        // Pass call through to all loaded plugin.
         for (int i = 0; i < plugins.size(); i++) {
             plugins.get(i).findFunctions(name, functions, count, max, i);
         }

@@ -31,6 +31,44 @@ public class FunctionSpecification {
             boolean isFunction,
             int returnType,
             boolean timeshare,
+            boolean freeTempData,
+            ParamValidationCallback paramValidationCallback) {
+        this.functionClass = functionClass;
+        this.paramTypes = paramTypes;
+        this.hasBrackets = brackets;
+        this.isFunction = isFunction;
+        this.returnType = new ValType(returnType);
+        this.timeshare = timeshare;
+        this.freeTempData = freeTempData;
+        this.paramValidationCallback = paramValidationCallback;
+    }
+
+    public FunctionSpecification(
+            Class functionClass,
+            ParamTypeList paramTypes,
+            boolean brackets,
+            boolean isFunction,
+            ValType returnType,
+            boolean timeshare,
+            boolean freeTempData,
+            ParamValidationCallback paramValidationCallback) {
+        this.functionClass = functionClass;
+        this.paramTypes = paramTypes;
+        hasBrackets = brackets;
+        this.isFunction = isFunction;
+        this.returnType = returnType;
+        this.timeshare = timeshare;
+        this.freeTempData = freeTempData;
+        this.paramValidationCallback = paramValidationCallback;
+    }
+
+    public FunctionSpecification(
+            Class functionClass,
+            ParamTypeList paramTypes,
+            boolean brackets,
+            boolean isFunction,
+            int returnType,
+            boolean timeshare,
             boolean conditionalTimeshare,
             boolean freeTempData,
             ParamValidationCallback paramValidationCallback) {

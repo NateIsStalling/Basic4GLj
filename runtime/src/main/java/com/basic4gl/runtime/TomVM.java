@@ -1,16 +1,13 @@
 package com.basic4gl.runtime;
 
+import static com.basic4gl.runtime.types.OpCode.OP_COND_TIMESHARE;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import com.basic4gl.runtime.VariableCollection.Variable;
 import com.basic4gl.runtime.stackframe.*;
 import com.basic4gl.runtime.types.*;
-import com.basic4gl.runtime.util.Function;
-import com.basic4gl.runtime.util.IVMDebugger;
-import com.basic4gl.runtime.util.Mutable;
-import com.basic4gl.runtime.util.Resources;
-import com.basic4gl.runtime.util.Streamable;
-import com.basic4gl.runtime.util.Streaming;
+import com.basic4gl.runtime.util.*;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -181,6 +178,14 @@ public class TomVM extends HasErrorState implements Streamable {
 
     private boolean stopped;
 
+    private Basic4GLLongRunningFunction longRunningFunction;
+    private ILongRunningFunctionListener longRunningFnDoneNotifiedListener;
+
+    /**
+     * Conditional timeshare break
+     */
+    private boolean timeshare;
+
     // TODO Reimplement libraries
     // public TomVM(PluginDLLManager plugins, IVMDebugger debugger) {
     public TomVM(IVMDebugger debugger) {
@@ -323,10 +328,20 @@ public class TomVM extends HasErrorState implements Streamable {
 
         clearError();
         paused = false;
+        timeshare = false;
 
         Instruction instruction;
         int stepCount = 0;
         int tempI;
+
+        // Handle long running functions
+        if (longRunningFunction != null)
+        {
+            if (longRunningFunction.isPolled()) {
+                longRunningFunction.poll();
+            }
+            return;
+        }
 
         // Virtual machine main loop
         step:
@@ -902,6 +917,14 @@ public class TomVM extends HasErrorState implements Streamable {
                     break;
 
                 case OpCode.OP_TIMESHARE:
+                    ip++; // Move on to next instruction
+                    break; // And return
+
+                case OpCode.OP_COND_TIMESHARE:
+                    if (!timeshare) {
+                        // If no timeshare flagged, continue executing
+                        continue step;
+                    }
                     ip++; // Move on to next instruction
                     break; // And return
 
@@ -1842,6 +1865,10 @@ public class TomVM extends HasErrorState implements Streamable {
             s.setErrorString("");
         }
 
+        // Current long running function
+        s.setLongRunningFunction(longRunningFunction);
+        longRunningFunction = null;
+
         // Other state
         s.setPaused(paused);
 
@@ -1880,6 +1907,10 @@ public class TomVM extends HasErrorState implements Streamable {
         unwindTemp();
         unwindStack(state.getStackDataTop());
         data.restoreState(state.getStackDataTop(), state.getTempDataLock(), true);
+
+        // Long running function
+        cancelLongRunningFunction();
+        longRunningFunction = state.getLongRunningFunction();
 
         // Error state
         if (state.isError()) {
@@ -2939,7 +2970,72 @@ public class TomVM extends HasErrorState implements Streamable {
         return codeInstructions.get(ip).opCode == OpCode.OP_END_CALLBACK; // Reached end callback opcode?
     }
 
+
+    public void beginLongRunningFunction(Basic4GLLongRunningFunction handler) {
+
+        // Should never be any existing long running fn, but just in case
+        cancelLongRunningFunction();
+
+        // Set handler as the new long running fn.
+        // This will prevent VM from executing any more op-codes
+        longRunningFunction = handler;
+    }
+
+    public void endLongRunningFunction() {
+        if (longRunningFunction != null)
+        {
+            // Delete if required
+            if (longRunningFunction.deleteWhenDone()) {
+                longRunningFunction.dispose();
+            }
+            // Unhook handler. This allows VM to continue executing op-codes.
+            longRunningFunction = null;
+
+            // Notify
+            if (longRunningFnDoneNotifiedListener != null) {
+                longRunningFnDoneNotifiedListener.onLongRunningFunctionDone(false);
+            }
+        }
+    }
+
+    public void cancelLongRunningFunction() {
+        if (longRunningFunction != null)
+        {
+            boolean deleteWhenDone = longRunningFunction.deleteWhenDone();
+            longRunningFunction.cancel();
+            if (deleteWhenDone) {
+                longRunningFunction.dispose();
+            }
+            longRunningFunction = null;
+
+            // Notify
+            if (longRunningFnDoneNotifiedListener != null) {
+                longRunningFnDoneNotifiedListener.onLongRunningFunctionDone(true);
+            }
+        }
+    }
+    public void setTimeshareBreakRequired() {
+        timeshare = true;
+    }
+    public boolean isInLongRunningFunction() {
+        return longRunningFunction != null;
+    }
+
+    /**
+     * If VM is waiting for a long running function that does not require polling,
+     * then application can block and wait for next event before calling continue() again.
+     * @return
+     */
+    public boolean canWaitForEvents() {
+        return longRunningFunction != null && !longRunningFunction.isPolled();
+    }
+
+    public void setLongRunningFunctionDoneNotified(ILongRunningFunctionListener listener) {
+        longRunningFnDoneNotifiedListener = listener;
+    }
+
     public Instruction[] getInstructions() {
         return codeInstructions.toArray(new Instruction[0]);
     }
+
 }

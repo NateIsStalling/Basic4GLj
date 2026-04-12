@@ -1,7 +1,9 @@
 package com.basic4gl.compiler.plugin;
 
+import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.TypeLibrary;
 import com.basic4gl.runtime.types.ValType;
+import com.basic4gl.runtime.util.Assert;
 import com.basic4gl.runtime.util.PointerResourceStore;
 
 import java.util.ArrayList;
@@ -9,7 +11,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import static com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLExtendedTypeCode.*;
-import static com.basic4gl.runtime.types.BasicValType.*;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 /**
@@ -42,7 +43,7 @@ public class PluginStructureManager {
      * @return
      */
     public int add(PluginStructure structure){
-        assertTrue(structure != null);
+        Assert.assertTrue(structure != null);
 
         // Structure must not already be stored
         if (findStructure(structure.getName()) != 0)
@@ -215,16 +216,16 @@ public class PluginStructureManager {
                 case PLUGIN_BASIC4GL_EXT_WORD:
                 case PLUGIN_BASIC4GL_EXT_INT:
                 case PLUGIN_BASIC4GL_EXT_INT64:
-                    vmType.basicType = VTP_INT;
+                    vmType.basicType = BasicValType.VTP_INT;
                     break;
 
                 case PLUGIN_BASIC4GL_EXT_FLOAT:
                 case PLUGIN_BASIC4GL_EXT_DOUBLE:
-                    vmType.basicType = VTP_REAL;
+                    vmType.basicType = BasicValType.VTP_REAL;
                     break;
 
                 case PLUGIN_BASIC4GL_EXT_STRING:
-                    vmType.setType(VTP_STRING);
+                    vmType.setType(BasicValType.VTP_STRING);
                     break;
             }
         }
@@ -257,7 +258,7 @@ public class PluginStructureManager {
 
             // Find corresponding structure
             PluginStructure structure = getStructure(dst.basicType);
-            assertTrue(structure != null);
+            Assert.assertTrue(structure != null);
 
             // Replace with virtual machine structure index
             dst.basicType = structure.getVMStructureIndex();

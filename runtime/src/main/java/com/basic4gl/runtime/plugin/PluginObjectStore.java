@@ -1,7 +1,7 @@
 package com.basic4gl.compiler.plugin;
 
-import com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLObjectStore;
-import com.basic4gl.compiler.plugin.sdk.plugin.Basic4GLObjectStoreListener;
+import com.basic4gl.runtime.plugin.Basic4GLObjectStore;
+import com.basic4gl.runtime.plugin.Basic4GLObjectStoreListener;
 import com.basic4gl.runtime.Store;
 
 /**
