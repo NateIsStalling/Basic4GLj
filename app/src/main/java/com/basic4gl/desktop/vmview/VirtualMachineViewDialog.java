@@ -9,6 +9,7 @@ import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.debug.protocol.types.DisassembledInstruction;
 import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.debug.protocol.types.Variable;
+import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -109,7 +110,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.add(registerPanel);
 
-        // === Top GroupBox Section (Code, Call stack, Variables) ===
+        // === Top GroupBox Section (Code, Call stack) ===
         JPanel topSection = new JPanel(new GridBagLayout());
         GridBagConstraints topConstraints = new GridBagConstraints();
         topConstraints.gridy = 0;
@@ -142,7 +143,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         variableDataTextArea.setEditable(false);
         variableDataTextArea.setLineWrap(true);
         variableDataTextArea.setWrapStyleWord(true);
-        seeValueLabel = new JLabel(" Pending Evaluation:");
+        seeValueLabel = new JLabel("Value not loaded:");
         seeValueLabel.setVisible(false);
         seeValueButton = new JButton("See Value");
         playPauseButton = new JButton(createImageIcon(ICON_PLAY));
@@ -203,7 +204,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
             }
         };
         allocatedStringsTableModel =
-                new DefaultTableModel(new Object[] {"Index", "Integer", "Floating Pt", "String"}, 0) {
+                new DefaultTableModel(new Object[] {"Index", "Value"}, 0) {
                     @Override
                     public boolean isCellEditable(int row, int column) {
                         return false;
@@ -224,23 +225,32 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
 
         topConstraints.gridx = 1;
         topConstraints.weightx = 1.0;
-        topSection.add(createGroupWithTable("Call stack", callStackTableModel, callStackStatusLabel), topConstraints);
-
-        topConstraints.gridx = 2;
-        topConstraints.weightx = 2.0;
-        topSection.add(createVariablesGroup(), topConstraints);
+        topSection.add(createGroupWithTable(callStackTableModel, callStackStatusLabel, "Call Stack"), topConstraints);
 
         contentPanel.add(topSection);
 
-        // === Bottom GroupBox Section (Heap, Stack, Temp, Allocated Strings) ===
-        JPanel bottomSection = new JPanel(new GridLayout(2, 2));
-        bottomSection.add(createGroupWithTable("Heap", heapTableModel, heapStatusLabel));
-        bottomSection.add(createGroupWithTable("Stack", stackTableModel, stackStatusLabel));
-        bottomSection.add(createGroupWithTable("Temp", tempTableModel, tempStatusLabel));
-        bottomSection.add(createGroupWithTable(
-                "Allocated Strings", allocatedStringsTableModel, allocatedStringsStatusLabel));
+        // === Bottom Split Section (Memory tabs on left, Variables on right) ===
+        JTabbedPane memoryTabs = new JTabbedPane();
+        SwingUtilities.updateComponentTreeUI(memoryTabs);
+        memoryTabs.setUI(new FlatTabbedPaneUI() {
+            @Override
+            protected void installDefaults() {
+                super.installDefaults();
+            }
+        });
+        memoryTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-        contentPanel.add(bottomSection);
+        memoryTabs.addTab("Heap", createGroupWithTable(heapTableModel, heapStatusLabel, null));
+        memoryTabs.addTab("Stack", createGroupWithTable( stackTableModel, stackStatusLabel, null));
+        memoryTabs.addTab("Temp", createGroupWithTable(tempTableModel, tempStatusLabel, null));
+        memoryTabs.addTab(
+                "Allocated Strings", createGroupWithTable(allocatedStringsTableModel, allocatedStringsStatusLabel, null));
+
+        JPanel memoryAndVariablesPanel = new JPanel(new GridLayout(1, 2));
+        memoryAndVariablesPanel.add(memoryTabs);
+        memoryAndVariablesPanel.add(createVariablesGroup());
+
+        contentPanel.add(memoryAndVariablesPanel);
 
         statusLabel = new JLabel("VM: stopped");
         contentPanel.add(statusLabel);
@@ -260,10 +270,11 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         return label;
     }
 
-    private JPanel createGroupWithTable(String title, DefaultTableModel model, JLabel statusLabel) {
+    private JPanel createGroupWithTable(DefaultTableModel model, JLabel statusLabel, String title) {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(title));
-
+        if (title != null && !title.trim().isEmpty()) {
+            panel.setBorder(BorderFactory.createTitledBorder(title));
+        }
         JTable table = new JTable(model);
         table.setFillsViewportHeight(true);
         applyMutedErrorRowRenderer(table);
@@ -579,8 +590,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         seeValueLabel.setVisible(isLazy);
         seeValueButton.setEnabled(isLazy && expression != null && variableWatchListener != null);
 
-        variableDataTextArea.setText("Name: " + name + "\nType: " + type
-                + "\n\nValue:\n" + displayedValue);
+        variableDataTextArea.setText(displayedValue);
         variableDataTextArea.setCaretPosition(0);
     }
 
@@ -662,13 +672,22 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         }
 
         model.setRowCount(0);
-        for (Variable variable : variables) {
-            model.addRow(new Object[] {
-                variable.name,
-                variable.value,
-                variable.type,
-                variable.evaluateName != null ? variable.evaluateName : ""
-            });
+        if (SCOPE_ALLOCATED_STRINGS.equals(scope)) {
+            for (Variable variable : variables) {
+                model.addRow(new Object[] {
+                        variable.name,
+                        variable.evaluateName != null ? variable.evaluateName : "",
+                });
+            }
+        } else {
+            for (Variable variable : variables) {
+                model.addRow(new Object[] {
+                        variable.name,
+                        variable.value,
+                        variable.type,
+                        variable.evaluateName != null ? variable.evaluateName : ""
+                });
+            }
         }
     }
 
@@ -744,7 +763,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
 
         if (SCOPE_CODE.equals(scope)) {
             codeStatusLabel.setText(detail);
-            insertPlaceholderRow(codeTableModel, scope, rangeLabel, new Object[] {"!", rangeLabel, "[ERROR]", detail, ""});
+            insertPlaceholderRow(codeTableModel, scope, rangeLabel, new Object[] {rangeLabel, "[ERROR]", detail, ""});
             return;
         }
 
@@ -778,7 +797,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
                     allocatedStringsTableModel,
                     scope,
                     rangeLabel,
-                    new Object[] {rangeLabel, "[ERROR]", "", detail});
+                    new Object[] {rangeLabel, detail});
             return;
         }
 
