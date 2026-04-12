@@ -6,7 +6,9 @@ import static com.formdev.flatlaf.FlatClientProperties.*;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
+import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
@@ -142,6 +144,7 @@ public class MainWindow
 
     // Debugging
     private boolean isDebugMode = false;
+    private VirtualMachineViewDialog virtualMachineViewDialog;
 
     // Set when stepping. Delays switching to the output window for the first 1000 op-codes.
     // (To prevent excessive screen mode switches when debugging full-screen programs.)
@@ -399,8 +402,16 @@ public class MainWindow
             basicEditor.actionStepOutOf();
         });
         viewVirtualMachineMenuItem.addActionListener(e -> {
-            VirtualMachineViewDialog dialog = new VirtualMachineViewDialog(frame);
-            dialog.setVisible(true);
+            if (virtualMachineViewDialog == null || !virtualMachineViewDialog.isDisplayable()) {
+                virtualMachineViewDialog = new VirtualMachineViewDialog(frame);
+            }
+            virtualMachineViewDialog.setVmRunning(basicEditor.getMode() == ApMode.AP_RUNNING);
+            virtualMachineViewDialog.setVisible(true);
+            if (basicEditor.getMode() == ApMode.AP_PAUSED) {
+                basicEditor.refreshCallStack();
+                basicEditor.refreshDisassembly();
+                basicEditor.refreshVariables();
+            }
         });
         toggleBookmarkMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, toolkit.getMenuShortcutKeyMask()));
         toggleBookmarkMenuItem.addActionListener(e -> {
@@ -1234,8 +1245,9 @@ public class MainWindow
         compilerStatusLabel.setText(statusMsg);
 
         // Notify virtual machine view
-        // TODO Implement VM Viewer
-        // VMView().SetVMIsRunning(mode == ApMode.AP_RUNNING);
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.setVmRunning(mode == ApMode.AP_RUNNING);
+        }
     }
 
     @Override
@@ -1425,6 +1437,27 @@ public class MainWindow
             } else {
                 gosubListModel.addElement(frame.name);
             }
+        }
+    }
+
+    @Override
+    public void updateVmViewCallStack(StackTraceCallback stackTraceCallback) {
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.updateCallStack(stackTraceCallback);
+        }
+    }
+
+    @Override
+    public void updateVmViewDisassembly(DisassembleCallback disassembleCallback) {
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.updateDisassembly(disassembleCallback);
+        }
+    }
+
+    @Override
+    public void updateVmViewVariables(VariablesCallback variablesCallback) {
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.updateVariables(variablesCallback);
         }
     }
 

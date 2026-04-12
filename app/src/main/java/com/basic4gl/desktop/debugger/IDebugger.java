@@ -29,4 +29,8 @@ public interface IDebugger {
     int evaluateWatch(String watch, boolean canCallFunc);
 
     void refreshCallStack();
+
+    void refreshDisassembly();
+
+    void refreshVariables();
 }

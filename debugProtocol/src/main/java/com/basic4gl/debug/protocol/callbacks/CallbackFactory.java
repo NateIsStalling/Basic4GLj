@@ -24,6 +24,10 @@ public class CallbackFactory {
                     return gson.fromJson(commandJson, StackTraceCallback.class);
                 case EvaluateWatchCallback.COMMAND:
                     return gson.fromJson(commandJson, EvaluateWatchCallback.class);
+                case DisassembleCallback.COMMAND:
+                    return gson.fromJson(commandJson, DisassembleCallback.class);
+                case VariablesCallback.COMMAND:
+                    return gson.fromJson(commandJson, VariablesCallback.class);
             }
         } catch (Exception e) {
         }

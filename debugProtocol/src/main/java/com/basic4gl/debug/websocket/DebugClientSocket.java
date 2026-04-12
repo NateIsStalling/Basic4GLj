@@ -17,6 +17,7 @@ import javax.websocket.*;
 @ClientEndpoint
 public class DebugClientSocket {
     private static final ILogger logger = new ConsoleLogger();
+    private static final int MAX_TEXT_MESSAGE_SIZE_BYTES = 1024 * 1024;
 
     private final CountDownLatch closureLatch = new CountDownLatch(1);
     private Session session;
@@ -34,6 +35,7 @@ public class DebugClientSocket {
     @OnOpen
     public void onWebSocketConnect(Session sess) {
         Gson gson = new Gson();
+        sess.setMaxTextMessageBufferSize(MAX_TEXT_MESSAGE_SIZE_BYTES);
 
         this.session = sess;
         this.commandFactory = new DebugCommandFactory(gson);

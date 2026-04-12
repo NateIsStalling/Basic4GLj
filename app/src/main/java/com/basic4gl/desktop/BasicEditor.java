@@ -2,8 +2,10 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
+import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.desktop.debugger.*;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
 import com.basic4gl.desktop.editor.FileEditor;
@@ -448,6 +450,14 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         vmWorker.refreshCallStack();
     }
 
+    public void refreshDisassembly() {
+        vmWorker.refreshDisassembly();
+    }
+
+    public void refreshVariables() {
+        vmWorker.refreshVariables();
+    }
+
     public void refreshWatchList() {
         presenter.refreshWatchList();
 
@@ -557,6 +567,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
             if (message.getStatus() == CallbackMessage.PAUSED) {
                 presenter.onPause();
                 refreshCallStack();
+                refreshDisassembly();
+                refreshVariables();
                 refreshWatchList();
             }
 
@@ -602,6 +614,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
             // TODO Pause
             if (message.getStatus() == CallbackMessage.PAUSED) {
                 presenter.onPause();
+                refreshCallStack();
+                refreshDisassembly();
+                refreshVariables();
+                refreshWatchList();
             }
 
             switch (message.getStatus()) {
@@ -633,7 +649,17 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         public void messageObject(Object message) {
             // TODO 12/2022 improve type safety of interface/map callback DTO to domain model
             if (message instanceof StackTraceCallback) {
-                presenter.updateCallStack((StackTraceCallback) message);
+                StackTraceCallback callback = (StackTraceCallback) message;
+                presenter.updateCallStack(callback);
+                presenter.updateVmViewCallStack(callback);
+            }
+
+            if (message instanceof DisassembleCallback) {
+                presenter.updateVmViewDisassembly((DisassembleCallback) message);
+            }
+
+            if (message instanceof VariablesCallback) {
+                presenter.updateVmViewVariables((VariablesCallback) message);
             }
 
             if (message instanceof EvaluateWatchCallback) {

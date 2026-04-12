@@ -23,6 +23,8 @@ import javax.websocket.WebSocketContainer;
 import org.eclipse.jetty.util.component.LifeCycle;
 
 public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugCommandListener, IDebugCallbackListener {
+    private static final int MAX_TEXT_MESSAGE_SIZE_BYTES = 1024 * 1024;
+    private static final int MAX_CALLBACK_TEXT_CHARS = 16 * 1024;
 
     private final DebuggerCallbackMessage callbackMessage;
     private final Debugger debugger;
@@ -47,6 +49,7 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
     public void connect(URI debugSocketUri) {
         try {
             container = ContainerProvider.getWebSocketContainer();
+            container.setDefaultMaxTextMessageBufferSize(MAX_TEXT_MESSAGE_SIZE_BYTES);
 
             // Create client side endpoint
             DebugClientSocket clientEndpoint = new DebugClientSocket(this, this);
@@ -94,7 +97,7 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
             status = new VMStatus(
                     message.getVMStatus().isDone(),
                     message.getVMStatus().hasError(),
-                    message.getVMStatus().getError());
+                    abbreviate(message.getVMStatus().getError(), MAX_CALLBACK_TEXT_CHARS));
         }
         com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback =
                 new com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage(
@@ -137,11 +140,29 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
     private void message(String json) {
         if (session != null && session.isOpen()) {
             try {
+                if (json.length() > MAX_TEXT_MESSAGE_SIZE_BYTES) {
+                    loggerTooLargeCallback(json.length());
+                    json = gson.toJson(new com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage(
+                            com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage.FAILED,
+                            "Debug callback too large; request stack/variables/disassembly separately.",
+                            null));
+                }
                 session.getBasicRemote().sendText(json);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private static String abbreviate(String text, int maxChars) {
+        if (text == null || text.length() <= maxChars) {
+            return text;
+        }
+        return text.substring(0, maxChars) + "... [truncated]";
+    }
+
+    private void loggerTooLargeCallback(int length) {
+        System.err.println("Dropping oversized callback payload (chars=" + length + ")");
     }
 
     @Override
@@ -227,8 +248,8 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
                 break;
             case VariablesCommand.COMMAND:
                 VariablesCommand variablesCommand = (VariablesCommand) command;
-                VariablesHandler variablesHandler = new VariablesHandler();
-                variablesHandler.handle(variablesCommand);
+                VariablesHandler variablesHandler = new VariablesHandler(vm, gson);
+                variablesHandler.handle(variablesCommand, variablesCommand.getId(), session);
                 break;
             default:
                 System.out.println("Ignored unsupported command: " + command.getCommand());
