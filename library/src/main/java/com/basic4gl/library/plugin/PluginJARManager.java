@@ -21,7 +21,11 @@ public class PluginJARManager extends PluginManager {
     private String directory;
     private PlatformMetadataPolicy platformMetadataPolicy = PlatformMetadataPolicy.WARN_IDE_BLOCK_EXPORT;
 
-    /// Find itor for JAR with filename
+    /**
+     * Finds the PluginLibrary for a loaded JAR with the given filename.
+     * @param filename
+     * @return
+     */
     private PluginLibrary findItor(String filename) {
         String lcase = filename.toLowerCase();
 
@@ -44,7 +48,9 @@ public class PluginJARManager extends PluginManager {
         this.directory = "";
     }
 
-    /// Iterate loaded JARs
+    /**
+     * @return Returns a list of currently loaded plugin JARs.
+     */
     public Vector<PluginJAR> loadedJARs(){
         Vector<PluginJAR> result = new Vector<>();
 
@@ -57,7 +63,10 @@ public class PluginJARManager extends PluginManager {
         return result;
     }
 
-    /// Find and list JAR files.
+    /**
+     * Find and list JAR files.
+     * @return
+     */
     public Vector<PluginJARFile> getJARFiles() {
         Vector<PluginJARFile> result = new Vector<>();
 
@@ -90,12 +99,20 @@ public class PluginJARManager extends PluginManager {
         return result;
     }
 
-    /// Find plugin JAR by name
+    /**
+     * Finds the PluginJAR with the given filename.
+     * @param filename
+     * @return
+     */
     public PluginJAR find(String filename) {
         return (PluginJAR) findItor(filename);
     }
 
-    /// Return true if a JAR file is loaded
+    /**
+     * Return true if a JAR file is loaded
+     * @param filename
+     * @return
+     */
     public boolean isLoaded(String filename) { return find(filename) != null; }
 
     public PlatformMetadataPolicy getPlatformMetadataPolicy() {
@@ -108,10 +125,7 @@ public class PluginJARManager extends PluginManager {
                 : platformMetadataPolicy;
     }
 
-    /// Load JAR. Returns true if JAR loaded successfully, or false if an error
-    /// occurred (use Error() to retrieve text).
-    public boolean loadJAR(String filename) {
-
+    public boolean loadPlugin(String filename) {
         // Attempt to load JAR
         // First check that it's not already loaded
         if (isLoaded(filename)) {
@@ -133,8 +147,7 @@ public class PluginJARManager extends PluginManager {
         return true;
     }
 
-    /// Unload JAR. Returns true if JAR unloaded successfully.
-    public boolean unloadJAR(String filename) {
+    public boolean unloadPlugin(String filename) {
 
         // Find JAR
         PluginLibrary i = findItor(filename);
@@ -205,7 +218,7 @@ public class PluginJARManager extends PluginManager {
             version.setMinorVersion(Streaming.readLong(stream));
 
             // Attempt to load JAR
-            if (!loadJAR(filename))
+            if (!loadPlugin(filename))
                 return false;
 
             // Check version number

@@ -187,7 +187,7 @@ public class OpCode {
     public static final short OP_CALL_OPERATOR_FUNC = 0x44;
 
     /**
-     * Call DLL function
+     * Call DLL (Plugin) function
      */
     public static final short OP_CALL_DLL = 0x45;
 
@@ -239,7 +239,7 @@ public class OpCode {
     public static final short OP_CREATE_RUNTIME_FRAME = 0x4F;
 
     /**
-     * End callback initiated by built-in function or DLL function,
+     * End callback initiated by built-in function or DLL (Plugin) function,
      * and return control to that function.
      */
     public static final short OP_END_CALLBACK = 0x50;

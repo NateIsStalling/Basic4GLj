@@ -19,7 +19,7 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
  */
 public class PluginLibrary implements Basic4GLFunctionRegistry {
 
-    public static int getBasicValTypeFromPluginTypeCode(Basic4GLTypeCode typeCode) {
+    public static int getBasicValType(Basic4GLTypeCode typeCode) {
         return switch (typeCode) {
             case INT -> BasicValType.VTP_INT;
             case FLOAT -> BasicValType.VTP_REAL;
@@ -28,8 +28,10 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
             default -> BasicValType.VTP_UNDEFINED;
         };
     }
-    /// Main plugin manager
-    private PluginManager manager;
+    /**
+     * Main plugin manager
+     */
+    private final PluginManager manager;
 
     // region FunctionRegistry data
 
@@ -78,10 +80,14 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
      */
     private final Set<PluginLibrary> referencingPlugins = new HashSet<>();
 
-    /// Main plugin interface
+    /**
+     * Main plugin interface
+     */
     protected Basic4GLPlugin plugin;
 
-    /// True if loading failed. Calling code should not try to use library.
+    /**
+     *  True if loading failed. Calling code should not try to use library.
+     */
     protected boolean failed;
 
     protected PluginLibrary(PluginManager manager) {
@@ -235,7 +241,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
 
         // Set return type
         currentSpec.setFunction(true);
-        currentSpec.setReturnType(new ValType(getBasicValTypeFromPluginTypeCode(typeCode)));
+        currentSpec.setReturnType(new ValType(getBasicValType(typeCode)));
     }
     public  void registerArrayFunction(
 		String name,
@@ -248,7 +254,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
 
         // Set return type
         currentSpec.setFunction(true);
-        currentSpec.setReturnType(new ValType(getBasicValTypeFromPluginTypeCode(typeCode), (byte) dimensions, (byte) 1, true));
+        currentSpec.setReturnType(new ValType(getBasicValType(typeCode), (byte) dimensions, (byte) 1, true));
         currentSpec.setFreeTempData(true);
     }
     public  void registerStructureFunction(
@@ -286,17 +292,17 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         currentSpec.setConditionalTimeshare(true);
     }
     public  void addParam(Basic4GLTypeCode typeCode) {
-        currentSpec.getParamTypes().addParam( new ValType(getBasicValTypeFromPluginTypeCode(typeCode)));
+        currentSpec.getParamTypes().addParam( new ValType(getBasicValType(typeCode)));
     }
     public  void addArrayParam(
             Basic4GLTypeCode typeCode,
             int dimensions){
-        currentSpec.getParamTypes().addParam( new ValType(getBasicValTypeFromPluginTypeCode(typeCode), (byte)dimensions, (byte) 1, true));
+        currentSpec.getParamTypes().addParam( new ValType(getBasicValType(typeCode), (byte)dimensions, (byte) 1, true));
     }
     public  void addStrucParam(int handle){
         currentSpec.getParamTypes().addParam( new ValType(handle));
     }
-    public  void modParamArray(byte dimensions) {
+    public void modParamArray(byte dimensions) {
         // Find last added param
         if (currentSpec.getParamTypes().getParams().size() > 0) {
             ValType param = currentSpec.getParamTypes().getParams().lastElement();
@@ -305,7 +311,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
             param.arrayLevel = dimensions;
         }
     }
-    public  void modParamPointer(byte level) {
+    public void modParamPointer(byte level) {
         // Find last added param
         if (currentSpec.getParamTypes().getParams().size() > 0) {
             ValType param = currentSpec.getParamTypes().getParams().lastElement();
@@ -424,25 +430,44 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     public Basic4GLPlugin getPlugin() { return plugin; }
     public Vector<FunctionSpecification> getFunctionSpecs() { return pluginFunctionSpecs; }
 
-    /// Return true if plugin failed to load and/or initialise
+    /**
+     * @return true if plugin failed to load and/or initialise
+     */
     public boolean hasFailed() { return failed; }
 
-    /// Plugin description for error reporting etc
+    /**
+     * Plugin description for error reporting etc
+     */
     public String getDescription() {
         return "Builtin library";
     }
 
-    /// Search for a constant
+    /**
+     * Find constant with a given name within this plugin.
+     * @param name constant name
+     * @return Constant object if found, or null if not found.
+     */
     public Constant findConstant(String name){
         return constants.getOrDefault(name, null);
     }
 
-    /// Return true if name matches a function in this DLL
+    /**
+     * Return true if name matches a function in this plugin.
+     * @param name function name
+     * @return true if name matches a function in this plugin.
+     */
     public boolean isFunction(String name) {
         return functionLookup.get(name.toLowerCase()) != null;
     }
 
-    /// Find all functions of a given name within this DLL and add them to the array
+    /**
+     * Find all functions of a given name within this plugin and add them to the array.
+     * @param name
+     * @param functions
+     * @param count
+     * @param max
+     * @param pluginIndex
+     */
     public void findFunctions(
             String name,
             ExtendedFunctionSpecification[] functions,
@@ -474,14 +499,22 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     // Function retrieval by index
     public int count() { return functions.size(); }
 
-    /// Retrieve function by index
+    /**
+     * Retrieve function by index
+     * @param index function index
+     * @return function if found, or null if not found.
+     */
     public Basic4GLFunction getFunction(int index) {
         Assert.assertTrue(index >= 0);
         Assert.assertTrue(index < count());
         return functions.get(index);
     }
 
-    /// Retrieve function name by index
+    /**
+     * Retrieve function name by index
+     * @param index function index
+     * @return function name if found, or "???" if not found.
+     */
     public String getFunctionName(int index){
         for (Map.Entry<String, List<Integer>> entry : functionLookup.entrySet()) {
             for (Integer value : entry.getValue()) {
@@ -494,17 +527,24 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         return "???";
     }
 
-    /// Iterate constants
+    /**
+     * Return a map of constant name to Constant object for all constants defined in this plugin.
+     * @return map of constant name to Constant object for all constants defined in this plugin.
+     */
     public HashMap<String, Constant> getConstants() { return constants; }
 
-    /// Clear all resource stores allocated by DLL
+    /**
+     * Clear all resource stores allocated by plugin
+     */
     public void clearObjectStores() {
         for (Basic4GLObjectStore objectStore: objectStores) {
             objectStore.clear();
         }
     }
 
-    /// Create VM versions of function specifications
+    /**
+     * Create VM versions of function specifications
+     */
     public void createVMFunctionSpecs() {
 
         // Create virtual machine version of each function definition.
@@ -530,30 +570,44 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         }
     }
 
-    /// Error text if failed
+    /**
+     * @return error text if plugin failed to load or initialise, or null if no error.
+     */
     public String getError() {
         return plugin.getError();
     }
 
-    /// Log that we are referenced by another Plugin.
-    /// (Thus we cannot be unloaded until the other Plugin has been).
+    /**
+     * Log that we are referenced by another Plugin.
+     * (Thus we cannot be unloaded until the other Plugin has been).
+     * @param plugin Plugin that references this one
+     */
     public void addReferencingPlugin(PluginLibrary plugin){
 
         // (Ignore self-references)
-        if (plugin != this)
+        if (plugin != this) {
             referencingPlugins.add(plugin);
+        }
     }
 
-    /// Log that we are no longer referenced by another specific Plugin.
-    /// (Typically means that Plugin has been unloaded)
+    /**
+     * Log that we are no longer referenced by another specific Plugin.
+     * (Typically means that Plugin has been unloaded)
+     * @param plugin Plugin that no longer references this one
+     */
     public void removeReferencingPlugin(PluginLibrary plugin) {
         referencingPlugins.remove(plugin);
     }
 
-    /// Return true if we are referenced by at least one other DLL
+    /**
+     * @return true if we are referenced by at least one other Plugin
+     */
     public boolean isReferenced() { return !referencingPlugins.isEmpty(); }
 
-    /// List Plugins that reference this one
+    /**
+     * List Plugins that reference this one
+     * @return comma separated list of descriptions of Plugins that reference this one
+     */
     public String describeReferencingPlugins(){
 
         // Build a comma separated list of plugins which reference this one
@@ -567,9 +621,6 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         }
         return result;
     }
-
-    /// Return true if this is the PluginJar class
-    public boolean isPluginJar() { return  false; }
 
     // Raw function specification access
     HashMap<String, List<Integer>> getFunctionLookup() { return functionLookup; }

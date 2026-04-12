@@ -6,10 +6,12 @@ import com.basic4gl.runtime.util.Mutable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 
-public class PluginManager
+public abstract class PluginManager
 {
 
     protected Vector<PluginLibrary> plugins = new Vector<>();
@@ -18,7 +20,7 @@ public class PluginManager
     protected boolean isStandaloneExe;
 
     // Data structures defined by plugins
-    protected PluginStructureManager structureManager;
+    protected PluginStructureManager structureManager = new PluginStructureManager();
 
     protected  String getSharedInterfaceKey(
          String name,
@@ -57,27 +59,51 @@ public class PluginManager
 
     // Plugin loading/unloading
 
-    /// Iterate loaded libraries
+    /**
+     * Load plugin and return true if successful. See getError() if failed.
+     * @param filename
+     * @return true if plugin loaded successfully, or false if an error
+     */
+    public abstract boolean loadPlugin(String filename);
+
+    /**
+     * Unload plugin. Returns true if plugin unloaded successfully
+     * @param filename
+     * @return
+     */
+    public abstract boolean unloadPlugin(String filename);
+
+    /**
+     * Loaded libraries
+     * @return PluginLibrary collection of loaded libraries.
+     */
     public Vector<PluginLibrary> getLoadedLibraries() { return plugins; }
 
-    /// Return text of last error.
-    public  String getError() { return error; }
+    /**
+     * @return text of last error.
+     */
+    public String getError() { return error; }
 
-    /// Unload all files
+    /**
+     * Unload all files
+     */
     public void clear(){
 
         // Unload all plugins
         for (PluginLibrary library : plugins) {
             library.dispose();
         }
-
         // Clear list
         plugins.clear();
     }
 
     // Find Plugin by name
 
-    /// Return true if name matches a DLL function
+    /**
+     * Return true if a function name matches a Plugin function.
+     * @param name function name
+     * @return true if name matches a Plugin function
+     */
     public boolean isPluginFunction(String name){
 
         // Look for matching function name
@@ -90,7 +116,11 @@ public class PluginManager
         return false;
     }
 
-    /// Find constant with a given name within all loaded plugins.
+    /**
+     * Find constant with a given name within all loaded plugins.
+     * @param name constant name
+     * @return Constant object if found, or null if not found.
+     */
     public Constant findConstant(String name) {
 
         // Search all plugins for constant
@@ -104,7 +134,13 @@ public class PluginManager
         return null;
     }
 
-    /// Find functions of a given name within all loaded plugins and append to array
+    /**
+     * Find functions of a given name within all loaded plugins and append to array.
+     * @param name function name
+     * @param functions array to append function specifications to.
+     * @param count
+     * @param max
+     */
     public void findFunctions(
             String name,
             ExtendedFunctionSpecification[] functions,
@@ -125,9 +161,11 @@ public class PluginManager
         }
     }
 
-    /// Create virtual machine version of function specifications.
-    /// Called immediately before a compile, but AFTER the VM versions of the
-    /// plugin structures have been created.
+    /**
+     * Create virtual machine version of function specifications.
+     * Called immediately before a compile, but AFTER the VM versions of the
+     * plugin structures have been created.
+     */
     public void createVMFunctionSpecs(){
         for (PluginLibrary library: plugins) {
             library.createVMFunctionSpecs();
@@ -194,7 +232,7 @@ public class PluginManager
         }
     }
 
-    // Interface sharing
+    // region Interface sharing
     public void registerInterface(
             Object intf,
              String name,
@@ -261,6 +299,7 @@ public class PluginManager
         return 0;
     }
 
+    // endregion
 
      public void streamOut(DataOutputStream stream) throws IOException {}
      public boolean streamIn(DataInputStream stream) throws IOException {

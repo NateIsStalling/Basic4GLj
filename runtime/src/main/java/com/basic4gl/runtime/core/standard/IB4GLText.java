@@ -17,11 +17,11 @@ public interface IB4GLText {
     void locate(int x, int y);
     void cls();
     void clearRegion(int x1, int y1, int x2, int y2);
-    int textRows();
-    int textCols();
+    int getTextRows();
+    int getTextCols();
     void resizeText(int cols, int rows);
-    void setTextScroll(boolean scroll);
-    boolean textScroll();
+    void setTextScrollEnabled(boolean scroll);
+    boolean getTextScrollEnabled();
     void drawText();
-    char charAt(int x, int y);
+    char getCharAt(int x, int y);
 }

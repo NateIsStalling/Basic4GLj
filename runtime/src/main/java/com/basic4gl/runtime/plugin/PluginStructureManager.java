@@ -188,7 +188,6 @@ public class PluginStructureManager {
         }
     }
 
-    ///
     /**
      * Find the VM datatype that corresponds to plugin data type.
      * @param pluginType

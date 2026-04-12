@@ -24,13 +24,21 @@ public interface Basic4GLObjectStore {
      */
     void remove(int handle);
 
-    /// Return true if handle is valid.
+    /**
+     * Return true if handle is valid.
+     * @param handle
+     * @return true if handle is valid.
+     */
     boolean isHandleValid(int handle);
 
-    /// Return object for given handle, or NULL if none.
+    /**
+     * @return Return object for given handle, or NULL if none.
+     */
     Object getObject(int handle);
 
-    /// Remove ALL objects and free up handles.
-    /// The dispose-of-object callback is called for each object.
+    /**
+     * Remove ALL objects and free up handles.
+     * The dispose-of-object callback is called for each object.
+     */
     void clear();
 };

@@ -641,7 +641,6 @@ public class MainWindow
         // TODO don't hardcode this classname
         atmf.putMapping("text/basic4gl", "com.basic4gl.desktop.editor.BasicTokenMaker");
 
-        // mDLLs(GetCurrentDir().c_str(), false)
         fileManager = new FileManager(this);
         plugins = new PluginJARManager(false);
         Preprocessor preprocessor = new Preprocessor(2, new EditorSourceFileServer(fileManager), new DiskFileServer());
@@ -661,6 +660,9 @@ public class MainWindow
         }
         fileManager.setFileDirectory(fileManager.getRunDirectory());
         fileManager.setCurrentDirectory(fileManager.getFileDirectory());
+
+        // TODO review if this should be a config option instead of the current directory
+        plugins.setDirectory(fileManager.getCurrentDirectory());
 
         // TODO this should be done as a callback
         refreshActions(basicEditor.getMode());

@@ -1,9 +1,11 @@
 package com.basic4gl.runtime.core.opengl;
 
+import com.basic4gl.runtime.core.standard.IB4GLText;
+
 /**
  * Created by Nate on 11/2/2015.
  */
-public interface IB4GLOpenGLText {
+public interface IB4GLOpenGLText extends IB4GLText {
     // Text mode constants/variables
     enum TextMode {
         TEXT_SIMPLE(0), // (Default). After any print function, text is automatically rendered as follows:

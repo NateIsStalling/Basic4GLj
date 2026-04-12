@@ -541,7 +541,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
                         // Resume running
                         if (debuggerCallbacks.getMessage().getStatus() == CallbackMessage.WORKING) {
                             plugins.onProgramResume();
-                            
+
                             // Kick the virtual machine over the next op-code before patching in the breakpoints.
                             // otherwise we would never get past a breakpoint once we hit it, because we would
                             // keep on hitting it immediately and returning.
@@ -997,7 +997,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     public void onFinally() {
         synchronized (GLTextGridWindow.this) {
             // TODO 12/2022 consolidate below; moved from main editor worker thread
-            // mDLLs.ProgramEnd();
+            plugins.onProgramEnd();
             vm.clearResources();
 
             // Inform libraries

@@ -47,8 +47,9 @@ public class PluginDataType {
     // Also doubles as padding size in byte (type = DLL_BASIC4GL_EXT_PADDING)
     private int stringSize;
 
-
-    /// Convert array type into array element type
+    /**
+     * Convert array type into array element type
+     */
     public void makeIntoElementType() {
         Assert.assertTrue(arrayLevel > 0);
         arrayLevel--;

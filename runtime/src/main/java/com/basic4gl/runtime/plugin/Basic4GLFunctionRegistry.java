@@ -5,9 +5,7 @@ package com.basic4gl.runtime.plugin;
  */
 public interface Basic4GLFunctionRegistry {
 
-
-    //////////////////////////////////////////////////////////////////////////////
-    //	Constants
+    // region Constants
 
     /**
      * Register a constant
@@ -39,8 +37,8 @@ public interface Basic4GLFunctionRegistry {
             String name,
             float value);
 
-    ///////////////////////////////////////////////////////////////////////////
-    //	Standard functions
+    // endregion
+    //	region Standard functions
 
     /**
      * Register function that returns no value
@@ -146,8 +144,8 @@ public interface Basic4GLFunctionRegistry {
      */
     void modTimeshare();
 
-    ///////////////////////////////////////////////////////////////////////////
-    //	Standard function parameters
+    // endregion
+    // region Standard function parameters
 
     /**
      * Add standard parameter to the last registered function.
@@ -209,8 +207,8 @@ public interface Basic4GLFunctionRegistry {
      */
     void modParamReference();
 
-    ///////////////////////////////////////////////////////////////////////////
-    //	Structures
+    // endregion
+    // region Structures
 
     /**
      * Register a new structure.
@@ -229,8 +227,8 @@ public interface Basic4GLFunctionRegistry {
             int versionMajor,
             int versionMinor);
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Structure fields
+    // endregion
+    // region Structure fields
 
     /**
      * Add empty padding
@@ -342,4 +340,5 @@ public interface Basic4GLFunctionRegistry {
      * See Basic4GLRuntime.isTimeshareBreakRequired().
      */
     void modConditionalTimeshare();
+    // endregion
 }

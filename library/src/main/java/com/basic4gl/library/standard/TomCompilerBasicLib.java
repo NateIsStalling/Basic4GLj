@@ -323,7 +323,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         comp.clearError();
         long saveIP = vm.getIP();
 
-        // Create hook for builtin/DLL function callbacks.
+        // Create hook for builtin/plugin function callbacks.
         // This consists of a GOSUB call to the code to be executed, followed by an
         // END CALLBACK op-code to trigger the return to the calling function.
         vm.addInstruction(new Instruction(

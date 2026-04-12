@@ -42,8 +42,8 @@ public class TomBasicCompiler extends HasErrorState {
     // Parser
     private final Parser parser;
 
-    // DLL manager
-     PluginManager plugins;
+    // Plugin manager
+    private PluginManager plugins;
 
     // Settings
     private final boolean isCaseSensitive;

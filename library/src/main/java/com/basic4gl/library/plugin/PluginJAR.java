@@ -175,7 +175,6 @@ public class PluginJAR extends PluginLibrary {
         }
     }
 
-    /// Accessors
     public String getFilename() {
         return filename;
     }
