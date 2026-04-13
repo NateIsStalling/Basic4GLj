@@ -1353,7 +1353,7 @@ public class TomVM extends HasErrorState implements Streamable {
         assertTrue(data.isIndexValid(destIndex));
         assertTrue(data.isIndexValid(destIndex + size - 1));
         for (int i = 0; i < size; i++) {
-            data.data().set(destIndex + i, data.data().get(sourceIndex + i));
+            data.data().set(destIndex + i, new Value(data.data().get(sourceIndex + i)));
         }
     }
 
@@ -1423,7 +1423,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // If type is basic, or pointer then just copy value
         else if (type.isBasicType() || type.getVirtualPointerLevel() > 0) {
-            data.data().set(destIndex, data.data().get(sourceIndex));
+            data.data().set(destIndex, new Value(data.data().get(sourceIndex)));
         }
 
         // If contains no strings, can just block copy
