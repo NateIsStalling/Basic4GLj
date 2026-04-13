@@ -66,11 +66,13 @@ public class EvaluateWatchHandler {
 
             // Setup compiler "in function" state to match the the current VM user
             // stack state.
-            int currentFunction;
-            if (vm.getCurrentUserFrame() < 0 || vm.getUserCallStack().lastElement().userFuncIndex < 0) {
-                currentFunction = -1;
-            } else {
-                currentFunction = vm.getUserCallStack().get(vm.getCurrentUserFrame()).userFuncIndex;
+            int currentFunction = -1;
+            int currentUserFrame = vm.getCurrentUserFrame();
+            if (currentUserFrame >= 0 && currentUserFrame < vm.getUserCallStack().size()) {
+                int userFuncIndex = vm.getUserCallStack().get(currentUserFrame).userFuncIndex;
+                if (userFuncIndex >= 0) {
+                    currentFunction = userFuncIndex;
+                }
             }
 
             boolean inFunction = currentFunction >= 0;

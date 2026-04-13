@@ -1948,12 +1948,17 @@ public class TomVM extends HasErrorState implements Streamable {
 
     // TODO Move to utility class
     static String trimToLength(String str, Mutable<Integer> length) {
-        if (str.length() > length.get()) {
-            length.set(0);
-            return str.substring(0, length.get());
-        } else {
+        int remaining = Math.max(0, length.get());
+        if (remaining == 0 || str.isEmpty()) {
+            length.set(remaining);
+            return "";
+        }
+        if (str.length() <= remaining) {
+            length.set(remaining - str.length());
             return str;
         }
+        length.set(0);
+        return str.substring(0, remaining);
     }
 
     void deref(Value val, ValType type) {
