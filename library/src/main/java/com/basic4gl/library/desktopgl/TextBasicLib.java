@@ -3476,7 +3476,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             Float[] result = {0f, 0f, 0f, 0f};
             if (TextBasicLib.sprites.isIndexStored(index)) {
                 for (int i = 0; i < 4; i++) {
-                    TextBasicLib.sprites.getValueAt(index).color[i] = result[i];
+                    result[i] = TextBasicLib.sprites.getValueAt(index).color[i];
                 }
             }
 
@@ -3601,7 +3601,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
     public static final class WrapSprAnimSpeed_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setRealVal(isSprite(index) ? getSprite(index).angled : 0);
+            vm.getReg().setRealVal(isSprite(index) ? getSprite(index).framed : 0);
         }
     }
 
