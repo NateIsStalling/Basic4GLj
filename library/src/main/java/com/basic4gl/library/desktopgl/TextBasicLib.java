@@ -2462,6 +2462,10 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         public void run(TomVM vm) {
             int key = TextBasicLib.appWindow.getKey();
             if (key != 0 && key <= Character.MAX_VALUE && key >= Character.MIN_VALUE) {
+                if (key == '\r') {
+                    // Keep scan-key queue in sync with synthesized Enter character.
+                    TextBasicLib.appWindow.discardLeadingScanKeyIf(GLFW_KEY_ENTER, GLFW_KEY_KP_ENTER);
+                }
                 vm.setRegString(String.valueOf((char) key));
             } else {
                 vm.setRegString("");
@@ -2471,7 +2475,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
 
     public static final class WrapInScanKey implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(Character.getNumericValue(TextBasicLib.appWindow.getScanKey()));
+            vm.getReg().setIntVal(TextBasicLib.appWindow.getScanKey());
         }
     }
 

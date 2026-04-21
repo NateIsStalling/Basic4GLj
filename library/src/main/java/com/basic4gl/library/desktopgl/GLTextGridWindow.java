@@ -1144,6 +1144,10 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
                                 } else {
                                     keyDown[key] |= 1;
                                     bufferScanKey((char) key);
+                                    if (key == GLFW_KEY_ENTER || key == GLFW_KEY_KP_ENTER) {
+                                        // Basic4GL expects Enter from inkey$ as chr$(13)
+                                        bufferKey('\r');
+                                    }
                                 }
                             } else if (action == GLFW_RELEASE) {
                                 keyDown[key] &= ~1;
@@ -1162,13 +1166,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
                                 closing = true;
                             }
 
-                            int end = bufferEnd;
-                            incEnd(); // Check for room in buffer
-                            if (bufferEnd != bufferStart) {
-                                keyBuffer[end] = (char) codepoint;
-                            } else {
-                                bufferEnd = end; // No room. Restore buffer pointers
-                            }
+                            bufferKey(codepoint);
                         }
                     });
 
