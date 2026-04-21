@@ -149,6 +149,16 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         }
     }
 
+    void bufferKey(int key) {
+        int end = bufferEnd;
+        incEnd();
+        if (bufferEnd != bufferStart) {
+            keyBuffer[end] = key;
+        } else {
+            bufferEnd = end;
+        }
+    }
+
     /**
      * Resize the scene in response to a window resize
      * @param width
@@ -1504,6 +1514,26 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         int result = scanKeyBuffer[scanBufferStart];
         incScanStart();
         return result;
+    }
+
+    void discardLeadingScanKeyIf(int key1, int key2) {
+        if (scanBufferStart == scanBufferEnd) {
+            return;
+        }
+        int next = scanKeyBuffer[scanBufferStart];
+        if (next == key1 || next == key2) {
+            incScanStart();
+        }
+    }
+
+    void discardLeadingKeyIf(int key1, int key2) {
+        if (bufferStart == bufferEnd) {
+            return;
+        }
+        int next = keyBuffer[bufferStart];
+        if (next == key1 || next == key2) {
+            incStart();
+        }
     }
 
     public void clearKeyBuffers() {

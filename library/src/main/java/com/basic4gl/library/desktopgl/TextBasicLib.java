@@ -2462,6 +2462,10 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         public void run(TomVM vm) {
             int key = TextBasicLib.appWindow.getKey();
             if (key != 0 && key <= Character.MAX_VALUE && key >= Character.MIN_VALUE) {
+                if (key == '\r') {
+                    // Keep scan-key queue in sync with synthesized Enter character.
+                    TextBasicLib.appWindow.discardLeadingScanKeyIf(GLFW_KEY_ENTER, GLFW_KEY_KP_ENTER);
+                }
                 vm.setRegString(String.valueOf((char) key));
             } else {
                 vm.setRegString("");
@@ -2471,7 +2475,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
 
     public static final class WrapInScanKey implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(Character.getNumericValue(TextBasicLib.appWindow.getScanKey()));
+            vm.getReg().setIntVal(TextBasicLib.appWindow.getScanKey());
         }
     }
 
@@ -3476,7 +3480,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             Float[] result = {0f, 0f, 0f, 0f};
             if (TextBasicLib.sprites.isIndexStored(index)) {
                 for (int i = 0; i < 4; i++) {
-                    TextBasicLib.sprites.getValueAt(index).color[i] = result[i];
+                    result[i] = TextBasicLib.sprites.getValueAt(index).color[i];
                 }
             }
 
@@ -3601,7 +3605,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
     public static final class WrapSprAnimSpeed_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setRealVal(isSprite(index) ? getSprite(index).angled : 0);
+            vm.getReg().setRealVal(isSprite(index) ? getSprite(index).framed : 0);
         }
     }
 

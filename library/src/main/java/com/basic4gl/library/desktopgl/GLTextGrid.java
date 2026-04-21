@@ -676,7 +676,9 @@ public class GLTextGrid extends HasErrorState {
                     }
                     break;
             }
-            if (sc == GLFW_KEY_ENTER) {
+            if (sc == GLFW_KEY_ENTER || sc == GLFW_KEY_KP_ENTER) {
+                // Input$ consumed Enter to submit; do not leak it to subsequent inkey$ calls.
+                window.discardLeadingKeyIf('\r', '\n');
                 done = true;
             }
             if (c >= ' ') {
