@@ -406,7 +406,8 @@ public class MainWindow
         viewVirtualMachineMenuItem.addActionListener(e -> {
             if (virtualMachineViewDialog == null || !virtualMachineViewDialog.isDisplayable()) {
                 virtualMachineViewDialog = new VirtualMachineViewDialog(frame);
-                virtualMachineViewDialog.setSeeValueHandler(expression -> basicEditor.evaluateVmViewVariable(expression));
+                virtualMachineViewDialog.setSeeValueHandler(
+                        expression -> basicEditor.evaluateVmViewVariable(expression));
                 virtualMachineViewDialog.setDebugControlsHandler(new DebugControlsListener() {
                     @Override
                     public void onPlayPauseRequested() {
@@ -1649,7 +1650,8 @@ public class MainWindow
     @Override
     public void onCurrentDirectoryChanged(String directory) {
         if (plugins != null) {
-            // TODO review whether plugins should be notified of current directory changes, or if they should just use a configured directory for loading/saving plugins
+            // TODO review whether plugins should be notified of current directory changes, or if they should just use a
+            // configured directory for loading/saving plugins
             plugins.setDirectory(directory);
         }
     }

@@ -515,14 +515,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         activeReadMemoryReference = null;
 
         int globalsRoot = queueVariablesPage(
-                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_GLOBALS,
-                0,
-                GLOBAL_VARIABLES_PAGE_SIZE,
-                null);
+                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_GLOBALS, 0, GLOBAL_VARIABLES_PAGE_SIZE, null);
         if (globalsRoot > 0) {
             activeVariableRootRequestByReference.put(
-                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_GLOBALS,
-                    globalsRoot);
+                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_GLOBALS, globalsRoot);
         }
 
         int registersRoot = queueVariablesPage(
@@ -532,32 +528,23 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
                 null);
         if (registersRoot > 0) {
             activeVariableRootRequestByReference.put(
-                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_REGISTERS,
-                    registersRoot);
+                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_REGISTERS, registersRoot);
         }
 
         refreshHeapMemory();
 
         int stackRoot = queueVariablesPage(
-                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK,
-                0,
-                MEMORY_VARIABLES_PAGE_SIZE,
-                null);
+                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK, 0, MEMORY_VARIABLES_PAGE_SIZE, null);
         if (stackRoot > 0) {
             activeVariableRootRequestByReference.put(
-                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK,
-                    stackRoot);
+                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_STACK, stackRoot);
         }
 
         int tempRoot = queueVariablesPage(
-                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_TEMP,
-                0,
-                MEMORY_VARIABLES_PAGE_SIZE,
-                null);
+                com.basic4gl.debug.protocol.commands.VariablesCommand.REF_TEMP, 0, MEMORY_VARIABLES_PAGE_SIZE, null);
         if (tempRoot > 0) {
             activeVariableRootRequestByReference.put(
-                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_TEMP,
-                    tempRoot);
+                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_TEMP, tempRoot);
         }
 
         int allocatedStringsRoot = queueVariablesPage(
@@ -567,8 +554,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
                 null);
         if (allocatedStringsRoot > 0) {
             activeVariableRootRequestByReference.put(
-                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS,
-                    allocatedStringsRoot);
+                    com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS, allocatedStringsRoot);
         }
     }
 
@@ -612,7 +598,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         }
 
         Variable[] page = callback.getVariables() != null ? callback.getVariables() : new Variable[0];
-        List<Variable> aggregate = variablePagesByReference.computeIfAbsent(pageRequest.reference, key -> new ArrayList<>());
+        List<Variable> aggregate =
+                variablePagesByReference.computeIfAbsent(pageRequest.reference, key -> new ArrayList<>());
         aggregate.addAll(Arrays.asList(page));
 
         if (page.length >= pageRequest.count) {
@@ -628,8 +615,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         merged.setRequestId(callback.getRequestId());
         merged.setVariables(aggregate.toArray(new Variable[0]));
 
-        if (pageRequest.reference
-                == com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS) {
+        if (pageRequest.reference == com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS) {
             updateAllocatedStringCache(aggregate);
         }
 
@@ -638,8 +624,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         activeVariableRootRequestByReference.remove(pageRequest.reference);
 
         // Heap string-column values depend on current string-store allocations.
-        if (pageRequest.reference
-                == com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS) {
+        if (pageRequest.reference == com.basic4gl.debug.protocol.commands.VariablesCommand.REF_ALLOCATED_STRINGS) {
             refreshHeapMemory();
         }
         return true;
@@ -652,8 +637,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         }
         int ownerRequestId = rootRequestId != null ? rootRequestId : requestId;
         pendingReadMemoryRequests.put(
-                requestId,
-                new ReadMemoryPageRequest(memoryReference, offsetBytes, countBytes, ownerRequestId));
+                requestId, new ReadMemoryPageRequest(memoryReference, offsetBytes, countBytes, ownerRequestId));
         return requestId;
     }
 
@@ -699,7 +683,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     }
 
     private Variable[] mapHeapMemoryToVariables(List<Byte> bytes, String memoryReference) {
-        int heapBase = parseMemoryAddress(memoryReference, compiler.getVM().getData().getPermanent());
+        int heapBase =
+                parseMemoryAddress(memoryReference, compiler.getVM().getData().getPermanent());
         int rowCount = bytes.size() / 4;
         Variable[] mapped = new Variable[rowCount];
         ByteBuffer buffer = ByteBuffer.allocate(bytes.size()).order(ByteOrder.LITTLE_ENDIAN);
@@ -775,7 +760,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     }
 
     private String formatReadMemoryRange(ReadMemoryPageRequest request) {
-        int heapBase = parseMemoryAddress(request.memoryReference, compiler.getVM().getData().getPermanent());
+        int heapBase = parseMemoryAddress(
+                request.memoryReference, compiler.getVM().getData().getPermanent());
         int startAddress = heapBase + Math.max(0, request.offsetBytes / 4);
         int wordCount = Math.max(1, request.countBytes / 4);
         int endAddress = startAddress + wordCount - 1;
@@ -789,8 +775,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         }
         int ownerRequestId = rootRequestId != null ? rootRequestId : requestId;
         pendingDisassemblyRequests.put(
-                requestId,
-                new DisassemblyPageRequest(instructionOffset, instructionCount, ownerRequestId));
+                requestId, new DisassemblyPageRequest(instructionOffset, instructionCount, ownerRequestId));
         return requestId;
     }
 
@@ -845,7 +830,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
         int requestId = callback.getRequestId();
         String detail = "Debug request failed";
-        if (callback.error != null && callback.error.format != null && !callback.error.format.trim().isEmpty()) {
+        if (callback.error != null
+                && callback.error.format != null
+                && !callback.error.format.trim().isEmpty()) {
             detail = callback.error.format;
         }
 
@@ -874,7 +861,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
             String scope = variableScope(variableRequest.reference);
             presenter.updateVmViewError(
                     scope,
-                    detail + " " + formatRangeForScope(scope, variableRequest.reference, variableRequest.start, variableRequest.count));
+                    detail + " "
+                            + formatRangeForScope(
+                                    scope, variableRequest.reference, variableRequest.start, variableRequest.count));
             return true;
         }
 
@@ -887,7 +876,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
             }
             presenter.updateVmViewError(
                     "code",
-                    detail + " " + formatCodeRange(disassemblyRequest.instructionOffset, disassemblyRequest.instructionCount));
+                    detail + " "
+                            + formatCodeRange(
+                                    disassemblyRequest.instructionOffset, disassemblyRequest.instructionCount));
             return true;
         }
 

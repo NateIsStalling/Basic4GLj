@@ -10,9 +10,6 @@ import com.basic4gl.debug.protocol.types.DisassembledInstruction;
 import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.debug.protocol.types.Variable;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
@@ -20,6 +17,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 
 public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineView {
     private static final Pattern RANGE_PATTERN = Pattern.compile("\\[(\\d+\\s*-\\s*\\d+)]");
@@ -203,13 +203,12 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
                 return false;
             }
         };
-        allocatedStringsTableModel =
-                new DefaultTableModel(new Object[] {"Index", "Value"}, 0) {
-                    @Override
-                    public boolean isCellEditable(int row, int column) {
-                        return false;
-                    }
-                };
+        allocatedStringsTableModel = new DefaultTableModel(new Object[] {"Index", "Value"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
 
         codeStatusLabel = createSectionStatusLabel();
         callStackStatusLabel = createSectionStatusLabel();
@@ -241,10 +240,11 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         memoryTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
         memoryTabs.addTab("Heap", createGroupWithTable(heapTableModel, heapStatusLabel, null));
-        memoryTabs.addTab("Stack", createGroupWithTable( stackTableModel, stackStatusLabel, null));
+        memoryTabs.addTab("Stack", createGroupWithTable(stackTableModel, stackStatusLabel, null));
         memoryTabs.addTab("Temp", createGroupWithTable(tempTableModel, tempStatusLabel, null));
         memoryTabs.addTab(
-                "Allocated Strings", createGroupWithTable(allocatedStringsTableModel, allocatedStringsStatusLabel, null));
+                "Allocated Strings",
+                createGroupWithTable(allocatedStringsTableModel, allocatedStringsStatusLabel, null));
 
         JPanel memoryAndVariablesPanel = new JPanel(new GridLayout(1, 2));
         memoryAndVariablesPanel.add(memoryTabs);
@@ -330,7 +330,8 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
             @Override
             public Component getTableCellRendererComponent(
                     JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                Component component =
+                        super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 if (row == highlightedCodeRow) {
                     component.setBackground(new Color(255, 220, 220));
                     component.setForeground(Color.BLACK);
@@ -361,7 +362,8 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
             @Override
             public Component getTableCellRendererComponent(
                     JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                Component component =
+                        super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 if (isErrorRow(table, row)) {
                     component.setBackground(ERROR_ROW_BG);
                     component.setForeground(ERROR_ROW_FG);
@@ -436,12 +438,8 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
                 String lineInfo = instruction.line != null ? String.valueOf(instruction.line + 1) : "";
                 source = sourceFileName + ":" + lineInfo;
             }
-            codeTableModel.addRow(new Object[] {
-                    instruction.address,
-                    instruction.instruction,
-                    instruction.symbol,
-                    source
-            });
+            codeTableModel.addRow(
+                    new Object[] {instruction.address, instruction.instruction, instruction.symbol, source});
 
             if (highlightedCodeRow < 0 && matchesCurrentInstruction(instruction)) {
                 highlightedCodeRow = i;
@@ -675,17 +673,16 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         if (SCOPE_ALLOCATED_STRINGS.equals(scope)) {
             for (Variable variable : variables) {
                 model.addRow(new Object[] {
-                        variable.name,
-                        variable.evaluateName != null ? variable.evaluateName : "",
+                    variable.name, variable.evaluateName != null ? variable.evaluateName : "",
                 });
             }
         } else {
             for (Variable variable : variables) {
                 model.addRow(new Object[] {
-                        variable.name,
-                        variable.value,
-                        variable.type,
-                        variable.evaluateName != null ? variable.evaluateName : ""
+                    variable.name,
+                    variable.value,
+                    variable.type,
+                    variable.evaluateName != null ? variable.evaluateName : ""
                 });
             }
         }
@@ -793,11 +790,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
 
         if (SCOPE_ALLOCATED_STRINGS.equals(scope)) {
             allocatedStringsStatusLabel.setText(detail);
-            insertPlaceholderRow(
-                    allocatedStringsTableModel,
-                    scope,
-                    rangeLabel,
-                    new Object[] {rangeLabel, detail});
+            insertPlaceholderRow(allocatedStringsTableModel, scope, rangeLabel, new Object[] {rangeLabel, detail});
             return;
         }
 
