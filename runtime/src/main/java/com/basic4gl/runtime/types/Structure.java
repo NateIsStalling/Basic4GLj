@@ -6,11 +6,18 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import static com.basic4gl.runtime.util.Assert.assertTrue;
+
 public class Structure implements Streamable {
     /**
      * Type name
      */
     public String name;
+
+    /**
+     * Has structure been defined. False if being defined, or has been forward declared.
+     */
+    public boolean isDefined;
 
     /**
      * Index of first field
@@ -51,6 +58,7 @@ public class Structure implements Streamable {
 
     public Structure(String name, int firstField) {
         this.name = name.toLowerCase();
+        isDefined = false;
         firstFieldIndex = firstField;
         fieldCount = 0;
         dataSize = 0;
@@ -62,6 +70,7 @@ public class Structure implements Streamable {
     // Streaming
     @Override
     public void streamOut(DataOutputStream stream) throws IOException {
+        assertTrue(isDefined); // Definition should have been completed
         Streaming.writeString(stream, name);
 
         Streaming.writeLong(stream, firstFieldIndex);
@@ -80,6 +89,9 @@ public class Structure implements Streamable {
         dataSize = (int) Streaming.readLong(stream);
         containsString = (Streaming.readByte(stream) == 1);
         containsArray = (Streaming.readByte(stream) == 1);
+
+        // Only defined structures should be streamed.
+        isDefined = true;
 
         return true;
     }

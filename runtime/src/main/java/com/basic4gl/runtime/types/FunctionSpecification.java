@@ -179,7 +179,7 @@ public class FunctionSpecification {
      * and if set perform a timesharing break immediately after returning.
      */
     public boolean getConditionalTimeshare() {
-        return timeshare;
+        return conditionalTimeshare;
     }
 
     public void setConditionalTimeshare(boolean conditionalTimeshare) {

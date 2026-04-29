@@ -61,8 +61,7 @@ public class TomVM extends HasErrorState implements Streamable {
             ERR_POINTER_SCOPE_ERROR = "Pointer scope error",
             ERR_NO_RUNTIME_FUNCTION = "Runtime function not implemented",
             ERR_INVALID_CODE_BLOCK = "Could not find runtime code to execute",
-            ERR_DLL_NOT_IMPLEMENTED = "DLL plugins are not implemented in this version of Basic4GL";
-
+            ERR_FUNC_PTR_INCOMPATIBLE = "Function/sub pointer is incompatible";
     // External functions
     /**
      * functions are standard functions where the parameters are pushed to the stack.
@@ -922,6 +921,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_COND_TIMESHARE:
                     if (!timeshare) {
                         // If no timeshare flagged, continue executing
+                        ip++; // Proceed to next instruction
                         continue step;
                     }
                     ip++; // Move on to next instruction
@@ -1035,6 +1035,70 @@ public class TomVM extends HasErrorState implements Streamable {
                     data.saveState(tempTop, tempLock);
                     stackFrame.prevStackTop = tempTop.get();
                     stackFrame.prevTempDataLock = tempLock.get();
+
+                    ip++; // Proceed to next instruction
+                    continue step;
+                }
+                case OpCode.OP_CREATE_FUNC_PTR_FRAME: {
+
+                    // This is identical to OP_CREATE_USER_FRAME, except that the function
+                    // index will be in reg, rather than the instruction.
+
+                    // Check for null function pointer
+                    if (reg.getIntVal() == 0)
+                    {
+                        setError(ERR_UNSET_POINTER);
+                        break;
+                    }
+
+                    // Check for stack overflow
+                    if (userCallStack.size() >= MAX_USER_STACK_CALLS) {
+                        setError(ERR_STACK_OVERFLOW);
+                        break;
+                    }
+
+                    // Function index + 1 is in reg
+                    // (+1 is so that we can use 0 for null)
+                    int funcIndex = reg.getIntVal() - 1;
+
+                    UserFuncStackFrame stackFrame = new UserFuncStackFrame();
+                    userCallStack.add(stackFrame);
+
+                    stackFrame.initForUserFunction(
+                            userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex),
+                            funcIndex);
+
+                    // Save previous stack frame data
+                    Mutable<Integer> stackTopRef = new Mutable<>(stackFrame.prevStackTop);
+                    Mutable<Integer> tempDataLockRef = new Mutable<>(stackFrame.prevTempDataLock);
+                    data.saveState(stackTopRef, tempDataLockRef);
+                    stackFrame.prevStackTop = stackTopRef.get();
+                    stackFrame.prevTempDataLock = tempDataLockRef.get();
+
+                    ip++; // Proceed to next instruction
+                    continue step;
+                }
+                case OpCode.OP_CHECK_FUNC_PTR: {
+
+                    // Function pointer can be null (0)
+                    if (reg.getIntVal() == 0) {
+                        ip++; // Proceed to next instruction
+                        continue step;
+                    }
+
+                    // Function index + 1 is in reg
+                    // (+1 is so that we can use 0 for null)
+                    int funcIndex = reg.getIntVal() - 1;
+
+                    // Check function prototype is compatible with prototype referenced by instruction
+                    UserFuncPrototype srcProto = userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex);
+                    UserFuncPrototype dstProto = userFunctionPrototypes.get(instruction.value.getIntVal());
+
+                    if (!srcProto.isCompatibleWith(dstProto))
+                    {
+                        setError(ERR_FUNC_PTR_INCOMPATIBLE);
+                        break;
+                    }
 
                     ip++; // Proceed to next instruction
                     continue step;
@@ -1293,6 +1357,20 @@ public class TomVM extends HasErrorState implements Streamable {
                         assertTrue(stackDestructors.isEmpty() || stackDestructors.lastElement().addr > ptr);
                         stackDestructors.add(new StackDestructor(ptr, instruction.value.getIntVal()));
                     }
+                    ip++; // Proceed to next instruction
+                    continue step;
+                }
+
+                case OpCode.OP_SWAP: {
+                    // Swap registers
+                    Value temp = new Value(getReg());
+                    getReg().setVal(new Value(getReg2()));
+                    getReg2().setVal(temp);
+
+                    String tempString = getRegString();
+                    setRegString(getReg2String());
+                    setReg2String(tempString);
+
                     ip++; // Proceed to next instruction
                     continue step;
                 }
@@ -2466,6 +2544,12 @@ public class TomVM extends HasErrorState implements Streamable {
     public int getCodeBlockOffset(int index) {
         assertTrue(isCodeBlockValid(index));
         return codeBlocks.get(index).programOffset;
+    }
+
+    public CodeBlock getCodeBlock(int index)
+    {
+        assertTrue(isCodeBlockValid(index));
+        return codeBlocks.get(index);
     }
 
     public RollbackPoint getRollbackPoint() {
