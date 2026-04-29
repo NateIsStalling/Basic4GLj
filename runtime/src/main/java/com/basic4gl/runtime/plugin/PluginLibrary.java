@@ -449,7 +449,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
      * @return Constant object if found, or null if not found.
      */
     public Constant findConstant(String name){
-        return constants.getOrDefault(name, null);
+        return constants.getOrDefault(name.toLowerCase(), null);
     }
 
     /**

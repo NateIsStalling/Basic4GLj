@@ -9,6 +9,7 @@ import com.basic4gl.runtime.util.PointerResourceStore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Objects;
 
 import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.*;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
@@ -108,7 +109,7 @@ public class PluginStructureManager {
             PluginStructure structure = i.next();
 
             // Find structures owned by given owner
-            if (structure.getOwner().equals(owner)) {
+            if (Objects.equals(structure.getOwner(), owner)) {
 
                 // Remove from name index, structure store and structure list
                 nameIndex.remove(structure.getName());
@@ -127,7 +128,7 @@ public class PluginStructureManager {
         String result = "";
         for (PluginStructure i : structures) {
             if (i.getOwner() == owner) {
-                if (result != "") {
+                if (!result.isEmpty()) {
                     result += "\r\n";
                 }
                 PluginStructure structure = i;
@@ -153,7 +154,8 @@ public class PluginStructureManager {
                         result += "(" + value + ")";
                     }
 
-                    char lastChar = field.getFieldName().charAt(field.getFieldName().length() - 1);
+                    String fieldName = field.getFieldName();
+                    char lastChar = fieldName.isEmpty() ? 0 : fieldName.charAt(fieldName.length() - 1);
                     switch (field.getDataType().getBaseType()) {
                         case PLUGIN_BASIC4GL_EXT_FLOAT:
                         case PLUGIN_BASIC4GL_EXT_DOUBLE:
