@@ -46,7 +46,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     /**
      * Current plugin runtime function being defined
      */
-    private final FunctionSpecification currentSpec;
+    private FunctionSpecification currentSpec;
     /**
      * Name of current function
      */
@@ -159,6 +159,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         currentFunc = function;
 
         // Set function defaults
+        currentSpec = new FunctionSpecification();
         currentSpec.getParamTypes().getParams().clear();
         currentSpec.setBrackets(true);
         currentSpec.setFunction(false);

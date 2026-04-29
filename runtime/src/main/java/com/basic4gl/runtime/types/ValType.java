@@ -364,7 +364,7 @@ public class ValType implements Streamable {
         for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++) {
             arrayDimensions[i] = (int) Streaming.readLong(stream);
         }
-        
+
         // NOTE: prototypeIndex is not streamed, as it is only relevant at compile time, and is not used at runtime.
 
         return true;
