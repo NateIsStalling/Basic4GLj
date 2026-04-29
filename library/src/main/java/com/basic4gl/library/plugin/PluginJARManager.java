@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -192,15 +193,14 @@ public class PluginJARManager extends PluginManager {
 
     public void streamOut(DataOutputStream stream) throws IOException {
         // Write JAR filenames, and versions
-        Streaming.writeLong(stream, plugins.size());
-        for (int i = 0; i < plugins.size(); i++) {
-            if (plugins.get(i) instanceof PluginJAR) {
-                PluginJAR jar = (PluginJAR) (plugins.get(i));
-                String filename = jar.getFileDetails().getFilename();
-                Streaming.writeString(stream, filename);
-                Streaming.writeLong(stream, jar.getFileDetails().getVersion().getMajorVersion());
-                Streaming.writeLong(stream, jar.getFileDetails().getVersion().getMinorVersion());
-            }
+        List<PluginLibrary> pluginJars = plugins.stream().filter(x -> x instanceof PluginJAR).toList();
+        Streaming.writeLong(stream, pluginJars.size());
+        for (PluginLibrary plugin : pluginJars) {
+            PluginJAR jar = (PluginJAR) plugin;
+            String filename = jar.getFileDetails().getFilename();
+            Streaming.writeString(stream, filename);
+            Streaming.writeLong(stream, jar.getFileDetails().getVersion().getMajorVersion());
+            Streaming.writeLong(stream, jar.getFileDetails().getVersion().getMinorVersion());
         }
     }
     public boolean streamIn(DataInputStream stream) throws IOException{

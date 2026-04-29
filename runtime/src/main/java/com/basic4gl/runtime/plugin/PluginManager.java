@@ -34,7 +34,7 @@ public abstract class PluginManager
         this.isStandaloneExe = isStandaloneExe;
     }
     public void dispose() {
-    clear();
+        clear();
     }
 
     // Member access
@@ -95,6 +95,9 @@ public abstract class PluginManager
         }
         // Clear list
         plugins.clear();
+
+        sharedInterfaces.clear();
+        structureManager.clear();
     }
 
     // Find Plugin by name
