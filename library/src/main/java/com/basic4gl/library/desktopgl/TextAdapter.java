@@ -1,9 +1,9 @@
 package com.basic4gl.library.desktopgl;
 
-import com.basic4gl.lib.util.IB4GLOpenGLText;
+import com.basic4gl.runtime.core.opengl.IB4GLOpenGLText;
 
 /**
- * Interface for DLLs
+ * Interface for plugins
  */
 public interface TextAdapter extends IB4GLOpenGLText {
 

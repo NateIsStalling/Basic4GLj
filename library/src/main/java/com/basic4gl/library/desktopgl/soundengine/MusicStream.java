@@ -89,8 +89,10 @@ public class MusicStream extends HasErrorState implements Runnable {
                 if (!shuttingDown) {
                     if (stream.isPlaying()) {
                         wakeEvent.waitFor(100);
+                        wakeEvent.reset();
                     } else {
                         wakeEvent.waitFor();
+                        wakeEvent.reset();
                     }
                 }
             }
@@ -133,9 +135,7 @@ public class MusicStream extends HasErrorState implements Runnable {
         readyEvent.dispose();
         wakeEvent.dispose();
         try {
-            synchronized (thread) {
-                thread.wait();
-            }
+            thread.join();
         } catch (InterruptedException consumed) {
             // Do nothing
         }

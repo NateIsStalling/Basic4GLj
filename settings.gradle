@@ -5,3 +5,5 @@ include 'runtime'
 include 'library'
 include 'debugServer'
 include 'debugProtocol'
+include 'plugin'
+

@@ -1,5 +1,7 @@
 package com.basic4gl.runtime;
 
+import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
+
 /**
  * Used to save virtual machine state.
  * (Debugger uses this to run small sections of code, without interrupting the
@@ -28,6 +30,9 @@ public class VMState {
     // Var data
     private int stackDataTop;
     private int tempDataLock;
+
+    // Current long running function
+    private Basic4GLLongRunningFunction longRunningFunction;
 
     // Error state
     private boolean error;
@@ -154,5 +159,13 @@ public class VMState {
 
     public void setPaused(boolean paused) {
         this.paused = paused;
+    }
+
+    public Basic4GLLongRunningFunction getLongRunningFunction() {
+        return longRunningFunction;
+    }
+
+    public void setLongRunningFunction(Basic4GLLongRunningFunction longRunningFunction) {
+        this.longRunningFunction = longRunningFunction;
     }
 }

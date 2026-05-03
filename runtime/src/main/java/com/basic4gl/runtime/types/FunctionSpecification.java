@@ -1,7 +1,4 @@
-package com.basic4gl.compiler.util;
-
-import com.basic4gl.compiler.ParamTypeList;
-import com.basic4gl.runtime.types.ValType;
+package com.basic4gl.runtime.types;
 
 /**
  * Specifies a function and parameters
@@ -13,6 +10,7 @@ public class FunctionSpecification {
     private boolean isFunction;
     private ValType returnType;
     private boolean timeshare;
+    private boolean conditionalTimeshare;
     private int index;
     private boolean freeTempData;
     private ParamValidationCallback paramValidationCallback;
@@ -34,7 +32,7 @@ public class FunctionSpecification {
             ParamValidationCallback paramValidationCallback) {
         this.functionClass = functionClass;
         this.paramTypes = paramTypes;
-        hasBrackets = brackets;
+        this.hasBrackets = brackets;
         this.isFunction = isFunction;
         this.returnType = new ValType(returnType);
         this.timeshare = timeshare;
@@ -61,12 +59,55 @@ public class FunctionSpecification {
         this.paramValidationCallback = paramValidationCallback;
     }
 
+    public FunctionSpecification(
+            Class functionClass,
+            ParamTypeList paramTypes,
+            boolean brackets,
+            boolean isFunction,
+            int returnType,
+            boolean timeshare,
+            boolean conditionalTimeshare,
+            boolean freeTempData,
+            ParamValidationCallback paramValidationCallback) {
+        this.functionClass = functionClass;
+        this.paramTypes = paramTypes;
+        this.hasBrackets = brackets;
+        this.isFunction = isFunction;
+        this.returnType = new ValType(returnType);
+        this.timeshare = timeshare;
+        this.conditionalTimeshare = conditionalTimeshare;
+        this.freeTempData = freeTempData;
+        this.paramValidationCallback = paramValidationCallback;
+    }
+
+    public FunctionSpecification(
+            Class functionClass,
+            ParamTypeList paramTypes,
+            boolean brackets,
+            boolean isFunction,
+            ValType returnType,
+            boolean timeshare,
+            boolean conditionalTimeshare,
+            boolean freeTempData,
+            ParamValidationCallback paramValidationCallback) {
+        this.functionClass = functionClass;
+        this.paramTypes = paramTypes;
+        hasBrackets = brackets;
+        this.isFunction = isFunction;
+        this.returnType = returnType;
+        this.timeshare = timeshare;
+        this.conditionalTimeshare = conditionalTimeshare;
+        this.freeTempData = freeTempData;
+        this.paramValidationCallback = paramValidationCallback;
+    }
+
     public FunctionSpecification(FunctionSpecification spec) {
         functionClass = spec.functionClass;
         isFunction = spec.isFunction;
         hasBrackets = spec.hasBrackets;
         returnType = spec.returnType;
         timeshare = spec.timeshare;
+        conditionalTimeshare = spec.conditionalTimeshare;
         index = spec.index;
         freeTempData = spec.freeTempData;
         paramValidationCallback = spec.paramValidationCallback;
@@ -131,6 +172,18 @@ public class FunctionSpecification {
 
     public void setTimeshare(boolean timeshare) {
         this.timeshare = timeshare;
+    }
+
+    /**
+     * True if virtual machine should check the timeshare flag
+     * and if set perform a timesharing break immediately after returning.
+     */
+    public boolean getConditionalTimeshare() {
+        return conditionalTimeshare;
+    }
+
+    public void setConditionalTimeshare(boolean conditionalTimeshare) {
+        this.conditionalTimeshare = conditionalTimeshare;
     }
 
     /**

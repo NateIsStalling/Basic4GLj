@@ -45,7 +45,7 @@ public class StackTraceCommandHandler {
             try {
                 session.getBasicRemote().sendText(json);
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException("Failed to send stackTrace callback", e);
             }
         }
     }

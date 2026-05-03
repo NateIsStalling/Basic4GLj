@@ -15,6 +15,14 @@ public class CallbackFactory {
 
         try {
             callback = gson.fromJson(commandJson, Callback.class);
+            if (!callback.success) {
+                try {
+                    return gson.fromJson(commandJson, ErrorCallback.class);
+                } catch (Exception e) {
+                    return new ErrorCallback();
+                }
+            }
+
             if (!Objects.equals(callback.type, Callback.TYPE)) {
                 return null;
             }
@@ -24,6 +32,12 @@ public class CallbackFactory {
                     return gson.fromJson(commandJson, StackTraceCallback.class);
                 case EvaluateWatchCallback.COMMAND:
                     return gson.fromJson(commandJson, EvaluateWatchCallback.class);
+                case DisassembleCallback.COMMAND:
+                    return gson.fromJson(commandJson, DisassembleCallback.class);
+                case ReadMemoryCallback.COMMAND:
+                    return gson.fromJson(commandJson, ReadMemoryCallback.class);
+                case VariablesCallback.COMMAND:
+                    return gson.fromJson(commandJson, VariablesCallback.class);
             }
         } catch (Exception e) {
         }

@@ -29,17 +29,25 @@ import java.util.Objects;
 public class ValType implements Streamable {
 
     public int basicType; // Basic type
-    public byte arrayLevel; // 0 = value, 1 = array, 2 = 2D array
-    public byte pointerLevel; // 0 = value, 1 = pointer to value, 2 =
-    // pointer to pointer to value, ...
+    /**
+     * 0 = value, 1 = array, 2 = 2D array
+     */
+    public byte arrayLevel;
+    /**
+     * 0 = value, 1 = pointer to value, 2 = pointer to pointer to value, ...
+     */
+    public byte pointerLevel;
     public boolean isByRef;
-    public int[] arrayDimensions = new int[TomVM.ARRAY_MAX_DIMENSIONS]; // # of
 
-    // elements
-    // in
-    // each
-    // array
-    // dimension
+    /**
+     * # of elements in each array dimension
+     */
+    public int[] arrayDimensions = new int[TomVM.ARRAY_MAX_DIMENSIONS];
+
+    /**
+     * Index of function prototype. Valid when basicType = VTP_FUNC_PTR
+     */
+    public int prototypeIndex;
 
     public ValType() {
         setType(VTP_UNDEFINED);
@@ -59,6 +67,12 @@ public class ValType implements Streamable {
 
     public ValType(int type, byte array, byte pointer, boolean byRef) {
         setType(type, array, pointer, byRef);
+    }
+
+    public boolean isFuncPtr() {
+        return basicType == VTP_FUNC_PTR
+                && pointerLevel == 0
+                && arrayLevel == 0;
     }
 
     /**
@@ -97,6 +111,7 @@ public class ValType implements Streamable {
         arrayLevel = array;
         pointerLevel = pointer;
         isByRef = byRef;
+        prototypeIndex = -1;
 
         Arrays.fill(arrayDimensions, 0);
         return this;
@@ -107,6 +122,8 @@ public class ValType implements Streamable {
         arrayLevel = t.arrayLevel;
         pointerLevel = t.pointerLevel;
         isByRef = t.isByRef;
+        prototypeIndex = t.prototypeIndex;
+
         arrayDimensions = Arrays.copyOf(t.arrayDimensions, TomVM.ARRAY_MAX_DIMENSIONS);
         return this;
     }
@@ -136,6 +153,11 @@ public class ValType implements Streamable {
                     return false;
                 }
             }
+        }
+
+        // Check prototype index if function pointer
+        if (basicType == VTP_FUNC_PTR && prototypeIndex != valType.prototypeIndex) {
+            return false;
         }
 
         return true;
@@ -326,6 +348,8 @@ public class ValType implements Streamable {
         for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++) {
             Streaming.writeLong(stream, arrayDimensions[i]);
         }
+
+        // NOTE: prototypeIndex is not streamed, as it is only relevant at compile time, and is not used at runtime.
     }
 
     public boolean streamIn(DataInputStream stream) throws IOException {
@@ -340,6 +364,8 @@ public class ValType implements Streamable {
         for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++) {
             arrayDimensions[i] = (int) Streaming.readLong(stream);
         }
+
+        // NOTE: prototypeIndex is not streamed, as it is only relevant at compile time, and is not used at runtime.
 
         return true;
     }

@@ -228,4 +228,42 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
             remoteDebugger.refreshCallStack();
         }
     }
+
+    @Override
+    public void refreshDisassembly() {
+        if (remoteDebugger != null) {
+            remoteDebugger.refreshDisassembly();
+        }
+    }
+
+    @Override
+    public int requestDisassembly(Integer instructionOffset, int instructionCount) {
+        if (remoteDebugger != null) {
+            return remoteDebugger.requestDisassembly(instructionOffset, instructionCount);
+        }
+        return 0;
+    }
+
+    @Override
+    public void refreshVariables() {
+        if (remoteDebugger != null) {
+            remoteDebugger.refreshVariables();
+        }
+    }
+
+    @Override
+    public int requestVariables(int variablesReference, Integer start, Integer count) {
+        if (remoteDebugger != null) {
+            return remoteDebugger.requestVariables(variablesReference, start, count);
+        }
+        return 0;
+    }
+
+    @Override
+    public int requestReadMemory(String memoryReference, Integer offset, int count) {
+        if (remoteDebugger != null) {
+            return remoteDebugger.requestReadMemory(memoryReference, offset, count);
+        }
+        return 0;
+    }
 }

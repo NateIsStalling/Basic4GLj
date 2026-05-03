@@ -1,4 +1,4 @@
-package com.basic4gl.lib.util;
+package com.basic4gl.runtime.core.standard;
 
 /**
  * Used to access files from a plugin.

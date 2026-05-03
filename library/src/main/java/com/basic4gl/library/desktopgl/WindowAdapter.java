@@ -1,5 +1,7 @@
 package com.basic4gl.library.desktopgl;
 
+import com.basic4gl.runtime.core.opengl.IB4GLOpenGLWindow;
+
 /**
  * Interface for plugins
  */

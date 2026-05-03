@@ -17,6 +17,7 @@ import javax.websocket.server.ServerEndpoint;
 @ServerEndpoint(value = "/debug/")
 public class DebugSocket {
     private static final ILogger logger = new ConsoleLogger();
+    private static final int MAX_TEXT_MESSAGE_SIZE_BYTES = 1024 * 1024;
 
     private static final Gson gson = new Gson();
 
@@ -36,6 +37,8 @@ public class DebugSocket {
 
     @OnOpen
     public void onWebSocketConnect(Session session) {
+        session.setMaxTextMessageBufferSize(MAX_TEXT_MESSAGE_SIZE_BYTES);
+
         UUID sessionId = UUID.randomUUID();
         sessionRepository.put(sessionId, session);
 

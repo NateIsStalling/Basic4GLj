@@ -12,6 +12,8 @@ import javax.websocket.WebSocketContainer;
 import org.eclipse.jetty.util.component.LifeCycle;
 
 public class DebugClientAdapter implements IDebugCommandListener {
+    private static final int MAX_TEXT_MESSAGE_SIZE_BYTES = 1024 * 1024;
+
     private WebSocketContainer container;
     private Session session;
     private final IDebugCallbackListener callbackListener;
@@ -30,6 +32,7 @@ public class DebugClientAdapter implements IDebugCommandListener {
 
         try {
             container = ContainerProvider.getWebSocketContainer();
+            container.setDefaultMaxTextMessageBufferSize(MAX_TEXT_MESSAGE_SIZE_BYTES);
 
             // Create client side endpoint
             DebugClientSocket clientEndpoint = new DebugClientSocket(this, callbackListener);

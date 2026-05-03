@@ -1,6 +1,4 @@
-package com.basic4gl.compiler.util;
-
-import com.basic4gl.runtime.types.ValType;
+package com.basic4gl.runtime.types;
 
 /**
  * Compile time parameter validation callback.

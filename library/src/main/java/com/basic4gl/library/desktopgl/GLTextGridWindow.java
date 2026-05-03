@@ -6,6 +6,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.compiler.util.IVMDriverAccess;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.library.debug.DebuggerCommandAdapter;
@@ -16,6 +17,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+
 import org.apache.commons.cli.*;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -32,8 +34,10 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
     private FileOpener fileOpener;
 
+    private PluginJARManager plugins;
     private TomBasicCompiler compiler;
     private TomVM vm;
+
     private String[] programArgs;
     private DebuggerCallbacks debuggerCallbacks;
     private DebuggerCommandAdapter debuggerAdapter;
@@ -354,7 +358,13 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
         instance.fileOpener = new FileOpener(""); // TODO load embedded files
         instance.fileOpener.setParentDirectory(currentDirectory);
 
-        instance.compiler = new TomBasicCompiler(new TomVM(debugger));
+        instance.plugins = new PluginJARManager(isStandalone);
+        instance.plugins.setDirectory(currentDirectory);
+
+        instance.compiler = new TomBasicCompiler(
+                new TomVM(instance.plugins, debugger),
+                instance.plugins);
+
         instance.vm = instance.compiler.getVM();
         instance.services = new ServiceCollection();
         instance.libraries = new ArrayList<>();
@@ -504,6 +514,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             for (Library lib : compiler.getLibraries()) {
                 initLibrary(lib);
             }
+            plugins.onProgramResume();
+
             // Debugger is not attached
             if (debuggerCallbacks == null) {
                 while (!Thread.currentThread().isInterrupted() && !vm.hasError() && !vm.isDone() && !isClosing()) {
@@ -528,6 +540,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
                         // Resume running
                         if (debuggerCallbacks.getMessage().getStatus() == CallbackMessage.WORKING) {
+                            plugins.onProgramResume();
+
                             // Kick the virtual machine over the next op-code before patching in the breakpoints.
                             // otherwise we would never get past a breakpoint once we hit it, because we would
                             // keep on hitting it immediately and returning.
@@ -983,7 +997,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     public void onFinally() {
         synchronized (GLTextGridWindow.this) {
             // TODO 12/2022 consolidate below; moved from main editor worker thread
-            // mDLLs.ProgramEnd();
+            plugins.onProgramEnd();
             vm.clearResources();
 
             // Inform libraries
