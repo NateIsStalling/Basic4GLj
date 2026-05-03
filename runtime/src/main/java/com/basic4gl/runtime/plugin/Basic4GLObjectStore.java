@@ -1,7 +1,7 @@
 package com.basic4gl.runtime.plugin;
 
 /**
- * These are optional utility objects that your DLL can request from Basic4GL.
+ * These are optional utility objects that your plugin can request from Basic4GL.
  * <p>They are used to associate an object with an integer handle. (Basic4GL
  * variables cannot store object references, but can store integer handles).
  * Basic4GL also tracks all objects allocated with an object store, and will
