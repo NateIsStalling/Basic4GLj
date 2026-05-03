@@ -236,7 +236,7 @@ public interface Basic4GLRuntime {
     /**
      * Indicates to the virtual machine that a timesharing break is required.
      * If the BASIC function has been modified with:
-     * IDLL_Basic4GL_FunctionRegistry.ModTimeshareBreak()
+     * Basic4GLFunctionRegistry.modTimeshareBreak()
      * this will trigger a time sharing break after the function returns.
      * This is useful for creating conditional timesharing breaks, when it
      * is not known until runtime whether the break is required.

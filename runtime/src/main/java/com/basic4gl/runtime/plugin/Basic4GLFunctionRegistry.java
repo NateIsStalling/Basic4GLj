@@ -337,7 +337,7 @@ public interface Basic4GLFunctionRegistry {
     /**
      * Modifies the last registered function to trigger a timesharing break
      * after it is called, IF the "timeshare" flag has been set in the virtual machine.
-     * See Basic4GLRuntime.isTimeshareBreakRequired().
+     * See Basic4GLRuntime.setTimeshareBreakRequired().
      */
     void modConditionalTimeshare();
     // endregion
