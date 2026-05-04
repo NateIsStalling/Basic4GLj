@@ -108,6 +108,20 @@ public class PluginJAR extends PluginLibrary {
                     return false;
                 }
 
+                // Validate host plugin API version compatibility.
+                if (!metadata.isApiCompatible(Basic4GLPluginProvider.PLUGIN_API_VERSION_MAJOR,
+                        Basic4GLPluginProvider.PLUGIN_API_VERSION_MINOR)) {
+                    String pluginName = metadata.name() == null || metadata.name().isBlank()
+                            ? filename
+                            : metadata.name();
+                    errorMessage = "Plugin '" + pluginName + "' requires plugin API >= "
+                            + metadata.minApiMajor() + "." + metadata.minApiMinor()
+                            + ", but current plugin API version is "
+                            + Basic4GLPluginProvider.PLUGIN_API_VERSION_MAJOR + "."
+                            + Basic4GLPluginProvider.PLUGIN_API_VERSION_MINOR;
+                    return false;
+                }
+
                 // Store metadata in fileDetails
                 this.metadata = metadata;
                 fileDetails.setDescription(

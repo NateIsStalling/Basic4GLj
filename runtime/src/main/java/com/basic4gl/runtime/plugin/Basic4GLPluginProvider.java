@@ -10,6 +10,12 @@ package com.basic4gl.runtime.plugin;
 public interface Basic4GLPluginProvider {
 
 	/**
+	 * Host plugin API version exposed to plugin metadata compatibility checks.
+	 */
+	int PLUGIN_API_VERSION_MAJOR = 1;
+	int PLUGIN_API_VERSION_MINOR = 0;
+
+	/**
 	 * Returns descriptive metadata used for compatibility and platform checks.
 	 */
 	PluginMetadata metadata();
