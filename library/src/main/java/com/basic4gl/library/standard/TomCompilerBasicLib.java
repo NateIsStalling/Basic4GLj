@@ -8,13 +8,14 @@ import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
 import static com.basic4gl.runtime.types.OpCode.*;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-import com.basic4gl.compiler.Constant;
-import com.basic4gl.compiler.ParamTypeList;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.FunctionSpecification;
+import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.compiler.util.IVMDriverAccess;
 import com.basic4gl.lib.util.*;
+import com.basic4gl.runtime.core.standard.IB4GLCompiler;
 import com.basic4gl.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.Value;
@@ -322,7 +323,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         comp.clearError();
         long saveIP = vm.getIP();
 
-        // Create hook for builtin/DLL function callbacks.
+        // Create hook for builtin/plugin function callbacks.
         // This consists of a GOSUB call to the code to be executed, followed by an
         // END CALLBACK op-code to trigger the return to the calling function.
         vm.addInstruction(new Instruction(

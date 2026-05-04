@@ -17,6 +17,8 @@ public class TypeLibrary implements Streamable {
     private final Vector<StructureField> fields;
     private final Vector<Structure> structures;
 
+    private int currentStrucIndex;
+
     public TypeLibrary() {
         fields = new Vector<>();
         structures = new Vector<>();
@@ -33,6 +35,7 @@ public class TypeLibrary implements Streamable {
     public void clear() {
         fields.clear();
         structures.clear();
+        currentStrucIndex = -1;
     }
 
     // Finding structures and fields
@@ -165,8 +168,8 @@ public class TypeLibrary implements Streamable {
 
     // Building structures
     public Structure getCurrentStruc() {
-        assertTrue(!isEmpty()); // Must have at least one structure
-        return structures.lastElement();
+        assertTrue(currentStrucIndex >= 0 && currentStrucIndex < structures.size());
+        return structures.get(currentStrucIndex);
     }
 
     public StructureField getCurrentField() {
@@ -187,8 +190,22 @@ public class TypeLibrary implements Streamable {
         assertTrue(!isStrucStored(name));
 
         // Create new structure
+        currentStrucIndex = structures.size();
         structures.add(new Structure(name, fields.size()));
         return getCurrentStruc();
+    }
+
+    public Structure makeStrucCurrent(String name)
+    {
+        assertTrue(isStrucStored(name));
+        currentStrucIndex = getStrucIndex(name);
+        return getCurrentStruc();
+    }
+
+    public void defineExistingStruc()
+    {
+        assertTrue(!getCurrentStruc().isDefined);
+        getCurrentStruc().firstFieldIndex = fields.size();
     }
 
     /**

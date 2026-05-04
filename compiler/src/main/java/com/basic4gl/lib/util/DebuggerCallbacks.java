@@ -8,6 +8,8 @@ import com.basic4gl.runtime.TomVM;
  * Created by Nate on 11/23/2015.
  */
 public abstract class DebuggerCallbacks {
+    private static final int MAX_STATUS_ERROR_CHARS = 16 * 1024;
+
     private final DebuggerTaskCallback taskCallback;
     private final DebuggerCallbackMessage callbackMessage;
     private final TomVM vm;
@@ -49,7 +51,7 @@ public abstract class DebuggerCallbacks {
         if (vm.isIPValid()) {
             instructionPosition = vm.getIPInSourceCode();
         }
-        VMStatus vmStatus = new VMStatus(vm.isDone(), vm.hasError(), vm.getError());
+        VMStatus vmStatus = new VMStatus(vm.isDone(), vm.hasError(), abbreviate(vm.getError(), MAX_STATUS_ERROR_CHARS));
         callbackMessage.setMessage(CallbackMessage.PAUSED, message, vmStatus);
         callbackMessage.setInstructionPosition(instructionPosition);
 
@@ -86,10 +88,17 @@ public abstract class DebuggerCallbacks {
         DebuggerCallbackMessage debuggerCallbackMessage = null;
 
         if (message != null) {
-            VMStatus vmStatus = new VMStatus(vm.isDone(), vm.hasError(), vm.getError());
+            VMStatus vmStatus = new VMStatus(vm.isDone(), vm.hasError(), abbreviate(vm.getError(), MAX_STATUS_ERROR_CHARS));
             debuggerCallbackMessage = new DebuggerCallbackMessage(message.getStatus(), message.getText(), vmStatus);
         }
         callbackMessage.setMessage(debuggerCallbackMessage);
         taskCallback.message(debuggerCallbackMessage);
+    }
+
+    private static String abbreviate(String text, int maxChars) {
+        if (text == null || text.length() <= maxChars) {
+            return text;
+        }
+        return text.substring(0, maxChars) + "... [truncated]";
     }
 }

@@ -107,10 +107,10 @@ public class IncludeLinkGenerator implements LinkGenerator {
             return null;
         }
         if (File.separatorChar == '\\') {
-            // From Windows to Linux/Mac
+            // From Linux/Mac to Windows
             return res.replace('/', File.separatorChar);
         } else {
-            // From Linux/Mac to Windows
+            // From Windows to Linux/Mac
             return res.replace('\\', File.separatorChar);
         }
     }

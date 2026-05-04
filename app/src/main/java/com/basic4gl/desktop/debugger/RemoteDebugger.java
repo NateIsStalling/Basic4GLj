@@ -113,4 +113,36 @@ public class RemoteDebugger implements IDebugger {
         DebugCommand command = new StackTraceCommand();
         adapter.message(command);
     }
+
+    @Override
+    public void refreshDisassembly() {
+        requestDisassembly(0, 200);
+    }
+
+    @Override
+    public int requestDisassembly(Integer instructionOffset, int instructionCount) {
+        DebugCommand command = new DisassembleCommand("0", 0, instructionOffset, instructionCount, true);
+        return adapter.message(command);
+    }
+
+    @Override
+    public void refreshVariables() {
+        requestVariables(VariablesCommand.REF_GLOBALS, 0, 128);
+        requestVariables(VariablesCommand.REF_REGISTERS, 0, 128);
+        requestVariables(VariablesCommand.REF_STACK, 0, 64);
+        requestVariables(VariablesCommand.REF_TEMP, 0, 64);
+        requestVariables(VariablesCommand.REF_ALLOCATED_STRINGS, 0, 64);
+    }
+
+    @Override
+    public int requestVariables(int variablesReference, Integer start, Integer count) {
+        DebugCommand command = new VariablesCommand(variablesReference, start, count);
+        return adapter.message(command);
+    }
+
+    @Override
+    public int requestReadMemory(String memoryReference, Integer offset, int count) {
+        DebugCommand command = new ReadMemoryCommand(memoryReference, offset, count);
+        return adapter.message(command);
+    }
 }

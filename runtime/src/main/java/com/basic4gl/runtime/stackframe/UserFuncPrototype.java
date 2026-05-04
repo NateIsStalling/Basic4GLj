@@ -138,6 +138,39 @@ public class UserFuncPrototype implements Streamable {
         return true;
     }
 
+    /**
+     * Return true if this function is compatible with the other one.
+     * This is similar to "Matches", except that "Matches" requires parameter names to match,
+     * whereas "IsCompatibleWith" only requires parameters to be the same types.
+     * @param func
+     * @return Return true if this function is compatible with the other one.
+     */
+    public boolean isCompatibleWith(UserFuncPrototype func) {
+
+        // Match return value
+        if (hasReturnVal != func.hasReturnVal) {
+            return false;
+        }
+
+        if (hasReturnVal && !returnValType.exactEquals(func.returnValType)) {
+            return false;
+        }
+
+        // Match parameters
+        if (paramCount != func.paramCount) {
+            return false;
+        }
+
+        for (int i = 0; i < paramCount; i++) {
+            if (!localVarTypes.get(i).exactEquals(func.localVarTypes.get(i))) {
+                return false;
+            }
+        }
+
+        // No differences found
+        return true;
+    }
+
     public void streamOut(DataOutputStream stream) throws IOException {
         // Return value
         Streaming.writeByte(stream, hasReturnVal ? (byte) 1 : 0);

@@ -1,4 +1,4 @@
-package com.basic4gl.lib.util;
+package com.basic4gl.runtime.core.standard;
 
 /**
  * Used to compile and execute Basic4GL code at RUNTIME.

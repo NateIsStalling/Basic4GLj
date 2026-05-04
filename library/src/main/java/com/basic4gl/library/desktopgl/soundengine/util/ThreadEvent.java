@@ -5,14 +5,17 @@ package com.basic4gl.library.desktopgl.soundengine.util;
  */
 public class ThreadEvent {
     private final Thread event;
+    private boolean signaled;
 
     public ThreadEvent() {
         event = new Thread();
+        signaled = false;
     }
 
     public void dispose() {
         synchronized (event) {
-            event.notify();
+            signaled = true;
+            event.notifyAll();
         }
     }
 
@@ -24,20 +27,31 @@ public class ThreadEvent {
     // Methods
     public void set() {
         synchronized (event) {
-            event.notify();
+            signaled = true;
+            event.notifyAll();
         }
     }
 
     public void reset() {
         synchronized (event) {
-            event.notify();
+            signaled = false;
         }
     }
 
     public void waitFor(long timeout) {
+        long endTime = timeout > 0 ? System.currentTimeMillis() + timeout : 0;
         try {
             synchronized (event) {
-                event.wait(timeout);
+                while (!signaled) {
+                    if (timeout <= 0) {
+                        break;
+                    }
+                    long remaining = endTime - System.currentTimeMillis();
+                    if (remaining <= 0) {
+                        break;
+                    }
+                    event.wait(remaining);
+                }
             }
         } catch (InterruptedException consumed) {
             // Do nothing
@@ -47,7 +61,9 @@ public class ThreadEvent {
     public void waitFor() {
         try {
             synchronized (event) {
-                event.wait();
+                while (!signaled) {
+                    event.wait();
+                }
             }
         } catch (InterruptedException e) {
             // Do nothing
@@ -55,6 +71,6 @@ public class ThreadEvent {
     }
 
     public void pulse() {
-        event.notify();
+        set();
     }
 }

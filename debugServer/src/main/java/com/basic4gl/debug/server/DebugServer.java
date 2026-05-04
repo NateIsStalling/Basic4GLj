@@ -8,6 +8,7 @@ import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainer
 
 public class DebugServer {
     private static final int DEFAULT_DEBUG_SERVER_PORT = 8080;
+    private static final int MAX_TEXT_MESSAGE_SIZE_BYTES = 1024 * 1024;
 
     public static void main(String[] args) {
         try {
@@ -28,7 +29,7 @@ public class DebugServer {
             // Initialize javax.websocket layer
             WebSocketServerContainerInitializer.configure(context, (servletContext, wsContainer) -> {
                 // Configure defaults for container
-                wsContainer.setDefaultMaxTextMessageBufferSize(65535);
+                wsContainer.setDefaultMaxTextMessageBufferSize(MAX_TEXT_MESSAGE_SIZE_BYTES);
 
                 // Add WebSocket endpoint to javax.websocket layer
                 wsContainer.addEndpoint(DebugSocket.class);

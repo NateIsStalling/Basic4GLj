@@ -85,6 +85,9 @@ public class Store<T> {
 
         // Deallocate index and return to array
         assertTrue(isIndexValid(index));
+
+        array.set(index, blankElement);
+
         valAllocated.set(index, false);
         freeList.add(0, index);
     }

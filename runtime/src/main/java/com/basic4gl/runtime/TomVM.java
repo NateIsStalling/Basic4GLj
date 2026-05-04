@@ -3,14 +3,13 @@ package com.basic4gl.runtime;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import com.basic4gl.runtime.VariableCollection.Variable;
+import com.basic4gl.runtime.plugin.Basic4GLRuntime;
+import com.basic4gl.runtime.plugin.PluginManager;
+import com.basic4gl.runtime.plugin.TomVMPluginAdapter;
 import com.basic4gl.runtime.stackframe.*;
 import com.basic4gl.runtime.types.*;
-import com.basic4gl.runtime.util.Function;
-import com.basic4gl.runtime.util.IVMDebugger;
-import com.basic4gl.runtime.util.Mutable;
-import com.basic4gl.runtime.util.Resources;
-import com.basic4gl.runtime.util.Streamable;
-import com.basic4gl.runtime.util.Streaming;
+import com.basic4gl.runtime.util.*;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -62,8 +61,7 @@ public class TomVM extends HasErrorState implements Streamable {
             ERR_POINTER_SCOPE_ERROR = "Pointer scope error",
             ERR_NO_RUNTIME_FUNCTION = "Runtime function not implemented",
             ERR_INVALID_CODE_BLOCK = "Could not find runtime code to execute",
-            ERR_DLL_NOT_IMPLEMENTED = "DLL plugins are not implemented in this version of Basic4GL";
-
+            ERR_FUNC_PTR_INCOMPATIBLE = "Function/sub pointer is incompatible";
     // External functions
     /**
      * functions are standard functions where the parameters are pushed to the stack.
@@ -113,10 +111,9 @@ public class TomVM extends HasErrorState implements Streamable {
     private final Vector<StackDestructor> stackDestructors;
     private final Vector<StackDestructor> tempDestructors;
 
-    // Plugin DLLs
-    // TODO Reimplement libraries
-    // PluginDLLManager plugins;
-    // IDLL_Basic4GL_Runtime pluginRuntime;
+    // Plugins
+    private final PluginManager plugins;
+    private final Basic4GLRuntime pluginRuntime;
 
     // Debugger
     private final IVMDebugger debugger;
@@ -181,16 +178,19 @@ public class TomVM extends HasErrorState implements Streamable {
 
     private boolean stopped;
 
-    // TODO Reimplement libraries
-    // public TomVM(PluginDLLManager plugins, IVMDebugger debugger) {
-    public TomVM(IVMDebugger debugger) {
-        this(debugger, MAX_DATA, MAX_STACK);
+    private Basic4GLLongRunningFunction longRunningFunction;
+    private ILongRunningFunctionListener longRunningFnDoneNotifiedListener;
+
+    /**
+     * Conditional timeshare break
+     */
+    private boolean timeshare;
+
+    public TomVM(PluginManager plugins, IVMDebugger debugger) {
+        this(plugins, debugger, MAX_DATA, MAX_STACK);
     }
 
-    // TODO Reimplement libraries
-    // public TomVM(PluginDLLManager plugins, IVMDebugger debugger,
-    //		int maxDataSize, int maxStackSize) {
-    public TomVM(IVMDebugger debugger, int maxDataSize, int maxStackSize) {
+    public TomVM(PluginManager plugins, IVMDebugger debugger, int maxDataSize, int maxStackSize) {
         this.debugger = debugger;
 
         data = new Data(maxDataSize, maxStackSize);
@@ -222,11 +222,11 @@ public class TomVM extends HasErrorState implements Streamable {
         tempBreakPoints = new ArrayList<>();
 
         initFunctions = new Vector<>();
-        // TODO Reimplement libraries
-        // this.plugins = plugins;
-        // Create plugin runtime
-        // this.pluginRuntime = new TomVMDLLAdapter(this,
-        //		this.plugins.StructureManager());
+
+         this.plugins = plugins;
+         // Create plugin runtime
+         this.pluginRuntime = new TomVMPluginAdapter(this,
+        		this.plugins.getStructureManager());
 
         clearProgram();
     }
@@ -235,6 +235,9 @@ public class TomVM extends HasErrorState implements Streamable {
      * New program
      */
     public void clearProgram() {
+        // Cancel any long running function
+        cancelLongRunningFunction();
+
         // Clear variables, data and data types
         clearVariables();
         variables.clear();
@@ -323,10 +326,20 @@ public class TomVM extends HasErrorState implements Streamable {
 
         clearError();
         paused = false;
+        timeshare = false;
 
         Instruction instruction;
         int stepCount = 0;
         int tempI;
+
+        // Handle long running functions
+        if (longRunningFunction != null)
+        {
+            if (longRunningFunction.isPolled()) {
+                longRunningFunction.poll();
+            }
+            return;
+        }
 
         // Virtual machine main loop
         step:
@@ -905,6 +918,15 @@ public class TomVM extends HasErrorState implements Streamable {
                     ip++; // Move on to next instruction
                     break; // And return
 
+                case OpCode.OP_COND_TIMESHARE:
+                    if (!timeshare) {
+                        // If no timeshare flagged, continue executing
+                        ip++; // Proceed to next instruction
+                        continue step;
+                    }
+                    ip++; // Move on to next instruction
+                    break; // And return
+
                 case OpCode.OP_FREE_TEMP:
 
                     // Free temporary data
@@ -981,12 +1003,11 @@ public class TomVM extends HasErrorState implements Streamable {
 
                 case OpCode.OP_CALL_DLL: {
 
-                    // Call plugin DLL function
-                    // TODO Reimplement libraries
-                    // int index = instruction.mValue.getIntVal();
-                    // this.plugins.GetPluginDLL(index >> 24)
-                    //		.GetFunction(index & 0x00ffffff).Run(this.pluginRuntime);
-                    setError(ERR_DLL_NOT_IMPLEMENTED); // Remove line when libraries are implemented
+                    // Call plugin function
+                    int index = instruction.value.getIntVal();
+                    this.plugins.getLoadedLibraries().get(index >> 24)
+                        .getFunction(index & 0x00ffffff).run(this.pluginRuntime);
+
                     if (!hasError()) {
                         ip++; // Proceed to next instruction
                         continue step;
@@ -1014,6 +1035,70 @@ public class TomVM extends HasErrorState implements Streamable {
                     data.saveState(tempTop, tempLock);
                     stackFrame.prevStackTop = tempTop.get();
                     stackFrame.prevTempDataLock = tempLock.get();
+
+                    ip++; // Proceed to next instruction
+                    continue step;
+                }
+                case OpCode.OP_CREATE_FUNC_PTR_FRAME: {
+
+                    // This is identical to OP_CREATE_USER_FRAME, except that the function
+                    // index will be in reg, rather than the instruction.
+
+                    // Check for null function pointer
+                    if (reg.getIntVal() == 0)
+                    {
+                        setError(ERR_UNSET_POINTER);
+                        break;
+                    }
+
+                    // Check for stack overflow
+                    if (userCallStack.size() >= MAX_USER_STACK_CALLS) {
+                        setError(ERR_STACK_OVERFLOW);
+                        break;
+                    }
+
+                    // Function index + 1 is in reg
+                    // (+1 is so that we can use 0 for null)
+                    int funcIndex = reg.getIntVal() - 1;
+
+                    UserFuncStackFrame stackFrame = new UserFuncStackFrame();
+                    userCallStack.add(stackFrame);
+
+                    stackFrame.initForUserFunction(
+                            userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex),
+                            funcIndex);
+
+                    // Save previous stack frame data
+                    Mutable<Integer> stackTopRef = new Mutable<>(stackFrame.prevStackTop);
+                    Mutable<Integer> tempDataLockRef = new Mutable<>(stackFrame.prevTempDataLock);
+                    data.saveState(stackTopRef, tempDataLockRef);
+                    stackFrame.prevStackTop = stackTopRef.get();
+                    stackFrame.prevTempDataLock = tempDataLockRef.get();
+
+                    ip++; // Proceed to next instruction
+                    continue step;
+                }
+                case OpCode.OP_CHECK_FUNC_PTR: {
+
+                    // Function pointer can be null (0)
+                    if (reg.getIntVal() == 0) {
+                        ip++; // Proceed to next instruction
+                        continue step;
+                    }
+
+                    // Function index + 1 is in reg
+                    // (+1 is so that we can use 0 for null)
+                    int funcIndex = reg.getIntVal() - 1;
+
+                    // Check function prototype is compatible with prototype referenced by instruction
+                    UserFuncPrototype srcProto = userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex);
+                    UserFuncPrototype dstProto = userFunctionPrototypes.get(instruction.value.getIntVal());
+
+                    if (!srcProto.isCompatibleWith(dstProto))
+                    {
+                        setError(ERR_FUNC_PTR_INCOMPATIBLE);
+                        break;
+                    }
 
                     ip++; // Proceed to next instruction
                     continue step;
@@ -1276,6 +1361,20 @@ public class TomVM extends HasErrorState implements Streamable {
                     continue step;
                 }
 
+                case OpCode.OP_SWAP: {
+                    // Swap registers
+                    Value temp = new Value(getReg());
+                    getReg().setVal(new Value(getReg2()));
+                    getReg2().setVal(temp);
+
+                    String tempString = getRegString();
+                    setRegString(getReg2String());
+                    setReg2String(tempString);
+
+                    ip++; // Proceed to next instruction
+                    continue step;
+                }
+
                 case OpCode.OP_SAVE_PARAM_PTR: {
 
                     // Save register pointer into param pointer
@@ -1332,7 +1431,7 @@ public class TomVM extends HasErrorState implements Streamable {
         assertTrue(data.isIndexValid(destIndex));
         assertTrue(data.isIndexValid(destIndex + size - 1));
         for (int i = 0; i < size; i++) {
-            data.data().set(destIndex + i, data.data().get(sourceIndex + i));
+            data.data().set(destIndex + i, new Value(data.data().get(sourceIndex + i)));
         }
     }
 
@@ -1402,7 +1501,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // If type is basic, or pointer then just copy value
         else if (type.isBasicType() || type.getVirtualPointerLevel() > 0) {
-            data.data().set(destIndex, data.data().get(sourceIndex));
+            data.data().set(destIndex, new Value(data.data().get(sourceIndex)));
         }
 
         // If contains no strings, can just block copy
@@ -1842,6 +1941,10 @@ public class TomVM extends HasErrorState implements Streamable {
             s.setErrorString("");
         }
 
+        // Current long running function
+        s.setLongRunningFunction(longRunningFunction);
+        longRunningFunction = null;
+
         // Other state
         s.setPaused(paused);
 
@@ -1881,6 +1984,10 @@ public class TomVM extends HasErrorState implements Streamable {
         unwindStack(state.getStackDataTop());
         data.restoreState(state.getStackDataTop(), state.getTempDataLock(), true);
 
+        // Long running function
+        cancelLongRunningFunction();
+        longRunningFunction = state.getLongRunningFunction();
+
         // Error state
         if (state.isError()) {
             setError(state.getErrorString());
@@ -1919,12 +2026,17 @@ public class TomVM extends HasErrorState implements Streamable {
 
     // TODO Move to utility class
     static String trimToLength(String str, Mutable<Integer> length) {
-        if (str.length() > length.get()) {
-            length.set(0);
-            return str.substring(0, length.get());
-        } else {
+        int remaining = Math.max(0, length.get());
+        if (remaining == 0 || str.isEmpty()) {
+            length.set(remaining);
+            return "";
+        }
+        if (str.length() <= remaining) {
+            length.set(remaining - str.length());
             return str;
         }
+        length.set(0);
+        return str.substring(0, remaining);
     }
 
     void deref(Value val, ValType type) {
@@ -2434,6 +2546,12 @@ public class TomVM extends HasErrorState implements Streamable {
         return codeBlocks.get(index).programOffset;
     }
 
+    public CodeBlock getCodeBlock(int index)
+    {
+        assertTrue(isCodeBlockValid(index));
+        return codeBlocks.get(index);
+    }
+
     public RollbackPoint getRollbackPoint() {
         RollbackPoint r = new RollbackPoint();
 
@@ -2465,13 +2583,11 @@ public class TomVM extends HasErrorState implements Streamable {
         Streaming.writeString(stream, STREAM_HEADER);
         Streaming.writeLong(stream, STREAM_VERSION);
 
-        // Plugin DLLs
-        // TODO Reimplement libraries
-        // this.plugins.StreamOut(stream);
+        // Plugins
+         this.plugins.streamOut(stream);
 
         // Variables
-        variables.streamOut(stream); // Note: mVariables automatically
-        // streams out mDataTypes
+        variables.streamOut(stream); // Note: `variables` automatically streams out `dataTypes`
 
         // String constants
         Streaming.writeLong(stream, stringConstants.size());
@@ -2522,18 +2638,15 @@ public class TomVM extends HasErrorState implements Streamable {
             return false;
         }
 
-        // Plugin DLLs
-        // TODO Reimplement libraries
-        /*
-        if (!this.plugins.StreamIn(stream)) {
-        	setError(this.plugins.Error());
+        // Plugins
+        if (!this.plugins.streamIn(stream)) {
+        	setError(this.plugins.getError());
         	return false;
         }
 
         // Register plugin structures and functions in VM
-        this.plugins.StructureManager().AddVMStructures(DataTypes());
-        this.plugins.CreateVMFunctionSpecs();
-        */
+        this.plugins.getStructureManager().addVMStructures(getDataTypes());
+        this.plugins.createVMFunctionSpecs();
 
         // Variables
         variables.streamIn(stream);
@@ -2930,12 +3043,81 @@ public class TomVM extends HasErrorState implements Streamable {
         this.resources.add(resources);
     }
 
-    // Plugin DLLs
-    // TODO Reimplement libraries
-    /*PluginDLLManager& Plugins() { return m_plugins; }*/
+    // Plugins
+    public PluginManager getPlugins() { return plugins; }
+
     // Builtin/plugin function callback support
     public boolean isEndCallback() {
         assertTrue(isIPValid());
         return codeInstructions.get(ip).opCode == OpCode.OP_END_CALLBACK; // Reached end callback opcode?
     }
+
+
+    public void beginLongRunningFunction(Basic4GLLongRunningFunction handler) {
+
+        // Should never be any existing long running fn, but just in case
+        cancelLongRunningFunction();
+
+        // Set handler as the new long running fn.
+        // This will prevent VM from executing any more op-codes
+        longRunningFunction = handler;
+    }
+
+    public void endLongRunningFunction() {
+        if (longRunningFunction != null)
+        {
+            // Delete if required
+            if (longRunningFunction.deleteWhenDone()) {
+                longRunningFunction.dispose();
+            }
+            // Unhook handler. This allows VM to continue executing op-codes.
+            longRunningFunction = null;
+
+            // Notify
+            if (longRunningFnDoneNotifiedListener != null) {
+                longRunningFnDoneNotifiedListener.onLongRunningFunctionDone(false);
+            }
+        }
+    }
+
+    public void cancelLongRunningFunction() {
+        if (longRunningFunction != null)
+        {
+            boolean deleteWhenDone = longRunningFunction.deleteWhenDone();
+            longRunningFunction.cancel();
+            if (deleteWhenDone) {
+                longRunningFunction.dispose();
+            }
+            longRunningFunction = null;
+
+            // Notify
+            if (longRunningFnDoneNotifiedListener != null) {
+                longRunningFnDoneNotifiedListener.onLongRunningFunctionDone(true);
+            }
+        }
+    }
+    public void setTimeshareBreakRequired() {
+        timeshare = true;
+    }
+    public boolean isInLongRunningFunction() {
+        return longRunningFunction != null;
+    }
+
+    /**
+     * If VM is waiting for a long running function that does not require polling,
+     * then application can block and wait for next event before calling continue() again.
+     * @return
+     */
+    public boolean canWaitForEvents() {
+        return longRunningFunction != null && !longRunningFunction.isPolled();
+    }
+
+    public void setLongRunningFunctionDoneNotified(ILongRunningFunctionListener listener) {
+        longRunningFnDoneNotifiedListener = listener;
+    }
+
+    public Instruction[] getInstructions() {
+        return codeInstructions.toArray(new Instruction[0]);
+    }
+
 }

@@ -3,10 +3,10 @@ package com.basic4gl.library.desktopgl;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.opengl.GL13.*;
 
-import com.basic4gl.compiler.Constant;
-import com.basic4gl.compiler.ParamTypeList;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.FunctionSpecification;
+import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;

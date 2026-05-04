@@ -20,7 +20,13 @@ public class HasErrorState {
     }
 
     public void setError(String message) {
-        System.err.println(message);
+        setError(message, true);
+    }
+
+    public void setError(String message, boolean verbose) {
+        if (verbose) {
+            System.err.println(message);
+        }
 
         hasErrorOccurred = true;
         errorMessage = message;

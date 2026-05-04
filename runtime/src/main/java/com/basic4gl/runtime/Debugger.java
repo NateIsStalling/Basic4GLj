@@ -112,4 +112,8 @@ public class Debugger extends IVMDebugger {
         return lineNumberMapping.getMainFromSource(
                 userBreakPoints.get(index).sourceFile, userBreakPoints.get(index).lineNo);
     }
+
+    public ILineNumberMapping getLineNumberMapping() {
+        return lineNumberMapping;
+    }
 }

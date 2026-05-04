@@ -29,4 +29,14 @@ public interface IDebugger {
     int evaluateWatch(String watch, boolean canCallFunc);
 
     void refreshCallStack();
+
+    void refreshDisassembly();
+
+    int requestDisassembly(Integer instructionOffset, int instructionCount);
+
+    void refreshVariables();
+
+    int requestVariables(int variablesReference, Integer start, Integer count);
+
+    int requestReadMemory(String memoryReference, Integer offset, int count);
 }

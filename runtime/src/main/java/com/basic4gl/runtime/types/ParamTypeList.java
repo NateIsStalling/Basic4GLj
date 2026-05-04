@@ -1,6 +1,5 @@
-package com.basic4gl.compiler;
+package com.basic4gl.runtime.types;
 
-import com.basic4gl.runtime.types.ValType;
 import java.util.*;
 
 /**

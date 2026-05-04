@@ -6,14 +6,19 @@ import static com.formdev.flatlaf.FlatClientProperties.*;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
+import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
 import com.basic4gl.desktop.util.*;
+import com.basic4gl.desktop.vmview.DebugControlsListener;
+import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.lib.util.EditorAppSettings;
 import com.basic4gl.lib.util.IConfigurableAppSettings;
+import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.util.Mutable;
@@ -44,6 +49,7 @@ public class MainWindow
                 ITabProvider,
                 IToggleBreakpointListener,
                 IFileEditorActionListener,
+                IFileManagerListener,
                 EmptyTabPanel.IEmptyTabPanelListener {
 
     private final CaretListener TrackCaretPosition = new CaretListener() {
@@ -101,6 +107,7 @@ public class MainWindow
     private final JMenuItem stepOverMenuItem = new JMenuItem("Step Over");
     private final JMenuItem stepIntoMenuItem = new JMenuItem("Step Into");
     private final JMenuItem stepOutOfMenuItem = new JMenuItem("Step Out of");
+    private final JMenuItem viewVirtualMachineMenuItem = new JMenuItem("View Virtual Machine");
 
     // Toolbar Buttons
     private final JButton newButton = new JButton(createImageIcon(ICON_NEW));
@@ -129,6 +136,7 @@ public class MainWindow
     private final IConfigurableAppSettings appSettings = new EditorAppSettings();
     private BasicEditor basicEditor;
     private FileManager fileManager;
+    private PluginJARManager plugins;
 
     private IncludeLinkGenerator linkGenerator = new IncludeLinkGenerator(this);
 
@@ -136,6 +144,9 @@ public class MainWindow
 
     // Debugging
     private boolean isDebugMode = false;
+    private VirtualMachineViewDialog virtualMachineViewDialog;
+    private int lastSourceRow = -1;
+    private int lastSourceColumn = -1;
 
     // Set when stepping. Delays switching to the output window for the first 1000 op-codes.
     // (To prevent excessive screen mode switches when debugging full-screen programs.)
@@ -293,6 +304,8 @@ public class MainWindow
         breakpointSubMenu.add(toggleBreakpointMenuItem);
         debugMenu.add(new JSeparator());
         debugMenu.add(debugMenuItem);
+        debugMenu.add(new JSeparator());
+        debugMenu.add(viewVirtualMachineMenuItem);
 
         appMenu.add(runMenuItem);
         appMenu.add(new JSeparator());
@@ -390,7 +403,44 @@ public class MainWindow
             isDelayScreenSwitchEnabled = true;
             basicEditor.actionStepOutOf();
         });
+        viewVirtualMachineMenuItem.addActionListener(e -> {
+            if (virtualMachineViewDialog == null || !virtualMachineViewDialog.isDisplayable()) {
+                virtualMachineViewDialog = new VirtualMachineViewDialog(frame);
+                virtualMachineViewDialog.setSeeValueHandler(
+                        expression -> basicEditor.evaluateVmViewVariable(expression));
+                virtualMachineViewDialog.setDebugControlsHandler(new DebugControlsListener() {
+                    @Override
+                    public void onPlayPauseRequested() {
+                        basicEditor.actionPlayPause();
+                    }
 
+                    @Override
+                    public void onStepRequested() {
+                        basicEditor.actionStepInto();
+                    }
+
+                    @Override
+                    public void onStepOverRequested() {
+                        basicEditor.actionStep();
+                    }
+
+                    @Override
+                    public void onStepOutRequested() {
+                        basicEditor.actionStepOutOf();
+                    }
+                });
+            }
+            if (lastSourceRow >= 0) {
+                virtualMachineViewDialog.setCurrentSourcePosition(lastSourceRow, lastSourceColumn);
+            }
+            virtualMachineViewDialog.setVmRunning(basicEditor.getMode() == ApMode.AP_RUNNING);
+            virtualMachineViewDialog.setVisible(true);
+            if (basicEditor.getMode() == ApMode.AP_PAUSED) {
+                basicEditor.refreshCallStack();
+                basicEditor.refreshDisassembly();
+                basicEditor.refreshVariables();
+            }
+        });
         toggleBookmarkMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, toolkit.getMenuShortcutKeyMask()));
         toggleBookmarkMenuItem.addActionListener(e -> {
             int i = tabControl.getSelectedIndex();
@@ -630,12 +680,12 @@ public class MainWindow
         // TODO don't hardcode this classname
         atmf.putMapping("text/basic4gl", "com.basic4gl.desktop.editor.BasicTokenMaker");
 
-        // mDLLs(GetCurrentDir().c_str(), false)
-        fileManager = new FileManager();
+        fileManager = new FileManager(this);
+        plugins = new PluginJARManager(false);
         Preprocessor preprocessor = new Preprocessor(2, new EditorSourceFileServer(fileManager), new DiskFileServer());
         Debugger debugger = new Debugger(preprocessor.getLineNumberMap());
-        TomVM vm = new TomVM(debugger);
-        TomBasicCompiler comp = new TomBasicCompiler(vm);
+        TomVM vm = new TomVM(plugins, debugger);
+        TomBasicCompiler comp = new TomBasicCompiler(vm, plugins);
         basicEditor = new BasicEditor(outputBinPath, fileManager, this, appSettings, preprocessor, debugger, comp);
 
         // TODO Confirm this doesn't break if app is ever signed
@@ -649,6 +699,9 @@ public class MainWindow
         }
         fileManager.setFileDirectory(fileManager.getRunDirectory());
         fileManager.setCurrentDirectory(fileManager.getFileDirectory());
+
+        // TODO review if this should be a config option instead of the current directory
+        plugins.setDirectory(fileManager.getCurrentDirectory());
 
         // TODO this should be done as a callback
         refreshActions(basicEditor.getMode());
@@ -1019,8 +1072,8 @@ public class MainWindow
         // Reset default run directory to programs folder
         fileManager.setRunDirectory(fileManager.getAppDirectory() + "\\Programs");
 
-        // Clear DLLs, breakpoints, bookmarks etc
-        // this.dlls.Clear();
+        // Clear plugins, breakpoints, bookmarks etc
+        this.plugins.clear();
         basicEditor.debugger.clearUserBreakPoints();
 
         // Refresh UI
@@ -1095,6 +1148,8 @@ public class MainWindow
 
     @Override
     public void placeCursorAtProcessed(final int row, int col) {
+        lastSourceRow = row;
+        lastSourceColumn = col;
 
         // Place cursor at position corresponding to row, col in post-processed file.
         // Find corresponding source position
@@ -1108,6 +1163,10 @@ public class MainWindow
 
         // Find (and show) corresponding editor frame
         if (r >= 0) {
+            if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+                virtualMachineViewDialog.setCurrentSourcePosition(r, c);
+            }
+
             int index = getTabIndex(file);
             if (index == -1) {
                 // Attempt to open tab
@@ -1220,8 +1279,9 @@ public class MainWindow
         compilerStatusLabel.setText(statusMsg);
 
         // Notify virtual machine view
-        // TODO Implement VM Viewer
-        // VMView().SetVMIsRunning(mode == ApMode.AP_RUNNING);
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.setVmRunning(mode == ApMode.AP_RUNNING);
+        }
     }
 
     @Override
@@ -1382,35 +1442,74 @@ public class MainWindow
         // Clear debug controls
         gosubListModel.clear();
 
-        // Update call stack
-        gosubListModel.addElement("IP");
+        for (String label : buildFriendlyCallStackLabels(stackTraceCallback)) {
+            gosubListModel.addElement(label);
+        }
+    }
 
-        int totalFrames =
-                stackTraceCallback.stackFrames.size(); // callback.totalFrames may be larger if paging is enforced
+    @Override
+    public void updateVmViewCallStack(StackTraceCallback stackTraceCallback) {
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.updateCallStack(toVmViewFriendlyCallStack(stackTraceCallback));
+        }
+    }
+
+    private ArrayList<String> buildFriendlyCallStackLabels(StackTraceCallback stackTraceCallback) {
+        ArrayList<String> labels = new ArrayList<>();
+        labels.add("IP");
+
+        if (stackTraceCallback == null || stackTraceCallback.stackFrames == null) {
+            return labels;
+        }
+
+        int totalFrames = stackTraceCallback.stackFrames.size();
         for (int i2 = 0; i2 < totalFrames; i2++) {
             StackFrame frame = stackTraceCallback.stackFrames.get(totalFrames - i2 - 1);
+            labels.add(toFriendlyStackFrameLabel(frame));
+        }
+        return labels;
+    }
 
-            // User functions have positive indices
-            Integer userFuncIndex = NumberUtil.parseIntOrNull(frame.name);
-            if (userFuncIndex != null) {
-                if (userFuncIndex >= 0) {
-                    // TODO 12/2022 migrate GetUserFunctionName to LineNumberMapping and handle in the
-                    // DebugCommandAdapter;
-                    //  would like to rely on frame.name to align with Microsoft's DAP specification
-                    gosubListModel.addElement(basicEditor.compiler.getUserFunctionName(userFuncIndex) + "()");
+    private String toFriendlyStackFrameLabel(StackFrame frame) {
+        // User functions have positive indices.
+        Integer userFuncIndex = NumberUtil.parseIntOrNull(frame.name);
+        if (userFuncIndex == null) {
+            return frame.name;
+        }
 
-                    // Otherwise must be a gosub
-                } else {
-                    // TODO 12/2022 migrate DescribeStackCall to LineNumberMapping and handle in the
-                    // DebugCommandAdapter;
-                    //  would like to rely on frame.name to align with Microsoft's DAP specification
-                    Integer returnAddr = NumberUtil.parseIntOrNull(frame.instructionPointer);
-                    String gosubLabel = returnAddr != null ? basicEditor.compiler.describeStackCall(returnAddr) : "???";
-                    gosubListModel.addElement("gosub " + gosubLabel);
-                }
-            } else {
-                gosubListModel.addElement(frame.name);
-            }
+        if (userFuncIndex >= 0) {
+            return basicEditor.compiler.getUserFunctionName(userFuncIndex) + "()";
+        }
+
+        Integer returnAddr = NumberUtil.parseIntOrNull(frame.instructionPointer);
+        String gosubLabel = returnAddr != null ? basicEditor.compiler.describeStackCall(returnAddr) : "???";
+        return "gosub " + gosubLabel;
+    }
+
+    private StackTraceCallback toVmViewFriendlyCallStack(StackTraceCallback stackTraceCallback) {
+        StackTraceCallback friendly = new StackTraceCallback();
+        for (String label : buildFriendlyCallStackLabels(stackTraceCallback)) {
+            StackFrame frame = new StackFrame();
+            frame.name = label;
+            frame.source = "";
+            frame.line = 0;
+            friendly.stackFrames.add(frame);
+        }
+        friendly.totalFrames = friendly.stackFrames.size();
+        return friendly;
+    }
+
+    @Override
+    public void updateVmViewDisassembly(DisassembleCallback disassembleCallback) {
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.updateDisassembly(disassembleCallback);
+        }
+    }
+
+    @Override
+    public void updateVmViewVariables(VariablesCallback variablesCallback) {
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.updateVariables(variablesCallback);
         }
     }
 
@@ -1422,6 +1521,20 @@ public class MainWindow
                 watchListModel.setElementAt(watch + ": " + result, index);
             }
             index++;
+        }
+    }
+
+    @Override
+    public void updateVmViewVariableValue(String expression, String result) {
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.applySeeValueResult(expression, result);
+        }
+    }
+
+    @Override
+    public void updateVmViewError(String scope, String message) {
+        if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
+            virtualMachineViewDialog.showError(scope, message);
         }
     }
 
@@ -1532,5 +1645,14 @@ public class MainWindow
     @Override
     public void onOpenClick(File file) {
         actionOpen(file);
+    }
+
+    @Override
+    public void onCurrentDirectoryChanged(String directory) {
+        if (plugins != null) {
+            // TODO review whether plugins should be notified of current directory changes, or if they should just use a
+            // configured directory for loading/saving plugins
+            plugins.setDirectory(directory);
+        }
     }
 }

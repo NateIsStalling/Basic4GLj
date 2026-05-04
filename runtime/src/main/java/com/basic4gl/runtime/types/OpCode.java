@@ -147,6 +147,16 @@ public class OpCode {
      */
     public static final short OP_REG_DESTRUCTOR = 0x19;
 
+    /**
+     * Swap register 1 and 2
+     */
+    public static final short OP_SWAP = 0x1A;
+
+    /**
+     * Conditionally perform a timesharing break.
+     * Breaks only if timeshare has been set in VM.
+     */
+    public static final short OP_COND_TIMESHARE = 0x1B;
     // endregion
 
     // region Flow control
@@ -177,7 +187,7 @@ public class OpCode {
     public static final short OP_CALL_OPERATOR_FUNC = 0x44;
 
     /**
-     * Call DLL function
+     * Call DLL (Plugin) function
      */
     public static final short OP_CALL_DLL = 0x45;
 
@@ -229,10 +239,21 @@ public class OpCode {
     public static final short OP_CREATE_RUNTIME_FRAME = 0x4F;
 
     /**
-     * End callback initiated by built-in function or DLL function,
+     * End callback initiated by built-in function or DLL (Plugin) function,
      * and return control to that function.
      */
     public static final short OP_END_CALLBACK = 0x50;
+
+    /**
+     * Create stack frame for call to function pointer
+     */
+    public static final short OP_CREATE_FUNC_PTR_FRAME = 0x51;
+
+    /**
+     * Check function pointer in register is compatible with the specified prototype
+     */
+    public static final short OP_CHECK_FUNC_PTR = 0x52;
+
 
     // endregion
 
@@ -381,6 +402,10 @@ public class OpCode {
                 return "CHECK_PTRS";
             case OP_REG_DESTRUCTOR:
                 return "REG_DESTRUCTOR";
+            case OP_SWAP:
+                return "OP_SWAP";
+            case OP_COND_TIMESHARE:
+                return "OP_COND_TIMESHARE";
             case OP_JUMP:
                 return "JUMP";
             case OP_JUMP_TRUE:
@@ -413,6 +438,10 @@ public class OpCode {
                 return "CREATE_RUNTIME_FRAME";
             case OP_END_CALLBACK:
                 return "END_CALLBACK";
+            case OP_CREATE_FUNC_PTR_FRAME:
+                return "OP_CREATE_FUNC_PTR_FRAME";
+            case OP_CHECK_FUNC_PTR:
+                return "OP_CHECK_FUNC_PTR";
             case OP_OP_NEG:
                 return "OP_NEG";
             case OP_OP_PLUS:

@@ -1,10 +1,10 @@
 package com.basic4gl.library.standard;
 
-import com.basic4gl.compiler.Constant;
-import com.basic4gl.compiler.ParamTypeList;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.FunctionSpecification;
-import com.basic4gl.compiler.util.ParamValidationCallback;
+import com.basic4gl.runtime.types.FunctionSpecification;
+import com.basic4gl.runtime.types.ParamValidationCallback;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
@@ -449,10 +449,7 @@ public class Standard implements FunctionLibrary {
 
     public static final class WrapArrayMax implements Function {
         public void run(TomVM vm) {
-            // Param 1 is data type, which we can ignore.
-            // Param 2 is the array (which will be by reference)
-            int dataIndex = vm.getIntParam(2);
-
+            int dataIndex = vm.getIntParam(1);
             // Arrays are prefixed with their array size.
             // Subtract one to get the maximum accepted value.
             vm.getReg().setIntVal(vm.getData().data().get(dataIndex).getIntVal() - 1);
@@ -927,7 +924,7 @@ public class Standard implements FunctionLibrary {
                     BasicValType.VTP_INT,
                     false,
                     false,
-                    new ValidateArrayMaxParam())
+                    null)
         });
         return s;
     }

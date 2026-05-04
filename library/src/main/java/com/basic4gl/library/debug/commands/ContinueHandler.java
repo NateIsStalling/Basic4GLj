@@ -3,6 +3,7 @@ package com.basic4gl.library.debug.commands;
 import com.basic4gl.lib.util.CallbackMessage;
 import com.basic4gl.lib.util.DebuggerCallbackMessage;
 import com.basic4gl.runtime.TomVM;
+import com.basic4gl.runtime.plugin.PluginManager;
 
 public class ContinueHandler {
 
