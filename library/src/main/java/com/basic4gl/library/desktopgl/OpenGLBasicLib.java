@@ -247,788 +247,788 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
     public Map<String, FunctionSpecification[]> specs() {
         Map<String, FunctionSpecification[]> s = new HashMap<>();
         s.put("loadimage", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapLoadImage.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapLoadImage.class,
+                        new ParamTypeList(BasicValType.VTP_STRING),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("deleteimage", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapDeleteImage.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapDeleteImage.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("imagewidth", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapImageWidth.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapImageWidth.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("imageheight", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapImageHeight.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapImageHeight.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("imageformat", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapImageFormat.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapImageFormat.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("imagedatatype", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapImageDataType.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapImageDataType.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("loadtexture", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapLoadTexture.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapLoadTexture.class,
+                        new ParamTypeList(BasicValType.VTP_STRING),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("loadmipmaptexture", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapLoadMipmapTexture.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapLoadMipmapTexture.class,
+                        new ParamTypeList(BasicValType.VTP_STRING),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glgentexture", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglGenTexture.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
+                new FunctionSpecification(
+                        WrapglGenTexture.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
         });
         s.put("gldeletetexture", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglDeleteTexture.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglDeleteTexture.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glteximage2d", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglTexImage2D.class,
-                    new ParamTypeList(
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapglTexImage2D_2.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapglTexImage2D_3.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapglTexImage2D_4.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapglTexImage2D_5.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglTexImage2D.class,
+                        new ParamTypeList(
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapglTexImage2D_2.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapglTexImage2D_3.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapglTexImage2D_4.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapglTexImage2D_5.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("gltexsubimage2d", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglTexSubImage2D.class,
-                    new ParamTypeList(
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglTexSubImage2D.class,
+                        new ParamTypeList(
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glubuild2dmipmaps", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapgluBuild2DMipmaps.class,
-                    new ParamTypeList(
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT,
-                            BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapgluBuild2DMipmaps_2.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapgluBuild2DMipmaps_3.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapgluBuild2DMipmaps_4.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapgluBuild2DMipmaps_5.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapgluBuild2DMipmaps.class,
+                        new ParamTypeList(
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT,
+                                BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapgluBuild2DMipmaps_2.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapgluBuild2DMipmaps_3.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapgluBuild2DMipmaps_4.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapgluBuild2DMipmaps_5.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glgetString", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglGetString.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    true,
-                    BasicValType.VTP_STRING,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglGetString.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        true,
+                        BasicValType.VTP_STRING,
+                        false,
+                        false,
+                        null)
         });
         s.put("extensionsupported", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapExtensionSupported.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapExtensionSupported.class,
+                        new ParamTypeList(BasicValType.VTP_STRING),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glmultitexcoord2f", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglMultiTexCoord2f.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_REAL, BasicValType.VTP_REAL),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglMultiTexCoord2f.class,
+                        new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_REAL, BasicValType.VTP_REAL),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glmultitexcoord2d", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglMultiTexCoord2d.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_REAL, BasicValType.VTP_REAL),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglMultiTexCoord2d.class,
+                        new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_REAL, BasicValType.VTP_REAL),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glactivetexture", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglActiveTexture.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglActiveTexture.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("maxtextureunits", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapMaxTextureUnits.class,
-                    new ParamTypeList(),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapMaxTextureUnits.class,
+                        new ParamTypeList(),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("windowwidth", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapWindowWidth.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
+                new FunctionSpecification(
+                        WrapWindowWidth.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
         });
         s.put("windowheight", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapWindowHeight.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
+                new FunctionSpecification(
+                        WrapWindowHeight.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
         });
         s.put("glgentextures", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglGenTextures.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglGenTextures.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("gldeletetextures", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglDeleteTextures.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglDeleteTextures.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glLoadMatrixd", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglLoadMatrixd.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglLoadMatrixd.class,
+                        new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glLoadMatrixf", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglLoadMatrixf.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglLoadMatrixf.class,
+                        new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glMultMatrixd", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglMultMatrixd.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglMultMatrixd.class,
+                        new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glMultMatrixf", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglMultMatrixf.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglMultMatrixf.class,
+                        new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glgetpolygonstipple", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglGetPolygonStipple.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglGetPolygonStipple.class,
+                        new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glpolygonstipple", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglPolygonStipple.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglPolygonStipple.class,
+                        new ParamTypeList(new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glgenlists", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglGenLists.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglGenLists.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("gldeletelists", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglDeleteLists.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglDeleteLists.class,
+                        new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glcalllists", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglCallLists.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapglCallLists_2.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglCallLists.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapglCallLists_2.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glBegin", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglBegin.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglBegin.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glEnd", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglEnd.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, false, false, null)
+                new FunctionSpecification(
+                        WrapglEnd.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, false, false, null)
         });
 
         s.put("imagestripframes", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    OldSquare_WrapImageStripFrames.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    true,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    OldSquare_WrapImageStripFrames_2.class,
-                    new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    true,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapImageStripFrames.class,
-                    new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    true,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        OldSquare_WrapImageStripFrames.class,
+                        new ParamTypeList(BasicValType.VTP_STRING),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        true,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        OldSquare_WrapImageStripFrames_2.class,
+                        new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        true,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapImageStripFrames.class,
+                        new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        true,
+                        false,
+                        null)
         });
         s.put("loadimagestrip", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    OldSquare_WrapLoadImageStrip.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
-                    true,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    OldSquare_WrapLoadImageStrip_2.class,
-                    new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
-                    true,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapLoadImageStrip.class,
-                    new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
-                    true,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        OldSquare_WrapLoadImageStrip.class,
+                        new ParamTypeList(BasicValType.VTP_STRING),
+                        true,
+                        true,
+                        new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                        true,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        OldSquare_WrapLoadImageStrip_2.class,
+                        new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT),
+                        true,
+                        true,
+                        new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                        true,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapLoadImageStrip.class,
+                        new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT),
+                        true,
+                        true,
+                        new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                        true,
+                        false,
+                        null)
         });
         s.put("loadmipmapimagestrip", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    OldSquare_WrapLoadMipmapImageStrip.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
-                    true,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    OldSquare_WrapLoadMipmapImageStrip_2.class,
-                    new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
-                    true,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapLoadMipmapImageStrip.class,
-                    new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
-                    true,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        OldSquare_WrapLoadMipmapImageStrip.class,
+                        new ParamTypeList(BasicValType.VTP_STRING),
+                        true,
+                        true,
+                        new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                        true,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        OldSquare_WrapLoadMipmapImageStrip_2.class,
+                        new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT),
+                        true,
+                        true,
+                        new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                        true,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapLoadMipmapImageStrip.class,
+                        new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT),
+                        true,
+                        true,
+                        new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                        true,
+                        false,
+                        null)
         });
 
         s.put("glGetFloatv", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglGetFloatv_2D.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglGetFloatv_2D.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glGetDoublev", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglGetDoublev_2D.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglGetDoublev_2D.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glGetIntegerv", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglGetIntegerv_2D.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglGetIntegerv_2D.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("glGetBooleanv", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglGetBooleanv_2D.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapglGetBooleanv_2D.class,
+                        new ParamTypeList(
+                                new ValType(BasicValType.VTP_INT),
+                                new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
 
         // New texture loading
         s.put("LoadTex", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapLoadTex.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    true,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapLoadTex.class,
+                        new ParamTypeList(BasicValType.VTP_STRING),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        true,
+                        false,
+                        null)
         });
         s.put("LoadTexStrip", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapLoadTexStrip.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
-                    true,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapLoadTexStrip2.class,
-                    new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
-                    true,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapLoadTexStrip.class,
+                        new ParamTypeList(BasicValType.VTP_STRING),
+                        true,
+                        true,
+                        new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                        true,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapLoadTexStrip2.class,
+                        new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT),
+                        true,
+                        true,
+                        new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true),
+                        true,
+                        false,
+                        null)
         });
         s.put("TexStripFrames", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapTexStripFrames.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    true,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapTexStripFrames2.class,
-                    new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT),
-                    true,
-                    true,
-                    BasicValType.VTP_INT,
-                    true,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapTexStripFrames.class,
+                        new ParamTypeList(BasicValType.VTP_STRING),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        true,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapTexStripFrames2.class,
+                        new ParamTypeList(BasicValType.VTP_STRING, BasicValType.VTP_INT, BasicValType.VTP_INT),
+                        true,
+                        true,
+                        BasicValType.VTP_INT,
+                        true,
+                        false,
+                        null)
         });
         s.put("SetTexIgnoreBlankFrames", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapSetTexIgnoreBlankFrames.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapSetTexIgnoreBlankFrames.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("SetTexTransparentCol", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapSetTexTransparentCol.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null),
-            new FunctionSpecification(
-                    WrapSetTexTransparentCol2.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapSetTexTransparentCol.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null),
+                new FunctionSpecification(
+                        WrapSetTexTransparentCol2.class,
+                        new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_INT, BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("SetTexNoTransparentCol", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapSetTexNoTransparentCol.class,
-                    new ParamTypeList(),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapSetTexNoTransparentCol.class,
+                        new ParamTypeList(),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("SetTexMipmap", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapSetTexMipmap.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapSetTexMipmap.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         s.put("SetTexLinearFilter", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapSetTexLinearFilter.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
-                    true,
-                    false,
-                    BasicValType.VTP_INT,
-                    false,
-                    false,
-                    null)
+                new FunctionSpecification(
+                        WrapSetTexLinearFilter.class,
+                        new ParamTypeList(BasicValType.VTP_INT),
+                        true,
+                        false,
+                        BasicValType.VTP_INT,
+                        false,
+                        false,
+                        null)
         });
         return s;
     }
@@ -2309,53 +2309,59 @@ public class OpenGLBasicLib implements FunctionLibrary, IGLRenderer {
 
     public static final class WrapglCallLists implements Function {
         public void run(TomVM vm) {
-            throw new RuntimeException("Not Implemented!");
-            //
-            //            // VTP_REAL array version
-            //
-            //            // Get size and type params
-            //            int n = vm.GetIntParam(3), type = vm.GetIntParam(2);
-            //            if (n > 65536) {
-            //                vm.FunctionError("Count must be 0 - 65536 (Basic4GL restriction)");
-            //                return;
-            //            }
-            //            if (n <= 0)
-            //                return;
-            //
-            //            // Get array parameter
-            //            ByteBuffer array = BufferUtils.createByteBuffer(65536 * 4);
-            //            if (Routines.ReadArrayDynamic(vm, 1, new ValType (BasicValType.VTP_REAL, (byte)
-            // 1, (byte) 1, true), type, array, n) == 0)
-            //                return;
-            //
-            //            // Call glCallLists
-            //            glCallLists(n, type, array);
+            // VTP_REAL array version
+
+            // Get size and type params
+            int n = vm.getIntParam(3), type = vm.getIntParam(2);
+            if (n > 65536) {
+                vm.functionError("Count must be 0 - 65536 (Basic4GL restriction)");
+                return;
+            }
+            if (n <= 0) {
+                return;
+            }
+
+            // Get array parameter
+            ByteBuffer array = BufferUtils.createByteBuffer(65536 * 4);
+            if (Routines.readArrayDynamic(vm, 1, new ValType (BasicValType.VTP_REAL, (byte)
+                    1, (byte) 1, true), type, array, n) == 0) {
+                return;
+            }
+
+            // Call glCallLists
+            array.rewind();
+            FloatBuffer floatBuffer = array.asFloatBuffer();
+            floatBuffer.limit(n);
+            glCallLists(array);
         }
     }
 
     public static final class WrapglCallLists_2 implements Function {
         public void run(TomVM vm) {
-            throw new RuntimeException("Not Implemented!");
-            //
-            //            // VTP_INT array version
-            //
-            //            // Get size and type params
-            //            int n = vm.GetIntParam(3), type = vm.GetIntParam(2);
-            //            if (n > 65536) {
-            //                vm.FunctionError("Count must be 0 - 65536 (Basic4GL restriction)");
-            //                return;
-            //            }
-            //            if (n <= 0)
-            //                return;
-            //
-            //            // Get array parameter
-            //            ByteBuffer array = BufferUtils.createByteBuffer(65536 * 4);
-            //            if (Routines.ReadArrayDynamic(vm, 1, new ValType (BasicValType.VTP_INT, (byte)
-            // 1, (byte) 1, true), type, array, n) == 0)
-            //                return;
-            //
-            //            // Call glCallLists
-            //            glCallLists(n, type, array);
+            // VTP_INT array version
+
+            // Get size and type params
+            int n = vm.getIntParam(3), type = vm.getIntParam(2);
+            if (n > 65536) {
+                vm.functionError("Count must be 0 - 65536 (Basic4GL restriction)");
+                return;
+            }
+            if (n <= 0) {
+                return;
+            }
+
+            // Get array parameter
+            ByteBuffer array = BufferUtils.createByteBuffer(65536 * 4);
+            if (Routines.readArrayDynamic(vm, 1, new ValType (BasicValType.VTP_INT, (byte)
+                    1, (byte) 1, true), type, array, n) == 0) {
+                return;
+            }
+
+            // Call glCallLists
+            array.rewind();
+            IntBuffer intBuffer = array.asIntBuffer();
+            intBuffer.limit(n);
+            glCallLists(intBuffer);
         }
     }
 
