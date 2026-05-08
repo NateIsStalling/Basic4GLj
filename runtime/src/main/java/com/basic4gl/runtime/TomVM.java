@@ -68,11 +68,9 @@ public class TomVM extends HasErrorState implements Streamable {
      */
     public Vector<Function> functions;
     /**
-     *  operatorFunctions are generally used for language extension,
-     *  and perform the job of either a unary or binary operator.
-     *  <p>That is, they perform Reg2 operator Reg1, and place the result in Reg1.
+     * Initialisation functions
      */
-    public Vector<Function> operatorFunctions;
+    private final Vector<Function> initFunctions;
     // Registers
     /**
      * Register values (when int or float)
@@ -131,11 +129,6 @@ public class TomVM extends HasErrorState implements Streamable {
     private final List<Resources> resources;
     private final Vector<UserFuncPrototype> userFunctionPrototypes;
     private final Vector<UserFunc> userFunctions;
-
-    /**
-     * Initialisation functions
-     */
-    private final Vector<Function> initFunctions;
 
     // Program data
 
@@ -215,13 +208,11 @@ public class TomVM extends HasErrorState implements Streamable {
 
         codeInstructions = new Vector<>();
         functions = new Vector<>();
-        operatorFunctions = new Vector<>();
+        initFunctions = new Vector<>();
         userFunctions = new Vector<>();
         userFunctionPrototypes = new Vector<>();
         patchedBreakPoints = new ArrayList<>();
         tempBreakPoints = new ArrayList<>();
-
-        initFunctions = new Vector<>();
 
          this.plugins = plugins;
          // Create plugin runtime
@@ -896,18 +887,6 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Call external function
                     functions.get(instruction.value.getIntVal()).run(this);
 
-                    if (!hasError()) {
-                        ip++; // Proceed to next instruction
-                        continue step;
-                    }
-                    break;
-
-                case OpCode.OP_CALL_OPERATOR_FUNC:
-                    assertTrue(instruction.value.getIntVal() >= 0);
-                    assertTrue(instruction.value.getIntVal() < operatorFunctions.size());
-
-                    // Call external function
-                    operatorFunctions.get(instruction.value.getIntVal()).run(this);
                     if (!hasError()) {
                         ip++; // Proceed to next instruction
                         continue step;
@@ -2944,16 +2923,6 @@ public class TomVM extends HasErrorState implements Streamable {
 
     public int getFunctionCount() {
         return functions.size();
-    }
-
-    public int addOperatorFunction(Function func) {
-        int result = getOperatorFunctionCount();
-        operatorFunctions.add(func);
-        return result;
-    }
-
-    public int getOperatorFunctionCount() {
-        return operatorFunctions.size();
     }
 
     // Called by external functions
