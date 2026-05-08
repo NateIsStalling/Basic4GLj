@@ -1,5 +1,6 @@
 package com.basic4gl.library.standard;
 
+import static com.basic4gl.runtime.types.BasicValType.VTP_REAL;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import com.basic4gl.runtime.types.Constant;
@@ -62,46 +63,10 @@ public class TrigBasicLib implements FunctionLibrary {
 
     @Override
     public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
-        //////////////////////////////////
-        // Register overloaded operators
-        scaleVec = vm.addOperatorFunction(new OpScaleVec());
-        scaleVec2 = vm.addOperatorFunction(new OpScaleVec2());
-        scaleMatrix = vm.addOperatorFunction(new OpScaleMatrix());
-        scaleMatrix2 = vm.addOperatorFunction(new OpScaleMatrix2());
-        divVec = vm.addOperatorFunction(new OpDivVec());
-        divMatrix = vm.addOperatorFunction(new OpDivMatrix());
-        matrixVec = vm.addOperatorFunction(new OpMatrixVec());
-        matrixMatrix = vm.addOperatorFunction(new OpMatrixMatrix());
-        vecVec = vm.addOperatorFunction(new OpVecVec());
-        vecPlusVec = vm.addOperatorFunction(new OpVecPlusVec());
-        vecMinusVec = vm.addOperatorFunction(new OpVecMinusVec());
-        matrixPlusMatrix = vm.addOperatorFunction(new OpMatrixPlusMatrix());
-        matrixMinusMatrix = vm.addOperatorFunction(new OpMatrixMinusMatrix());
-        negVec = vm.addOperatorFunction(new OpNegVec());
-        negMatrix = vm.addOperatorFunction(new OpNegMatrix());
     }
 
     @Override
     public void init(TomBasicCompiler comp, IServiceCollection services) {
-        // Compiler callback
-        comp.addUnOperExtension(new TrigUnOperatorExtension());
-        comp.addBinOperExtension(new TrigBinOperatorExtension());
-
-        scaleVec = comp.getVM().addOperatorFunction(new OpScaleVec());
-        scaleVec2 = comp.getVM().addOperatorFunction(new OpScaleVec2());
-        scaleMatrix = comp.getVM().addOperatorFunction(new OpScaleMatrix());
-        scaleMatrix2 = comp.getVM().addOperatorFunction(new OpScaleMatrix2());
-        divVec = comp.getVM().addOperatorFunction(new OpDivVec());
-        divMatrix = comp.getVM().addOperatorFunction(new OpDivMatrix());
-        matrixVec = comp.getVM().addOperatorFunction(new OpMatrixVec());
-        matrixMatrix = comp.getVM().addOperatorFunction(new OpMatrixMatrix());
-        vecVec = comp.getVM().addOperatorFunction(new OpVecVec());
-        vecPlusVec = comp.getVM().addOperatorFunction(new OpVecPlusVec());
-        vecMinusVec = comp.getVM().addOperatorFunction(new OpVecMinusVec());
-        matrixPlusMatrix = comp.getVM().addOperatorFunction(new OpMatrixPlusMatrix());
-        matrixMinusMatrix = comp.getVM().addOperatorFunction(new OpMatrixMinusMatrix());
-        negVec = comp.getVM().addOperatorFunction(new OpNegVec());
-        negMatrix = comp.getVM().addOperatorFunction(new OpNegMatrix());
     }
 
     @Override
@@ -117,243 +82,272 @@ public class TrigBasicLib implements FunctionLibrary {
     @Override
     public Map<String, FunctionSpecification[]> specs() {
         Map<String, FunctionSpecification[]> s = new HashMap<>();
-        s.put("Vec4", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapVec4.class,
-                    new ParamTypeList(
-                            BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("Vec4", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapVec4.class,
+                        new ParamTypeList(
+                                VTP_REAL, VTP_REAL, VTP_REAL, VTP_REAL),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 1, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("Vec3", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapVec3.class,
-                    new ParamTypeList(BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("Vec3", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapVec3.class,
+                        new ParamTypeList(VTP_REAL, VTP_REAL, VTP_REAL),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 1, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("Vec2", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapVec2.class,
-                    new ParamTypeList(BasicValType.VTP_REAL, BasicValType.VTP_REAL),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("Vec2", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapVec2.class,
+                        new ParamTypeList(VTP_REAL, VTP_REAL),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 1, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("MatrixZero", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapMatrixZero.class,
-                    new ParamTypeList(),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("MatrixZero", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapMatrixZero.class,
+                        new ParamTypeList(),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("MatrixIdentity", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapMatrixIdentity.class,
-                    new ParamTypeList(),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("MatrixIdentity", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapMatrixIdentity.class,
+                        new ParamTypeList(),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("MatrixScale", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapMatrixScale.class,
-                    new ParamTypeList(BasicValType.VTP_REAL),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null),
-            new FunctionSpecification(
-                    WrapMatrixScale_2.class,
-                    new ParamTypeList(BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("MatrixScale", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapMatrixScale.class,
+                        new ParamTypeList(VTP_REAL),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null),
+                new FunctionSpecification(
+                        WrapMatrixScale_2.class,
+                        new ParamTypeList(VTP_REAL, VTP_REAL, VTP_REAL),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("MatrixTranslate", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapMatrixTranslate.class,
-                    new ParamTypeList(BasicValType.VTP_REAL, BasicValType.VTP_REAL, BasicValType.VTP_REAL),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("MatrixTranslate", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapMatrixTranslate.class,
+                        new ParamTypeList(VTP_REAL, VTP_REAL, VTP_REAL),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("MatrixRotateX", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapMatrixRotateX.class,
-                    new ParamTypeList(BasicValType.VTP_REAL),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("MatrixRotateX", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapMatrixRotateX.class,
+                        new ParamTypeList(VTP_REAL),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("MatrixRotateY", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapMatrixRotateY.class,
-                    new ParamTypeList(BasicValType.VTP_REAL),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("MatrixRotateY", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapMatrixRotateY.class,
+                        new ParamTypeList(VTP_REAL),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("MatrixRotateZ", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapMatrixRotateZ.class,
-                    new ParamTypeList(BasicValType.VTP_REAL),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("MatrixRotateZ", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapMatrixRotateZ.class,
+                        new ParamTypeList(VTP_REAL),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("MatrixRotate", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapMatrixRotate.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_REAL),
-                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("MatrixRotate", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapMatrixRotate.class,
+                        new ParamTypeList(
+                                new ValType(VTP_REAL),
+                                new ValType(VTP_REAL, (byte) 1, (byte) 1, true)),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("MatrixBasis", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapMatrixBasis.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
-                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
-                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("MatrixBasis", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapMatrixBasis.class,
+                        new ParamTypeList(
+                                new ValType(VTP_REAL, (byte) 1, (byte) 1, true),
+                                new ValType(VTP_REAL, (byte) 1, (byte) 1, true),
+                                new ValType(VTP_REAL, (byte) 1, (byte) 1, true)),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("MatrixCrossProduct", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapMatrixCrossProduct.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("MatrixCrossProduct", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapMatrixCrossProduct.class,
+                        new ParamTypeList(new ValType(VTP_REAL, (byte) 1, (byte) 1, true)),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("CrossProduct", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapCross.class,
-                    new ParamTypeList(
-                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
-                            new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("CrossProduct", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapCross.class,
+                        new ParamTypeList(
+                                new ValType(VTP_REAL, (byte) 1, (byte) 1, true),
+                                new ValType(VTP_REAL, (byte) 1, (byte) 1, true)),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 1, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("Length", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapLength.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
-                    true,
-                    true,
-                    BasicValType.VTP_REAL,
-                    false,
-                    false,
-                    null)
+        s.put("Length", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapLength.class,
+                        new ParamTypeList(new ValType(VTP_REAL, (byte) 1, (byte) 1, true)),
+                        true,
+                        true,
+                        VTP_REAL,
+                        false,
+                        false,
+                        null)
         });
-        s.put("Normalize", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapNormalize.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true)),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("Normalize", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapNormalize.class,
+                        new ParamTypeList(new ValType(VTP_REAL, (byte) 1, (byte) 1, true)),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 1, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("Determinant", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapDeterminant.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    true,
-                    BasicValType.VTP_REAL,
-                    false,
-                    false,
-                    null)
+        s.put("Determinant", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapDeterminant.class,
+                        new ParamTypeList(new ValType(VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        true,
+                        VTP_REAL,
+                        false,
+                        false,
+                        null)
         });
-        s.put("Transpose", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapTranspose.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("Transpose", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapTranspose.class,
+                        new ParamTypeList(new ValType(VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("RTInvert", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapRTInvert.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("RTInvert", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapRTInvert.class,
+                        new ParamTypeList(new ValType(VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
-        s.put("Orthonormalize", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapOrthonormalize.class,
-                    new ParamTypeList(new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
-                    true,
-                    true,
-                    new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true),
-                    false,
-                    true,
-                    null)
+        s.put("Orthonormalize", new FunctionSpecification[]{
+                new FunctionSpecification(
+                        WrapOrthonormalize.class,
+                        new ParamTypeList(new ValType(VTP_REAL, (byte) 2, (byte) 1, true)),
+                        true,
+                        true,
+                        new ValType(VTP_REAL, (byte) 2, (byte) 1, true),
+                        false,
+                        true,
+                        null)
         });
+
+        // Register overloaded operators
+        s.put("operator*", new FunctionSpecification[]{
+                new FunctionSpecification(WrapOpVecTimesScalar.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 1, (byte) 1, true), new ValType(VTP_REAL)), true, true, new ValType(VTP_REAL, (byte) 1, (byte) 1, true), false, true, null),
+                new FunctionSpecification(WrapOpScalarTimesVec.class, new ParamTypeList(new ValType(VTP_REAL), new ValType(VTP_REAL, (byte) 1, (byte) 1, true)), true, true, new ValType(VTP_REAL, (byte) 1, (byte) 1, true), false, true, null),
+                new FunctionSpecification(WrapOpMatrixTimesScalar.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 2, (byte) 1, true), new ValType(VTP_REAL)), true, true, new ValType(VTP_REAL, (byte) 2, (byte) 1, true), false, true, null),
+                new FunctionSpecification(WrapOpScalarTimesMatrix.class, new ParamTypeList(new ValType(VTP_REAL), new ValType(VTP_REAL, (byte) 2, (byte) 1, true)), true, true, new ValType(VTP_REAL, (byte) 2, (byte) 1, true), false, true, null),
+
+                new FunctionSpecification(WrapOpMatrixTimesVec.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 2, (byte) 1, true), new ValType(VTP_REAL, (byte) 1, (byte) 1, true)), true, true, new ValType(VTP_REAL, (byte) 1, (byte) 1, true), false, true, null),
+                new FunctionSpecification(WrapOpMatrixTimesMatrix.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 2, (byte) 1, true), new ValType(VTP_REAL, (byte) 2, (byte) 1, true)), true, true, new ValType(VTP_REAL, (byte) 2, (byte) 1, true), false, true, null),
+                new FunctionSpecification(WrapOpVecTimesVec.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 1, (byte) 1, true), new ValType(VTP_REAL, (byte) 1, (byte) 1, true)), true, true, new ValType(VTP_REAL), false, false, null)
+        });
+        s.put("operator/", new FunctionSpecification[]{
+                new FunctionSpecification(WrapOpVecDivScalar.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 1, (byte) 1, true), new ValType(VTP_REAL)), true, true, new ValType(VTP_REAL, (byte) 1, (byte) 1, true), false, true, null),
+                new FunctionSpecification(WrapOpMatrixDivScalar.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 2, (byte) 1, true), new ValType(VTP_REAL)), true, true, new ValType(VTP_REAL, (byte) 2, (byte) 1, true), false, true, null)
+        });
+        s.put("operator+", new FunctionSpecification[]{
+                new FunctionSpecification(WrapOpVecPlusVec.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 1, (byte) 1, true), new ValType(VTP_REAL, (byte) 1, (byte) 1, true)), true, true, new ValType(VTP_REAL, (byte) 1, (byte) 1, true), false, true, null),
+                new FunctionSpecification(WrapOpMatrixPlusMatrix.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 2, (byte) 1, true), new ValType(VTP_REAL, (byte) 2, (byte) 1, true)), true, true, new ValType(VTP_REAL, (byte) 2, (byte) 1, true), false, true, null)
+        });
+
+        s.put("operator-", new FunctionSpecification[]{
+                new FunctionSpecification(WrapOpVecMinusVec.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 1, (byte) 1, true), new ValType(VTP_REAL, (byte) 1, (byte) 1, true)), true, true, new ValType(VTP_REAL, (byte) 1, (byte) 1, true), false, true, null),
+                new FunctionSpecification(WrapOpMatrixMinusMatrix.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 2, (byte) 1, true), new ValType(VTP_REAL, (byte) 2, (byte) 1, true)), true, true, new ValType(VTP_REAL, (byte) 2, (byte) 1, true), false, true, null),
+                new FunctionSpecification(WrapOpNegVec.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 1, (byte) 1, true)), true, true, new ValType(VTP_REAL, (byte) 1, (byte) 1, true), false, true, null),
+                new FunctionSpecification(WrapOpNegMatrix.class, new ParamTypeList(new ValType(VTP_REAL, (byte) 2, (byte) 1, true)), true, true, new ValType(VTP_REAL, (byte) 2, (byte) 1, true), false, true, null)
+        });
+
+
         return s;
     }
 
@@ -673,6 +667,7 @@ public class TrigBasicLib implements FunctionLibrary {
     /**
      * Invert an "RT" matrix, where "RT" means that the matrix is made from
      * rotations and translations only.
+     *
      * @param m
      * @param result
      */
@@ -697,6 +692,7 @@ public class TrigBasicLib implements FunctionLibrary {
     /**
      * Ensure rotation component of matrix is orthonormal, via a series of
      * normalizations and cross products.
+     *
      * @param m
      */
     public static void orthonormalize(float[] m) {
@@ -714,6 +710,7 @@ public class TrigBasicLib implements FunctionLibrary {
 
     /**
      * Arbitrary axis rotation
+     *
      * @param ang
      * @param v
      */
@@ -752,6 +749,7 @@ public class TrigBasicLib implements FunctionLibrary {
      * Read a 3D vector.
      * This can be a 2, 3 or 4 element vector, but will always be returned as a 4
      * element vector. (z = 0 & w = 1 if not specified.)
+     *
      * @param vm
      * @param index
      * @param v
@@ -769,7 +767,7 @@ public class TrigBasicLib implements FunctionLibrary {
         // Read in vector and convert to 4 element format
         v[2] = 0;
         v[3] = 1;
-        Data.readArray(vm.getData(), index, new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), v, size);
+        Data.readArray(vm.getData(), index, new ValType(VTP_REAL, (byte) 1, (byte) 1, true), v, size);
 
         // Return original size
         return size;
@@ -778,6 +776,7 @@ public class TrigBasicLib implements FunctionLibrary {
     /**
      * Read 3D matrix.
      * Matrix must be 4x4
+     *
      * @param vm
      * @param index
      * @param m
@@ -793,7 +792,7 @@ public class TrigBasicLib implements FunctionLibrary {
         }
 
         // Read in matrix
-        Data.readArray(vm.getData(), index, new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true), m, 16);
+        Data.readArray(vm.getData(), index, new ValType(VTP_REAL, (byte) 2, (byte) 1, true), m, 16);
         return true;
     }
 
@@ -804,7 +803,7 @@ public class TrigBasicLib implements FunctionLibrary {
     public static final class WrapVec4 implements Function {
         public void run(TomVM vm) {
 
-            float[] vec4 = new float[] {vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1)};
+            float[] vec4 = new float[]{vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1)};
             vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 4, vec4));
         }
     }
@@ -812,7 +811,7 @@ public class TrigBasicLib implements FunctionLibrary {
     public static final class WrapVec3 implements Function {
         public void run(TomVM vm) {
 
-            float[] vec3 = new float[] {vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1)};
+            float[] vec3 = new float[]{vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1)};
             vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 3, vec3));
         }
     }
@@ -820,7 +819,7 @@ public class TrigBasicLib implements FunctionLibrary {
     public static final class WrapVec2 implements Function {
         public void run(TomVM vm) {
 
-            float[] vec2 = new float[] {vm.getRealParam(2), vm.getRealParam(1)};
+            float[] vec2 = new float[]{vm.getRealParam(2), vm.getRealParam(1)};
             vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, vec2));
         }
     }
@@ -905,19 +904,19 @@ public class TrigBasicLib implements FunctionLibrary {
             Data.readArray(
                     vm.getData(),
                     vm.getIntParam(3),
-                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    new ValType(VTP_REAL, (byte) 1, (byte) 1, true),
                     Arrays.copyOfRange(matrix, 0, 4),
                     4);
             Data.readArray(
                     vm.getData(),
                     vm.getIntParam(2),
-                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    new ValType(VTP_REAL, (byte) 1, (byte) 1, true),
                     Arrays.copyOfRange(matrix, 4, 8),
                     4);
             Data.readArray(
                     vm.getData(),
                     vm.getIntParam(1),
-                    new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true),
+                    new ValType(VTP_REAL, (byte) 1, (byte) 1, true),
                     Arrays.copyOfRange(matrix, 8, 12),
                     4);
             returnMatrix(vm);
@@ -1051,7 +1050,7 @@ public class TrigBasicLib implements FunctionLibrary {
 
     // region Overloaded operators
 
-    void doScaleVec(TomVM vm, float scale, int vecIndex) {
+    static void doScaleVec(TomVM vm, float scale, int vecIndex) {
 
         // Extract data
         int size = readVec(vm, vecIndex, v1);
@@ -1066,7 +1065,7 @@ public class TrigBasicLib implements FunctionLibrary {
         vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
     }
 
-    void doScaleMatrix(TomVM vm, float scale, int matrixIndex) {
+    static void doScaleMatrix(TomVM vm, float scale, int matrixIndex) {
 
         // Read in matrix
         if (!readMatrix(vm, matrixIndex, m1)) {
@@ -1268,164 +1267,153 @@ public class TrigBasicLib implements FunctionLibrary {
         }
     }
 
-    // Compiler callback
-    public final class TrigUnOperatorExtension implements UnaryOperatorExtension {
 
-        public boolean run(
-                Mutable<ValType> regType, // IN: Current type in register.
-                //         OUT: Required type cast before calling function
-                short oper, // IN: Operator being applied; OpCode
-                Mutable<Integer> operFunction, // OUT: Index of VM_CALL_OPERATOR_FUNC function to call
-                Mutable<ValType> resultType, // OUT: Resulting value type
-                Mutable<Boolean> freeTempData) { // OUT: Set to true if temp data needs to be freed
+// Operator function wrappers
 
-            // Must be real values, and not pointers (references are OK however)
-            if (regType.get().getVirtualPointerLevel() > 0 || regType.get().basicType != BasicValType.VTP_REAL) {
-                return false;
-            }
-
-            if (oper == OpCode.OP_OP_NEG) {
-                if (regType.get().arrayLevel == 1) { // -Vector
-                    operFunction.set(negVec);
-                    resultType.get().setType(regType.get());
-                    freeTempData.set(true);
-                    return true;
-                }
-                if (regType.get().arrayLevel == 2) { // -Matrix
-                    operFunction.set(negMatrix);
-                    resultType.get().setType(regType.get());
-                    freeTempData.set(true);
-                    return true;
-                }
-            }
-
-            return false;
+    public static final class WrapOpVecTimesScalar implements Function {
+        public void run(TomVM vm) {
+            doScaleVec(vm, vm.getRealParam(1), vm.getIntParam(2));
         }
     }
 
-    public final class TrigBinOperatorExtension implements BinaryOperatorExtension {
-
-        public boolean run(
-                Mutable<ValType> regType, // IN: Current type in register.
-                //         OUT: Required type cast before calling function
-                Mutable<ValType> reg2Type, // IN: Current type in second register (operation is reg2 OP reg1, e.g reg2 +
-                // reg1):    OUT: Required type cast before calling function
-                short oper, // IN: Operator being applied
-                Mutable<Integer> operFunction, // OUT: Index of VM_CALL_OPERATOR_FUNC function to call
-                Mutable<ValType> resultType, // OUT: Resulting value type
-                Mutable<Boolean> freeTempData) { // OUT: Set to true if temp data needs to be freed
-
-            // Pointers not accepted (references are OK however)
-            if (regType.get().getVirtualPointerLevel() > 0 || reg2Type.get().getVirtualPointerLevel() > 0) {
-                return false;
-            }
-
-            // Validate data types. We will only work with ints and reals
-            if (regType.get().basicType != BasicValType.VTP_REAL && regType.get().basicType != BasicValType.VTP_INT) {
-                return false;
-            }
-            if (reg2Type.get().basicType != BasicValType.VTP_REAL && reg2Type.get().basicType != BasicValType.VTP_INT) {
-                return false;
-            }
-
-            // Is acceptible to have an integer value, but must be typecast to a real
-            // Arrays of integers not acceptible
-            if (regType.get().basicType == BasicValType.VTP_INT) {
-                if (regType.get().isBasicType()) {
-                    regType.get().basicType = BasicValType.VTP_REAL;
-                } else {
-                    return false;
-                }
-            }
-            if (reg2Type.get().basicType == BasicValType.VTP_INT) {
-                if (reg2Type.get().isBasicType()) {
-                    reg2Type.get().basicType = BasicValType.VTP_REAL;
-                } else {
-                    return false;
-                }
-            }
-
-            // Look for recognised combinations
-            if (oper == OpCode.OP_OP_TIMES) {
-                if (regType.get().arrayLevel == 0 && reg2Type.get().arrayLevel == 1) { // Vector * scalar
-                    operFunction.set(scaleVec);
-                    resultType.get().setType(reg2Type.get());
-                    freeTempData.set(true);
-                    return true;
-                } else if (regType.get().arrayLevel == 1 && reg2Type.get().arrayLevel == 0) { // Scalar * vector
-                    operFunction.set(scaleVec2);
-                    resultType.get().setType(regType.get());
-                    freeTempData.set(true);
-                    return true;
-                }
-                if (regType.get().arrayLevel == 0 && reg2Type.get().arrayLevel == 2) { // Vector * scalar
-                    operFunction.set(scaleMatrix);
-                    resultType.get().setType(reg2Type.get());
-                    freeTempData.set(true);
-                    return true;
-                } else if (regType.get().arrayLevel == 2 && reg2Type.get().arrayLevel == 0) { // Scalar * vector
-                    operFunction.set(scaleMatrix2);
-                    resultType.get().setType(regType.get());
-                    freeTempData.set(true);
-                    return true;
-                } else if (reg2Type.get().arrayLevel == 2 && regType.get().arrayLevel == 1) { // Matrix * vector
-                    operFunction.set(matrixVec);
-                    resultType.get().setType(regType.get());
-                    freeTempData.set(true);
-                    return true;
-                } else if (reg2Type.get().arrayLevel == 2 && regType.get().arrayLevel == 2) { // Matrix * matrix
-                    operFunction.set(matrixMatrix);
-                    resultType.get().setType(regType.get());
-                    freeTempData.set(true);
-                    return true;
-                } else if (regType.get().arrayLevel == 1 && reg2Type.get().arrayLevel == 1) { // Vec * Vec (Dot product)
-                    operFunction.set(vecVec);
-                    resultType.get().setType(BasicValType.VTP_REAL);
-                    freeTempData.set(false);
-                    return true;
-                }
-                return false;
-            } else if (oper == OpCode.OP_OP_DIV) {
-                if (regType.get().arrayLevel == 0 && reg2Type.get().arrayLevel == 1) { // Vector / scalar
-                    operFunction.set(divVec);
-                    resultType.get().setType(reg2Type.get());
-                    freeTempData.set(true);
-                    return true;
-                }
-                if (regType.get().arrayLevel == 0 && reg2Type.get().arrayLevel == 2) { // Matrix / scalar
-                    operFunction.set(divMatrix);
-                    resultType.get().setType(reg2Type.get());
-                    freeTempData.set(true);
-                    return true;
-                }
-            } else if (oper == OpCode.OP_OP_PLUS) {
-                if (regType.get().arrayLevel == 1 && reg2Type.get().arrayLevel == 1) { // Vector + vector
-                    operFunction.set(vecPlusVec);
-                    resultType.get().setType(regType.get());
-                    freeTempData.set(true);
-                    return true;
-                } else if (regType.get().arrayLevel == 2 && reg2Type.get().arrayLevel == 2) { // Matrix + matrix
-                    operFunction.set(matrixPlusMatrix);
-                    resultType.get().setType(regType.get());
-                    freeTempData.set(true);
-                    return true;
-                }
-            } else if (oper == OpCode.OP_OP_MINUS) {
-                if (regType.get().arrayLevel == 1 && reg2Type.get().arrayLevel == 1) { // Vector - vector
-                    operFunction.set(vecMinusVec);
-                    resultType.get().setType(regType.get());
-                    freeTempData.set(true);
-                    return true;
-                } else if (regType.get().arrayLevel == 2 && reg2Type.get().arrayLevel == 2) { // Matrix - matrix
-                    operFunction.set(matrixMinusMatrix);
-                    resultType.get().setType(regType.get());
-                    freeTempData.set(true);
-                    return true;
-                }
-            }
-            return false;
+    public static final class WrapOpScalarTimesVec implements Function {
+        public void run(TomVM vm) {
+            doScaleVec(vm, vm.getRealParam(2), vm.getIntParam(1));
         }
     }
 
+    public static final class WrapOpMatrixTimesScalar implements Function {
+        public void run(TomVM vm) {
+            doScaleMatrix(vm, vm.getRealParam(1), vm.getIntParam(2));
+        }
+    }
+
+    public static final class WrapOpScalarTimesMatrix implements Function {
+        public void run(TomVM vm) {
+            doScaleMatrix(vm, vm.getRealParam(2), vm.getIntParam(1));
+        }
+    }
+
+    public static final class WrapOpVecDivScalar implements Function {
+        public void run(TomVM vm) {
+            doScaleVec(vm, 1.0f / vm.getRealParam(1), vm.getIntParam(2));
+        }
+    }
+
+    public static final class WrapOpMatrixDivScalar implements Function {
+        public void run(TomVM vm) {
+            doScaleMatrix(vm, 1.0f / vm.getRealParam(1), vm.getIntParam(2));
+        }
+    }
+
+    public static final class WrapOpMatrixTimesVec implements Function {
+        public void run(TomVM vm) {
+            float[] result = new float[]
+            {
+                0.0f, 0.0f, 0.0f, 0.0f
+            };
+            int size = 4;
+            if (readMatrix(vm, vm.getIntParam(2), m1)
+                    && (size = readVec(vm, vm.getIntParam(1), v1)) >= 0) {
+                matrixTimesVec(m1, v1, result);
+            }
+            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, result));
+        }
+    }
+
+    public static final class WrapOpMatrixTimesMatrix implements Function {
+        public void run(TomVM vm) {
+            float[] result = new float[16];
+            if (readMatrix(vm, vm.getIntParam(2), m1) && readMatrix(vm, vm.getIntParam(1), m2)) {
+                matrixTimesMatrix(m1, m2, result);
+            } else {
+                for (int i = 0; i < 16; i++) {
+                    result[i] = 0.0f;
+                }
+            }
+            vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
+        }
+    }
+
+    public static final class WrapOpVecTimesVec implements Function {
+        public void run(TomVM vm) {
+            if (readVec(vm, vm.getIntParam(2), v1) >= 0
+                && readVec(vm, vm.getIntParam(1), v2) >= 0) {
+                vm.getReg().setRealVal(dotProduct(v1, v2));
+            } else {
+                vm.getReg().setRealVal(0.0f);
+            }
+        }
+    }
+
+    public static final class WrapOpVecPlusVec implements Function {
+        public void run(TomVM vm) {
+            float[] result = new float[]
+            {
+                0.0f, 0.0f, 0.0f, 0.0f
+            };
+            int s1 = 4, s2 = 4;
+            if ((s1 = readVec(vm, vm.getIntParam(2), v1)) >= 0
+                && (s2 = readVec(vm, vm.getIntParam(1), v2)) >= 0) {
+                vecPlus(v1, v2, result);
+            }
+            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
+        }
+    }
+
+    public static final class WrapOpVecMinusVec implements Function {
+        public void run(TomVM vm) {
+            float[] result = new float[] {
+                0.0f, 0.0f, 0.0f, 0.0f
+            };
+            int s1 = 4, s2 = 4;
+            if ((s1 = readVec(vm, vm.getIntParam(2), v1)) >= 0
+                && (s2 = readVec(vm, vm.getIntParam(1), v2)) >= 0) {
+                vecMinus(v1, v2, result);
+            }
+            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
+        }
+    }
+
+    public static final class WrapOpMatrixPlusMatrix implements Function {
+        public void run(TomVM vm) {
+            float[] result = new float[16];
+            if (readMatrix(vm, vm.getIntParam(2), m1)
+                && readMatrix(vm, vm.getIntParam(1), m2)) {
+                matrixPlus(m1, m2, result);
+            } else {
+                for (int i = 0; i < 16; i++) {
+                    result[i] = 0.0f;
+                }
+            }
+            vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
+        }
+    }
+    public static final class WrapOpMatrixMinusMatrix implements Function {
+        public void run(TomVM vm) {
+            float[] result = new float[16];
+            if (readMatrix(vm, vm.getIntParam(2), m1)
+                            && readMatrix(vm, vm.getIntParam(1), m2)) {
+                matrixMinus(m1, m2, result);
+            } else {
+                for (int i = 0; i < 16; i++) {
+                    result[i] = 0.0f;
+                }
+            }
+            vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
+        }
+    }
+
+    public static final class WrapOpNegVec implements Function {
+        public void run(TomVM vm) {
+            doScaleVec(vm, -1.0f, vm.getIntParam(1));
+        }
+    }
+
+    public static final class WrapOpNegMatrix implements Function {
+        public void run(TomVM vm) {
+            doScaleMatrix(vm, -1.0f,vm.getIntParam(1));
+        }
+    }
     // endregion
 }

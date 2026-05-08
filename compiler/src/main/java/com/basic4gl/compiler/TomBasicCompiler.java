@@ -4288,7 +4288,7 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Find builtin functions
         boolean found = false;
-        List<Integer> functionIndexCollection = functionIndex.get(name);
+        List<Integer> functionIndexCollection = functionIndex.get(name.toLowerCase());
         if (functionIndexCollection != null) {
             for (Integer i : functionIndexCollection) {
                 if (!(functionCount < TC_MAXOVERLOADEDFUNCTIONS)) {
@@ -4329,28 +4329,36 @@ public class TomBasicCompiler extends HasErrorState {
             }
         }
 
-
-        // Only the first instance will be checked to see whether we need
-        // brackets.
-        // (Therefore either all instances should have brackets, or all
-        // instances
-        // should have no brackets.)
-        boolean brackets = functions[0].getSpecification().hasBrackets();
-
-        if ((syntax == LS_TRADITIONAL || syntax == LS_TRADITIONAL_SUFFIX ) && brackets) {
-            // Special brackets rules for traditional syntax
-            brackets = false;
-            // Look for a version of the function that:
-            // * Has at least one parameter, AND
-            // * Returns a value
-            //
-            // If one is found, then we require brackets. Otherwise we don't.
-            for (int i = 0; i < functionCount && !brackets; i++) {
-                brackets = functions[i].getSpecification().isFunction();
+        // Filter out non functions if a result is needed.
+        if (needResult)
+        {
+            functions = Arrays.stream(functions)
+                    .filter(fn -> fn != null && fn.getSpecification().isFunction())
+                    .toArray(ExtendedFunctionSpecification[]::new);
+            functionCount = functions.length;
+            if (functionCount == 0)
+            {
+                setError(name + " does not return a value");
+                return false;
             }
-            // && functions.get(i).paramTypes.getParams().size() > 0; // Need to
-            // rethink below loop before we can enable this
         }
+        // Brackets are required if any remaining overload requires brackets.
+        // (We need to decide up front whether a '(' is the function brackets or part of the first parameter expression.
+        // It gets too complicated if we try to handle some overloads that require brackets and some that don't.)
+        boolean brackets = Arrays.stream(functions).anyMatch(fn ->{
+            if (fn == null) {
+                return false;
+            }
+            // Explicit no-brackets function
+            if (!fn.getSpecification().hasBrackets()) {
+                return false;
+            }
+            // Traditional syntax: Don't require brackets for subs or no-param functions
+            if ((syntax == LS_TRADITIONAL || syntax == LS_TRADITIONAL_SUFFIX) && (!fn.getSpecification().isFunction() || fn.getSpecification().getParamTypes().getParams().isEmpty())) {
+                return false;
+            }
+            return true;
+        });
 
         boolean isNoParamFunction = functionCount == 1 && functions[0].getSpecification().isFunction() && functions[0].getSpecification().getParamTypes().getParams().size() == 0;
 
@@ -4551,7 +4559,7 @@ public class TomBasicCompiler extends HasErrorState {
         ExtendedFunctionSpecification spec = functions[matchIndex];
 
         // Expect closing bracket
-        if (brackets) {
+        if (type == FunctionType.FT_NORMAL && brackets) {
             if (!token.getText().equals(")")) {
                 setError("Expected ')'");
                 return false;
@@ -4739,102 +4747,6 @@ public class TomBasicCompiler extends HasErrorState {
             addInstruction(OpCode.OP_FREE_TEMP, BasicValType.VTP_INT, new Value());
         }
         freeTempData = false;
-
-        return true;
-    }
-
-    private boolean compileExtendedUnOperation(short operOpCode) {
-
-        Mutable<ValType> type = new Mutable<>(new ValType());
-        Mutable<Integer> opFunc = new Mutable<>(-1);
-        Mutable<Boolean> freeTempData = new Mutable<>(false);
-        Mutable<ValType> resultType = new Mutable<>(new ValType());
-        boolean found = false;
-
-        // Iterate through external operator extension functions until we find
-        // one that can handle our data.
-        for (int i = 0; i < unaryOperatorExtensions.size() && !found; i++) {
-
-            // Setup input data
-            type.get().setType(regType);
-            opFunc.set(-1);
-            freeTempData.set(false);
-            resultType.set(new ValType());
-
-            // Call function
-            found = unaryOperatorExtensions.get(i).run(type, operOpCode, opFunc, resultType, freeTempData);
-        }
-
-        if (!found) // No handler found.
-        {
-            return false; // This is not an error, but operation must be
-        }
-        // passed through to default operator handling.
-
-        // Generate code to convert operands as necessary
-        boolean conv = compileConvert(type.get());
-        assertTrue(conv);
-
-        // Generate code to call external operator function
-        assertTrue(opFunc.get() >= 0);
-        assertTrue(opFunc.get() < vm.getOperatorFunctionCount());
-        addInstruction(OpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT, new Value(opFunc.get()));
-
-        // Set register to result type
-        regType.setType(resultType.get());
-
-        // Record whether we need to free temp data
-        this.freeTempData = this.freeTempData || freeTempData.get();
-
-        return true;
-    }
-
-    private boolean compileExtendedBinOperation(short operOpCode) {
-
-        Mutable<ValType> type1 = new Mutable<>(new ValType());
-        Mutable<ValType> type2 = new Mutable<>(new ValType());
-        Mutable<Integer> opFunc = new Mutable<>(-1);
-        Mutable<Boolean> freeTempData = new Mutable<>(false);
-        Mutable<ValType> resultType = new Mutable<>(new ValType());
-        boolean found = false;
-
-        // Iterate through external operator extension functions until we find
-        // one that can handle our data.
-        for (int i = 0; i < binaryOperatorExtensions.size() && !found; i++) {
-
-            // Setup input data
-            type1.get().setType(regType);
-            type2.get().setType(reg2Type);
-            opFunc.set(-1);
-            freeTempData.set(false);
-            resultType.set(new ValType());
-
-            // Call function
-            found = binaryOperatorExtensions.get(i).run(type1, type2, operOpCode, opFunc, resultType, freeTempData);
-        }
-
-        if (!found) // No handler found.
-        {
-            return false; // This is not an error, but operation must be
-        }
-        // passed through to default operator handling.
-
-        // Generate code to convert operands as necessary
-        boolean conv1 = compileConvert(type1.get());
-        boolean conv2 = compileConvert2(type2.get());
-        assertTrue(conv1);
-        assertTrue(conv2);
-
-        // Generate code to call external operator function
-        assertTrue(opFunc.get() >= 0);
-        assertTrue(opFunc.get() < vm.getOperatorFunctionCount());
-        addInstruction(OpCode.OP_CALL_OPERATOR_FUNC, BasicValType.VTP_INT, new Value(opFunc.get()));
-
-        // Set register to result type
-        regType.setType(resultType.get());
-
-        // Record whether we need to free temp data
-        this.freeTempData = this.freeTempData || freeTempData.get();
 
         return true;
     }
@@ -5442,7 +5354,7 @@ public class TomBasicCompiler extends HasErrorState {
         result.setBuiltin(true);
 
         // Search for function with matching name & param type
-        List<Integer> l = functionIndex.get(name);
+        List<Integer> l = functionIndex.get(name.toLowerCase());
         if (l != null) {
             for (Integer i : l) {
                 FunctionSpecification spec = functions.get(i);

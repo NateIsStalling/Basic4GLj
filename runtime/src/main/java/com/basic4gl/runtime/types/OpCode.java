@@ -183,7 +183,9 @@ public class OpCode {
 
     /**
      * Call external operator function
+     * Deprecated: Replaced in Basic4GL 2.6.0 with OP_CALL_FUNC, and renamed to OP_UNUSED in original source.
      */
+    @Deprecated
     public static final short OP_CALL_OPERATOR_FUNC = 0x44;
 
     /**
