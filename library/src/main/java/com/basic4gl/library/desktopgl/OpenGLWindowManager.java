@@ -17,15 +17,14 @@ import static org.lwjgl.opengl.GL11.*;
 public abstract class OpenGLWindowManager extends HasErrorState {
     private int framebufferWidth;
     private int framebufferHeight;
+    private int windowWidth;
+    private int windowHeight;
 
-    private void setOpenGLDefaults() {
+    private void applyViewportAndProjection() {
         int viewportWidth = getFramebufferWidth();
         int viewportHeight = getFramebufferHeight();
 
-        // Setup a default viewport
         GL11.glViewport(0, 0, viewportWidth, viewportHeight); // Reset The Current Viewport
-
-        // Set some default OpenGL matrices. Basic 3D perspective projection
         glMatrixMode(GL_PROJECTION); // Select The Projection Matrix
         glLoadIdentity(); // Reset The Projection Matrix
         gluPerspective(
@@ -36,6 +35,10 @@ public abstract class OpenGLWindowManager extends HasErrorState {
 
         glMatrixMode(GL_MODELVIEW); // Select The Modelview Matrix
         glLoadIdentity(); // Reset The Modelview Matrix
+    }
+
+    private void setOpenGLDefaults() {
+        applyViewportAndProjection();
         try { glShadeModel(GL_SMOOTH); }
         catch (Exception e) { ; }
         try { glClearColor(0.0f, 0.0f, 0.0f, 0.5f); }
@@ -93,6 +96,8 @@ public abstract class OpenGLWindowManager extends HasErrorState {
         isWindowShowing = false;
         framebufferWidth = 0;
         framebufferHeight = 0;
+        windowWidth = 0;
+        windowHeight = 0;
     }
 
     public void dispose() {
@@ -100,20 +105,36 @@ public abstract class OpenGLWindowManager extends HasErrorState {
     }
 
     public OpenGLWindowParams getActiveParams() { return activeParams; }
+
+    private OpenGLWindowParams buildResolvedActiveParams() {
+        OpenGLWindowParams resolved = new OpenGLWindowParams(pendingParams);
+        resolved.isFullscreen = pendingParams.isFullscreen;
+        resolved.width = pendingParams.width == 0 ? getScreenWidth() : pendingParams.width;
+        resolved.height = pendingParams.height == 0 ? getScreenHeight() : pendingParams.height;
+        return resolved;
+    }
+
     public void recreateWindow() {
+        OpenGLWindowParams previousActiveParams = new OpenGLWindowParams(activeParams);
+
         // Destroy any existing window first
         destroyWindow();
 
         // Create new window
         clearError();
-        internalCreateWindow(pendingParams);
+        activeParams = buildResolvedActiveParams();
+        isWindowCreated = true;
+        isWindowShowing = false;
+        internalCreateWindow(activeParams);
 
         if (hasError()) {
+            isWindowCreated = false;
+            isWindowShowing = false;
+            activeParams = previousActiveParams;
             return;
         }
 
-        isWindowCreated = true;
-        activeParams = pendingParams;
+        internalActivateWindow();
         isWindowShowing = true;
         setOpenGLDefaults();
 
@@ -150,6 +171,8 @@ public abstract class OpenGLWindowManager extends HasErrorState {
             isWindowCreated = false;
             framebufferWidth = 0;
             framebufferHeight = 0;
+            windowWidth = 0;
+            windowHeight = 0;
         }
     }
     public boolean isCloseRequested() {
@@ -167,16 +190,22 @@ public abstract class OpenGLWindowManager extends HasErrorState {
 
     public void subscribeBeforeDestroyWindow(OpenGLBeforeDestroyWindowListener listener) { beforeDestroyWindowListeners.add(listener); }
     public int getWindowWidth() {
-        int width = activeParams.width;
-        if (width == 0) {
-            width = getScreenWidth();
+        int width = windowWidth;
+        if (width <= 0) {
+            width = activeParams.width;
+            if (width == 0) {
+                width = getScreenWidth();
+            }
         }
         return width;
     }
     public int getWindowHeight() {
-        int height = activeParams.height;
-        if (height == 0) {
-            height = getScreenHeight();
+        int height = windowHeight;
+        if (height <= 0) {
+            height = activeParams.height;
+            if (height == 0) {
+                height = getScreenHeight();
+            }
         }
         return height;
     }
@@ -197,8 +226,25 @@ public abstract class OpenGLWindowManager extends HasErrorState {
     }
 
     protected void updateFramebufferSize(int width, int height) {
-        framebufferWidth = Math.max(width, 1);
-        framebufferHeight = Math.max(height, 1);
+        int newWidth = Math.max(width, 1);
+        int newHeight = Math.max(height, 1);
+        boolean changed = newWidth != framebufferWidth || newHeight != framebufferHeight;
+
+        framebufferWidth = newWidth;
+        framebufferHeight = newHeight;
+
+        // Fullscreen Retina transitions can report final drawable size after activation.
+        if (isWindowCreated && changed) {
+            try {
+                applyViewportAndProjection();
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    protected void updateWindowSize(int width, int height) {
+        windowWidth = Math.max(width, 1);
+        windowHeight = Math.max(height, 1);
     }
 
     public int getFramebufferWidth() {

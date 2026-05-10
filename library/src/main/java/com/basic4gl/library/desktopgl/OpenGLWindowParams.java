@@ -20,4 +20,15 @@ public class OpenGLWindowParams {
         isStencilBufferRequired = false;
         title = "OpenGL";
     }
+
+    public OpenGLWindowParams(OpenGLWindowParams source) {
+        isFullscreen = source.isFullscreen;
+        width = source.width;
+        height = source.height;
+        bpp = source.bpp;
+        isBordered = source.isBordered;
+        isResizable = source.isResizable;
+        isStencilBufferRequired = source.isStencilBufferRequired;
+        title = source.title;
+    }
 }

@@ -74,9 +74,17 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
     static final int SETTING_HEIGHT = 4; // Index of window height setting in config
     static final int SETTING_RESIZABLE = 5; // Index of window resizable setting in config
     static final int SETTING_SCREEN_MODE = 6; // Index of screen mode setting in config
-    static final int SETTING_SUPPORT_WINDOWS = 9; // Index of Windows support setting in config
-    static final int SETTING_SUPPORT_MAC = 10; // Index of Mac support setting in config
-    static final int SETTING_SUPPORT_LINUX = 11; // Index of Linux support setting in config
+
+    static final int SETTING_USE_DESKTOP_RES = 7; // Index of desktop resolution toggle in config
+    static final int SETTING_COLOUR_DEPTH = 8; // Index of fullscreen color depth setting in config
+    static final int SETTING_BORDER = 9; // Index of bordered window setting in config
+    static final int SETTING_STENCIL = 10; // Index of stencil buffer setting in config
+    static final int SETTING_STARTUP_WINDOW_OPTION = 11; // Index of startup window creation mode
+
+    static final int SETTING_SUPPORT_WINDOWS = 14; // Index of Windows support setting in config
+    static final int SETTING_SUPPORT_MAC = 15; // Index of Mac support setting in config
+    static final int SETTING_SUPPORT_LINUX = 16; // Index of Linux support setting in config
+
 
     static final int SUPPORT_WINDOWS_32_64 = 0;
     static final int SUPPORT_WINDOWS_32 = 1;
@@ -90,6 +98,13 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
 
     static final int MODE_WINDOWED = 0;
     static final int MODE_FULLSCREEN = 1;
+
+    static final int COLOUR_DEPTH_DEFAULT = 0;
+    static final int COLOUR_DEPTH_16BIT = 1;
+    static final int COLOUR_DEPTH_32BIT = 2;
+
+    static final int STARTUP_WINDOW_CREATE_IMMEDIATELY = 0;
+    static final int STARTUP_WINDOW_DEFERRED = 1;
 
     static final String CONFIG_FILE = "config.ser"; // Filename for configuration file
     static final String STATE_FILE = "state.bin"; // Filename for stored VM state
@@ -681,10 +696,26 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         settings.addSetting(new String[] {"Window Height"}, Configuration.PARAM_INT, "480");
         settings.addSetting(new String[] {"Resizable Window"}, Configuration.PARAM_BOOL, "false");
         settings.addSetting(
-                new String[] {"Screen Mode", "Windowed"},
+                new String[] {"Screen Mode", "Windowed", "Fullscreen"},
                 // "Fullscreen"}, temporarily disabled
                 Configuration.PARAM_CHOICE,
                 "0");
+        settings.addSetting(new String[] {"Use Desktop Resolution"}, Configuration.PARAM_BOOL, "false");
+        settings.addSetting(
+                new String[] {"Colour Depth", "Default", "16-bit", "32-bit"},
+                Configuration.PARAM_CHOICE,
+                String.valueOf(COLOUR_DEPTH_DEFAULT));
+        settings.addSetting(new String[] {"Bordered Window"}, Configuration.PARAM_BOOL, "true");
+        settings.addSetting(new String[] {"Require Stencil Buffer"}, Configuration.PARAM_BOOL, "false");
+        settings.addSetting(
+                new String[] {
+                    "Startup Window",
+                    "Create window when application starts",
+                    "Don't create window until UpdateWindow() is called"
+                },
+                Configuration.PARAM_CHOICE,
+                String.valueOf(STARTUP_WINDOW_CREATE_IMMEDIATELY));
+
         settings.addSetting(new String[] {}, Configuration.PARAM_DIVIDER, "");
         settings.addSetting(new String[] {"Platforms"}, Configuration.PARAM_HEADING, "");
         settings.addSetting(
@@ -697,6 +728,14 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
                 new String[] {"Linux Support", "32/64-bit", "Do not support"}, Configuration.PARAM_CHOICE, "0");
 
         return settings;
+    }
+
+    private String getConfigValueOrDefault(int index, String defaultValue) {
+        if (configuration == null || index < 0 || index >= configuration.getSettingCount()) {
+            return defaultValue;
+        }
+        String value = configuration.getValue(index);
+        return value != null ? value : defaultValue;
     }
 
     @Override
@@ -1131,6 +1170,17 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
 
             boolean resizable = Boolean.valueOf(configuration.getValue(SETTING_RESIZABLE));
             int mode = Integer.valueOf(configuration.getValue(SETTING_SCREEN_MODE));
+            boolean useDesktopResolution = Boolean.parseBoolean(
+                    getConfigValueOrDefault(SETTING_USE_DESKTOP_RES, "false"));
+            int colourDepth = Integer.parseInt(
+                    getConfigValueOrDefault(SETTING_COLOUR_DEPTH, String.valueOf(COLOUR_DEPTH_DEFAULT)));
+            boolean bordered = Boolean.parseBoolean(getConfigValueOrDefault(SETTING_BORDER, "true"));
+            boolean stencilRequired = Boolean.parseBoolean(getConfigValueOrDefault(SETTING_STENCIL, "false"));
+            int startupWindowOption = Integer.parseInt(
+                    getConfigValueOrDefault(
+                            SETTING_STARTUP_WINDOW_OPTION,
+                            String.valueOf(STARTUP_WINDOW_CREATE_IMMEDIATELY)));
+            boolean createWindowOnStart = startupWindowOption == STARTUP_WINDOW_CREATE_IMMEDIATELY;
 
             // Setup an error callback. The default implementation
             // will print the error message in System.err.
@@ -1151,25 +1201,33 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
             // Create the window
 //            windowManager.activateWindow();
 
-// TODO 2.6.4            windowManager.pendingParams = ...
-            // Header determines whether we create the actual window now or wait until
+            // Config determines whether we create the actual window now or wait until
             // UpdateWindow() is executed in the Basic4GL code.
-            // TODO - implement options for creating window later, and for recreating window on demand (ie: for fullscreen mode)
-//            if (header.startupWindowOption == 0)
-//            {
 
-                // Apply startup configuration to pending window params before window creation.
-                windowManager.pendingParams.title = title;
-                windowManager.pendingParams.width = width;
-                windowManager.pendingParams.height = height;
-                windowManager.pendingParams.isResizable = resizable;
-                windowManager.pendingParams.isFullscreen = mode == MODE_FULLSCREEN;
+            // Apply startup configuration to pending window params.
+            // If startup is deferred these are consumed by UpdateWindow().
+            windowManager.pendingParams.title = title;
+            windowManager.pendingParams.isFullscreen = mode == MODE_FULLSCREEN;
+            windowManager.pendingParams.width = useDesktopResolution ? 0 : width;
+            windowManager.pendingParams.height = useDesktopResolution ? 0 : height;
+            windowManager.pendingParams.isResizable = resizable;
+            if (windowManager.pendingParams.isFullscreen && colourDepth == COLOUR_DEPTH_16BIT) {
+                windowManager.pendingParams.bpp = 16;
+            } else if (windowManager.pendingParams.isFullscreen && colourDepth == COLOUR_DEPTH_32BIT) {
+                windowManager.pendingParams.bpp = 32;
+            } else {
+                windowManager.pendingParams.bpp = 0;
+            }
+            windowManager.pendingParams.isBordered = bordered;
+            windowManager.pendingParams.isStencilBufferRequired = stencilRequired;
 
+            if (createWindowOnStart)
+            {
                 windowManager.recreateWindow();
-//            }
-            long window = windowManager.getGLFWWindow();
+            }
+             long window = windowManager.getGLFWWindow();
 //            window = glfwCreateWindow(width, height, title, NULL, NULL);
-            if (window == NULL) {
+            if (createWindowOnStart && window == NULL) {
                 throw new RuntimeException("Failed to create the GLFW window");
             }
 
@@ -1263,7 +1321,9 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
 
             // Make the window visible
 //            glfwShowWindow(window);
-            windowManager.activateWindow();
+            if (createWindowOnStart) {
+                windowManager.activateWindow();
+            }
             //			int err = glGetError();
             //			System.out.println(err);
         }

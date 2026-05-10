@@ -2,20 +2,42 @@ package com.basic4gl.library.desktopgl.glfw;
 
 import com.basic4gl.library.desktopgl.OpenGLWindowManager;
 import com.basic4gl.library.desktopgl.OpenGLWindowParams;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
+import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.GL_TRUE;
 
 public class GLFWWindowManager extends OpenGLWindowManager {
     private long window;
     private GLFWFramebufferSizeCallback framebufferSizeCallback;
+    private GLFWWindowSizeCallback windowSizeCallback;
+    private boolean pendingSizeRefresh;
 
+     private void refreshFramebufferSize() {
+        if (window == 0) {
+            return;
+        }
+        IntBuffer fbWidth = BufferUtils.createIntBuffer(1);
+        IntBuffer fbHeight = BufferUtils.createIntBuffer(1);
+        glfwGetFramebufferSize(window, fbWidth, fbHeight);
+        updateFramebufferSize(fbWidth.get(0), fbHeight.get(0));
+    }
+
+    private void refreshWindowSize() {
+        if (window == 0) {
+            return;
+        }
+        IntBuffer winWidth = BufferUtils.createIntBuffer(1);
+        IntBuffer winHeight = BufferUtils.createIntBuffer(1);
+        glfwGetWindowSize(window, winWidth, winHeight);
+        updateWindowSize(winWidth.get(0), winHeight.get(0));
+    }
 
     public long getGLFWWindow() { return window; }
 
@@ -24,9 +46,14 @@ public class GLFWWindowManager extends OpenGLWindowManager {
     {
         assertTrue(window != 0);
         glfwSetFramebufferSizeCallback(window, null);
+        glfwSetWindowSizeCallback(window, null);
         if (framebufferSizeCallback != null) {
             framebufferSizeCallback.free();
             framebufferSizeCallback = null;
+        }
+        if (windowSizeCallback != null) {
+            windowSizeCallback.free();
+            windowSizeCallback = null;
         }
         glfwDestroyWindow(window);
         window = 0;
@@ -43,7 +70,7 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         glfwWindowHint(GLFW_RESIZABLE, params.isResizable ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_DECORATED, params.isBordered ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_STENCIL_BITS, params.isStencilBufferRequired ? 8 : 0);
-        glfwWindowHint(GLFW_SCALE_TO_MONITOR, GL_TRUE); // handle monitor resolution scaling
+
         if (params.isFullscreen && params.bpp == 16)
         {
             glfwWindowHint(GLFW_RED_BITS, 5);
@@ -63,15 +90,28 @@ public class GLFWWindowManager extends OpenGLWindowManager {
             glfwWindowHint(GLFW_BLUE_BITS, GLFW_DONT_CARE);
         }
 
-        // Calculate actual dimensions
+        // Dimensions are resolved by OpenGLWindowManager before creation.
         int width = params.width;
         int height = params.height;
-        if (width == 0 || height == 0)
-        {
-            // Use desktop resolution
+        boolean usesDesktopResolution = pendingParams.width == 0 || pendingParams.height == 0;
+        if (params.isFullscreen && usesDesktopResolution) {
+            long monitor = glfwGetPrimaryMonitor();
+            FloatBuffer scaleX = BufferUtils.createFloatBuffer(1);
+            FloatBuffer scaleY = BufferUtils.createFloatBuffer(1);
+            glfwGetMonitorContentScale(monitor, scaleX, scaleY);
+            float sx = scaleX.get(0);
+            float sy = scaleY.get(0);
+            if (sx > 1.0f || sy > 1.0f) {
+                width = Math.max(1, Math.round(width * sx));
+                height = Math.max(1, Math.round(height * sy));
+            }
+        }
+        if (width <= 0 || height <= 0) {
             GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            width = mode.width();
-            height = mode.height();
+            if (mode != null) {
+                width = mode.width();
+                height = mode.height();
+            }
         }
 
         // Create the window
@@ -91,11 +131,25 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         // Make OpenGL context current
         glfwMakeContextCurrent(window);
 
+        // Initialize OpenGL bindings before any framebuffer-driven GL state updates.
+        // This line is critical for LWJGL's interoperation with GLFW's
+        // OpenGL context, or any context that is managed externally.
+        // LWJGL detects the context that is current in the current thread,
+        // creates the ContextCapabilities instance and makes the OpenGL
+        // bindings available for use.
+        GL.createCapabilities();
+
+        refreshWindowSize();
         // Use drawable framebuffer size (not logical window size) for Retina/high-DPI rendering.
-        IntBuffer fbWidth = BufferUtils.createIntBuffer(1);
-        IntBuffer fbHeight = BufferUtils.createIntBuffer(1);
-        glfwGetFramebufferSize(window, fbWidth, fbHeight);
-        updateFramebufferSize(fbWidth.get(0), fbHeight.get(0));
+        refreshFramebufferSize();
+
+        windowSizeCallback = new GLFWWindowSizeCallback() {
+            @Override
+            public void invoke(long window, int width, int height) {
+                updateWindowSize(width, height);
+            }
+        };
+        glfwSetWindowSizeCallback(window, windowSizeCallback);
 
         framebufferSizeCallback = new GLFWFramebufferSizeCallback() {
             @Override
@@ -105,13 +159,8 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         };
         glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-
-        // This line is critical for LWJGL's interoperation with GLFW's
-        // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
-        // creates the ContextCapabilities instance and makes the OpenGL
-        // bindings available for use.
-        GL.createCapabilities();
+        // Fullscreen Retina can settle final drawable size one frame later.
+        pendingSizeRefresh = true;
 
         // Load OpenGL extensions
 //        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
@@ -123,16 +172,22 @@ public class GLFWWindowManager extends OpenGLWindowManager {
     protected void internalActivateWindow() {
         assertTrue(window != 0);
 
-        if (activeParams.isFullscreen)
-        {
-            glfwRestoreWindow(window);
-        }
-
         // Give window focus.
 
         // Cross-platform GLFW focus/raise
         glfwShowWindow(window);
         glfwFocusWindow(window);
+
+        // Fullscreen Retina transitions can finalize drawable size when shown/activated.
+        refreshWindowSize();
+        refreshFramebufferSize();
+        if (activeParams.isFullscreen) {
+            // Give GLFW one event refresh to apply late fullscreen drawable-size updates.
+            glfwPollEvents();
+            refreshWindowSize();
+            refreshFramebufferSize();
+        }
+        pendingSizeRefresh = true;
     }
 
     @Override
@@ -160,6 +215,11 @@ public class GLFWWindowManager extends OpenGLWindowManager {
     protected void internalSwapBuffers()
     {
         assertTrue(window != 0);
+        if (pendingSizeRefresh) {
+            refreshWindowSize();
+            refreshFramebufferSize();
+            pendingSizeRefresh = false;
+        }
         glfwSwapBuffers(window);
     }
 
@@ -188,6 +248,8 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         super();
         window = 0;
         framebufferSizeCallback = null;
+        windowSizeCallback = null;
+        pendingSizeRefresh = false;
         if (!glfwInit())
         {
             setError("glfwInit() failed");
