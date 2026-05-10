@@ -101,7 +101,7 @@ public class CodeBlock implements Streamable {
     }
 
     public boolean filenameEquals(String otherFilename) {
-        return prepCodeBlockFilename(otherFilename).equals(filename);
+        return prepCodeBlockFilename(otherFilename).equals(prepCodeBlockFilename(filename));
     }
 
     private String prepCodeBlockFilename(String filename)

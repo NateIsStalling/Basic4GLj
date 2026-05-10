@@ -10,7 +10,7 @@ import com.basic4gl.library.standard.TrigBasicLib;
 /**
  * A GLTextGrid with added support for sprites
  */
-public class GLSpriteEngine extends GLTextGrid {
+public class GLSpriteEngine {
 
     // Constants
     public static final byte DRAW_SPRITES_INFRONT = 2;
@@ -28,7 +28,7 @@ public class GLSpriteEngine extends GLTextGrid {
             head = null;
         }
 
-        protected void finalize() {
+        protected void dispose() {
             while (head != null) {
                 head.remove();
             }
@@ -156,27 +156,10 @@ public class GLSpriteEngine extends GLTextGrid {
         glPopAttrib();
     }
 
-    void internalDraw(byte flags) {
-
-        // Draw sprites behind text
-        if ((flags & DRAW_SPRITES_BEHIND) != 0) {
-            drawSprites(false);
-        }
-
-        // Draw text
-        super.internalDraw(flags);
-
-        // Draw sprites in front of text
-        if ((flags & DRAW_SPRITES_INFRONT) != 0) {
-            drawSprites(true);
-        }
-    }
-
     public float camX, camY, camZ;
     public float camAngle;
 
-    public GLSpriteEngine(String texFile, FileOpener files, int rows, int cols, int texRows, int texCols) {
-        super(texFile, files, rows, cols, texRows, texCols);
+    public GLSpriteEngine() {
         setDefaults();
     }
 

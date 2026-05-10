@@ -29,6 +29,24 @@ public interface IB4GLOpenGLText extends IB4GLText {
         public int getMode() {
             return mode;
         }
+
+        public static TextMode fromInt(int mode) {
+            for (TextMode m : TextMode.values()) {
+                if (m.getMode() == mode) {
+                    return m;
+                }
+            }
+            throw new IllegalArgumentException("Invalid text mode: " + mode);
+        }
+
+        public static TextMode fromIntOrDefault(int mode, TextMode defaultMode) {
+            for (TextMode m : TextMode.values()) {
+                if (m.getMode() == mode) {
+                    return m;
+                }
+            }
+            return defaultMode;
+        }
     }
 
     void setFont(int fontTexture);

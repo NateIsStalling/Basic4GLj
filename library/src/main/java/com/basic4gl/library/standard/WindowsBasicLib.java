@@ -1,5 +1,6 @@
 package com.basic4gl.library.standard;
 
+import com.basic4gl.library.desktopgl.OpenGLWindowManager;
 import com.basic4gl.runtime.types.Constant;
 import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
@@ -21,7 +22,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
     private static FileOpener files = null;
     private static long performanceFreq;
 
-    private WindowsWavStore wavFiles;
+    private OpenGLWindowManager windowManager;
 
     @Override
     public String name() {
@@ -40,9 +41,7 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
 
     @Override
     public void init(TomBasicCompiler comp, IServiceCollection services) {
-        wavFiles = new WindowsWavStore();
-        // Register resources
-        comp.getVM().addResources(wavFiles);
+        windowManager = services.getService(OpenGLWindowManager.class);
     }
 
     @Override
@@ -88,6 +87,17 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
                     false,
                     null)
         });
+
+        s.put("DesktopWidth", new FunctionSpecification[]{
+            new FunctionSpecification(WrapDesktopWidth.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
+        });
+        s.put("DesktopHeight", new FunctionSpecification[]{
+            new FunctionSpecification(WrapDesktopHeight.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
+        });
+        s.put("iswindowclosing", new FunctionSpecification[]{
+            new FunctionSpecification(WrapIsWindowClosing.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
+        });
+
         return s;
     }
 
@@ -125,10 +135,9 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
         }
     }
 
-    public static final class WrapBeep implements Function {
+    public final class WrapBeep implements Function {
         public void run(TomVM vm) {
-            // TODO without AWT!
-            //            java.awt.Toolkit.getDefaultToolkit().beep();
+            windowManager.beep();
         }
     }
 
@@ -156,6 +165,24 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
     public final class WrapPerformanceCounter implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal((int) (getPerformanceCounter() % Integer.MAX_VALUE));
+        }
+    }
+
+    public final class WrapDesktopWidth implements Function {
+        public void run (TomVM vm){
+            vm.getReg().setIntVal(windowManager.getScreenWidth());
+        }
+    }
+
+    public final class WrapDesktopHeight implements Function {
+        public void run (TomVM vm){
+            vm.getReg().setIntVal(windowManager.getScreenHeight());
+        }
+    }
+
+    public final class WrapIsWindowClosing implements Function {
+        public void run (TomVM vm){
+            vm.getReg().setIntVal(windowManager.isCloseRequested() ? -1 : 0);
         }
     }
 }

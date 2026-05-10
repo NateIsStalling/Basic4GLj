@@ -1,12 +1,9 @@
 package com.basic4gl.library.standard;
 
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.ParamTypeList;
+import com.basic4gl.runtime.types.*;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.util.Function;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -20,6 +17,10 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.basic4gl.lib.util.FileOpener.ERROR_DIRECTORY_ALREADY_EXISTS;
+import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
+import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
 
 /**
  * Created by Nate on 11/17/2015.
@@ -107,10 +108,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("OpenFileRead", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapOpenFileRead.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
+                    new ParamTypeList(VTP_STRING),
                     true,
                     true,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -118,36 +119,42 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("OpenFileWrite", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapOpenFileWrite.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
+                    new ParamTypeList(VTP_STRING),
                     true,
                     true,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
         });
+        s.put("OpenAppDataRead", new FunctionSpecification[]{
+            new FunctionSpecification(WrapOpenAppDataRead.class, new ParamTypeList(new ValType(VTP_STRING), new ValType(VTP_STRING), new ValType(VTP_INT)), true, true, VTP_INT, true, false, null)
+        });
+        s.put("OpenAppDataWrite",   new FunctionSpecification[]{
+            new FunctionSpecification(WrapOpenAppDataWrite.class, new ParamTypeList(new ValType(VTP_STRING), new ValType(VTP_STRING), new ValType(VTP_INT)), true, true, VTP_INT, true, false, null)
+        });
         s.put("CloseFile", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapCloseFile.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT),
                     true,
                     false,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
         });
         s.put("FileError", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapFileError.class, new ParamTypeList(), true, true, BasicValType.VTP_STRING, true, false, null)
+                    WrapFileError.class, new ParamTypeList(), true, true, VTP_STRING, true, false, null)
         });
         s.put("EndOfFile", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapEndOfFile.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT),
                     true,
                     true,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -155,10 +162,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("WriteChar", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapWriteChar.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_STRING),
+                    new ParamTypeList(VTP_INT, VTP_STRING),
                     true,
                     false,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -166,10 +173,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("WriteString", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapWriteString.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_STRING),
+                    new ParamTypeList(VTP_INT, VTP_STRING),
                     true,
                     false,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -177,10 +184,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("WriteLine", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapWriteLine.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_STRING),
+                    new ParamTypeList(VTP_INT, VTP_STRING),
                     true,
                     false,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -188,10 +195,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("WriteByte", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapWriteByte.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT, VTP_INT),
                     true,
                     false,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -199,10 +206,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("WriteWord", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapWriteWord.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT, VTP_INT),
                     true,
                     false,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -210,10 +217,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("WriteInt", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapWriteInt.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT, VTP_INT),
                     true,
                     false,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -221,10 +228,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("WriteFloat", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapWriteFloat.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_REAL),
+                    new ParamTypeList(VTP_INT, BasicValType.VTP_REAL),
                     true,
                     false,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -232,10 +239,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("WriteReal", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapWriteFloat.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_REAL),
+                    new ParamTypeList(VTP_INT, BasicValType.VTP_REAL),
                     true,
                     false,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -243,10 +250,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("WriteDouble", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapWriteDouble.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_REAL),
+                    new ParamTypeList(VTP_INT, BasicValType.VTP_REAL),
                     true,
                     false,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -254,10 +261,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("ReadLine", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapReadLine.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT),
                     true,
                     true,
-                    BasicValType.VTP_STRING,
+                    VTP_STRING,
                     true,
                     false,
                     null)
@@ -265,10 +272,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("ReadChar", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapReadChar.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT),
                     true,
                     true,
-                    BasicValType.VTP_STRING,
+                    VTP_STRING,
                     true,
                     false,
                     null)
@@ -276,10 +283,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("ReadByte", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapReadByte.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT),
                     true,
                     true,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -287,10 +294,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("ReadWord", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapReadWord.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT),
                     true,
                     true,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -298,10 +305,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("ReadInt", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapReadInt.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT),
                     true,
                     true,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -309,7 +316,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("ReadFloat", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapReadFloat.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT),
                     true,
                     true,
                     BasicValType.VTP_REAL,
@@ -320,7 +327,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("ReadReal", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapReadFloat.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT),
                     true,
                     true,
                     BasicValType.VTP_REAL,
@@ -331,7 +338,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("ReadDouble", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapReadDouble.class,
-                    new ParamTypeList(BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT),
                     true,
                     true,
                     BasicValType.VTP_REAL,
@@ -342,7 +349,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("Seek", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapSeek.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT, VTP_INT),
                     true,
                     false,
                     BasicValType.VTP_REAL,
@@ -353,10 +360,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("ReadText", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapReadText.class,
-                    new ParamTypeList(BasicValType.VTP_INT, BasicValType.VTP_INT),
+                    new ParamTypeList(VTP_INT, VTP_INT),
                     true,
                     true,
-                    BasicValType.VTP_STRING,
+                    VTP_STRING,
                     true,
                     false,
                     null)
@@ -364,29 +371,29 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         s.put("FindFirstFile", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapFindFirstFile.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
+                    new ParamTypeList(VTP_STRING),
                     true,
                     true,
-                    BasicValType.VTP_STRING,
+                    VTP_STRING,
                     true,
                     false,
                     null)
         });
         s.put("FindNextFile", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapFindNextFile.class, new ParamTypeList(), true, true, BasicValType.VTP_STRING, true, false, null)
+                    WrapFindNextFile.class, new ParamTypeList(), true, true, VTP_STRING, true, false, null)
         });
         s.put("FindClose", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapFindClose.class, new ParamTypeList(), true, false, BasicValType.VTP_INT, true, false, null)
+                    WrapFindClose.class, new ParamTypeList(), true, false, VTP_INT, true, false, null)
         });
         s.put("DeleteFile", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapDeleteFile.class,
-                    new ParamTypeList(BasicValType.VTP_STRING),
+                    new ParamTypeList(VTP_STRING),
                     true,
                     true,
-                    BasicValType.VTP_INT,
+                    VTP_INT,
                     true,
                     false,
                     null)
@@ -1077,5 +1084,77 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 vm.getReg().setIntVal(-1);
             }
         }
+    }
+
+    public final class WrapOpenAppDataRead implements Function {
+        public void run (TomVM vm){
+            vm.getReg().setIntVal(internalOpenAppDataRead(vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));
+        }
+    }
+
+    public final class WrapOpenAppDataWrite implements Function {
+        public void run (TomVM vm){
+            vm.getReg().setIntVal(internalOpenAppDataWrite(vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));
+        }
+    }
+
+
+    private int internalOpenAppDataRead(String subFolder, String filename, boolean allUsers) {
+
+        // Get application data path
+        String appDataPath = files.getAppDataFolder(allUsers);
+        if (appDataPath == null || appDataPath.isEmpty()) {
+            return 0;
+        }
+
+        // Build file path, and open file
+        String fullFilename = FileUtil.joinPaths(appDataPath, files.getAppDataFolderName(), subFolder, filename);
+        fullFilename = FileUtil.separatorsToSystem(fullFilename);
+        return internalOpenFileRead(fullFilename);
+    }
+
+    private int internalOpenAppDataWrite(String subFolder, String filename, boolean allUsers) {
+
+        // Get application data path
+        String appDataPath = files.getAppDataFolder(allUsers);
+        String appDataName = files.getAppDataFolderName();
+        if (appDataPath == null || appDataPath.isEmpty()) {
+            return 0;
+        }
+
+        // Create folder if it doesn't already exist
+        String basic4glAppDataPath = FileUtil.joinPaths(appDataPath, appDataName);
+        String path = FileUtil.joinPaths(basic4glAppDataPath, subFolder);
+
+        // Check access to path before creating folder.
+        // Anything inside appdata\basic4gl should be allowed, but this should catch any attempts
+        // to break out using the parent path specifier (e.g. subfolder = "..\..\some other folder").
+        // Do this before creating any directory.
+        if (!files.checkFilesFolder(path))
+        {
+            lastError = files.getError();
+            return 0;
+        }
+
+        // Create basic4GL folder
+        if (!files.createDirectory(basic4glAppDataPath))
+        {
+            if (!files.getError().equals(ERROR_DIRECTORY_ALREADY_EXISTS)) {
+                lastError = "Unable to create " + appDataName + " folder in App Data";
+                return 0;
+            }
+        }
+
+        // Create subfolder in Basic4GL folder
+        if (!files.createDirectory(path)) {
+            if (!files.getError().equals(ERROR_DIRECTORY_ALREADY_EXISTS)) {
+                lastError = "Unable to create folder in App Data";
+                return 0;
+            }
+        }
+
+        // Build file path, and open file
+        String fullFilename = FileUtil.joinPaths(path, filename);
+        return internalOpenFileWrite(fullFilename);
     }
 }

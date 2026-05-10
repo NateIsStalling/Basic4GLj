@@ -8,6 +8,7 @@ import com.basic4gl.lib.util.Configuration;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.lib.util.Target;
+import com.basic4gl.library.desktopgl.util.GLUtil;
 import com.basic4gl.runtime.HasErrorState;
 import com.basic4gl.runtime.TomVM;
 import java.io.InputStream;
@@ -77,7 +78,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         }
     }
 
-    protected long window; // Window handle (m_HWnd in original source)
+//    protected long window; // Window handle (m_HWnd in original source)
     protected boolean active; // True if window is active
     protected boolean focused; // True if window has focus
     protected boolean visible; // True if window is visible
@@ -94,10 +95,13 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     protected boolean closing;
     // TODO Possibly use Map structure instead of array for this.keyDown if it'd use less memory
     // Character.MAX_VALUE is used for array size to support GLFW keycodes that are in the 256+ range
-    protected byte[] keyDown = new byte[Character.MAX_VALUE]; // Tracks key states
-    protected int[] keyBuffer = new int[GLWINDOWKEYBUFFER]; // Queues key presses
-    protected int[] scanKeyBuffer = new int[GLWINDOWKEYBUFFER]; // Queuse scan keys
-    protected int bufferStart, bufferEnd, scanBufferStart, scanBufferEnd;
+
+    // TODO 2.6.4 OpenGLKeyboard refactor
+    //protected byte[] keyDown = new byte[Character.MAX_VALUE]; // Tracks key states
+//    protected int[] keyBuffer = new int[GLWINDOWKEYBUFFER]; // Queues key presses
+//    protected int[] scanKeyBuffer = new int[GLWINDOWKEYBUFFER]; // Queuse scan keys
+//    protected int bufferStart, bufferEnd, scanBufferStart, scanBufferEnd;
+
     protected boolean dontPaint; // If false (default), WM_PAINT messages will cause a swapBuffers () call.
     // Otherwise they wontException e
     protected boolean painting;
@@ -114,21 +118,21 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     protected boolean showingCursor;
     protected ResetGLModeType resetGLMode;
 
-    void incStart() {
-        bufferStart = (++bufferStart) % GLWINDOWKEYBUFFER;
-    }
-
-    void incEnd() {
-        bufferEnd = (++bufferEnd) % GLWINDOWKEYBUFFER;
-    }
-
-    void incScanStart() {
-        scanBufferStart = (++scanBufferStart) % GLWINDOWKEYBUFFER;
-    }
-
-    void incScanEnd() {
-        scanBufferEnd = (++scanBufferEnd) % GLWINDOWKEYBUFFER;
-    }
+//    void incStart() {
+//        bufferStart = (++bufferStart) % GLWINDOWKEYBUFFER;
+//    }
+//
+//    void incEnd() {
+//        bufferEnd = (++bufferEnd) % GLWINDOWKEYBUFFER;
+//    }
+//
+//    void incScanStart() {
+//        scanBufferStart = (++scanBufferStart) % GLWINDOWKEYBUFFER;
+//    }
+//
+//    void incScanEnd() {
+//        scanBufferEnd = (++scanBufferEnd) % GLWINDOWKEYBUFFER;
+//    }
 
     void positionMouse() {
         // TODO without AWT!
@@ -138,26 +142,26 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         //            e.printStackTrace();
         //        }
     }
-
-    void bufferScanKey(int key) {
-        int end = scanBufferEnd;
-        incScanEnd();
-        if (scanBufferEnd != scanBufferStart) {
-            scanKeyBuffer[end] = key;
-        } else {
-            scanBufferEnd = end;
-        }
-    }
-
-    void bufferKey(int key) {
-        int end = bufferEnd;
-        incEnd();
-        if (bufferEnd != bufferStart) {
-            keyBuffer[end] = key;
-        } else {
-            bufferEnd = end;
-        }
-    }
+//
+//    void bufferScanKey(int key) {
+//        int end = scanBufferEnd;
+//        incScanEnd();
+//        if (scanBufferEnd != scanBufferStart) {
+//            scanKeyBuffer[end] = key;
+//        } else {
+//            scanBufferEnd = end;
+//        }
+//    }
+//
+//    void bufferKey(int key) {
+//        int end = bufferEnd;
+//        incEnd();
+//        if (bufferEnd != bufferStart) {
+//            keyBuffer[end] = key;
+//        } else {
+//            bufferEnd = end;
+//        }
+//    }
 
     /**
      * Resize the scene in response to a window resize
@@ -200,25 +204,26 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         glLoadIdentity();									// Reset The Modelview Matrix*/
     }
 
-    protected void killWindow() {
-
-        // Close the window
-        hide();
-
-        // Must destroy OpenGL context first
-        killGLContext();
-
-        // Delete the window
-        /*glWindows.erase (m_HWnd);           // Remove from window list
-        if (m_HDC) {
-        	ReleaseDC(m_HWnd,m_HDC);
-        	m_HDC = 0;
-        }*/
-        if (window != 0) {
-            glfwDestroyWindow(window);
-            window = 0;
-        }
-    }
+    // TODO 2.6.4 refactor
+//    protected void killWindow() {
+//
+//        // Close the window
+//        hide();
+//
+//        // Must destroy OpenGL context first
+//        killGLContext();
+//
+//        // Delete the window
+//        /*glWindows.erase (m_HWnd);           // Remove from window list
+//        if (m_HDC) {
+//        	ReleaseDC(m_HWnd,m_HDC);
+//        	m_HDC = 0;
+//        }*/
+//        if (window != 0) {
+//            glfwDestroyWindow(window);
+//            window = 0;
+//        }
+//    }
 
     protected void killGLContext() {
 
@@ -291,14 +296,14 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         focused = false;
         visible = false;
         closing = false;
-        bufferStart = 0;
-        bufferEnd = 0;
-        scanBufferStart = 0;
-        scanBufferEnd = 0;
+//        bufferStart = 0;
+//        bufferEnd = 0;
+//        scanBufferStart = 0;
+//        scanBufferEnd = 0;
         showingCursor = true;
 
         // Clear key buffers
-        clearKeyBuffers();
+//        clearKeyBuffers();
 
         // Defaults
         fov = 60.0;
@@ -1008,7 +1013,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         }
 
         // Multitexturing
-        if (isExtensionSupported("GL_ARB_multitexture")) {
+        if (GLUtil.isExtensionSupported("GL_ARB_multitexture")) {
 
             // Disable texturing for all texture units
             IntBuffer units = BufferUtils.createIntBuffer(1);
@@ -1055,75 +1060,76 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         }
 
         // Setup OpenGL defaults
-        resetOpenGLDefaults();
+        // TODO 2.6.4 refactor
+//        resetOpenGLDefaults();
 
         return true; // Initialization Went OK
     }
 
-    public void resetOpenGLDefaults() {
-        // Setup a default viewport
-        // Get frame buffer size to support high resolution/retina displays
-        IntBuffer w = BufferUtils.createIntBuffer(1);
-        IntBuffer h = BufferUtils.createIntBuffer(1);
-        glfwGetFramebufferSize(window, w, h);
-        int width = w.get(0);
-        int height = h.get(0);
-
-        //        System.out.println("main "+ m_width + ", " + m_height);
-        // Setup some 'nice' defaults
-        resizeGLScene(width, height); // Projection matrix
-
-        // TODO should this be m_width, m_height
-        GL11.glViewport(0, 0, this.width, this.height); // Reset The Current Viewport
-        //        System.out.println("oops "+ width + ", " + height);
-
-        // Set some default OpenGL matrices. Basic 3D perspective projection
-        GL11.glMatrixMode(GL11.GL_PROJECTION); // Select The Projection Matrix
-        GL11.glLoadIdentity(); // Reset The Projection Matrix
-        perspectiveGL(fov, (float) this.width / (float) this.height, nearClip, farClip);
-
-        GL11.glMatrixMode(GL11.GL_MODELVIEW); // Select The Modelview Matrix
-        GL11.glLoadIdentity(); // Reset The Modelview Matrix
-        try {
-            GL11.glShadeModel(GL11.GL_SMOOTH);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            GL11.glClearDepth(1.0f);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            GL11.glDepthFunc(GL11.GL_LEQUAL);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            GL11.glHint(GL11.GL_PERSPECTIVE_CORRECTION_HINT, GL11.GL_NICEST);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            GL11.glDisable(GL11.GL_TEXTURE_2D);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);
-        swapBuffers();
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);
-    }
+//    public void resetOpenGLDefaults() {
+//        // Setup a default viewport
+//        // Get frame buffer size to support high resolution/retina displays
+//        IntBuffer w = BufferUtils.createIntBuffer(1);
+//        IntBuffer h = BufferUtils.createIntBuffer(1);
+//        glfwGetFramebufferSize(window, w, h);
+//        int width = w.get(0);
+//        int height = h.get(0);
+//
+//        //        System.out.println("main "+ m_width + ", " + m_height);
+//        // Setup some 'nice' defaults
+//        resizeGLScene(width, height); // Projection matrix
+//
+//        // TODO should this be m_width, m_height
+//        GL11.glViewport(0, 0, this.width, this.height); // Reset The Current Viewport
+//        //        System.out.println("oops "+ width + ", " + height);
+//
+//        // Set some default OpenGL matrices. Basic 3D perspective projection
+//        GL11.glMatrixMode(GL11.GL_PROJECTION); // Select The Projection Matrix
+//        GL11.glLoadIdentity(); // Reset The Projection Matrix
+//        GLUtil.perspectiveGL(fov, (float) this.width / (float) this.height, nearClip, farClip);
+//
+//        GL11.glMatrixMode(GL11.GL_MODELVIEW); // Select The Modelview Matrix
+//        GL11.glLoadIdentity(); // Reset The Modelview Matrix
+//        try {
+//            GL11.glShadeModel(GL11.GL_SMOOTH);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            GL11.glClearDepth(1.0f);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            GL11.glEnable(GL11.GL_DEPTH_TEST);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            GL11.glDepthFunc(GL11.GL_LEQUAL);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            GL11.glHint(GL11.GL_PERSPECTIVE_CORRECTION_HINT, GL11.GL_NICEST);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            GL11.glDisable(GL11.GL_TEXTURE_2D);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);
+//        swapBuffers();
+//        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_COLOR_BUFFER_BIT);
+//    }
 
     /*
     public boolean ProcessWindowsMessages(){
@@ -1142,223 +1148,224 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
     	return false;
     }*/
 
-    public void recreateWindow(
-            boolean fullScreen,
-            boolean border,
-            int width,
-            int height,
-            int bpp,
-            boolean stencil,
-            String title,
-            boolean allowResizing,
-            boolean fitToWorkArea) {
-
-        // Save window settings
-        this.fullScreen = fullScreen;
-        showBorder = border;
-        this.width = width;
-        this.height = height;
-        this.bpp = bpp;
-        this.title = title;
-        this.allowResizing = allowResizing;
-        this.fitToWorkArea = fitToWorkArea;
-        this.stencil = stencil;
-
-        // Delete existing window
-        killWindow();
-
-        // TODO Create window here
-        /*
-        // Create new one
-        GLuint		PixelFormat;			// Holds The Results After Searching For A Match
-        DWORD		dwExStyle;				// Window Extended Style
-        DWORD		dwStyle;				// Window Style
-        RECT		WindowRect;				// Grabs Rectangle Upper Left / Lower Right Values
-        WindowRect.left     =(long)0;			// Set Left Value To 0
-        WindowRect.right    =(long)m_width;		// Set Right Value To Requested Width
-        WindowRect.top      =(long)0;			// Set Top Value To 0
-        WindowRect.bottom   =(long)m_height;	// Set Bottom Value To Requested Height
-
-        if (m_fullScreen)												// Attempt Fullscreen Mode?
-        {
-        	memset(&m_screenSettings,0,sizeof(m_screenSettings));	// Makes Sure Memory's Cleared
-        	m_screenSettings.dmSize=sizeof(m_screenSettings);		// Size Of The Devmode Structure
-        	m_screenSettings.dmPelsWidth	= m_width;				// Selected Screen Width
-        	m_screenSettings.dmPelsHeight	= m_height;				// Selected Screen Height
-        	m_screenSettings.dmBitsPerPel	= m_bpp;				// Selected Bits Per Pixel
-        	m_screenSettings.dmFields=DM_PELSWIDTH|DM_PELSHEIGHT;
-        	if (m_bpp)
-        		m_screenSettings.dmFields |= DM_BITSPERPEL;
-        }
-
-        if (m_fullScreen || !m_border)									// Are We Still In Fullscreen Mode?
-        {
-        	// Borderless window
-        	dwExStyle=WS_EX_APPWINDOW;
-        	dwStyle=WS_POPUP;
-        }
-        else {
-        	// Standard window
-        	dwExStyle=WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;			        // Window Extended Style
-        	if (allowResizing)
-        		dwStyle = WS_OVERLAPPEDWINDOW;
-        	else
-        		dwStyle = WS_OVERLAPPEDWINDOW & ~(WS_SIZEBOX | WS_MAXIMIZEBOX);	    // Windows Style
-        	if (m_fitToWorkArea)
-        		dwStyle |= WS_MAXIMIZE;
-        }
-
-        if (!m_fullScreen && !m_fitToWorkArea) {
-
-        	// Get the screen resolution
-        	HWND desktop = GetDesktopWindow ();
-        	RECT desktopRect;
-        	GetWindowRect (desktop, &desktopRect);
-        	int xoffs, yoffs;
-        	if (WindowRect.right > desktopRect.right)
-        		xoffs = -WindowRect.left;
-        	else
-        		xoffs = (desktopRect.right  - WindowRect.right)  / 2;
-        	if (WindowRect.bottom > desktopRect.bottom)
-        		yoffs = -WindowRect.top;
-        	else
-        		yoffs = (desktopRect.bottom - WindowRect.bottom) / 2;
-        	WindowRect.left     += xoffs;
-        	WindowRect.right    += xoffs;
-        	WindowRect.top      += yoffs;
-        	WindowRect.bottom   += yoffs;
-
-        	// Adjust window size to allow for border
-        	if (m_border)
-        		AdjustWindowRectEx(&WindowRect, dwStyle, false, dwExStyle);
-        }
-
-        // Fitting to work area?
-        if (m_fitToWorkArea) {
-        	SystemParametersInfo(SPI_GETWORKAREA, 0, &WindowRect, 0);    // Gets the desktop work area
-        	m_width = WindowRect.right - WindowRect.left;
-        	m_height = WindowRect.bottom - WindowRect.top;
-        }
-
-        // Create The Window
-        if (!(m_HWnd=CreateWindowEx(	dwExStyle,				    		// Extended Style For The Window
-        		"gbOpenGL",			    			// Class Name
-        		m_title.c_str (),   				// Window Title
-        		dwStyle |							// Defined Window Style
-        				WS_CLIPSIBLINGS |					// Required Window Style
-        				WS_CLIPCHILDREN,					// Required Window Style
-        		WindowRect.left, WindowRect.top,	// Window Position
-        		WindowRect.right-WindowRect.left,	// Calculate Window Width
-        		WindowRect.bottom-WindowRect.top,	// Calculate Window Height
-        		NULL,								// No Parent Window
-        		NULL,								// No Menu
-        		m_HInstance,						// Instance
-        		NULL)))								// Dont Pass Anything To WM_CREATE
-        {
-        	setError ("Window creation error");
-        	return;
-        }
-
-        // Register window (for window procedure)
-        glWindows [m_HWnd] = this;
-
-        */
-        // TODO enable stencil buffer
-        /*
-        // Stencil buffer depth
-        int stencilBits = m_stencil ? 8 : 0;
-
-        static	PIXELFORMATDESCRIPTOR pfd=				// pfd Tells Windows How We Want Things To Be
-        		{
-        				sizeof(PIXELFORMATDESCRIPTOR),				// Size Of This Pixel Format Descriptor
-        				1,											// Version Number
-        				PFD_DRAW_TO_WINDOW |						// Format Must Support Window
-        						PFD_SUPPORT_OPENGL |						// Format Must Support OpenGL
-        						PFD_DOUBLEBUFFER,
-        				PFD_TYPE_RGBA,								// Request An RGBA Format
-        				m_bpp,										// Select Our Color Depth
-        				0, 0, 0, 0, 0, 0,							// Color Bits Ignored
-        				0,											// No Alpha Buffer
-        				0,											// Shift Bit Ignored
-        				0,											// No Accumulation Buffer
-        				0, 0, 0, 0,									// Accumulation Bits Ignored
-        				16,											// 16Bit Z-Buffer (Depth Buffer)
-        				stencilBits, 								// No Stencil Buffer
-        				0,											// No Auxiliary Buffer
-        				PFD_MAIN_PLANE,								// Main Drawing Layer
-        				0,											// Reserved
-        				0, 0, 0										// Layer Masks Ignored
-        		};
-
-        if (!(m_HDC=GetDC(m_HWnd)))					 	// Did We Get A Device Context?
-        {
-        	SetError ("Failed to get window device context");
-        	return;
-        }
-
-        if (!(PixelFormat=ChoosePixelFormat(m_HDC,&pfd)))	// Did Windows Find A Matching Pixel Format?
-        {
-        	SetError ("Could not find a suitable pixel format");
-        	return;
-        }
-
-        // Determine whether pixel format will be hardware accellerated.
-
-        PIXELFORMATDESCRIPTOR pfd_new;
-        DescribePixelFormat (m_HDC, PixelFormat, sizeof (PIXELFORMATDESCRIPTOR), &pfd_new);
-
-        if ((pfd_new.dwFlags & PFD_GENERIC_FORMAT) != 0					// Generic
-        		&&  (pfd_new.dwFlags & PFD_GENERIC_ACCELERATED) == 0) {			// Non accellerated
-
-        	// Warn user that OpenGL will proceed in software mode!
-        	if (MessageBox(null, "Hardware 3D acceleration is not available for this display mode.\nProceed in software mode?",
-        			"Warning",
-        			MB_YESNO|MB_ICONEXCLAMATION) == IDNO) {
-        		setError ("Aborted");
-        		return;
-        	}
-        }
-
-        if(!SetPixelFormat(m_HDC,PixelFormat,&pfd))		// Are We Able To Set The Pixel Format?
-        {
-        	setError ("Set pixel format failed");
-        	return;
-        }*/
-
-        // Setup OpenGL
-        recreateGLContext();
-    }
+//    public void recreateWindow(
+//            boolean fullScreen,
+//            boolean border,
+//            int width,
+//            int height,
+//            int bpp,
+//            boolean stencil,
+//            String title,
+//            boolean allowResizing,
+//            boolean fitToWorkArea) {
+//
+//        // Save window settings
+//        this.fullScreen = fullScreen;
+//        showBorder = border;
+//        this.width = width;
+//        this.height = height;
+//        this.bpp = bpp;
+//        this.title = title;
+//        this.allowResizing = allowResizing;
+//        this.fitToWorkArea = fitToWorkArea;
+//        this.stencil = stencil;
+//
+//        // Delete existing window
+//        killWindow();
+//
+//        // TODO Create window here
+//        /*
+//        // Create new one
+//        GLuint		PixelFormat;			// Holds The Results After Searching For A Match
+//        DWORD		dwExStyle;				// Window Extended Style
+//        DWORD		dwStyle;				// Window Style
+//        RECT		WindowRect;				// Grabs Rectangle Upper Left / Lower Right Values
+//        WindowRect.left     =(long)0;			// Set Left Value To 0
+//        WindowRect.right    =(long)m_width;		// Set Right Value To Requested Width
+//        WindowRect.top      =(long)0;			// Set Top Value To 0
+//        WindowRect.bottom   =(long)m_height;	// Set Bottom Value To Requested Height
+//
+//        if (m_fullScreen)												// Attempt Fullscreen Mode?
+//        {
+//        	memset(&m_screenSettings,0,sizeof(m_screenSettings));	// Makes Sure Memory's Cleared
+//        	m_screenSettings.dmSize=sizeof(m_screenSettings);		// Size Of The Devmode Structure
+//        	m_screenSettings.dmPelsWidth	= m_width;				// Selected Screen Width
+//        	m_screenSettings.dmPelsHeight	= m_height;				// Selected Screen Height
+//        	m_screenSettings.dmBitsPerPel	= m_bpp;				// Selected Bits Per Pixel
+//        	m_screenSettings.dmFields=DM_PELSWIDTH|DM_PELSHEIGHT;
+//        	if (m_bpp)
+//        		m_screenSettings.dmFields |= DM_BITSPERPEL;
+//        }
+//
+//        if (m_fullScreen || !m_border)									// Are We Still In Fullscreen Mode?
+//        {
+//        	// Borderless window
+//        	dwExStyle=WS_EX_APPWINDOW;
+//        	dwStyle=WS_POPUP;
+//        }
+//        else {
+//        	// Standard window
+//        	dwExStyle=WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;			        // Window Extended Style
+//        	if (allowResizing)
+//        		dwStyle = WS_OVERLAPPEDWINDOW;
+//        	else
+//        		dwStyle = WS_OVERLAPPEDWINDOW & ~(WS_SIZEBOX | WS_MAXIMIZEBOX);	    // Windows Style
+//        	if (m_fitToWorkArea)
+//        		dwStyle |= WS_MAXIMIZE;
+//        }
+//
+//        if (!m_fullScreen && !m_fitToWorkArea) {
+//
+//        	// Get the screen resolution
+//        	HWND desktop = GetDesktopWindow ();
+//        	RECT desktopRect;
+//        	GetWindowRect (desktop, &desktopRect);
+//        	int xoffs, yoffs;
+//        	if (WindowRect.right > desktopRect.right)
+//        		xoffs = -WindowRect.left;
+//        	else
+//        		xoffs = (desktopRect.right  - WindowRect.right)  / 2;
+//        	if (WindowRect.bottom > desktopRect.bottom)
+//        		yoffs = -WindowRect.top;
+//        	else
+//        		yoffs = (desktopRect.bottom - WindowRect.bottom) / 2;
+//        	WindowRect.left     += xoffs;
+//        	WindowRect.right    += xoffs;
+//        	WindowRect.top      += yoffs;
+//        	WindowRect.bottom   += yoffs;
+//
+//        	// Adjust window size to allow for border
+//        	if (m_border)
+//        		AdjustWindowRectEx(&WindowRect, dwStyle, false, dwExStyle);
+//        }
+//
+//        // Fitting to work area?
+//        if (m_fitToWorkArea) {
+//        	SystemParametersInfo(SPI_GETWORKAREA, 0, &WindowRect, 0);    // Gets the desktop work area
+//        	m_width = WindowRect.right - WindowRect.left;
+//        	m_height = WindowRect.bottom - WindowRect.top;
+//        }
+//
+//        // Create The Window
+//        if (!(m_HWnd=CreateWindowEx(	dwExStyle,				    		// Extended Style For The Window
+//        		"gbOpenGL",			    			// Class Name
+//        		m_title.c_str (),   				// Window Title
+//        		dwStyle |							// Defined Window Style
+//        				WS_CLIPSIBLINGS |					// Required Window Style
+//        				WS_CLIPCHILDREN,					// Required Window Style
+//        		WindowRect.left, WindowRect.top,	// Window Position
+//        		WindowRect.right-WindowRect.left,	// Calculate Window Width
+//        		WindowRect.bottom-WindowRect.top,	// Calculate Window Height
+//        		NULL,								// No Parent Window
+//        		NULL,								// No Menu
+//        		m_HInstance,						// Instance
+//        		NULL)))								// Dont Pass Anything To WM_CREATE
+//        {
+//        	setError ("Window creation error");
+//        	return;
+//        }
+//
+//        // Register window (for window procedure)
+//        glWindows [m_HWnd] = this;
+//
+//        */
+//        // TODO enable stencil buffer
+//        /*
+//        // Stencil buffer depth
+//        int stencilBits = m_stencil ? 8 : 0;
+//
+//        static	PIXELFORMATDESCRIPTOR pfd=				// pfd Tells Windows How We Want Things To Be
+//        		{
+//        				sizeof(PIXELFORMATDESCRIPTOR),				// Size Of This Pixel Format Descriptor
+//        				1,											// Version Number
+//        				PFD_DRAW_TO_WINDOW |						// Format Must Support Window
+//        						PFD_SUPPORT_OPENGL |						// Format Must Support OpenGL
+//        						PFD_DOUBLEBUFFER,
+//        				PFD_TYPE_RGBA,								// Request An RGBA Format
+//        				m_bpp,										// Select Our Color Depth
+//        				0, 0, 0, 0, 0, 0,							// Color Bits Ignored
+//        				0,											// No Alpha Buffer
+//        				0,											// Shift Bit Ignored
+//        				0,											// No Accumulation Buffer
+//        				0, 0, 0, 0,									// Accumulation Bits Ignored
+//        				16,											// 16Bit Z-Buffer (Depth Buffer)
+//        				stencilBits, 								// No Stencil Buffer
+//        				0,											// No Auxiliary Buffer
+//        				PFD_MAIN_PLANE,								// Main Drawing Layer
+//        				0,											// Reserved
+//        				0, 0, 0										// Layer Masks Ignored
+//        		};
+//
+//        if (!(m_HDC=GetDC(m_HWnd)))					 	// Did We Get A Device Context?
+//        {
+//        	SetError ("Failed to get window device context");
+//        	return;
+//        }
+//
+//        if (!(PixelFormat=ChoosePixelFormat(m_HDC,&pfd)))	// Did Windows Find A Matching Pixel Format?
+//        {
+//        	SetError ("Could not find a suitable pixel format");
+//        	return;
+//        }
+//
+//        // Determine whether pixel format will be hardware accellerated.
+//
+//        PIXELFORMATDESCRIPTOR pfd_new;
+//        DescribePixelFormat (m_HDC, PixelFormat, sizeof (PIXELFORMATDESCRIPTOR), &pfd_new);
+//
+//        if ((pfd_new.dwFlags & PFD_GENERIC_FORMAT) != 0					// Generic
+//        		&&  (pfd_new.dwFlags & PFD_GENERIC_ACCELERATED) == 0) {			// Non accellerated
+//
+//        	// Warn user that OpenGL will proceed in software mode!
+//        	if (MessageBox(null, "Hardware 3D acceleration is not available for this display mode.\nProceed in software mode?",
+//        			"Warning",
+//        			MB_YESNO|MB_ICONEXCLAMATION) == IDNO) {
+//        		setError ("Aborted");
+//        		return;
+//        	}
+//        }
+//
+//        if(!SetPixelFormat(m_HDC,PixelFormat,&pfd))		// Are We Able To Set The Pixel Format?
+//        {
+//        	setError ("Set pixel format failed");
+//        	return;
+//        }*/
+//
+//        // Setup OpenGL
+//        //TODO 2.6.4 refactoring
+////        recreateGLContext();
+//    }
 
     // virtual
-    public void recreateGLContext() {
-
-        // Delete existing context
-        killGLContext();
-
-        // Create main context
-
-        // Initialize GLFW. Most GLFW functions will not work before doing this.
-        if (!glfwInit()) {
-            throw new IllegalStateException("Unable to initialize GLFW");
-        }
-
-        // TODO Make context current
-        /*
-        // Create the window
-        window = glfwCreateWindow(WIDTH, HEIGHT, title, NULL, NULL);
-        if (window == NULL)
-        	throw new RuntimeException("Failed to create the GLFW window");
-
-        // Make the OpenGL context current
-        glfwMakeContextCurrent(window);
-        */
-
-        // Multitexture extension pointers may not be valid anymore, so re-fetch them
-        initMultitexture();
-
-        // Setup OpenGL defaults
-        resetOpenGLDefaults();
-    }
+//    public void recreateGLContextDeprecated() {
+//
+//        // Delete existing context
+//        killGLContext();
+//
+//        // Create main context
+//
+//        // Initialize GLFW. Most GLFW functions will not work before doing this.
+//        if (!glfwInit()) {
+//            throw new IllegalStateException("Unable to initialize GLFW");
+//        }
+//
+//        // TODO Make context current
+//        /*
+//        // Create the window
+//        window = glfwCreateWindow(WIDTH, HEIGHT, title, NULL, NULL);
+//        if (window == NULL)
+//        	throw new RuntimeException("Failed to create the GLFW window");
+//
+//        // Make the OpenGL context current
+//        glfwMakeContextCurrent(window);
+//        */
+//
+//        // Multitexture extension pointers may not be valid anymore, so re-fetch them
+//        initMultitexture();
+//
+//        // Setup OpenGL defaults
+//        resetOpenGLDefaults();
+//    }
 
     // Settings
     public int getWidth() {
@@ -1456,7 +1463,9 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         if (!visible) {
             return;
         }
-        glfwHideWindow(window); // Hide the window
+        // TODO 2.6.4 refactoring - this looks like dead code, since hide is overridden in GLWindow and GLCanvas, and the only call to hide is from GLWindow, which calls the override. If this is correct, we can remove this method and move the doShowCursor() call to the override.
+//        windowManager.hideWindow(this);
+//        glfwHideWindow(window); // Hide the window
         // ProcessWindowsMessages ();
         visible = false;
         // TODO Exit fullscreen mode
@@ -1480,107 +1489,107 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
     // Keyboard handling
 
-    /**
-     * Pulls a key from the keyboard buffer. Returns 0 if none waiting.
-     * @return
-     */
-    public int getKey() {
-
-        // Flush any keypress messages
-        // processWindowsMessages ();
-
-        // Check for buffered keypress
-        if (bufferStart == bufferEnd) {
-            return 0;
-        }
-
-        // Extract and return it
-        int result = keyBuffer[bufferStart];
-        incStart();
-        return result;
-    }
-
-    public int getScanKey() {
-
-        // Flush any keypress messages
-        // ProcessWindowsMessages ();
-
-        // Check for buffered keypress
-        if (scanBufferStart == scanBufferEnd) {
-            return 0;
-        }
-
-        // Extract and return it
-        int result = scanKeyBuffer[scanBufferStart];
-        incScanStart();
-        return result;
-    }
-
-    void discardLeadingScanKeyIf(int key1, int key2) {
-        if (scanBufferStart == scanBufferEnd) {
-            return;
-        }
-        int next = scanKeyBuffer[scanBufferStart];
-        if (next == key1 || next == key2) {
-            incScanStart();
-        }
-    }
-
-    void discardLeadingKeyIf(int key1, int key2) {
-        if (bufferStart == bufferEnd) {
-            return;
-        }
-        int next = keyBuffer[bufferStart];
-        if (next == key1 || next == key2) {
-            incStart();
-        }
-    }
-
-    public void clearKeyBuffers() {
-
-        // Clear key states
-        for (int i = 0; i < keyDown.length; i++)
-        // TODO determine correct default value; 'false' was used in original source
-        {
-            keyDown[i] = 0;
-        }
-
-        // Clear key buffer
-        bufferStart = 0;
-        bufferEnd = 0;
-        scanBufferStart = 0;
-        scanBufferEnd = 0;
-    }
-
-    public boolean isKeyDown(char i) {
-        // ProcessWindowsMessages();
-        return keyDown[i] != 0;
-    }
-
-    public void fakeScanKey(int scanCode, int bitmask, boolean down) {
-        assertTrue(bitmask != 0);
-
-        // Fake a key press/release
-        // TODO confirm mask works properly
-        boolean wasDown = (keyDown[scanCode] & bitmask) != 0;
-
-        // Add a keypress to buffer (if necessary)
-        if (down && !wasDown) {
-            bufferScanKey(scanCode);
-        }
-
-        // Toggle key bitmask
-        if (down) {
-            keyDown[scanCode] |= bitmask;
-        } else {
-            keyDown[scanCode] &= ~bitmask;
-        }
-    }
+//    /**
+//     * Pulls a key from the keyboard buffer. Returns 0 if none waiting.
+//     * @return
+//     */
+//    public int getKey() {
+//
+//        // Flush any keypress messages
+//        // processWindowsMessages ();
+//
+//        // Check for buffered keypress
+//        if (bufferStart == bufferEnd) {
+//            return 0;
+//        }
+//
+//        // Extract and return it
+//        int result = keyBuffer[bufferStart];
+//        incStart();
+//        return result;
+//    }
+//
+//    public int getScanKey() {
+//
+//        // Flush any keypress messages
+//        // ProcessWindowsMessages ();
+//
+//        // Check for buffered keypress
+//        if (scanBufferStart == scanBufferEnd) {
+//            return 0;
+//        }
+//
+//        // Extract and return it
+//        int result = scanKeyBuffer[scanBufferStart];
+//        incScanStart();
+//        return result;
+//    }
+//
+//    void discardLeadingScanKeyIf(int key1, int key2) {
+//        if (scanBufferStart == scanBufferEnd) {
+//            return;
+//        }
+//        int next = scanKeyBuffer[scanBufferStart];
+//        if (next == key1 || next == key2) {
+//            incScanStart();
+//        }
+//    }
+//
+//    void discardLeadingKeyIf(int key1, int key2) {
+//        if (bufferStart == bufferEnd) {
+//            return;
+//        }
+//        int next = keyBuffer[bufferStart];
+//        if (next == key1 || next == key2) {
+//            incStart();
+//        }
+//    }
+//
+//    public void clearKeyBuffers() {
+//
+//        // Clear key states
+//        for (int i = 0; i < keyDown.length; i++)
+//        // TODO determine correct default value; 'false' was used in original source
+//        {
+//            keyDown[i] = 0;
+//        }
+//
+//        // Clear key buffer
+//        bufferStart = 0;
+//        bufferEnd = 0;
+//        scanBufferStart = 0;
+//        scanBufferEnd = 0;
+//    }
+//
+//    public boolean isKeyDown(char i) {
+//        // ProcessWindowsMessages();
+//        return keyDown[i] != 0;
+//    }
+//
+//    public void fakeScanKey(int scanCode, int bitmask, boolean down) {
+//        assertTrue(bitmask != 0);
+//
+//        // Fake a key press/release
+//        // TODO confirm mask works properly
+//        boolean wasDown = (keyDown[scanCode] & bitmask) != 0;
+//
+//        // Add a keypress to buffer (if necessary)
+//        if (down && !wasDown) {
+//            bufferScanKey(scanCode);
+//        }
+//
+//        // Toggle key bitmask
+//        if (down) {
+//            keyDown[scanCode] |= bitmask;
+//        } else {
+//            keyDown[scanCode] &= ~bitmask;
+//        }
+//    }
 
     // Display screen
-    void swapBuffers() {
-        glfwSwapBuffers(window); // DisplayManager
-    }
+//    void swapBuffers() {
+//        glfwSwapBuffers(window); // DisplayManager
+//    }
 
     // virtual
     /*
@@ -1599,22 +1608,7 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
 
     }*/
 
-    // Multitexturing extension
-    public boolean isExtensionSupported(String extension) {
-        // TODO determine what this function does; not sure the purpose of padding the strings with
-        // whitespace
-        String extensions = GL11.glGetString(GL11.GL_EXTENSIONS);
-        extensions = " " + extensions + " ";
-        extension = " " + extension + " ";
-        return extensions.contains(extension);
-        /*
-        //Original source for reference
-        	std::string extensions = (char *) glGetString (GL_EXTENSIONS);
-        	extensions = (std::string) " " + extensions + " ";
-        	extension = " " + extension + " ";
-        	return extensions.find (extension) != std::string::npos;
-         */
-    }
+
 
     public void initMultitexture() {
         // TODO Look into extensions
@@ -1740,20 +1734,4 @@ public abstract class GLWindow extends HasErrorState implements Target, IVMDrive
         GL11.glLoadIdentity();
     }
 
-    /**
-     * gluPerspective replacement
-     * @param fovY
-     * @param aspect
-     * @param zNear
-     * @param zFar
-     */
-    void perspectiveGL(double fovY, double aspect, double zNear, double zFar) {
-        double fW, fH;
-
-        // fH = tan( (fovY / 2) / 180 * pi ) * zNear;
-        fH = Math.tan(fovY / 360.0 * M_PI) * zNear;
-        fW = fH * aspect;
-
-        GL11.glFrustum(-fW, fW, -fH, fH, zNear, zFar);
-    }
 }

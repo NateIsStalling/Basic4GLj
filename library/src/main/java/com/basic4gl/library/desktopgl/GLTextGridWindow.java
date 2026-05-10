@@ -6,6 +6,11 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.library.desktopgl.glfw.GLFWKeyboard;
+import com.basic4gl.library.desktopgl.glfw.GLFWMouse;
+import com.basic4gl.library.desktopgl.glfw.GLFWWindowManager;
+import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
+import com.basic4gl.library.desktopgl.input.OpenGLMouse;
 import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.compiler.util.IVMDriverAccess;
 import com.basic4gl.lib.util.*;
@@ -32,6 +37,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     private IServiceCollection services;
     private static GLTextGridWindow instance;
 
+    private GLFWWindowManager windowManager;
+    private GLFWKeyboard keyboard;
     private FileOpener fileOpener;
 
     private PluginJARManager plugins;
@@ -49,8 +56,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
     // We need to strongly reference callback instances.
     private GLFWErrorCallback errorCallback;
-    private GLFWKeyCallback keyCallback;
-    private GLFWCharCallback charCallback;
+//    private GLFWKeyCallback keyCallback;
+//    private GLFWCharCallback charCallback;
 
     private boolean isClosing;
 
@@ -384,6 +391,23 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
         instance.libraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
         instance.libraries.add(new com.basic4gl.library.standard.TomCompilerBasicLib());
 
+        // Standard services
+        GLFWWindowManager windowManager = new GLFWWindowManager();
+        instance.windowManager = windowManager;
+        instance.textGrid = new GLTextGrid(
+            instance.fileOpener.getFilenameForRead("charset.png", false),
+            instance.fileOpener,
+            25,
+            40,
+            16,
+            16);
+        instance.keyboard = new GLFWKeyboard(windowManager);
+        instance.services.registerService(OpenGLWindowManager.class, windowManager);
+        instance.services.registerService(OpenGLKeyboard.class, instance.keyboard);
+        instance.services.registerService(OpenGLMouse.class, new GLFWMouse(windowManager));
+        instance.services.registerService(Content2DManager.class, new Content2DManager(windowManager));
+        instance.services.registerService(GLTextGrid.class, instance.textGrid);
+
         // Register library functions
         for (Library lib : instance.libraries) {
             lib.init(instance.compiler, instance.services); // Allow libraries to register function overloads
@@ -595,7 +619,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             //				glEnable(GL_DEPTH_TEST);                        // Enables Depth Testing
             //				glDepthFunc(GL_LEQUAL);                         // The Type Of Depth Test To Do
             // Keep window responsive until closed
-            while (!Thread.currentThread().isInterrupted() && window != 0 && !isClosing()) {
+            while (!Thread.currentThread().isInterrupted() && windowManager.getGLFWWindow() != 0 && !isClosing()) {
                 // System.out.println("idle");
                 try {
                     // Go easy on the processor
@@ -629,7 +653,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     }
 
     @Override
-    public void hide() {}
+    public void hide() {
+        windowManager.deactivateWindow();
+    }
 
     @Override
     public void stop() {
@@ -648,8 +674,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
     @Override
     public boolean isFullscreen() {
-        // TODO Auto-generated method stub
-        return false;
+        return windowManager.activeParams.isFullscreen;
     }
 
     @Override
@@ -862,13 +887,13 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
         compiler.streamIn(input);
     }
 
-    GLTextGrid getTextGrid() {
-        return textGrid;
-    }
+//    GLTextGrid getTextGrid() {
+//        return textGrid;
+//    }
 
-    void setTextGrid(GLTextGrid grid) {
-        textGrid = grid;
-    }
+//    void setTextGrid(GLTextGrid grid) {
+//        textGrid = grid;
+//    }
 
     public CallbackMessage driveVM(int steps) {
 
@@ -938,8 +963,9 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             ((IFileAccess) lib).init(fileOpener);
         }
         if (lib instanceof IGLRenderer) {
-            ((IGLRenderer) lib).setTextGrid(textGrid);
-            ((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
+            //TODO deprecate IGLRenderer in favor of services
+//            ((IGLRenderer) lib).setTextGrid(textGrid);
+//            ((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
         }
 
         lib.init(vm, services, appSettings, programArgs);
@@ -961,26 +987,22 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
         // Create window
         init();
 
-        // This line is critical for LWJGL's interoperation with GLFW's
-        // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
-        // creates the ContextCapabilities instance and makes the OpenGL
-        // bindings available for use.
-        GL.createCapabilities();
 
+        //TODO updating this to 2.6.4; this should be handled by the window manager now that it is a service
         resetGL();
 
         // Initialize Sprite Engine
-        textGrid = new GLSpriteEngine(charsetPath, fileOpener, 25, 40, 16, 16);
-        if (textGrid.hasError()) {
-            vm.setError(textGrid.getError());
-        }
+        //TODO updating this to 2.6.4
+//        textGrid = new GLSpriteEngine(charsetPath, fileOpener, 25, 40, 16, 16);
+//        if (textGrid.hasError()) {
+//            vm.setError(textGrid.getError());
+//        }
     }
 
     public void onPostExecute() {
-        //		glfwSwapBuffers(this.window); // swap the color buffers
+
         // Keep window responsive until closed
-        while (!Thread.currentThread().isInterrupted() && window != 0 && !isClosing()) {
+        while (!Thread.currentThread().isInterrupted() && windowManager.getGLFWWindow() != 0 && !isClosing()) {
             try {
                 // Go easy on the processor
                 Thread.sleep(10);
@@ -1019,12 +1041,18 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
             // Release window and window callbacks
             System.out.println("destroy window");
-            glfwDestroyWindow(window);
+//            glfwDestroyWindow(window);
+
+            windowManager.destroyWindow();
 
             System.out.println("destroy callbacks");
-            keyCallback.free();
-            charCallback.free();
-            clearKeyBuffers();
+            //TODO 2.6.4
+//            keyCallback.free();
+//            charCallback.free();
+//            clearKeyBuffers();
+            // TODO 2.6.4 is this necessary?
+            keyboard.clearKeyBuffers();
+
 
             // Terminate GLFW and release the GLFWerrorfun
             System.out.println("glfwTerminate");
@@ -1036,22 +1064,25 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             errorCallback = null; // .release();
             // Clear pointer to window
             // An access violation will occur next time this window is launched if this isn't cleared
-            window = 0;
+            // TODO 2.6.4 refactor - this should be handled by windowManager.destroyWindow()
+//            window = 0;
         }
         System.out.println("exit");
     }
 
-    public void recreateGLContext() {
-        super.recreateGLContext();
-
-        if (textGrid != null) {
-            textGrid.uploadCharsetTexture();
-        }
-    }
+    //TODO 2.6.4 cleanup
+//    public void recreateGLContext() {
+//        super.recreateGLContext();
+//
+//        if (textGrid != null) {
+//            textGrid.uploadCharsetTexture();
+//        }
+//    }
 
     public boolean isClosing() {
         try {
             synchronized (this) {
+                long window = windowManager.getGLFWWindow();
                 return isClosing || (window != 0 && glfwWindowShouldClose(window));
             }
         } catch (Exception e) {
@@ -1063,6 +1094,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     public boolean isVisible() {
         try {
             synchronized (this) {
+                long window = windowManager.getGLFWWindow();
                 return window != 0 && !glfwWindowShouldClose(window);
             }
         } catch (Exception e) {
@@ -1116,13 +1148,26 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             }
 
             // Configure our window
-            glfwDefaultWindowHints(); // optional, the current window hints are already the default
-            glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
-            glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE); // the window will be resizable
-            glfwWindowHint(GLFW_SCALE_TO_MONITOR, GL_TRUE); // handle monitor resolution scaling
+//            glfwDefaultWindowHints(); // optional, the current window hints are already the default
+
+//            glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
+//            glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE); // the window will be resizable
+
 
             // Create the window
-            window = glfwCreateWindow(width, height, title, NULL, NULL);
+//            windowManager.activateWindow();
+
+// TODO 2.6.4            windowManager.pendingParams = ...
+            // Header determines whether we create the actual window now or wait until
+            // UpdateWindow() is executed in the Basic4GL code.
+            // TODO - implement options for creating window later, and for recreating window on demand (ie: for fullscreen mode)
+//            if (header.startupWindowOption == 0)
+//            {
+
+                windowManager.recreateWindow();
+//            }
+            long window = windowManager.getGLFWWindow();
+//            window = glfwCreateWindow(width, height, title, NULL, NULL);
             if (window == NULL) {
                 throw new RuntimeException("Failed to create the GLFW window");
             }
@@ -1140,49 +1185,50 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             }
             mFrame.add(mCanvas);*/
 
+            // TODO 2.6.4 refactor
             // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-            glfwSetKeyCallback(
-                    window,
-                    keyCallback = new GLFWKeyCallback() {
-                        @Override
-                        public void invoke(long window, int key, int scancode, int action, int mods) {
-                            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                                glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
-                            }
-                            if (key < 0) {
-                                return;
-                            }
-                            if (action == GLFW_PRESS) {
-                                if (key == GLFW_KEY_PAUSE) {
-                                    pausePressed = true;
-                                } else {
-                                    keyDown[key] |= 1;
-                                    bufferScanKey((char) key);
-                                    if (key == GLFW_KEY_ENTER || key == GLFW_KEY_KP_ENTER) {
-                                        // Basic4GL expects Enter from inkey$ as chr$(13)
-                                        bufferKey('\r');
-                                    }
-                                }
-                            } else if (action == GLFW_RELEASE) {
-                                keyDown[key] &= ~1;
-                            }
-                        }
-                    });
-            // Setup a character key callback
-            glfwSetCharCallback(
-                    window,
-                    charCallback = new GLFWCharCallback() {
-                        @Override
-                        public void invoke(long window, int codepoint) {
-
-                            if (codepoint == 27) // Esc closes window
-                            {
-                                closing = true;
-                            }
-
-                            bufferKey(codepoint);
-                        }
-                    });
+//            glfwSetKeyCallback(
+//                    window,
+//                    keyCallback = new GLFWKeyCallback() {
+//                        @Override
+//                        public void invoke(long window, int key, int scancode, int action, int mods) {
+//                            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+//                                glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
+//                            }
+//                            if (key < 0) {
+//                                return;
+//                            }
+//                            if (action == GLFW_PRESS) {
+//                                if (key == GLFW_KEY_PAUSE) {
+//                                    pausePressed = true;
+//                                } else {
+//                                    keyDown[key] |= 1;
+//                                    bufferScanKey((char) key);
+//                                    if (key == GLFW_KEY_ENTER || key == GLFW_KEY_KP_ENTER) {
+//                                        // Basic4GL expects Enter from inkey$ as chr$(13)
+//                                        bufferKey('\r');
+//                                    }
+//                                }
+//                            } else if (action == GLFW_RELEASE) {
+//                                keyDown[key] &= ~1;
+//                            }
+//                        }
+//                    });
+//            // Setup a character key callback
+//            glfwSetCharCallback(
+//                    window,
+//                    charCallback = new GLFWCharCallback() {
+//                        @Override
+//                        public void invoke(long window, int codepoint) {
+//
+//                            if (codepoint == 27) // Esc closes window
+//                            {
+//                                closing = true;
+//                            }
+//
+//                            bufferKey(codepoint);
+//                        }
+//                    });
 
             // Get the resolution of the primary monitor
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
@@ -1208,12 +1254,14 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             //			} // the stack frame is popped automatically
 
             // Make the OpenGL context current
-            glfwMakeContextCurrent(window);
+//            glfwMakeContextCurrent(window);
             // Enable v-sync
-            glfwSwapInterval(1);
+            // TODO 2.6.4 refactor - is this still needed with the window manager handling context creation?
+//            glfwSwapInterval(1);
 
             // Make the window visible
-            glfwShowWindow(window);
+//            glfwShowWindow(window);
+            windowManager.activateWindow();
             //			int err = glGetError();
             //			System.out.println(err);
         }

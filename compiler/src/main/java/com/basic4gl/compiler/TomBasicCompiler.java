@@ -171,6 +171,10 @@ public class TomBasicCompiler extends HasErrorState {
         return reservedWords;
     }
 
+    public Map<String, Integer> getGlobalUserFunctionIndex() {
+        return globalUserFunctionIndex;
+    }
+
     /**
      * Internal compiler types
      */
