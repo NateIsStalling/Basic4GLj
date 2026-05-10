@@ -15,16 +15,22 @@ import static org.lwjgl.opengl.GL11.*;
  * Abstract base class. Must be implemented for specific OpenGL window library (e.g. GLFW)
  */
 public abstract class OpenGLWindowManager extends HasErrorState {
+    private int framebufferWidth;
+    private int framebufferHeight;
+
     private void setOpenGLDefaults() {
+        int viewportWidth = getFramebufferWidth();
+        int viewportHeight = getFramebufferHeight();
+
         // Setup a default viewport
-        GL11.glViewport(0, 0, getWindowWidth(), getWindowHeight()); // Reset The Current Viewport
+        GL11.glViewport(0, 0, viewportWidth, viewportHeight); // Reset The Current Viewport
 
         // Set some default OpenGL matrices. Basic 3D perspective projection
         glMatrixMode(GL_PROJECTION); // Select The Projection Matrix
         glLoadIdentity(); // Reset The Projection Matrix
         gluPerspective(
                 60.0f,
-                (float)getWindowWidth() / (float)getWindowHeight(),
+                (float) viewportWidth / (float) viewportHeight,
                 1.0f,
                 1000.0f);
 
@@ -85,6 +91,8 @@ public abstract class OpenGLWindowManager extends HasErrorState {
     public OpenGLWindowManager() {
         isWindowCreated = false;
         isWindowShowing = false;
+        framebufferWidth = 0;
+        framebufferHeight = 0;
     }
 
     public void dispose() {
@@ -140,6 +148,8 @@ public abstract class OpenGLWindowManager extends HasErrorState {
 
             internalDestroyWindow();
             isWindowCreated = false;
+            framebufferWidth = 0;
+            framebufferHeight = 0;
         }
     }
     public boolean isCloseRequested() {
@@ -184,6 +194,19 @@ public abstract class OpenGLWindowManager extends HasErrorState {
             height = getScreenHeight();
         }
         return height;
+    }
+
+    protected void updateFramebufferSize(int width, int height) {
+        framebufferWidth = Math.max(width, 1);
+        framebufferHeight = Math.max(height, 1);
+    }
+
+    public int getFramebufferWidth() {
+        return framebufferWidth > 0 ? framebufferWidth : getWindowWidth();
+    }
+
+    public int getFramebufferHeight() {
+        return framebufferHeight > 0 ? framebufferHeight : getWindowHeight();
     }
 
     public boolean isExtensionSupported(String extension) {

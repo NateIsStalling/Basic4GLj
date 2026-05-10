@@ -6,6 +6,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.library.desktopgl.glfw.GLFWKeyboard;
 import com.basic4gl.library.desktopgl.glfw.GLFWMouse;
 import com.basic4gl.library.desktopgl.glfw.GLFWWindowManager;
@@ -16,6 +17,7 @@ import com.basic4gl.compiler.util.IVMDriverAccess;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.library.debug.DebuggerCommandAdapter;
 import com.basic4gl.runtime.Debugger;
+import com.basic4gl.runtime.HasErrorState;
 import com.basic4gl.runtime.InstructionPosition;
 import com.basic4gl.runtime.TomVM;
 import java.io.*;
@@ -30,7 +32,7 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
-public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCommandLineOptions {
+public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver, IFileAccess, ITargetCommandLineOptions {
 
     // Libraries
     private java.util.List<Library> libraries;
@@ -114,16 +116,6 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
     }
 
     public GLTextGridWindow() {
-        super(
-                false,
-                true,
-                640, // Note: If width = 0, will use screen width
-                480,
-                0, // Color depth - 0 (use desktop), 16, or 32
-                true,
-                "Basic4GLj",
-                false,
-                false);
     }
 
     public static Library getInstance(TomBasicCompiler compiler) {
@@ -533,11 +525,13 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             if (debuggerCallbacks != null) {
                 debuggerCallbacks.onPostLoad();
             }
-            onPreExecute();
             // Initialize libraries
             for (Library lib : compiler.getLibraries()) {
                 initLibrary(lib);
             }
+
+            onPreExecute();
+
             plugins.onProgramResume();
 
             // Debugger is not attached
@@ -989,7 +983,7 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
 
 
         //TODO updating this to 2.6.4; this should be handled by the window manager now that it is a service
-        resetGL();
+//        resetGL();
 
         // Initialize Sprite Engine
         //TODO updating this to 2.6.4
@@ -1132,8 +1126,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             m_glWin.SetTextGrid (m_glText);
             */
             String title = configuration.getValue(SETTING_TITLE);
-            width = Integer.valueOf(configuration.getValue(SETTING_WIDTH));
-            height = Integer.valueOf(configuration.getValue(SETTING_HEIGHT));
+            int width = Integer.valueOf(configuration.getValue(SETTING_WIDTH));
+            int height = Integer.valueOf(configuration.getValue(SETTING_HEIGHT));
 
             boolean resizable = Boolean.valueOf(configuration.getValue(SETTING_RESIZABLE));
             int mode = Integer.valueOf(configuration.getValue(SETTING_SCREEN_MODE));
@@ -1163,6 +1157,13 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             // TODO - implement options for creating window later, and for recreating window on demand (ie: for fullscreen mode)
 //            if (header.startupWindowOption == 0)
 //            {
+
+                // Apply startup configuration to pending window params before window creation.
+                windowManager.pendingParams.title = title;
+                windowManager.pendingParams.width = width;
+                windowManager.pendingParams.height = height;
+                windowManager.pendingParams.isResizable = resizable;
+                windowManager.pendingParams.isFullscreen = mode == MODE_FULLSCREEN;
 
                 windowManager.recreateWindow();
 //            }
@@ -1233,7 +1234,8 @@ public class GLTextGridWindow extends GLWindow implements IFileAccess, ITargetCo
             // Get the resolution of the primary monitor
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             // Center our window
-            glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
+            // TODO 2.6.4 refactor - this should be handled by the window manager now that it is a service
+//            glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
             // Get the thread stack and push a new frame
             //			try ( MemoryStack stack = stackPush() ) {
             //				IntBuffer pWidth = stack.mallocInt(1); // int*

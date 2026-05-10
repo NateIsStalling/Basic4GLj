@@ -2,16 +2,19 @@ package com.basic4gl.library.desktopgl.glfw;
 
 import com.basic4gl.library.desktopgl.OpenGLWindowManager;
 import com.basic4gl.library.desktopgl.OpenGLWindowParams;
+import java.nio.IntBuffer;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window;
 import static org.lwjgl.opengl.GL11.GL_TRUE;
 
 public class GLFWWindowManager extends OpenGLWindowManager {
     private long window;
+    private GLFWFramebufferSizeCallback framebufferSizeCallback;
 
 
     public long getGLFWWindow() { return window; }
@@ -20,6 +23,11 @@ public class GLFWWindowManager extends OpenGLWindowManager {
     protected void internalDestroyWindow()
     {
         assertTrue(window != 0);
+        glfwSetFramebufferSizeCallback(window, null);
+        if (framebufferSizeCallback != null) {
+            framebufferSizeCallback.free();
+            framebufferSizeCallback = null;
+        }
         glfwDestroyWindow(window);
         window = 0;
     }
@@ -77,10 +85,25 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         if (window == 0) {
             System.out.println("Failed to create GLFW window");
             setError("Error creating window");
+            return;
         }
 
         // Make OpenGL context current
         glfwMakeContextCurrent(window);
+
+        // Use drawable framebuffer size (not logical window size) for Retina/high-DPI rendering.
+        IntBuffer fbWidth = BufferUtils.createIntBuffer(1);
+        IntBuffer fbHeight = BufferUtils.createIntBuffer(1);
+        glfwGetFramebufferSize(window, fbWidth, fbHeight);
+        updateFramebufferSize(fbWidth.get(0), fbHeight.get(0));
+
+        framebufferSizeCallback = new GLFWFramebufferSizeCallback() {
+            @Override
+            public void invoke(long window, int width, int height) {
+                updateFramebufferSize(width, height);
+            }
+        };
+        glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
 
         // This line is critical for LWJGL's interoperation with GLFW's
@@ -164,6 +187,7 @@ public class GLFWWindowManager extends OpenGLWindowManager {
     {
         super();
         window = 0;
+        framebufferSizeCallback = null;
         if (!glfwInit())
         {
             setError("glfwInit() failed");
