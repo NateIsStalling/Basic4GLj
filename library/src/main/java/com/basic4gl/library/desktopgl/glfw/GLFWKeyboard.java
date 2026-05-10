@@ -69,6 +69,16 @@ public class GLFWKeyboard extends OpenGLKeyboard {
             case GLFW_KEY_PRINT_SCREEN: return VK_PRINT;
             case GLFW_KEY_INSERT: return VK_INSERT;
             case GLFW_KEY_DELETE: return VK_DELETE;
+
+            // Alt/Menu keys
+            case GLFW_KEY_LEFT_ALT: return ignoreLeftRight ? VK_MENU : VK_LMENU;
+            case GLFW_KEY_RIGHT_ALT: return ignoreLeftRight ? VK_MENU : VK_RMENU;
+
+            // Windows/Super keys + application menu key
+            case GLFW_KEY_LEFT_SUPER: return VK_LWIN;
+            case GLFW_KEY_RIGHT_SUPER: return VK_RWIN;
+            case GLFW_KEY_MENU: return VK_APPS;
+
             case GLFW_KEY_KP_0: return VK_NUMPAD0;
             case GLFW_KEY_KP_1: return VK_NUMPAD1;
             case GLFW_KEY_KP_2: return VK_NUMPAD2;

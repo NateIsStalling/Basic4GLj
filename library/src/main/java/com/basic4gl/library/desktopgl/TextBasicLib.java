@@ -5,6 +5,7 @@ import static com.basic4gl.library.desktopgl.GLSpriteEngine.DRAW_SPRITES_INFRONT
 import static com.basic4gl.library.desktopgl.GLTextGrid.DRAW_TEXT;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.system.windows.User32.*;
 
 import com.basic4gl.library.desktopgl.input.InputCommandHandler;
 import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
@@ -157,66 +158,113 @@ public class TextBasicLib implements FunctionLibrary {
          *       For non-printable keys, custom names are used (e.g. "F4", "BACKSPACE", etc.)
          */
 
-        c.put("VK_BACK", new Constant(GLFW_KEY_BACKSPACE));
-        c.put("VK_TAB", new Constant(GLFW_KEY_TAB));
-        c.put("VK_SPACE", new Constant(GLFW_KEY_SPACE));
-        c.put("VK_PRIOR", new Constant(GLFW_KEY_PAGE_UP));
-        c.put("VK_NEXT", new Constant(GLFW_KEY_PAGE_DOWN));
-        c.put("VK_CAPITAL", new Constant(GLFW_KEY_CAPS_LOCK));
-        c.put("VK_ESCAPE", new Constant(GLFW_KEY_ESCAPE));
-        c.put("VK_END", new Constant(GLFW_KEY_END));
-        c.put("VK_HOME", new Constant(GLFW_KEY_HOME));
-        c.put("VK_LEFT", new Constant(GLFW_KEY_LEFT));
-        c.put("VK_UP", new Constant(GLFW_KEY_UP));
-        c.put("VK_RIGHT", new Constant(GLFW_KEY_RIGHT));
-        c.put("VK_DOWN", new Constant(GLFW_KEY_DOWN));
-        c.put("VK_INSERT", new Constant(GLFW_KEY_INSERT));
-        c.put("VK_DELETE", new Constant(GLFW_KEY_DELETE));
-        c.put("VK_NUMPAD0", new Constant(GLFW_KEY_KP_0));
-        c.put("VK_NUMPAD1", new Constant(GLFW_KEY_KP_1));
-        c.put("VK_NUMPAD2", new Constant(GLFW_KEY_KP_2));
-        c.put("VK_NUMPAD3", new Constant(GLFW_KEY_KP_3));
-        c.put("VK_NUMPAD4", new Constant(GLFW_KEY_KP_4));
-        c.put("VK_NUMPAD5", new Constant(GLFW_KEY_KP_5));
-        c.put("VK_NUMPAD6", new Constant(GLFW_KEY_KP_6));
-        c.put("VK_NUMPAD7", new Constant(GLFW_KEY_KP_7));
-        c.put("VK_NUMPAD8", new Constant(GLFW_KEY_KP_8));
-        c.put("VK_NUMPAD9", new Constant(GLFW_KEY_KP_9));
-        c.put("VK_MULTIPLY", new Constant(GLFW_KEY_KP_MULTIPLY));
-        c.put("VK_ADD", new Constant(GLFW_KEY_KP_ADD));
-        c.put("VK_SUBTRACT", new Constant(GLFW_KEY_KP_SUBTRACT));
-        c.put("VK_DECIMAL", new Constant(GLFW_KEY_KP_DECIMAL));
-        c.put("VK_DIVIDE", new Constant(GLFW_KEY_KP_DIVIDE));
-        c.put("VK_F1", new Constant(GLFW_KEY_F1));
-        c.put("VK_F2", new Constant(GLFW_KEY_F2));
-        c.put("VK_F3", new Constant(GLFW_KEY_F3));
-        c.put("VK_F4", new Constant(GLFW_KEY_F4));
-        c.put("VK_F5", new Constant(GLFW_KEY_F5));
-        c.put("VK_F6", new Constant(GLFW_KEY_F6));
-        c.put("VK_F7", new Constant(GLFW_KEY_F7));
-        c.put("VK_F8", new Constant(GLFW_KEY_F8));
-        c.put("VK_F9", new Constant(GLFW_KEY_F9));
-        c.put("VK_F10", new Constant(GLFW_KEY_F10));
-        c.put("VK_F11", new Constant(GLFW_KEY_F11));
-        c.put("VK_F12", new Constant(GLFW_KEY_F12));
-        c.put("VK_F13", new Constant(GLFW_KEY_F13));
-        c.put("VK_F14", new Constant(GLFW_KEY_F14));
-        c.put("VK_F15", new Constant(GLFW_KEY_F15));
-        c.put("VK_F16", new Constant(GLFW_KEY_F16));
-        c.put("VK_F17", new Constant(GLFW_KEY_F17));
-        c.put("VK_F18", new Constant(GLFW_KEY_F18));
-        c.put("VK_F19", new Constant(GLFW_KEY_F19));
-        c.put("VK_F20", new Constant(GLFW_KEY_F20));
-        c.put("VK_F21", new Constant(GLFW_KEY_F21));
-        c.put("VK_F22", new Constant(GLFW_KEY_F22));
-        c.put("VK_F23", new Constant(GLFW_KEY_F23));
-        c.put("VK_F24", new Constant(GLFW_KEY_F24));
-        c.put("VK_LSHIFT", new Constant(GLFW_KEY_LEFT_SHIFT));
-        c.put("VK_RSHIFT", new Constant(GLFW_KEY_RIGHT_SHIFT));
-        c.put("VK_LCONTROL", new Constant(GLFW_KEY_LEFT_CONTROL));
-        c.put("VK_RCONTROL", new Constant(GLFW_KEY_RIGHT_CONTROL));
-        c.put("VK_NUMLOCK", new Constant(GLFW_KEY_NUM_LOCK));
-        c.put("VK_SCROLL", new Constant(GLFW_KEY_SCROLL_LOCK));
+
+
+        c.put("VK_LBUTTON", new Constant(VK_LBUTTON));             // Virtual key codes
+        c.put("VK_RBUTTON", new Constant(VK_RBUTTON));
+        c.put("VK_CANCEL", new Constant(VK_CANCEL));
+        c.put("VK_MBUTTON", new Constant(VK_MBUTTON));
+        c.put("VK_CLEAR", new Constant(VK_CLEAR));
+        c.put("VK_RETURN", new Constant(VK_RETURN));
+        c.put("VK_SHIFT", new Constant(VK_SHIFT));
+        c.put("VK_CONTROL", new Constant(VK_CONTROL));
+        c.put("VK_MENU", new Constant(VK_MENU));
+        c.put("VK_PAUSE", new Constant(VK_PAUSE));
+
+        c.put("VK_BACK", new Constant(VK_BACK));
+        c.put("VK_TAB", new Constant(VK_TAB));
+        c.put("VK_SPACE", new Constant(VK_SPACE));
+        c.put("VK_PRIOR", new Constant(VK_PRIOR));
+        c.put("VK_NEXT", new Constant(VK_NEXT));
+        c.put("VK_CAPITAL", new Constant(VK_CAPITAL));
+        c.put("VK_KANA", new Constant(VK_KANA));
+        c.put("VK_HANGEUL", new Constant(VK_HANGEUL));
+        c.put("VK_HANGUL", new Constant(VK_HANGUL));
+        c.put("VK_JUNJA", new Constant(VK_JUNJA));
+        c.put("VK_FINAL", new Constant(VK_FINAL));
+        c.put("VK_HANJA", new Constant(VK_HANJA));
+        c.put("VK_KANJI", new Constant(VK_KANJI));
+
+        c.put("VK_ESCAPE", new Constant(VK_ESCAPE));
+        c.put("VK_CONVERT", new Constant(VK_CONVERT));
+        c.put("VK_NONCONVERT", new Constant(VK_NONCONVERT));
+        c.put("VK_ACCEPT", new Constant(VK_ACCEPT));
+        c.put("VK_MODECHANGE", new Constant(VK_MODECHANGE));
+        
+        c.put("VK_END", new Constant(VK_END));
+        c.put("VK_HOME", new Constant(VK_HOME));
+        c.put("VK_LEFT", new Constant(VK_LEFT));
+        c.put("VK_UP", new Constant(VK_UP));
+        c.put("VK_RIGHT", new Constant(VK_RIGHT));
+        c.put("VK_DOWN", new Constant(VK_DOWN));
+        c.put("VK_INSERT", new Constant(VK_INSERT));
+        c.put("VK_DELETE", new Constant(VK_DELETE));
+
+        c.put("VK_SELECT", new Constant(VK_SELECT));
+        c.put("VK_PRINT", new Constant(VK_PRINT));
+        c.put("VK_EXECUTE", new Constant(VK_EXECUTE));
+        c.put("VK_SNAPSHOT", new Constant(VK_SNAPSHOT));
+        c.put("VK_HELP", new Constant(VK_HELP));
+        c.put("VK_LWIN", new Constant(VK_LWIN));
+        c.put("VK_RWIN", new Constant(VK_RWIN));
+        c.put("VK_APPS", new Constant(VK_APPS));
+        
+        c.put("VK_NUMPAD0", new Constant(VK_NUMPAD0));
+        c.put("VK_NUMPAD1", new Constant(VK_NUMPAD1));
+        c.put("VK_NUMPAD2", new Constant(VK_NUMPAD2));
+        c.put("VK_NUMPAD3", new Constant(VK_NUMPAD3));
+        c.put("VK_NUMPAD4", new Constant(VK_NUMPAD4));
+        c.put("VK_NUMPAD5", new Constant(VK_NUMPAD5));
+        c.put("VK_NUMPAD6", new Constant(VK_NUMPAD6));
+        c.put("VK_NUMPAD7", new Constant(VK_NUMPAD7));
+        c.put("VK_NUMPAD8", new Constant(VK_NUMPAD8));
+        c.put("VK_NUMPAD9", new Constant(VK_NUMPAD9));
+        c.put("VK_MULTIPLY", new Constant(VK_MULTIPLY));
+        c.put("VK_ADD", new Constant(VK_ADD));
+        c.put("VK_SEPARATOR", new Constant(VK_SEPARATOR));
+        c.put("VK_SUBTRACT", new Constant(VK_SUBTRACT));
+        c.put("VK_DECIMAL", new Constant(VK_DECIMAL));
+        c.put("VK_DIVIDE", new Constant(VK_DIVIDE));
+        c.put("VK_F1", new Constant(VK_F1));
+        c.put("VK_F2", new Constant(VK_F2));
+        c.put("VK_F3", new Constant(VK_F3));
+        c.put("VK_F4", new Constant(VK_F4));
+        c.put("VK_F5", new Constant(VK_F5));
+        c.put("VK_F6", new Constant(VK_F6));
+        c.put("VK_F7", new Constant(VK_F7));
+        c.put("VK_F8", new Constant(VK_F8));
+        c.put("VK_F9", new Constant(VK_F9));
+        c.put("VK_F10", new Constant(VK_F10));
+        c.put("VK_F11", new Constant(VK_F11));
+        c.put("VK_F12", new Constant(VK_F12));
+        c.put("VK_F13", new Constant(VK_F13));
+        c.put("VK_F14", new Constant(VK_F14));
+        c.put("VK_F15", new Constant(VK_F15));
+        c.put("VK_F16", new Constant(VK_F16));
+        c.put("VK_F17", new Constant(VK_F17));
+        c.put("VK_F18", new Constant(VK_F18));
+        c.put("VK_F19", new Constant(VK_F19));
+        c.put("VK_F20", new Constant(VK_F20));
+        c.put("VK_F21", new Constant(VK_F21));
+        c.put("VK_F22", new Constant(VK_F22));
+        c.put("VK_F23", new Constant(VK_F23));
+        c.put("VK_F24", new Constant(VK_F24));
+        c.put("VK_LSHIFT", new Constant(VK_LSHIFT));
+        c.put("VK_RSHIFT", new Constant(VK_RSHIFT));
+        c.put("VK_LCONTROL", new Constant(VK_LCONTROL));
+        c.put("VK_RCONTROL", new Constant(VK_RCONTROL));
+        c.put("VK_LMENU", new Constant(VK_LMENU));
+        c.put("VK_RMENU", new Constant(VK_RMENU));
+        c.put("VK_NUMLOCK", new Constant(VK_NUMLOCK));
+        c.put("VK_SCROLL", new Constant(VK_SCROLL));
+
+        c.put("VK_PROCESSKEY", new Constant(VK_PROCESSKEY));
+        c.put("VK_ATTN", new Constant(VK_ATTN));
+        c.put("VK_CRSEL", new Constant(VK_CRSEL));
+        c.put("VK_EXSEL", new Constant(VK_EXSEL));
+        c.put("VK_EREOF", new Constant(VK_EREOF));
+        c.put("VK_PLAY", new Constant(VK_PLAY));
+        c.put("VK_ZOOM", new Constant(VK_ZOOM));
 
         c.put("GLFW_KEY_UNKNOWN", new Constant(GLFW_KEY_UNKNOWN));
         c.put("GLFW_KEY_SPACE", new Constant(GLFW_KEY_SPACE));
@@ -2428,7 +2476,7 @@ public class TextBasicLib implements FunctionLibrary {
             if (index < 0 || index > Character.MAX_VALUE) {
                 vm.getReg().setIntVal(0);
             } else {
-                vm.getReg().setIntVal(keyboard.isKeyDown((char) index) ? -1 : 0);
+                vm.getReg().setIntVal(keyboard.isScanKeyDown((char) index) ? -1 : 0);
             }
         }
     }
