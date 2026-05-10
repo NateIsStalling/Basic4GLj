@@ -3,6 +3,7 @@ package com.basic4gl.library.desktopgl.glfw;
 import com.basic4gl.library.desktopgl.OpenGLWindowManager;
 import com.basic4gl.library.desktopgl.OpenGLWindowParams;
 import java.nio.FloatBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;

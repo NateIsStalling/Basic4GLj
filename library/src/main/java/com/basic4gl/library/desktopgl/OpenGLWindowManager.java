@@ -116,16 +116,16 @@ public abstract class OpenGLWindowManager extends HasErrorState {
 
     public void recreateWindow() {
         OpenGLWindowParams previousActiveParams = new OpenGLWindowParams(activeParams);
+        OpenGLWindowParams resolvedParams = buildResolvedActiveParams();
 
         // Destroy any existing window first
         destroyWindow();
 
         // Create new window
         clearError();
-        activeParams = buildResolvedActiveParams();
         isWindowCreated = true;
         isWindowShowing = false;
-        internalCreateWindow(activeParams);
+        internalCreateWindow(resolvedParams);
 
         if (hasError()) {
             isWindowCreated = false;
@@ -133,6 +133,8 @@ public abstract class OpenGLWindowManager extends HasErrorState {
             activeParams = previousActiveParams;
             return;
         }
+
+        activeParams = pendingParams;
 
         internalActivateWindow();
         isWindowShowing = true;
