@@ -271,7 +271,7 @@ public class FileOpener extends HasErrorState {
     }
 
     public String getParentDirectory() {
-        return null;
+        return parentDirectory;
     }
 
     public String getAppDataFolder(boolean allUsers) {
