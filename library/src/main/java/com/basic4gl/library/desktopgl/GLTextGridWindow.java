@@ -564,6 +564,11 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
                     // Run the virtual machine for a certain number of steps
                     vm.patchIn();
 
+                    // Check for pause key. (This allows us to pause when in full screen mode. Useful for debugging.)
+                    if (keyboard.isPausePressed()) {
+                        vm.pause();
+                    }
+
                     if (vm.isPaused()) {
                         // Breakpoint reached or paused by debugger
                         System.out.println("VM paused");
