@@ -98,5 +98,5 @@
 	OpenGL GLU constants are unavailable, they are unsupported by the current version of LWJGL that is used by Basic4GLj. GLU functions available in previous versions of Basic4GL are available with modifications.
 		gluOrtho2D is mapped to glOrtho
 		gluPerspective uses glFrustrum implementation
-		gluLookAt will currently throw an UnsupportedOperationException if called
+		gluLookAt uses glMultMatrixf with glTranslated implementation
 	

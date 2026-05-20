@@ -1,5 +1,6 @@
 package com.basic4gl.library.desktopgl;
 
+import static com.basic4gl.library.desktopgl.util.GLUtil.lookAt;
 import static org.lwjgl.opengl.GL11.glFrustum;
 import static org.lwjgl.opengl.GL11.glOrtho;
 
@@ -253,20 +254,19 @@ public class GLUBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapgluLookAt implements Function {
-
         public void run(TomVM vm) {
-            // TODO implement gluLookAt
-            throw new UnsupportedOperationException();
-            /*gluLookAt(vm.GetRealParam(9),
-            		vm.GetRealParam(8),
-            		vm.GetRealParam(7),
-            		vm.GetRealParam(6),
-            		vm.GetRealParam(5),
-            		vm.GetRealParam(4),
-            		vm.GetRealParam(3),
-            		vm.GetRealParam(2),
-            		vm.GetRealParam(1));
-            */
+            double eyeX = vm.getRealParam(9);
+            double eyeY = vm.getRealParam(8);
+            double eyeZ = vm.getRealParam(7);
+            double centerX = vm.getRealParam(6);
+            double centerY = vm.getRealParam(5);
+            double centerZ = vm.getRealParam(4);
+            double upX = vm.getRealParam(3);
+            double upY = vm.getRealParam(2);
+            double upZ = vm.getRealParam(1);
+
+            // gluLookAt(); // Replaced with lookAt
+            lookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
         }
     }
 }
