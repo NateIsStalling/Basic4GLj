@@ -1,17 +1,19 @@
 package com.basic4gl.library.desktopgl;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
+import com.basic4gl.library.desktopgl.content.Content2DManager;
+import com.basic4gl.library.desktopgl.content.GLTextGrid;
 import com.basic4gl.library.desktopgl.glfw.GLFWKeyboard;
 import com.basic4gl.library.desktopgl.glfw.GLFWMouse;
 import com.basic4gl.library.desktopgl.glfw.GLFWWindowManager;
 import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
 import com.basic4gl.library.desktopgl.input.OpenGLMouse;
+import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.compiler.util.IVMDriverAccess;
 import com.basic4gl.lib.util.*;
@@ -26,11 +28,8 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.cli.*;
-import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
 
 public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver, IFileAccess, ITargetCommandLineOptions {
 
@@ -683,7 +682,7 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
 
     @Override
     public boolean isFullscreen() {
-        return windowManager.activeParams.isFullscreen;
+        return windowManager.getActiveParams().isFullscreen;
     }
 
     @Override
@@ -994,11 +993,6 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         }
         if (lib instanceof IFileAccess) {
             ((IFileAccess) lib).init(fileOpener);
-        }
-        if (lib instanceof IGLRenderer) {
-            //TODO deprecate IGLRenderer in favor of services
-//            ((IGLRenderer) lib).setTextGrid(textGrid);
-//            ((IGLRenderer) lib).setWindow(GLTextGridWindow.this);
         }
 
         lib.init(vm, services, appSettings, programArgs);

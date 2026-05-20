@@ -1,6 +1,6 @@
 package com.basic4gl.library.standard;
 
-import com.basic4gl.library.desktopgl.OpenGLWindowManager;
+import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.runtime.types.Constant;
 import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;

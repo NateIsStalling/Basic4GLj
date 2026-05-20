@@ -1,4 +1,4 @@
-package com.basic4gl.library.desktopgl;
+package com.basic4gl.library.desktopgl.window;
 
 import com.basic4gl.library.desktopgl.util.GLUtil;
 import com.basic4gl.runtime.HasErrorState;

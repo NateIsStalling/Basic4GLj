@@ -1,4 +1,4 @@
-package com.basic4gl.library.desktopgl;
+package com.basic4gl.library.desktopgl.window;
 
 public class OpenGLWindowParams {
     public boolean isFullscreen;

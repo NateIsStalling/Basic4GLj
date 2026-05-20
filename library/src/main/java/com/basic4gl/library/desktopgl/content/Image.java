@@ -1,4 +1,4 @@
-package com.basic4gl.library.desktopgl;
+package com.basic4gl.library.desktopgl.content;
 
 import static org.lwjgl.stb.STBImage.stbi_failure_reason;
 import static org.lwjgl.stb.STBImage.stbi_load;

@@ -5,7 +5,11 @@ import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.opengl.GL13.*;
 
+import com.basic4gl.library.desktopgl.content.Image;
+import com.basic4gl.library.desktopgl.content.LoadImage;
+import com.basic4gl.library.desktopgl.util.Routines;
 import com.basic4gl.library.desktopgl.util.WindowAdapter;
+import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.runtime.types.Constant;
 import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
@@ -28,14 +32,10 @@ import org.lwjgl.opengl.*;
  * Created by Nate on 11/3/2015.
  */
 public class OpenGLBasicLib implements FunctionLibrary {
-    // ImageResourceStore
-    //
-    // Stores pointers to Corona image objects
-    // typedef vmPointerResourceStore<corona.Image> ImageResourceStore;
 
     private static final int MAXIMAGESIZE = (2048 * 2048);
+
     // Globals
-//    private static GLWindow appWindow;
     private OpenGLWindowManager windowManager;
 
     private static TextureResourceStore textures;
@@ -54,10 +54,6 @@ public class OpenGLBasicLib implements FunctionLibrary {
     private IntBuffer intBuffer16;
     private FloatBuffer floatBuffer16;
     private DoubleBuffer doubleBuffer16;
-//
-//    public static GLWindow getAppWindow() {
-//        return appWindow;
-//    }
 
     @Override
     public String name() {
@@ -1342,15 +1338,6 @@ public class OpenGLBasicLib implements FunctionLibrary {
         } else {
             return 0;
         }
-    }
-
-    static String getFileExt(String filename) {
-        String ext = "";
-        int i = filename.lastIndexOf('.');
-        if (i > 0) {
-            ext = filename.substring(i + 1);
-        }
-        return ext.toLowerCase();
     }
 
     static boolean isPowerOf2(int value) {

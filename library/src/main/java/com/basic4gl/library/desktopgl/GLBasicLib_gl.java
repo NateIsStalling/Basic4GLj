@@ -2,6 +2,7 @@ package com.basic4gl.library.desktopgl;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import com.basic4gl.library.desktopgl.util.Routines;
 import com.basic4gl.runtime.types.Constant;
 import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;

@@ -34,23 +34,6 @@ public class TrigBasicLib implements FunctionLibrary {
     public static final float[] matrix = new float[16];
     private static final float[] v1 = new float[4], v2 = new float[4], m1 = new float[16], m2 = new float[16];
 
-    // Indices
-    private int scaleVec,
-            scaleVec2,
-            scaleMatrix,
-            scaleMatrix2,
-            matrixVec,
-            matrixMatrix,
-            divVec,
-            divMatrix,
-            vecVec,
-            vecPlusVec,
-            vecMinusVec,
-            matrixPlusMatrix,
-            matrixMinusMatrix,
-            negVec,
-            negMatrix;
-
     @Override
     public String name() {
         return "TrigBasicLib";

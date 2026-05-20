@@ -1,9 +1,8 @@
-package com.basic4gl.library.desktopgl;
+package com.basic4gl.library.desktopgl.content;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.opengl.GL11.*;
 
-import com.basic4gl.lib.util.FileOpener;
 import com.basic4gl.library.standard.Standard;
 import com.basic4gl.library.standard.TrigBasicLib;
 
@@ -60,7 +59,7 @@ public class GLSpriteEngine {
     // Working variables
     private GLBasicSprite cursor;
 
-    void drawSprites(boolean inFront) {
+    public void drawSprites(boolean inFront) {
 
         // Setup OpenGL state.
         // Note: Most of the OpenGL state is already setup for us (in preparation for

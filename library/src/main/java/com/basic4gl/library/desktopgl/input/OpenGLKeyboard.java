@@ -1,6 +1,6 @@
 package com.basic4gl.library.desktopgl.input;
 
-import com.basic4gl.library.desktopgl.OpenGLWindowManager;
+import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 
 import java.util.*;
 

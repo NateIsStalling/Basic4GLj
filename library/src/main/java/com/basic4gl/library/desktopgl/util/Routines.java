@@ -1,4 +1,4 @@
-package com.basic4gl.library.desktopgl;
+package com.basic4gl.library.desktopgl.util;
 
 import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;

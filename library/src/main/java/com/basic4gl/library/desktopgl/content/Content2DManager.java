@@ -1,5 +1,6 @@
-package com.basic4gl.library.desktopgl;
+package com.basic4gl.library.desktopgl.content;
 
+import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.runtime.core.opengl.IB4GLOpenGLText;
 
 import java.util.ArrayList;

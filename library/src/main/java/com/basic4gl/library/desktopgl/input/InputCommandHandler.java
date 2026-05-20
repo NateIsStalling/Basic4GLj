@@ -1,7 +1,7 @@
 package com.basic4gl.library.desktopgl.input;
 
-import com.basic4gl.library.desktopgl.Content2DManager;
-import com.basic4gl.library.desktopgl.GLTextGrid;
+import com.basic4gl.library.desktopgl.content.Content2DManager;
+import com.basic4gl.library.desktopgl.content.GLTextGrid;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
 

@@ -1,4 +1,4 @@
-package com.basic4gl.library.desktopgl;
+package com.basic4gl.library.desktopgl.content;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
@@ -7,6 +7,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.Vector;
+
 import org.lwjgl.opengl.GL11;
 
 /**

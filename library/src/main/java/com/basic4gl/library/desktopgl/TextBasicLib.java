@@ -1,15 +1,17 @@
 package com.basic4gl.library.desktopgl;
 
-import static com.basic4gl.library.desktopgl.GLSpriteEngine.DRAW_SPRITES_BEHIND;
-import static com.basic4gl.library.desktopgl.GLSpriteEngine.DRAW_SPRITES_INFRONT;
-import static com.basic4gl.library.desktopgl.GLTextGrid.DRAW_TEXT;
+import static com.basic4gl.library.desktopgl.content.GLSpriteEngine.DRAW_SPRITES_BEHIND;
+import static com.basic4gl.library.desktopgl.content.GLSpriteEngine.DRAW_SPRITES_INFRONT;
+import static com.basic4gl.library.desktopgl.content.GLTextGrid.DRAW_TEXT;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.windows.User32.*;
 
+import com.basic4gl.library.desktopgl.content.*;
 import com.basic4gl.library.desktopgl.input.InputCommandHandler;
 import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
 import com.basic4gl.library.desktopgl.input.OpenGLMouse;
+import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.runtime.core.opengl.IB4GLOpenGLText;
 import com.basic4gl.runtime.types.Constant;
 import com.basic4gl.runtime.types.ParamTypeList;
@@ -18,7 +20,7 @@ import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
-import com.basic4gl.library.desktopgl.GLSpriteEngine.*;
+import com.basic4gl.library.desktopgl.content.GLSpriteEngine.*;
 import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;

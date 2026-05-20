@@ -27,9 +27,8 @@ import org.lwjgl.BufferUtils;
 public class JoystickBasicLib implements FunctionLibrary {
     private static final int DEFAULT_JOY_THRESHHOLD = 0x4000;
     private static final int JOY_BUTTONS = 4;
-    // Global variables
-//    private static GLWindow appWindow;
 
+    // Global variables
     private static FloatBuffer joyInfo; // Current joystick state
     private static ByteBuffer buttons;
 
@@ -44,7 +43,6 @@ public class JoystickBasicLib implements FunctionLibrary {
     5. Left and right on right sticker.
     */
     private static boolean autoPoll = true; // When true, joystick is automatically Polled before any function call
-    private static boolean initialised = false;
     private static int threshHold = DEFAULT_JOY_THRESHHOLD; // Number of units the joystick must be moved
 
     private OpenGLKeyboard keyboard;

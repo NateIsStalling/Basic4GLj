@@ -1,4 +1,4 @@
-package com.basic4gl.library.desktopgl;
+package com.basic4gl.library.desktopgl.content;
 
 /**
  * Copyright (C) Tom Mulgrew, 2016 (tmulgrew@slingshot.co.nz)

@@ -3,6 +3,8 @@ package com.basic4gl.library.desktopgl;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.opengl.GL11.*;
 
+import com.basic4gl.library.desktopgl.content.GLBasicSprite;
+import com.basic4gl.library.desktopgl.content.GLSpriteEngine;
 import com.basic4gl.library.standard.TrigBasicLib;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
