@@ -39,6 +39,32 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         updateWindowSize(winWidth.get(0), winHeight.get(0));
     }
 
+    private void centerWindowOnPrimaryMonitor(int targetWidth, int targetHeight) {
+        if (window == 0) {
+            return;
+        }
+
+        long monitor = glfwGetPrimaryMonitor();
+        if (monitor == 0) {
+            return;
+        }
+
+        GLFWVidMode mode = glfwGetVideoMode(monitor);
+        if (mode == null) {
+            return;
+        }
+
+        IntBuffer monitorX = BufferUtils.createIntBuffer(1);
+        IntBuffer monitorY = BufferUtils.createIntBuffer(1);
+        glfwGetMonitorPos(monitor, monitorX, monitorY);
+
+        int width = Math.max(targetWidth, 1);
+        int height = Math.max(targetHeight, 1);
+        int x = monitorX.get(0) + Math.max((mode.width() - width) / 2, 0);
+        int y = monitorY.get(0) + Math.max((mode.height() - height) / 2, 0);
+        glfwSetWindowPos(window, x, y);
+    }
+
     public long getGLFWWindow() { return window; }
 
     @Override
@@ -126,6 +152,10 @@ public class GLFWWindowManager extends OpenGLWindowManager {
             System.out.println("Failed to create GLFW window");
             setError("Error creating window");
             return;
+        }
+
+        if (!params.isFullscreen) {
+            centerWindowOnPrimaryMonitor(width, height);
         }
 
         // Make OpenGL context current
