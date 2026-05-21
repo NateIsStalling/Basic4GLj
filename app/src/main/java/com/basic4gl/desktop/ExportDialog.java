@@ -15,8 +15,6 @@ import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -27,8 +25,6 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
  * Created by Nate on 2/5/2015.
  */
 public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChangeListener {
-    private static final Pattern STRING_LITERAL_PATTERN = Pattern.compile("\"((?:\\\\.|[^\"\\\\])*)\"");
-
     private final TomBasicCompiler compiler;
     private final Preprocessor preprocessor;
     private final TomVM vm;
@@ -501,9 +497,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 continue;
             }
 
-            Matcher matcher = STRING_LITERAL_PATTERN.matcher(text);
-            while (matcher.find()) {
-                String literal = unescapeLiteral(matcher.group(1));
+            for (String literal : extractStringLiterals(text)) {
                 if (literal == null || literal.isBlank()) {
                     continue;
                 }
@@ -528,11 +522,59 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         return new ArrayList<>(detected);
     }
 
-    private String unescapeLiteral(String literal) {
-        if (literal == null) {
-            return null;
+    static java.util.List<String> extractStringLiterals(String text) {
+        java.util.List<String> literals = new ArrayList<>();
+        if (text == null || text.isEmpty()) {
+            return literals;
         }
-        return literal.replace("\\\"", "\"").replace("\\\\", "\\");
+
+        int length = text.length();
+        int index = 0;
+        while (index < length) {
+            char ch = text.charAt(index);
+            if (ch != '"') {
+                index++;
+                continue;
+            }
+
+            StringBuilder literal = new StringBuilder();
+            index++;
+            boolean escaped = false;
+            boolean terminated = false;
+            while (index < length) {
+                char current = text.charAt(index++);
+                if (escaped) {
+                    if (current == '"' || current == '\\') {
+                        literal.append(current);
+                    } else {
+                        // Preserve non-quote escape sequences exactly as typed.
+                        literal.append('\\').append(current);
+                    }
+                    escaped = false;
+                    continue;
+                }
+
+                if (current == '\\') {
+                    escaped = true;
+                    continue;
+                }
+
+                if (current == '"') {
+                    literals.add(literal.toString());
+                    terminated = true;
+                    break;
+                }
+
+                literal.append(current);
+            }
+
+            // Unterminated string literal: discard and continue scanning.
+            if (!terminated) {
+                continue;
+            }
+        }
+
+        return literals;
     }
 
     private void export() {
