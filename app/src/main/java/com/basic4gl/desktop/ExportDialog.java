@@ -12,7 +12,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -23,6 +27,8 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
  * Created by Nate on 2/5/2015.
  */
 public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChangeListener {
+    private static final Pattern STRING_LITERAL_PATTERN = Pattern.compile("\"((?:\\\\.|[^\"\\\\])*)\"");
+
     private final TomBasicCompiler compiler;
     private final Preprocessor preprocessor;
     private final TomVM vm;
@@ -33,8 +39,11 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
     private final JTabbedPane tabs;
     private final JComboBox<String> builderComboBox;
     private final JButton libraryInfoButton;
+    private final DefaultListModel<String> embeddedAssetsModel;
+    private final JList<String> embeddedAssetsList;
 
     private final JTextField filePathTextField;
+    private final String exportBaseDirectory;
 
     private final JTextPane infoTextPane;
     private final ConfigurationFormPanel configPane;
@@ -46,12 +55,17 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
     private int currentBuilder; // Index value of target in mTargets
 
     public ExportDialog(
-            Frame parent, TomBasicCompiler compiler, Preprocessor preprocessor, Vector<FileEditor> editors) {
+            Frame parent,
+            TomBasicCompiler compiler,
+            Preprocessor preprocessor,
+            Vector<FileEditor> editors,
+            String exportBaseDirectory) {
 
         this.compiler = compiler;
         this.preprocessor = preprocessor;
         vm = this.compiler.getVM();
         fileEditors = editors;
+        this.exportBaseDirectory = FileUtil.separatorsToSystem(exportBaseDirectory);
 
         dialog = new JDialog(parent);
 
@@ -101,6 +115,11 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         JPanel targetPane = new JPanel();
         targetPane.setLayout(new BorderLayout());
         tabs.addTab("Settings", targetPane);
+
+        // Assets tab
+        JPanel assetsPane = new JPanel(new BorderLayout(0, 10));
+        assetsPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+        tabs.addTab("Assets", assetsPane);
 
         // Configure File tab
         filePane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -221,6 +240,38 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         propertiesPanel.add(targetPropertiesScrollPane, BorderLayout.CENTER);
         targetPane.add(propertiesPanel, BorderLayout.CENTER);
 
+        JLabel assetsDescription = new JLabel("Embedded files to include in exported package:");
+        assetsPane.add(assetsDescription, BorderLayout.NORTH);
+
+        embeddedAssetsModel = new DefaultListModel<>();
+        embeddedAssetsList = new JList<>(embeddedAssetsModel);
+        embeddedAssetsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        JScrollPane assetsScrollPane = new JScrollPane(embeddedAssetsList);
+        configureSmoothScrolling(assetsScrollPane);
+        assetsPane.add(assetsScrollPane, BorderLayout.CENTER);
+
+        JPanel assetsButtonPane = new JPanel();
+        assetsButtonPane.setLayout(new BoxLayout(assetsButtonPane, BoxLayout.LINE_AXIS));
+        JButton addAssetButton = new JButton("Add...");
+        JButton removeAssetButton = new JButton("Remove");
+        JButton clearAssetsButton = new JButton("Clear");
+        assetsButtonPane.add(addAssetButton);
+        assetsButtonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+        assetsButtonPane.add(removeAssetButton);
+        assetsButtonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+        assetsButtonPane.add(clearAssetsButton);
+        assetsButtonPane.add(Box.createHorizontalGlue());
+        assetsPane.add(assetsButtonPane, BorderLayout.SOUTH);
+
+        addAssetButton.addActionListener(e -> promptAndAddAssets());
+        removeAssetButton.addActionListener(e -> {
+            java.util.List<String> selected = embeddedAssetsList.getSelectedValuesList();
+            for (String value : selected) {
+                embeddedAssetsModel.removeElement(value);
+            }
+        });
+        clearAssetsButton.addActionListener(e -> embeddedAssetsModel.clear());
+
         libraryInfoButton.addActionListener(e -> {
             libraryInfoDialog.setLocationRelativeTo(dialog);
             libraryInfoDialog.setVisible(true);
@@ -328,10 +379,144 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         this.currentBuilder = selectedBuilder;
         builderComboBox.setSelectedIndex(selectedBuilder);
         selectBuilder(selectedBuilder);
+
+        embeddedAssetsModel.clear();
+        Builder selected = (Builder) this.libraries.get(builders.get(selectedBuilder));
+        if (selected instanceof IAssetExportBuilder) {
+            for (String asset : ((IAssetExportBuilder) selected).getExportAssets()) {
+                embeddedAssetsModel.addElement(asset);
+            }
+        }
+        mergeDetectedAssetsFromSource();
     }
 
     public int getCurrentBuilder() {
         return currentBuilder;
+    }
+
+    private void promptAndAddAssets() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setMultiSelectionEnabled(true);
+        int result = chooser.showOpenDialog(dialog);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File[] files = chooser.getSelectedFiles();
+        if (files == null || files.length == 0) {
+            return;
+        }
+
+        for (File file : files) {
+            if (file == null) {
+                continue;
+            }
+            String normalizedPath = normalizeAssetPath(file);
+            if (!embeddedAssetsModel.contains(normalizedPath)) {
+                embeddedAssetsModel.addElement(normalizedPath);
+            }
+        }
+    }
+
+    private String normalizeAssetPath(File file) {
+        Path selected = file.toPath().toAbsolutePath().normalize();
+        Path baseDir = getExportBasePath();
+        try {
+            Path relative = baseDir.relativize(selected);
+            String relPath = relative.toString().replace('\\', '/');
+            if (!relPath.startsWith("..")) {
+                return relPath;
+            }
+        } catch (IllegalArgumentException ignored) {
+            // Different roots on some platforms: keep absolute path.
+        }
+        return selected.toString().replace('\\', '/');
+    }
+
+    private Path getExportBasePath() {
+        if (exportBaseDirectory != null && !exportBaseDirectory.isBlank()) {
+            return Paths.get(exportBaseDirectory).toAbsolutePath().normalize();
+        }
+        return Paths.get("").toAbsolutePath().normalize();
+    }
+
+    private void applySelectedAssets(Builder builder) {
+        if (!(builder instanceof IAssetExportBuilder)) {
+            return;
+        }
+
+        IAssetExportBuilder assetBuilder = (IAssetExportBuilder) builder;
+        assetBuilder.setExportAssetBaseDirectory(exportBaseDirectory);
+
+        java.util.List<String> assets = new ArrayList<>();
+        for (int i = 0; i < embeddedAssetsModel.size(); i++) {
+            assets.add(embeddedAssetsModel.get(i));
+        }
+        assetBuilder.setExportAssets(assets);
+    }
+
+    private void mergeDetectedAssetsFromSource() {
+        LinkedHashSet<String> merged = new LinkedHashSet<>();
+        for (int i = 0; i < embeddedAssetsModel.size(); i++) {
+            merged.add(embeddedAssetsModel.get(i));
+        }
+        merged.addAll(detectAssetsFromSourceLiterals());
+
+        embeddedAssetsModel.clear();
+        for (String asset : merged) {
+            embeddedAssetsModel.addElement(asset);
+        }
+    }
+
+    private java.util.List<String> detectAssetsFromSourceLiterals() {
+        LinkedHashSet<String> detected = new LinkedHashSet<>();
+
+        for (FileEditor editor : fileEditors) {
+            String sourcePath = editor.getFilePath();
+            if (sourcePath == null || sourcePath.isBlank()) {
+                continue;
+            }
+
+            File parentDir = new File(sourcePath).getAbsoluteFile().getParentFile();
+            File baseDir = getExportBasePath().toFile();
+            String text = editor.getEditorPane().getText();
+            if (text == null || text.isEmpty()) {
+                continue;
+            }
+
+            Matcher matcher = STRING_LITERAL_PATTERN.matcher(text);
+            while (matcher.find()) {
+                String literal = unescapeLiteral(matcher.group(1));
+                if (literal == null || literal.isBlank()) {
+                    continue;
+                }
+
+                String normalizedLiteral = FileUtil.separatorsToSystem(literal);
+                File candidate = new File(normalizedLiteral);
+                if (!candidate.isAbsolute()) {
+                    File baseCandidate = new File(baseDir, normalizedLiteral);
+                    if (baseCandidate.exists() && baseCandidate.isFile()) {
+                        candidate = baseCandidate;
+                    } else {
+                        candidate = parentDir == null ? baseCandidate : new File(parentDir, normalizedLiteral);
+                    }
+                }
+
+                if (candidate.exists() && candidate.isFile()) {
+                    detected.add(normalizeAssetPath(candidate));
+                }
+            }
+        }
+
+        return new ArrayList<>(detected);
+    }
+
+    private String unescapeLiteral(String literal) {
+        if (literal == null) {
+            return null;
+        }
+        return literal.replace("\\\"", "\"").replace("\\\\", "\\");
     }
 
     private void export() {
@@ -358,6 +543,8 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
             }
 
             configPane.applyConfig();
+            mergeDetectedAssetsFromSource();
+            applySelectedAssets(builder);
 
             if (!filePathTextField.getText().isEmpty()) {
                 dest = new File(filePathTextField.getText());

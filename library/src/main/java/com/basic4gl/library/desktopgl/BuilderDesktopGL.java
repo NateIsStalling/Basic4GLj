@@ -8,7 +8,9 @@ import com.basic4gl.runtime.TomVM;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -19,10 +21,12 @@ import java.util.zip.ZipOutputStream;
 /**
  * Created by Nate on 8/15/2015.
  */
-public class BuilderDesktopGL extends Builder {
+public class BuilderDesktopGL extends Builder implements IAssetExportBuilder {
 
     private GLTextGridWindow target;
     private FileOpener files;
+    private final List<String> exportAssets = new ArrayList<>();
+    private String exportAssetBaseDirectory;
 
     public static Library getInstance(TomBasicCompiler compiler) {
         BuilderDesktopGL instance = new BuilderDesktopGL();
@@ -119,6 +123,9 @@ public class BuilderDesktopGL extends Builder {
                 output.closeEntry();
             }
         }
+
+        // Add selected assets to archive (preserve relative layout where possible)
+        addExportAssets(output);
 
         // Add launcher script
         // TODO add additional scripts for each platform
@@ -240,6 +247,96 @@ public class BuilderDesktopGL extends Builder {
 
         output.close();
         return true;
+    }
+
+    private void addExportAssets(ZipOutputStream output) throws IOException {
+        if (exportAssets.isEmpty()) {
+            return;
+        }
+
+        Set<String> addedEntries = new HashSet<>();
+        byte[] buffer = new byte[8192];
+        for (String configuredPath : exportAssets) {
+            if (configuredPath == null || configuredPath.isBlank()) {
+                continue;
+            }
+
+            String normalizedConfiguredPath = FileUtil.separatorsToSystem(configuredPath);
+            File configuredFile = new File(normalizedConfiguredPath);
+            File source = resolveAssetFile(configuredFile);
+            if (!source.exists() || !source.isFile()) {
+                System.out.println("Asset not found, skipping: " + configuredPath);
+                continue;
+            }
+
+            String zipPath;
+            if (configuredFile.isAbsolute()) {
+                zipPath = "assets/" + source.getName();
+            } else {
+                zipPath = normalizedConfiguredPath.replace('\\', '/');
+                while (zipPath.startsWith("./")) {
+                    zipPath = zipPath.substring(2);
+                }
+                while (zipPath.startsWith("/")) {
+                    zipPath = zipPath.substring(1);
+                }
+            }
+            if (zipPath.contains("..") || zipPath.isBlank()) {
+                System.out.println("Unsafe asset path, skipping: " + configuredPath);
+                continue;
+            }
+            if (!addedEntries.add(zipPath)) {
+                continue;
+            }
+
+            ZipEntry assetEntry = new ZipEntry(zipPath);
+            assetEntry.setTime(source.lastModified());
+            output.putNextEntry(assetEntry);
+            try (InputStream input = new FileInputStream(source)) {
+                int read;
+                while ((read = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, read);
+                }
+            }
+            output.closeEntry();
+        }
+    }
+
+    private File resolveAssetFile(File configuredFile) {
+        if (configuredFile.isAbsolute()) {
+            return configuredFile;
+        }
+
+        if (exportAssetBaseDirectory != null && !exportAssetBaseDirectory.isBlank()) {
+            return new File(exportAssetBaseDirectory, configuredFile.getPath());
+        }
+
+        if (files != null) {
+            String parentDirectory = files.getParentDirectory();
+            if (parentDirectory != null && !parentDirectory.isBlank()) {
+                return new File(parentDirectory, configuredFile.getPath());
+            }
+        }
+
+        return configuredFile;
+    }
+
+    @Override
+    public void setExportAssets(List<String> assets) {
+        exportAssets.clear();
+        if (assets != null) {
+            exportAssets.addAll(assets);
+        }
+    }
+
+    @Override
+    public void setExportAssetBaseDirectory(String baseDirectory) {
+        exportAssetBaseDirectory = FileUtil.separatorsToSystem(baseDirectory);
+    }
+
+    @Override
+    public List<String> getExportAssets() {
+        return new ArrayList<>(exportAssets);
     }
 
     @Override
