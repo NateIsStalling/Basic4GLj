@@ -28,9 +28,11 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
     private final TomVM vm;
     private final Vector<FileEditor> fileEditors;
 
-    private final Dialog dialog;
+    private final JDialog dialog;
+    private final JDialog libraryInfoDialog;
     private final JTabbedPane tabs;
-    private final JComboBox builderComboBox;
+    private final JComboBox<String> builderComboBox;
+    private final JButton libraryInfoButton;
 
     private final JTextField filePathTextField;
 
@@ -42,9 +44,6 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
     private java.util.List<Library> libraries;
     private java.util.List<Integer> builders; // Indexes of libraries that can be launch targets
     private int currentBuilder; // Index value of target in mTargets
-
-    private final java.util.List<JComponent> settingComponents = new ArrayList<>();
-    private Configuration currentConfig;
 
     public ExportDialog(
             Frame parent, TomBasicCompiler compiler, Preprocessor preprocessor, Vector<FileEditor> editors) {
@@ -59,6 +58,11 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         dialog.setTitle("Export Project");
         dialog.setResizable(false);
         dialog.setModal(true);
+
+        libraryInfoDialog = new JDialog(dialog, "Library Info", Dialog.ModalityType.DOCUMENT_MODAL);
+        libraryInfoDialog.setResizable(true);
+        libraryInfoDialog.setLayout(new BorderLayout());
+        libraryInfoDialog.add(createLibraryInfoHeader("Details for the selected export target."), BorderLayout.NORTH);
 
         tabs = new JTabbedPane();
         dialog.add(tabs);
@@ -93,7 +97,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         filePane.setLayout(new BoxLayout(filePane, BoxLayout.LINE_AXIS));
         tabs.addTab("File", filePane);
 
-        // Settings tab; duplicate of the build tab in ProjectSettingsDialog
+        // Settings tab
         JPanel targetPane = new JPanel();
         targetPane.setLayout(new BorderLayout());
         tabs.addTab("Settings", targetPane);
@@ -154,56 +158,76 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         filePane.add(fileButton);
 
         // Configure Settings tab
-        JPanel targetSelectionPane = new JPanel();
+        JPanel targetSelectionPane = new JPanel(new GridBagLayout());
         targetPane.add(targetSelectionPane, BorderLayout.NORTH);
-        targetSelectionPane.setLayout(new BoxLayout(targetSelectionPane, BoxLayout.LINE_AXIS));
         targetSelectionPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        targetSelectionPane.add(new JLabel("Target"));
-        builderComboBox = new JComboBox();
-        builderComboBox.setBorder(new EmptyBorder(0, 10, 0, 10));
-        targetSelectionPane.add(builderComboBox);
+        GridBagConstraints targetConstraints = new GridBagConstraints();
+        targetConstraints.gridx = 0;
+        targetConstraints.gridy = 0;
+        targetConstraints.anchor = GridBagConstraints.WEST;
+        targetConstraints.insets = new Insets(0, 0, 0, 10);
+        targetSelectionPane.add(new JLabel("Target"), targetConstraints);
 
-        JPanel buildInfoPane = new JPanel();
-        targetPane.add(buildInfoPane, BorderLayout.CENTER);
-        GridLayout buildInfoPaneLayout = new GridLayout(1, 2);
-        buildInfoPane.setLayout(buildInfoPaneLayout);
+        builderComboBox = new JComboBox<>();
+        targetConstraints.gridx = 1;
+        targetConstraints.weightx = 1.0;
+        targetConstraints.fill = GridBagConstraints.HORIZONTAL;
+        targetSelectionPane.add(builderComboBox, targetConstraints);
 
-        JPanel infoPanel = new JPanel();
-        buildInfoPane.add(infoPanel);
+        libraryInfoButton = new JButton("Library Info...");
+        targetConstraints.gridx = 2;
+        targetConstraints.weightx = 0;
+        targetConstraints.fill = GridBagConstraints.NONE;
+        targetConstraints.insets = new Insets(0, 10, 0, 0);
+        targetSelectionPane.add(libraryInfoButton, targetConstraints);
 
-        infoPanel.setLayout(new BorderLayout());
-        infoPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 5));
-        JLabel infoLabel = new JLabel("Library Info:");
-        infoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        infoPanel.add(infoLabel, BorderLayout.PAGE_START);
         infoTextPane = new JTextPane();
-        // mInfoTextPane.setBackground(Color.LIGHT_GRAY);
         infoTextPane.setEditable(false);
+        infoTextPane.setBackground(UIManager.getColor("Panel.background"));
+        infoTextPane.setBorder(new EmptyBorder(8, 10, 8, 10));
+        infoTextPane.setMargin(new Insets(4, 2, 4, 2));
         JScrollPane targetInfoScrollPane = new JScrollPane(infoTextPane);
         targetInfoScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        infoPanel.add(targetInfoScrollPane, BorderLayout.CENTER);
+        configureSmoothScrolling(targetInfoScrollPane);
 
-        JPanel propertiesPanel = new JPanel();
-        buildInfoPane.add(propertiesPanel);
+        JPanel libraryInfoPane = new JPanel(new BorderLayout());
+        libraryInfoPane.setBorder(new EmptyBorder(0, 12, 12, 12));
+        libraryInfoPane.add(targetInfoScrollPane, BorderLayout.CENTER);
+        libraryInfoDialog.add(libraryInfoPane, BorderLayout.CENTER);
 
-        propertiesPanel.setLayout(new BorderLayout());
-        propertiesPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 5));
+        JButton closeLibraryInfoButton = new JButton("Close");
+        closeLibraryInfoButton.addActionListener(e -> libraryInfoDialog.setVisible(false));
+        JPanel libraryInfoFooter = new JPanel();
+        libraryInfoFooter.setLayout(new BoxLayout(libraryInfoFooter, BoxLayout.LINE_AXIS));
+        libraryInfoFooter.setBorder(new EmptyBorder(0, 12, 12, 12));
+        libraryInfoFooter.add(Box.createHorizontalGlue());
+        libraryInfoFooter.add(closeLibraryInfoButton);
+        libraryInfoDialog.add(libraryInfoFooter, BorderLayout.SOUTH);
+        libraryInfoDialog.setMinimumSize(new Dimension(420, 300));
+        libraryInfoDialog.setSize(new Dimension(460, 320));
+
+        JPanel propertiesPanel = new JPanel(new BorderLayout());
+        propertiesPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
         JLabel propertiesLabel = new JLabel("Properties:");
-        propertiesLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        propertiesLabel.setBorder(BorderFactory.createEmptyBorder(10, 4, 10, 4));
         propertiesPanel.add(propertiesLabel, BorderLayout.PAGE_START);
-        configPane = new ConfigurationFormPanel(this);
-        // mConfigPane.setBackground(Color.LIGHT_GRAY);
 
+        configPane = new ConfigurationFormPanel(this);
         configPane.setBorder(new EmptyBorder(4, 4, 4, 4));
         JScrollPane targetPropertiesScrollPane = new JScrollPane(configPane);
         targetPropertiesScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        configureSmoothScrolling(targetPropertiesScrollPane);
         propertiesPanel.add(targetPropertiesScrollPane, BorderLayout.CENTER);
-        configPane.setLayout(new BoxLayout(configPane, BoxLayout.Y_AXIS));
-        configPane.setAlignmentX(0f);
+        targetPane.add(propertiesPanel, BorderLayout.CENTER);
+
+        libraryInfoButton.addActionListener(e -> {
+            libraryInfoDialog.setLocationRelativeTo(dialog);
+            libraryInfoDialog.setVisible(true);
+        });
 
         builderComboBox.addActionListener(e -> {
-            JComboBox cb = (JComboBox) e.getSource();
+            JComboBox<?> cb = (JComboBox<?>) e.getSource();
             if (cb == null) {
                 return;
             }
@@ -216,13 +240,57 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         dialog.setLocationRelativeTo(parent);
     }
 
+    private JPanel createLibraryInfoHeader(String description) {
+        JPanel header = new JPanel();
+        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+        header.setBorder(new EmptyBorder(12, 12, 8, 12));
+
+        JLabel titleLabel = new JLabel("About Library");
+        Font baseFont = titleLabel.getFont();
+        titleLabel.setFont(baseFont.deriveFont(Font.BOLD, baseFont.getSize() + 4f));
+
+        JLabel descriptionLabel = new JLabel(description);
+        descriptionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+        descriptionLabel.setBorder(new EmptyBorder(2, 0, 0, 0));
+
+        header.add(titleLabel);
+        header.add(descriptionLabel);
+        return header;
+    }
+
+    private void configureSmoothScrolling(JScrollPane scrollPane) {
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getVerticalScrollBar().setBlockIncrement(64);
+        scrollPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
+        scrollPane.setWheelScrollingEnabled(true);
+    }
+
     private void selectBuilder(int builderIndex) {
+        if (builders == null || builders.isEmpty() || builderIndex < 0 || builderIndex >= builders.size()) {
+            currentBuilder = -1;
+            infoTextPane.setText("No export targets available.");
+            configPane.removeAll();
+            configPane.revalidate();
+            configPane.repaint();
+            setTargetSettingsEnabled(false);
+            exportButton.setEnabled(false);
+            return;
+        }
+
         currentBuilder = builderIndex;
         Library target = libraries.get(builders.get(currentBuilder));
 
-        // TODO Display target info
         infoTextPane.setText(target.description());
+        infoTextPane.setCaretPosition(0);
         configPane.setConfiguration(new Configuration(((Builder) target).getConfiguration()));
+        setTargetSettingsEnabled(true);
+        exportButton.setEnabled(true);
+    }
+
+    private void setTargetSettingsEnabled(boolean enabled) {
+        builderComboBox.setEnabled(enabled);
+        libraryInfoButton.setEnabled(enabled);
+        configPane.setEnabled(enabled);
     }
 
     public void setVisible(boolean visible) {
@@ -231,7 +299,6 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
     public void setLibraries(java.util.List<Library> libraries, int currentBuilder) {
         builderComboBox.removeAllItems();
-        this.currentBuilder = currentBuilder;
         this.libraries = libraries;
         builders = new ArrayList<>();
         int i = 0;
@@ -246,7 +313,21 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
             }
             i++;
         }
-        builderComboBox.setSelectedIndex(currentBuilder);
+
+        if (builders.isEmpty()) {
+            this.currentBuilder = -1;
+            selectBuilder(-1);
+            return;
+        }
+
+        int selectedBuilder = currentBuilder;
+        if (selectedBuilder < 0 || selectedBuilder >= builders.size()) {
+            selectedBuilder = 0;
+        }
+
+        this.currentBuilder = selectedBuilder;
+        builderComboBox.setSelectedIndex(selectedBuilder);
+        selectBuilder(selectedBuilder);
     }
 
     public int getCurrentBuilder() {
@@ -257,6 +338,11 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         try {
             File dest;
             int decision;
+
+            if (currentBuilder < 0 || builders == null || currentBuilder >= builders.size()) {
+                JOptionPane.showMessageDialog(dialog, "No export target selected.");
+                return;
+            }
 
             Builder builder;
             Library lib = libraries.get(builders.get(currentBuilder));
@@ -315,6 +401,10 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
     @Override
     public void onConfigurationChanged(Configuration configuration) {
+        if (currentBuilder < 0 || builders == null || currentBuilder >= builders.size()) {
+            return;
+        }
+
         Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
 
         builder.setConfiguration(configuration);
