@@ -48,6 +48,8 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
     private final JTextPane infoTextPane;
     private final ConfigurationFormPanel configPane;
     private final JButton exportButton;
+    private final JProgressBar exportProgressBar;
+    private File lastExportDestination;
 
     // Libraries
     private java.util.List<Library> libraries;
@@ -83,16 +85,30 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
         JPanel buttonPane = new JPanel();
         dialog.add(buttonPane, BorderLayout.SOUTH);
+        exportProgressBar = new JProgressBar();
+        exportProgressBar.setVisible(false);
+        exportProgressBar.setStringPainted(true);
+        exportProgressBar.setString("Ready");
+        exportProgressBar.setIndeterminate(false);
+        exportProgressBar.putClientProperty("JComponent.minimumWidth", 260);
+        exportProgressBar.setMinimumSize(new Dimension(220, exportProgressBar.getPreferredSize().height));
         exportButton = new JButton("Export");
         JButton cancelButton = new JButton("Cancel");
         exportButton.addActionListener(e -> export());
         cancelButton.addActionListener(e -> ExportDialog.this.setVisible(false));
-        buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
+        buttonPane.setLayout(new BorderLayout(10, 0));
         buttonPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        buttonPane.add(Box.createHorizontalGlue());
-        buttonPane.add(exportButton);
-        buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
-        buttonPane.add(cancelButton);
+
+        JPanel progressPane = new JPanel(new BorderLayout());
+        progressPane.add(exportProgressBar, BorderLayout.CENTER);
+        buttonPane.add(progressPane, BorderLayout.CENTER);
+
+        JPanel actionButtonsPane = new JPanel();
+        actionButtonsPane.setLayout(new BoxLayout(actionButtonsPane, BoxLayout.LINE_AXIS));
+        actionButtonsPane.add(exportButton);
+        actionButtonsPane.add(Box.createRigidArea(new Dimension(10, 0)));
+        actionButtonsPane.add(cancelButton);
+        buttonPane.add(actionButtonsPane, BorderLayout.EAST);
 
         SwingUtilities.updateComponentTreeUI(tabs);
         tabs.setUI(new FlatTabbedPaneUI() {
@@ -573,6 +589,8 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 }
                 enableComponents(tabs, false);
                 exportButton.setEnabled(false);
+                setExportInProgress(true, "Preparing export...");
+                lastExportDestination = dest;
                 ExportWorker export = new ExportWorker(builder, dest, new ExportCallback());
                 export.execute();
             } else {
@@ -582,7 +600,79 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         } catch (Exception e1) {
             enableComponents(tabs, true);
             exportButton.setEnabled(true);
+            setExportInProgress(false);
             e1.printStackTrace();
+        }
+    }
+
+    private void setExportInProgress(boolean inProgress) {
+        setExportInProgress(inProgress, inProgress ? "Exporting..." : "Ready");
+    }
+
+    private void setExportInProgress(boolean inProgress, String status) {
+        exportProgressBar.setVisible(inProgress);
+        exportProgressBar.setIndeterminate(inProgress);
+        setExportStatus(status);
+    }
+
+    private void setExportStatus(String status) {
+        if (status == null || status.isBlank()) {
+            status = "Exporting...";
+        }
+        exportProgressBar.setString(status);
+    }
+
+    private String getShowInFileManagerLabel() {
+        String osName = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        if (osName.contains("win")) {
+            return "Show in Explorer";
+        }
+        if (osName.contains("mac")) {
+            return "Show in Finder";
+        }
+        return "Show in File Manager";
+    }
+
+    private void showExportSuccessDialog() {
+        String revealLabel = getShowInFileManagerLabel();
+        Object[] options = {"OK", revealLabel};
+        int result = JOptionPane.showOptionDialog(
+                dialog,
+                "Export successful!",
+                "Success",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                options,
+                options[0]);
+
+        // User chose the OS-specific "Show in ..." action.
+        if (result == 1) {
+            openExportInFileManager();
+        }
+    }
+
+    private void openExportInFileManager() {
+        try {
+            if (lastExportDestination == null) {
+                return;
+            }
+
+            File target = lastExportDestination;
+            File directory = target.isDirectory() ? target : target.getParentFile();
+            if (directory == null || !directory.exists()) {
+                return;
+            }
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(directory);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                    dialog,
+                    "Export succeeded, but the destination folder could not be opened.",
+                    "Open Folder Failed",
+                    JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -627,11 +717,13 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         @Override
         protected Object doInBackground() throws Exception {
             callbackMessage = new CallbackMessage(CallbackMessage.WORKING, "");
+            publish(new CallbackMessage(CallbackMessage.WORKING, "Compiling source..."));
 
             if (!compile()) {
                 callbackMessage.setMessage(CallbackMessage.FAILED, compiler.getError());
                 return null; // TODO Throw error
             }
+            publish(new CallbackMessage(CallbackMessage.WORKING, "Packaging export archive..."));
             // Export to file
             FileOutputStream stream = new FileOutputStream(dest);
 
@@ -732,18 +824,21 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         @Override
         public void message(CallbackMessage message) {
             if (message.getStatus() == CallbackMessage.WORKING) {
-                // TODO display build progress
-                System.out.println("Exporting...");
+                String statusText = message.getText();
+                setExportStatus(statusText == null || statusText.isBlank() ? "Exporting..." : statusText);
                 return;
             }
             if (message.getStatus() == CallbackMessage.SUCCESS) {
                 System.out.println("Export successful.");
-                JOptionPane.showMessageDialog(dialog, "Export successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                setExportStatus("Export complete");
+                showExportSuccessDialog();
                 dialog.setVisible(false);
             } else if (message.getStatus() == CallbackMessage.FAILED) {
                 System.out.println("Export failed.");
+                setExportStatus("Export failed");
                 JOptionPane.showMessageDialog(dialog, message.getText(), "Export failed.", JOptionPane.ERROR_MESSAGE);
             }
+            setExportInProgress(false);
             enableComponents(tabs, true);
             exportButton.setEnabled(true);
         }
