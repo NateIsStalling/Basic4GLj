@@ -240,7 +240,7 @@ public class GLFWWindowManager extends OpenGLWindowManager {
     @Override
     public void beep() {
         // TODO without AWT!
-        java.awt.Toolkit.getDefaultToolkit().beep();
+        // java.awt.Toolkit.getDefaultToolkit().beep();
     }
 
     public GLFWWindowManager()
