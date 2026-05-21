@@ -61,4 +61,29 @@ public class Configuration implements Serializable {
     public void setValue(int index, String val) {
         values.set(index, val);
     }
+
+    public Integer getIntValue(int index) {
+        return Integer.valueOf(values.get(index));
+    }
+
+    public Integer getIntValueOrDefault(int index, int defaultValue) {
+        if (index < 0 || index >= getSettingCount()) {
+            return defaultValue;
+        }
+        String value = getValue(index);
+        return value != null ? Integer.parseInt(value) : defaultValue;
+    }
+
+    public Boolean getBooleanValue(int index) {
+        return Boolean.valueOf(values.get(index));
+    }
+
+    public Boolean getBooleanValueOrDefault(int index, boolean defaultValue) {
+        if (index < 0 || index >= getSettingCount()) {
+            return defaultValue;
+        }
+        String value = getValue(index);
+        return value != null ? Boolean.parseBoolean(value) : defaultValue;
+    }
+
 }

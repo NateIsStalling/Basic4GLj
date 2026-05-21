@@ -23,12 +23,12 @@ public class LoadImage {
     }
 
     // Return the image format as an OpenGL constant
-    static int getImageFormat(Image image) {
+    public static int getImageFormat(Image image) {
         assertTrue(image != null);
         return (image.getBPP() & 0xffff) == 3 ? GL11.GL_RGB : GL11.GL_RGBA; // corona::PF_R8G8B8 ? GL_RGB : GL_RGBA;
     }
 
-    static Image loadImage(String filename) {
+    public static Image loadImage(String filename) {
         assertTrue(mFiles != null);
 
         // Load and return an image.
@@ -261,7 +261,7 @@ public class LoadImage {
     		return dst;
     	}
     */
-    static Vector<Image> splitImageStrip(Image image, int frameWidth, int frameHeight) {
+    public static Vector<Image> splitImageStrip(Image image, int frameWidth, int frameHeight) {
         assertTrue(image != null);
 
         if (frameWidth <= 0 || frameHeight <= 0) {
@@ -310,7 +310,7 @@ public class LoadImage {
         return images;
     }
 
-    static boolean isImageBlank(Image image) {
+    public static boolean isImageBlank(Image image) {
         assertTrue(image != null);
 
         // Format must include an alpha channel
@@ -333,7 +333,7 @@ public class LoadImage {
         return true;
     }
 
-    static Image applyTransparentColor(Image image, long col) {
+    public static Image applyTransparentColor(Image image, long col) {
         assertTrue(image != null);
 
         // Clone image and convert to RGBA

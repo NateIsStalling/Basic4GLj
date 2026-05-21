@@ -198,13 +198,13 @@ public class BuilderDesktopGL extends Builder {
 
             // Save VM's initial state to Jar
             this.target.reset();
-            jarEntry = new JarEntry(GLTextGridWindow.STATE_FILE);
+            jarEntry = new JarEntry(StandaloneCommandLineOptions.STATE_FILE);
             target.putNextEntry(jarEntry);
             this.target.saveState(target);
             target.closeEntry();
 
             // Serialize the build configuration and add to Jar
-            jarEntry = new JarEntry(GLTextGridWindow.CONFIG_FILE);
+            jarEntry = new JarEntry(StandaloneCommandLineOptions.CONFIG_FILE);
             target.putNextEntry(jarEntry);
             this.target.saveConfiguration(target);
             target.closeEntry();

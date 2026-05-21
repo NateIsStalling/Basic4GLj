@@ -10,7 +10,7 @@ public class OpenGLKeyboard {
 
     /// Callback functions for when key pressed.
     /// Parameter is whether key is scankey (true) or ASCII character (false)
-    private ArrayList<KeyPressedCallback> keyPressedCallbacks = new ArrayList<>();
+    private final ArrayList<KeyPressedCallback> keyPressedCallbacks = new ArrayList<>();
     private int unsubscribeHandleGenerator;
     private boolean isPausePressed;
 

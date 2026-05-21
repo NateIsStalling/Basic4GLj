@@ -53,7 +53,7 @@ public class GLTextGrid extends HasErrorState {
         return r | (long) g << 8 | (long) b << 16 | (long) alpha << 24;
     }
 
-    GLTextGrid(String texFile, FileOpener files, int rows, int cols, int texRows, int texCols) {
+    public GLTextGrid(String texFile, FileOpener files, int rows, int cols, int texRows, int texCols) {
         this.rows = rows;
         columns = cols;
         textureRows = texRows;
@@ -672,127 +672,10 @@ public class GLTextGrid extends HasErrorState {
         return texture;
     }
 
-    // Input commands
-
-//    /**
-//     * Allows user to type in a string. Returns string upon exit.
-//     * @param window
-//     * @return
-//     */
-//    public String getString(GLWindow window) {
-//
-//        assertTrue(window != null);
-//        colours.rewind();
-//        LongBuffer col = colours.asLongBuffer();
-//
-//        // Record leftmost cursor position
-//        // Cursor can not be moved further left than that point
-//        int left = cursorX;
-//        boolean saveCursor = showCursor;
-//        showCursor = true;
-//
-//        // Perform UI
-//        boolean done = false;
-//        while (!(window.isClosing() || done)) {
-//
-//            glClear(GL_COLOR_BUFFER_BIT);
-//            draw((byte) 0xff);
-//            window.swapBuffers();
-//
-//            // Keyboard input
-//            int c = 0, sc = 0;
-//            while (c == 0 && sc == 0 && !window.isClosing()) {
-//                sc = window.getScanKey();
-//                if (sc == 0) {
-//                    c = window.getKey();
-//                }
-//                // Go easy on the processor
-//                try {
-//                    Thread.sleep(10);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                // Keep window responsive
-//                glfwPollEvents();
-//            }
-//            if (window.isClosing()) {
-//                return "";
-//            }
-//            switch (sc) {
-//                case GLFW_KEY_LEFT:
-//                    if (cursorX > left) {
-//                        cursorX--;
-//                    }
-//                    break;
-//                case GLFW_KEY_RIGHT:
-//                    if (cursorX < columns - 1) {
-//                        cursorX++;
-//                    }
-//                    break;
-//                case GLFW_KEY_DELETE:
-//                    delete();
-//                    break;
-//                case GLFW_KEY_BACKSPACE:
-//                    if (cursorX > left) {
-//                        backspace();
-//                    }
-//                    break;
-//            }
-//            if (sc == GLFW_KEY_ENTER || sc == GLFW_KEY_KP_ENTER) {
-//                // Input$ consumed Enter to submit; do not leak it to subsequent inkey$ calls.
-//                window.discardLeadingKeyIf('\r', '\n');
-//                done = true;
-//            }
-//            if (c >= ' ') {
-//                if (cursorX < columns - 1 && insert()) {
-//                    chars[cursorY * columns + cursorX] = (char) c;
-//                    col.put(cursorY * columns + cursorX, currentColour);
-//                    textures[cursorY * columns + cursorX] = currentTexture;
-//                    cursorX++;
-//                }
-//            }
-//            // Go easy on the processor
-//            try {
-//                Thread.sleep(10);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            // Keep window responsive
-//            glfwPollEvents();
-//        }
-//        if (window.isClosing()) {
-//            return "";
-//        }
-//        // Extract string
-//        int lineOffset = cursorY * columns;
-//        int right = columns;
-//        while (right > left && chars[lineOffset + right - 1] <= ' ') // Trim spaces from right
-//        {
-//            right--;
-//        }
-//        while (left < right && chars[lineOffset + left] <= ' ') // Trim spaces from left
-//        {
-//            left++;
-//        }
-//        String result = "";
-//        for (int i = left; i < right; i++) {
-//            result += chars[lineOffset + i];
-//        }
-//
-//        // Restore cursor, perform newline and update screen
-//        newLine();
-//        showCursor = saveCursor;
-//        glClear(GL_COLOR_BUFFER_BIT);
-//        draw((byte) 0xff);
-//        window.swapBuffers();
-//
-//        return result;
-//    }
-
     /**
      * release image from memory
      */
-    void destroy() {
+    public void destroy() {
         /*if (this.image != null)
         	stbi_image_free(this.image.getPixels());
         this.image = null;*/

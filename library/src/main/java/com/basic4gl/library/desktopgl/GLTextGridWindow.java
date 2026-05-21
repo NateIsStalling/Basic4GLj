@@ -1,5 +1,6 @@
 package com.basic4gl.library.desktopgl;
 
+import static com.basic4gl.library.desktopgl.StandaloneSettings.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -46,6 +47,7 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
     private TomBasicCompiler compiler;
     private TomVM vm;
 
+    private final StandaloneCommandLineOptionsParser cliParser = new StandaloneCommandLineOptionsParser();
     private String[] programArgs;
     private DebuggerCallbacks debuggerCallbacks;
     private DebuggerCommandAdapter debuggerAdapter;
@@ -57,67 +59,18 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
 
     // We need to strongly reference callback instances.
     private GLFWErrorCallback errorCallback;
-//    private GLFWKeyCallback keyCallback;
-//    private GLFWCharCallback charCallback;
 
     private boolean isClosing;
 
     private GLTextGrid textGrid;
 
     private IAppSettings appSettings; // common settings for all libraries
+    private final IStandaloneSettings settings = new StandaloneSettings(); // settings specific to standalone application
     private Configuration configuration; // runtime configuration for this library
-
-    static final int SETTING_TITLE = 1; // Index of window title setting in config
-    static final int SETTING_VERSION = 2; // Index of version string setting in config
-    static final int SETTING_WIDTH = 3; // Index of window width setting in config
-    static final int SETTING_HEIGHT = 4; // Index of window height setting in config
-    static final int SETTING_RESIZABLE = 5; // Index of window resizable setting in config
-    static final int SETTING_SCREEN_MODE = 6; // Index of screen mode setting in config
-
-    static final int SETTING_USE_DESKTOP_RES = 7; // Index of desktop resolution toggle in config
-    static final int SETTING_COLOUR_DEPTH = 8; // Index of fullscreen color depth setting in config
-    static final int SETTING_BORDER = 9; // Index of bordered window setting in config
-    static final int SETTING_STENCIL = 10; // Index of stencil buffer setting in config
-    static final int SETTING_STARTUP_WINDOW_OPTION = 11; // Index of startup window creation mode
-
-    static final int SETTING_SUPPORT_WINDOWS = 14; // Index of Windows support setting in config
-    static final int SETTING_SUPPORT_MAC = 15; // Index of Mac support setting in config
-    static final int SETTING_SUPPORT_LINUX = 16; // Index of Linux support setting in config
-
-
-    static final int SUPPORT_WINDOWS_32_64 = 0;
-    static final int SUPPORT_WINDOWS_32 = 1;
-    static final int SUPPORT_WINDOWS_64 = 2;
-    static final int SUPPORT_WINDOWS_NO = 3;
-
-    static final int SUPPORT_MAC_32_64 = 0;
-    static final int SUPPORT_MAC_NO = 1;
-
-    static final int SUPPORT_LINUX_32_64 = 0;
-
-    static final int MODE_WINDOWED = 0;
-    static final int MODE_FULLSCREEN = 1;
-
-    static final int COLOUR_DEPTH_DEFAULT = 0;
-    static final int COLOUR_DEPTH_16BIT = 1;
-    static final int COLOUR_DEPTH_32BIT = 2;
-
-    static final int STARTUP_WINDOW_CREATE_IMMEDIATELY = 0;
-    static final int STARTUP_WINDOW_DEFERRED = 1;
-
-    static final String CONFIG_FILE = "config.ser"; // Filename for configuration file
-    static final String STATE_FILE = "state.bin"; // Filename for stored VM state
+// Filename for stored VM state
 
     static final String DEFAULT_VERSION = "1.0"; // Default version name for compiled programs
 
-    // Predefined CLI options used by Basic4GLj debugger
-    static final String CONFIG_FILE_PATH_OPTION = "c";
-    static final String PROGRAM_FILE_PATH_OPTION = "p";
-    static final String LINE_MAPPING_FILE_PATH_OPTION = "m";
-    static final String LOG_FILE_PATH_OPTION = "logfile";
-    static final String PARENT_DIRECTORY_OPTION = "parent";
-    static final String DEBUGGER_PORT_OPTION = "d";
-    static final String SAFE_MODE_OPTION = "s";
 
     private String charsetPath = "charset.png"; // Default charset texture
 
@@ -156,150 +109,19 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         boolean isStandalone = true;
         boolean isSafeModeEnabled = true; // default safe mode to true (only applied if isStandalone=false)
 
-        // Load VM's state from file
-        String stateFile = "/" + STATE_FILE;
-        String configFile = "/" + CONFIG_FILE;
-        String mappingFile = null;
-        String currentDirectory = null;
-        String debugServerPort = null;
-        String logFilePath = null;
-
-        // Program should display help
-        boolean displayHelp = false;
-
-        // Program should display version and exit
-        boolean displayVersion = false;
-
-        // Program args used to initialize function libraries
-        String[] programArgs = new String[0];
-
-        // create the CLI parser
-        CommandLineParser parser = new DefaultParser();
-        Options options = new Options();
-
-        try {
-            Option help = Option.builder("h")
-                    .longOpt("help")
-                    .desc("print this message")
-                    .build();
-
-            Option version = Option.builder("v")
-                    .longOpt("version")
-                    .desc("print the version information and exit")
-                    .build();
-
-            Option safeModeOption = Option.builder("s")
-                    .longOpt("safe-mode-enabled")
-                    .desc("run the program in safe mode")
-                    .build();
-
-            Option logFileOption = Option.builder(LOG_FILE_PATH_OPTION)
-                    .argName("file")
-                    .hasArg()
-                    .desc("use given file path for log output")
-                    .build();
-
-            Option configFileOption = Option.builder(CONFIG_FILE_PATH_OPTION)
-                    .longOpt("config-path")
-                    .argName("file")
-                    .hasArg()
-                    .desc("use given file for program config")
-                    .build();
-
-            Option stateFileOption = Option.builder(PROGRAM_FILE_PATH_OPTION)
-                    .longOpt("program-path")
-                    .argName("file")
-                    .hasArg()
-                    .desc("use given file path to load compiled program code")
-                    .build();
-
-            Option mappingFileOption = Option.builder(LINE_MAPPING_FILE_PATH_OPTION)
-                    .longOpt("line-mapping-path")
-                    .argName("file")
-                    .hasArg()
-                    .desc("use given file path for program line mapping")
-                    .build();
-
-            Option parentPathOption = Option.builder(PARENT_DIRECTORY_OPTION)
-                    .argName("directory")
-                    .hasArg()
-                    .desc("use given directory path for program parent directory")
-                    .build();
-
-            Option debugPortOption = Option.builder(DEBUGGER_PORT_OPTION)
-                    .longOpt("debugger-port")
-                    .argName("port")
-                    .hasArg()
-                    .desc("use given port to connect to the debugger")
-                    .build();
-
-            options.addOption(help);
-            options.addOption(version);
-            options.addOption(safeModeOption);
-            options.addOption(stateFileOption);
-            options.addOption(configFileOption);
-            options.addOption(mappingFileOption);
-            options.addOption(logFileOption);
-            options.addOption(parentPathOption);
-            options.addOption(debugPortOption);
-
-            // parse the command line arguments
-            CommandLine cmd = parser.parse(options, args, false);
-
-            stateFile = cmd.getOptionValue(stateFileOption, "/" + STATE_FILE);
-            configFile = cmd.getOptionValue(configFileOption, "/" + CONFIG_FILE);
-            mappingFile = cmd.getOptionValue(mappingFileOption, null);
-            logFilePath = cmd.getOptionValue(logFileOption, null);
-            currentDirectory = cmd.getOptionValue(parentPathOption, null);
-            debugServerPort = cmd.getOptionValue(debugPortOption, null);
-
-            isSafeModeEnabled = cmd.hasOption(safeModeOption);
-
-            displayHelp = cmd.hasOption(help);
-            displayVersion = cmd.hasOption(version);
-
-            // Args not recognized may be accessed by function libraries; eg: Standard Library args(),
-            // argcount()
-            programArgs = cmd.getArgs();
-        } catch (ParseException exp) {
-            // oops, something went wrong
-            System.err.println("Parsing failed.  Reason: " + exp.getMessage());
-
-            // attempt to allow program to continue normally - assumes program is compiled as a standalone
-            // application
-            programArgs = args;
-        }
-
-        // Log standard output to file if requested
-        if (logFilePath != null) {
-            PrintStream out = null;
-            try {
-                System.out.println("Logging program output to: " + logFilePath);
-                File file = new File(logFilePath);
-                if (!file.exists()) {
-                    file.getParentFile().mkdirs();
-                    file.createNewFile();
-                }
-                out = new PrintStream(new FileOutputStream(file.getAbsolutePath(), true), true);
-                System.setOut(out);
-                System.setErr(out);
-            } catch (IOException e) {
-                System.err.println("Unable to log to file");
-                e.printStackTrace();
-            }
-        }
-
         // JOptionPane.showMessageDialog(null, "Waiting...");
         instance = new GLTextGridWindow();
 
+        StandaloneCommandLineOptions options = instance.cliParser.parse(args);
+
         // Load window configuration
         try {
-            if (instance.getClass().getResource(configFile) != null) {
+            if (instance.getClass().getResource(options.configFile) != null) {
                 // use bundled config file if running as an exported project
-                instance.loadConfiguration(instance.getClass().getResourceAsStream(configFile));
+                instance.loadConfiguration(instance.getClass().getResourceAsStream(options.configFile));
             } else {
                 // external config file path was provided by commandline - ie: from the IDE
-                instance.loadConfiguration(new FileInputStream(configFile));
+                instance.loadConfiguration(new FileInputStream(options.configFile));
 
                 // program is not standalone
                 isStandalone = false;
@@ -311,21 +133,12 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         }
 
         // Log CLI help documentation
-        if (displayHelp) {
-            // generate the CLI help statement
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(
-                    "basic4gl-app [options] [args...]",
-                    """
-		Arguments following options are passed as user-defined arguments to the program.
-
-		where options include:""",
-                    options,
-                    "");
+        if (options.displayHelp) {
+            instance.cliParser.printHelp();
         }
 
         // display program version info and exit if requested by CLI args
-        if (displayVersion) {
+        if (options.displayVersion) {
             String versionName = "";
             String title = instance.configuration.getValue(SETTING_TITLE);
             String version = instance.configuration.getValue(SETTING_VERSION);
@@ -344,7 +157,7 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         }
 
         // provide program args for function libraries
-        instance.programArgs = programArgs;
+        instance.programArgs = options.programArgs;
 
         instance.appSettings = isStandalone ? new StandaloneAppSettings() : new EditorAppSettings();
 
@@ -353,8 +166,8 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         }
 
         LineNumberMapping lineNumberMapping = null;
-        if (mappingFile != null) {
-            try (FileInputStream streamIn = new FileInputStream(mappingFile);
+        if (options.mappingFile != null) {
+            try (FileInputStream streamIn = new FileInputStream(options.mappingFile);
                     ObjectInputStream objectinputstream = new ObjectInputStream(streamIn)) {
                 lineNumberMapping = (LineNumberMapping) objectinputstream.readObject();
             } catch (Exception e) {
@@ -367,12 +180,12 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         //		instance.mFiles = new FileOpener(); //TODO load embedded files
 
         // Initialize file opener
-        System.out.println("par: " + currentDirectory);
+        System.out.println("par: " + options.currentDirectory);
         instance.fileOpener = new FileOpener(""); // TODO load embedded files
-        instance.fileOpener.setParentDirectory(currentDirectory);
+        instance.fileOpener.setParentDirectory(options.currentDirectory);
 
         instance.plugins = new PluginJARManager(isStandalone);
-        instance.plugins.setDirectory(currentDirectory);
+        instance.plugins.setDirectory(options.currentDirectory);
 
         instance.compiler = new TomBasicCompiler(
                 new TomVM(instance.plugins, debugger),
@@ -427,16 +240,16 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
             }
         }
 
-        instance.fileOpener.setParentDirectory(currentDirectory);
+        instance.fileOpener.setParentDirectory(options.currentDirectory);
 
         try {
-            System.out.println(stateFile);
-            if (instance.getClass().getResource(stateFile) != null) {
+            System.out.println(options.stateFile);
+            if (instance.getClass().getResource(options.stateFile) != null) {
                 // use bundled VM state file if running as an exported project
-                instance.loadState(instance.getClass().getResourceAsStream(stateFile));
+                instance.loadState(instance.getClass().getResourceAsStream(options.stateFile));
             } else {
                 // external VM state file path was provided by commandline - ie: from the IDE
-                instance.loadState(new DataInputStream(new FileInputStream(stateFile)));
+                instance.loadState(new DataInputStream(new FileInputStream(options.stateFile)));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -451,9 +264,9 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         // TODO this message has too much power
         instance.debuggerCallbackMessage = new DebuggerCallbackMessage(CallbackMessage.WORKING, "", null);
 
-        if (debugServerPort != null) {
+        if (options.debugServerPort != null) {
 
-            URI debugServerUri = URI.create("ws://localhost:" + debugServerPort + "/debug/");
+            URI debugServerUri = URI.create("ws://localhost:" + options.debugServerPort + "/debug/");
 
             instance.debuggerAdapter = new DebuggerCommandAdapter(
                     instance.debuggerCallbackMessage, debugger, instance, instance.compiler, instance.vm);
@@ -489,7 +302,6 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
     @Override
     public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -620,36 +432,13 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
 
                 debuggerCallbacks.message(message);
             }
-            //
-            //				glMatrixMode(GL_MODELVIEW);
-            //				glLoadIdentity();
-            //
-            //				//Calculate the aspect ratio of the window
-            //				perspectiveGL(90.0f,(float)this.width/(float)this.height,0.1f,100.0f);
-            //
-            //				glShadeModel(GL_SMOOTH);
-            //				glClearDepth(1.0f);                         // Depth Buffer Setup
-            //				glEnable(GL_DEPTH_TEST);                        // Enables Depth Testing
-            //				glDepthFunc(GL_LEQUAL);                         // The Type Of Depth Test To Do
+
             // Keep window responsive until closed
             while (!Thread.currentThread().isInterrupted() && windowManager.getGLFWWindow() != 0 && !isClosing()) {
                 // System.out.println("idle");
                 try {
                     // Go easy on the processor
                     Thread.sleep(10);
-
-                    //						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-                    //
-                    //						glLoadIdentity();//							' Reset The View
-                    //
-                    //						glColor3f(0.5f,0.5f,1.0f);//						' Set The Color To Blue One Time Only
-                    //						glBegin(GL_QUADS);//							' Draw A Quad
-                    //						glVertex3f(-1.0f, 1.0f, 0.0f);//					' Top Left
-                    //						glVertex3f( 1.0f, 1.0f, 0.0f)	;//				' Top Right
-                    //						glVertex3f( 1.0f,-1.0f, 0.0f);//					' Bottom Right
-                    //						glVertex3f(-0.5f,-1.0f, 0.0f);//					' Bottom Left
-                    //						glEnd();
-                    //						glfwSwapBuffers(this.window);
 
                     // Poll for window events. The key callback above will only be
                     // invoked during this call.
@@ -692,54 +481,7 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
 
     @Override
     public Configuration getSettings() {
-        Configuration settings = new Configuration();
-        settings.addSetting(new String[] {"Window Config"}, Configuration.PARAM_HEADING, "");
-        settings.addSetting(new String[] {"Window Title"}, Configuration.PARAM_STRING, "My Application");
-        settings.addSetting(new String[] {"Program Version"}, Configuration.PARAM_STRING, "1.0");
-        settings.addSetting(new String[] {"Window Width"}, Configuration.PARAM_INT, "640");
-        settings.addSetting(new String[] {"Window Height"}, Configuration.PARAM_INT, "480");
-        settings.addSetting(new String[] {"Resizable Window"}, Configuration.PARAM_BOOL, "false");
-        settings.addSetting(
-                new String[] {"Screen Mode", "Windowed", "Fullscreen"},
-                // "Fullscreen"}, temporarily disabled
-                Configuration.PARAM_CHOICE,
-                "0");
-        settings.addSetting(new String[] {"Use Desktop Resolution"}, Configuration.PARAM_BOOL, "false");
-        settings.addSetting(
-                new String[] {"Colour Depth", "Default", "16-bit", "32-bit"},
-                Configuration.PARAM_CHOICE,
-                String.valueOf(COLOUR_DEPTH_DEFAULT));
-        settings.addSetting(new String[] {"Bordered Window"}, Configuration.PARAM_BOOL, "true");
-        settings.addSetting(new String[] {"Require Stencil Buffer"}, Configuration.PARAM_BOOL, "false");
-        settings.addSetting(
-                new String[] {
-                    "Startup Window",
-                    "Create window when application starts",
-                    "Don't create window until UpdateWindow() is called"
-                },
-                Configuration.PARAM_CHOICE,
-                String.valueOf(STARTUP_WINDOW_CREATE_IMMEDIATELY));
-
-        settings.addSetting(new String[] {}, Configuration.PARAM_DIVIDER, "");
-        settings.addSetting(new String[] {"Platforms"}, Configuration.PARAM_HEADING, "");
-        settings.addSetting(
-                new String[] {"Windows Support", "32/64-bit", "32-bit", "64-bit", "Do not support"},
-                Configuration.PARAM_CHOICE,
-                "0");
-        settings.addSetting(
-                new String[] {"Mac Support", "32/64-bit", "Do not support"}, Configuration.PARAM_CHOICE, "0");
-        settings.addSetting(
-                new String[] {"Linux Support", "32/64-bit", "Do not support"}, Configuration.PARAM_CHOICE, "0");
-
-        return settings;
-    }
-
-    private String getConfigValueOrDefault(int index, String defaultValue) {
-        if (configuration == null || index < 0 || index >= configuration.getSettingCount()) {
-            return defaultValue;
-        }
-        String value = configuration.getValue(index);
-        return value != null ? value : defaultValue;
+        return settings.getSettings();
     }
 
     @Override
@@ -826,9 +568,9 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         List<String> list = new ArrayList<>();
 
         // Get supported platforms
-        int windows = Integer.valueOf(config.getValue(GLTextGridWindow.SETTING_SUPPORT_WINDOWS));
-        int mac = Integer.valueOf(config.getValue(GLTextGridWindow.SETTING_SUPPORT_MAC));
-        int linux = Integer.valueOf(config.getValue(GLTextGridWindow.SETTING_SUPPORT_LINUX));
+        int windows = Integer.valueOf(config.getValue(SETTING_SUPPORT_WINDOWS));
+        int mac = Integer.valueOf(config.getValue(SETTING_SUPPORT_MAC));
+        int linux = Integer.valueOf(config.getValue(SETTING_SUPPORT_LINUX));
 
         // Common
         list.add("charset.png");
@@ -924,14 +666,6 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         compiler.streamIn(input);
     }
 
-//    GLTextGrid getTextGrid() {
-//        return textGrid;
-//    }
-
-//    void setTextGrid(GLTextGrid grid) {
-//        textGrid = grid;
-//    }
-
     public CallbackMessage driveVM(int steps) {
 
         // Drive the virtual machine
@@ -1018,17 +752,6 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
     public void onPreExecute() {
         // Create window
         init();
-
-
-        //TODO updating this to 2.6.4; this should be handled by the window manager now that it is a service
-//        resetGL();
-
-        // Initialize Sprite Engine
-        //TODO updating this to 2.6.4
-//        textGrid = new GLSpriteEngine(charsetPath, fileOpener, 25, 40, 16, 16);
-//        if (textGrid.hasError()) {
-//            vm.setError(textGrid.getError());
-//        }
     }
 
     public void onPostExecute() {
@@ -1073,18 +796,9 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
 
             // Release window and window callbacks
             System.out.println("destroy window");
-//            glfwDestroyWindow(window);
-
             windowManager.destroyWindow();
 
-            System.out.println("destroy callbacks");
-            //TODO 2.6.4
-//            keyCallback.free();
-//            charCallback.free();
-//            clearKeyBuffers();
-            // TODO 2.6.4 is this necessary?
             keyboard.clearKeyBuffers();
-
 
             // Terminate GLFW and release the GLFWerrorfun
             System.out.println("glfwTerminate");
@@ -1093,23 +807,11 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
             if (callback != null) {
                 callback.free();
             }
-            errorCallback = null; // .release();
-            // Clear pointer to window
-            // An access violation will occur next time this window is launched if this isn't cleared
-            // TODO 2.6.4 refactor - this should be handled by windowManager.destroyWindow()
-//            window = 0;
+            errorCallback = null;
+            windowManager.destroyWindow();
         }
         System.out.println("exit");
     }
-
-    //TODO 2.6.4 cleanup
-//    public void recreateGLContext() {
-//        super.recreateGLContext();
-//
-//        if (textGrid != null) {
-//            textGrid.uploadCharsetTexture();
-//        }
-//    }
 
     public boolean isClosing() {
         try {
@@ -1137,48 +839,18 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
 
     private void init() {
         synchronized (GLTextGridWindow.this) {
-            // C++ source code for reference
-            // this.glWin = null;
-            // this.glText = null;
-
-            // Default settings
-            // boolean fullScreen = false, border = true;
-            // int width = 640, height = 480, bpp = 0;
-            // ResetGLModeType resetGLMode = RGM_RESETSTATE;
-
-            // Create window
-            /*
-            this.glWin = new glTextGridWindow ( fullScreen, border, width, height,
-            bpp, "Basic4GL", resetGLMode);
-
-            // Check for errors if (this.glWin.Error ()) { MessageDlg ( (AnsiString)
-            this.glWin.GetError().c_str(), mtError, TMsgDlgButtons() << mbOK, 0);
-            Application.Terminate (); return; } m_glWin.Hide ();
-
-            // Create OpenGL text grid m_glText = new glSpriteEngine (
-            (ExtractFilePath (Application.ExeName) + "charset.png").c_str (),
-            &m_files, 25, 40, 16, 16);
-            // Check for errors if (m_glText.Error ()) { MessageDlg (
-            (AnsiString) + m_glText.GetError ().c_str (), mtError,
-            TMsgDlgButtons() << mbOK, 0); Application.Terminate (); return; }
-            m_glWin.SetTextGrid (m_glText);
-            */
             String title = configuration.getValue(SETTING_TITLE);
-            int width = Integer.valueOf(configuration.getValue(SETTING_WIDTH));
-            int height = Integer.valueOf(configuration.getValue(SETTING_HEIGHT));
+            int width = configuration.getIntValue(SETTING_WIDTH);
+            int height = configuration.getIntValue(SETTING_HEIGHT);
 
-            boolean resizable = Boolean.valueOf(configuration.getValue(SETTING_RESIZABLE));
-            int mode = Integer.valueOf(configuration.getValue(SETTING_SCREEN_MODE));
-            boolean useDesktopResolution = Boolean.parseBoolean(
-                    getConfigValueOrDefault(SETTING_USE_DESKTOP_RES, "false"));
-            int colourDepth = Integer.parseInt(
-                    getConfigValueOrDefault(SETTING_COLOUR_DEPTH, String.valueOf(COLOUR_DEPTH_DEFAULT)));
-            boolean bordered = Boolean.parseBoolean(getConfigValueOrDefault(SETTING_BORDER, "true"));
-            boolean stencilRequired = Boolean.parseBoolean(getConfigValueOrDefault(SETTING_STENCIL, "false"));
-            int startupWindowOption = Integer.parseInt(
-                    getConfigValueOrDefault(
-                            SETTING_STARTUP_WINDOW_OPTION,
-                            String.valueOf(STARTUP_WINDOW_CREATE_IMMEDIATELY)));
+            boolean resizable = configuration.getBooleanValue(SETTING_RESIZABLE);
+            int mode = configuration.getIntValue(SETTING_SCREEN_MODE);
+            boolean useDesktopResolution = configuration.getBooleanValueOrDefault(SETTING_USE_DESKTOP_RES, false);
+            int colourDepth = configuration.getIntValueOrDefault(SETTING_COLOUR_DEPTH, COLOUR_DEPTH_DEFAULT);
+
+            boolean bordered = configuration.getBooleanValueOrDefault(SETTING_BORDER, true);
+            boolean stencilRequired = configuration.getBooleanValueOrDefault(SETTING_STENCIL, false);
+            int startupWindowOption = configuration.getIntValueOrDefault(SETTING_STARTUP_WINDOW_OPTION, STARTUP_WINDOW_CREATE_IMMEDIATELY);
             boolean createWindowOnStart = startupWindowOption == STARTUP_WINDOW_CREATE_IMMEDIATELY;
 
             // Setup an error callback. The default implementation
@@ -1189,16 +861,6 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
             if (!glfwInit()) {
                 throw new IllegalStateException("Unable to initialize GLFW");
             }
-
-            // Configure our window
-//            glfwDefaultWindowHints(); // optional, the current window hints are already the default
-
-//            glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
-//            glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE); // the window will be resizable
-
-
-            // Create the window
-//            windowManager.activateWindow();
 
             // Config determines whether we create the actual window now or wait until
             // UpdateWindow() is executed in the Basic4GL code.
@@ -1224,142 +886,60 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
             {
                 windowManager.recreateWindow();
             }
-             long window = windowManager.getGLFWWindow();
-//            window = glfwCreateWindow(width, height, title, NULL, NULL);
+
+            long window = windowManager.getGLFWWindow();
             if (createWindowOnStart && window == NULL) {
                 throw new RuntimeException("Failed to create the GLFW window");
             }
 
             // TODO implement window icons
 
-            /* //TODO Implement fullscreen and windowless mode
-            //Scrap code from previous swing implementation
-            if (mode == MODE_FULLSCREEN) {
-            	mFrame.setUndecorated(true);
-            	mFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            } else {
-            	mFrame.setUndecorated(false);
-            	mFrame.setExtendedState(JFrame.NORMAL);
-            }
-            mFrame.add(mCanvas);*/
-
-            // TODO 2.6.4 refactor
-            // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-//            glfwSetKeyCallback(
-//                    window,
-//                    keyCallback = new GLFWKeyCallback() {
-//                        @Override
-//                        public void invoke(long window, int key, int scancode, int action, int mods) {
-//                            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-//                                glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
-//                            }
-//                            if (key < 0) {
-//                                return;
-//                            }
-//                            if (action == GLFW_PRESS) {
-//                                if (key == GLFW_KEY_PAUSE) {
-//                                    pausePressed = true;
-//                                } else {
-//                                    keyDown[key] |= 1;
-//                                    bufferScanKey((char) key);
-//                                    if (key == GLFW_KEY_ENTER || key == GLFW_KEY_KP_ENTER) {
-//                                        // Basic4GL expects Enter from inkey$ as chr$(13)
-//                                        bufferKey('\r');
-//                                    }
-//                                }
-//                            } else if (action == GLFW_RELEASE) {
-//                                keyDown[key] &= ~1;
-//                            }
-//                        }
-//                    });
-//            // Setup a character key callback
-//            glfwSetCharCallback(
-//                    window,
-//                    charCallback = new GLFWCharCallback() {
-//                        @Override
-//                        public void invoke(long window, int codepoint) {
-//
-//                            if (codepoint == 27) // Esc closes window
-//                            {
-//                                closing = true;
-//                            }
-//
-//                            bufferKey(codepoint);
-//                        }
-//                    });
 
             // Get the resolution of the primary monitor
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             // Center our window
             // TODO 2.6.4 refactor - this should be handled by the window manager now that it is a service
 //            glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
-            // Get the thread stack and push a new frame
-            //			try ( MemoryStack stack = stackPush() ) {
-            //				IntBuffer pWidth = stack.mallocInt(1); // int*
-            //				IntBuffer pHeight = stack.mallocInt(1); // int*
-            //
-            //				// Get the window size passed to glfwCreateWindow
-            //				glfwGetWindowSize(m_window, pWidth, pHeight);
-            //
-            //				// Get the resolution of the primary monitor
-            //				GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            //
-            //				// Center the window
-            //				glfwSetWindowPos(
-            //						this.window,
-            //						(vidmode.width() - pWidth.get(0)) / 2,
-            //						(vidmode.height() - pHeight.get(0)) / 2
-            //				);
-            //			} // the stack frame is popped automatically
-
-            // Make the OpenGL context current
-//            glfwMakeContextCurrent(window);
-            // Enable v-sync
-            // TODO 2.6.4 refactor - is this still needed with the window manager handling context creation?
-//            glfwSwapInterval(1);
 
             // Make the window visible
-//            glfwShowWindow(window);
             if (createWindowOnStart) {
                 windowManager.activateWindow();
             }
-            //			int err = glGetError();
-            //			System.out.println(err);
         }
     }
 
     @Override
     public String getConfigFilePathCommandLineOption() {
-        return CONFIG_FILE_PATH_OPTION;
+        return cliParser.getConfigFilePathCommandLineOption();
     }
 
     @Override
     public String getLineMappingFilePathCommandLineOption() {
-        return LINE_MAPPING_FILE_PATH_OPTION;
+        return cliParser.getLineMappingFilePathCommandLineOption();
     }
 
     @Override
     public String getLogFilePathCommandLineOption() {
-        return LOG_FILE_PATH_OPTION;
+        return cliParser.getLogFilePathCommandLineOption();
     }
 
     @Override
     public String getParentDirectoryCommandLineOption() {
-        return PARENT_DIRECTORY_OPTION;
+        return cliParser.getParentDirectoryCommandLineOption();
     }
 
     @Override
     public String getProgramFilePathCommandLineOption() {
-        return PROGRAM_FILE_PATH_OPTION;
+        return cliParser.getProgramFilePathCommandLineOption();
     }
 
     @Override
     public String getDebuggerPortCommandLineOption() {
-        return DEBUGGER_PORT_OPTION;
+        return cliParser.getDebuggerPortCommandLineOption();
     }
 
     @Override
     public String getSandboxModeEnabledOption() {
-        return SAFE_MODE_OPTION;
+        return cliParser.getSandboxModeEnabledOption();
     }
 }

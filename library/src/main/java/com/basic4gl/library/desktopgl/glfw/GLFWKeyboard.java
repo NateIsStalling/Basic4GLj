@@ -35,6 +35,7 @@ public class GLFWKeyboard extends OpenGLKeyboard {
 
         windowManager.subscribeBeforeDestroyWindow(() ->
         {
+            System.out.println("destroy key callbacks");
             GLFWKeyCallback keyCallback = glfwSetKeyCallback(windowManager.getGLFWWindow(), null);
             if (keyCallback != null) {
                 keyCallback.free();
