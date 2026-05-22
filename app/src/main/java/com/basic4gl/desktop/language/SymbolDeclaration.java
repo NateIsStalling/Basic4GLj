@@ -21,4 +21,3 @@ public record SymbolDeclaration(
         String fileId,
         int line,
         int column) {}
-

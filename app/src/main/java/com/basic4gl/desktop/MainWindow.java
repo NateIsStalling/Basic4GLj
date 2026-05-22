@@ -41,7 +41,9 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
+import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.fife.ui.rsyntaxtextarea.*;
@@ -100,6 +102,8 @@ public class MainWindow
     private final ButtonGroup rightDocsGroup = new ButtonGroup();
     private final Map<String, JToggleButton> rightDocsButtons = new HashMap<>();
     private final JTree fileBrowserTree = new JTree();
+    private final JTree assetsTree = new JTree();
+    private final FileSystemView fileSystemView = FileSystemView.getFileSystemView();
     private final DefaultListModel<String> assetsListModel = new DefaultListModel<>();
     private final JList<String> assetsList = new JList<>(assetsListModel);
     private final JComboBox<String> runTargetCombo = new JComboBox<>();
@@ -165,6 +169,29 @@ public class MainWindow
         @Override
         public String toString() {
             return signature;
+        }
+    }
+
+    private static final class AssetItem {
+        final String title;
+        final String subtitle;
+        final File file;
+        final Icon icon;
+
+        AssetItem(String title, String subtitle, File file, Icon icon) {
+            this.title = title;
+            this.subtitle = subtitle;
+            this.file = file;
+            this.icon = icon;
+        }
+
+        boolean isOpenable() {
+            return file != null && file.isFile();
+        }
+
+        @Override
+        public String toString() {
+            return title;
         }
     }
 
@@ -2098,8 +2125,36 @@ public class MainWindow
     }
 
     private JPanel buildFileBrowserPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new BorderLayout(0, 6));
+        JPanel header = new JPanel(new BorderLayout());
+        JLabel title = new JLabel("Workspace Browser");
+        title.setBorder(new EmptyBorder(4, 8, 0, 8));
+        JButton refresh = new JButton("Refresh");
+        refresh.setFocusable(false);
+        refresh.addActionListener(e -> refreshFileBrowserTree());
+        header.add(title, BorderLayout.WEST);
+        header.add(refresh, BorderLayout.EAST);
+        panel.add(header, BorderLayout.NORTH);
+
         fileBrowserTree.setRootVisible(true);
+        fileBrowserTree.setShowsRootHandles(true);
+        fileBrowserTree.setRowHeight(22);
+        fileBrowserTree.setCellRenderer(new DefaultTreeCellRenderer() {
+            @Override
+            public Component getTreeCellRendererComponent(
+                    JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                JLabel label = (JLabel) super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+                if (value instanceof DefaultMutableTreeNode node && node.getUserObject() instanceof File file) {
+                    label.setText(file == null ? "" : fileSystemView.getSystemDisplayName(file));
+                    if (label.getText() == null || label.getText().isBlank()) {
+                        label.setText(file.getName().isBlank() ? file.getPath() : file.getName());
+                    }
+                    label.setIcon(fileSystemView.getSystemIcon(file));
+                    label.setToolTipText(file.getAbsolutePath());
+                }
+                return label;
+            }
+        });
         fileBrowserTree.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -2121,35 +2176,69 @@ public class MainWindow
                 }
             }
         });
-        panel.add(new JScrollPane(fileBrowserTree), BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(fileBrowserTree);
+        configureSmoothScrolling(scrollPane);
+        panel.add(scrollPane, BorderLayout.CENTER);
         return panel;
     }
 
     private JPanel buildAssetsPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        assetsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        assetsList.addMouseListener(new MouseAdapter() {
+        JPanel panel = new JPanel(new BorderLayout(0, 6));
+        JPanel header = new JPanel(new BorderLayout());
+        JLabel title = new JLabel("Assets");
+        title.setBorder(new EmptyBorder(4, 8, 0, 8));
+        JButton refresh = new JButton("Refresh");
+        refresh.setFocusable(false);
+        refresh.addActionListener(e -> refreshAssetsLibrary());
+        header.add(title, BorderLayout.WEST);
+        header.add(refresh, BorderLayout.EAST);
+        panel.add(header, BorderLayout.NORTH);
+
+        assetsTree.setRootVisible(false);
+        assetsTree.setShowsRootHandles(true);
+        assetsTree.setRowHeight(24);
+        assetsTree.setCellRenderer(new DefaultTreeCellRenderer() {
+            @Override
+            public Component getTreeCellRendererComponent(
+                    JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                JLabel label = (JLabel) super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+                if (value instanceof DefaultMutableTreeNode node && node.getUserObject() instanceof AssetItem item) {
+                    label.setText(item.subtitle == null || item.subtitle.isBlank()
+                            ? item.title
+                            : "<html><b>" + escapeHtml(item.title) + "</b><br/><span style='color:gray;'>"
+                                    + escapeHtml(item.subtitle) + "</span></html>");
+                    label.setIcon(item.icon);
+                    label.setToolTipText(item.file != null ? item.file.getAbsolutePath() : item.subtitle);
+                }
+                return label;
+            }
+        });
+
+        assetsTree.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() != 2) {
                     return;
                 }
-                String selected = assetsList.getSelectedValue();
-                if (selected == null) {
+                TreePath path = assetsTree.getPathForLocation(e.getX(), e.getY());
+                if (path == null) {
                     return;
                 }
-                File file = new File(selected);
-                if (!file.exists()) {
+                Object userObject = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
+                if (!(userObject instanceof AssetItem item) || !item.isOpenable()) {
                     return;
                 }
-                if (selected.toLowerCase(Locale.ROOT).endsWith(".md")) {
-                    openMarkdownInDocsTab(file);
+                if (item.file.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
+                    openMarkdownInDocsTab(item.file);
                 } else {
-                    openTab(file);
+                    openTab(item.file);
                 }
             }
         });
-        panel.add(new JScrollPane(assetsList), BorderLayout.CENTER);
+
+        JScrollPane scrollPane = new JScrollPane(assetsTree);
+        configureSmoothScrolling(scrollPane);
+        panel.add(scrollPane, BorderLayout.CENTER);
         return panel;
     }
 
@@ -2352,6 +2441,13 @@ public class MainWindow
         return button;
     }
 
+    private void configureSmoothScrolling(JScrollPane scrollPane) {
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getVerticalScrollBar().setBlockIncrement(64);
+        scrollPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
+        scrollPane.setWheelScrollingEnabled(true);
+    }
+
     private void onLeftSidebarButtonPressed(String key) {
         if (Objects.equals(activeLeftSidebarKey, key) && isLeftSidebarExpanded()) {
             collapseLeftSidebar();
@@ -2446,6 +2542,9 @@ public class MainWindow
         File root = new File(fileManager.getCurrentDirectory());
         DefaultMutableTreeNode rootNode = buildFileTreeNode(root, 0, 5);
         fileBrowserTree.setModel(new DefaultTreeModel(rootNode));
+        if (fileBrowserTree.getRowCount() > 0) {
+            fileBrowserTree.expandRow(0);
+        }
     }
 
     private DefaultMutableTreeNode buildFileTreeNode(File file, int depth, int maxDepth) {
@@ -2469,38 +2568,283 @@ public class MainWindow
     }
 
     private void refreshAssetsLibrary() {
-        assetsListModel.clear();
-        File root = new File(fileManager.getCurrentDirectory());
-        collectAssetFiles(root, 0, 4);
+        File rootDir = new File(fileManager.getCurrentDirectory());
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(
+                new AssetItem(
+                        "Assets",
+                        "Workspace resources, libraries, and embedded literals",
+                        null,
+                        createImageIcon(ICON_MENU_ASSETS)));
+
+        DefaultMutableTreeNode workspaceNode = buildMediaTypeSection(
+                "Workspace Resources",
+                collectWorkspaceAssets(rootDir, 0, 4),
+                rootDir,
+                createImageIcon(ICON_MENU_FOLDER));
+        if (workspaceNode != null) {
+            rootNode.add(workspaceNode);
+        }
+
+        DefaultMutableTreeNode literalNode = buildMediaTypeSection(
+                "Embedded Literals",
+                detectLiteralAssets(rootDir),
+                rootDir,
+                createImageIcon(ICON_MENU_ASSETS));
+        if (literalNode != null) {
+            rootNode.add(literalNode);
+        }
+
+        DefaultMutableTreeNode librariesNode = buildLibraryResourcesNode(rootDir);
+        if (librariesNode != null) {
+            rootNode.add(librariesNode);
+        }
+
+        assetsTree.setModel(new DefaultTreeModel(rootNode));
+        for (int i = 0; i < Math.min(4, assetsTree.getRowCount()); i++) {
+            assetsTree.expandRow(i);
+        }
     }
 
-    private void collectAssetFiles(File directory, int depth, int maxDepth) {
+    private DefaultMutableTreeNode buildMediaTypeSection(String title, java.util.List<File> files, File baseDir, Icon sectionIcon) {
+        if (files == null || files.isEmpty()) {
+            return null;
+        }
+        Map<String, java.util.List<File>> byMediaType = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (File file : files) {
+            String mediaType = getMediaTypeLabel(file);
+            byMediaType.computeIfAbsent(mediaType, k -> new ArrayList<>()).add(file);
+        }
+        DefaultMutableTreeNode section = new DefaultMutableTreeNode(
+                new AssetItem(title, files.size() + " file(s)", null, sectionIcon));
+        for (String mediaType : List.of("Images", "Audio", "Video", "Text", "Documents", "Other")) {
+            java.util.List<File> bucket = byMediaType.get(mediaType);
+            if (bucket == null || bucket.isEmpty()) {
+                continue;
+            }
+            DefaultMutableTreeNode typeNode = new DefaultMutableTreeNode(
+                    new AssetItem(mediaType, bucket.size() + " file(s)", null, createImageIcon(ICON_MENU_FOLDER)));
+            bucket.sort(Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
+            for (File file : bucket) {
+                typeNode.add(new DefaultMutableTreeNode(createAssetItem(file, baseDir, mediaType)));
+            }
+            section.add(typeNode);
+        }
+        return section;
+    }
+
+    private DefaultMutableTreeNode buildLibraryResourcesNode(File baseDir) {
+        if (basicEditor == null || basicEditor.getLibraries() == null || basicEditor.getLibraries().isEmpty()) {
+            return null;
+        }
+
+        DefaultMutableTreeNode librariesNode = new DefaultMutableTreeNode(
+                new AssetItem("Libraries", "Bookmarked libraries and their resource files", null, createImageIcon(ICON_MENU_FUNCTIONS)));
+        for (Library library : basicEditor.getLibraries()) {
+            if (library == null) {
+                continue;
+            }
+            DefaultMutableTreeNode libNode = new DefaultMutableTreeNode(
+                    new AssetItem(
+                            library.name() == null || library.name().isBlank() ? "(unnamed library)" : library.name(),
+                            library.description(),
+                            null,
+                            createImageIcon(ICON_MENU_BOOKMARKS)));
+
+            java.util.List<File> libraryFiles = new ArrayList<>();
+            collectResolvedLibraryAssets(library.getDependencies(), baseDir, libraryFiles);
+            collectResolvedLibraryAssets(library.getClassPathObjects(), baseDir, libraryFiles);
+            libraryFiles.sort(Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
+            for (File file : libraryFiles) {
+                libNode.add(new DefaultMutableTreeNode(createAssetItem(file, baseDir, "Library resource")));
+            }
+
+            if (libNode.getChildCount() == 0) {
+                libNode.add(new DefaultMutableTreeNode(
+                        new AssetItem("No local resources", "Library has no resolvable resource files in the workspace", null, createImageIcon(ICON_MENU_HELP))));
+            }
+            librariesNode.add(libNode);
+        }
+        return librariesNode;
+    }
+
+    private void collectResolvedLibraryAssets(java.util.List<String> paths, File baseDir, java.util.List<File> out) {
+        if (paths == null || paths.isEmpty()) {
+            return;
+        }
+        for (String path : paths) {
+            if (path == null || path.isBlank()) {
+                continue;
+            }
+            File resolved = resolveAssetReference(path, baseDir, null);
+            if (resolved == null || !resolved.exists()) {
+                continue;
+            }
+            if (resolved.isDirectory()) {
+                collectWorkspaceAssets(resolved, 0, 2, out);
+            } else {
+                out.add(resolved);
+            }
+        }
+    }
+
+    private java.util.List<File> detectLiteralAssets(File baseDir) {
+        java.util.LinkedHashSet<File> detected = new java.util.LinkedHashSet<>();
+        if (fileManager == null) {
+            return new ArrayList<>();
+        }
+
+        for (com.basic4gl.desktop.editor.FileEditor editor : fileManager.getFileEditors()) {
+            if (editor == null || editor.getEditorPane() == null) {
+                continue;
+            }
+            String text = editor.getEditorPane().getText();
+            if (text == null || text.isBlank()) {
+                continue;
+            }
+            File sourceFile = editor.getFile();
+            File sourceParent = sourceFile != null ? sourceFile.getAbsoluteFile().getParentFile() : null;
+            for (String literal : ExportDialog.extractStringLiterals(text)) {
+                if (literal == null || literal.isBlank()) {
+                    continue;
+                }
+                File resolved = resolveAssetReference(literal, baseDir, sourceParent);
+                if (resolved != null && resolved.exists() && resolved.isFile()) {
+                    detected.add(resolved);
+                }
+            }
+        }
+        return new ArrayList<>(detected);
+    }
+
+    private java.util.List<File> collectWorkspaceAssets(File directory, int depth, int maxDepth) {
+        java.util.List<File> assets = new ArrayList<>();
+        collectWorkspaceAssets(directory, depth, maxDepth, assets);
+        return assets;
+    }
+
+    private void collectWorkspaceAssets(File directory, int depth, int maxDepth, java.util.List<File> out) {
         if (directory == null || !directory.isDirectory() || depth > maxDepth) {
             return;
         }
+        if (shouldSkipAssetDirectory(directory)) {
+            return;
+        }
+
         File[] files = directory.listFiles();
         if (files == null) {
             return;
         }
         Arrays.sort(files, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
         for (File file : files) {
-            if (file.isDirectory()) {
-                collectAssetFiles(file, depth + 1, maxDepth);
+            if (file == null || file.getName().startsWith(".")) {
                 continue;
             }
-            String name = file.getName().toLowerCase(Locale.ROOT);
-            if (name.endsWith(".png")
-                    || name.endsWith(".jpg")
-                    || name.endsWith(".jpeg")
-                    || name.endsWith(".gif")
-                    || name.endsWith(".wav")
-                    || name.endsWith(".ogg")
-                    || name.endsWith(".mp3")
-                    || name.endsWith(".txt")
-                    || name.endsWith(".md")) {
-                assetsListModel.addElement(file.getAbsolutePath());
+            if (file.isDirectory()) {
+                collectWorkspaceAssets(file, depth + 1, maxDepth, out);
+            } else if (isKnownAssetFile(file)) {
+                out.add(file);
             }
         }
+    }
+
+    private boolean shouldSkipAssetDirectory(File directory) {
+        String name = directory.getName().toLowerCase(Locale.ROOT);
+        return name.equals("build")
+                || name.equals("out")
+                || name.equals("target")
+                || name.equals("bin")
+                || name.equals("dist")
+                || name.equals("node_modules")
+                || name.equals(".gradle")
+                || name.equals(".git");
+    }
+
+    private AssetItem createAssetItem(File file, File baseDir, String subtitlePrefix) {
+        String subtitle = subtitlePrefix;
+        if (file != null) {
+            String relative = formatRelativePath(file, baseDir);
+            if (relative != null && !relative.isBlank()) {
+                subtitle = subtitle == null || subtitle.isBlank() ? relative : subtitle + " • " + relative;
+            }
+        }
+        return new AssetItem(file != null ? file.getName() : "(unknown)", subtitle, file, file != null ? fileSystemView.getSystemIcon(file) : createImageIcon(ICON_MENU_FOLDER));
+    }
+
+    private File resolveAssetReference(String literal, File baseDir, File sourceParent) {
+        if (literal == null || literal.isBlank()) {
+            return null;
+        }
+        String normalized = com.basic4gl.lib.util.FileUtil.separatorsToSystem(literal);
+        File candidate = new File(normalized);
+        if (candidate.isAbsolute()) {
+            return candidate;
+        }
+        if (baseDir != null) {
+            File workspace = new File(baseDir, normalized);
+            if (workspace.exists()) {
+                return workspace;
+            }
+        }
+        if (sourceParent != null) {
+            File sibling = new File(sourceParent, normalized);
+            if (sibling.exists()) {
+                return sibling;
+            }
+        }
+        return candidate;
+    }
+
+    private boolean isKnownAssetFile(File file) {
+        String name = file.getName().toLowerCase(Locale.ROOT);
+        return getMediaTypeLabel(file) != null && !"Other".equals(getMediaTypeLabel(file));
+    }
+
+    private String getMediaTypeLabel(File file) {
+        if (file == null) {
+            return "Other";
+        }
+        String name = file.getName().toLowerCase(Locale.ROOT);
+        if (name.endsWith(".png")
+                || name.endsWith(".jpg")
+                || name.endsWith(".jpeg")
+                || name.endsWith(".gif")
+                || name.endsWith(".bmp")
+                || name.endsWith(".webp")
+                || name.endsWith(".ico")) {
+            return "Images";
+        }
+        if (name.endsWith(".wav") || name.endsWith(".ogg") || name.endsWith(".mp3") || name.endsWith(".flac")) {
+            return "Audio";
+        }
+        if (name.endsWith(".mp4") || name.endsWith(".mov") || name.endsWith(".webm")) {
+            return "Video";
+        }
+        if (name.endsWith(".txt") || name.endsWith(".md") || name.endsWith(".json") || name.endsWith(".xml")
+                || name.endsWith(".csv") || name.endsWith(".ini") || name.endsWith(".cfg") || name.endsWith(".properties")) {
+            return "Text";
+        }
+        if (name.endsWith(".pdf") || name.endsWith(".doc") || name.endsWith(".docx") || name.endsWith(".rtf")) {
+            return "Documents";
+        }
+        return "Other";
+    }
+
+    private String formatRelativePath(File file, File baseDir) {
+        if (file == null) {
+            return "";
+        }
+        if (baseDir != null) {
+            try {
+                java.nio.file.Path relative = baseDir.getAbsoluteFile().toPath().normalize().relativize(file.getAbsoluteFile().toPath().normalize());
+                String text = relative.toString().replace('\\', '/');
+                if (!text.startsWith("..")) {
+                    return text;
+                }
+            } catch (Exception ignored) {
+                // Fall back to file name below.
+            }
+        }
+        return file.getName();
     }
 
     private void refreshRunnableFileControls() {
@@ -2631,6 +2975,7 @@ public class MainWindow
                 .thenComparing(item -> item.kind));
         rebuildLibraryFilterOptions();
         filterReferenceItems();
+        refreshAssetsLibrary();
     }
 
     private void populateDocsFromCompiler() {
