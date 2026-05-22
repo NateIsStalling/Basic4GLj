@@ -114,6 +114,13 @@ public class MainWindow
     private final JComboBox<String> referenceLibraryFilter = new JComboBox<>(new String[] {"All libraries"});
     private final JTextPane referenceDetailsPane = new JTextPane();
     private final JButton referenceInsertButton = new JButton("Insert");
+    private final javax.swing.Timer referenceFilterDebounceTimer =
+            new javax.swing.Timer(120, e -> filterReferenceItems());
+    private boolean updatingReferenceFilters = false;
+    private static final String REFERENCE_NO_MATCHES_HTML =
+            "<html><body style='font-family:sans-serif;padding:6px;'>No matches.</body></html>";
+    private static final String REFERENCE_SELECT_PROMPT_HTML =
+            "<html><body style='font-family:sans-serif;padding:6px;'>Select an entry.</body></html>";
     private final java.util.List<ReferenceItem> allReferenceItems = new ArrayList<>();
     // Language support is shared between the symbol indexer and (via BasicTokenMaker) the editor.
     private final com.basic4gl.desktop.language.LanguageSupport languageSupport =
@@ -181,6 +188,7 @@ public class MainWindow
 
     private final JMenuItem findMenuItem = new JMenuItem("Find");
     private final JMenuItem replaceMenuItem = new JMenuItem("Replace");
+    private final JMenuItem goToDeclarationMenuItem = new JMenuItem("Go to Declaration");
     private final JCheckBoxMenuItem debugMenuItem = new JCheckBoxMenuItem("Debug Mode");
 
     private final JMenuItem settingsMenuItem = new JMenuItem("Project Settings");
@@ -359,6 +367,7 @@ public class MainWindow
         editMenu.add(new JSeparator());
         editMenu.add(findMenuItem);
         editMenu.add(replaceMenuItem);
+        editMenu.add(goToDeclarationMenuItem);
         editMenu.add(new JSeparator());
         editMenu.add(selectAllMenuItem);
 
@@ -449,6 +458,8 @@ public class MainWindow
         replaceMenuItem.addActionListener(e -> {
             showFindReplaceMenu(true);
         });
+        goToDeclarationMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, toolkit.getMenuShortcutKeyMask()));
+        goToDeclarationMenuItem.addActionListener(e -> actionGoToDeclaration());
         selectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, toolkit.getMenuShortcutKeyMask()));
         selectAllMenuItem.addActionListener(e -> {
             int i = tabControl.getSelectedIndex();
@@ -1200,6 +1211,198 @@ public class MainWindow
         refreshDebugDisplays(basicEditor.getMode());
     }
 
+    private void actionGoToDeclaration() {
+        int selectedTab = tabControl.getSelectedIndex();
+        if (selectedTab < 0 || selectedTab >= fileManager.getFileEditors().size()) {
+            return;
+        }
+
+        FileEditor activeEditor = fileManager.getFileEditors().get(selectedTab);
+        JTextArea editorPane = activeEditor.getEditorPane();
+        String symbol = getIdentifierAtCaret(editorPane);
+        if (symbol == null || symbol.isBlank()) {
+            setCompilerStatus("No identifier at caret");
+            return;
+        }
+
+        String activeFile = activeEditor.getFilePath();
+        int caretLine = 0;
+        try {
+            caretLine = editorPane.getLineOfOffset(editorPane.getCaretPosition());
+        } catch (BadLocationException ignored) {
+        }
+
+        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> declarations =
+                collectOpenFileDeclarations();
+        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> matches = declarations.stream()
+                .filter(d -> ("label".equals(d.kind()) || "variable".equals(d.kind()))
+                        && d.name().equalsIgnoreCase(symbol))
+                .toList();
+
+        if (matches.isEmpty()) {
+            setCompilerStatus("Declaration not found for: " + symbol);
+            return;
+        }
+
+        com.basic4gl.desktop.language.SymbolDeclaration selected =
+                chooseDeclarationForCaret(matches, activeFile, caretLine);
+        if (selected == null) {
+            return;
+        }
+
+        if (matches.size() > 1) {
+            selected = promptUserForDeclaration(matches, selected);
+            if (selected == null) {
+                return;
+            }
+        }
+
+        goToDeclarationLocation(selected);
+        setCompilerStatus("Declaration: " + selected.signature());
+    }
+
+    private java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> collectOpenFileDeclarations() {
+        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> declarations = new ArrayList<>();
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            String fileId = editor.getFilePath();
+            if (fileId == null || fileId.isBlank()) {
+                File file = editor.getFile();
+                fileId = file != null ? file.getAbsolutePath() : "<unsaved:" + editor.getTitle() + ">";
+            }
+            declarations.addAll(languageSupport.extractDeclarations(editor.getEditorPane().getText(), fileId));
+        }
+        return declarations;
+    }
+
+    private com.basic4gl.desktop.language.SymbolDeclaration chooseDeclarationForCaret(
+            java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> matches, String activeFile, int caretLine) {
+        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> sameFile = matches.stream()
+                .filter(d -> Objects.equals(d.fileId(), activeFile))
+                .toList();
+        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> candidates =
+                sameFile.isEmpty() ? matches : sameFile;
+
+        com.basic4gl.desktop.language.SymbolDeclaration best = null;
+        int bestScore = Integer.MAX_VALUE;
+        for (com.basic4gl.desktop.language.SymbolDeclaration candidate : candidates) {
+            int score = declarationScore(candidate, activeFile, caretLine);
+            if (score < bestScore) {
+                bestScore = score;
+                best = candidate;
+            }
+        }
+        return best;
+    }
+
+    private int declarationScore(
+            com.basic4gl.desktop.language.SymbolDeclaration declaration, String activeFile, int caretLine) {
+        int score = 0;
+        if (!Objects.equals(declaration.fileId(), activeFile)) {
+            score += 1_000_000;
+        }
+        int lineDistance = Math.abs(caretLine - declaration.line());
+        score += lineDistance;
+        if (declaration.line() > caretLine) {
+            // Prefer declarations above the current caret location.
+            score += 5_000;
+        }
+        // Prefer first declaration over later re-dims when ambiguous.
+        score += Math.max(0, declaration.declarationIndex() - 1) * 50;
+        return score;
+    }
+
+    private com.basic4gl.desktop.language.SymbolDeclaration promptUserForDeclaration(
+            java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> matches,
+            com.basic4gl.desktop.language.SymbolDeclaration preferred) {
+        Object[] options = matches.stream().map(this::formatDeclarationChoice).toArray();
+        Object initial = preferred != null ? formatDeclarationChoice(preferred) : (options.length > 0 ? options[0] : null);
+        Object selected = JOptionPane.showInputDialog(
+                frame,
+                "Multiple declarations found. Choose destination:",
+                "Go to Declaration",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                initial);
+        if (selected == null) {
+            return null;
+        }
+        String selectedText = selected.toString();
+        for (com.basic4gl.desktop.language.SymbolDeclaration declaration : matches) {
+            if (formatDeclarationChoice(declaration).equals(selectedText)) {
+                return declaration;
+            }
+        }
+        return preferred;
+    }
+
+    private String formatDeclarationChoice(com.basic4gl.desktop.language.SymbolDeclaration declaration) {
+        String fileLabel = declaration.fileId();
+        File f = fileLabel == null ? null : new File(fileLabel);
+        if (f != null && f.getName() != null && !f.getName().isBlank()) {
+            fileLabel = f.getName();
+        }
+        return declaration.kind() + "  " + declaration.signature()
+                + "  (" + fileLabel + ":" + (declaration.line() + 1) + ")";
+    }
+
+    private void goToDeclarationLocation(com.basic4gl.desktop.language.SymbolDeclaration declaration) {
+        String filePath = declaration.fileId();
+        int index = getTabIndex(filePath);
+        if (index == -1 && filePath != null && !filePath.startsWith("<unsaved:")) {
+            File file = new File(filePath);
+            if (file.exists()) {
+                addTab(FileEditor.open(file, this, fileManager, this, linkGenerator, searchContext));
+                index = getTabIndex(filePath);
+            }
+        }
+        if (index < 0 || index >= fileManager.getFileEditors().size()) {
+            return;
+        }
+
+        tabControl.setSelectedIndex(index);
+        JTextArea pane = fileManager.getFileEditors().get(index).getEditorPane();
+        int targetOffset;
+        try {
+            int lineStart = pane.getLineStartOffset(Math.max(0, declaration.line()));
+            targetOffset = Math.min(lineStart + Math.max(0, declaration.column()), pane.getDocument().getLength());
+        } catch (BadLocationException e) {
+            targetOffset = Math.min(pane.getDocument().getLength(), pane.getCaretPosition());
+        }
+        pane.requestFocusInWindow();
+        pane.setCaretPosition(targetOffset);
+    }
+
+    private String getIdentifierAtCaret(JTextArea editorPane) {
+        String text = editorPane.getText();
+        if (text == null || text.isEmpty()) {
+            return null;
+        }
+        int caret = editorPane.getCaretPosition();
+        caret = Math.max(0, Math.min(caret, text.length()));
+
+        if (caret > 0 && (caret == text.length() || !isIdentifierChar(text.charAt(caret)))) {
+            caret--;
+        }
+        if (caret < 0 || caret >= text.length() || !isIdentifierChar(text.charAt(caret))) {
+            return null;
+        }
+
+        int start = caret;
+        while (start > 0 && isIdentifierChar(text.charAt(start - 1))) {
+            start--;
+        }
+        int end = caret + 1;
+        while (end < text.length() && isIdentifierChar(text.charAt(end))) {
+            end++;
+        }
+        return text.substring(start, end);
+    }
+
+    private boolean isIdentifierChar(char c) {
+        return Character.isLetterOrDigit(c) || c == '_';
+    }
+
     public void closeAll() {
         for (int i = tabControl.getTabCount() - 1; i >= 0; i--) {
             closeTab(i);
@@ -1223,6 +1426,7 @@ public class MainWindow
         fileManager.ensureRunnableFileValid();
         refreshRunnableFileControls();
         refreshSidebarContent();
+        symbolIndexer.schedule();
     }
 
     public void addTab() {
@@ -1294,6 +1498,7 @@ public class MainWindow
         fileManager.ensureRunnableFileValid();
         refreshRunnableFileControls();
         refreshSidebarContent();
+        symbolIndexer.schedule();
     }
 
     @Override
@@ -1406,6 +1611,7 @@ public class MainWindow
             copyMenuItem.setEnabled(true);
             findMenuItem.setEnabled(true);
             replaceMenuItem.setEnabled(true);
+            goToDeclarationMenuItem.setEnabled(true);
             selectAllMenuItem.setEnabled(true);
 
             stepOverButton.setEnabled(true);
@@ -1464,6 +1670,7 @@ public class MainWindow
                 copyMenuItem.setEnabled(false);
                 findMenuItem.setEnabled(false);
                 replaceMenuItem.setEnabled(false);
+                goToDeclarationMenuItem.setEnabled(false);
                 selectAllMenuItem.setEnabled(false);
 
                 stepOverButton.setEnabled(false);
@@ -2004,8 +2211,12 @@ public class MainWindow
         referenceKindFilter.setToolTipText("Filter by functions or constants");
         referenceSourceFilter.setToolTipText("Filter by builtin tokens or library-provided tokens");
         referenceLibraryFilter.setToolTipText("Filter by library");
+        referenceFilterDebounceTimer.setRepeats(false);
 
         referenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        referenceList.setFixedCellHeight(20);
+        referenceList.setPrototypeCellValue(new ReferenceItem(
+                "function", "prototype", "prototype(symbol, arg)", "Builtin", "", "", 0));
         referenceList.setCellRenderer(new DefaultListCellRenderer() {
             private final ImageIcon functionIcon = createImageIcon(ICON_FUNCTION);
             private final ImageIcon variableIcon = createImageIcon(ICON_VARIABLE);
@@ -2025,7 +2236,7 @@ public class MainWindow
                     } else {
                         label.setIcon(variableIcon);
                     }
-                    label.setToolTipText(item.signature + "  [" + item.library + "]");
+                    label.setToolTipText(null);
                 }
                 return label;
             }
@@ -2046,17 +2257,17 @@ public class MainWindow
         referenceSearchField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                filterReferenceItems();
+                requestFilterReferenceItems();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                filterReferenceItems();
+                requestFilterReferenceItems();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                filterReferenceItems();
+                requestFilterReferenceItems();
             }
         });
         referenceList.addListSelectionListener(e -> {
@@ -2064,9 +2275,21 @@ public class MainWindow
                 updateReferenceSelectionDetails();
             }
         });
-        referenceKindFilter.addActionListener(e -> filterReferenceItems());
-        referenceSourceFilter.addActionListener(e -> filterReferenceItems());
-        referenceLibraryFilter.addActionListener(e -> filterReferenceItems());
+        referenceKindFilter.addActionListener(e -> {
+            if (!updatingReferenceFilters) {
+                filterReferenceItems();
+            }
+        });
+        referenceSourceFilter.addActionListener(e -> {
+            if (!updatingReferenceFilters) {
+                filterReferenceItems();
+            }
+        });
+        referenceLibraryFilter.addActionListener(e -> {
+            if (!updatingReferenceFilters) {
+                filterReferenceItems();
+            }
+        });
         referenceList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -2502,12 +2725,21 @@ public class MainWindow
             }
         }
 
-        referenceLibraryFilter.removeAllItems();
-        referenceLibraryFilter.addItem("All libraries");
-        for (String library : libraries) {
-            referenceLibraryFilter.addItem(library);
+        updatingReferenceFilters = true;
+        try {
+            referenceLibraryFilter.removeAllItems();
+            referenceLibraryFilter.addItem("All libraries");
+            for (String library : libraries) {
+                referenceLibraryFilter.addItem(library);
+            }
+            referenceLibraryFilter.setSelectedItem(libraries.contains(selected) ? selected : "All libraries");
+        } finally {
+            updatingReferenceFilters = false;
         }
-        referenceLibraryFilter.setSelectedItem(libraries.contains(selected) ? selected : "All libraries");
+    }
+
+    private void requestFilterReferenceItems() {
+        referenceFilterDebounceTimer.restart();
     }
 
     private void filterReferenceItems() {
@@ -2517,7 +2749,8 @@ public class MainWindow
         String selectedSource = Objects.toString(referenceSourceFilter.getSelectedItem(), "All sources");
         String selectedLibrary = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All libraries");
 
-        referenceListModel.clear();
+        ReferenceItem previousSelection = referenceList.getSelectedValue();
+        java.util.List<ReferenceItem> matches = new ArrayList<>();
         for (ReferenceItem item : allReferenceItems) {
             boolean kindMatches = "All".equals(selectedKind)
                     || ("Functions".equals(selectedKind)
@@ -2545,16 +2778,24 @@ public class MainWindow
                     || (item.library != null
                             && item.library.toLowerCase(Locale.ROOT).contains(needle))) {
                 if (kindMatches && sourceMatches && libraryMatches) {
-                    referenceListModel.addElement(item);
+                    matches.add(item);
                 }
             }
         }
 
+        referenceListModel.clear();
+        for (ReferenceItem match : matches) {
+            referenceListModel.addElement(match);
+        }
+
         if (!referenceListModel.isEmpty()) {
-            referenceList.setSelectedIndex(0);
+            if (previousSelection != null && matches.contains(previousSelection)) {
+                referenceList.setSelectedValue(previousSelection, true);
+            } else {
+                referenceList.setSelectedIndex(0);
+            }
         } else {
-            referenceDetailsPane.setText(
-                    "<html><body style='font-family:sans-serif;padding:6px;'>No matches.</body></html>");
+            referenceDetailsPane.setText(REFERENCE_NO_MATCHES_HTML);
             referenceInsertButton.setEnabled(false);
         }
     }
@@ -2562,8 +2803,7 @@ public class MainWindow
     private void updateReferenceSelectionDetails() {
         ReferenceItem item = referenceList.getSelectedValue();
         if (item == null) {
-            referenceDetailsPane.setText(
-                    "<html><body style='font-family:sans-serif;padding:6px;'>Select an entry.</body></html>");
+            referenceDetailsPane.setText(REFERENCE_SELECT_PROMPT_HTML);
             referenceInsertButton.setEnabled(false);
             return;
         }

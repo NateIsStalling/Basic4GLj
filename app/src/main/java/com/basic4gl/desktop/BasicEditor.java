@@ -320,6 +320,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         // TODO Reset file directory
         // SetCurrentDir(mRunDirectory);
 
+        presenter.onCompileSucceeded();
         return true;
     }
 

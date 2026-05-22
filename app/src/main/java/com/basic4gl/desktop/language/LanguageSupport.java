@@ -42,8 +42,8 @@ public interface LanguageSupport {
     /**
      * Tokenizes a single line of source text.
      *
-     * <p>The returned list contains all tokens in left-to-right order. {@link LangToken#start}
-     * and {@link LangToken#end} are 0-based character offsets within {@code line}.
+     * <p>The returned list contains all tokens in left-to-right order. {@link LangToken#start()}
+     * and {@link LangToken#end()} are 0-based character offsets within {@code line}.
      *
      * <p>Implementations must not return {@code null}; an empty line may return an empty list.
      *
@@ -79,4 +79,18 @@ public interface LanguageSupport {
      * @return discovered symbols; never {@code null}
      */
     List<IndexedSymbol> extractSymbols(String source);
+
+    /**
+     * Extracts declaration sites from source for navigation features (e.g. Go To Declaration).
+     *
+     * <p>Default implementation returns an empty list so existing language plugins remain binary
+     * compatible until they opt into declaration-aware navigation.
+     *
+     * @param source full source text
+     * @param fileId caller-provided source identifier (typically absolute file path)
+     * @return declaration list; never {@code null}
+     */
+    default List<SymbolDeclaration> extractDeclarations(String source, String fileId) {
+        return List.of();
+    }
 }

@@ -204,6 +204,10 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         String pendingVarName = null;
         String pendingVarType = null;
         String currentRoutine = null;
+        // Struc-scope tracking: dims inside a struc block use "struc:<Name>" as scope
+        // so they never collide with same-named program variables in re-dim counting.
+        boolean inStruc = false;
+        String currentStrucName = null;
 
         for (int i = 0; i < tokens.size(); i++) {
             Token t = tokens.get(i);
@@ -213,12 +217,15 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
             if (type == Token.EOF || type == Basic4GL.WS || type == Basic4GL.NEWLINE) {
                 // A newline resets after-dim state (one dim per line)
                 if (type == Basic4GL.NEWLINE && state == AFTER_DIM_NAME) {
+                    String effectiveRoutine = inStruc
+                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
+                            : currentRoutine;
                     flushVariable(
                             symbolsByKey,
                             variableDeclCounts,
                             pendingVarName,
                             null,
-                            currentRoutine);
+                            effectiveRoutine);
                     state = NONE;
                     pendingVarName = null;
                 }
@@ -235,6 +242,16 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                                 && (next.getType() == Basic4GL.FUNCTION_KW || next.getType() == Basic4GL.SUB_KW)) {
                             currentRoutine = null;
                         }
+                    } else if (type == Basic4GL.STRUC_KW) {
+                        // Entering a struc block – capture the struct name from the next identifier
+                        Token nameToken = peekNonWs(tokens, i + 1);
+                        currentStrucName = (nameToken != null && nameToken.getType() == Basic4GL.IDENTIFIER)
+                                ? nameToken.getText()
+                                : null;
+                        inStruc = true;
+                    } else if (type == Basic4GL.ENDSTRUC_KW) {
+                        inStruc = false;
+                        currentStrucName = null;
                     } else if (type == Basic4GL.DIM_KW) {
                         state = AFTER_DIM_KW;
                     } else if (type == Basic4GL.IDENTIFIER) {
@@ -295,6 +312,9 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     }
                 }
                 case AFTER_DIM_NAME -> {
+                    String effectiveRoutine = inStruc
+                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
+                            : currentRoutine;
                     if (type == Basic4GL.AS_KW) {
                         state = AFTER_AS_KW;
                     } else if (type == Basic4GL.COLON || type == Basic4GL.COMMA) {
@@ -304,7 +324,7 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                                 variableDeclCounts,
                                 pendingVarName,
                                 pendingVarType,
-                                currentRoutine);
+                                effectiveRoutine);
                         pendingVarName = null;
                         pendingVarType = null;
                         state = (type == Basic4GL.COMMA) ? AFTER_DIM_KW : NONE;
@@ -314,13 +334,16 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                                 variableDeclCounts,
                                 pendingVarName,
                                 pendingVarType,
-                                currentRoutine);
+                                effectiveRoutine);
                         state = NONE;
                     } else {
                         // Any other token (e.g. array size) – stay in AFTER_DIM_NAME
                     }
                 }
                 case AFTER_AS_KW -> {
+                    String effectiveRoutine = inStruc
+                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
+                            : currentRoutine;
                     if (type == Basic4GL.IDENTIFIER
                             || type == Basic4GL.INTEGER_T
                             || type == Basic4GL.INT_T
@@ -333,7 +356,7 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                                 variableDeclCounts,
                                 pendingVarName,
                                 pendingVarType,
-                                currentRoutine);
+                                effectiveRoutine);
                         state = NONE;
                     } else {
                         flushVariable(
@@ -341,7 +364,7 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                                 variableDeclCounts,
                                 pendingVarName,
                                 null,
-                                currentRoutine);
+                                effectiveRoutine);
                         state = NONE;
                     }
                 }
@@ -350,15 +373,235 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
 
         // Flush any dangling state at EOF
         if (state == AFTER_DIM_NAME || state == AFTER_AS_KW) {
+            String effectiveRoutine = inStruc
+                    ? "struc:" + (currentStrucName != null ? currentStrucName : "")
+                    : currentRoutine;
             flushVariable(
                     symbolsByKey,
                     variableDeclCounts,
                     pendingVarName,
                     pendingVarType,
-                    currentRoutine);
+                    effectiveRoutine);
         }
 
         return new ArrayList<>(symbolsByKey.values());
+    }
+
+    @Override
+    public List<SymbolDeclaration> extractDeclarations(String source, String fileId) {
+        if (source == null || source.isEmpty()) {
+            return List.of();
+        }
+
+        Basic4GL lexer = createLexer(source);
+        CommonTokenStream stream = new CommonTokenStream(lexer);
+        stream.fill();
+        List<Token> tokens = stream.getTokens();
+
+        List<SymbolDeclaration> declarations = new ArrayList<>();
+        Map<String, Integer> variableDeclCounts = new LinkedHashMap<>();
+
+        final int NONE = 0;
+        final int AFTER_FUNC_KW = 1;
+        final int COLLECT_PARAMS = 2;
+        final int AFTER_DIM_KW = 3;
+        final int AFTER_DIM_NAME = 4;
+        final int AFTER_AS_KW = 5;
+
+        int state = NONE;
+        Token pendingFuncNameToken = null;
+        StringBuilder paramBuf = null;
+        int parenDepth = 0;
+        Token pendingVarNameToken = null;
+        String pendingVarType = null;
+        String currentRoutine = null;
+        // Struc-scope tracking: dims inside a struc block use "struc:<Name>" as scope
+        // so they never collide with same-named program variables in re-dim counting.
+        boolean inStruc = false;
+        String currentStrucName = null;
+
+        for (int i = 0; i < tokens.size(); i++) {
+            Token t = tokens.get(i);
+            int type = t.getType();
+
+            if (type == Token.EOF || type == Basic4GL.WS || type == Basic4GL.NEWLINE) {
+                if (type == Basic4GL.NEWLINE && state == AFTER_DIM_NAME && pendingVarNameToken != null) {
+                    String effectiveRoutine = inStruc
+                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
+                            : currentRoutine;
+                    emitVariableDeclaration(
+                            declarations,
+                            variableDeclCounts,
+                            pendingVarNameToken,
+                            pendingVarType,
+                            effectiveRoutine,
+                            fileId);
+                    pendingVarNameToken = null;
+                    pendingVarType = null;
+                    state = NONE;
+                }
+                continue;
+            }
+
+            switch (state) {
+                case NONE -> {
+                    if (type == Basic4GL.FUNCTION_KW || type == Basic4GL.SUB_KW) {
+                        state = AFTER_FUNC_KW;
+                    } else if (type == Basic4GL.END_KW) {
+                        Token next = peekNonWs(tokens, i + 1);
+                        if (next != null
+                                && (next.getType() == Basic4GL.FUNCTION_KW || next.getType() == Basic4GL.SUB_KW)) {
+                            currentRoutine = null;
+                        }
+                    } else if (type == Basic4GL.STRUC_KW) {
+                        // Entering a struc block – capture the struct name from the next identifier
+                        Token nameToken = peekNonWs(tokens, i + 1);
+                        currentStrucName = (nameToken != null && nameToken.getType() == Basic4GL.IDENTIFIER)
+                                ? nameToken.getText()
+                                : null;
+                        inStruc = true;
+                    } else if (type == Basic4GL.ENDSTRUC_KW) {
+                        inStruc = false;
+                        currentStrucName = null;
+                    } else if (type == Basic4GL.DIM_KW) {
+                        state = AFTER_DIM_KW;
+                    } else if (type == Basic4GL.IDENTIFIER) {
+                        Token next = peekNonWs(tokens, i + 1);
+                        if (next != null && next.getType() == Basic4GL.COLON) {
+                            declarations.add(new SymbolDeclaration(
+                                    "label",
+                                    t.getText(),
+                                    t.getText() + ":",
+                                    currentRoutine == null ? "global" : currentRoutine,
+                                    1,
+                                    fileId,
+                                    Math.max(0, t.getLine() - 1),
+                                    Math.max(0, t.getCharPositionInLine())));
+                        }
+                    }
+                }
+                case AFTER_FUNC_KW -> {
+                    if (type == Basic4GL.IDENTIFIER) {
+                        pendingFuncNameToken = t;
+                        paramBuf = new StringBuilder(t.getText()).append('(');
+                        parenDepth = 0;
+                        state = COLLECT_PARAMS;
+                    } else {
+                        state = NONE;
+                    }
+                }
+                case COLLECT_PARAMS -> {
+                    if (type == Basic4GL.LPAREN) {
+                        parenDepth++;
+                    } else if (type == Basic4GL.RPAREN) {
+                        if (parenDepth == 0 && pendingFuncNameToken != null) {
+                            String sig = paramBuf.toString().trim();
+                            if (sig.endsWith(",")) {
+                                sig = sig.substring(0, sig.length() - 1).trim();
+                            }
+                            declarations.add(new SymbolDeclaration(
+                                    "userfunc",
+                                    pendingFuncNameToken.getText(),
+                                    sig + ")",
+                                    "global",
+                                    1,
+                                    fileId,
+                                    Math.max(0, pendingFuncNameToken.getLine() - 1),
+                                    Math.max(0, pendingFuncNameToken.getCharPositionInLine())));
+                            currentRoutine = pendingFuncNameToken.getText();
+                            pendingFuncNameToken = null;
+                            paramBuf = null;
+                            state = NONE;
+                        } else {
+                            parenDepth--;
+                            if (paramBuf != null) {
+                                paramBuf.append(t.getText());
+                            }
+                        }
+                    } else {
+                        if (paramBuf != null
+                                && !paramBuf.toString().endsWith("(")
+                                && !paramBuf.toString().endsWith(",")
+                                && !paramBuf.toString().endsWith(" ")) {
+                            paramBuf.append(' ');
+                        }
+                        if (paramBuf != null) {
+                            paramBuf.append(t.getText());
+                        }
+                    }
+                }
+                case AFTER_DIM_KW -> {
+                    if (type == Basic4GL.IDENTIFIER) {
+                        pendingVarNameToken = t;
+                        pendingVarType = null;
+                        state = AFTER_DIM_NAME;
+                    } else {
+                        state = NONE;
+                    }
+                }
+                case AFTER_DIM_NAME -> {
+                    String effectiveRoutine = inStruc
+                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
+                            : currentRoutine;
+                    if (type == Basic4GL.AS_KW) {
+                        state = AFTER_AS_KW;
+                    } else if (type == Basic4GL.COLON || type == Basic4GL.COMMA) {
+                        if (pendingVarNameToken != null) {
+                            emitVariableDeclaration(
+                                    declarations,
+                                    variableDeclCounts,
+                                    pendingVarNameToken,
+                                    pendingVarType,
+                                    effectiveRoutine,
+                                    fileId);
+                        }
+                        pendingVarNameToken = null;
+                        pendingVarType = null;
+                        state = (type == Basic4GL.COMMA) ? AFTER_DIM_KW : NONE;
+                    }
+                }
+                case AFTER_AS_KW -> {
+                    String effectiveRoutine = inStruc
+                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
+                            : currentRoutine;
+                    if (type == Basic4GL.IDENTIFIER
+                            || type == Basic4GL.INTEGER_T
+                            || type == Basic4GL.INT_T
+                            || type == Basic4GL.SINGLE_T
+                            || type == Basic4GL.DOUBLE_T
+                            || type == Basic4GL.STRING_T) {
+                        pendingVarType = t.getText();
+                    }
+                    if (pendingVarNameToken != null) {
+                        emitVariableDeclaration(
+                                declarations,
+                                variableDeclCounts,
+                                pendingVarNameToken,
+                                pendingVarType,
+                                effectiveRoutine,
+                                fileId);
+                    }
+                    pendingVarNameToken = null;
+                    pendingVarType = null;
+                    state = NONE;
+                }
+            }
+        }
+
+        if ((state == AFTER_DIM_NAME || state == AFTER_AS_KW) && pendingVarNameToken != null) {
+            String effectiveRoutine = inStruc
+                    ? "struc:" + (currentStrucName != null ? currentStrucName : "")
+                    : currentRoutine;
+            emitVariableDeclaration(
+                    declarations,
+                    variableDeclCounts,
+                    pendingVarNameToken,
+                    pendingVarType,
+                    effectiveRoutine,
+                    fileId);
+        }
+
+        return declarations;
     }
 
     // -------------------------------------------------------------------------
@@ -423,6 +666,35 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         String scopedSig = baseSig + " [scope: " + scope + "]";
         String sig = declCount > 1 ? scopedSig + " [re-dim x" + declCount + "]" : scopedSig;
         out.put(key, new IndexedSymbol("variable", name, sig));
+    }
+
+    private static void emitVariableDeclaration(
+            List<SymbolDeclaration> declarations,
+            Map<String, Integer> variableDeclCounts,
+            Token nameToken,
+            String type,
+            String currentRoutine,
+            String fileId) {
+        String name = nameToken.getText();
+        if (name == null || name.isBlank()) {
+            return;
+        }
+        String scope = currentRoutine == null ? "global" : currentRoutine;
+        String key = symbolKey("variable", name, scope);
+        int declCount = variableDeclCounts.merge(key, 1, Integer::sum);
+        String baseSig = (type != null && !type.isBlank()) ? type + " " + name : name;
+        String scopedSig = baseSig + " [scope: " + scope + "]";
+        String sig = declCount > 1 ? scopedSig + " [re-dim x" + declCount + "]" : scopedSig;
+
+        declarations.add(new SymbolDeclaration(
+                "variable",
+                name,
+                sig,
+                scope,
+                declCount,
+                fileId,
+                Math.max(0, nameToken.getLine() - 1),
+                Math.max(0, nameToken.getCharPositionInLine())));
     }
 
     private static String symbolKey(String kind, String name, String scope) {
