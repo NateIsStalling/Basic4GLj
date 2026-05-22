@@ -4,19 +4,25 @@ import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
 import static com.formdev.flatlaf.FlatClientProperties.*;
 
+import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
-import com.basic4gl.desktop.spi.FileLineNumber;
-import com.basic4gl.desktop.spi.MenuService;
-import com.basic4gl.desktop.spi.ProjectExportPage;
-import com.basic4gl.desktop.spi.ProjectSettingsPage;
+import com.basic4gl.desktop.spi.*;
+import com.basic4gl.desktop.spi.language.FunctionDefinition;
+import com.basic4gl.desktop.spi.language.LabelDefinition;
+import com.basic4gl.desktop.spi.language.VariableDefinition;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.Library;
 import com.basic4gl.language.core.internal.Mutable;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ValType;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
@@ -101,14 +107,18 @@ public class MainWindow
     private final DefaultListModel<ReferenceItem> referenceListModel = new DefaultListModel<>();
     private final JList<ReferenceItem> referenceList = new JList<>(referenceListModel);
     private final JTextField referenceSearchField = new JTextField();
-    private final JComboBox<String> referenceKindFilter = new JComboBox<>(new String[] {"All", "Functions", "Constants", "Labels", "Variables"});
+    private final JComboBox<String> referenceKindFilter =
+            new JComboBox<>(new String[] {"All", "Functions", "Constants", "Labels", "Variables"});
     private final JComboBox<String> referenceSourceFilter =
             new JComboBox<>(new String[] {"All sources", "Builtin", "Libraries", "Program"});
     private final JComboBox<String> referenceLibraryFilter = new JComboBox<>(new String[] {"All libraries"});
     private final JTextPane referenceDetailsPane = new JTextPane();
     private final JButton referenceInsertButton = new JButton("Insert");
     private final java.util.List<ReferenceItem> allReferenceItems = new ArrayList<>();
-    private final SymbolIndexer symbolIndexer = new SymbolIndexer(this::updateProgramSymbols);
+    // Language support is shared between the symbol indexer and (via BasicTokenMaker) the editor.
+    private final com.basic4gl.desktop.language.LanguageSupport languageSupport =
+            new com.basic4gl.desktop.language.Basic4GLLanguageSupport();
+    private final SymbolIndexer symbolIndexer = new SymbolIndexer(languageSupport, this::updateProgramSymbols);
     private int expandedLeftSidebarWidth = 260;
     private int expandedRightDocsWidth = 320;
     private String activeLeftSidebarKey = "files";
@@ -1729,11 +1739,12 @@ public class MainWindow
         splitTabControl.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         splitTabControl.putClientProperty(TABBED_PANE_TAB_CLOSABLE, true);
         splitTabControl.putClientProperty(
-                TABBED_PANE_TAB_CLOSE_CALLBACK,
-                (BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
+                TABBED_PANE_TAB_CLOSE_CALLBACK, (BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
                     if (tabIndex >= 0) {
                         splitTabControl.remove(tabIndex);
-                        if (splitTabControl.getTabCount() == 0 && basicEditor != null && basicEditor.getMode() != ApMode.AP_CLOSED) {
+                        if (splitTabControl.getTabCount() == 0
+                                && basicEditor != null
+                                && basicEditor.getMode() != ApMode.AP_CLOSED) {
                             mainPane.setTopComponent(primaryTabHost);
                         }
                     }
@@ -1766,7 +1777,8 @@ public class MainWindow
         JPopupMenu popup = new JPopupMenu();
         JMenuItem setRunnable = new JMenuItem("Set as runnable file");
         setRunnable.addActionListener(x -> {
-            fileManager.setRunnableFilePath(fileManager.getFileEditors().get(tabIndex).getFilePath());
+            fileManager.setRunnableFilePath(
+                    fileManager.getFileEditors().get(tabIndex).getFilePath());
             refreshRunnableFileControls();
         });
         popup.add(setRunnable);
@@ -2000,7 +2012,8 @@ public class MainWindow
             @Override
             public Component getListCellRendererComponent(
                     JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                JLabel label =
+                        (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof ReferenceItem item) {
                     label.setText(item.signature);
                     if ("function".equals(item.kind) || "userfunc".equals(item.kind)) {
@@ -2277,7 +2290,8 @@ public class MainWindow
         }
         int index = runTargetCombo.getSelectedIndex();
         if (index >= 0 && index < fileManager.getFileEditors().size()) {
-            fileManager.setRunnableFilePath(fileManager.getFileEditors().get(index).getFilePath());
+            fileManager.setRunnableFilePath(
+                    fileManager.getFileEditors().get(index).getFilePath());
         }
     }
 
@@ -2309,69 +2323,66 @@ public class MainWindow
      * Replaces all "Program" (user-defined) reference items with the freshly scanned symbols and
      * refreshes the reference panel.
      */
-    private void updateProgramSymbols(List<SymbolIndexer.IndexedSymbol> symbols) {
+    private void updateProgramSymbols(List<com.basic4gl.desktop.language.IndexedSymbol> symbols) {
         // Remove all existing Program-sourced items
         allReferenceItems.removeIf(item -> "Program".equals(item.library));
 
         // Add newly scanned symbols
-        for (SymbolIndexer.IndexedSymbol sym : symbols) {
+        for (com.basic4gl.desktop.language.IndexedSymbol sym : symbols) {
             String details;
             String insertText;
             int caretOffset;
-            switch (sym.kind) {
+            switch (sym.kind()) {
                 case "userfunc" -> {
                     details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name) + "</h3>"
+                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
                             + "<p style='margin:0 0 4px 0;'><b>Type:</b> User Function"
                             + "<br/><b>Source:</b> Program</p>"
-                            + "<p style='margin:0;'>" + escapeHtml(sym.signature) + "</p>"
+                            + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
                             + "</body></html>";
-                    insertText = sym.name + "()";
-                    caretOffset = sym.name.length() + 1;
+                    insertText = sym.name() + "()";
+                    caretOffset = sym.name().length() + 1;
                 }
                 case "label" -> {
                     details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name) + "</h3>"
+                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
                             + "<p style='margin:0 0 4px 0;'><b>Type:</b> Label"
-                            + "<br/><b>Usage:</b> <code>gosub " + escapeHtml(sym.name) + "</code>"
-                            + " / <code>goto " + escapeHtml(sym.name) + "</code></p>"
+                            + "<br/><b>Usage:</b> <code>gosub " + escapeHtml(sym.name()) + "</code>"
+                            + " / <code>goto " + escapeHtml(sym.name()) + "</code></p>"
                             + "</body></html>";
-                    insertText = sym.name;
-                    caretOffset = sym.name.length();
+                    insertText = sym.name();
+                    caretOffset = sym.name().length();
                 }
                 default -> { // "variable"
                     details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name) + "</h3>"
+                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
                             + "<p style='margin:0 0 4px 0;'><b>Type:</b> Variable"
                             + "<br/><b>Source:</b> Program</p>"
-                            + "<p style='margin:0;'>" + escapeHtml(sym.signature) + "</p>"
+                            + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
                             + "</body></html>";
-                    insertText = sym.name;
-                    caretOffset = sym.name.length();
+                    insertText = sym.name();
+                    caretOffset = sym.name().length();
                 }
             }
-            allReferenceItems.add(new ReferenceItem(sym.kind, sym.name, sym.signature, "Program", details, insertText, caretOffset));
+            allReferenceItems.add(new ReferenceItem(
+                    sym.kind(), sym.name(), sym.signature(), "Program", details, insertText, caretOffset));
         }
 
-        allReferenceItems.sort(
-                Comparator.comparing((ReferenceItem item) -> item.name, String.CASE_INSENSITIVE_ORDER)
-                        .thenComparing(item -> item.kind));
+        allReferenceItems.sort(Comparator.comparing((ReferenceItem item) -> item.name, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(item -> item.kind));
         rebuildLibraryFilterOptions();
         filterReferenceItems();
     }
 
     private void populateDocsFromCompiler() {
-        if (basicEditor == null || basicEditor.compiler == null) {
+        if (basicEditor == null || basicEditor.getCompiler() == null) {
             return;
         }
-        Map<Integer, String> functionLibraryBySpecIndex = buildFunctionLibraryBySpecIndex();
-        Map<String, String> constantLibraryByName = buildConstantLibraryByName();
         allReferenceItems.clear();
-        allReferenceItems.addAll(buildFunctionReferenceItems(basicEditor.compiler, functionLibraryBySpecIndex));
-        allReferenceItems.addAll(buildConstantReferenceItems(basicEditor.compiler, constantLibraryByName));
-        allReferenceItems.addAll(buildUserFunctionReferenceItems(basicEditor.compiler));
-        allReferenceItems.addAll(buildLabelReferenceItems(basicEditor.compiler));
-        allReferenceItems.addAll(buildVariableReferenceItems(basicEditor.compiler));
+        allReferenceItems.addAll(buildFunctionReferenceItems(basicEditor.getLanguageService()));
+        allReferenceItems.addAll(buildConstantReferenceItems(basicEditor.getLanguageService()));
+        allReferenceItems.addAll(buildLabelReferenceItems(basicEditor.getLanguageService()));
+        allReferenceItems.addAll(buildVariableReferenceItems(basicEditor.getLanguageService()));
         allReferenceItems.sort(Comparator.comparing((ReferenceItem item) -> item.name, String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(item -> item.kind));
         rebuildLibraryFilterOptions();
@@ -2379,210 +2390,96 @@ public class MainWindow
     }
 
     private java.util.List<ReferenceItem> buildFunctionReferenceItems(
-            TomBasicCompiler comp, Map<Integer, String> functionLibraryBySpecIndex) {
+            LanguageService comp) {
         java.util.List<ReferenceItem> items = new ArrayList<>();
-        for (String key : comp.getFunctionIndex().keySet()) {
-            for (Integer index : comp.getFunctionIndex().get(key)) {
-                String name = key;
-                FunctionSpecification spec = comp.getFunctions().get(index);
-                String libraryName = functionLibraryBySpecIndex.getOrDefault(index, "Builtin");
-                String library = libraryName != null ? libraryName : "Builtin";
-                StringBuilder signature = new StringBuilder();
-                if (spec.isFunction()) {
-                    signature.append(getTypeString(spec.getReturnType())).append(' ');
-                }
-                signature.append(name);
-                signature.append(spec.hasBrackets() ? "(" : " ");
-                boolean needComma = false;
-                Vector<ValType> params = spec.getParamTypes().getParams();
-                StringBuilder argsOnly = new StringBuilder();
-                if (params != null) {
-                    for (ValType type : params) {
-                        if (needComma) {
-                            signature.append(", ");
-                            argsOnly.append(", ");
-                        }
-                        String typeName = getTypeString(type);
-                        signature.append(typeName);
-                        argsOnly.append(typeName);
-                        needComma = true;
+        for  (FunctionDefinition item : comp.getFunctionDefinitions()) {
+            if (item == null) {
+                continue;
+            }
+            StringBuilder argsOnly = new StringBuilder();
+            if (item.parameters() != null) {
+                for (VariableDefinition arg : item.parameters()) {
+                    if (argsOnly.length() > 0) {
+                        argsOnly.append(", ");
                     }
+                    argsOnly.append(arg.signature());
                 }
-                if (spec.hasBrackets()) {
-                    signature.append(')');
-                }
-
-                String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                        + "<h3 style='margin:0 0 8px 0;'>"
-                        + escapeHtml(name)
-                        + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Function<br/><b>Library:</b> "
-                        + escapeHtml(library)
-                        + "</p><p style='margin:0;'>"
-                        + escapeHtml(signature.toString())
-                        + "</p></body></html>";
-                String insertText = spec.hasBrackets() ? name + "()" : name + " ";
-                int caretOffset = spec.hasBrackets() ? name.length() + 1 : insertText.length();
-                if (spec.hasBrackets() && argsOnly.length() > 0) {
-                    insertText = name + "(" + argsOnly + ")";
-                    caretOffset = name.length() + 1;
-                }
-                items.add(new ReferenceItem("function", name, signature.toString(), library, details, insertText, caretOffset));
             }
-        }
-        return items;
-    }
-
-    private java.util.List<ReferenceItem> buildConstantReferenceItems(
-            TomBasicCompiler comp, Map<String, String> constantLibraryByName) {
-        java.util.List<ReferenceItem> items = new ArrayList<>();
-        for (String key : comp.getConstants().keySet()) {
-            String library = constantLibraryByName.getOrDefault(key.toLowerCase(Locale.ROOT), "Builtin");
-            if (library == null) {
-                library = "Builtin";
-            }
-            String signature = key + " = (" + getTypeString(comp.getConstants().get(key).getType()) + ") "
-                    + comp.getConstants().get(key);
             String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
                     + "<h3 style='margin:0 0 8px 0;'>"
-                    + escapeHtml(key)
-                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Constant<br/><b>Library:</b> "
-                    + escapeHtml(library)
+                    + escapeHtml(item.name())
+                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Function<br/><b>Library:</b> "
+                    + escapeHtml(item.packageName())
                     + "</p><p style='margin:0;'>"
-                    + escapeHtml(signature)
+                    + escapeHtml(item.signature())
                     + "</p></body></html>";
-            items.add(new ReferenceItem("constant", key, signature, library, details, key, key.length()));
+            String insertText = item.hasBrackets() ? item.name() + "()" : item.name() + " ";
+            int caretOffset = item.hasBrackets() ? item.name().length() + 1 : insertText.length();
+            if (item.hasBrackets() && argsOnly.length() > 0) {
+                insertText = item.name() + "(" + argsOnly + ")";
+                caretOffset = item.name().length() + 1;
+            }
+            items.add(new ReferenceItem(
+                    "function", item.name(), item.signature(), item.packageName(), details, insertText, caretOffset));
         }
         return items;
     }
 
-    private java.util.List<ReferenceItem> buildUserFunctionReferenceItems(TomBasicCompiler comp) {
+    private java.util.List<ReferenceItem> buildConstantReferenceItems(LanguageService comp) {
         java.util.List<ReferenceItem> items = new ArrayList<>();
-        Map<String, Integer> funcIndex = comp.getGlobalUserFunctionIndex();
-        java.util.Vector<com.basic4gl.runtime.stackframe.UserFunc> functions = comp.getVM().getUserFunctions();
-        java.util.Vector<com.basic4gl.runtime.stackframe.UserFuncPrototype> prototypes = comp.getVM().getUserFunctionPrototypes();
-        for (Map.Entry<String, Integer> entry : funcIndex.entrySet()) {
-            String name = entry.getKey();
-            int funcIdx = entry.getValue();
-            com.basic4gl.runtime.stackframe.UserFuncPrototype prototype = null;
-            if (funcIdx >= 0 && funcIdx < functions.size()) {
-                int protoIdx = functions.get(funcIdx).prototypeIndex;
-                if (protoIdx >= 0 && protoIdx < prototypes.size()) {
-                    prototype = prototypes.get(protoIdx);
-                }
+        for (VariableDefinition  item : comp.getConstantDefinitions()) {
+            if (item == null) {
+                continue;
             }
-            StringBuilder signature = new StringBuilder();
-            if (prototype != null && prototype.hasReturnVal) {
-                signature.append(getTypeString(prototype.returnValType)).append(' ');
-            }
-            signature.append(name).append('(');
-            if (prototype != null && prototype.paramCount > 0) {
-                String[] params = new String[prototype.paramCount];
-                for (Map.Entry<String, Integer> v : prototype.localVarIndex.entrySet()) {
-                    int idx = v.getValue();
-                    if (idx < prototype.paramCount && idx < prototype.localVarTypes.size()) {
-                        params[idx] = getTypeString(prototype.localVarTypes.get(idx)) + " " + v.getKey();
-                    }
-                }
-                boolean needComma = false;
-                for (String param : params) {
-                    if (needComma) signature.append(", ");
-                    signature.append(param != null ? param : "?");
-                    needComma = true;
-                }
-            }
-            signature.append(')');
             String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(name)
-                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> User Function<br/><b>Source:</b> Program</p>"
-                    + "<p style='margin:0;'>" + escapeHtml(signature.toString()) + "</p></body></html>";
-            items.add(new ReferenceItem("userfunc", name, signature.toString(), "Program", details, name + "()", name.length() + 1));
+                    + "<h3 style='margin:0 0 8px 0;'>"
+                    + escapeHtml(item.name())
+                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Constant<br/><b>Library:</b> "
+                    + escapeHtml(item.packageName())
+                    + "</p><p style='margin:0;'>"
+                    + escapeHtml(item.signature())
+                    + "</p></body></html>";
+            items.add(new ReferenceItem("constant", item.name(), item.signature(), item.packageName(), details, item.name(), item.name().length()));
         }
+
         return items;
     }
 
-    private java.util.List<ReferenceItem> buildLabelReferenceItems(TomBasicCompiler comp) {
+    private java.util.List<ReferenceItem> buildLabelReferenceItems(LanguageService comp) {
         java.util.List<ReferenceItem> items = new ArrayList<>();
-        for (String labelName : comp.getLabelNames()) {
-            String signature = labelName + ":";
+        for (LabelDefinition label : comp.getLabelDefinitions()) {
+            if (label == null) {
+                continue;
+            }
+            String signature = label.signature();
             String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(labelName)
+                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(label.name())
                     + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Label<br/><b>Usage:</b> "
-                    + "<code>gosub " + escapeHtml(labelName) + "</code> / <code>goto " + escapeHtml(labelName) + "</code>"
+                    + "<code>" + escapeHtml(label.usage()) + "</code>"
                     + "</p></body></html>";
-            items.add(new ReferenceItem("label", labelName, signature, "Program", details, labelName, labelName.length()));
+            items.add(new ReferenceItem(
+                    "label", label.name(), signature, "Program", details, label.name(), label.name().length()));
         }
         return items;
     }
 
-    private java.util.List<ReferenceItem> buildVariableReferenceItems(TomBasicCompiler comp) {
+    private java.util.List<ReferenceItem> buildVariableReferenceItems(LanguageService comp) {
         java.util.List<ReferenceItem> items = new ArrayList<>();
-        for (com.basic4gl.runtime.VariableCollection.Variable variable : comp.getVM().getVariables().getVariables()) {
-            if (variable.name == null || variable.name.isEmpty()) continue;
-            String typeStr = getTypeString(variable.type);
-            String signature = typeStr + " " + variable.name;
+        for (VariableDefinition variable :
+                comp.getVariableDefinitions()) {
+            if (variable == null || variable.name() == null || variable.name().isEmpty()) {
+                continue;
+            }
+            String typeStr = variable.type().name();
+            String signature = variable.signature();
             String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(variable.name)
+                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(variable.name())
                     + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Variable<br/><b>Data type:</b> "
                     + escapeHtml(typeStr) + "<br/><b>Source:</b> Program</p></body></html>";
-            items.add(new ReferenceItem("variable", variable.name, signature, "Program", details, variable.name, variable.name.length()));
+            items.add(new ReferenceItem(
+                    "variable", variable.name(), signature, "Program", details, variable.name(), variable.name().length()));
         }
         return items;
-    }
-
-    private Map<Integer, String> buildFunctionLibraryBySpecIndex() {
-        Map<Integer, String> functionLibraryBySpecIndex = new HashMap<>();
-        if (basicEditor == null || basicEditor.getLibraries() == null) {
-            return functionLibraryBySpecIndex;
-        }
-
-        int specCursor = 0;
-        for (Library library : basicEditor.getLibraries()) {
-            if (!(library instanceof FunctionLibrary functionLibrary)) {
-                continue;
-            }
-            Map<String, FunctionSpecification[]> specs = functionLibrary.specs();
-            if (specs == null) {
-                continue;
-            }
-            int count = 0;
-            for (FunctionSpecification[] overloads : specs.values()) {
-                if (overloads != null) {
-                    count += overloads.length;
-                }
-            }
-            for (int i = 0; i < count; i++) {
-                String libName = library.name();
-                if (libName != null) {
-                functionLibraryBySpecIndex.put(specCursor + i, library.name());
-                }
-            }
-            specCursor += count;
-        }
-        return functionLibraryBySpecIndex;
-    }
-
-    private Map<String, String> buildConstantLibraryByName() {
-        Map<String, String> constantLibraryByName = new HashMap<>();
-        if (basicEditor == null || basicEditor.getLibraries() == null) {
-            return constantLibraryByName;
-        }
-
-        for (Library library : basicEditor.getLibraries()) {
-            if (!(library instanceof FunctionLibrary functionLibrary)) {
-                continue;
-            }
-            Map<String, com.basic4gl.runtime.types.Constant> constants = functionLibrary.constants();
-            if (constants == null) {
-                continue;
-            }
-            for (String name : constants.keySet()) {
-                String libName = library.name();
-                if (libName != null) {
-                constantLibraryByName.put(name.toLowerCase(Locale.ROOT), library.name());
-                }
-            }
-        }
-        return constantLibraryByName;
     }
 
     private void rebuildLibraryFilterOptions() {
@@ -2590,7 +2487,7 @@ public class MainWindow
         Set<String> libraries = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         for (ReferenceItem item : allReferenceItems) {
             if (item.library != null) {
-            libraries.add(item.library);
+                libraries.add(item.library);
             }
         }
 
@@ -2612,22 +2509,32 @@ public class MainWindow
         referenceListModel.clear();
         for (ReferenceItem item : allReferenceItems) {
             boolean kindMatches = "All".equals(selectedKind)
-                    || ("Functions".equals(selectedKind) && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
+                    || ("Functions".equals(selectedKind)
+                            && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
                     || ("Constants".equals(selectedKind) && "constant".equals(item.kind))
                     || ("Labels".equals(selectedKind) && "label".equals(item.kind))
                     || ("Variables".equals(selectedKind) && "variable".equals(item.kind));
             boolean sourceMatches = "All sources".equals(selectedSource)
-                    || ("Builtin".equals(selectedSource) && item.library != null && "Builtin".equalsIgnoreCase(item.library))
-                    || ("Libraries".equals(selectedSource) && item.library != null && !"Builtin".equalsIgnoreCase(item.library) && !"Program".equalsIgnoreCase(item.library))
-                    || ("Program".equals(selectedSource) && item.library != null && "Program".equalsIgnoreCase(item.library));
-            boolean libraryMatches = "All libraries".equals(selectedLibrary) || (item.library != null && selectedLibrary.equals(item.library));
+                    || ("Builtin".equals(selectedSource)
+                            && item.library != null
+                            && "Builtin".equalsIgnoreCase(item.library))
+                    || ("Libraries".equals(selectedSource)
+                            && item.library != null
+                            && !"Builtin".equalsIgnoreCase(item.library)
+                            && !"Program".equalsIgnoreCase(item.library))
+                    || ("Program".equals(selectedSource)
+                            && item.library != null
+                            && "Program".equalsIgnoreCase(item.library));
+            boolean libraryMatches = "All libraries".equals(selectedLibrary)
+                    || (item.library != null && selectedLibrary.equals(item.library));
             if (needle.isEmpty()
                     || item.name.toLowerCase(Locale.ROOT).contains(needle)
                     || item.signature.toLowerCase(Locale.ROOT).contains(needle)
                     || item.kind.toLowerCase(Locale.ROOT).contains(needle)
-                    || (item.library != null && item.library.toLowerCase(Locale.ROOT).contains(needle))) {
+                    || (item.library != null
+                            && item.library.toLowerCase(Locale.ROOT).contains(needle))) {
                 if (kindMatches && sourceMatches && libraryMatches) {
-                referenceListModel.addElement(item);
+                    referenceListModel.addElement(item);
                 }
             }
         }
@@ -2635,7 +2542,8 @@ public class MainWindow
         if (!referenceListModel.isEmpty()) {
             referenceList.setSelectedIndex(0);
         } else {
-            referenceDetailsPane.setText("<html><body style='font-family:sans-serif;padding:6px;'>No matches.</body></html>");
+            referenceDetailsPane.setText(
+                    "<html><body style='font-family:sans-serif;padding:6px;'>No matches.</body></html>");
             referenceInsertButton.setEnabled(false);
         }
     }
@@ -2643,7 +2551,8 @@ public class MainWindow
     private void updateReferenceSelectionDetails() {
         ReferenceItem item = referenceList.getSelectedValue();
         if (item == null) {
-            referenceDetailsPane.setText("<html><body style='font-family:sans-serif;padding:6px;'>Select an entry.</body></html>");
+            referenceDetailsPane.setText(
+                    "<html><body style='font-family:sans-serif;padding:6px;'>Select an entry.</body></html>");
             referenceInsertButton.setEnabled(false);
             return;
         }
@@ -2664,37 +2573,11 @@ public class MainWindow
         JTextArea editorPane = fileManager.getFileEditors().get(selectedTab).getEditorPane();
         int insertStart = editorPane.getSelectionStart();
         editorPane.replaceSelection(item.insertText);
-        editorPane.setCaretPosition(Math.min(insertStart + item.caretOffset, editorPane.getDocument().getLength()));
+        editorPane.setCaretPosition(Math.min(
+                insertStart + item.caretOffset, editorPane.getDocument().getLength()));
         editorPane.requestFocusInWindow();
     }
 
-    private String getTypeString(ValType type) {
-        if (type == null) {
-            return "???";
-        }
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < type.getVirtualPointerLevel(); i++) {
-            result.append('&');
-        }
-        result.append(getTypeString(type.basicType));
-        for (int i = 0; i < type.arrayLevel; i++) {
-            result.append("()");
-        }
-        return result.toString();
-    }
-
-    private String getTypeString(int type) {
-        switch (type) {
-            case BasicValType.VTP_INT:
-                return "int";
-            case BasicValType.VTP_REAL:
-                return "real";
-            case BasicValType.VTP_STRING:
-                return "string";
-            default:
-                return "???";
-        }
-    }
 
     private void openMarkdownInDocsTab(File file) {
         File resolved = file.isAbsolute() ? file : new File(fileManager.getCurrentDirectory(), file.getPath());
