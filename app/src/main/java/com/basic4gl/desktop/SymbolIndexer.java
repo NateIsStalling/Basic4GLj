@@ -7,7 +7,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Lightweight debounced symbol indexer.
@@ -32,6 +34,11 @@ import javax.swing.SwingUtilities;
  */
 public class SymbolIndexer {
 
+    /** Supplies a full-source snapshot; typically implemented by MainWindow. */
+    public interface SourceProvider {
+        String getSourceSnapshot();
+    }
+
     /** Receives indexed symbols on the Swing EDT after each debounce cycle. */
     public interface Callback {
         void onIndexed(List<IndexedSymbol> symbols);
@@ -41,6 +48,7 @@ public class SymbolIndexer {
     private static final long DEBOUNCE_MILLIS = 400;
 
     private final LanguageSupport languageSupport;
+    private final SourceProvider sourceProvider;
     private final Callback callback;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -50,9 +58,11 @@ public class SymbolIndexer {
     });
 
     private ScheduledFuture<?> pending;
+    private long requestedRevision = 0;
 
-    public SymbolIndexer(LanguageSupport languageSupport, Callback callback) {
+    public SymbolIndexer(LanguageSupport languageSupport, SourceProvider sourceProvider, Callback callback) {
         this.languageSupport = languageSupport;
+        this.sourceProvider = sourceProvider;
         this.callback = callback;
     }
 
@@ -62,11 +72,11 @@ public class SymbolIndexer {
      * <p>Calling this again before the window expires cancels the previous pass and restarts the
      * timer — only one extraction runs per idle period. Thread-safe.
      *
-     * @param source full source text (may span multiple concatenated editor files)
      */
-    public synchronized void schedule(String source) {
+    public synchronized void schedule() {
         cancelPending();
-        pending = scheduler.schedule(() -> runAndDeliver(source), DEBOUNCE_MILLIS, TimeUnit.MILLISECONDS);
+        long revision = ++requestedRevision;
+        pending = scheduler.schedule(() -> runAndDeliver(revision), DEBOUNCE_MILLIS, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -75,11 +85,11 @@ public class SymbolIndexer {
      * <p>Useful after a successful full compile to sync symbols without waiting for the debounce
      * window.
      *
-     * @param source full source text
      */
-    public synchronized void indexNow(String source) {
+    public synchronized void indexNow() {
         cancelPending();
-        pending = scheduler.schedule(() -> runAndDeliver(source), 0, TimeUnit.MILLISECONDS);
+        long revision = ++requestedRevision;
+        pending = scheduler.schedule(() -> runAndDeliver(revision), 0, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -100,8 +110,33 @@ public class SymbolIndexer {
         }
     }
 
-    private void runAndDeliver(String source) {
+    private void runAndDeliver(long revision) {
+        String source = getSourceSnapshotOnEdt();
         List<IndexedSymbol> result = languageSupport.extractSymbols(source);
-        SwingUtilities.invokeLater(() -> callback.onIndexed(result));
+        SwingUtilities.invokeLater(() -> {
+            synchronized (SymbolIndexer.this) {
+                if (revision != requestedRevision) {
+                    return;
+                }
+            }
+            callback.onIndexed(result);
+        });
+    }
+
+    private String getSourceSnapshotOnEdt() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return sourceProvider.getSourceSnapshot();
+        }
+
+        AtomicReference<String> source = new AtomicReference<>("");
+        try {
+            SwingUtilities.invokeAndWait(() -> source.set(sourceProvider.getSourceSnapshot()));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (InvocationTargetException e) {
+            // Keep indexing resilient even if the source provider throws.
+            return "";
+        }
+        return source.get();
     }
 }

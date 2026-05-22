@@ -3,7 +3,9 @@ package com.basic4gl.desktop.editor;
 import com.basic4gl.desktop.language.HighlightKind;
 import com.basic4gl.desktop.language.LangToken;
 import com.basic4gl.desktop.language.LanguageSupport;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.Segment;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMaker;
 import org.fife.ui.rsyntaxtextarea.Token;
@@ -23,7 +25,15 @@ import org.fife.ui.rsyntaxtextarea.TokenMap;
  */
 public class LanguageSupportTokenMaker extends AbstractTokenMaker {
 
+    private static final int LINE_TOKEN_CACHE_SIZE = 512;
+
     private final LanguageSupport languageSupport;
+    private final Map<String, List<LangToken>> lineTokenCache = new LinkedHashMap<>(128, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, List<LangToken>> eldest) {
+            return size() > LINE_TOKEN_CACHE_SIZE;
+        }
+    };
 
     public LanguageSupportTokenMaker(LanguageSupport languageSupport) {
         this.languageSupport = languageSupport;
@@ -108,7 +118,17 @@ public class LanguageSupportTokenMaker extends AbstractTokenMaker {
      * @param docOffset   document-level character offset of the first character
      */
     private void appendTokens(Segment seg, String lineText, int arrayOffset, int docOffset) {
-        List<LangToken> tokens = languageSupport.tokenizeLine(lineText);
+        List<LangToken> tokens;
+        synchronized (lineTokenCache) {
+            tokens = lineTokenCache.get(lineText);
+        }
+        if (tokens == null) {
+            tokens = List.copyOf(languageSupport.tokenizeLine(lineText));
+            synchronized (lineTokenCache) {
+                lineTokenCache.put(lineText, tokens);
+            }
+        }
+
         for (LangToken lt : tokens) {
             HighlightKind kind = languageSupport.classify(lt);
             int rstaType = kindToRstaType(kind);

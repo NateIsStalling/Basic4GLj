@@ -118,7 +118,9 @@ public class MainWindow
     // Language support is shared between the symbol indexer and (via BasicTokenMaker) the editor.
     private final com.basic4gl.desktop.language.LanguageSupport languageSupport =
             new com.basic4gl.desktop.language.Basic4GLLanguageSupport();
-    private final SymbolIndexer symbolIndexer = new SymbolIndexer(languageSupport, this::updateProgramSymbols);
+    private final SymbolIndexer symbolIndexer =
+            new SymbolIndexer(languageSupport, this::collectAllSourceText, this::updateProgramSymbols);
+    private int lastProgramSymbolsFingerprint = Integer.MIN_VALUE;
     private int expandedLeftSidebarWidth = 260;
     private int expandedRightDocsWidth = 320;
     private String activeLeftSidebarKey = "files";
@@ -1251,7 +1253,7 @@ public class MainWindow
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
-                symbolIndexer.schedule(collectAllSourceText());
+                symbolIndexer.schedule();
             }
 
             @Override
@@ -1259,7 +1261,7 @@ public class MainWindow
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
-                symbolIndexer.schedule(collectAllSourceText());
+                symbolIndexer.schedule();
             }
 
             @Override
@@ -1395,7 +1397,7 @@ public class MainWindow
         populateDocsFromCompiler();
         // Also sync the indexer immediately so the debounced background pass
         // reflects the compiled state right away.
-        symbolIndexer.indexNow(collectAllSourceText());
+        symbolIndexer.indexNow();
     }
 
     @Override
@@ -2324,6 +2326,15 @@ public class MainWindow
      * refreshes the reference panel.
      */
     private void updateProgramSymbols(List<com.basic4gl.desktop.language.IndexedSymbol> symbols) {
+        int fingerprint = 1;
+        for (com.basic4gl.desktop.language.IndexedSymbol symbol : symbols) {
+            fingerprint = 31 * fingerprint + Objects.hash(symbol.kind(), symbol.name(), symbol.signature());
+        }
+        if (fingerprint == lastProgramSymbolsFingerprint) {
+            return;
+        }
+        lastProgramSymbolsFingerprint = fingerprint;
+
         // Remove all existing Program-sourced items
         allReferenceItems.removeIf(item -> "Program".equals(item.library));
 

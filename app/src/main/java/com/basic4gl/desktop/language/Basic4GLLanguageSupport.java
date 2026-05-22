@@ -1,7 +1,10 @@
 package com.basic4gl.desktop.language;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
@@ -183,7 +186,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         stream.fill();
         List<Token> tokens = stream.getTokens();
 
-        List<IndexedSymbol> symbols = new ArrayList<>();
+        Map<String, IndexedSymbol> symbolsByKey = new LinkedHashMap<>();
+        Map<String, Integer> variableDeclCounts = new LinkedHashMap<>();
 
         // State machine
         final int NONE = 0;
@@ -199,6 +203,7 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         int parenDepth = 0;
         String pendingVarName = null;
         String pendingVarType = null;
+        String currentRoutine = null;
 
         for (int i = 0; i < tokens.size(); i++) {
             Token t = tokens.get(i);
@@ -208,7 +213,12 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
             if (type == Token.EOF || type == Basic4GL.WS || type == Basic4GL.NEWLINE) {
                 // A newline resets after-dim state (one dim per line)
                 if (type == Basic4GL.NEWLINE && state == AFTER_DIM_NAME) {
-                    flushVariable(symbols, pendingVarName, null);
+                    flushVariable(
+                            symbolsByKey,
+                            variableDeclCounts,
+                            pendingVarName,
+                            null,
+                            currentRoutine);
                     state = NONE;
                     pendingVarName = null;
                 }
@@ -219,13 +229,19 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                 case NONE -> {
                     if (type == Basic4GL.FUNCTION_KW || type == Basic4GL.SUB_KW) {
                         state = AFTER_FUNC_KW;
+                    } else if (type == Basic4GL.END_KW) {
+                        Token next = peekNonWs(tokens, i + 1);
+                        if (next != null
+                                && (next.getType() == Basic4GL.FUNCTION_KW || next.getType() == Basic4GL.SUB_KW)) {
+                            currentRoutine = null;
+                        }
                     } else if (type == Basic4GL.DIM_KW) {
                         state = AFTER_DIM_KW;
                     } else if (type == Basic4GL.IDENTIFIER) {
                         // Look ahead (skip WS) for a COLON → label declaration
                         Token next = peekNonWs(tokens, i + 1);
                         if (next != null && next.getType() == Basic4GL.COLON) {
-                            symbols.add(new IndexedSymbol("label", t.getText(), t.getText() + ":"));
+                            addFirstLabel(symbolsByKey, t.getText());
                         }
                     }
                 }
@@ -250,7 +266,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                             // Remove trailing comma if any
                             if (sig.endsWith(","))
                                 sig = sig.substring(0, sig.length() - 1).trim();
-                            symbols.add(new IndexedSymbol("userfunc", pendingFuncName, sig + ")"));
+                            addFirstFunction(symbolsByKey, pendingFuncName, sig + ")");
+                            currentRoutine = pendingFuncName;
                             state = NONE;
                             pendingFuncName = null;
                             paramBuf = null;
@@ -282,12 +299,22 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                         state = AFTER_AS_KW;
                     } else if (type == Basic4GL.COLON || type == Basic4GL.COMMA) {
                         // 'dim x, y' or 'dim x :' – flush current, continue
-                        flushVariable(symbols, pendingVarName, pendingVarType);
+                        flushVariable(
+                                symbolsByKey,
+                                variableDeclCounts,
+                                pendingVarName,
+                                pendingVarType,
+                                currentRoutine);
                         pendingVarName = null;
                         pendingVarType = null;
                         state = (type == Basic4GL.COMMA) ? AFTER_DIM_KW : NONE;
                     } else if (type == Basic4GL.NEWLINE) {
-                        flushVariable(symbols, pendingVarName, pendingVarType);
+                        flushVariable(
+                                symbolsByKey,
+                                variableDeclCounts,
+                                pendingVarName,
+                                pendingVarType,
+                                currentRoutine);
                         state = NONE;
                     } else {
                         // Any other token (e.g. array size) – stay in AFTER_DIM_NAME
@@ -301,10 +328,20 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                             || type == Basic4GL.DOUBLE_T
                             || type == Basic4GL.STRING_T) {
                         pendingVarType = t.getText();
-                        flushVariable(symbols, pendingVarName, pendingVarType);
+                        flushVariable(
+                                symbolsByKey,
+                                variableDeclCounts,
+                                pendingVarName,
+                                pendingVarType,
+                                currentRoutine);
                         state = NONE;
                     } else {
-                        flushVariable(symbols, pendingVarName, null);
+                        flushVariable(
+                                symbolsByKey,
+                                variableDeclCounts,
+                                pendingVarName,
+                                null,
+                                currentRoutine);
                         state = NONE;
                     }
                 }
@@ -313,10 +350,15 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
 
         // Flush any dangling state at EOF
         if (state == AFTER_DIM_NAME || state == AFTER_AS_KW) {
-            flushVariable(symbols, pendingVarName, pendingVarType);
+            flushVariable(
+                    symbolsByKey,
+                    variableDeclCounts,
+                    pendingVarName,
+                    pendingVarType,
+                    currentRoutine);
         }
 
-        return symbols;
+        return new ArrayList<>(symbolsByKey.values());
     }
 
     // -------------------------------------------------------------------------
@@ -347,9 +389,47 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         return null;
     }
 
-    private static void flushVariable(List<IndexedSymbol> out, String name, String type) {
-        if (name == null || name.isBlank()) return;
-        String sig = (type != null && !type.isBlank()) ? type + " " + name : name;
-        out.add(new IndexedSymbol("variable", name, sig));
+    private static void addFirstLabel(Map<String, IndexedSymbol> out, String name) {
+        if (name == null || name.isBlank()) {
+            return;
+        }
+        String key = symbolKey("label", name, null);
+        out.putIfAbsent(key, new IndexedSymbol("label", name, name + ":"));
+    }
+
+    private static void addFirstFunction(Map<String, IndexedSymbol> out, String name, String signature) {
+        if (name == null || name.isBlank()) {
+            return;
+        }
+        String key = symbolKey("userfunc", name, null);
+        out.putIfAbsent(key, new IndexedSymbol("userfunc", name, signature));
+    }
+
+    private static void flushVariable(
+            Map<String, IndexedSymbol> out,
+            Map<String, Integer> variableDeclCounts,
+            String name,
+            String type,
+            String currentRoutine) {
+        if (name == null || name.isBlank()) {
+            return;
+        }
+
+        String scope = currentRoutine == null ? "global" : currentRoutine;
+        String key = symbolKey("variable", name, scope);
+        int declCount = variableDeclCounts.merge(key, 1, Integer::sum);
+
+        String baseSig = (type != null && !type.isBlank()) ? type + " " + name : name;
+        String scopedSig = baseSig + " [scope: " + scope + "]";
+        String sig = declCount > 1 ? scopedSig + " [re-dim x" + declCount + "]" : scopedSig;
+        out.put(key, new IndexedSymbol("variable", name, sig));
+    }
+
+    private static String symbolKey(String kind, String name, String scope) {
+        String normalizedName = name == null ? "" : name.toLowerCase(Locale.ROOT);
+        if (scope == null || scope.isBlank()) {
+            return kind + "|" + normalizedName;
+        }
+        return kind + "|" + scope.toLowerCase(Locale.ROOT) + "|" + normalizedName;
     }
 }
