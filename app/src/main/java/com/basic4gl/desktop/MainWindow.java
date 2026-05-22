@@ -108,7 +108,7 @@ public class MainWindow
     private final JList<ReferenceItem> referenceList = new JList<>(referenceListModel);
     private final JTextField referenceSearchField = new JTextField();
     private final JComboBox<String> referenceKindFilter =
-            new JComboBox<>(new String[] {"All", "Functions", "Constants", "Labels", "Variables"});
+            new JComboBox<>(new String[] {"All", "Functions", "Constants", "Labels", "Variables", "Structs"});
     private final JComboBox<String> referenceSourceFilter =
             new JComboBox<>(new String[] {"All sources", "Builtin", "Libraries", "Program"});
     private final JComboBox<String> referenceLibraryFilter = new JComboBox<>(new String[] {"All libraries"});
@@ -2221,6 +2221,7 @@ public class MainWindow
             private final ImageIcon functionIcon = createImageIcon(ICON_FUNCTION);
             private final ImageIcon variableIcon = createImageIcon(ICON_VARIABLE);
             private final ImageIcon labelIcon = createImageIcon(ICON_LABEL);
+            private final ImageIcon structIcon = createImageIcon(ICON_STRUCT);
 
             @Override
             public Component getListCellRendererComponent(
@@ -2233,6 +2234,8 @@ public class MainWindow
                         label.setIcon(functionIcon);
                     } else if ("label".equals(item.kind)) {
                         label.setIcon(labelIcon);
+                    } else if ("struc".equals(item.kind)) {
+                        label.setIcon(structIcon);
                     } else {
                         label.setIcon(variableIcon);
                     }
@@ -2587,6 +2590,16 @@ public class MainWindow
                     insertText = sym.name();
                     caretOffset = sym.name().length();
                 }
+                case "struc" -> {
+                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
+                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> Struct"
+                            + "<br/><b>Source:</b> Program</p>"
+                            + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
+                            + "</body></html>";
+                    insertText = sym.name();
+                    caretOffset = sym.name().length();
+                }
                 default -> { // "variable"
                     details = "<html><body style='font-family:sans-serif;padding:6px;'>"
                             + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
@@ -2757,7 +2770,8 @@ public class MainWindow
                             && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
                     || ("Constants".equals(selectedKind) && "constant".equals(item.kind))
                     || ("Labels".equals(selectedKind) && "label".equals(item.kind))
-                    || ("Variables".equals(selectedKind) && "variable".equals(item.kind));
+                    || ("Variables".equals(selectedKind) && "variable".equals(item.kind))
+                    || ("Structs".equals(selectedKind) && "struc".equals(item.kind));
             boolean sourceMatches = "All sources".equals(selectedSource)
                     || ("Builtin".equals(selectedSource)
                             && item.library != null

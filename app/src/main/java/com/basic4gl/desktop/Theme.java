@@ -27,4 +27,6 @@ public class Theme {
     public static final String ICON_FUNCTION = THEME_DIRECTORY + "icon_function.png";
     public static final String ICON_VARIABLE = THEME_DIRECTORY + "icon_variable.png";
     public static final String ICON_LABEL = THEME_DIRECTORY + "icon_label.png";
+    /** Placeholder – replace with a dedicated struct icon when available. */
+    public static final String ICON_STRUCT = THEME_DIRECTORY + "icon_variable.png";
 }

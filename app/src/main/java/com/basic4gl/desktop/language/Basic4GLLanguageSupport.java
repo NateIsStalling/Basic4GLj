@@ -152,7 +152,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     Basic4GL.TILDE,
                     Basic4GL.PERCENT,
                     Basic4GL.PIPE,
-                    Basic4GL.HASH -> HighlightKind.OPERATOR;
+                    Basic4GL.HASH,
+                    Basic4GL.AMPERSAND -> HighlightKind.OPERATOR;
 
                 // Unknown / unrecognised
             default -> HighlightKind.OTHER;
@@ -203,6 +204,9 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         int parenDepth = 0;
         String pendingVarName = null;
         String pendingVarType = null;
+        // Depth of ( or [ seen while in AFTER_DIM_NAME – used to suppress the
+        // type-prefix identifier swap when inside an array-size expression.
+        int dimArrayDepth = 0;
         String currentRoutine = null;
         // Struc-scope tracking: dims inside a struc block use "struc:<Name>" as scope
         // so they never collide with same-named program variables in re-dim counting.
@@ -224,10 +228,12 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                             symbolsByKey,
                             variableDeclCounts,
                             pendingVarName,
-                            null,
+                            pendingVarType,
                             effectiveRoutine);
                     state = NONE;
                     pendingVarName = null;
+                    pendingVarType = null;
+                    dimArrayDepth = 0;
                 }
                 continue;
             }
@@ -241,14 +247,22 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                         if (next != null
                                 && (next.getType() == Basic4GL.FUNCTION_KW || next.getType() == Basic4GL.SUB_KW)) {
                             currentRoutine = null;
+                        } else if (next != null && next.getType() == Basic4GL.TYPE_KW) {
+                            // "end type" – same as endstruc
+                            inStruc = false;
+                            currentStrucName = null;
                         }
-                    } else if (type == Basic4GL.STRUC_KW) {
-                        // Entering a struc block – capture the struct name from the next identifier
+                    } else if (type == Basic4GL.STRUC_KW || type == Basic4GL.TYPE_KW) {
+                        // Entering a struc/type block – capture the struct name from the next identifier
                         Token nameToken = peekNonWs(tokens, i + 1);
                         currentStrucName = (nameToken != null && nameToken.getType() == Basic4GL.IDENTIFIER)
                                 ? nameToken.getText()
                                 : null;
                         inStruc = true;
+                        // Emit the struct type itself as a symbol
+                        if (currentStrucName != null) {
+                            addFirstStruct(symbolsByKey, currentStrucName);
+                        }
                     } else if (type == Basic4GL.ENDSTRUC_KW) {
                         inStruc = false;
                         currentStrucName = null;
@@ -305,7 +319,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                 case AFTER_DIM_KW -> {
                     if (type == Basic4GL.IDENTIFIER) {
                         pendingVarName = t.getText();
-                        pendingVarType = null;
+                        // Infer type from identifier suffix (#, !, $, %)
+                        pendingVarType = inferTypeFromIdentifierSuffix(t.getText());
                         state = AFTER_DIM_NAME;
                     } else {
                         state = NONE;
@@ -315,9 +330,27 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     String effectiveRoutine = inStruc
                             ? "struc:" + (currentStrucName != null ? currentStrucName : "")
                             : currentRoutine;
-                    if (type == Basic4GL.AS_KW) {
+                    if (type == Basic4GL.AS_KW && dimArrayDepth == 0) {
+                        dimArrayDepth = 0;
                         state = AFTER_AS_KW;
-                    } else if (type == Basic4GL.COLON || type == Basic4GL.COMMA) {
+                    } else if (type == Basic4GL.LPAREN || type == Basic4GL.LBRACKET) {
+                        dimArrayDepth++;
+                    } else if (type == Basic4GL.RPAREN || type == Basic4GL.RBRACKET) {
+                        if (dimArrayDepth > 0) dimArrayDepth--;
+                    } else if (type == Basic4GL.IDENTIFIER && dimArrayDepth == 0) {
+                        // "dim Type VarName" – the first IDENTIFIER was the type name,
+                        // this IDENTIFIER is the actual variable name.
+                        // Check if we already have a pendingVarType: if it's the inferred
+                        // type from pendingVarName (the first ID), we're in type-prefix mode.
+                        String inferredFromFirstId = inferTypeFromIdentifierSuffix(pendingVarName);
+                        if (pendingVarType == null || pendingVarType.equals(inferredFromFirstId)) {
+                            // Type-prefix case: pendingVarName is the explicit type, new ID is the var name
+                            String newVarUserType = t.getText();
+                            String newVarInferredType = inferTypeFromIdentifierSuffix(newVarUserType);
+                            pendingVarType = newVarInferredType != null ? newVarInferredType : pendingVarName;
+                            pendingVarName = newVarUserType;
+                        }
+                    } else if ((type == Basic4GL.COLON || type == Basic4GL.COMMA) && dimArrayDepth == 0) {
                         // 'dim x, y' or 'dim x :' – flush current, continue
                         flushVariable(
                                 symbolsByKey,
@@ -327,18 +360,10 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                                 effectiveRoutine);
                         pendingVarName = null;
                         pendingVarType = null;
+                        dimArrayDepth = 0;
                         state = (type == Basic4GL.COMMA) ? AFTER_DIM_KW : NONE;
-                    } else if (type == Basic4GL.NEWLINE) {
-                        flushVariable(
-                                symbolsByKey,
-                                variableDeclCounts,
-                                pendingVarName,
-                                pendingVarType,
-                                effectiveRoutine);
-                        state = NONE;
-                    } else {
-                        // Any other token (e.g. array size) – stay in AFTER_DIM_NAME
                     }
+                    // else: other tokens (array size expression contents, &, etc.) – stay
                 }
                 case AFTER_AS_KW -> {
                     String effectiveRoutine = inStruc
@@ -414,6 +439,9 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         int parenDepth = 0;
         Token pendingVarNameToken = null;
         String pendingVarType = null;
+        // Depth of ( or [ seen while in AFTER_DIM_NAME – used to suppress the
+        // type-prefix identifier swap when inside an array-size expression.
+        int dimArrayDepth = 0;
         String currentRoutine = null;
         // Struc-scope tracking: dims inside a struc block use "struc:<Name>" as scope
         // so they never collide with same-named program variables in re-dim counting.
@@ -438,6 +466,7 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                             fileId);
                     pendingVarNameToken = null;
                     pendingVarType = null;
+                    dimArrayDepth = 0;
                     state = NONE;
                 }
                 continue;
@@ -452,14 +481,30 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                         if (next != null
                                 && (next.getType() == Basic4GL.FUNCTION_KW || next.getType() == Basic4GL.SUB_KW)) {
                             currentRoutine = null;
+                        } else if (next != null && next.getType() == Basic4GL.TYPE_KW) {
+                            // "end type" – same as endstruc
+                            inStruc = false;
+                            currentStrucName = null;
                         }
-                    } else if (type == Basic4GL.STRUC_KW) {
-                        // Entering a struc block – capture the struct name from the next identifier
+                    } else if (type == Basic4GL.STRUC_KW || type == Basic4GL.TYPE_KW) {
+                        // Entering a struc/type block – capture the struct name from the next identifier
                         Token nameToken = peekNonWs(tokens, i + 1);
                         currentStrucName = (nameToken != null && nameToken.getType() == Basic4GL.IDENTIFIER)
                                 ? nameToken.getText()
                                 : null;
                         inStruc = true;
+                        // Emit the struct type definition itself as a declaration
+                        if (currentStrucName != null && nameToken != null) {
+                            declarations.add(new SymbolDeclaration(
+                                    "struc",
+                                    currentStrucName,
+                                    "struc " + currentStrucName,
+                                    "global",
+                                    1,
+                                    fileId,
+                                    Math.max(0, nameToken.getLine() - 1),
+                                    Math.max(0, nameToken.getCharPositionInLine())));
+                        }
                     } else if (type == Basic4GL.ENDSTRUC_KW) {
                         inStruc = false;
                         currentStrucName = null;
@@ -533,7 +578,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                 case AFTER_DIM_KW -> {
                     if (type == Basic4GL.IDENTIFIER) {
                         pendingVarNameToken = t;
-                        pendingVarType = null;
+                        // Infer type from identifier suffix (#, !, $, %)
+                        pendingVarType = inferTypeFromIdentifierSuffix(t.getText());
                         state = AFTER_DIM_NAME;
                     } else {
                         state = NONE;
@@ -543,9 +589,26 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     String effectiveRoutine = inStruc
                             ? "struc:" + (currentStrucName != null ? currentStrucName : "")
                             : currentRoutine;
-                    if (type == Basic4GL.AS_KW) {
+                    if (type == Basic4GL.AS_KW && dimArrayDepth == 0) {
+                        dimArrayDepth = 0;
                         state = AFTER_AS_KW;
-                    } else if (type == Basic4GL.COLON || type == Basic4GL.COMMA) {
+                    } else if (type == Basic4GL.LPAREN || type == Basic4GL.LBRACKET) {
+                        dimArrayDepth++;
+                    } else if (type == Basic4GL.RPAREN || type == Basic4GL.RBRACKET) {
+                        if (dimArrayDepth > 0) dimArrayDepth--;
+                    } else if (type == Basic4GL.IDENTIFIER && dimArrayDepth == 0) {
+                        // "dim Type VarName" – the first IDENTIFIER was the type name,
+                        // this IDENTIFIER is the actual variable name.
+                        String firstIdText = pendingVarNameToken != null ? pendingVarNameToken.getText() : null;
+                        String inferredFromFirstId = inferTypeFromIdentifierSuffix(firstIdText);
+                        if (pendingVarType == null || pendingVarType.equals(inferredFromFirstId)) {
+                            // Type-prefix case: first token is the explicit type, new token is the var name
+                            String newVarUserType = t.getText();
+                            String newVarInferredType = inferTypeFromIdentifierSuffix(newVarUserType);
+                            pendingVarType = newVarInferredType != null ? newVarInferredType : firstIdText;
+                            pendingVarNameToken = t;
+                        }
+                    } else if ((type == Basic4GL.COLON || type == Basic4GL.COMMA) && dimArrayDepth == 0) {
                         if (pendingVarNameToken != null) {
                             emitVariableDeclaration(
                                     declarations,
@@ -557,8 +620,10 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                         }
                         pendingVarNameToken = null;
                         pendingVarType = null;
+                        dimArrayDepth = 0;
                         state = (type == Basic4GL.COMMA) ? AFTER_DIM_KW : NONE;
                     }
+                    // else: other tokens (array size expression, &, etc.) – stay in AFTER_DIM_NAME
                 }
                 case AFTER_AS_KW -> {
                     String effectiveRoutine = inStruc
@@ -648,6 +713,14 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         out.putIfAbsent(key, new IndexedSymbol("userfunc", name, signature));
     }
 
+    private static void addFirstStruct(Map<String, IndexedSymbol> out, String name) {
+        if (name == null || name.isBlank()) {
+            return;
+        }
+        String key = symbolKey("struc", name, null);
+        out.putIfAbsent(key, new IndexedSymbol("struc", name, "struc " + name));
+    }
+
     private static void flushVariable(
             Map<String, IndexedSymbol> out,
             Map<String, Integer> variableDeclCounts,
@@ -703,5 +776,29 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
             return kind + "|" + normalizedName;
         }
         return kind + "|" + scope.toLowerCase(Locale.ROOT) + "|" + normalizedName;
+    }
+
+    /**
+     * Infer the type of a variable from its identifier suffix.
+     * Returns the inferred type, or null if no suffix.
+     *
+     * <ul>
+     *   <li>{@code #} or {@code !} → "real"</li>
+     *   <li>{@code $} → "string"</li>
+     *   <li>{@code %} → "integer"</li>
+     *   <li>no suffix → null (undefined type)</li>
+     * </ul>
+     */
+    private static String inferTypeFromIdentifierSuffix(String identifier) {
+        if (identifier == null || identifier.isEmpty()) {
+            return null;
+        }
+        char last = identifier.charAt(identifier.length() - 1);
+        return switch (last) {
+            case '#', '!' -> "real";
+            case '$' -> "string";
+            case '%' -> "integer";
+            default -> null;
+        };
     }
 }

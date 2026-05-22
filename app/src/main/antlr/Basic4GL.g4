@@ -93,7 +93,14 @@ INT_LIT     : [0-9]+ ;
 // Identifiers (catch-all after keywords – order matters)
 // ---------------------------------------------------------------------------
 
-IDENTIFIER  : [a-zA-Z_][a-zA-Z_0-9]* ;
+// Type-suffix characters are part of the identifier:
+//   # or ! = real (double/float)
+//   $ = string
+//   % = integer
+//   (no suffix) = undefined type
+// & is a separate token (pointer/reference prefix).
+// These are placed here (after all keywords) so keywords still win on max-munch.
+IDENTIFIER  : [a-zA-Z_][a-zA-Z_0-9]* [#!$%]? ;
 
 // ---------------------------------------------------------------------------
 // Operators and punctuation  (multi-char operators before their prefixes)
@@ -125,6 +132,7 @@ TILDE       : '~' ;
 PERCENT     : '%' ;
 PIPE        : '|' ;
 HASH        : '#' ;
+AMPERSAND   : '&' ;
 
 // ---------------------------------------------------------------------------
 // Whitespace
