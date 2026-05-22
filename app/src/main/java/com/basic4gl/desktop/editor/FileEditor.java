@@ -1,5 +1,6 @@
 package com.basic4gl.desktop.editor;
 
+import com.basic4gl.desktop.language.Basic4GLFoldParser;
 import com.basic4gl.desktop.util.EditorUtil;
 import com.basic4gl.desktop.util.IFileManager;
 import com.basic4gl.desktop.util.SwingIconUtil;
@@ -16,6 +17,7 @@ import javax.swing.text.BadLocationException;
 import org.fife.rsta.ui.CollapsibleSectionPanel;
 import org.fife.rsta.ui.search.*;
 import org.fife.ui.rsyntaxtextarea.*;
+import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 import org.fife.ui.rtextarea.*;
 
 public class FileEditor implements SearchListener {
@@ -28,6 +30,10 @@ public class FileEditor implements SearchListener {
     private static final String THEME_DIRECTORY = IMAGE_DIRECTORY + "material/";
     private static final String ICON_BOOKMARK = THEME_DIRECTORY + "bookmark.png";
     private static final String ICON_BREAK_PT = THEME_DIRECTORY + "BreakPt.png";
+
+    static {
+        FoldParserManager.get().addFoldParserMapping("text/basic4gl", new Basic4GLFoldParser());
+    }
 
     private final IFileManager fileManager;
     private final IToggleBreakpointListener toggleBreakpointListener;
@@ -66,6 +72,8 @@ public class FileEditor implements SearchListener {
 
         editorPane = new RSyntaxTextArea(20, 60);
         editorPane.setSyntaxEditingStyle("text/basic4gl");
+        // Enable code folding
+        editorPane.setCodeFoldingEnabled(true);
         if (linkGenerator != null) {
             editorPane.setHyperlinksEnabled(true);
             editorPane.setLinkScanningMask(EditorUtil.getLinkScanningMask());
@@ -192,7 +200,22 @@ public class FileEditor implements SearchListener {
         scrollPane.setIconRowHeaderEnabled(HEADER_BOOKMARK, false);
         scrollPane.setIconRowHeaderEnabled(HEADER_BREAK_PT, true);
 
-        scrollPane.setFoldIndicatorEnabled(false);
+        // Enable code folding for Basic4GL syntax
+        gutter.setFoldIndicatorEnabled(true);
+        scrollPane.setFoldIndicatorEnabled(true);
+        // Modern fold visuals: show collapsed markers on hover and subtle armed highlight.
+        gutter.setFoldIndicatorStyle(FoldIndicatorStyle.MODERN);
+        gutter.setExpandedFoldRenderStrategy(ExpandedFoldRenderStrategy.ON_HOVER);
+        gutter.setShowArmedFoldRange(true);
+        gutter.setShowCollapsedRegionToolTips(true);
+        gutter.setSpacingBetweenLineNumbersAndFoldIndicator(4);
+        gutter.setArmedFoldBackground(new Color(232, 244, 255));
+        gutter.setFoldIndicatorArmedForeground(new Color(60, 90, 160));
+
+        // Force gutter visibility update
+        editorPane.setCodeFoldingEnabled(true);
+        scrollPane.revalidate();
+        scrollPane.repaint();
 
         // Create toolbars and tie their search contexts together also.
         findToolBar = new FindToolBar(this);

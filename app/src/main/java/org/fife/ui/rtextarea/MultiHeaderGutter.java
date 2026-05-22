@@ -6,6 +6,7 @@
 package org.fife.ui.rtextarea;
 
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
@@ -34,6 +35,28 @@ public class MultiHeaderGutter extends JPanel {
     private final List<Boolean> autoHideIconArea = new ArrayList<>();
     private boolean iconRowHeaderInheritsGutterBackground;
     private FoldIndicator foldIndicator;
+    private boolean armed;
+    private int spacingBetweenLineNumbersAndFoldIndicator;
+    private final MouseAdapter armedListener = new MouseAdapter() {
+        @Override
+        public void mouseEntered(java.awt.event.MouseEvent e) {
+            setArmed(true);
+        }
+
+        @Override
+        public void mouseMoved(java.awt.event.MouseEvent e) {
+            setArmed(true);
+        }
+
+        @Override
+        public void mouseExited(java.awt.event.MouseEvent e) {
+            Component src = (Component) e.getSource();
+            Point p = SwingUtilities.convertPoint(src, e.getPoint(), MultiHeaderGutter.this);
+            if (!MultiHeaderGutter.this.contains(p)) {
+                setArmed(false);
+            }
+        }
+    };
     private final MultiHeaderGutter.TextAreaListener listener = new MultiHeaderGutter.TextAreaListener();
 
     public MultiHeaderGutter(RTextArea textArea) {
@@ -41,6 +64,7 @@ public class MultiHeaderGutter extends JPanel {
         this.lineNumberFont = RTextArea.getDefaultFont();
         this.lineNumberingStartIndex = 1;
         this.iconRowHeaderInheritsGutterBackground = false;
+        this.spacingBetweenLineNumbersAndFoldIndicator = 0;
         this.setTextArea(textArea);
         this.setLayout(new BorderLayout());
         if (this.textArea != null) {
@@ -62,6 +86,10 @@ public class MultiHeaderGutter extends JPanel {
         this.headerArea = new JPanel();
         this.headerArea.setLayout(new BoxLayout(this.headerArea, BoxLayout.LINE_AXIS));
         this.add(this.headerArea, "Before");
+        this.addMouseListener(armedListener);
+        this.addMouseMotionListener(armedListener);
+        this.headerArea.addMouseListener(armedListener);
+        this.headerArea.addMouseMotionListener(armedListener);
     }
 
     public GutterIconInfo addLineTrackingIcon(int headerIndex, int line, Icon icon) throws BadLocationException {
@@ -167,6 +195,19 @@ public class MultiHeaderGutter extends JPanel {
         return false;
     }
 
+    public boolean isArmed() {
+        return armed;
+    }
+
+    void setArmed(boolean armed) {
+        if (armed != this.armed) {
+            this.armed = armed;
+            if (this.foldIndicator != null) {
+                this.foldIndicator.gutterArmedUpdate(armed);
+            }
+        }
+    }
+
     public boolean isBookmarkingEnabled(int headerIndex) {
         return this.iconAreas.get(headerIndex).isBookmarkingEnabled();
     }
@@ -242,12 +283,17 @@ public class MultiHeaderGutter extends JPanel {
     public void setFoldIndicatorEnabled(boolean enabled) {
         if (this.foldIndicator != null) {
             if (enabled) {
-                this.add(this.foldIndicator, "After");
+                if (this.foldIndicator.getParent() != this) {
+                    this.add(this.foldIndicator, "After");
+                }
             } else {
-                this.remove(this.foldIndicator);
+                if (this.foldIndicator.getParent() == this) {
+                    this.remove(this.foldIndicator);
+                }
             }
 
             this.revalidate();
+            this.repaint();
         }
     }
 
@@ -257,6 +303,49 @@ public class MultiHeaderGutter extends JPanel {
         }
 
         this.foldIndicator.setFoldIconBackground(bg);
+    }
+
+    public void setArmedFoldBackground(Color bg) {
+        this.foldIndicator.setFoldIconArmedBackground(bg);
+    }
+
+    public void setFoldIndicatorArmedForeground(Color fg) {
+        if (fg == null) {
+            fg = FoldIndicator.DEFAULT_FOREGROUND;
+        }
+        this.foldIndicator.setArmedForeground(fg);
+    }
+
+    public void setFoldIndicatorStyle(FoldIndicatorStyle style) {
+        if (this.foldIndicator != null) {
+            this.foldIndicator.setStyle(style);
+            this.revalidate();
+            this.repaint();
+        }
+    }
+
+    public void setExpandedFoldRenderStrategy(ExpandedFoldRenderStrategy strategy) {
+        this.foldIndicator.setExpandedFoldRenderStrategy(strategy);
+    }
+
+    public void setShowArmedFoldRange(boolean show) {
+        this.foldIndicator.setShowArmedFoldRange(show);
+    }
+
+    public int getSpacingBetweenLineNumbersAndFoldIndicator() {
+        return spacingBetweenLineNumbersAndFoldIndicator;
+    }
+
+    public void setSpacingBetweenLineNumbersAndFoldIndicator(int spacing) {
+        spacing = Math.max(0, spacing);
+        if (spacing != this.spacingBetweenLineNumbersAndFoldIndicator) {
+            this.spacingBetweenLineNumbersAndFoldIndicator = spacing;
+            if (this.lineNumberList != null) {
+                this.lineNumberList.setBorder(new EmptyBorder(0, 0, 0, spacing));
+            }
+            this.revalidate();
+            this.repaint();
+        }
     }
 
     public void setFoldIndicatorForeground(Color fg) {
@@ -284,6 +373,8 @@ public class MultiHeaderGutter extends JPanel {
         IconRowHeader header = kit.createIconRowHeader(textArea);
         header.setInheritsGutterBackground(this.getIconRowHeaderInheritsGutterBackground());
         this.iconAreas.add(header);
+        header.addMouseListener(armedListener);
+        header.addMouseMotionListener(armedListener);
         this.autoHideIconArea.add(false);
         setIconRowHeaderEnabled(this.iconAreas.size() - 1, true);
     }
@@ -296,6 +387,8 @@ public class MultiHeaderGutter extends JPanel {
         IconRowHeader header = kit.createIconRowHeader(textArea);
         header.setInheritsGutterBackground(this.getIconRowHeaderInheritsGutterBackground());
         this.iconAreas.add(header);
+        header.addMouseListener(armedListener);
+        header.addMouseMotionListener(armedListener);
         this.autoHideIconArea.add(false);
         setIconRowHeaderEnabled(this.iconAreas.size() - 1, true);
     }
@@ -404,6 +497,9 @@ public class MultiHeaderGutter extends JPanel {
                 this.lineNumberList.setFont(this.getLineNumberFont());
                 this.lineNumberList.setForeground(this.getLineNumberColor());
                 this.lineNumberList.setLineNumberingStartIndex(this.getLineNumberingStartIndex());
+                this.lineNumberList.setBorder(new EmptyBorder(0, 0, 0, this.spacingBetweenLineNumbersAndFoldIndicator));
+                this.lineNumberList.addMouseListener(armedListener);
+                this.lineNumberList.addMouseMotionListener(armedListener);
             } else {
                 this.lineNumberList.setTextArea(textArea);
             }
@@ -418,6 +514,8 @@ public class MultiHeaderGutter extends JPanel {
 
             if (this.foldIndicator == null) {
                 this.foldIndicator = new FoldIndicator(textArea);
+                this.foldIndicator.addMouseListener(armedListener);
+                this.foldIndicator.addMouseMotionListener(armedListener);
             } else {
                 this.foldIndicator.setTextArea(textArea);
             }
