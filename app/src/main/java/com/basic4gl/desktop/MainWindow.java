@@ -112,6 +112,8 @@ public class MainWindow
     private final JComboBox<String> referenceSourceFilter =
             new JComboBox<>(new String[] {"All sources", "Builtin", "Libraries", "Program"});
     private final JComboBox<String> referenceLibraryFilter = new JComboBox<>(new String[] {"All libraries"});
+    private final JButton referenceFiltersButton = new JButton("Filters");
+    private final JPopupMenu referenceFiltersPopup = new JPopupMenu();
     private final JTextPane referenceDetailsPane = new JTextPane();
     private final JButton referenceInsertButton = new JButton("Insert");
     private final javax.swing.Timer referenceFilterDebounceTimer =
@@ -2194,23 +2196,25 @@ public class MainWindow
     private void configureDocsPane() {
         JPanel lookupPanel = new JPanel(new BorderLayout(6, 6));
         JPanel lookupHeader = new JPanel(new BorderLayout(6, 6));
-        JPanel lookupFilters = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-        lookupFilters.add(new JLabel("Type"));
-        lookupFilters.add(referenceKindFilter);
-        lookupFilters.add(new JLabel("Source"));
-        lookupFilters.add(referenceSourceFilter);
-        lookupFilters.add(new JLabel("Library"));
-        lookupFilters.add(referenceLibraryFilter);
-        lookupHeader.add(lookupFilters, BorderLayout.WEST);
+
+        JPanel leftHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        referenceFiltersButton.setFocusable(false);
+        referenceFiltersButton.setToolTipText("Open reference filters");
+        leftHeader.add(referenceFiltersButton);
+        lookupHeader.add(leftHeader, BorderLayout.WEST);
+
         lookupHeader.add(referenceSearchField, BorderLayout.CENTER);
         referenceInsertButton.setFocusable(false);
         referenceInsertButton.setEnabled(false);
         lookupHeader.add(referenceInsertButton, BorderLayout.EAST);
 
         referenceSearchField.setToolTipText("Search by name, signature, or library");
-        referenceKindFilter.setToolTipText("Filter by functions or constants");
-        referenceSourceFilter.setToolTipText("Filter by builtin tokens or library-provided tokens");
-        referenceLibraryFilter.setToolTipText("Filter by library");
+        referenceKindFilter.setToolTipText("Filter by kind");
+        referenceSourceFilter.setToolTipText("Filter by builtin, libraries, or program symbols");
+        referenceLibraryFilter.setToolTipText("Filter by library name");
+        referenceKindFilter.setPrototypeDisplayValue("Functions");
+        rebuildReferenceFiltersPopup();
+
         referenceFilterDebounceTimer.setRepeats(false);
 
         referenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -2280,18 +2284,25 @@ public class MainWindow
         });
         referenceKindFilter.addActionListener(e -> {
             if (!updatingReferenceFilters) {
+                updateReferenceFiltersButtonTooltip();
                 filterReferenceItems();
             }
         });
         referenceSourceFilter.addActionListener(e -> {
             if (!updatingReferenceFilters) {
+                updateReferenceFiltersButtonTooltip();
                 filterReferenceItems();
             }
         });
         referenceLibraryFilter.addActionListener(e -> {
             if (!updatingReferenceFilters) {
+                updateReferenceFiltersButtonTooltip();
                 filterReferenceItems();
             }
+        });
+        referenceFiltersButton.addActionListener(e -> {
+            rebuildReferenceFiltersPopup();
+            referenceFiltersPopup.show(referenceFiltersButton, 0, referenceFiltersButton.getHeight());
         });
         referenceList.addMouseListener(new MouseAdapter() {
             @Override
@@ -2302,6 +2313,7 @@ public class MainWindow
             }
         });
         referenceInsertButton.addActionListener(e -> insertSelectedReference());
+        updateReferenceFiltersButtonTooltip();
 
         rightDocsRail.setFloatable(false);
         rightDocsRail.setRollover(true);
@@ -2749,6 +2761,67 @@ public class MainWindow
         } finally {
             updatingReferenceFilters = false;
         }
+        rebuildReferenceFiltersPopup();
+        updateReferenceFiltersButtonTooltip();
+    }
+
+    private void rebuildReferenceFiltersPopup() {
+        referenceFiltersPopup.removeAll();
+
+        JMenu typeMenu = new JMenu("Type");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "All", "All");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "Functions", "Functions");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "Constants", "Constants");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "Labels", "Labels");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "Variables", "Variables");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "Structs", "Structs");
+
+        JMenu sourceMenu = new JMenu("Source");
+        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "All sources", "All sources");
+        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Builtin", "Builtin");
+        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Libraries", "Libraries");
+        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Program", "Program");
+
+        JMenu libraryMenu = new JMenu("Library");
+        for (int i = 0; i < referenceLibraryFilter.getItemCount(); i++) {
+            String item = referenceLibraryFilter.getItemAt(i);
+            if (item != null) {
+                addReferenceRadioItems(libraryMenu, referenceLibraryFilter, item, item);
+            }
+        }
+
+        JMenuItem resetItem = new JMenuItem("Reset filters");
+        resetItem.addActionListener(e -> {
+            updatingReferenceFilters = true;
+            try {
+                referenceKindFilter.setSelectedItem("All");
+                referenceSourceFilter.setSelectedItem("All sources");
+                referenceLibraryFilter.setSelectedItem("All libraries");
+            } finally {
+                updatingReferenceFilters = false;
+            }
+            updateReferenceFiltersButtonTooltip();
+            filterReferenceItems();
+        });
+
+        referenceFiltersPopup.add(typeMenu);
+        referenceFiltersPopup.add(sourceMenu);
+        referenceFiltersPopup.add(libraryMenu);
+        referenceFiltersPopup.addSeparator();
+        referenceFiltersPopup.add(resetItem);
+    }
+
+    private void addReferenceRadioItems(JMenu menu, JComboBox<String> combo, String label, String value) {
+        JRadioButtonMenuItem item = new JRadioButtonMenuItem(label, Objects.equals(combo.getSelectedItem(), value));
+        item.addActionListener(e -> combo.setSelectedItem(value));
+        menu.add(item);
+    }
+
+    private void updateReferenceFiltersButtonTooltip() {
+        String type = Objects.toString(referenceKindFilter.getSelectedItem(), "All");
+        String source = Objects.toString(referenceSourceFilter.getSelectedItem(), "All sources");
+        String library = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All libraries");
+        referenceFiltersButton.setToolTipText("Type: " + type + " | Source: " + source + " | Library: " + library);
     }
 
     private void requestFilterReferenceItems() {
