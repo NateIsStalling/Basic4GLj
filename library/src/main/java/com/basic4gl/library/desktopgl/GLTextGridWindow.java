@@ -886,12 +886,6 @@ public class GLTextGridWindow extends HasErrorState
 
             // TODO implement window icons
 
-            // Get the resolution of the primary monitor
-            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            // Center our window
-            // TODO 2.6.4 refactor - this should be handled by the window manager now that it is a service
-            //            glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
-
             // Make the window visible
             if (createWindowOnStart) {
                 windowManager.activateWindow();
