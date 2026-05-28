@@ -93,8 +93,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         JPanel buildSettingsCard = new JPanel(new BorderLayout(0, 12));
         buildSettingsCard.setBorder(new EmptyBorder(12, 12, 12, 12));
         buildSettingsCard.add(
-                createSectionHeader(
-                        "Build Settings", "Select a build target and configure its export options."),
+                createSectionHeader("Build Settings", "Select a build target and configure its export options."),
                 BorderLayout.NORTH);
 
         JPanel buildSettingsBody = new JPanel(new BorderLayout(0, 12));
@@ -141,9 +140,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         JPanel safeModeSettingsCard = new JPanel(new BorderLayout(0, 12));
         safeModeSettingsCard.setBorder(new EmptyBorder(12, 12, 12, 12));
         safeModeSettingsCard.add(
-                createSectionHeader(
-                        "Safe Mode",
-                        "Control filesystem restrictions for programs you run in the editor."),
+                createSectionHeader("Safe Mode", "Control filesystem restrictions for programs you run in the editor."),
                 BorderLayout.NORTH);
 
         JTextPane safeModeDescriptionTextPane = new JTextPane();
@@ -178,17 +175,16 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         splitPane.setBorder(null);
         contentPane.add(splitPane, BorderLayout.CENTER);
 
-        sectionsList.addListSelectionListener(
-                e -> {
-                    if (e.getValueIsAdjusting()) {
-                        return;
-                    }
-                    String selectedSection = sectionsList.getSelectedValue();
-                    if (selectedSection == null) {
-                        return;
-                    }
-                    ((CardLayout) cardsPane.getLayout()).show(cardsPane, selectedSection);
-                });
+        sectionsList.addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            String selectedSection = sectionsList.getSelectedValue();
+            if (selectedSection == null) {
+                return;
+            }
+            ((CardLayout) cardsPane.getLayout()).show(cardsPane, selectedSection);
+        });
         sectionsList.setSelectedIndex(0);
 
         // Buttons

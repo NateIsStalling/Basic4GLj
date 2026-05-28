@@ -1,13 +1,12 @@
 package com.basic4gl.library.desktopgl.window;
 
-import com.basic4gl.library.desktopgl.util.GLUtil;
-import com.basic4gl.runtime.HasErrorState;
-import org.lwjgl.opengl.GL11;
-
-import java.util.ArrayList;
-
 import static com.basic4gl.library.desktopgl.util.GLUtil.gluPerspective;
 import static org.lwjgl.opengl.GL11.*;
+
+import com.basic4gl.library.desktopgl.util.GLUtil;
+import com.basic4gl.runtime.HasErrorState;
+import java.util.ArrayList;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Manages creating and recreating the OpenGL window.
@@ -27,11 +26,7 @@ public abstract class OpenGLWindowManager extends HasErrorState {
         GL11.glViewport(0, 0, viewportWidth, viewportHeight); // Reset The Current Viewport
         glMatrixMode(GL_PROJECTION); // Select The Projection Matrix
         glLoadIdentity(); // Reset The Projection Matrix
-        gluPerspective(
-                60.0f,
-                (float) viewportWidth / (float) viewportHeight,
-                1.0f,
-                1000.0f);
+        gluPerspective(60.0f, (float) viewportWidth / (float) viewportHeight, 1.0f, 1000.0f);
 
         glMatrixMode(GL_MODELVIEW); // Select The Modelview Matrix
         glLoadIdentity(); // Reset The Modelview Matrix
@@ -39,20 +34,41 @@ public abstract class OpenGLWindowManager extends HasErrorState {
 
     private void setOpenGLDefaults() {
         applyViewportAndProjection();
-        try { glShadeModel(GL_SMOOTH); }
-        catch (Exception e) { ; }
-        try { glClearColor(0.0f, 0.0f, 0.0f, 0.5f); }
-        catch (Exception e) { ; }
-        try { glClearDepth(1.0f); }
-        catch (Exception e) { ; }
-        try { glEnable(GL_DEPTH_TEST); }
-        catch (Exception e) { ; }
-        try { glDepthFunc(GL_LEQUAL); }
-        catch (Exception e) { ; }
-        try { glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); }
-        catch (Exception e) { ; }
-        try { glDisable(GL_TEXTURE_2D); }
-        catch (Exception e) { ; }
+        try {
+            glShadeModel(GL_SMOOTH);
+        } catch (Exception e) {
+            ;
+        }
+        try {
+            glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+        } catch (Exception e) {
+            ;
+        }
+        try {
+            glClearDepth(1.0f);
+        } catch (Exception e) {
+            ;
+        }
+        try {
+            glEnable(GL_DEPTH_TEST);
+        } catch (Exception e) {
+            ;
+        }
+        try {
+            glDepthFunc(GL_LEQUAL);
+        } catch (Exception e) {
+            ;
+        }
+        try {
+            glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+        } catch (Exception e) {
+            ;
+        }
+        try {
+            glDisable(GL_TEXTURE_2D);
+        } catch (Exception e) {
+            ;
+        }
 
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         swapBuffers();
@@ -100,11 +116,11 @@ public abstract class OpenGLWindowManager extends HasErrorState {
         windowHeight = 0;
     }
 
-    public void dispose() {
+    public void dispose() {}
 
+    public OpenGLWindowParams getActiveParams() {
+        return activeParams;
     }
-
-    public OpenGLWindowParams getActiveParams() { return activeParams; }
 
     private OpenGLWindowParams buildResolvedActiveParams() {
         OpenGLWindowParams resolved = new OpenGLWindowParams(pendingParams);
@@ -141,31 +157,29 @@ public abstract class OpenGLWindowManager extends HasErrorState {
         setOpenGLDefaults();
 
         // Call window created callbacks
-        for (OpenGLWindowCreatedListener listener : windowCreatedListeners)
-        {
+        for (OpenGLWindowCreatedListener listener : windowCreatedListeners) {
             listener.onOpenGLWindowCreated();
         }
     }
+
     public void activateWindow() {
-        if (isWindowCreated && !isWindowShowing)
-        {
+        if (isWindowCreated && !isWindowShowing) {
             internalActivateWindow();
             isWindowShowing = true;
         }
     }
+
     public void deactivateWindow() {
-        if (isWindowCreated && isWindowShowing)
-        {
+        if (isWindowCreated && isWindowShowing) {
             internalDeactivateWindow();
             isWindowShowing = false;
         }
     }
+
     public void destroyWindow() {
-        if (isWindowCreated)
-        {
+        if (isWindowCreated) {
             // Call before window destroyed callbacks
-            for (OpenGLBeforeDestroyWindowListener listener : beforeDestroyWindowListeners)
-            {
+            for (OpenGLBeforeDestroyWindowListener listener : beforeDestroyWindowListeners) {
                 listener.onBeforeDestroyOpenGLWindow();
             }
 
@@ -177,20 +191,29 @@ public abstract class OpenGLWindowManager extends HasErrorState {
             windowHeight = 0;
         }
     }
+
     public boolean isCloseRequested() {
         return isWindowCreated && internalIsCloseRequested();
     }
+
     public void swapBuffers() {
-        if (isWindowCreated)
-        {
+        if (isWindowCreated) {
             internalSwapBuffers();
         }
     }
 
-    public boolean isWindowCreated() { return isWindowCreated; }
-    public void subscribeWindowCreated(OpenGLWindowCreatedListener listener)	{ windowCreatedListeners.add(listener); }
+    public boolean isWindowCreated() {
+        return isWindowCreated;
+    }
 
-    public void subscribeBeforeDestroyWindow(OpenGLBeforeDestroyWindowListener listener) { beforeDestroyWindowListeners.add(listener); }
+    public void subscribeWindowCreated(OpenGLWindowCreatedListener listener) {
+        windowCreatedListeners.add(listener);
+    }
+
+    public void subscribeBeforeDestroyWindow(OpenGLBeforeDestroyWindowListener listener) {
+        beforeDestroyWindowListeners.add(listener);
+    }
+
     public int getWindowWidth() {
         int width = windowWidth;
         if (width <= 0) {
@@ -201,6 +224,7 @@ public abstract class OpenGLWindowManager extends HasErrorState {
         }
         return width;
     }
+
     public int getWindowHeight() {
         int height = windowHeight;
         if (height <= 0) {
@@ -211,7 +235,8 @@ public abstract class OpenGLWindowManager extends HasErrorState {
         }
         return height;
     }
-    public int getPendingWindowWidth(){
+
+    public int getPendingWindowWidth() {
         int width = pendingParams.width;
         if (width == 0) {
             width = getScreenWidth();

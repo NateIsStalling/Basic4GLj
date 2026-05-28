@@ -39,4 +39,3 @@ public enum PlatformId {
         return UNKNOWN;
     }
 }
-

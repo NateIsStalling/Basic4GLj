@@ -68,7 +68,8 @@ public class EvaluateWatchHandler {
             // stack state.
             int currentFunction = -1;
             int currentUserFrame = vm.getCurrentUserFrame();
-            if (currentUserFrame >= 0 && currentUserFrame < vm.getUserCallStack().size()) {
+            if (currentUserFrame >= 0
+                    && currentUserFrame < vm.getUserCallStack().size()) {
                 int userFuncIndex = vm.getUserCallStack().get(currentUserFrame).userFuncIndex;
                 if (userFuncIndex >= 0) {
                     currentFunction = userFuncIndex;

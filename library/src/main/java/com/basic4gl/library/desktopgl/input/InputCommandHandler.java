@@ -1,29 +1,28 @@
 package com.basic4gl.library.desktopgl.input;
 
+import static org.lwjgl.system.windows.User32.*;
+
 import com.basic4gl.library.desktopgl.content.Content2DManager;
 import com.basic4gl.library.desktopgl.content.GLTextGrid;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
 
-import static org.lwjgl.system.windows.User32.*;
-
 public class InputCommandHandler implements Basic4GLLongRunningFunction {
-        private TomVM vm;
-        private OpenGLKeyboard keyboard;
-        private Content2DManager contentManager;
-        private GLTextGrid textGrid;
+    private TomVM vm;
+    private OpenGLKeyboard keyboard;
+    private Content2DManager contentManager;
+    private GLTextGrid textGrid;
 
-        private int left;					// Leftmost cursor position
-        private boolean saveCursor;
-        private boolean isStarted;
-        private int unsubscribeHandle;
-
+    private int left; // Leftmost cursor position
+    private boolean saveCursor;
+    private boolean isStarted;
+    private int unsubscribeHandle;
 
     private void processKeys() {
         processKeys(false);
     }
-    private void processKeys(boolean forceRedraw)
-    {
+
+    private void processKeys(boolean forceRedraw) {
         // Keyboard input
         char c;
         int sc;
@@ -60,9 +59,10 @@ public class InputCommandHandler implements Basic4GLLongRunningFunction {
             }
 
             // Enter key
-            // Note: Testing for return character (13) instead of scan key VK_ENTER, because some older Basic4GL programs
+            // Note: Testing for return character (13) instead of scan key VK_ENTER, because some older Basic4GL
+            // programs
             // rely on this behaviour. I.e. they call input immediately after inkey$() returns 13, at which point
-            // the scan key buffer contains a VK_ENTER, but the return character has been removed from the character 
+            // the scan key buffer contains a VK_ENTER, but the return character has been removed from the character
             // buffer.
             // (The return character is a special case non-printable character that is added to the character buffer.
             // This is for compatibility with older Basic4GL versions)
@@ -70,11 +70,11 @@ public class InputCommandHandler implements Basic4GLLongRunningFunction {
                 int lineOffset = textGrid.getCursorY() * textGrid.getColumns();
                 int right = textGrid.getColumns();
                 char[] chars = textGrid.getChars();
-                while (right > left && chars[lineOffset + right - 1] <= ' ')      // Trim spaces from right
+                while (right > left && chars[lineOffset + right - 1] <= ' ') // Trim spaces from right
                 {
                     right--;
                 }
-                while (left < right && chars[lineOffset + left] <= ' ')           // Trim spaces from left
+                while (left < right && chars[lineOffset + left] <= ' ') // Trim spaces from left
                 {
                     left++;
                 }
@@ -113,13 +113,13 @@ public class InputCommandHandler implements Basic4GLLongRunningFunction {
         }
     }
 
-    private void redraw()
-    {
+    private void redraw() {
         // Draw text
         contentManager.fullRedraw();
     }
 
-    public InputCommandHandler(TomVM vm, OpenGLKeyboard keyboard, Content2DManager contentManager, GLTextGrid textGrid) {
+    public InputCommandHandler(
+            TomVM vm, OpenGLKeyboard keyboard, Content2DManager contentManager, GLTextGrid textGrid) {
         this.vm = vm;
         this.keyboard = keyboard;
         this.contentManager = contentManager;
@@ -132,8 +132,7 @@ public class InputCommandHandler implements Basic4GLLongRunningFunction {
         textGrid.showCursor();
 
         // Ask to be notified of keyboard events
-        unsubscribeHandle = keyboard.subscribeKeyPressed((isScanKey) ->
-        {
+        unsubscribeHandle = keyboard.subscribeKeyPressed((isScanKey) -> {
             processKeys();
         });
 
@@ -141,34 +140,29 @@ public class InputCommandHandler implements Basic4GLLongRunningFunction {
         keyboard.clearKeyBuffers();
     }
 
-    public void dispose()
-    {
+    public void dispose() {
         keyboard.unsubscribeKeyPressed(unsubscribeHandle);
         unsubscribeHandle = 0;
     }
 
-    public boolean isPolled()
-    {
-        // We want to be polled once, so that we can process any already buffered keypresses, and possibly 
+    public boolean isPolled() {
+        // We want to be polled once, so that we can process any already buffered keypresses, and possibly
         // end the long running function immediately if the buffer contains an ENTER keypress.
         // After that, if the function is still active, we don't need to be polled, and can wait for keypress
         // notifications.
         return !isStarted;
     }
 
-    public void poll()
-    {
+    public void poll() {
         isStarted = true;
         processKeys(true);
     }
 
-    public boolean deleteWhenDone()
-    {
+    public boolean deleteWhenDone() {
         return true;
     }
 
-    public void cancel()
-    {
+    public void cancel() {
         // (Nothing to do)
     }
 }

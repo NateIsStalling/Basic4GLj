@@ -1,6 +1,5 @@
 package com.basic4gl.runtime.plugin;
 
-
 /**
  * Implement this interface to be notified when objects have been removed
  * from an Basic4GLObjectStore.

@@ -7,6 +7,9 @@ import static org.lwjgl.system.MemoryUtil.*;
 import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
+import com.basic4gl.compiler.util.IVMDriverAccess;
+import com.basic4gl.lib.util.*;
+import com.basic4gl.library.debug.DebuggerCommandAdapter;
 import com.basic4gl.library.desktopgl.content.Content2DManager;
 import com.basic4gl.library.desktopgl.content.GLTextGrid;
 import com.basic4gl.library.desktopgl.glfw.GLFWKeyboard;
@@ -16,9 +19,6 @@ import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
 import com.basic4gl.library.desktopgl.input.OpenGLMouse;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.library.plugin.PluginJARManager;
-import com.basic4gl.compiler.util.IVMDriverAccess;
-import com.basic4gl.lib.util.*;
-import com.basic4gl.library.debug.DebuggerCommandAdapter;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.HasErrorState;
 import com.basic4gl.runtime.InstructionPosition;
@@ -27,12 +27,12 @@ import java.io.*;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-
 import org.apache.commons.cli.*;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 
-public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver, IFileAccess, ITargetCommandLineOptions {
+public class GLTextGridWindow extends HasErrorState
+        implements Target, IVMDriver, IFileAccess, ITargetCommandLineOptions {
 
     // Libraries
     private java.util.List<Library> libraries;
@@ -65,12 +65,12 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
     private GLTextGrid textGrid;
 
     private IAppSettings appSettings; // common settings for all libraries
-    private final IStandaloneSettings settings = new StandaloneSettings(); // settings specific to standalone application
+    private final IStandaloneSettings settings =
+            new StandaloneSettings(); // settings specific to standalone application
     private Configuration configuration; // runtime configuration for this library
-// Filename for stored VM state
+    // Filename for stored VM state
 
     static final String DEFAULT_VERSION = "1.0"; // Default version name for compiled programs
-
 
     private String charsetPath = "charset.png"; // Default charset texture
 
@@ -82,8 +82,7 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         return charsetPath;
     }
 
-    public GLTextGridWindow() {
-    }
+    public GLTextGridWindow() {}
 
     public static Library getInstance(TomBasicCompiler compiler) {
         GLTextGridWindow instance = new GLTextGridWindow();
@@ -187,9 +186,7 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         instance.plugins = new PluginJARManager(isStandalone);
         instance.plugins.setDirectory(options.currentDirectory);
 
-        instance.compiler = new TomBasicCompiler(
-                new TomVM(instance.plugins, debugger),
-                instance.plugins);
+        instance.compiler = new TomBasicCompiler(new TomVM(instance.plugins, debugger), instance.plugins);
 
         instance.vm = instance.compiler.getVM();
         instance.services = new ServiceCollection();
@@ -214,12 +211,7 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
         GLFWWindowManager windowManager = new GLFWWindowManager();
         instance.windowManager = windowManager;
         instance.textGrid = new GLTextGrid(
-            instance.fileOpener.getFilenameForRead("charset.png", false),
-            instance.fileOpener,
-            25,
-            40,
-            16,
-            16);
+                instance.fileOpener.getFilenameForRead("charset.png", false), instance.fileOpener, 25, 40, 16, 16);
         instance.keyboard = new GLFWKeyboard(windowManager);
         instance.services.registerService(OpenGLWindowManager.class, windowManager);
         instance.services.registerService(OpenGLKeyboard.class, instance.keyboard);
@@ -850,7 +842,8 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
 
             boolean bordered = configuration.getBooleanValueOrDefault(SETTING_BORDER, true);
             boolean stencilRequired = configuration.getBooleanValueOrDefault(SETTING_STENCIL, false);
-            int startupWindowOption = configuration.getIntValueOrDefault(SETTING_STARTUP_WINDOW_OPTION, STARTUP_WINDOW_CREATE_IMMEDIATELY);
+            int startupWindowOption = configuration.getIntValueOrDefault(
+                    SETTING_STARTUP_WINDOW_OPTION, STARTUP_WINDOW_CREATE_IMMEDIATELY);
             boolean createWindowOnStart = startupWindowOption == STARTUP_WINDOW_CREATE_IMMEDIATELY;
 
             // Setup an error callback. The default implementation
@@ -882,8 +875,7 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
             windowManager.pendingParams.isBordered = bordered;
             windowManager.pendingParams.isStencilBufferRequired = stencilRequired;
 
-            if (createWindowOnStart)
-            {
+            if (createWindowOnStart) {
                 windowManager.recreateWindow();
             }
 
@@ -894,12 +886,11 @@ public class GLTextGridWindow extends HasErrorState implements Target, IVMDriver
 
             // TODO implement window icons
 
-
             // Get the resolution of the primary monitor
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             // Center our window
             // TODO 2.6.4 refactor - this should be handled by the window manager now that it is a service
-//            glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
+            //            glfwSetWindowPos(window, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
 
             // Make the window visible
             if (createWindowOnStart) {

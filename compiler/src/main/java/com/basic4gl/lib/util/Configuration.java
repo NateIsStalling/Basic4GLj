@@ -85,5 +85,4 @@ public class Configuration implements Serializable {
         String value = getValue(index);
         return value != null ? Boolean.parseBoolean(value) : defaultValue;
     }
-
 }

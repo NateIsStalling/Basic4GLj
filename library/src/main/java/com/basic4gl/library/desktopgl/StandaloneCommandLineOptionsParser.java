@@ -1,15 +1,14 @@
 package com.basic4gl.library.desktopgl;
 
-import com.basic4gl.lib.util.ITargetCommandLineOptions;
-import org.apache.commons.cli.*;
+import static com.basic4gl.library.desktopgl.StandaloneCommandLineOptions.CONFIG_FILE;
+import static com.basic4gl.library.desktopgl.StandaloneCommandLineOptions.STATE_FILE;
 
+import com.basic4gl.lib.util.ITargetCommandLineOptions;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-
-import static com.basic4gl.library.desktopgl.StandaloneCommandLineOptions.CONFIG_FILE;
-import static com.basic4gl.library.desktopgl.StandaloneCommandLineOptions.STATE_FILE;
+import org.apache.commons.cli.*;
 
 public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOptions {
     // Predefined CLI options used by Basic4GLj debugger
@@ -34,10 +33,7 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
 
     public StandaloneCommandLineOptionsParser() {
         options = new Options();
-        help = Option.builder("h")
-                .longOpt("help")
-                .desc("print this message")
-                .build();
+        help = Option.builder("h").longOpt("help").desc("print this message").build();
 
         version = Option.builder("v")
                 .longOpt("version")
@@ -170,7 +166,6 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
                 options,
                 "");
     }
-
 
     @Override
     public String getConfigFilePathCommandLineOption() {

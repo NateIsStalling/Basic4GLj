@@ -41,4 +41,5 @@ public interface Basic4GLObjectStore {
      * The dispose-of-object callback is called for each object.
      */
     void clear();
-};
+}
+;

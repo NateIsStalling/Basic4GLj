@@ -3,7 +3,6 @@ package com.basic4gl.library.desktopgl.content;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import java.util.Vector;
-
 import org.lwjgl.opengl.GL11;
 
 /**

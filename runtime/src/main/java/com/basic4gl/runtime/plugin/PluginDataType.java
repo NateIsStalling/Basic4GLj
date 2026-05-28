@@ -1,11 +1,10 @@
 package com.basic4gl.runtime.plugin;
 
-import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.util.Assert;
-
 import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING;
 import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_STRING;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+
+import com.basic4gl.runtime.TomVM;
+import com.basic4gl.runtime.util.Assert;
 
 /**
  * Represents a data type in a plugin structure.

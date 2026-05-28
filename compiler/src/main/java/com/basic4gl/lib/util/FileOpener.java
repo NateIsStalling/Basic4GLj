@@ -309,6 +309,5 @@ public class FileOpener extends HasErrorState {
                 return false;
             }
         }
-
     }
 }

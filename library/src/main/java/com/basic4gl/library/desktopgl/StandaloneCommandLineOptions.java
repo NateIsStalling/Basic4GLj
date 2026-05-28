@@ -1,6 +1,5 @@
 package com.basic4gl.library.desktopgl;
 
-
 public class StandaloneCommandLineOptions {
 
     static final String CONFIG_FILE = "config.ser"; // Filename for configuration file
@@ -10,6 +9,7 @@ public class StandaloneCommandLineOptions {
      *  Load VM's state from file
      */
     public String stateFile = "/" + STATE_FILE;
+
     public String configFile = "/" + CONFIG_FILE;
     public String mappingFile = null;
     public String currentDirectory = null;

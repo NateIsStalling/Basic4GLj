@@ -5,21 +5,21 @@ import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.opengl.GL13.*;
 
+import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.lib.util.FunctionLibrary;
+import com.basic4gl.lib.util.IAppSettings;
+import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.library.desktopgl.content.Image;
 import com.basic4gl.library.desktopgl.content.LoadImage;
 import com.basic4gl.library.desktopgl.util.Routines;
 import com.basic4gl.library.desktopgl.util.WindowAdapter;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.ParamTypeList;
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.FunctionSpecification;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.PointerResourceStore;
@@ -65,10 +65,8 @@ public class OpenGLBasicLib implements FunctionLibrary {
         return "OpenGL 1.* constants and image loading functions";
     }
 
-
     @Override
     public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
-
 
         // Removed in 2.6.X, as this is now handled by the window manager
         // windowManager.clearKeyBuffers();
@@ -112,8 +110,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         }
         windowManager = services.getService(OpenGLWindowManager.class);
         if (windowManager != null) {
-            windowManager.subscribeBeforeDestroyWindow(() ->
-            {
+            windowManager.subscribeBeforeDestroyWindow(() -> {
                 // Free loaded textures before window is destroyed.
                 // (Doesn't always indicate end of program. Program could be recreating the OpenGL window)
                 textures.clear();
@@ -123,7 +120,6 @@ public class OpenGLBasicLib implements FunctionLibrary {
             // TODO need to add any missing registerInterface calls for other libraries
             comp.getPlugins().registerInterface(new WindowAdapter(windowManager), "IB4GLOpenGLWindow", 1, 0, null);
         }
-
     }
 
     @Override
@@ -256,91 +252,35 @@ public class OpenGLBasicLib implements FunctionLibrary {
         Map<String, FunctionSpecification[]> s = new HashMap<>();
         s.put("loadimage", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapLoadImage.class,
-                    new ParamTypeList(VTP_STRING),
-                    true,
-                    true,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapLoadImage.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, false, false, null)
         });
         s.put("deleteimage", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapDeleteImage.class,
-                    new ParamTypeList(VTP_INT),
-                    true,
-                    false,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapDeleteImage.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, false, false, null)
         });
         s.put("imagewidth", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapImageWidth.class,
-                    new ParamTypeList(VTP_INT),
-                    true,
-                    true,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapImageWidth.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
         });
         s.put("imageheight", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapImageHeight.class,
-                    new ParamTypeList(VTP_INT),
-                    true,
-                    true,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapImageHeight.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
         });
         s.put("imageformat", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapImageFormat.class,
-                    new ParamTypeList(VTP_INT),
-                    true,
-                    true,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapImageFormat.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
         });
         s.put("imagedatatype", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapImageDataType.class,
-                    new ParamTypeList(VTP_INT),
-                    true,
-                    true,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapImageDataType.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
         });
         s.put("loadtexture", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapLoadTexture.class,
-                    new ParamTypeList(VTP_STRING),
-                    true,
-                    true,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapLoadTexture.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, false, false, null)
         });
         s.put("loadmipmaptexture", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapLoadMipmapTexture.class,
-                    new ParamTypeList(VTP_STRING),
-                    true,
-                    true,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapLoadMipmapTexture.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, false, false, null)
         });
         s.put("glgentexture", new FunctionSpecification[] {
             new FunctionSpecification(
@@ -348,28 +288,12 @@ public class OpenGLBasicLib implements FunctionLibrary {
         });
         s.put("gldeletetexture", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapglDeleteTexture.class,
-                    new ParamTypeList(VTP_INT),
-                    true,
-                    false,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapglDeleteTexture.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, false, false, null)
         });
         s.put("glteximage2d", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapglTexImage2D.class,
-                    new ParamTypeList(
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT),
+                    new ParamTypeList(VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT),
                     true,
                     false,
                     VTP_INT,
@@ -452,16 +376,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         s.put("gltexsubimage2d", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapglTexSubImage2D.class,
-                    new ParamTypeList(
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT),
+                    new ParamTypeList(VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT),
                     true,
                     false,
                     VTP_INT,
@@ -472,14 +387,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         s.put("glubuild2dmipmaps", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapgluBuild2DMipmaps.class,
-                    new ParamTypeList(
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT,
-                            VTP_INT),
+                    new ParamTypeList(VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT, VTP_INT),
                     true,
                     false,
                     VTP_INT,
@@ -553,14 +461,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         });
         s.put("glgetString", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapglGetString.class,
-                    new ParamTypeList(VTP_INT),
-                    true,
-                    true,
-                    VTP_STRING,
-                    false,
-                    false,
-                    null)
+                    WrapglGetString.class, new ParamTypeList(VTP_INT), true, true, VTP_STRING, false, false, null)
         });
         s.put("extensionsupported", new FunctionSpecification[] {
             new FunctionSpecification(
@@ -597,25 +498,11 @@ public class OpenGLBasicLib implements FunctionLibrary {
         });
         s.put("glactivetexture", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapglActiveTexture.class,
-                    new ParamTypeList(VTP_INT),
-                    true,
-                    false,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapglActiveTexture.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, false, false, null)
         });
         s.put("maxtextureunits", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapMaxTextureUnits.class,
-                    new ParamTypeList(),
-                    true,
-                    true,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapMaxTextureUnits.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
         });
         s.put("windowwidth", new FunctionSpecification[] {
             new FunctionSpecification(
@@ -628,9 +515,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         s.put("glgentextures", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapglGenTextures.class,
-                    new ParamTypeList(
-                            new ValType(VTP_INT),
-                            new ValType(VTP_INT, (byte) 1, (byte) 1, true)),
+                    new ParamTypeList(new ValType(VTP_INT), new ValType(VTP_INT, (byte) 1, (byte) 1, true)),
                     true,
                     false,
                     VTP_INT,
@@ -641,9 +526,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         s.put("gldeletetextures", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapglDeleteTextures.class,
-                    new ParamTypeList(
-                            new ValType(VTP_INT),
-                            new ValType(VTP_INT, (byte) 1, (byte) 1, true)),
+                    new ParamTypeList(new ValType(VTP_INT), new ValType(VTP_INT, (byte) 1, (byte) 1, true)),
                     true,
                     false,
                     VTP_INT,
@@ -719,14 +602,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         });
         s.put("glgenlists", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapglGenLists.class,
-                    new ParamTypeList(VTP_INT),
-                    true,
-                    true,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapglGenLists.class, new ParamTypeList(VTP_INT), true, true, VTP_INT, false, false, null)
         });
         s.put("gldeletelists", new FunctionSpecification[] {
             new FunctionSpecification(
@@ -755,9 +631,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             new FunctionSpecification(
                     WrapglCallLists_2.class,
                     new ParamTypeList(
-                            new ValType(VTP_INT),
-                            new ValType(VTP_INT),
-                            new ValType(VTP_INT, (byte) 1, (byte) 1, true)),
+                            new ValType(VTP_INT), new ValType(VTP_INT), new ValType(VTP_INT, (byte) 1, (byte) 1, true)),
                     true,
                     false,
                     VTP_INT,
@@ -767,18 +641,10 @@ public class OpenGLBasicLib implements FunctionLibrary {
         });
         s.put("glBegin", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapglBegin.class,
-                    new ParamTypeList(VTP_INT),
-                    true,
-                    false,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapglBegin.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, false, false, null)
         });
         s.put("glEnd", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapglEnd.class, new ParamTypeList(), true, false, VTP_INT, false, false, null)
+            new FunctionSpecification(WrapglEnd.class, new ParamTypeList(), true, false, VTP_INT, false, false, null)
         });
 
         s.put("imagestripframes", new FunctionSpecification[] {
@@ -873,8 +739,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             new FunctionSpecification(
                     WrapglGetFloatv_2D.class,
                     new ParamTypeList(
-                            new ValType(VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                            new ValType(VTP_INT), new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
                     true,
                     false,
                     VTP_INT,
@@ -886,8 +751,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             new FunctionSpecification(
                     WrapglGetDoublev_2D.class,
                     new ParamTypeList(
-                            new ValType(VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                            new ValType(VTP_INT), new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
                     true,
                     false,
                     VTP_INT,
@@ -899,8 +763,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             new FunctionSpecification(
                     WrapglGetIntegerv_2D.class,
                     new ParamTypeList(
-                            new ValType(VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                            new ValType(VTP_INT), new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
                     true,
                     false,
                     VTP_INT,
@@ -912,8 +775,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             new FunctionSpecification(
                     WrapglGetBooleanv_2D.class,
                     new ParamTypeList(
-                            new ValType(VTP_INT),
-                            new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
+                            new ValType(VTP_INT), new ValType(BasicValType.VTP_REAL, (byte) 2, (byte) 1, true)),
                     true,
                     false,
                     VTP_INT,
@@ -925,14 +787,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         // New texture loading
         s.put("LoadTex", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapLoadTex.class,
-                    new ParamTypeList(VTP_STRING),
-                    true,
-                    true,
-                    VTP_INT,
-                    true,
-                    false,
-                    null)
+                    WrapLoadTex.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null)
         });
         s.put("LoadTexStrip", new FunctionSpecification[] {
             new FunctionSpecification(
@@ -956,14 +811,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         });
         s.put("TexStripFrames", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapTexStripFrames.class,
-                    new ParamTypeList(VTP_STRING),
-                    true,
-                    true,
-                    VTP_INT,
-                    true,
-                    false,
-                    null),
+                    WrapTexStripFrames.class, new ParamTypeList(VTP_STRING), true, true, VTP_INT, true, false, null),
             new FunctionSpecification(
                     WrapTexStripFrames2.class,
                     new ParamTypeList(VTP_STRING, VTP_INT, VTP_INT),
@@ -1007,30 +855,21 @@ public class OpenGLBasicLib implements FunctionLibrary {
         });
         s.put("SetTexNoTransparentCol", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapSetTexNoTransparentCol.class,
-                    new ParamTypeList(),
-                    true,
-                    false,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapSetTexNoTransparentCol.class, new ParamTypeList(), true, false, VTP_INT, false, false, null)
         });
         s.put("SetTexMipmap", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapSetTexMipmap.class,
-                    new ParamTypeList(VTP_INT),
-                    true,
-                    false,
-                    VTP_INT,
-                    false,
-                    false,
-                    null)
+                    WrapSetTexMipmap.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, false, false, null)
         });
         s.put("SetTexLinearFilter", new FunctionSpecification[] {
             new FunctionSpecification(
-                    WrapSetTexLinearFilter.class,
-                    new ParamTypeList(VTP_INT),
+                    WrapSetTexLinearFilter.class, new ParamTypeList(VTP_INT), true, false, VTP_INT, false, false, null)
+        });
+        // OpenGL window management
+        s.put("SetWindowWidth", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetWindowWidth.class,
+                    new ParamTypeList(new ValType(VTP_INT)),
                     true,
                     false,
                     VTP_INT,
@@ -1038,55 +877,114 @@ public class OpenGLBasicLib implements FunctionLibrary {
                     false,
                     null)
         });
-        // OpenGL window management
-        s.put("SetWindowWidth", new FunctionSpecification[]{
-            new FunctionSpecification(WrapSetWindowWidth.class, new ParamTypeList(new ValType(VTP_INT)), true, false, VTP_INT, false, false, null)
+        s.put("SetWindowHeight", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetWindowHeight.class,
+                    new ParamTypeList(new ValType(VTP_INT)),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
         });
-        s.put("SetWindowHeight", new FunctionSpecification[]{
-            new FunctionSpecification(WrapSetWindowHeight.class, new ParamTypeList(new ValType(VTP_INT)), true, false, VTP_INT, false, false, null)
+        s.put("SetWindowFullscreen", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetWindowFullscreen.class,
+                    new ParamTypeList(new ValType(VTP_INT)),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
         });
-        s.put("SetWindowFullscreen", new FunctionSpecification[]{
-            new FunctionSpecification(WrapSetWindowFullscreen.class, new ParamTypeList(new ValType(VTP_INT)), true, false, VTP_INT, false, false, null)
+        s.put("SetWindowBorder", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetWindowBorder.class,
+                    new ParamTypeList(new ValType(VTP_INT)),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
         });
-        s.put("SetWindowBorder", new FunctionSpecification[]{
-            new FunctionSpecification(WrapSetWindowBorder.class, new ParamTypeList(new ValType(VTP_INT)), true, false, VTP_INT, false, false, null)
+        s.put("SetWindowBPP", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetWindowBpp.class,
+                    new ParamTypeList(new ValType(VTP_INT)),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
         });
-        s.put("SetWindowBPP", new FunctionSpecification[]{
-            new FunctionSpecification(WrapSetWindowBpp.class, new ParamTypeList(new ValType(VTP_INT)), true, false, VTP_INT, false, false, null)
+        s.put("SetWindowStencil", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetWindowStencil.class,
+                    new ParamTypeList(new ValType(VTP_INT)),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
         });
-        s.put("SetWindowStencil", new FunctionSpecification[]{
-            new FunctionSpecification(WrapSetWindowStencil.class, new ParamTypeList(new ValType(VTP_INT)), true, false, VTP_INT, false, false, null)
+        s.put("SetWindowTitle", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetWindowTitle.class,
+                    new ParamTypeList(new ValType(VTP_STRING)),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
         });
-        s.put("SetWindowTitle", new FunctionSpecification[]{
-            new FunctionSpecification(WrapSetWindowTitle.class, new ParamTypeList(new ValType(VTP_STRING)), true, false, VTP_INT, false, false, null)
+        s.put("SetWindowResizable", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSetWindowResizable.class,
+                    new ParamTypeList(new ValType(VTP_INT)),
+                    true,
+                    false,
+                    VTP_INT,
+                    false,
+                    false,
+                    null)
         });
-        s.put("SetWindowResizable", new FunctionSpecification[]{
-            new FunctionSpecification(WrapSetWindowResizable.class, new ParamTypeList(new ValType(VTP_INT)), true, false, VTP_INT, false, false, null)
+        s.put("WindowFullscreen", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapWindowFullscreen.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
         });
-        s.put("WindowFullscreen", new FunctionSpecification[]{
-            new FunctionSpecification(WrapWindowFullscreen.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
+        s.put("WindowBorder", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapWindowBorder.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
         });
-        s.put("WindowBorder", new FunctionSpecification[]{
-            new FunctionSpecification(WrapWindowBorder.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
-        });
-        s.put("WindowBPP", new FunctionSpecification[]{
+        s.put("WindowBPP", new FunctionSpecification[] {
             new FunctionSpecification(WrapWindowBpp.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
         });
-        s.put("WindowStencil", new FunctionSpecification[]{
-            new FunctionSpecification(WrapWindowStencil.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
+        s.put("WindowStencil", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapWindowStencil.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
         });
-        s.put("WindowTitle", new FunctionSpecification[]{
-            new FunctionSpecification(WrapWindowTitle.class, new ParamTypeList(), true, true, VTP_STRING, false, false, null)
+        s.put("WindowTitle", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapWindowTitle.class, new ParamTypeList(), true, true, VTP_STRING, false, false, null)
         });
-        s.put("WindowResizable", new FunctionSpecification[]{
-            new FunctionSpecification(WrapWindowResizable.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
+        s.put("WindowResizable", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapWindowResizable.class, new ParamTypeList(), true, true, VTP_INT, false, false, null)
         });
-        s.put("UpdateWindow", new FunctionSpecification[]{
-            new FunctionSpecification(WrapUpdateWindow.class, new ParamTypeList(), true, true, VTP_INT, true, false, null)
+        s.put("UpdateWindow", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapUpdateWindow.class, new ParamTypeList(), true, true, VTP_INT, true, false, null)
         });
 
-        s.put("swapbuffers", new FunctionSpecification[]{
-            new FunctionSpecification(WrapSwapBuffers.class, new ParamTypeList(), true, false, VTP_INT, false, false, null)
+        s.put("swapbuffers", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapSwapBuffers.class, new ParamTypeList(), true, false, VTP_INT, false, false, null)
         });
         return s;
     }
@@ -2186,8 +2084,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             ByteBuffer handles = BufferUtils.createByteBuffer(
                     (Integer.SIZE / Byte.SIZE) * 65536); // 64K should be enough for anybody ;)
             int[] array = new int[65536];
-            Data.readAndZero(
-                    vm.getData(), vm.getIntParam(1), new ValType(VTP_INT, (byte) 1), array, count);
+            Data.readAndZero(vm.getData(), vm.getIntParam(1), new ValType(VTP_INT, (byte) 1), array, count);
 
             IntBuffer handlesIntBuffer = handles.asIntBuffer();
             handlesIntBuffer.put(array);
@@ -2299,11 +2196,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
             glGetPolygonStipple(mask);
             Data.writeArray(
-                    vm.getData(),
-                    vm.getIntParam(1),
-                    new ValType(VTP_INT, (byte) 1, (byte) 1, true),
-                    mask.array(),
-                    128);
+                    vm.getData(), vm.getIntParam(1), new ValType(VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
         }
     }
 
@@ -2311,11 +2204,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
             Data.readAndZero(
-                    vm.getData(),
-                    vm.getIntParam(1),
-                    new ValType(VTP_INT, (byte) 1, (byte) 1, true),
-                    mask.array(),
-                    128);
+                    vm.getData(), vm.getIntParam(1), new ValType(VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
             glPolygonStipple(mask);
         }
     }
@@ -2372,8 +2261,9 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
             // Get array parameter
             ByteBuffer array = BufferUtils.createByteBuffer(65536 * 4);
-            if (Routines.readArrayDynamic(vm, 1, new ValType (BasicValType.VTP_REAL, (byte)
-                    1, (byte) 1, true), type, array, n) == 0) {
+            if (Routines.readArrayDynamic(
+                            vm, 1, new ValType(BasicValType.VTP_REAL, (byte) 1, (byte) 1, true), type, array, n)
+                    == 0) {
                 return;
             }
 
@@ -2401,8 +2291,9 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
             // Get array parameter
             ByteBuffer array = BufferUtils.createByteBuffer(65536 * 4);
-            if (Routines.readArrayDynamic(vm, 1, new ValType (BasicValType.VTP_INT, (byte)
-                    1, (byte) 1, true), type, array, n) == 0) {
+            if (Routines.readArrayDynamic(
+                            vm, 1, new ValType(BasicValType.VTP_INT, (byte) 1, (byte) 1, true), type, array, n)
+                    == 0) {
                 return;
             }
 
@@ -2479,12 +2370,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             glGetIntegerv(vm.getIntParam(2), intBuffer16);
             intBuffer16.rewind();
             intBuffer16.get(data);
-            Data.writeArray(
-                    vm.getData(),
-                    vm.getIntParam(1),
-                    new ValType(VTP_INT, (byte) 2, (byte) 1, true),
-                    data,
-                    16);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType(VTP_INT, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
@@ -2498,12 +2384,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             glGetBooleanv(vm.getIntParam(2), byteBuffer16);
             byteBuffer16.rewind();
             byteBuffer16.get(data);
-            Data.writeArray(
-                    vm.getData(),
-                    vm.getIntParam(1),
-                    new ValType(VTP_INT, (byte) 2, (byte) 1, true),
-                    data,
-                    16);
+            Data.writeArray(vm.getData(), vm.getIntParam(1), new ValType(VTP_INT, (byte) 2, (byte) 1, true), data, 16);
         }
     }
 
@@ -2569,9 +2450,8 @@ public class OpenGLBasicLib implements FunctionLibrary {
         }
     }
 
-
     public final class WrapSetWindowWidth implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             int value = vm.getIntParam(1);
             if (value >= 1 && value <= 4096) {
                 windowManager.pendingParams.width = value;
@@ -2580,7 +2460,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetWindowHeight implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             int value = vm.getIntParam(1);
             if (value >= 1 && value <= 4096) {
                 windowManager.pendingParams.height = value;
@@ -2589,19 +2469,19 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetWindowFullscreen implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             windowManager.pendingParams.isFullscreen = vm.getIntParam(1) != 0;
         }
     }
 
     public final class WrapSetWindowBorder implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             windowManager.pendingParams.isBordered = vm.getIntParam(1) != 0;
         }
     }
 
     public final class WrapSetWindowBpp implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             int value = vm.getIntParam(1);
             if (value >= 1 && value <= 32) {
                 windowManager.pendingParams.bpp = value;
@@ -2610,69 +2490,69 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetWindowStencil implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             windowManager.pendingParams.isStencilBufferRequired = vm.getIntParam(1) != 0;
         }
     }
 
     public final class WrapSetWindowTitle implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             windowManager.pendingParams.title = vm.getStringParam(1);
         }
     }
 
     public final class WrapSetWindowResizable implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             windowManager.pendingParams.isResizable = vm.getIntParam(1) != 0;
         }
     }
 
     public final class WrapWindowFullscreen implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             vm.getReg().setIntVal(windowManager.pendingParams.isFullscreen ? -1 : 0);
         }
     }
 
     public final class WrapWindowBorder implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             vm.getReg().setIntVal(windowManager.pendingParams.isBordered ? -1 : 0);
         }
     }
 
     public final class WrapWindowBpp implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             vm.getReg().setIntVal(windowManager.pendingParams.bpp);
         }
     }
 
     public final class WrapWindowStencil implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             vm.getReg().setIntVal(windowManager.pendingParams.isStencilBufferRequired ? -1 : 0);
         }
     }
 
     public final class WrapWindowTitle implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             vm.setRegString(windowManager.pendingParams.title);
         }
     }
 
     public final class WrapWindowResizable implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             vm.getReg().setIntVal(windowManager.pendingParams.isResizable ? -1 : 0);
         }
     }
 
     /// Apply changes from SetWindowWidth/-Height/Visible etc calls.
     public final class WrapUpdateWindow implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             windowManager.recreateWindow();
             vm.getReg().setIntVal(windowManager.hasError() ? 0 : -1);
         }
     }
 
     public final class WrapSwapBuffers implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             windowManager.swapBuffers();
         }
     }

@@ -8,6 +8,7 @@ import com.basic4gl.runtime.core.opengl.IB4GLOpenGLWindow;
  */
 public class WindowAdapter implements IB4GLOpenGLWindow {
     private OpenGLWindowManager windowManager;
+
     public WindowAdapter(OpenGLWindowManager windowManager) {
         this.windowManager = windowManager;
     }

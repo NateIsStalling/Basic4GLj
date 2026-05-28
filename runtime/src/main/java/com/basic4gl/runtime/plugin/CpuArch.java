@@ -39,4 +39,3 @@ public enum CpuArch {
         return fromString(arch);
     }
 }
-

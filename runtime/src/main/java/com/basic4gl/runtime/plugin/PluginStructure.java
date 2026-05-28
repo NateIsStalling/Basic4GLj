@@ -1,14 +1,12 @@
 package com.basic4gl.runtime.plugin;
 
+import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING;
+
 import com.basic4gl.runtime.types.TypeLibrary;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Assert;
-
 import java.util.Locale;
 import java.util.Vector;
-
-import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 public class PluginStructure {
 
@@ -37,6 +35,7 @@ public class PluginStructure {
         owner = null;
         handle = 0;
     }
+
     public PluginStructure(Object owner, String name, int versionMajor, int versionMinor) {
         this.owner = owner;
         this.name = name.toLowerCase(Locale.getDefault());
@@ -52,25 +51,50 @@ public class PluginStructure {
     }
 
     // Member access
-    public Object getOwner()      { return owner; }
-    public String getName() { return name; }
-    public int getVersionMajor() { return versionMajor; }
-    public int getVersionMinor() { return versionMinor; }
+    public Object getOwner() {
+        return owner;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getVersionMajor() {
+        return versionMajor;
+    }
+
+    public int getVersionMinor() {
+        return versionMinor;
+    }
 
     // Field access
-    public int getFieldCount() { return fields.size(); }
+    public int getFieldCount() {
+        return fields.size();
+    }
+
     public PluginStructureField getField(int index) {
         Assert.assertTrue(index >= 0);
         Assert.assertTrue(index < getFieldCount());
         return fields.get(index);
     }
 
-    public int getVMStructureIndex()           { return vmStructureIndex; }
-    public void setVMStructureIndex(int value) { vmStructureIndex = value; }
-    public int getHandle()                     { return handle; }
-    public void setHandle(int value)           { handle = value; }
+    public int getVMStructureIndex() {
+        return vmStructureIndex;
+    }
 
-    public void addToVM(TypeLibrary typeLib, PluginStructureManager manager){
+    public void setVMStructureIndex(int value) {
+        vmStructureIndex = value;
+    }
+
+    public int getHandle() {
+        return handle;
+    }
+
+    public void setHandle(int value) {
+        handle = value;
+    }
+
+    public void addToVM(TypeLibrary typeLib, PluginStructureManager manager) {
 
         // Create corresponding structure in type library
 
@@ -79,7 +103,7 @@ public class PluginStructure {
         typeLib.createStruc(name);
 
         // Add and convert fields
-        for (PluginStructureField field: fields) {
+        for (PluginStructureField field : fields) {
 
             // Find structure data type
             PluginDataType type = field.getDataType();

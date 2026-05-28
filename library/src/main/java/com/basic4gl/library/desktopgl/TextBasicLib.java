@@ -7,23 +7,23 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.windows.User32.*;
 
+import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.lib.util.FunctionLibrary;
+import com.basic4gl.lib.util.IAppSettings;
+import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.library.desktopgl.content.*;
+import com.basic4gl.library.desktopgl.content.GLSpriteEngine.*;
 import com.basic4gl.library.desktopgl.input.InputCommandHandler;
 import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
 import com.basic4gl.library.desktopgl.input.OpenGLMouse;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.runtime.core.opengl.IB4GLOpenGLText;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.ParamTypeList;
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
-import com.basic4gl.library.desktopgl.content.GLSpriteEngine.*;
 import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;
+import com.basic4gl.runtime.core.opengl.IB4GLOpenGLText;
 import com.basic4gl.runtime.types.BasicValType;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.FunctionSpecification;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
 import com.basic4gl.runtime.util.Function;
@@ -45,7 +45,6 @@ public class TextBasicLib implements FunctionLibrary {
 
     private static GLSpriteStore sprites;
     private static int boundSprite;
-
 
     private OpenGLWindowManager windowManager;
     private Content2DManager contentManager;
@@ -75,7 +74,7 @@ public class TextBasicLib implements FunctionLibrary {
         appText.setTexture(appText.getDefaultTexture());
         appText.setScroll(true);
 
-//        appWindow.setDontPaint(false);
+        //        appWindow.setDontPaint(false);
 
         // Sprite engine defaults
         sprites = new GLSpriteStore();
@@ -92,7 +91,7 @@ public class TextBasicLib implements FunctionLibrary {
         this.spriteEngine = new GLSpriteEngine();
         this.appText = services.getService(GLTextGrid.class);
         this.windowManager = services.getService(OpenGLWindowManager.class);
-        this.contentManager	= services.getService(Content2DManager.class);
+        this.contentManager = services.getService(Content2DManager.class);
         this.keyboard = services.getService(OpenGLKeyboard.class);
         this.mouse = services.getService(OpenGLMouse.class);
 
@@ -160,9 +159,7 @@ public class TextBasicLib implements FunctionLibrary {
          *       For non-printable keys, custom names are used (e.g. "F4", "BACKSPACE", etc.)
          */
 
-
-
-        c.put("VK_LBUTTON", new Constant(VK_LBUTTON));             // Virtual key codes
+        c.put("VK_LBUTTON", new Constant(VK_LBUTTON)); // Virtual key codes
         c.put("VK_RBUTTON", new Constant(VK_RBUTTON));
         c.put("VK_CANCEL", new Constant(VK_CANCEL));
         c.put("VK_MBUTTON", new Constant(VK_MBUTTON));
@@ -192,7 +189,7 @@ public class TextBasicLib implements FunctionLibrary {
         c.put("VK_NONCONVERT", new Constant(VK_NONCONVERT));
         c.put("VK_ACCEPT", new Constant(VK_ACCEPT));
         c.put("VK_MODECHANGE", new Constant(VK_MODECHANGE));
-        
+
         c.put("VK_END", new Constant(VK_END));
         c.put("VK_HOME", new Constant(VK_HOME));
         c.put("VK_LEFT", new Constant(VK_LEFT));
@@ -210,7 +207,7 @@ public class TextBasicLib implements FunctionLibrary {
         c.put("VK_LWIN", new Constant(VK_LWIN));
         c.put("VK_RWIN", new Constant(VK_RWIN));
         c.put("VK_APPS", new Constant(VK_APPS));
-        
+
         c.put("VK_NUMPAD0", new Constant(VK_NUMPAD0));
         c.put("VK_NUMPAD1", new Constant(VK_NUMPAD1));
         c.put("VK_NUMPAD2", new Constant(VK_NUMPAD2));
@@ -460,17 +457,17 @@ public class TextBasicLib implements FunctionLibrary {
                     false,
                     null)
         });
-//        s.put("swapbuffers", new FunctionSpecification[] {
-//            new FunctionSpecification(
-//                    WrapSwapBuffers.class,
-//                    new ParamTypeList(),
-//                    true,
-//                    false,
-//                    new ValType(BasicValType.VTP_INT),
-//                    false,
-//                    false,
-//                    null)
-//        });
+        //        s.put("swapbuffers", new FunctionSpecification[] {
+        //            new FunctionSpecification(
+        //                    WrapSwapBuffers.class,
+        //                    new ParamTypeList(),
+        //                    true,
+        //                    false,
+        //                    new ValType(BasicValType.VTP_INT),
+        //                    false,
+        //                    false,
+        //                    null)
+        //        });
         s.put("drawtext", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapDrawText.class,
@@ -3910,8 +3907,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapClearRegion implements Function {
         public void run(TomVM vm) {
-            appText.clearRegion(
-                    vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
+            appText.clearRegion(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
             contentManager.changeMade();
         }
     }

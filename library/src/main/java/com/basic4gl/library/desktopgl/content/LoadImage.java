@@ -7,7 +7,6 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.Vector;
-
 import org.lwjgl.opengl.GL11;
 
 /**

@@ -12,21 +12,22 @@ public class PluginObjectStore implements Basic4GLObjectStore {
     private void deleteObject(int handle) {
         // Free object
         Object object = getObject(handle);
-        if (callback != null)
-            callback.onObjectRemoved(this, object);
+        if (callback != null) callback.onObjectRemoved(this, object);
     }
+
     public PluginObjectStore(Basic4GLObjectStoreListener callback) {
         store = new Store<>(null);
         this.callback = callback;
-        store.clear();			// Required to allocate single blank object
+        store.clear(); // Required to allocate single blank object
     }
 
-    public int add(Object object){
+    public int add(Object object) {
         int handle = store.alloc();
         store.setValue(handle, object);
         return handle;
     }
-    public void remove(int handle){
+
+    public void remove(int handle) {
         if (isHandleValid(handle)) {
 
             // Free object
@@ -36,13 +37,16 @@ public class PluginObjectStore implements Basic4GLObjectStore {
             store.freeAtIndex(handle);
         }
     }
+
     public boolean isHandleValid(int handle) {
         return store.isIndexStored(handle);
     }
+
     public Object getObject(int handle) {
         return isHandleValid(handle) ? store.getValueAt(handle) : null;
     }
-    public void clear(){
+
+    public void clear() {
         // Delete each individual element
         // Note: Skip index 0, as this is the dummy no-object index.
         for (int i = 1; i < store.getArray().size(); i++) {
@@ -54,4 +58,5 @@ public class PluginObjectStore implements Basic4GLObjectStore {
         // Clear store
         store.clear();
     }
-};
+}
+;

@@ -2,46 +2,41 @@ package com.basic4gl.runtime.plugin;
 
 import com.basic4gl.runtime.types.Constant;
 import com.basic4gl.runtime.util.Mutable;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Vector;
 
-public abstract class PluginManager
-{
+public abstract class PluginManager {
 
     protected Vector<PluginLibrary> plugins = new Vector<>();
     protected String error;
-    protected HashMap< String, PluginSharedInterface> sharedInterfaces = new HashMap<>();
+    protected HashMap<String, PluginSharedInterface> sharedInterfaces = new HashMap<>();
     protected boolean isStandaloneExe;
 
     // Data structures defined by plugins
     protected PluginStructureManager structureManager = new PluginStructureManager();
 
-    protected  String getSharedInterfaceKey(
-         String name,
-        int major,
-        int minor) {
+    protected String getSharedInterfaceKey(String name, int major, int minor) {
         return name + "_" + major + "_" + minor;
     }
 
-
-    public PluginManager(boolean isStandaloneExe){
+    public PluginManager(boolean isStandaloneExe) {
         this.isStandaloneExe = isStandaloneExe;
     }
+
     public void dispose() {
         clear();
     }
 
     // Member access
-    public PluginStructureManager getStructureManager() { return structureManager; }
+    public PluginStructureManager getStructureManager() {
+        return structureManager;
+    }
 
     // Library registration
-    public boolean addPlugin(Basic4GLPlugin plugin){
+    public boolean addPlugin(Basic4GLPlugin plugin) {
 
         // Wrap in library object.
         // This will also initialise the plugin and report back any error
@@ -77,17 +72,21 @@ public abstract class PluginManager
      * Loaded libraries
      * @return PluginLibrary collection of loaded libraries.
      */
-    public Vector<PluginLibrary> getLoadedLibraries() { return plugins; }
+    public Vector<PluginLibrary> getLoadedLibraries() {
+        return plugins;
+    }
 
     /**
      * @return text of last error.
      */
-    public String getError() { return error; }
+    public String getError() {
+        return error;
+    }
 
     /**
      * Unload all files
      */
-    public void clear(){
+    public void clear() {
 
         // Unload all plugins
         for (PluginLibrary library : plugins) {
@@ -107,10 +106,10 @@ public abstract class PluginManager
      * @param name function name
      * @return true if name matches a Plugin function
      */
-    public boolean isPluginFunction(String name){
+    public boolean isPluginFunction(String name) {
 
         // Look for matching function name
-        for(PluginLibrary library: plugins) {
+        for (PluginLibrary library : plugins) {
             if (library.isFunction(name)) {
                 return true;
             }
@@ -127,9 +126,9 @@ public abstract class PluginManager
     public Constant findConstant(String name) {
 
         // Search all plugins for constant
-        for (int i = 0; i < plugins.size(); i++){
+        for (int i = 0; i < plugins.size(); i++) {
             Constant value = plugins.get(i).findConstant(name);
-            if (value != null){
+            if (value != null) {
                 return value;
             }
         }
@@ -144,11 +143,7 @@ public abstract class PluginManager
      * @param count
      * @param max
      */
-    public void findFunctions(
-            String name,
-            ExtendedFunctionSpecification[] functions,
-            Mutable<Integer> count,
-            int max){
+    public void findFunctions(String name, ExtendedFunctionSpecification[] functions, Mutable<Integer> count, int max) {
 
         // Pass call through to all loaded plugin.
         for (int i = 0; i < plugins.size(); i++) {
@@ -156,10 +151,11 @@ public abstract class PluginManager
         }
     }
 
-    public  String getFunctionName(int pluginIndex, int functionIndex){
+    public String getFunctionName(int pluginIndex, int functionIndex) {
         if (pluginIndex >= 0 && pluginIndex < plugins.size()) {
-            return plugins.get(pluginIndex).getDescription() + " " + plugins.get(pluginIndex).getFunctionName(functionIndex);
-        }else {
+            return plugins.get(pluginIndex).getDescription() + " "
+                    + plugins.get(pluginIndex).getFunctionName(functionIndex);
+        } else {
             return "???";
         }
     }
@@ -169,12 +165,11 @@ public abstract class PluginManager
      * Called immediately before a compile, but AFTER the VM versions of the
      * plugin structures have been created.
      */
-    public void createVMFunctionSpecs(){
-        for (PluginLibrary library: plugins) {
+    public void createVMFunctionSpecs() {
+        for (PluginLibrary library : plugins) {
             library.createVMFunctionSpecs();
         }
     }
-
 
     // Plugin events
 
@@ -182,66 +177,64 @@ public abstract class PluginManager
      *
      * @return Returns true if all plugins started successfully. Otherwise program should not proceed.
      */
-    public boolean programStart()
-    {
+    public boolean programStart() {
         for (int i = 0; i < plugins.size(); i++) {
-        // Attempt to start plugin
-        if (!plugins.get(i).getPlugin().start()) {
-            // Plugin failed!
+            // Attempt to start plugin
+            if (!plugins.get(i).getPlugin().start()) {
+                // Plugin failed!
 
-            // Get error
-            error = "Error initialising plugin " + plugins.get(i).getDescription() + ": " + plugins.get(i).getError();
+                // Get error
+                error = "Error initialising plugin " + plugins.get(i).getDescription() + ": "
+                        + plugins.get(i).getError();
 
-            // Stop all plugins that have just been started
-            for (int j = i - 1; j >= 0; j--) {
-                plugins.get(j).getPlugin().end();
+                // Stop all plugins that have just been started
+                for (int j = i - 1; j >= 0; j--) {
+                    plugins.get(j).getPlugin().end();
+                }
+
+                // Abort program
+                return false;
             }
-
-            // Abort program
-            return false;
         }
-    }
 
         // All plugins started successfully
         error = "";
         return true;
     }
-    public void onProgramEnd(){
-        for (PluginLibrary library: plugins) {
-            library.clearObjectStores();           // Also clear object stores.
+
+    public void onProgramEnd() {
+        for (PluginLibrary library : plugins) {
+            library.clearObjectStores(); // Also clear object stores.
             library.getPlugin().end();
         }
     }
+
     public void onProgramPause() {
-        for (PluginLibrary library: plugins) {
+        for (PluginLibrary library : plugins) {
             library.getPlugin().pause();
         }
     }
 
     public void onProgramResume() {
-        for (PluginLibrary library: plugins) {
+        for (PluginLibrary library : plugins) {
             library.getPlugin().resume();
         }
     }
+
     public void onProgramDelayedResume() {
-        for (PluginLibrary library: plugins) {
+        for (PluginLibrary library : plugins) {
             library.getPlugin().delayedResume();
         }
     }
 
     public void onProcessMessages() {
-        for (PluginLibrary library: plugins) {
+        for (PluginLibrary library : plugins) {
             library.getPlugin().processMessages();
         }
     }
 
     // region Interface sharing
-    public void registerInterface(
-            Object intf,
-             String name,
-            int major,
-            int minor,
-            PluginLibrary owner) {
+    public void registerInterface(Object intf, String name, int major, int minor, PluginLibrary owner) {
 
         // Construct unique string key
         String key = getSharedInterfaceKey(name, major, minor);
@@ -250,16 +243,12 @@ public abstract class PluginManager
         sharedInterfaces.put(key, new PluginSharedInterface(intf, owner));
     }
 
-    public Object fetchInterface(
-         String name,
-        int major,
-        int minor,
-        PluginLibrary requester) {
+    public Object fetchInterface(String name, int major, int minor, PluginLibrary requester) {
 
-    // Construct unique string key
-    String key = getSharedInterfaceKey(name, major, minor);
+        // Construct unique string key
+        String key = getSharedInterfaceKey(name, major, minor);
 
-    // Fetch object
+        // Fetch object
         if (!sharedInterfaces.containsKey(key)) {
             return null;
         }
@@ -267,19 +256,15 @@ public abstract class PluginManager
         PluginSharedInterface obj = sharedInterfaces.get(key);
 
         // Add a dependency between the requester and the owner.
-    if (requester != null && obj.getOwner() != null) {
-        obj.getOwner().addReferencingPlugin(requester);
+        if (requester != null && obj.getOwner() != null) {
+            obj.getOwner().addReferencingPlugin(requester);
+        }
+
+        // Return the interface
+        return obj.getInterface();
     }
 
-    // Return the interface
-    return obj.getInterface();
-}
-
-    public int fetchStructure(
-             String name,
-            int major,
-            int minor,
-            PluginLibrary requester) {
+    public int fetchStructure(String name, int major, int minor, PluginLibrary requester) {
 
         // Find handle
         int handle = getStructureManager().findStructure(name);
@@ -287,8 +272,7 @@ public abstract class PluginManager
 
             // Find structure and check version
             PluginStructure structure = getStructureManager().getStructure(handle);
-            if (structure.getVersionMajor() == major &&
-                    structure.getVersionMinor() == minor) {
+            if (structure.getVersionMajor() == major && structure.getVersionMinor() == minor) {
 
                 // Add dependency between structure owner and requester
                 if (structure.getOwner() != null && structure.getOwner() != requester) {
@@ -304,8 +288,10 @@ public abstract class PluginManager
 
     // endregion
 
-     public void streamOut(DataOutputStream stream) throws IOException {}
-     public boolean streamIn(DataInputStream stream) throws IOException {
-         return true;
-     }
-};
+    public void streamOut(DataOutputStream stream) throws IOException {}
+
+    public boolean streamIn(DataInputStream stream) throws IOException {
+        return true;
+    }
+}
+;

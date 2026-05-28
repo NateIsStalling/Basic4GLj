@@ -1,10 +1,9 @@
 package com.basic4gl.library.desktopgl.input;
 
-import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-
-import java.util.*;
-
 import static org.lwjgl.system.windows.User32.VK_PAUSE;
+
+import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
+import java.util.*;
 
 public class OpenGLKeyboard {
 
@@ -14,17 +13,17 @@ public class OpenGLKeyboard {
     private int unsubscribeHandleGenerator;
     private boolean isPausePressed;
 
-    private void notifySubscribers(boolean isScanKey){
+    private void notifySubscribers(boolean isScanKey) {
         // Iterate a COPY of the subscriber set, in case the subscriber unsubscribes
         // during processing of the notification. (E.g. Input$ BASIC command handler
         // completes when ENTER key is pressed).
         List<KeyPressedCallback> callbackCopy = new ArrayList<>(keyPressedCallbacks);
-        for (KeyPressedCallback c : callbackCopy)
-        {
+        for (KeyPressedCallback c : callbackCopy) {
             c.callback.onKeyPressed(isScanKey);
         }
     }
-    private void processScanKey(int key, byte keybit){
+
+    private void processScanKey(int key, byte keybit) {
         scanKeyMasks[key] |= keybit;
 
         // Add to buffer
@@ -47,8 +46,7 @@ public class OpenGLKeyboard {
         isPausePressed = false;
 
         clearKeyState();
-        windowManager.subscribeWindowCreated(() ->
-        {
+        windowManager.subscribeWindowCreated(() -> {
             clearKeyBuffers();
             clearKeyState();
         });
@@ -56,7 +54,7 @@ public class OpenGLKeyboard {
 
     // Process keypresses, update bufferes and notify subscribers.
     // Descendent classes should call these in response to keyboard events.
-    protected void scanKeyPress(int key, char c){
+    protected void scanKeyPress(int key, char c) {
         // Special case: Detect PAUSE
         if (key == VK_PAUSE) {
             isPausePressed = true;
@@ -84,7 +82,8 @@ public class OpenGLKeyboard {
             charMasks[c] &= ~1;
         }
     }
-    protected void keyPress(char c){
+
+    protected void keyPress(char c) {
         if (charBuffer.size() < 16) {
             charBuffer.add(c);
         }
@@ -104,13 +103,12 @@ public class OpenGLKeyboard {
         return key != null ? key : 0;
     }
 
-    public void clearKeyBuffers(){
+    public void clearKeyBuffers() {
         charBuffer.clear();
         scanKeyBuffer.clear();
     }
 
-    public void clearKeyState()
-    {
+    public void clearKeyState() {
         for (int i = 0; i < 256; i++) {
             scanKeyMasks[i] = 0;
         }
@@ -126,25 +124,28 @@ public class OpenGLKeyboard {
         }
         return false;
     }
-    public boolean isScanKeyDown(int scanKey){
+
+    public boolean isScanKeyDown(int scanKey) {
         if (scanKey >= 0 && scanKey <= 255) {
             return scanKeyMasks[scanKey] != 0;
         }
         return false;
     }
-    public boolean isPausePressed(){
+
+    public boolean isPausePressed() {
         boolean result = isPausePressed;
-        isPausePressed = false;				// Reset flag on read
+        isPausePressed = false; // Reset flag on read
         return result;
     }
 
     // Key notification
-    public int subscribeKeyPressed(KeyPressedListener callback){
+    public int subscribeKeyPressed(KeyPressedListener callback) {
         int unsubscribeHandle = ++unsubscribeHandleGenerator;
         keyPressedCallbacks.add(new KeyPressedCallback(unsubscribeHandle, callback));
         return unsubscribeHandle;
     }
-    public void unsubscribeKeyPressed(int unsubscribeHandle){
+
+    public void unsubscribeKeyPressed(int unsubscribeHandle) {
         Iterator<KeyPressedCallback> it = keyPressedCallbacks.iterator();
         while (it.hasNext()) {
             KeyPressedCallback entry = it.next();
@@ -161,22 +162,19 @@ public class OpenGLKeyboard {
      * @param keybit
      * @param isDown
      */
-    public void fakeKeyState(int scanKey, char c, byte keybit, boolean isDown){
-        if (scanKey != 0)
-        {
+    public void fakeKeyState(int scanKey, char c, byte keybit, boolean isDown) {
+        if (scanKey != 0) {
             // Set/clear corresponding bit
             if (isDown) {
                 if ((scanKeyMasks[scanKey] & keybit) == 0) {
                     processScanKey(scanKey, keybit);
                 }
-            }
-            else {
+            } else {
                 scanKeyMasks[scanKey] &= ~keybit;
             }
         }
 
-        if (c != 0)
-        {
+        if (c != 0) {
             if (isDown) {
                 boolean wasPressed = (charMasks[c] & keybit) != 0;
                 charMasks[c] |= keybit;
@@ -186,8 +184,7 @@ public class OpenGLKeyboard {
                 if (!wasPressed) {
                     keyPress(c);
                 }
-            }
-            else {
+            } else {
                 charMasks[c] &= ~keybit;
             }
         }

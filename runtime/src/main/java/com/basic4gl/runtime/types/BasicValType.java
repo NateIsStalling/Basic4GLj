@@ -31,6 +31,7 @@ public class BasicValType {
      * Function pointer. (Internally stored as an integer)
      */
     public static final int VTP_FUNC_PTR = -6;
+
     public static final int VTP_INT = -5;
     public static final int VTP_REAL = -4;
     public static final int VTP_STRING = -3;

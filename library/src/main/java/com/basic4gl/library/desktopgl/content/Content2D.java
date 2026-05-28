@@ -11,8 +11,7 @@ public class Content2D {
     int bitFlag;
     Content2DDrawHandler drawCallback;
 
-    Content2D(float z, int bitFlag, Content2DDrawHandler drawCallback)
-    {
+    Content2D(float z, int bitFlag, Content2DDrawHandler drawCallback) {
         this.z = z;
         this.bitFlag = bitFlag;
         this.drawCallback = drawCallback;

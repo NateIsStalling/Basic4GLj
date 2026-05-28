@@ -1,10 +1,12 @@
 package com.basic4gl.library.debug.commands;
 
+import static com.basic4gl.runtime.types.OpCode.*;
+
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.commands.DisassembleCommand;
-import com.basic4gl.debug.protocol.types.DisassembledInstruction;
 import com.basic4gl.debug.protocol.types.DisassembleArguments;
+import com.basic4gl.debug.protocol.types.DisassembledInstruction;
 import com.basic4gl.debug.protocol.types.Source;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.Instruction;
@@ -14,11 +16,8 @@ import com.basic4gl.runtime.types.OpCode;
 import com.basic4gl.runtime.util.ILineNumberMapping;
 import com.basic4gl.runtime.util.Mutable;
 import com.google.gson.Gson;
-
-import javax.websocket.Session;
 import java.util.stream.IntStream;
-
-import static com.basic4gl.runtime.types.OpCode.*;
+import javax.websocket.Session;
 
 public class DisassembleHandler {
     private final Debugger debugger;
@@ -64,7 +63,8 @@ public class DisassembleHandler {
     private int getStartInstruction(DisassembleArguments arguments) {
         int base = parseMemoryReference(arguments != null ? arguments.memoryReference : null);
         int byteOffset = arguments != null && arguments.offset != null ? arguments.offset : 0;
-        int instructionOffset = arguments != null && arguments.instructionOffset != null ? arguments.instructionOffset : 0;
+        int instructionOffset =
+                arguments != null && arguments.instructionOffset != null ? arguments.instructionOffset : 0;
         return base + byteOffset + instructionOffset;
     }
 
@@ -142,8 +142,7 @@ public class DisassembleHandler {
                 int index = i.value.getIntVal();
                 if (vm.getVariables().isIndexValid(index))
                     return vm.getVariables().getVariables().get(index).name;
-                else
-                    return "???";
+                else return "???";
             }
             case OP_CALL_FUNC: {
                 return this.compiler.getFunctionNameAt(i.value.getIntVal()) + "()";
@@ -160,8 +159,7 @@ public class DisassembleHandler {
                 return compiler.getUserFunctionName(i.value.getIntVal()) + "()";
             }
             case OP_LOAD_CONST: {
-                if (i.basicVarType == BasicValType.VTP_FUNC_PTR)
-                {
+                if (i.basicVarType == BasicValType.VTP_FUNC_PTR) {
                     if (i.value.getIntVal() == 0) return "[NULL]";
                     return compiler.getUserFunctionName(i.value.getIntVal() - 1) + "()";
                 }

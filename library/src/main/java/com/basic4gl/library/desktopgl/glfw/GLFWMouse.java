@@ -1,10 +1,10 @@
 package com.basic4gl.library.desktopgl.glfw;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 import com.basic4gl.library.desktopgl.input.OpenGLMouse;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWScrollCallbackI;
-
-import static org.lwjgl.glfw.GLFW.*;
 
 public class GLFWMouse implements OpenGLMouse {
 
@@ -17,8 +17,7 @@ public class GLFWMouse implements OpenGLMouse {
     private int wheelDelta;
     private boolean isCursorVisible;
 
-
-// Functions
+    // Functions
 
     class MouseCursorPosCallback implements GLFWCursorPosCallbackI {
         @Override
@@ -34,12 +33,10 @@ public class GLFWMouse implements OpenGLMouse {
         }
     }
 
-// GlfwMouse methods
+    // GlfwMouse methods
 
-    private boolean setCursorInputMode(int mode)
-    {
-        if (window != 0 && cursorInputMode != mode)
-        {
+    private boolean setCursorInputMode(int mode) {
+        if (window != 0 && cursorInputMode != mode) {
             glfwSetInputMode(window, GLFW_CURSOR, mode);
             cursorInputMode = mode;
             return true;
@@ -48,18 +45,15 @@ public class GLFWMouse implements OpenGLMouse {
         return false;
     }
 
-    private void positionMode()
-    {
+    private void positionMode() {
         // For backwards compatibility with previous Basic4GL versions,
         // once cursor has been hidden (by executing MouseXD() or MouseYD())
         // it remains hidden, even if using regular positions again.
         setCursorInputMode(isCursorVisible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN);
     }
 
-    private void offsetMode()
-    {
-        if (setCursorInputMode(GLFW_CURSOR_DISABLED))
-        {
+    private void offsetMode() {
+        if (setCursorInputMode(GLFW_CURSOR_DISABLED)) {
             // Set previous position to current position, so that initial XD and YD return 0.
             prevX = x;
             prevY = y;
@@ -67,8 +61,7 @@ public class GLFWMouse implements OpenGLMouse {
         }
     }
 
-    public GLFWMouse(GLFWWindowManager windowManager)
-    {
+    public GLFWMouse(GLFWWindowManager windowManager) {
         window = 0;
         cursorInputMode = GLFW_CURSOR_NORMAL;
         x = 0.0;
@@ -80,8 +73,7 @@ public class GLFWMouse implements OpenGLMouse {
         isCursorVisible = true;
 
         // Get window handle when window has been created
-        windowManager.subscribeWindowCreated(() ->
-        {
+        windowManager.subscribeWindowCreated(() -> {
             // Store window
             window = windowManager.getGLFWWindow();
 
@@ -96,8 +88,7 @@ public class GLFWMouse implements OpenGLMouse {
             isCursorVisible = true;
 
             // Hide cursor if in full screen mode
-            if (windowManager.getActiveParams().isFullscreen)
-            {
+            if (windowManager.getActiveParams().isFullscreen) {
                 setCursorInputMode(GLFW_CURSOR_HIDDEN);
                 isCursorVisible = false;
             }
@@ -106,18 +97,18 @@ public class GLFWMouse implements OpenGLMouse {
             glfwSetScrollCallback(window, new MouseScrollCallback());
             glfwSetCursorPosCallback(window, new MouseCursorPosCallback());
         });
-        windowManager.subscribeBeforeDestroyWindow(() ->
-        {
+        windowManager.subscribeBeforeDestroyWindow(() -> {
             glfwSetScrollCallback(window, null);
             glfwSetCursorPosCallback(window, null);
-            setCursorInputMode(GLFW_CURSOR_NORMAL);			// Seems to be required to prevent cursor locking to window's region in some cases
+            setCursorInputMode(
+                    GLFW_CURSOR_NORMAL); // Seems to be required to prevent cursor locking to window's region in some
+            // cases
             window = 0;
         });
     }
 
     @Override
-    public float getX()
-    {
+    public float getX() {
         if (window == 0) {
             return 0.0f;
         }
@@ -126,8 +117,7 @@ public class GLFWMouse implements OpenGLMouse {
     }
 
     @Override
-    public float getY()
-    {
+    public float getY() {
         if (window == 0) {
             return 0.0f;
         }
@@ -136,8 +126,7 @@ public class GLFWMouse implements OpenGLMouse {
     }
 
     @Override
-    public float getXD()
-    {
+    public float getXD() {
         if (window == 0) {
             return 0.0f;
         }
@@ -152,8 +141,7 @@ public class GLFWMouse implements OpenGLMouse {
     }
 
     @Override
-    public float getYD()
-    {
+    public float getYD() {
         if (window == 0) {
             return 0.0f;
         }
@@ -168,18 +156,17 @@ public class GLFWMouse implements OpenGLMouse {
     }
 
     @Override
-    public boolean getButton(int index)
-    {
+    public boolean getButton(int index) {
         if (window == 0) {
             return false;
         }
-        return index >= GLFW_MOUSE_BUTTON_1 && index <= GLFW_MOUSE_BUTTON_8
+        return index >= GLFW_MOUSE_BUTTON_1
+                && index <= GLFW_MOUSE_BUTTON_8
                 && glfwGetMouseButton(window, index) == GLFW_PRESS;
     }
 
     @Override
-    public int getWheelDelta()
-    {
+    public int getWheelDelta() {
         if (window == 0) {
             return 0;
         }
@@ -188,16 +175,14 @@ public class GLFWMouse implements OpenGLMouse {
         return result;
     }
 
-    public void cursorPosCallback(double xpos, double ypos)
-    {
+    public void cursorPosCallback(double xpos, double ypos) {
         x = xpos;
         y = ypos;
     }
 
-    public void scrollCallback(double xoffset, double yoffset)
-    {
+    public void scrollCallback(double xoffset, double yoffset) {
         double scrollY = prevScrollY + yoffset;
-        wheelDelta += Math.floor(scrollY) - Math.floor(prevScrollY);
+        wheelDelta += (int) (Math.floor(scrollY) - Math.floor(prevScrollY));
         prevScrollY = scrollY;
     }
 }

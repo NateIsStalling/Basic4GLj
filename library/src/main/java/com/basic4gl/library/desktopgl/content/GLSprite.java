@@ -6,7 +6,6 @@ import static org.lwjgl.opengl.GL11.*;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Vector;
-
 import org.lwjgl.BufferUtils;
 
 /**

@@ -1,17 +1,17 @@
 package com.basic4gl.library.desktopgl.glfw;
 
+import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static org.lwjgl.glfw.GLFW.*;
+
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowParams;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
-import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.opengl.GL;
-
-import static com.basic4gl.runtime.util.Assert.assertTrue;
-import static org.lwjgl.glfw.GLFW.*;
 
 public class GLFWWindowManager extends OpenGLWindowManager {
     private long window;
@@ -19,7 +19,7 @@ public class GLFWWindowManager extends OpenGLWindowManager {
     private GLFWWindowSizeCallback windowSizeCallback;
     private boolean pendingSizeRefresh;
 
-     private void refreshFramebufferSize() {
+    private void refreshFramebufferSize() {
         if (window == 0) {
             return;
         }
@@ -65,11 +65,12 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         glfwSetWindowPos(window, x, y);
     }
 
-    public long getGLFWWindow() { return window; }
+    public long getGLFWWindow() {
+        return window;
+    }
 
     @Override
-    protected void internalDestroyWindow()
-    {
+    protected void internalDestroyWindow() {
         assertTrue(window != 0);
         glfwSetFramebufferSizeCallback(window, null);
         glfwSetWindowSizeCallback(window, null);
@@ -86,8 +87,7 @@ public class GLFWWindowManager extends OpenGLWindowManager {
     }
 
     @Override
-    protected void internalCreateWindow(OpenGLWindowParams params)
-    {
+    protected void internalCreateWindow(OpenGLWindowParams params) {
         assertTrue(window == 0);
 
         // Some params must specified as "hints"
@@ -97,20 +97,15 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         glfwWindowHint(GLFW_DECORATED, params.isBordered ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_STENCIL_BITS, params.isStencilBufferRequired ? 8 : 0);
 
-        if (params.isFullscreen && params.bpp == 16)
-        {
+        if (params.isFullscreen && params.bpp == 16) {
             glfwWindowHint(GLFW_RED_BITS, 5);
             glfwWindowHint(GLFW_GREEN_BITS, 6);
             glfwWindowHint(GLFW_BLUE_BITS, 5);
-        }
-        else if (params.isFullscreen && params.bpp == 32)
-        {
+        } else if (params.isFullscreen && params.bpp == 32) {
             glfwWindowHint(GLFW_RED_BITS, 8);
             glfwWindowHint(GLFW_GREEN_BITS, 8);
             glfwWindowHint(GLFW_BLUE_BITS, 8);
-        }
-        else
-        {
+        } else {
             glfwWindowHint(GLFW_RED_BITS, GLFW_DONT_CARE);
             glfwWindowHint(GLFW_GREEN_BITS, GLFW_DONT_CARE);
             glfwWindowHint(GLFW_BLUE_BITS, GLFW_DONT_CARE);
@@ -141,12 +136,7 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         }
 
         // Create the window
-        window = glfwCreateWindow(
-                width,
-                height,
-                params.title,
-                params.isFullscreen ? glfwGetPrimaryMonitor() : 0,
-                0);
+        window = glfwCreateWindow(width, height, params.title, params.isFullscreen ? glfwGetPrimaryMonitor() : 0, 0);
 
         if (window == 0) {
             System.out.println("Failed to create GLFW window");
@@ -193,9 +183,9 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         pendingSizeRefresh = true;
 
         // Load OpenGL extensions
-//        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
-//            SetError("gladLoadGLLoader() failed");
-//        }
+        //        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+        //            SetError("gladLoadGLLoader() failed");
+        //        }
     }
 
     @Override
@@ -224,26 +214,23 @@ public class GLFWWindowManager extends OpenGLWindowManager {
     protected void internalDeactivateWindow() {
         assertTrue(window != 0);
 
-        if (activeParams.isFullscreen)
-        {
+        if (activeParams.isFullscreen) {
             // Switch away from fullscreen window by minimising it
             glfwIconifyWindow(window);
-            //HWND handle = glfwGetWin32Window(window);
-            //ShowWindow(handle, SW_HIDE); 		    			// Hide the window
-            //ChangeDisplaySettings(nullptr, 0);
+            // HWND handle = glfwGetWin32Window(window);
+            // ShowWindow(handle, SW_HIDE); 		    			// Hide the window
+            // ChangeDisplaySettings(nullptr, 0);
         }
     }
 
     @Override
-    protected boolean internalIsCloseRequested()
-    {
+    protected boolean internalIsCloseRequested() {
         assertTrue(window != 0);
         return glfwWindowShouldClose(window);
     }
 
     @Override
-    protected void internalSwapBuffers()
-    {
+    protected void internalSwapBuffers() {
         assertTrue(window != 0);
         if (pendingSizeRefresh) {
             refreshWindowSize();
@@ -254,15 +241,13 @@ public class GLFWWindowManager extends OpenGLWindowManager {
     }
 
     @Override
-    public int getScreenWidth()
-    {
+    public int getScreenWidth() {
         GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         return mode.width();
     }
 
     @Override
-    public int getScreenHeight()
-    {
+    public int getScreenHeight() {
         GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         return mode.height();
     }
@@ -273,24 +258,21 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         // java.awt.Toolkit.getDefaultToolkit().beep();
     }
 
-    public GLFWWindowManager()
-    {
+    public GLFWWindowManager() {
         super();
         window = 0;
         framebufferSizeCallback = null;
         windowSizeCallback = null;
         pendingSizeRefresh = false;
-        if (!glfwInit())
-        {
+        if (!glfwInit()) {
             setError("glfwInit() failed");
             return;
         }
 
-//        atexit(glfwTerminate);
+        //        atexit(glfwTerminate);
     }
 
-    public void dispose()
-    {
+    public void dispose() {
         if (window != 0) {
             internalDestroyWindow();
         }

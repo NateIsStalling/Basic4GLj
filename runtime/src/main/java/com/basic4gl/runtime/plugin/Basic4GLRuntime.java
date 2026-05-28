@@ -1,7 +1,6 @@
 package com.basic4gl.runtime.plugin;
 
 import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
-
 import java.nio.ByteBuffer;
 
 /**
@@ -27,9 +26,10 @@ public interface Basic4GLRuntime {
      * int, float (called "real" in Basic4gl documentation) and string (char[])
      */
     int getIntParam(int index);
-    float getFloatParam(int index);
-    String getStringParam(int index);
 
+    float getFloatParam(int index);
+
+    String getStringParam(int index);
 
     /**
      * Set function return value.
@@ -39,9 +39,10 @@ public interface Basic4GLRuntime {
      * Otherwise behaviour is undefined and Basic4GL could crash.
      */
     void setIntResult(int result);
-    void setFloatResult(float result);
-    void setStringResult(String result);
 
+    void setFloatResult(float result);
+
+    void setStringResult(String result);
 
     /**
      * Get array parameter, and convert to C/C++ style array
@@ -52,13 +53,15 @@ public interface Basic4GLRuntime {
      */
     void getIntArrayParam(
             int index,
-            int[] array,						// Data is returned here. Must be as big as the array params.
-            int dimensions,                 // 10 is the maximum # of dimesions supported by Basic4GL
-            int dimension0Size,int... args);
+            int[] array, // Data is returned here. Must be as big as the array params.
+            int dimensions, // 10 is the maximum # of dimesions supported by Basic4GL
+            int dimension0Size,
+            int... args);
+
     void getFloatArrayParam(
             int index,
-            float[] array,					// Data is returned here. Must be as big as the array params.
-            int dimensions,                 // 10 is the maximum # of dimesions supported by Basic4GL
+            float[] array, // Data is returned here. Must be as big as the array params.
+            int dimensions, // 10 is the maximum # of dimesions supported by Basic4GL
             int dimension0Size,
             int... args);
 
@@ -72,23 +75,16 @@ public interface Basic4GLRuntime {
      * So if an array is DIMmed as: dim a(10)
      * this method will return 11 as the number of elements.
      */
-    int getArrayParamDimension(
-            int index,
-            int dimension);
+    int getArrayParamDimension(int index, int dimension);
 
     /**
      * Set array parameter result
      */
-    void setIntArrayResult(
-            int[] array,
-            int dimensions,
-            int dimension0Size,int... args);
-    void setFloatArrayResult(
-            float[] array,
-            int dimensions,
-            int dimension0Size,int... args);
+    void setIntArrayResult(int[] array, int dimensions, int dimension0Size, int... args);
 
-    //---------------------------------------------------------------------------------------------
+    void setFloatArrayResult(float[] array, int dimensions, int dimension0Size, int... args);
+
+    // ---------------------------------------------------------------------------------------------
     // Extended data access methods
     //
     // These methods handle converting data between C variables/structures and Basic4GL parameters
@@ -113,16 +109,15 @@ public interface Basic4GLRuntime {
     //		* SetReturnValue
 
     // Data type definition for data conversion
-    void setType(int baseType);					// Can either be a DLL_Basic4GL_Ext_TypeCode, or a structure type handle (returned from RegisterStructure or FetchStructure)
-    void setStringType(int size);				// Number of characters (including terminating 0)
+    void setType(int baseType); // Can either be a DLL_Basic4GL_Ext_TypeCode, or a structure type handle (returned from
+    // RegisterStructure or FetchStructure)
+
+    void setStringType(int size); // Number of characters (including terminating 0)
 
     /**
      * Convert a type into an array
      */
-    void modTypeArray(
-            int dimensions,
-            int dimension0Size,
-            int ...otherDimensions);
+    void modTypeArray(int dimensions, int dimension0Size, int... otherDimensions);
 
     /**
      * Convert a type into a reference.
@@ -156,7 +151,7 @@ public interface Basic4GLRuntime {
      */
     void setReturnValue(ByteBuffer src);
 
-    //---------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------
     // Direct data access.
     // These methods allow you to access Basic4GL variable memory directly.
     // To use these methods you must have a good understanding of the underlying
@@ -197,18 +192,21 @@ public interface Basic4GLRuntime {
      * Write real value to address
      */
     void directSetString(int memAddr, String str);
-    //---------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------
 
     /**
-     * Begin a long running function.
+     * Begin a long-running function.
+     * <br>
      * This should be called from a regular BASIC function which should then immediately return.
+     * <br>
      * *** THE FUNCTION MUST ALSO BE REGISTERED WITH A TIMESHARING BREAK (using ModTimeShare()). ***
      * Basic4GL will not execute any more VM op-codes until the long running function handler
      * calls EndLongRunningFn().
+     * <br>
      * The main application event loop will continue to run however, so that operating system events
      * can be processed. Basic4GL can poll the long running function handler if required
      * (see the IDLL_Basic4GL_LongRunningFunction interface for more info).
-     ///
+     * <br>
      * An example of a long running function would be stopping and waiting for a user to key in a
      * text string.
      * * The regular BASIC function would create the handler object, hook it up to receive
@@ -231,7 +229,7 @@ public interface Basic4GLRuntime {
     /**
      * Indicate an error from a function
      */
-    void  functionError(String text);
+    void functionError(String text);
 
     /**
      * Indicates to the virtual machine that a timesharing break is required.

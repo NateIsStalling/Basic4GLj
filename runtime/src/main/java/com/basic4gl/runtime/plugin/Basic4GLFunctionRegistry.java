@@ -13,9 +13,7 @@ public interface Basic4GLFunctionRegistry {
      * @param name
      * @param value
      */
-    void registerStringConstant(
-            String name,
-            String value);
+    void registerStringConstant(String name, String value);
 
     /**
      * Register a constant
@@ -23,9 +21,7 @@ public interface Basic4GLFunctionRegistry {
      * @param name
      * @param value
      */
-    void registerIntConstant(
-            String name,
-            int value);
+    void registerIntConstant(String name, int value);
 
     /**
      * Register a constant
@@ -33,9 +29,7 @@ public interface Basic4GLFunctionRegistry {
      * @param name
      * @param value
      */
-    void registerFloatConstant(
-            String name,
-            float value);
+    void registerFloatConstant(String name, float value);
 
     // endregion
     //	region Standard functions
@@ -46,9 +40,7 @@ public interface Basic4GLFunctionRegistry {
      * @param name
      * @param function
      */
-    void registerVoidFunction(
-            String name,
-            Basic4GLFunction function);
+    void registerVoidFunction(String name, Basic4GLFunction function);
 
     /**
      * Register function that returns single value
@@ -57,10 +49,7 @@ public interface Basic4GLFunctionRegistry {
      * @param function
      * @param typeCode
      */
-    void registerFunction(
-            String name,
-            Basic4GLFunction function,
-            Basic4GLTypeCode typeCode);
+    void registerFunction(String name, Basic4GLFunction function, Basic4GLTypeCode typeCode);
 
     /**
      * Register function that returns an array.
@@ -72,11 +61,7 @@ public interface Basic4GLFunctionRegistry {
      * @param typeCode
      * @param dimensions
      */
-    void registerArrayFunction(
-            String name,
-            Basic4GLFunction function,
-            Basic4GLTypeCode typeCode,
-            int dimensions);
+    void registerArrayFunction(String name, Basic4GLFunction function, Basic4GLTypeCode typeCode, int dimensions);
 
     /**
      * Register function that returns a structure.
@@ -86,10 +71,7 @@ public interface Basic4GLFunctionRegistry {
      * @param function
      * @param structureTypeHandle
      */
-    void registerStructureFunction(
-            String name,
-            Basic4GLFunction function,
-            int structureTypeHandle);
+    void registerStructureFunction(String name, Basic4GLFunction function, int structureTypeHandle);
 
     /**
      * Modifies the last registered function to return an array.
@@ -99,7 +81,6 @@ public interface Basic4GLFunctionRegistry {
      * @param dimensions
      */
     void modReturnArray(byte dimensions);
-
 
     /**
      * Modifies the last registered function to return a pointer.
@@ -165,9 +146,7 @@ public interface Basic4GLFunctionRegistry {
      * @param typeCode
      * @param dimensions
      */
-    void addArrayParam(
-            Basic4GLTypeCode typeCode,
-            int dimensions);
+    void addArrayParam(Basic4GLTypeCode typeCode, int dimensions);
 
     /**
      * Add a structure parameter to the last registered function.
@@ -222,10 +201,7 @@ public interface Basic4GLFunctionRegistry {
      * @param versionMinor
      * @return
      */
-    int registerStructure(
-            String name,
-            int versionMajor,
-            int versionMinor);
+    int registerStructure(String name, int versionMajor, int versionMinor);
 
     // endregion
     // region Structure fields
@@ -260,7 +236,7 @@ public interface Basic4GLFunctionRegistry {
      * @param dimensions
      * @param dimension1Size
      */
-    void modStrucFieldArray(byte dimensions, int dimension1Size, int ...otherSizes);
+    void modStrucFieldArray(byte dimensions, int dimension1Size, int... otherSizes);
 
     /**
      * Convert the last defined structure field into a pointer
@@ -281,10 +257,7 @@ public interface Basic4GLFunctionRegistry {
      * @param versionMinor
      * @return Returns handle, or 0 if not registered.
      */
-    int fetchStructure(
-            String name,
-            int versionMajor,
-            int versionMinor);
+    int fetchStructure(String name, int versionMajor, int versionMinor);
 
     /**
      * Register a shared interface to Basic4GL, which can be fetched and used
@@ -303,11 +276,7 @@ public interface Basic4GLFunctionRegistry {
      * @param major  used to identify the object
      * @param minor  used to identify the object
      */
-    void registerInterface(
-            Object object,
-            String name,
-            int major,
-            int minor);
+    void registerInterface(Object object, String name, int major, int minor);
 
     /**
      * Fetch an interface from another library.
@@ -317,10 +286,7 @@ public interface Basic4GLFunctionRegistry {
      * @param minor
      * @return Returns the interface if a matching one is found. Returns null otherwise.
      */
-    Object fetchInterface(
-            String name,
-            int major,
-            int minor);
+    Object fetchInterface(String name, int major, int minor);
 
     /**
      * Create an object store.

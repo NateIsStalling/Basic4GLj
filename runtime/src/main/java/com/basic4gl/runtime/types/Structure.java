@@ -1,12 +1,12 @@
 package com.basic4gl.runtime.types;
 
+import static com.basic4gl.runtime.util.Assert.assertTrue;
+
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
-import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 public class Structure implements Streamable {
     /**

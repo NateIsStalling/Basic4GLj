@@ -17,10 +17,12 @@ public class PluginSharedInterface {
         this.intf = intf;
         this.owner = owner;
     }
+
     public PluginSharedInterface(PluginSharedInterface s) {
         this.intf = s.intf;
         this.owner = s.owner;
     }
+
     public PluginSharedInterface() {
         this.intf = null;
         this.owner = null;

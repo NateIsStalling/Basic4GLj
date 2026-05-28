@@ -44,6 +44,3 @@ public class ExportDialogTest {
         assertTrue(literals.get(0).endsWith("asset.dat"));
     }
 }
-
-
-

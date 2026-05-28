@@ -44,25 +44,25 @@ public final class FileUtil {
         }
     }
 
-   public static String includeSlash(String path) {
-       if (path == null || path.isEmpty()) {
-           return path;
-       }
+    public static String includeSlash(String path) {
+        if (path == null || path.isEmpty()) {
+            return path;
+        }
 
-       char last = path.charAt(path.length() - 1);
-       if (last != '\\' && last != '/') {
-           path += File.separator;
-       }
-       return path;
-   }
+        char last = path.charAt(path.length() - 1);
+        if (last != '\\' && last != '/') {
+            path += File.separator;
+        }
+        return path;
+    }
 
-   public static String joinPaths(String... paths) {
-       StringBuilder result = new StringBuilder();
-       for (String path : paths) {
-           if (path != null && !path.isEmpty()) {
-               result.append(includeSlash(separatorsToSystem(path)));
-           }
-       }
-       return result.toString();
-   }
+    public static String joinPaths(String... paths) {
+        StringBuilder result = new StringBuilder();
+        for (String path : paths) {
+            if (path != null && !path.isEmpty()) {
+                result.append(includeSlash(separatorsToSystem(path)));
+            }
+        }
+        return result.toString();
+    }
 }

@@ -21,7 +21,6 @@ public class StandaloneSettings implements IStandaloneSettings {
     static final int SETTING_SUPPORT_MAC = 15; // Index of Mac support setting in config
     static final int SETTING_SUPPORT_LINUX = 16; // Index of Linux support setting in config
 
-
     static final int SUPPORT_WINDOWS_32_64 = 0;
     static final int SUPPORT_WINDOWS_32 = 1;
     static final int SUPPORT_WINDOWS_64 = 2;
@@ -51,10 +50,7 @@ public class StandaloneSettings implements IStandaloneSettings {
         settings.addSetting(new String[] {"Window Width"}, Configuration.PARAM_INT, "640");
         settings.addSetting(new String[] {"Window Height"}, Configuration.PARAM_INT, "480");
         settings.addSetting(new String[] {"Resizable Window"}, Configuration.PARAM_BOOL, "false");
-        settings.addSetting(
-                new String[] {"Screen Mode", "Windowed", "Fullscreen"},
-                Configuration.PARAM_CHOICE,
-                "0");
+        settings.addSetting(new String[] {"Screen Mode", "Windowed", "Fullscreen"}, Configuration.PARAM_CHOICE, "0");
         settings.addSetting(new String[] {"Use Desktop Resolution"}, Configuration.PARAM_BOOL, "false");
         settings.addSetting(
                 new String[] {"Colour Depth", "Default", "16-bit", "32-bit"},
@@ -64,9 +60,9 @@ public class StandaloneSettings implements IStandaloneSettings {
         settings.addSetting(new String[] {"Require Stencil Buffer"}, Configuration.PARAM_BOOL, "false");
         settings.addSetting(
                 new String[] {
-                        "Startup Window",
-                        "Create window when application starts",
-                        "Don't create window until UpdateWindow() is called"
+                    "Startup Window",
+                    "Create window when application starts",
+                    "Don't create window until UpdateWindow() is called"
                 },
                 Configuration.PARAM_CHOICE,
                 String.valueOf(STARTUP_WINDOW_CREATE_IMMEDIATELY));

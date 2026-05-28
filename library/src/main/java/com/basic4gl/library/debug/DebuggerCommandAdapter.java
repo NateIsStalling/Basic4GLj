@@ -304,9 +304,8 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
             try {
                 sendErrorCallback(requestId, commandName, e);
             } catch (Exception ex) {
-                System.err.println(
-                        "Failed to send ErrorCallback for request " + requestId + " (" + commandName + "): "
-                                + ex.getMessage());
+                System.err.println("Failed to send ErrorCallback for request " + requestId + " (" + commandName + "): "
+                        + ex.getMessage());
                 ex.printStackTrace();
             }
         }

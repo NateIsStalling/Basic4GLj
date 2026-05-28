@@ -14,6 +14,7 @@ public class Basic4GLExtendedTypeCode {
      * Empty padding in C structure
      */
     public static final int PLUGIN_BASIC4GL_EXT_PADDING = -256;
+
     public static final int PLUGIN_BASIC4GL_EXT_BYTE = -255;
     public static final int PLUGIN_BASIC4GL_EXT_WORD = -254;
     public static final int PLUGIN_BASIC4GL_EXT_INT = -253;

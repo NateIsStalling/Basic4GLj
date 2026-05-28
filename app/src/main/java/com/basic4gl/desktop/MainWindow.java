@@ -734,13 +734,12 @@ public class MainWindow
             compilerStatusLabel.setText(basicEditor.preprocessor.getError());
             return;
         }
-        ExportDialog dialog =
-                new ExportDialog(
-                        frame,
-                        basicEditor.compiler,
-                        basicEditor.preprocessor,
-                        fileManager.getFileEditors(),
-                        fileManager.getCurrentDirectory());
+        ExportDialog dialog = new ExportDialog(
+                frame,
+                basicEditor.compiler,
+                basicEditor.preprocessor,
+                fileManager.getFileEditors(),
+                fileManager.getCurrentDirectory());
         dialog.setLibraries(basicEditor.getLibraries(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();

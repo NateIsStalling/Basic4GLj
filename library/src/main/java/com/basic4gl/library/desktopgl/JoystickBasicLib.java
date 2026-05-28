@@ -3,16 +3,16 @@ package com.basic4gl.library.desktopgl;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.windows.User32.*;
 
-import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
+import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.FunctionSpecification;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.runtime.util.Function;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -58,8 +58,7 @@ public class JoystickBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
-    }
+    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
 
     @Override
     public void init(TomBasicCompiler comp, IServiceCollection services) {
@@ -323,12 +322,12 @@ public class JoystickBasicLib implements FunctionLibrary {
             // Axis movement translates to cursor keys
             // Fire button 1 translates to space bar
             // Fire button 2 translates to control key (Ctrl)
-            keyboard.fakeKeyState(VK_LEFT, (char)0, (byte) 2, getJoyX() < -threshHold);
-            keyboard.fakeKeyState(VK_RIGHT, (char)0,(byte) 2, getJoyX() > threshHold);
-            keyboard.fakeKeyState(VK_UP,  (char)0,(byte) 2, getJoyY() < -threshHold);
-            keyboard.fakeKeyState(VK_DOWN,  (char)0,(byte) 2, getJoyY() > threshHold);
-            keyboard.fakeKeyState(VK_SPACE,  ' ',(byte) 2, buttons != null && buttons.get(0) != 0);
-            keyboard.fakeKeyState(VK_CONTROL,  (char)0,(byte) 2,buttons != null && buttons.get(1) != 0);
+            keyboard.fakeKeyState(VK_LEFT, (char) 0, (byte) 2, getJoyX() < -threshHold);
+            keyboard.fakeKeyState(VK_RIGHT, (char) 0, (byte) 2, getJoyX() > threshHold);
+            keyboard.fakeKeyState(VK_UP, (char) 0, (byte) 2, getJoyY() < -threshHold);
+            keyboard.fakeKeyState(VK_DOWN, (char) 0, (byte) 2, getJoyY() > threshHold);
+            keyboard.fakeKeyState(VK_SPACE, ' ', (byte) 2, buttons != null && buttons.get(0) != 0);
+            keyboard.fakeKeyState(VK_CONTROL, (char) 0, (byte) 2, buttons != null && buttons.get(1) != 0);
         }
     }
 }

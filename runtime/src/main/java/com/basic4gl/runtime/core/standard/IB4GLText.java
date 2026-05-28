@@ -1,6 +1,5 @@
 package com.basic4gl.runtime.core.standard;
 
-
 /**
  * Interface to the Basic4GL text mechanism.
  * <p>Note:
@@ -14,14 +13,24 @@ package com.basic4gl.runtime.core.standard;
 public interface IB4GLText {
     // Standard text output
     void print(String text, boolean newline);
+
     void locate(int x, int y);
+
     void cls();
+
     void clearRegion(int x1, int y1, int x2, int y2);
+
     int getTextRows();
+
     int getTextCols();
+
     void resizeText(int cols, int rows);
+
     void setTextScrollEnabled(boolean scroll);
+
     boolean getTextScrollEnabled();
+
     void drawText();
+
     char getCharAt(int x, int y);
 }

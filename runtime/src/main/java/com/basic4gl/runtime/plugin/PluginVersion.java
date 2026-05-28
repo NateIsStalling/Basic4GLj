@@ -6,9 +6,7 @@ public class PluginVersion {
     private long major;
     private long minor;
 
-    public PluginVersion() {
-
-    }
+    public PluginVersion() {}
 
     public PluginVersion(int major, int minor) {
         this.major = major;

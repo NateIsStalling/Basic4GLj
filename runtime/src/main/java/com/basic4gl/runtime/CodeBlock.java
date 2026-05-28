@@ -60,8 +60,7 @@ public class CodeBlock implements Streamable {
 
         // User functions
         Streaming.writeLong(stream, userFunctions.size());
-        for (Map.Entry<String, Integer> fn : userFunctions.entrySet())
-        {
+        for (Map.Entry<String, Integer> fn : userFunctions.entrySet()) {
             Streaming.writeString(stream, fn.getKey());
             Streaming.writeLong(stream, fn.getValue());
         }
@@ -83,8 +82,7 @@ public class CodeBlock implements Streamable {
         // User functions
         userFunctions.clear();
         count = (int) Streaming.readLong(stream);
-        for (int i = 0; i < count; i++)
-        {
+        for (int i = 0; i < count; i++) {
             String name = Streaming.readString(stream);
             int index = (int) Streaming.readLong(stream);
             userFunctions.put(name, index);
@@ -104,8 +102,7 @@ public class CodeBlock implements Streamable {
         return prepCodeBlockFilename(otherFilename).equals(prepCodeBlockFilename(filename));
     }
 
-    private String prepCodeBlockFilename(String filename)
-    {
+    private String prepCodeBlockFilename(String filename) {
         if (filename == null) {
             return "";
         }

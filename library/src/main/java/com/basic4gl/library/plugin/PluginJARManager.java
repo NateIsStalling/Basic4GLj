@@ -2,12 +2,11 @@ package com.basic4gl.library.plugin;
 
 import com.basic4gl.runtime.plugin.*;
 import com.basic4gl.runtime.util.Streaming;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.nio.file.DirectoryStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
@@ -52,7 +51,7 @@ public class PluginJARManager extends PluginManager {
     /**
      * @return Returns a list of currently loaded plugin JARs.
      */
-    public Vector<PluginJAR> loadedJARs(){
+    public Vector<PluginJAR> loadedJARs() {
         Vector<PluginJAR> result = new Vector<>();
 
         for (PluginLibrary lib : plugins) {
@@ -114,16 +113,17 @@ public class PluginJARManager extends PluginManager {
      * @param filename
      * @return
      */
-    public boolean isLoaded(String filename) { return find(filename) != null; }
+    public boolean isLoaded(String filename) {
+        return find(filename) != null;
+    }
 
     public PlatformMetadataPolicy getPlatformMetadataPolicy() {
         return platformMetadataPolicy;
     }
 
     public void setPlatformMetadataPolicy(PlatformMetadataPolicy platformMetadataPolicy) {
-        this.platformMetadataPolicy = platformMetadataPolicy == null
-                ? PlatformMetadataPolicy.WARN_IDE_BLOCK_EXPORT
-                : platformMetadataPolicy;
+        this.platformMetadataPolicy =
+                platformMetadataPolicy == null ? PlatformMetadataPolicy.WARN_IDE_BLOCK_EXPORT : platformMetadataPolicy;
     }
 
     public boolean loadPlugin(String filename) {
@@ -160,22 +160,23 @@ public class PluginJARManager extends PluginManager {
         // Check that JAR can be unloaded.
         // If the JAR owns objects that are currently used by other JARs, then it
         // cannot be unloaded before the other JARs have been.
-        PluginJAR jar = (PluginJAR)i;
+        PluginJAR jar = (PluginJAR) i;
         if (jar.isReferenced()) {
             error = "The following plugin JAR(s) must be unloaded first:\r\n" + jar.describeReferencingPlugins();
             return false;
         }
 
         // Inform other JARs that this one is being unloaded
-        for (PluginLibrary plugin: plugins) {
+        for (PluginLibrary plugin : plugins) {
             if (jar != plugin && plugin instanceof PluginJAR) {
-                ((PluginJAR)plugin).removeReferencingPlugin(jar);
+                ((PluginJAR) plugin).removeReferencingPlugin(jar);
             }
         }
 
         // Unregister all interfaces owned by this JAR
-        for (Iterator<Map.Entry<String, PluginSharedInterface>> it = sharedInterfaces.entrySet().iterator();
-             it.hasNext(); ) {
+        for (Iterator<Map.Entry<String, PluginSharedInterface>> it =
+                        sharedInterfaces.entrySet().iterator();
+                it.hasNext(); ) {
             Map.Entry<String, PluginSharedInterface> entry = it.next();
             if (entry.getValue().getOwner() == jar) {
                 it.remove();
@@ -193,7 +194,8 @@ public class PluginJARManager extends PluginManager {
 
     public void streamOut(DataOutputStream stream) throws IOException {
         // Write JAR filenames, and versions
-        List<PluginLibrary> pluginJars = plugins.stream().filter(x -> x instanceof PluginJAR).toList();
+        List<PluginLibrary> pluginJars =
+                plugins.stream().filter(x -> x instanceof PluginJAR).toList();
         Streaming.writeLong(stream, pluginJars.size());
         for (PluginLibrary plugin : pluginJars) {
             PluginJAR jar = (PluginJAR) plugin;
@@ -203,7 +205,8 @@ public class PluginJARManager extends PluginManager {
             Streaming.writeLong(stream, jar.getFileDetails().getVersion().getMinorVersion());
         }
     }
-    public boolean streamIn(DataInputStream stream) throws IOException{
+
+    public boolean streamIn(DataInputStream stream) throws IOException {
 
         // Clear out any existing plugins
         clear();
@@ -218,15 +221,14 @@ public class PluginJARManager extends PluginManager {
             version.setMinorVersion(Streaming.readLong(stream));
 
             // Attempt to load JAR
-            if (!loadPlugin(filename))
-                return false;
+            if (!loadPlugin(filename)) return false;
 
             // Check version number
             PluginJAR jar = find(filename);
             if (!jar.getFileDetails().getVersion().equals(version)) {
-                error = "Plugin JAR " + filename + " is the wrong version.\r\n" +
-                        "Version is " + jar.getFileDetails().getVersion().toString() +
-                        ", expected " + version.toString();
+                error = "Plugin JAR " + filename + " is the wrong version.\r\n" + "Version is "
+                        + jar.getFileDetails().getVersion().toString() + ", expected "
+                        + version.toString();
                 return false;
             }
         }

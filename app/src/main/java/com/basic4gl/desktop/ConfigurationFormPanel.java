@@ -67,8 +67,7 @@ public class ConfigurationFormPanel extends JPanel implements Scrollable {
                 addFullWidthRow(boolRow);
                 break;
             case Configuration.PARAM_INT:
-                JSpinner spinner = new JSpinner(
-                        new SpinnerNumberModel(Integer.parseInt(value), 0, Short.MAX_VALUE, 1));
+                JSpinner spinner = new JSpinner(new SpinnerNumberModel(Integer.parseInt(value), 0, Short.MAX_VALUE, 1));
                 spinner.setPreferredSize(new Dimension(110, spinner.getPreferredSize().height));
                 spinner.setMinimumSize(new Dimension(80, spinner.getPreferredSize().height));
                 settingComponents.add(spinner);
@@ -131,10 +130,7 @@ public class ConfigurationFormPanel extends JPanel implements Scrollable {
         removeAll();
 
         for (int i = 0; i < currentConfig.getSettingCount(); i++) {
-            addConfigurationField(
-                    currentConfig.getField(i),
-                    currentConfig.getParamType(i),
-                    currentConfig.getValue(i));
+            addConfigurationField(currentConfig.getField(i), currentConfig.getParamType(i), currentConfig.getValue(i));
         }
 
         GridBagConstraints filler = new GridBagConstraints();

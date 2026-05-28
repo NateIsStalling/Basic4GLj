@@ -76,8 +76,8 @@ public class GLTextGrid extends HasErrorState {
         scroll = true;
 
         // Load charset texture
-//        glPushAttrib(GL_ALL_ATTRIB_BITS);
-//        glEnable(GL_TEXTURE_2D);
+        //        glPushAttrib(GL_ALL_ATTRIB_BITS);
+        //        glEnable(GL_TEXTURE_2D);
         LoadImage.init(files);
         IntBuffer w = BufferUtils.createIntBuffer(1);
         IntBuffer h = BufferUtils.createIntBuffer(1);
@@ -87,7 +87,7 @@ public class GLTextGrid extends HasErrorState {
             setError("Error loading bitmap: " + texFile);
             return;
         }
-//        uploadCharsetTexture();
+        //        uploadCharsetTexture();
 
         // Calculate character size (in texture coordinates)
         charXSize = 1.0 / textureColumns;
@@ -101,7 +101,7 @@ public class GLTextGrid extends HasErrorState {
 
         // TODO 12/16/2020 - glDisable may be needed; GLTextGrid seems to be causing issues with
         // GL_QUADS, SaveGLState might not be working as expected
-//        glDisable(GL_TEXTURE_2D);
+        //        glDisable(GL_TEXTURE_2D);
     }
 
     protected void saveGLState() {
@@ -310,17 +310,17 @@ public class GLTextGrid extends HasErrorState {
     public void draw() {
 
         // Create perspective transform
-        glMatrixMode (GL_PROJECTION);
-        glLoadIdentity ();
-        GLUtil.gluOrtho2D (0, 0, 1, 1);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        GLUtil.gluOrtho2D(0, 0, 1, 1);
 
         // Clear model view matrix (to identity)
-        glMatrixMode (GL_MODELVIEW);
-        glLoadIdentity ();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
 
         // Iterate through character map
         int index = 0;
-        double  xStep = 2.0 / columns,           // Character size on screen in screen coordinates
+        double xStep = 2.0 / columns, // Character size on screen in screen coordinates
                 yStep = 2.0 / rows;
         long lastTex = 0;
 
@@ -328,42 +328,39 @@ public class GLTextGrid extends HasErrorState {
             for (int x = 0; x < columns; x++) {
 
                 // Get current and previous character
-                char c = chars [index];
+                char c = chars[index];
                 colours.position(index * (Long.SIZE / Byte.SIZE));
                 int tex = textures[index];
 
                 // Redraw character if changed
                 // Find character 2D position in texture
                 if (c != ' ') {
-                    int charx = c % textureColumns,
-                            chary = c / textureColumns;
+                    int charx = c % textureColumns, chary = c / textureColumns;
 
                     // Convert to texture coordinates
-                    double  tx = charx * charXSize + OFFSET,
-                            ty = 1.0 - (chary + 1) * charYSize + OFFSET;
+                    double tx = charx * charXSize + OFFSET, ty = 1.0 - (chary + 1) * charYSize + OFFSET;
 
                     // Find screen coordinates
-                    double  screenX = x * xStep - 1.0,
-                            screenY = 1.0 - (y + 1) * yStep;
+                    double screenX = x * xStep - 1.0, screenY = 1.0 - (y + 1) * yStep;
 
                     // Bind appropriate texture
                     if (tex != lastTex) {
-                        glBindTexture (GL_TEXTURE_2D, tex);
+                        glBindTexture(GL_TEXTURE_2D, tex);
                         lastTex = tex;
                     }
 
                     // Write character
-                    glColor4ubv (colours);
-                    glBegin (GL_QUADS);
-                    glTexCoord2d (tx,                ty);
-                    glVertex2d (screenX,           screenY);
-                    glTexCoord2d (tx + charXSize,  ty);
-                    glVertex2d (screenX + xStep,   screenY);
-                    glTexCoord2d (tx + charXSize,  ty + charYSize);
-                    glVertex2d (screenX + xStep, screenY + yStep);
-                    glTexCoord2d (tx,ty + charYSize);
-                    glVertex2d (screenX,screenY + yStep);
-                    glEnd ();
+                    glColor4ubv(colours);
+                    glBegin(GL_QUADS);
+                    glTexCoord2d(tx, ty);
+                    glVertex2d(screenX, screenY);
+                    glTexCoord2d(tx + charXSize, ty);
+                    glVertex2d(screenX + xStep, screenY);
+                    glTexCoord2d(tx + charXSize, ty + charYSize);
+                    glVertex2d(screenX + xStep, screenY + yStep);
+                    glTexCoord2d(tx, ty + charYSize);
+                    glVertex2d(screenX, screenY + yStep);
+                    glEnd();
                 }
                 index++;
             }
@@ -428,7 +425,9 @@ public class GLTextGrid extends HasErrorState {
         showCursor = false;
     }
 
-    public boolean isCursorShowing() { return showCursor; }
+    public boolean isCursorShowing() {
+        return showCursor;
+    }
 
     public void setCursorPosition(int x, int y) {
         if (x < 0) {

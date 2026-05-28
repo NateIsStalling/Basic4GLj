@@ -1,11 +1,10 @@
 package com.basic4gl.library.desktopgl.content;
 
+import static org.lwjgl.opengl.GL11.*;
+
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.runtime.core.opengl.IB4GLOpenGLText;
-
 import java.util.ArrayList;
-
-import static org.lwjgl.opengl.GL11.*;
 
 /**
  * Copyright (C) Tom Mulgrew, 2016 (tmulgrew@slingshot.co.nz)
@@ -42,8 +41,7 @@ public class Content2DManager {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    private void restoreGLState()
-    {
+    private void restoreGLState() {
         // Restore preserved OpenGL state
         glMatrixMode(GL_TEXTURE);
         glPopMatrix();
@@ -57,10 +55,8 @@ public class Content2DManager {
     private void internalDraw(int bitFlags) {
         // Draw content
         SaveGLState();
-        for (Content2D c : content)
-        {
-            if ((c.bitFlag & bitFlags) != 0)
-            {
+        for (Content2D c : content) {
+            if ((c.bitFlag & bitFlags) != 0) {
                 c.drawCallback.onDrawContent2D(c);
             }
         }
@@ -72,14 +68,12 @@ public class Content2DManager {
         reset();
     }
 
-    public void dispose() {
-
-    }
+    public void dispose() {}
 
     /**
      * Reset to defaults
      */
-    public void reset(){
+    public void reset() {
         // Set default
         drawMode = IB4GLOpenGLText.TextMode.TEXT_SIMPLE;
     }
@@ -101,10 +95,17 @@ public class Content2DManager {
     }
 
     // Properties
-    public IB4GLOpenGLText.TextMode getDrawMode() { return drawMode; }
-    public void setDrawMode(IB4GLOpenGLText.TextMode value)  { drawMode = value; }
-    public OpenGLWindowManager getWindowManager() { return windowManager; }
+    public IB4GLOpenGLText.TextMode getDrawMode() {
+        return drawMode;
+    }
 
+    public void setDrawMode(IB4GLOpenGLText.TextMode value) {
+        drawMode = value;
+    }
+
+    public OpenGLWindowManager getWindowManager() {
+        return windowManager;
+    }
 
     /**
      * Explicitly redraw
@@ -116,13 +117,10 @@ public class Content2DManager {
      * Explicitly redraw
      * @param bitFlags
      */
-    public void draw(int bitFlags){
-        if (drawMode == IB4GLOpenGLText.TextMode.TEXT_SIMPLE || drawMode == IB4GLOpenGLText.TextMode.TEXT_BUFFERED)
-        {
+    public void draw(int bitFlags) {
+        if (drawMode == IB4GLOpenGLText.TextMode.TEXT_SIMPLE || drawMode == IB4GLOpenGLText.TextMode.TEXT_BUFFERED) {
             fullRedraw(bitFlags);
-        }
-        else if (drawMode == IB4GLOpenGLText.TextMode.TEXT_OVERLAID)
-        {
+        } else if (drawMode == IB4GLOpenGLText.TextMode.TEXT_OVERLAID) {
             internalDraw(bitFlags);
         }
     }
@@ -131,8 +129,7 @@ public class Content2DManager {
         fullRedraw(0xffffffff);
     }
 
-    public void fullRedraw(int bitFlags)
-    {
+    public void fullRedraw(int bitFlags) {
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         internalDraw(bitFlags);
         windowManager.swapBuffers();
@@ -141,11 +138,9 @@ public class Content2DManager {
     /**
      * Notify of 2D change made
      */
-    public void changeMade()
-    {
+    public void changeMade() {
         // Redraw automatically if in simple mode
-        if (drawMode == IB4GLOpenGLText.TextMode.TEXT_SIMPLE)
-        {
+        if (drawMode == IB4GLOpenGLText.TextMode.TEXT_SIMPLE) {
             this.draw();
         }
     }

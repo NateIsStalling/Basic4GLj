@@ -20,4 +20,3 @@ public class ReadMemoryCommand extends DebugCommand {
         arguments.count = count;
     }
 }
-

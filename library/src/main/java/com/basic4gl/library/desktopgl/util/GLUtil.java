@@ -1,12 +1,11 @@
 package com.basic4gl.library.desktopgl.util;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-
-import java.nio.FloatBuffer;
-
 import static org.lwjgl.opengl.GL11.glMultMatrixf;
 import static org.lwjgl.opengl.GL11.glTranslated;
+
+import java.nio.FloatBuffer;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 
 public class GLUtil {
     public static void gluPerspective(float fovY, float aspect, float zNear, float zFar) {
@@ -60,9 +59,15 @@ public class GLUtil {
      * @param upZ
      */
     public static void lookAt(
-            double eyeX, double eyeY, double eyeZ,
-            double centerX, double centerY, double centerZ,
-            double upX, double upY, double upZ) {
+            double eyeX,
+            double eyeY,
+            double eyeZ,
+            double centerX,
+            double centerY,
+            double centerZ,
+            double upX,
+            double upY,
+            double upZ) {
 
         // forward = normalize(center - eye)
         double fx = centerX - eyeX;
@@ -70,12 +75,16 @@ public class GLUtil {
         double fz = centerZ - eyeZ;
         double flen = Math.sqrt(fx * fx + fy * fy + fz * fz);
         if (flen == 0.0) return;
-        fx /= flen; fy /= flen; fz /= flen;
+        fx /= flen;
+        fy /= flen;
+        fz /= flen;
 
         // up = normalize(up)
         double ulen = Math.sqrt(upX * upX + upY * upY + upZ * upZ);
         if (ulen == 0.0) return;
-        upX /= ulen; upY /= ulen; upZ /= ulen;
+        upX /= ulen;
+        upY /= ulen;
+        upZ /= ulen;
 
         // side = normalize(forward x up)
         double sx = fy * upZ - fz * upY;
@@ -83,7 +92,9 @@ public class GLUtil {
         double sz = fx * upY - fy * upX;
         double slen = Math.sqrt(sx * sx + sy * sy + sz * sz);
         if (slen == 0.0) return;
-        sx /= slen; sy /= slen; sz /= slen;
+        sx /= slen;
+        sy /= slen;
+        sz /= slen;
 
         // recompute orthogonal up = side x forward
         double ux = sy * fz - sz * fy;

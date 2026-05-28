@@ -1,13 +1,13 @@
 package com.basic4gl.library.standard;
 
-import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.lib.util.*;
+import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.FunctionSpecification;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.runtime.util.Function;
 import java.util.HashMap;
 import java.util.List;
@@ -88,14 +88,24 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
                     null)
         });
 
-        s.put("DesktopWidth", new FunctionSpecification[]{
-            new FunctionSpecification(WrapDesktopWidth.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
+        s.put("DesktopWidth", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapDesktopWidth.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
         });
-        s.put("DesktopHeight", new FunctionSpecification[]{
-            new FunctionSpecification(WrapDesktopHeight.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
+        s.put("DesktopHeight", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapDesktopHeight.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
         });
-        s.put("iswindowclosing", new FunctionSpecification[]{
-            new FunctionSpecification(WrapIsWindowClosing.class, new ParamTypeList(), true, true, BasicValType.VTP_INT, false, false, null)
+        s.put("iswindowclosing", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapIsWindowClosing.class,
+                    new ParamTypeList(),
+                    true,
+                    true,
+                    BasicValType.VTP_INT,
+                    false,
+                    false,
+                    null)
         });
 
         return s;
@@ -169,19 +179,19 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapDesktopWidth implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             vm.getReg().setIntVal(windowManager.getScreenWidth());
         }
     }
 
     public final class WrapDesktopHeight implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             vm.getReg().setIntVal(windowManager.getScreenHeight());
         }
     }
 
     public final class WrapIsWindowClosing implements Function {
-        public void run (TomVM vm){
+        public void run(TomVM vm) {
             vm.getReg().setIntVal(windowManager.isCloseRequested() ? -1 : 0);
         }
     }
