@@ -1,16 +1,15 @@
-package com.basic4gl.library.desktopgl;
+package com.basic4gl.library.desktopgl.content;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.opengl.GL11.*;
 
-import com.basic4gl.lib.util.FileOpener;
 import com.basic4gl.library.standard.Standard;
 import com.basic4gl.library.standard.TrigBasicLib;
 
 /**
  * A GLTextGrid with added support for sprites
  */
-public class GLSpriteEngine extends GLTextGrid {
+public class GLSpriteEngine {
 
     // Constants
     public static final byte DRAW_SPRITES_INFRONT = 2;
@@ -28,7 +27,7 @@ public class GLSpriteEngine extends GLTextGrid {
             head = null;
         }
 
-        protected void finalize() {
+        protected void dispose() {
             while (head != null) {
                 head.remove();
             }
@@ -60,7 +59,7 @@ public class GLSpriteEngine extends GLTextGrid {
     // Working variables
     private GLBasicSprite cursor;
 
-    void drawSprites(boolean inFront) {
+    public void drawSprites(boolean inFront) {
 
         // Setup OpenGL state.
         // Note: Most of the OpenGL state is already setup for us (in preparation for
@@ -156,27 +155,10 @@ public class GLSpriteEngine extends GLTextGrid {
         glPopAttrib();
     }
 
-    void internalDraw(byte flags) {
-
-        // Draw sprites behind text
-        if ((flags & DRAW_SPRITES_BEHIND) != 0) {
-            drawSprites(false);
-        }
-
-        // Draw text
-        super.internalDraw(flags);
-
-        // Draw sprites in front of text
-        if ((flags & DRAW_SPRITES_INFRONT) != 0) {
-            drawSprites(true);
-        }
-    }
-
     public float camX, camY, camZ;
     public float camAngle;
 
-    public GLSpriteEngine(String texFile, FileOpener files, int rows, int cols, int texRows, int texCols) {
-        super(texFile, files, rows, cols, texRows, texCols);
+    public GLSpriteEngine() {
         setDefaults();
     }
 

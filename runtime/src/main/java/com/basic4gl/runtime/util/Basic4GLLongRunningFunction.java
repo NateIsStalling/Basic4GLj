@@ -4,8 +4,7 @@ package com.basic4gl.runtime.util;
  * Interface to a BASIC function that suspends Basic4GL execution until it completes.
  * See Basic4GLRuntime.beginLongRunningFn() for more information.
  */
-public interface Basic4GLLongRunningFunction
-{
+public interface Basic4GLLongRunningFunction {
     void dispose();
 
     /**

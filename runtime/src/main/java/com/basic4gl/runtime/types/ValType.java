@@ -37,6 +37,7 @@ public class ValType implements Streamable {
      * 0 = value, 1 = pointer to value, 2 = pointer to pointer to value, ...
      */
     public byte pointerLevel;
+
     public boolean isByRef;
 
     /**
@@ -70,9 +71,7 @@ public class ValType implements Streamable {
     }
 
     public boolean isFuncPtr() {
-        return basicType == VTP_FUNC_PTR
-                && pointerLevel == 0
-                && arrayLevel == 0;
+        return basicType == VTP_FUNC_PTR && pointerLevel == 0 && arrayLevel == 0;
     }
 
     /**

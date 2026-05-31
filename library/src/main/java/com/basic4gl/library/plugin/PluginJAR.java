@@ -1,7 +1,6 @@
 package com.basic4gl.library.plugin;
 
 import com.basic4gl.runtime.plugin.*;
-
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -11,10 +10,10 @@ import java.util.ServiceLoader;
 
 /**
  * Represents a dynamically-loaded plugin JAR.
- * 
+ *
  * Replaces C++ DLL-based loading (LoadLibrary, GetProcAddress) with Java ServiceLoader.
  * Maintains the same plugin lifecycle: metadata validation -> provider discovery -> plugin.load().
- * 
+ *
  * Workflow:
  * 1. Load JAR via URLClassLoader with parent classloader inheritance
  * 2. Discover providers via ServiceLoader (replaces GetProcAddress)
@@ -34,7 +33,7 @@ public class PluginJAR extends PluginLibrary {
 
     /**
      * Load and initialize a plugin JAR from the given path.
-     * 
+     *
      * @param manager Parent PluginManager/PluginJARManager
      * @param path Directory path containing the JAR
      * @param filename JAR filename
@@ -59,9 +58,7 @@ public class PluginJAR extends PluginLibrary {
 
             URL jarUrl = jarPath.toUri().toURL();
             this.classLoader = URLClassLoader.newInstance(
-                new URL[]{jarUrl},
-                Thread.currentThread().getContextClassLoader()
-            );
+                    new URL[] {jarUrl}, Thread.currentThread().getContextClassLoader());
 
             // Step 2-4: Discover provider, validate metadata, create plugin
             if (!discoverAndLoadProvider()) {
@@ -91,7 +88,7 @@ public class PluginJAR extends PluginLibrary {
     private boolean discoverAndLoadProvider() {
         try {
             ServiceLoader<Basic4GLPluginProvider> loader =
-                ServiceLoader.load(Basic4GLPluginProvider.class, classLoader);
+                    ServiceLoader.load(Basic4GLPluginProvider.class, classLoader);
 
             for (Basic4GLPluginProvider provider : loader) {
                 // Get metadata for preflight validation
@@ -109,11 +106,11 @@ public class PluginJAR extends PluginLibrary {
                 }
 
                 // Validate host plugin API version compatibility.
-                if (!metadata.isApiCompatible(Basic4GLPluginProvider.PLUGIN_API_VERSION_MAJOR,
+                if (!metadata.isApiCompatible(
+                        Basic4GLPluginProvider.PLUGIN_API_VERSION_MAJOR,
                         Basic4GLPluginProvider.PLUGIN_API_VERSION_MINOR)) {
-                    String pluginName = metadata.name() == null || metadata.name().isBlank()
-                            ? filename
-                            : metadata.name();
+                    String pluginName =
+                            metadata.name() == null || metadata.name().isBlank() ? filename : metadata.name();
                     errorMessage = "Plugin '" + pluginName + "' requires plugin API >= "
                             + metadata.minApiMajor() + "." + metadata.minApiMinor()
                             + ", but current plugin API version is "
@@ -139,8 +136,9 @@ public class PluginJAR extends PluginLibrary {
                     }
                 } else {
                     if (!metadata.platformSupport().supportsCurrent()) {
-                        errorMessage = "Plugin '" + metadata.name() + "' does not support " +
-                                PlatformId.current().id() + "-" + CpuArch.current().primary();
+                        errorMessage = "Plugin '" + metadata.name() + "' does not support "
+                                + PlatformId.current().id() + "-"
+                                + CpuArch.current().primary();
                         return false;
                     }
                 }
@@ -183,7 +181,8 @@ public class PluginJAR extends PluginLibrary {
                 classLoader.close();
             } catch (IOException e) {
                 // Log but don't fail on close error
-                System.err.println("Warning: Failed to close plugin classloader for '" + filename + "': " + e.getMessage());
+                System.err.println(
+                        "Warning: Failed to close plugin classloader for '" + filename + "': " + e.getMessage());
             }
             classLoader = null;
         }
@@ -199,8 +198,7 @@ public class PluginJAR extends PluginLibrary {
 
     @Override
     public String getDescription() {
-        return fileDetails != null && fileDetails.getDescription() != null ?
-                fileDetails.getDescription() : filename;
+        return fileDetails != null && fileDetails.getDescription() != null ? fileDetails.getDescription() : filename;
     }
 
     public PluginMetadata getMetadata() {

@@ -88,7 +88,8 @@ public abstract class DebuggerCallbacks {
         DebuggerCallbackMessage debuggerCallbackMessage = null;
 
         if (message != null) {
-            VMStatus vmStatus = new VMStatus(vm.isDone(), vm.hasError(), abbreviate(vm.getError(), MAX_STATUS_ERROR_CHARS));
+            VMStatus vmStatus =
+                    new VMStatus(vm.isDone(), vm.hasError(), abbreviate(vm.getError(), MAX_STATUS_ERROR_CHARS));
             debuggerCallbackMessage = new DebuggerCallbackMessage(message.getStatus(), message.getText(), vmStatus);
         }
         callbackMessage.setMessage(debuggerCallbackMessage);

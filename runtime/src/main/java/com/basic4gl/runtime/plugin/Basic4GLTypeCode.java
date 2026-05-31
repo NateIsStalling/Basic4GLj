@@ -9,4 +9,3 @@ public enum Basic4GLTypeCode {
     STRING,
     FUNCPTR;
 }
-

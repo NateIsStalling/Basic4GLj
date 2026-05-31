@@ -11,9 +11,7 @@ public class PluginJARFile {
     private boolean loaded;
     private PluginVersion version;
 
-    public PluginJARFile() {
-
-    }
+    public PluginJARFile() {}
 
     public PluginJARFile(String filename, String description, boolean loaded, PluginVersion version) {
         this.filename = filename;

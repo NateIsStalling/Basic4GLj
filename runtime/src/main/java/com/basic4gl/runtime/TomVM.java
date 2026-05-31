@@ -9,7 +9,6 @@ import com.basic4gl.runtime.plugin.TomVMPluginAdapter;
 import com.basic4gl.runtime.stackframe.*;
 import com.basic4gl.runtime.types.*;
 import com.basic4gl.runtime.util.*;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -214,10 +213,9 @@ public class TomVM extends HasErrorState implements Streamable {
         patchedBreakPoints = new ArrayList<>();
         tempBreakPoints = new ArrayList<>();
 
-         this.plugins = plugins;
-         // Create plugin runtime
-         this.pluginRuntime = new TomVMPluginAdapter(this,
-        		this.plugins.getStructureManager());
+        this.plugins = plugins;
+        // Create plugin runtime
+        this.pluginRuntime = new TomVMPluginAdapter(this, this.plugins.getStructureManager());
 
         clearProgram();
     }
@@ -324,8 +322,7 @@ public class TomVM extends HasErrorState implements Streamable {
         int tempI;
 
         // Handle long running functions
-        if (longRunningFunction != null)
-        {
+        if (longRunningFunction != null) {
             if (longRunningFunction.isPolled()) {
                 longRunningFunction.poll();
             }
@@ -984,8 +981,11 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Call plugin function
                     int index = instruction.value.getIntVal();
-                    this.plugins.getLoadedLibraries().get(index >> 24)
-                        .getFunction(index & 0x00ffffff).run(this.pluginRuntime);
+                    this.plugins
+                            .getLoadedLibraries()
+                            .get(index >> 24)
+                            .getFunction(index & 0x00ffffff)
+                            .run(this.pluginRuntime);
 
                     if (!hasError()) {
                         ip++; // Proceed to next instruction
@@ -1024,8 +1024,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     // index will be in reg, rather than the instruction.
 
                     // Check for null function pointer
-                    if (reg.getIntVal() == 0)
-                    {
+                    if (reg.getIntVal() == 0) {
                         setError(ERR_UNSET_POINTER);
                         break;
                     }
@@ -1044,8 +1043,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     userCallStack.add(stackFrame);
 
                     stackFrame.initForUserFunction(
-                            userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex),
-                            funcIndex);
+                            userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex), funcIndex);
 
                     // Save previous stack frame data
                     Mutable<Integer> stackTopRef = new Mutable<>(stackFrame.prevStackTop);
@@ -1070,11 +1068,11 @@ public class TomVM extends HasErrorState implements Streamable {
                     int funcIndex = reg.getIntVal() - 1;
 
                     // Check function prototype is compatible with prototype referenced by instruction
-                    UserFuncPrototype srcProto = userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex);
+                    UserFuncPrototype srcProto =
+                            userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex);
                     UserFuncPrototype dstProto = userFunctionPrototypes.get(instruction.value.getIntVal());
 
-                    if (!srcProto.isCompatibleWith(dstProto))
-                    {
+                    if (!srcProto.isCompatibleWith(dstProto)) {
                         setError(ERR_FUNC_PTR_INCOMPATIBLE);
                         break;
                     }
@@ -2525,8 +2523,7 @@ public class TomVM extends HasErrorState implements Streamable {
         return codeBlocks.get(index).programOffset;
     }
 
-    public CodeBlock getCodeBlock(int index)
-    {
+    public CodeBlock getCodeBlock(int index) {
         assertTrue(isCodeBlockValid(index));
         return codeBlocks.get(index);
     }
@@ -2563,7 +2560,7 @@ public class TomVM extends HasErrorState implements Streamable {
         Streaming.writeLong(stream, STREAM_VERSION);
 
         // Plugins
-         this.plugins.streamOut(stream);
+        this.plugins.streamOut(stream);
 
         // Variables
         variables.streamOut(stream); // Note: `variables` automatically streams out `dataTypes`
@@ -2619,8 +2616,8 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // Plugins
         if (!this.plugins.streamIn(stream)) {
-        	setError(this.plugins.getError());
-        	return false;
+            setError(this.plugins.getError());
+            return false;
         }
 
         // Register plugin structures and functions in VM
@@ -3013,14 +3010,15 @@ public class TomVM extends HasErrorState implements Streamable {
     }
 
     // Plugins
-    public PluginManager getPlugins() { return plugins; }
+    public PluginManager getPlugins() {
+        return plugins;
+    }
 
     // Builtin/plugin function callback support
     public boolean isEndCallback() {
         assertTrue(isIPValid());
         return codeInstructions.get(ip).opCode == OpCode.OP_END_CALLBACK; // Reached end callback opcode?
     }
-
 
     public void beginLongRunningFunction(Basic4GLLongRunningFunction handler) {
 
@@ -3033,8 +3031,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
 
     public void endLongRunningFunction() {
-        if (longRunningFunction != null)
-        {
+        if (longRunningFunction != null) {
             // Delete if required
             if (longRunningFunction.deleteWhenDone()) {
                 longRunningFunction.dispose();
@@ -3050,8 +3047,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
 
     public void cancelLongRunningFunction() {
-        if (longRunningFunction != null)
-        {
+        if (longRunningFunction != null) {
             boolean deleteWhenDone = longRunningFunction.deleteWhenDone();
             longRunningFunction.cancel();
             if (deleteWhenDone) {
@@ -3065,9 +3061,11 @@ public class TomVM extends HasErrorState implements Streamable {
             }
         }
     }
+
     public void setTimeshareBreakRequired() {
         timeshare = true;
     }
+
     public boolean isInLongRunningFunction() {
         return longRunningFunction != null;
     }
@@ -3088,5 +3086,4 @@ public class TomVM extends HasErrorState implements Streamable {
     public Instruction[] getInstructions() {
         return codeInstructions.toArray(new Instruction[0]);
     }
-
 }

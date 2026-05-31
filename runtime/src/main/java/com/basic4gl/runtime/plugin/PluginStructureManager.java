@@ -1,18 +1,16 @@
 package com.basic4gl.runtime.plugin;
 
+import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.*;
+
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.TypeLibrary;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Assert;
 import com.basic4gl.runtime.util.PointerResourceStore;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Objects;
-
-import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.*;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 /**
  * Stores and manages structures defined by plugins.
@@ -31,7 +29,7 @@ public class PluginStructureManager {
     /**
      * Name->structure index lookup
      */
-    private final HashMap<String,Integer> nameIndex = new HashMap<>();
+    private final HashMap<String, Integer> nameIndex = new HashMap<>();
 
     public PluginStructureManager() {
         clear();
@@ -43,12 +41,13 @@ public class PluginStructureManager {
      * @param structure
      * @return
      */
-    public int add(PluginStructure structure){
+    public int add(PluginStructure structure) {
         Assert.assertTrue(structure != null);
 
         // Structure must not already be stored
-        if (findStructure(structure.getName()) != 0)
+        if (findStructure(structure.getName()) != 0) {
             return 0;
+        }
 
         // Add to ordered list
         structures.add(structure);
@@ -67,12 +66,11 @@ public class PluginStructureManager {
      * @param handle
      * @return PluginStructure or null if handle invalid
      */
-    public PluginStructure getStructure(int handle)
-    {
+    public PluginStructure getStructure(int handle) {
         return structureStore.getValueAt(handle);
     }
 
-    public void clear(){
+    public void clear() {
         structureStore.clear();
         structures.clear();
         nameIndex.clear();
@@ -83,12 +81,11 @@ public class PluginStructureManager {
         // TODO is this handled by blankElement already (Mar 31, 2025)?       structureStore.alloc(null);
     }
 
-
     /**
      * Find structure by name.
      * @return Returns its handle, or 0 if not found.
      */
-    public int findStructure(String name){
+    public int findStructure(String name) {
         String key = name.toLowerCase();
         if (nameIndex.containsKey(key)) {
             return nameIndex.get(key);
@@ -100,7 +97,7 @@ public class PluginStructureManager {
      * Remove all structures owned by a particular object
      * @param owner
      */
-    public void removeOwnedStructures(Object owner){
+    public void removeOwnedStructures(Object owner) {
 
         // Iterate over structures
         Iterator<PluginStructure> i = structures.iterator();
@@ -124,7 +121,7 @@ public class PluginStructureManager {
      * @param owner
      * @return
      */
-    public String describeOwnedStructures(Object owner){
+    public String describeOwnedStructures(Object owner) {
         String result = "";
         for (PluginStructure i : structures) {
             if (i.getOwner() == owner) {
@@ -138,7 +135,8 @@ public class PluginStructureManager {
                     result += "\r\n  dim ";
                     if (field.getDataType().getBaseType() >= 0) {
                         // Find referred to structure
-                        PluginStructure fieldStructure = structureStore.getValueAt(field.getDataType().getBaseType());
+                        PluginStructure fieldStructure =
+                                structureStore.getValueAt(field.getDataType().getBaseType());
                         if (fieldStructure != null) {
                             result += fieldStructure.getName() + " ";
                         } else {
@@ -150,7 +148,9 @@ public class PluginStructureManager {
                     }
                     result += field.getFieldName();
                     for (int k = 0; k < field.getDataType().getArrayLevel(); k++) {
-                        int value = field.getDataType().getArrayDims()[field.getDataType().getArrayLevel() - k - 1] - 1;
+                        int value = field.getDataType()
+                                        .getArrayDims()[field.getDataType().getArrayLevel() - k - 1]
+                                - 1;
                         result += "(" + value + ")";
                     }
 
@@ -195,7 +195,7 @@ public class PluginStructureManager {
      * @param pluginType
      * @return
      */
-    public ValType vmTypeFromPluginType(PluginDataType pluginType){
+    public ValType vmTypeFromPluginType(PluginDataType pluginType) {
 
         ValType vmType = new ValType();
 
@@ -207,12 +207,11 @@ public class PluginStructureManager {
 
             // Set virtual machine structure type
             vmType.setType(structure.getVMStructureIndex());
-        }
-        else {
+        } else {
 
             // Basic type.
             // Find closest corresponding Basic4GL type
-            switch(pluginType.getBaseType()) {
+            switch (pluginType.getBaseType()) {
                 case PLUGIN_BASIC4GL_EXT_BYTE:
                 case PLUGIN_BASIC4GL_EXT_WORD:
                 case PLUGIN_BASIC4GL_EXT_INT:
@@ -249,7 +248,7 @@ public class PluginStructureManager {
      * @param src plugin type
      * @return virtual machine equivalent type
      */
-    public ValType getVMType(ValType src){
+    public ValType getVMType(ValType src) {
 
         // Copy value type
         ValType dst = new ValType(src);

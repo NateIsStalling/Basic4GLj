@@ -12,6 +12,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -28,31 +30,40 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
     private final TomVM vm;
     private final Vector<FileEditor> fileEditors;
 
-    private final Dialog dialog;
+    private final JDialog dialog;
+    private final JDialog libraryInfoDialog;
     private final JTabbedPane tabs;
-    private final JComboBox builderComboBox;
+    private final JComboBox<String> builderComboBox;
+    private final JButton libraryInfoButton;
+    private final DefaultListModel<String> embeddedAssetsModel;
+    private final JList<String> embeddedAssetsList;
 
     private final JTextField filePathTextField;
+    private final String exportBaseDirectory;
 
     private final JTextPane infoTextPane;
     private final ConfigurationFormPanel configPane;
     private final JButton exportButton;
+    private final JProgressBar exportProgressBar;
+    private File lastExportDestination;
 
     // Libraries
     private java.util.List<Library> libraries;
     private java.util.List<Integer> builders; // Indexes of libraries that can be launch targets
     private int currentBuilder; // Index value of target in mTargets
 
-    private final java.util.List<JComponent> settingComponents = new ArrayList<>();
-    private Configuration currentConfig;
-
     public ExportDialog(
-            Frame parent, TomBasicCompiler compiler, Preprocessor preprocessor, Vector<FileEditor> editors) {
+            Frame parent,
+            TomBasicCompiler compiler,
+            Preprocessor preprocessor,
+            Vector<FileEditor> editors,
+            String exportBaseDirectory) {
 
         this.compiler = compiler;
         this.preprocessor = preprocessor;
         vm = this.compiler.getVM();
         fileEditors = editors;
+        this.exportBaseDirectory = FileUtil.separatorsToSystem(exportBaseDirectory);
 
         dialog = new JDialog(parent);
 
@@ -60,21 +71,40 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         dialog.setResizable(false);
         dialog.setModal(true);
 
+        libraryInfoDialog = new JDialog(dialog, "Library Info", Dialog.ModalityType.DOCUMENT_MODAL);
+        libraryInfoDialog.setResizable(true);
+        libraryInfoDialog.setLayout(new BorderLayout());
+        libraryInfoDialog.add(createLibraryInfoHeader("Details for the selected export target."), BorderLayout.NORTH);
+
         tabs = new JTabbedPane();
         dialog.add(tabs);
 
         JPanel buttonPane = new JPanel();
         dialog.add(buttonPane, BorderLayout.SOUTH);
+        exportProgressBar = new JProgressBar();
+        exportProgressBar.setVisible(false);
+        exportProgressBar.setStringPainted(true);
+        exportProgressBar.setString("Ready");
+        exportProgressBar.setIndeterminate(false);
+        exportProgressBar.putClientProperty("JComponent.minimumWidth", 260);
+        exportProgressBar.setMinimumSize(new Dimension(220, exportProgressBar.getPreferredSize().height));
         exportButton = new JButton("Export");
         JButton cancelButton = new JButton("Cancel");
         exportButton.addActionListener(e -> export());
         cancelButton.addActionListener(e -> ExportDialog.this.setVisible(false));
-        buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
+        buttonPane.setLayout(new BorderLayout(10, 0));
         buttonPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        buttonPane.add(Box.createHorizontalGlue());
-        buttonPane.add(exportButton);
-        buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
-        buttonPane.add(cancelButton);
+
+        JPanel progressPane = new JPanel(new BorderLayout());
+        progressPane.add(exportProgressBar, BorderLayout.CENTER);
+        buttonPane.add(progressPane, BorderLayout.CENTER);
+
+        JPanel actionButtonsPane = new JPanel();
+        actionButtonsPane.setLayout(new BoxLayout(actionButtonsPane, BoxLayout.LINE_AXIS));
+        actionButtonsPane.add(exportButton);
+        actionButtonsPane.add(Box.createRigidArea(new Dimension(10, 0)));
+        actionButtonsPane.add(cancelButton);
+        buttonPane.add(actionButtonsPane, BorderLayout.EAST);
 
         SwingUtilities.updateComponentTreeUI(tabs);
         tabs.setUI(new FlatTabbedPaneUI() {
@@ -93,10 +123,15 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         filePane.setLayout(new BoxLayout(filePane, BoxLayout.LINE_AXIS));
         tabs.addTab("File", filePane);
 
-        // Settings tab; duplicate of the build tab in ProjectSettingsDialog
+        // Settings tab
         JPanel targetPane = new JPanel();
         targetPane.setLayout(new BorderLayout());
         tabs.addTab("Settings", targetPane);
+
+        // Assets tab
+        JPanel assetsPane = new JPanel(new BorderLayout(0, 10));
+        assetsPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+        tabs.addTab("Assets", assetsPane);
 
         // Configure File tab
         filePane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -154,56 +189,108 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         filePane.add(fileButton);
 
         // Configure Settings tab
-        JPanel targetSelectionPane = new JPanel();
+        JPanel targetSelectionPane = new JPanel(new GridBagLayout());
         targetPane.add(targetSelectionPane, BorderLayout.NORTH);
-        targetSelectionPane.setLayout(new BoxLayout(targetSelectionPane, BoxLayout.LINE_AXIS));
         targetSelectionPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        targetSelectionPane.add(new JLabel("Target"));
-        builderComboBox = new JComboBox();
-        builderComboBox.setBorder(new EmptyBorder(0, 10, 0, 10));
-        targetSelectionPane.add(builderComboBox);
+        GridBagConstraints targetConstraints = new GridBagConstraints();
+        targetConstraints.gridx = 0;
+        targetConstraints.gridy = 0;
+        targetConstraints.anchor = GridBagConstraints.WEST;
+        targetConstraints.insets = new Insets(0, 0, 0, 10);
+        targetSelectionPane.add(new JLabel("Target"), targetConstraints);
 
-        JPanel buildInfoPane = new JPanel();
-        targetPane.add(buildInfoPane, BorderLayout.CENTER);
-        GridLayout buildInfoPaneLayout = new GridLayout(1, 2);
-        buildInfoPane.setLayout(buildInfoPaneLayout);
+        builderComboBox = new JComboBox<>();
+        targetConstraints.gridx = 1;
+        targetConstraints.weightx = 1.0;
+        targetConstraints.fill = GridBagConstraints.HORIZONTAL;
+        targetSelectionPane.add(builderComboBox, targetConstraints);
 
-        JPanel infoPanel = new JPanel();
-        buildInfoPane.add(infoPanel);
+        libraryInfoButton = new JButton("Library Info...");
+        targetConstraints.gridx = 2;
+        targetConstraints.weightx = 0;
+        targetConstraints.fill = GridBagConstraints.NONE;
+        targetConstraints.insets = new Insets(0, 10, 0, 0);
+        targetSelectionPane.add(libraryInfoButton, targetConstraints);
 
-        infoPanel.setLayout(new BorderLayout());
-        infoPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 5));
-        JLabel infoLabel = new JLabel("Library Info:");
-        infoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        infoPanel.add(infoLabel, BorderLayout.PAGE_START);
         infoTextPane = new JTextPane();
-        // mInfoTextPane.setBackground(Color.LIGHT_GRAY);
         infoTextPane.setEditable(false);
+        infoTextPane.setBackground(UIManager.getColor("Panel.background"));
+        infoTextPane.setBorder(new EmptyBorder(8, 10, 8, 10));
+        infoTextPane.setMargin(new Insets(4, 2, 4, 2));
         JScrollPane targetInfoScrollPane = new JScrollPane(infoTextPane);
         targetInfoScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        infoPanel.add(targetInfoScrollPane, BorderLayout.CENTER);
+        configureSmoothScrolling(targetInfoScrollPane);
 
-        JPanel propertiesPanel = new JPanel();
-        buildInfoPane.add(propertiesPanel);
+        JPanel libraryInfoPane = new JPanel(new BorderLayout());
+        libraryInfoPane.setBorder(new EmptyBorder(0, 12, 12, 12));
+        libraryInfoPane.add(targetInfoScrollPane, BorderLayout.CENTER);
+        libraryInfoDialog.add(libraryInfoPane, BorderLayout.CENTER);
 
-        propertiesPanel.setLayout(new BorderLayout());
-        propertiesPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 5));
+        JButton closeLibraryInfoButton = new JButton("Close");
+        closeLibraryInfoButton.addActionListener(e -> libraryInfoDialog.setVisible(false));
+        JPanel libraryInfoFooter = new JPanel();
+        libraryInfoFooter.setLayout(new BoxLayout(libraryInfoFooter, BoxLayout.LINE_AXIS));
+        libraryInfoFooter.setBorder(new EmptyBorder(0, 12, 12, 12));
+        libraryInfoFooter.add(Box.createHorizontalGlue());
+        libraryInfoFooter.add(closeLibraryInfoButton);
+        libraryInfoDialog.add(libraryInfoFooter, BorderLayout.SOUTH);
+        libraryInfoDialog.setMinimumSize(new Dimension(420, 300));
+        libraryInfoDialog.setSize(new Dimension(460, 320));
+
+        JPanel propertiesPanel = new JPanel(new BorderLayout());
+        propertiesPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
         JLabel propertiesLabel = new JLabel("Properties:");
-        propertiesLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        propertiesLabel.setBorder(BorderFactory.createEmptyBorder(10, 4, 10, 4));
         propertiesPanel.add(propertiesLabel, BorderLayout.PAGE_START);
-        configPane = new ConfigurationFormPanel(this);
-        // mConfigPane.setBackground(Color.LIGHT_GRAY);
 
+        configPane = new ConfigurationFormPanel(this);
         configPane.setBorder(new EmptyBorder(4, 4, 4, 4));
         JScrollPane targetPropertiesScrollPane = new JScrollPane(configPane);
         targetPropertiesScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        configureSmoothScrolling(targetPropertiesScrollPane);
         propertiesPanel.add(targetPropertiesScrollPane, BorderLayout.CENTER);
-        configPane.setLayout(new BoxLayout(configPane, BoxLayout.Y_AXIS));
-        configPane.setAlignmentX(0f);
+        targetPane.add(propertiesPanel, BorderLayout.CENTER);
+
+        JLabel assetsDescription = new JLabel("Embedded files to include in exported package:");
+        assetsPane.add(assetsDescription, BorderLayout.NORTH);
+
+        embeddedAssetsModel = new DefaultListModel<>();
+        embeddedAssetsList = new JList<>(embeddedAssetsModel);
+        embeddedAssetsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        JScrollPane assetsScrollPane = new JScrollPane(embeddedAssetsList);
+        configureSmoothScrolling(assetsScrollPane);
+        assetsPane.add(assetsScrollPane, BorderLayout.CENTER);
+
+        JPanel assetsButtonPane = new JPanel();
+        assetsButtonPane.setLayout(new BoxLayout(assetsButtonPane, BoxLayout.LINE_AXIS));
+        JButton addAssetButton = new JButton("Add...");
+        JButton removeAssetButton = new JButton("Remove");
+        JButton clearAssetsButton = new JButton("Clear");
+        assetsButtonPane.add(addAssetButton);
+        assetsButtonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+        assetsButtonPane.add(removeAssetButton);
+        assetsButtonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+        assetsButtonPane.add(clearAssetsButton);
+        assetsButtonPane.add(Box.createHorizontalGlue());
+        assetsPane.add(assetsButtonPane, BorderLayout.SOUTH);
+
+        addAssetButton.addActionListener(e -> promptAndAddAssets());
+        removeAssetButton.addActionListener(e -> {
+            java.util.List<String> selected = embeddedAssetsList.getSelectedValuesList();
+            for (String value : selected) {
+                embeddedAssetsModel.removeElement(value);
+            }
+        });
+        clearAssetsButton.addActionListener(e -> embeddedAssetsModel.clear());
+
+        libraryInfoButton.addActionListener(e -> {
+            libraryInfoDialog.setLocationRelativeTo(dialog);
+            libraryInfoDialog.setVisible(true);
+        });
 
         builderComboBox.addActionListener(e -> {
-            JComboBox cb = (JComboBox) e.getSource();
+            JComboBox<?> cb = (JComboBox<?>) e.getSource();
             if (cb == null) {
                 return;
             }
@@ -216,13 +303,57 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         dialog.setLocationRelativeTo(parent);
     }
 
+    private JPanel createLibraryInfoHeader(String description) {
+        JPanel header = new JPanel();
+        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+        header.setBorder(new EmptyBorder(12, 12, 8, 12));
+
+        JLabel titleLabel = new JLabel("About Library");
+        Font baseFont = titleLabel.getFont();
+        titleLabel.setFont(baseFont.deriveFont(Font.BOLD, baseFont.getSize() + 4f));
+
+        JLabel descriptionLabel = new JLabel(description);
+        descriptionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+        descriptionLabel.setBorder(new EmptyBorder(2, 0, 0, 0));
+
+        header.add(titleLabel);
+        header.add(descriptionLabel);
+        return header;
+    }
+
+    private void configureSmoothScrolling(JScrollPane scrollPane) {
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getVerticalScrollBar().setBlockIncrement(64);
+        scrollPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
+        scrollPane.setWheelScrollingEnabled(true);
+    }
+
     private void selectBuilder(int builderIndex) {
+        if (builders == null || builders.isEmpty() || builderIndex < 0 || builderIndex >= builders.size()) {
+            currentBuilder = -1;
+            infoTextPane.setText("No export targets available.");
+            configPane.removeAll();
+            configPane.revalidate();
+            configPane.repaint();
+            setTargetSettingsEnabled(false);
+            exportButton.setEnabled(false);
+            return;
+        }
+
         currentBuilder = builderIndex;
         Library target = libraries.get(builders.get(currentBuilder));
 
-        // TODO Display target info
         infoTextPane.setText(target.description());
+        infoTextPane.setCaretPosition(0);
         configPane.setConfiguration(new Configuration(((Builder) target).getConfiguration()));
+        setTargetSettingsEnabled(true);
+        exportButton.setEnabled(true);
+    }
+
+    private void setTargetSettingsEnabled(boolean enabled) {
+        builderComboBox.setEnabled(enabled);
+        libraryInfoButton.setEnabled(enabled);
+        configPane.setEnabled(enabled);
     }
 
     public void setVisible(boolean visible) {
@@ -231,7 +362,6 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
     public void setLibraries(java.util.List<Library> libraries, int currentBuilder) {
         builderComboBox.removeAllItems();
-        this.currentBuilder = currentBuilder;
         this.libraries = libraries;
         builders = new ArrayList<>();
         int i = 0;
@@ -246,17 +376,216 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
             }
             i++;
         }
-        builderComboBox.setSelectedIndex(currentBuilder);
+
+        if (builders.isEmpty()) {
+            this.currentBuilder = -1;
+            selectBuilder(-1);
+            return;
+        }
+
+        int selectedBuilder = currentBuilder;
+        if (selectedBuilder < 0 || selectedBuilder >= builders.size()) {
+            selectedBuilder = 0;
+        }
+
+        this.currentBuilder = selectedBuilder;
+        builderComboBox.setSelectedIndex(selectedBuilder);
+        selectBuilder(selectedBuilder);
+
+        embeddedAssetsModel.clear();
+        Builder selected = (Builder) this.libraries.get(builders.get(selectedBuilder));
+        if (selected instanceof IAssetExportBuilder) {
+            for (String asset : ((IAssetExportBuilder) selected).getExportAssets()) {
+                embeddedAssetsModel.addElement(asset);
+            }
+        }
+        mergeDetectedAssetsFromSource();
     }
 
     public int getCurrentBuilder() {
         return currentBuilder;
     }
 
+    private void promptAndAddAssets() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setMultiSelectionEnabled(true);
+        int result = chooser.showOpenDialog(dialog);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File[] files = chooser.getSelectedFiles();
+        if (files == null || files.length == 0) {
+            return;
+        }
+
+        for (File file : files) {
+            if (file == null) {
+                continue;
+            }
+            String normalizedPath = normalizeAssetPath(file);
+            if (!embeddedAssetsModel.contains(normalizedPath)) {
+                embeddedAssetsModel.addElement(normalizedPath);
+            }
+        }
+    }
+
+    private String normalizeAssetPath(File file) {
+        Path selected = file.toPath().toAbsolutePath().normalize();
+        Path baseDir = getExportBasePath();
+        try {
+            Path relative = baseDir.relativize(selected);
+            String relPath = relative.toString().replace('\\', '/');
+            if (!relPath.startsWith("..")) {
+                return relPath;
+            }
+        } catch (IllegalArgumentException ignored) {
+            // Different roots on some platforms: keep absolute path.
+        }
+        return selected.toString().replace('\\', '/');
+    }
+
+    private Path getExportBasePath() {
+        if (exportBaseDirectory != null && !exportBaseDirectory.isBlank()) {
+            return Paths.get(exportBaseDirectory).toAbsolutePath().normalize();
+        }
+        return Paths.get("").toAbsolutePath().normalize();
+    }
+
+    private void applySelectedAssets(Builder builder) {
+        if (!(builder instanceof IAssetExportBuilder)) {
+            return;
+        }
+
+        IAssetExportBuilder assetBuilder = (IAssetExportBuilder) builder;
+        assetBuilder.setExportAssetBaseDirectory(exportBaseDirectory);
+
+        java.util.List<String> assets = new ArrayList<>();
+        for (int i = 0; i < embeddedAssetsModel.size(); i++) {
+            assets.add(embeddedAssetsModel.get(i));
+        }
+        assetBuilder.setExportAssets(assets);
+    }
+
+    private void mergeDetectedAssetsFromSource() {
+        LinkedHashSet<String> merged = new LinkedHashSet<>();
+        for (int i = 0; i < embeddedAssetsModel.size(); i++) {
+            merged.add(embeddedAssetsModel.get(i));
+        }
+        merged.addAll(detectAssetsFromSourceLiterals());
+
+        embeddedAssetsModel.clear();
+        for (String asset : merged) {
+            embeddedAssetsModel.addElement(asset);
+        }
+    }
+
+    private java.util.List<String> detectAssetsFromSourceLiterals() {
+        LinkedHashSet<String> detected = new LinkedHashSet<>();
+
+        for (FileEditor editor : fileEditors) {
+            String sourcePath = editor.getFilePath();
+            if (sourcePath == null || sourcePath.isBlank()) {
+                continue;
+            }
+
+            File parentDir = new File(sourcePath).getAbsoluteFile().getParentFile();
+            File baseDir = getExportBasePath().toFile();
+            String text = editor.getEditorPane().getText();
+            if (text == null || text.isEmpty()) {
+                continue;
+            }
+
+            for (String literal : extractStringLiterals(text)) {
+                if (literal == null || literal.isBlank()) {
+                    continue;
+                }
+
+                String normalizedLiteral = FileUtil.separatorsToSystem(literal);
+                File candidate = new File(normalizedLiteral);
+                if (!candidate.isAbsolute()) {
+                    File baseCandidate = new File(baseDir, normalizedLiteral);
+                    if (baseCandidate.exists() && baseCandidate.isFile()) {
+                        candidate = baseCandidate;
+                    } else {
+                        candidate = parentDir == null ? baseCandidate : new File(parentDir, normalizedLiteral);
+                    }
+                }
+
+                if (candidate.exists() && candidate.isFile()) {
+                    detected.add(normalizeAssetPath(candidate));
+                }
+            }
+        }
+
+        return new ArrayList<>(detected);
+    }
+
+    static java.util.List<String> extractStringLiterals(String text) {
+        java.util.List<String> literals = new ArrayList<>();
+        if (text == null || text.isEmpty()) {
+            return literals;
+        }
+
+        int length = text.length();
+        int index = 0;
+        while (index < length) {
+            char ch = text.charAt(index);
+            if (ch != '"') {
+                index++;
+                continue;
+            }
+
+            StringBuilder literal = new StringBuilder();
+            index++;
+            boolean escaped = false;
+            boolean terminated = false;
+            while (index < length) {
+                char current = text.charAt(index++);
+                if (escaped) {
+                    if (current == '"' || current == '\\') {
+                        literal.append(current);
+                    } else {
+                        // Preserve non-quote escape sequences exactly as typed.
+                        literal.append('\\').append(current);
+                    }
+                    escaped = false;
+                    continue;
+                }
+
+                if (current == '\\') {
+                    escaped = true;
+                    continue;
+                }
+
+                if (current == '"') {
+                    literals.add(literal.toString());
+                    terminated = true;
+                    break;
+                }
+
+                literal.append(current);
+            }
+
+            // Unterminated string literal: discard and continue scanning.
+            if (!terminated) {
+                continue;
+            }
+        }
+
+        return literals;
+    }
+
     private void export() {
         try {
             File dest;
             int decision;
+
+            if (currentBuilder < 0 || builders == null || currentBuilder >= builders.size()) {
+                JOptionPane.showMessageDialog(dialog, "No export target selected.");
+                return;
+            }
 
             Builder builder;
             Library lib = libraries.get(builders.get(currentBuilder));
@@ -272,6 +601,8 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
             }
 
             configPane.applyConfig();
+            mergeDetectedAssetsFromSource();
+            applySelectedAssets(builder);
 
             if (!filePathTextField.getText().isEmpty()) {
                 dest = new File(filePathTextField.getText());
@@ -300,6 +631,8 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 }
                 enableComponents(tabs, false);
                 exportButton.setEnabled(false);
+                setExportInProgress(true, "Preparing export...");
+                lastExportDestination = dest;
                 ExportWorker export = new ExportWorker(builder, dest, new ExportCallback());
                 export.execute();
             } else {
@@ -309,12 +642,88 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         } catch (Exception e1) {
             enableComponents(tabs, true);
             exportButton.setEnabled(true);
+            setExportInProgress(false);
             e1.printStackTrace();
+        }
+    }
+
+    private void setExportInProgress(boolean inProgress) {
+        setExportInProgress(inProgress, inProgress ? "Exporting..." : "Ready");
+    }
+
+    private void setExportInProgress(boolean inProgress, String status) {
+        exportProgressBar.setVisible(inProgress);
+        exportProgressBar.setIndeterminate(inProgress);
+        setExportStatus(status);
+    }
+
+    private void setExportStatus(String status) {
+        if (status == null || status.isBlank()) {
+            status = "Exporting...";
+        }
+        exportProgressBar.setString(status);
+    }
+
+    private String getShowInFileManagerLabel() {
+        String osName = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        if (osName.contains("win")) {
+            return "Show in Explorer";
+        }
+        if (osName.contains("mac")) {
+            return "Show in Finder";
+        }
+        return "Show in File Manager";
+    }
+
+    private void showExportSuccessDialog() {
+        String revealLabel = getShowInFileManagerLabel();
+        Object[] options = {"OK", revealLabel};
+        int result = JOptionPane.showOptionDialog(
+                dialog,
+                "Export successful!",
+                "Success",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                options,
+                options[0]);
+
+        // User chose the OS-specific "Show in ..." action.
+        if (result == 1) {
+            openExportInFileManager();
+        }
+    }
+
+    private void openExportInFileManager() {
+        try {
+            if (lastExportDestination == null) {
+                return;
+            }
+
+            File target = lastExportDestination;
+            File directory = target.isDirectory() ? target : target.getParentFile();
+            if (directory == null || !directory.exists()) {
+                return;
+            }
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(directory);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                    dialog,
+                    "Export succeeded, but the destination folder could not be opened.",
+                    "Open Folder Failed",
+                    JOptionPane.WARNING_MESSAGE);
         }
     }
 
     @Override
     public void onConfigurationChanged(Configuration configuration) {
+        if (currentBuilder < 0 || builders == null || currentBuilder >= builders.size()) {
+            return;
+        }
+
         Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
 
         builder.setConfiguration(configuration);
@@ -350,11 +759,13 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         @Override
         protected Object doInBackground() throws Exception {
             callbackMessage = new CallbackMessage(CallbackMessage.WORKING, "");
+            publish(new CallbackMessage(CallbackMessage.WORKING, "Compiling source..."));
 
             if (!compile()) {
                 callbackMessage.setMessage(CallbackMessage.FAILED, compiler.getError());
                 return null; // TODO Throw error
             }
+            publish(new CallbackMessage(CallbackMessage.WORKING, "Packaging export archive..."));
             // Export to file
             FileOutputStream stream = new FileOutputStream(dest);
 
@@ -455,18 +866,21 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         @Override
         public void message(CallbackMessage message) {
             if (message.getStatus() == CallbackMessage.WORKING) {
-                // TODO display build progress
-                System.out.println("Exporting...");
+                String statusText = message.getText();
+                setExportStatus(statusText == null || statusText.isBlank() ? "Exporting..." : statusText);
                 return;
             }
             if (message.getStatus() == CallbackMessage.SUCCESS) {
                 System.out.println("Export successful.");
-                JOptionPane.showMessageDialog(dialog, "Export successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                setExportStatus("Export complete");
+                showExportSuccessDialog();
                 dialog.setVisible(false);
             } else if (message.getStatus() == CallbackMessage.FAILED) {
                 System.out.println("Export failed.");
+                setExportStatus("Export failed");
                 JOptionPane.showMessageDialog(dialog, message.getText(), "Export failed.", JOptionPane.ERROR_MESSAGE);
             }
+            setExportInProgress(false);
             enableComponents(tabs, true);
             exportButton.setEnabled(true);
         }

@@ -1,16 +1,18 @@
 package com.basic4gl.library.desktopgl;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.system.windows.User32.*;
 
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
+import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.types.BasicValType;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.FunctionSpecification;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.runtime.util.Function;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -22,12 +24,11 @@ import org.lwjgl.BufferUtils;
 /**
  * Created by Nate on 11/19/2015.
  */
-public class JoystickBasicLib implements FunctionLibrary, IGLRenderer {
+public class JoystickBasicLib implements FunctionLibrary {
     private static final int DEFAULT_JOY_THRESHHOLD = 0x4000;
     private static final int JOY_BUTTONS = 4;
-    // Global variables
-    private static GLWindow appWindow;
 
+    // Global variables
     private static FloatBuffer joyInfo; // Current joystick state
     private static ByteBuffer buttons;
 
@@ -42,15 +43,9 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer {
     5. Left and right on right sticker.
     */
     private static boolean autoPoll = true; // When true, joystick is automatically Polled before any function call
-    private static boolean initialised = false;
     private static int threshHold = DEFAULT_JOY_THRESHHOLD; // Number of units the joystick must be moved
 
-    public void setWindow(GLWindow window) {
-        appWindow = window;
-    }
-
-    public void setTextGrid(GLTextGrid text) { // do nothing
-    }
+    private OpenGLKeyboard keyboard;
 
     @Override
     public String name() {
@@ -67,6 +62,8 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer {
 
     @Override
     public void init(TomBasicCompiler comp, IServiceCollection services) {
+        keyboard = services.getService(OpenGLKeyboard.class);
+
         // Init function
         comp.getVM()
                 .addInitFunction(
@@ -317,7 +314,7 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer {
         }
     }
 
-    public static final class WrapJoyKeys implements Function {
+    public final class WrapJoyKeys implements Function {
         public void run(TomVM vm) {
             autoPoll();
 
@@ -325,13 +322,12 @@ public class JoystickBasicLib implements FunctionLibrary, IGLRenderer {
             // Axis movement translates to cursor keys
             // Fire button 1 translates to space bar
             // Fire button 2 translates to control key (Ctrl)
-            appWindow.fakeScanKey(GLFW_KEY_LEFT, 2, getJoyX() < -threshHold);
-            appWindow.fakeScanKey(GLFW_KEY_RIGHT, 2, getJoyX() > threshHold);
-            appWindow.fakeScanKey(GLFW_KEY_UP, 2, getJoyY() < -threshHold);
-            appWindow.fakeScanKey(GLFW_KEY_DOWN, 2, getJoyY() > threshHold);
-            appWindow.fakeScanKey(GLFW_KEY_SPACE, 2, buttons != null && buttons.get(0) != 0);
-            // TODO Original source used VK_CONTROL
-            appWindow.fakeScanKey(GLFW_KEY_LEFT_CONTROL, 2, buttons != null && buttons.get(1) != 0);
+            keyboard.fakeKeyState(VK_LEFT, (char) 0, (byte) 2, getJoyX() < -threshHold);
+            keyboard.fakeKeyState(VK_RIGHT, (char) 0, (byte) 2, getJoyX() > threshHold);
+            keyboard.fakeKeyState(VK_UP, (char) 0, (byte) 2, getJoyY() < -threshHold);
+            keyboard.fakeKeyState(VK_DOWN, (char) 0, (byte) 2, getJoyY() > threshHold);
+            keyboard.fakeKeyState(VK_SPACE, ' ', (byte) 2, buttons != null && buttons.get(0) != 0);
+            keyboard.fakeKeyState(VK_CONTROL, (char) 0, (byte) 2, buttons != null && buttons.get(1) != 0);
         }
     }
 }

@@ -10,9 +10,9 @@ import com.basic4gl.runtime.VariableCollection;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Mutable;
 import com.google.gson.Gson;
-import javax.websocket.Session;
 import java.util.ArrayList;
 import java.util.List;
+import javax.websocket.Session;
 
 public class VariablesHandler {
     private static final int MAX_MEMORY_ROWS = 128;
@@ -43,14 +43,15 @@ public class VariablesHandler {
             count = variablesCommand.arguments.count;
         }
 
-        List<Variable> mapped = switch (reference) {
-            case VariablesCommand.REF_REGISTERS -> buildRegisterVariables();
-            case VariablesCommand.REF_STACK -> buildStackVariables(start, count);
-            case VariablesCommand.REF_TEMP -> buildTempVariables(start, count);
-            case VariablesCommand.REF_ALLOCATED_STRINGS -> buildAllocatedStringVariables(start, count);
-            case VariablesCommand.REF_GLOBALS -> buildGlobalVariables(start, count);
-            default -> new ArrayList<>();
-        };
+        List<Variable> mapped =
+                switch (reference) {
+                    case VariablesCommand.REF_REGISTERS -> buildRegisterVariables();
+                    case VariablesCommand.REF_STACK -> buildStackVariables(start, count);
+                    case VariablesCommand.REF_TEMP -> buildTempVariables(start, count);
+                    case VariablesCommand.REF_ALLOCATED_STRINGS -> buildAllocatedStringVariables(start, count);
+                    case VariablesCommand.REF_GLOBALS -> buildGlobalVariables(start, count);
+                    default -> new ArrayList<>();
+                };
 
         VariablesCallback callback = new VariablesCallback();
         callback.setRequestId(requestId);
@@ -68,7 +69,8 @@ public class VariablesHandler {
             VariableCollection.Variable vmVariable = globals.get(i);
             Variable variable = new Variable();
             variable.name = vmVariable.name;
-            variable.type = vm.getDataTypes().describeVariable("", vmVariable.type).trim();
+            variable.type =
+                    vm.getDataTypes().describeVariable("", vmVariable.type).trim();
             variable.value = getValueString(vmVariable);
             variable.evaluateName = vmVariable.name;
             variable.variablesReference = 0;
@@ -182,10 +184,11 @@ public class VariablesHandler {
         boolean truncatedEvaluateName = false;
 
         if (vmVariable != null && vmVariable.allocated()) {
-             ValType valueType = new ValType(vmVariable.type);
+            ValType valueType = new ValType(vmVariable.type);
             // Apply lazy loading hint for structured variables, as their value string can be expensive to compute
             if (!valueType.isBasicType() && valueType.pointerLevel <= 0) {
-                // TODO Needing to review why valToString is slow for structured variables. Defer to lazy loading for now
+                // TODO Needing to review why valToString is slow for structured variables. Defer to lazy loading for
+                // now
                 truncatedEvaluateName = true;
             }
         }

@@ -2,7 +2,7 @@ package com.basic4gl.runtime.plugin;
 
 /**
  * Policy for handling plugins with missing or incomplete platform metadata.
- * 
+ *
  * Allows host/loader to enforce different strictness levels:
  * - Development: lenient defaults for rapid iteration
  * - IDE: warn but allow with caveats
@@ -32,4 +32,3 @@ public enum PlatformMetadataPolicy {
      */
     STRICT_BLOCK
 }
-

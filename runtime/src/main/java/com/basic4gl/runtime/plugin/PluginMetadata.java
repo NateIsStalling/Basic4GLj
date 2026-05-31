@@ -3,7 +3,7 @@ package com.basic4gl.runtime.plugin;
 /**
  * Metadata describing a plugin's capabilities, version, and platform support.
  * Replaces the C++ DLL_Name_QueryFunction pattern.
- * 
+ *
  * Plugin providers return this from their metadata() method to allow the host loader
  * to validate compatibility before instantiating the actual plugin.
  */
@@ -112,10 +112,10 @@ public class PluginMetadata {
                 throw new IllegalArgumentException("Plugin name is required");
             }
             if (platformSupport == null) {
-                platformSupport = new PlatformSupport.Builder().addAllPlatforms().build();
+                platformSupport =
+                        new PlatformSupport.Builder().addAllPlatforms().build();
             }
             return new PluginMetadata(this);
         }
     }
 }
-

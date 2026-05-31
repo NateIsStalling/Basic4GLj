@@ -1,21 +1,31 @@
 package com.basic4gl.library.desktopgl;
 
+import static com.basic4gl.library.desktopgl.content.GLSpriteEngine.DRAW_SPRITES_BEHIND;
+import static com.basic4gl.library.desktopgl.content.GLSpriteEngine.DRAW_SPRITES_INFRONT;
+import static com.basic4gl.library.desktopgl.content.GLTextGrid.DRAW_TEXT;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.windows.User32.*;
 
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
-import com.basic4gl.library.desktopgl.GLSpriteEngine.*;
+import com.basic4gl.library.desktopgl.content.*;
+import com.basic4gl.library.desktopgl.content.GLSpriteEngine.*;
+import com.basic4gl.library.desktopgl.input.InputCommandHandler;
+import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
+import com.basic4gl.library.desktopgl.input.OpenGLMouse;
+import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.runtime.Data;
 import com.basic4gl.runtime.TomVM;
+import com.basic4gl.runtime.core.opengl.IB4GLOpenGLText;
 import com.basic4gl.runtime.types.BasicValType;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.FunctionSpecification;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.runtime.types.ValType;
+import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
 import com.basic4gl.runtime.util.Function;
 import java.nio.IntBuffer;
 import java.util.*;
@@ -24,20 +34,23 @@ import org.lwjgl.BufferUtils;
 /**
  * Created by Nate on 11/1/2015.
  */
-public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
+public class TextBasicLib implements FunctionLibrary {
 
     public static final int MAX_SPRITES = 100000;
 
     // Global variables
-    private static GLWindow appWindow;
-    private static GLTextGrid appText;
+    private GLTextGrid appText;
 
     private static int spriteCount;
 
     private static GLSpriteStore sprites;
     private static int boundSprite;
 
-    private static TextMode textMode = TextMode.TEXT_SIMPLE;
+    private OpenGLWindowManager windowManager;
+    private Content2DManager contentManager;
+    private OpenGLKeyboard keyboard;
+    private OpenGLMouse mouse;
+    private GLSpriteEngine spriteEngine;
 
     private final float[] vec = new float[4];
 
@@ -52,30 +65,20 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
     }
 
     @Override
-    public void setWindow(GLWindow window) {
-        TextBasicLib.appWindow = window;
-    }
-
-    @Override
-    public void setTextGrid(GLTextGrid text) {
-        TextBasicLib.appText = text;
-    }
-
-    @Override
     public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         // Text rendering defaults
-        textMode = TextMode.TEXT_SIMPLE;
+        contentManager.reset();
         appText.resize(25, 40);
         appText.hideCursor();
         appText.setColour(GLTextGrid.makeColour((short) 220, (short) 220, (short) 255));
         appText.setTexture(appText.getDefaultTexture());
         appText.setScroll(true);
-        appWindow.setDontPaint(false);
+
+        //        appWindow.setDontPaint(false);
 
         // Sprite engine defaults
         sprites = new GLSpriteStore();
         sprites.clear();
-        GLSpriteEngine spriteEngine = (GLSpriteEngine) appText;
         spriteEngine.setDefaults();
         boundSprite = 0;
 
@@ -83,7 +86,37 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
     }
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {}
+    public void init(TomBasicCompiler comp, IServiceCollection services) {
+
+        this.spriteEngine = new GLSpriteEngine();
+        this.appText = services.getService(GLTextGrid.class);
+        this.windowManager = services.getService(OpenGLWindowManager.class);
+        this.contentManager = services.getService(Content2DManager.class);
+        this.keyboard = services.getService(OpenGLKeyboard.class);
+        this.mouse = services.getService(OpenGLMouse.class);
+
+        if (contentManager != null) {
+
+            // Upload charset texture after window created
+            contentManager.getWindowManager().subscribeWindowCreated(() -> {
+                appText.uploadCharsetTexture();
+            });
+            contentManager.getWindowManager().subscribeBeforeDestroyWindow(() -> {
+                appText.deleteCharsetTexture();
+            });
+
+            // Register 2D content layers
+            contentManager.addContent(0.0f, DRAW_TEXT, (content) -> {
+                appText.draw();
+            });
+            contentManager.addContent(-1.0f, DRAW_SPRITES_BEHIND, (content) -> {
+                spriteEngine.drawSprites(false);
+            });
+            contentManager.addContent(1.0f, DRAW_SPRITES_INFRONT, (content) -> {
+                spriteEngine.drawSprites(true);
+            });
+        }
+    }
 
     @Override
     public void cleanup() {
@@ -94,12 +127,12 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
     public Map<String, Constant> constants() {
         Map<String, Constant> c = new HashMap<>();
         // Register constants
-        c.put("TEXT_SIMPLE", new Constant(TextMode.TEXT_SIMPLE.getMode()));
-        c.put("TEXT_BUFFERED", new Constant(TextMode.TEXT_BUFFERED.getMode()));
-        c.put("TEXT_OVERLAID", new Constant(TextMode.TEXT_OVERLAID.getMode()));
-        c.put("DRAW_TEXT", new Constant(GLTextGrid.DRAW_TEXT));
-        c.put("DRAW_SPRITES_BEHIND", new Constant(GLSpriteEngine.DRAW_SPRITES_BEHIND));
-        c.put("DRAW_SPRITES_INFRONT", new Constant(GLSpriteEngine.DRAW_SPRITES_INFRONT));
+        c.put("TEXT_SIMPLE", new Constant(IB4GLOpenGLText.TextMode.TEXT_SIMPLE.getMode()));
+        c.put("TEXT_BUFFERED", new Constant(IB4GLOpenGLText.TextMode.TEXT_BUFFERED.getMode()));
+        c.put("TEXT_OVERLAID", new Constant(IB4GLOpenGLText.TextMode.TEXT_OVERLAID.getMode()));
+        c.put("DRAW_TEXT", new Constant(DRAW_TEXT));
+        c.put("DRAW_SPRITES_BEHIND", new Constant(DRAW_SPRITES_BEHIND));
+        c.put("DRAW_SPRITES_INFRONT", new Constant(DRAW_SPRITES_INFRONT));
         c.put("DRAW_SPRITES", new Constant(GLSpriteEngine.DRAW_SPRITES));
 
         // COMPATIBILITY NOTE:
@@ -126,66 +159,111 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
          *       For non-printable keys, custom names are used (e.g. "F4", "BACKSPACE", etc.)
          */
 
-        c.put("VK_BACK", new Constant(GLFW_KEY_BACKSPACE));
-        c.put("VK_TAB", new Constant(GLFW_KEY_TAB));
-        c.put("VK_SPACE", new Constant(GLFW_KEY_SPACE));
-        c.put("VK_PRIOR", new Constant(GLFW_KEY_PAGE_UP));
-        c.put("VK_NEXT", new Constant(GLFW_KEY_PAGE_DOWN));
-        c.put("VK_CAPITAL", new Constant(GLFW_KEY_CAPS_LOCK));
-        c.put("VK_ESCAPE", new Constant(GLFW_KEY_ESCAPE));
-        c.put("VK_END", new Constant(GLFW_KEY_END));
-        c.put("VK_HOME", new Constant(GLFW_KEY_HOME));
-        c.put("VK_LEFT", new Constant(GLFW_KEY_LEFT));
-        c.put("VK_UP", new Constant(GLFW_KEY_UP));
-        c.put("VK_RIGHT", new Constant(GLFW_KEY_RIGHT));
-        c.put("VK_DOWN", new Constant(GLFW_KEY_DOWN));
-        c.put("VK_INSERT", new Constant(GLFW_KEY_INSERT));
-        c.put("VK_DELETE", new Constant(GLFW_KEY_DELETE));
-        c.put("VK_NUMPAD0", new Constant(GLFW_KEY_KP_0));
-        c.put("VK_NUMPAD1", new Constant(GLFW_KEY_KP_1));
-        c.put("VK_NUMPAD2", new Constant(GLFW_KEY_KP_2));
-        c.put("VK_NUMPAD3", new Constant(GLFW_KEY_KP_3));
-        c.put("VK_NUMPAD4", new Constant(GLFW_KEY_KP_4));
-        c.put("VK_NUMPAD5", new Constant(GLFW_KEY_KP_5));
-        c.put("VK_NUMPAD6", new Constant(GLFW_KEY_KP_6));
-        c.put("VK_NUMPAD7", new Constant(GLFW_KEY_KP_7));
-        c.put("VK_NUMPAD8", new Constant(GLFW_KEY_KP_8));
-        c.put("VK_NUMPAD9", new Constant(GLFW_KEY_KP_9));
-        c.put("VK_MULTIPLY", new Constant(GLFW_KEY_KP_MULTIPLY));
-        c.put("VK_ADD", new Constant(GLFW_KEY_KP_ADD));
-        c.put("VK_SUBTRACT", new Constant(GLFW_KEY_KP_SUBTRACT));
-        c.put("VK_DECIMAL", new Constant(GLFW_KEY_KP_DECIMAL));
-        c.put("VK_DIVIDE", new Constant(GLFW_KEY_KP_DIVIDE));
-        c.put("VK_F1", new Constant(GLFW_KEY_F1));
-        c.put("VK_F2", new Constant(GLFW_KEY_F2));
-        c.put("VK_F3", new Constant(GLFW_KEY_F3));
-        c.put("VK_F4", new Constant(GLFW_KEY_F4));
-        c.put("VK_F5", new Constant(GLFW_KEY_F5));
-        c.put("VK_F6", new Constant(GLFW_KEY_F6));
-        c.put("VK_F7", new Constant(GLFW_KEY_F7));
-        c.put("VK_F8", new Constant(GLFW_KEY_F8));
-        c.put("VK_F9", new Constant(GLFW_KEY_F9));
-        c.put("VK_F10", new Constant(GLFW_KEY_F10));
-        c.put("VK_F11", new Constant(GLFW_KEY_F11));
-        c.put("VK_F12", new Constant(GLFW_KEY_F12));
-        c.put("VK_F13", new Constant(GLFW_KEY_F13));
-        c.put("VK_F14", new Constant(GLFW_KEY_F14));
-        c.put("VK_F15", new Constant(GLFW_KEY_F15));
-        c.put("VK_F16", new Constant(GLFW_KEY_F16));
-        c.put("VK_F17", new Constant(GLFW_KEY_F17));
-        c.put("VK_F18", new Constant(GLFW_KEY_F18));
-        c.put("VK_F19", new Constant(GLFW_KEY_F19));
-        c.put("VK_F20", new Constant(GLFW_KEY_F20));
-        c.put("VK_F21", new Constant(GLFW_KEY_F21));
-        c.put("VK_F22", new Constant(GLFW_KEY_F22));
-        c.put("VK_F23", new Constant(GLFW_KEY_F23));
-        c.put("VK_F24", new Constant(GLFW_KEY_F24));
-        c.put("VK_LSHIFT", new Constant(GLFW_KEY_LEFT_SHIFT));
-        c.put("VK_RSHIFT", new Constant(GLFW_KEY_RIGHT_SHIFT));
-        c.put("VK_LCONTROL", new Constant(GLFW_KEY_LEFT_CONTROL));
-        c.put("VK_RCONTROL", new Constant(GLFW_KEY_RIGHT_CONTROL));
-        c.put("VK_NUMLOCK", new Constant(GLFW_KEY_NUM_LOCK));
-        c.put("VK_SCROLL", new Constant(GLFW_KEY_SCROLL_LOCK));
+        c.put("VK_LBUTTON", new Constant(VK_LBUTTON)); // Virtual key codes
+        c.put("VK_RBUTTON", new Constant(VK_RBUTTON));
+        c.put("VK_CANCEL", new Constant(VK_CANCEL));
+        c.put("VK_MBUTTON", new Constant(VK_MBUTTON));
+        c.put("VK_CLEAR", new Constant(VK_CLEAR));
+        c.put("VK_RETURN", new Constant(VK_RETURN));
+        c.put("VK_SHIFT", new Constant(VK_SHIFT));
+        c.put("VK_CONTROL", new Constant(VK_CONTROL));
+        c.put("VK_MENU", new Constant(VK_MENU));
+        c.put("VK_PAUSE", new Constant(VK_PAUSE));
+
+        c.put("VK_BACK", new Constant(VK_BACK));
+        c.put("VK_TAB", new Constant(VK_TAB));
+        c.put("VK_SPACE", new Constant(VK_SPACE));
+        c.put("VK_PRIOR", new Constant(VK_PRIOR));
+        c.put("VK_NEXT", new Constant(VK_NEXT));
+        c.put("VK_CAPITAL", new Constant(VK_CAPITAL));
+        c.put("VK_KANA", new Constant(VK_KANA));
+        c.put("VK_HANGEUL", new Constant(VK_HANGEUL));
+        c.put("VK_HANGUL", new Constant(VK_HANGUL));
+        c.put("VK_JUNJA", new Constant(VK_JUNJA));
+        c.put("VK_FINAL", new Constant(VK_FINAL));
+        c.put("VK_HANJA", new Constant(VK_HANJA));
+        c.put("VK_KANJI", new Constant(VK_KANJI));
+
+        c.put("VK_ESCAPE", new Constant(VK_ESCAPE));
+        c.put("VK_CONVERT", new Constant(VK_CONVERT));
+        c.put("VK_NONCONVERT", new Constant(VK_NONCONVERT));
+        c.put("VK_ACCEPT", new Constant(VK_ACCEPT));
+        c.put("VK_MODECHANGE", new Constant(VK_MODECHANGE));
+
+        c.put("VK_END", new Constant(VK_END));
+        c.put("VK_HOME", new Constant(VK_HOME));
+        c.put("VK_LEFT", new Constant(VK_LEFT));
+        c.put("VK_UP", new Constant(VK_UP));
+        c.put("VK_RIGHT", new Constant(VK_RIGHT));
+        c.put("VK_DOWN", new Constant(VK_DOWN));
+        c.put("VK_INSERT", new Constant(VK_INSERT));
+        c.put("VK_DELETE", new Constant(VK_DELETE));
+
+        c.put("VK_SELECT", new Constant(VK_SELECT));
+        c.put("VK_PRINT", new Constant(VK_PRINT));
+        c.put("VK_EXECUTE", new Constant(VK_EXECUTE));
+        c.put("VK_SNAPSHOT", new Constant(VK_SNAPSHOT));
+        c.put("VK_HELP", new Constant(VK_HELP));
+        c.put("VK_LWIN", new Constant(VK_LWIN));
+        c.put("VK_RWIN", new Constant(VK_RWIN));
+        c.put("VK_APPS", new Constant(VK_APPS));
+
+        c.put("VK_NUMPAD0", new Constant(VK_NUMPAD0));
+        c.put("VK_NUMPAD1", new Constant(VK_NUMPAD1));
+        c.put("VK_NUMPAD2", new Constant(VK_NUMPAD2));
+        c.put("VK_NUMPAD3", new Constant(VK_NUMPAD3));
+        c.put("VK_NUMPAD4", new Constant(VK_NUMPAD4));
+        c.put("VK_NUMPAD5", new Constant(VK_NUMPAD5));
+        c.put("VK_NUMPAD6", new Constant(VK_NUMPAD6));
+        c.put("VK_NUMPAD7", new Constant(VK_NUMPAD7));
+        c.put("VK_NUMPAD8", new Constant(VK_NUMPAD8));
+        c.put("VK_NUMPAD9", new Constant(VK_NUMPAD9));
+        c.put("VK_MULTIPLY", new Constant(VK_MULTIPLY));
+        c.put("VK_ADD", new Constant(VK_ADD));
+        c.put("VK_SEPARATOR", new Constant(VK_SEPARATOR));
+        c.put("VK_SUBTRACT", new Constant(VK_SUBTRACT));
+        c.put("VK_DECIMAL", new Constant(VK_DECIMAL));
+        c.put("VK_DIVIDE", new Constant(VK_DIVIDE));
+        c.put("VK_F1", new Constant(VK_F1));
+        c.put("VK_F2", new Constant(VK_F2));
+        c.put("VK_F3", new Constant(VK_F3));
+        c.put("VK_F4", new Constant(VK_F4));
+        c.put("VK_F5", new Constant(VK_F5));
+        c.put("VK_F6", new Constant(VK_F6));
+        c.put("VK_F7", new Constant(VK_F7));
+        c.put("VK_F8", new Constant(VK_F8));
+        c.put("VK_F9", new Constant(VK_F9));
+        c.put("VK_F10", new Constant(VK_F10));
+        c.put("VK_F11", new Constant(VK_F11));
+        c.put("VK_F12", new Constant(VK_F12));
+        c.put("VK_F13", new Constant(VK_F13));
+        c.put("VK_F14", new Constant(VK_F14));
+        c.put("VK_F15", new Constant(VK_F15));
+        c.put("VK_F16", new Constant(VK_F16));
+        c.put("VK_F17", new Constant(VK_F17));
+        c.put("VK_F18", new Constant(VK_F18));
+        c.put("VK_F19", new Constant(VK_F19));
+        c.put("VK_F20", new Constant(VK_F20));
+        c.put("VK_F21", new Constant(VK_F21));
+        c.put("VK_F22", new Constant(VK_F22));
+        c.put("VK_F23", new Constant(VK_F23));
+        c.put("VK_F24", new Constant(VK_F24));
+        c.put("VK_LSHIFT", new Constant(VK_LSHIFT));
+        c.put("VK_RSHIFT", new Constant(VK_RSHIFT));
+        c.put("VK_LCONTROL", new Constant(VK_LCONTROL));
+        c.put("VK_RCONTROL", new Constant(VK_RCONTROL));
+        c.put("VK_LMENU", new Constant(VK_LMENU));
+        c.put("VK_RMENU", new Constant(VK_RMENU));
+        c.put("VK_NUMLOCK", new Constant(VK_NUMLOCK));
+        c.put("VK_SCROLL", new Constant(VK_SCROLL));
+
+        c.put("VK_PROCESSKEY", new Constant(VK_PROCESSKEY));
+        c.put("VK_ATTN", new Constant(VK_ATTN));
+        c.put("VK_CRSEL", new Constant(VK_CRSEL));
+        c.put("VK_EXSEL", new Constant(VK_EXSEL));
+        c.put("VK_EREOF", new Constant(VK_EREOF));
+        c.put("VK_PLAY", new Constant(VK_PLAY));
+        c.put("VK_ZOOM", new Constant(VK_ZOOM));
 
         c.put("GLFW_KEY_UNKNOWN", new Constant(GLFW_KEY_UNKNOWN));
         c.put("GLFW_KEY_SPACE", new Constant(GLFW_KEY_SPACE));
@@ -379,17 +457,17 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
                     false,
                     null)
         });
-        s.put("swapbuffers", new FunctionSpecification[] {
-            new FunctionSpecification(
-                    WrapSwapBuffers.class,
-                    new ParamTypeList(),
-                    true,
-                    false,
-                    new ValType(BasicValType.VTP_INT),
-                    false,
-                    false,
-                    null)
-        });
+        //        s.put("swapbuffers", new FunctionSpecification[] {
+        //            new FunctionSpecification(
+        //                    WrapSwapBuffers.class,
+        //                    new ParamTypeList(),
+        //                    true,
+        //                    false,
+        //                    new ValType(BasicValType.VTP_INT),
+        //                    false,
+        //                    false,
+        //                    null)
+        //        });
         s.put("drawtext", new FunctionSpecification[] {
             new FunctionSpecification(
                     WrapDrawText.class,
@@ -2154,107 +2232,6 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         return null;
     }
 
-    public void print(String text, boolean newline) {
-        TextBasicLib.appText.write(text);
-        if (newline) {
-            TextBasicLib.appText.newLine();
-        }
-        TextBasicLib.redraw();
-    }
-
-    public void locate(int x, int y) {
-        TextBasicLib.appText.setCursorPosition(x, y);
-    }
-
-    public void cls() {
-        TextBasicLib.appText.clear();
-        TextBasicLib.redraw();
-    }
-
-    public void clearRegion(int x1, int y1, int x2, int y2) {
-        TextBasicLib.appText.clearRegion(x1, y1, x2, y2);
-        TextBasicLib.redraw();
-    }
-
-    public int getTextRows() {
-        return TextBasicLib.appText.getRows();
-    }
-
-    public int getTextCols() {
-        return TextBasicLib.appText.getColumns();
-    }
-
-    public void resizeText(int cols, int rows) {
-        if (rows < 1) {
-            rows = 1;
-        }
-        if (rows > 500) {
-            rows = 500;
-        }
-        if (cols < 1) {
-            cols = 1;
-        }
-        if (cols > 500) {
-            cols = 500;
-        }
-        TextBasicLib.appText.resize(rows, cols);
-        TextBasicLib.redraw();
-    }
-
-    public void setTextScrollEnabled(boolean scroll) {
-        TextBasicLib.appText.setScroll(scroll);
-    }
-
-    public boolean getTextScrollEnabled() {
-        return TextBasicLib.appText.getScroll();
-    }
-
-    public void drawText() {
-        TextBasicLib.forceDraw();
-    }
-
-    public char getCharAt(int x, int y) {
-        return TextBasicLib.appText.getTextAt(x, y);
-    }
-
-    public void setFont(int fontTexture) {
-        TextBasicLib.appText.setTexture(fontTexture);
-    }
-
-    public int getDefaultFont() {
-        return TextBasicLib.appText.getDefaultTexture();
-    }
-
-    public void setTextMode(TextMode mode) {
-        textMode = mode;
-    }
-
-    public void setColor(byte red, byte green, byte blue) {
-        TextBasicLib.appText.setColour(GLTextGrid.makeColour(red, green, blue));
-    }
-
-    static void forceDraw() {
-        forceDraw((byte) (GLTextGrid.DRAW_TEXT | GLSpriteEngine.DRAW_SPRITES));
-    }
-
-    static void forceDraw(byte flags) {
-        if (textMode == TextMode.TEXT_SIMPLE || textMode == TextMode.TEXT_BUFFERED) {
-            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        }
-
-        appText.draw(flags);
-
-        if (textMode == TextMode.TEXT_SIMPLE || textMode == TextMode.TEXT_BUFFERED) {
-            appWindow.swapBuffers();
-        }
-    }
-
-    static void redraw() {
-        if (textMode == TextMode.TEXT_SIMPLE) {
-            forceDraw();
-        }
-    }
-
     boolean getTextures(TomVM vm, int paramIndex, Vector<Integer> dest) {
 
         // Read in texture array and convert to vector (for storage in sprite)
@@ -2349,78 +2326,61 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
                 4);
     }
 
-    public static final class WrapTextMode implements Function {
+    public final class WrapTextMode implements Function {
         public void run(TomVM vm) {
             int m = vm.getIntParam(1);
-            switch (m) {
-                case 0:
-                    textMode = TextMode.TEXT_SIMPLE;
-                    break;
-                case 1:
-                    textMode = TextMode.TEXT_BUFFERED;
-                    break;
-                case 2:
-                    textMode = TextMode.TEXT_OVERLAID;
-                    break;
-            }
+            contentManager.setDrawMode(IB4GLOpenGLText.TextMode.fromIntOrDefault(m, contentManager.getDrawMode()));
         }
     }
 
-    public static final class WrapCls implements Function {
+    public final class WrapCls implements Function {
         public void run(TomVM vm) {
             appText.clear();
-            redraw();
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapPrint implements Function {
+    public final class WrapPrint implements Function {
         public void run(TomVM vm) {
             appText.write(vm.getStringParam(1));
-            redraw();
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapPrintr implements Function {
+    public final class WrapPrintr implements Function {
         public void run(TomVM vm) {
             appText.write(vm.getStringParam(1));
             appText.newLine();
-            redraw();
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapPrintr_2 implements Function {
+    public final class WrapPrintr_2 implements Function {
         public void run(TomVM vm) {
             appText.newLine();
-            redraw();
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapLocate implements Function {
+    public final class WrapLocate implements Function {
         public void run(TomVM vm) {
             appText.setCursorPosition(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
-    public static final class WrapSwapBuffers implements Function {
+    public final class WrapDrawText implements Function {
         public void run(TomVM vm) {
-            appWindow.swapBuffers();
-            appWindow.setDontPaint(false);
+            contentManager.draw();
         }
     }
 
-    public static final class WrapDrawText implements Function {
+    public final class WrapDrawText2 implements Function {
         public void run(TomVM vm) {
-            TextBasicLib.forceDraw();
+            contentManager.draw(vm.getIntParam(1).byteValue());
         }
     }
 
-    public static final class WrapDrawText2 implements Function {
-        public void run(TomVM vm) {
-            TextBasicLib.forceDraw(vm.getIntParam(1).byteValue());
-        }
-    }
-
-    public static final class WrapResizeText implements Function {
+    public final class WrapResizeText implements Function {
         public void run(TomVM vm) {
             int rows = vm.getIntParam(1), cols = vm.getIntParam(2);
             if (rows < 1) {
@@ -2435,37 +2395,34 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             if (cols > 500) {
                 cols = 500;
             }
-            TextBasicLib.appText.resize(rows, cols);
-            TextBasicLib.redraw();
+            appText.resize(rows, cols);
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapTextRows implements Function {
+    public final class WrapTextRows implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(appText.getRows());
         }
     }
 
-    public static final class WrapTextCols implements Function {
+    public final class WrapTextCols implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(appText.getColumns());
         }
     }
 
-    public static final class WrapInput implements Function {
+    public final class WrapInput implements Function {
         public void run(TomVM vm) {
-            vm.setRegString(appText.getString(TextBasicLib.appWindow));
+            Basic4GLLongRunningFunction handler = new InputCommandHandler(vm, keyboard, contentManager, appText);
+            vm.beginLongRunningFunction(handler);
         }
     }
 
-    public static final class WrapInkey implements Function {
+    public final class WrapInkey implements Function {
         public void run(TomVM vm) {
-            int key = TextBasicLib.appWindow.getKey();
-            if (key != 0 && key <= Character.MAX_VALUE && key >= Character.MIN_VALUE) {
-                if (key == '\r') {
-                    // Keep scan-key queue in sync with synthesized Enter character.
-                    TextBasicLib.appWindow.discardLeadingScanKeyIf(GLFW_KEY_ENTER, GLFW_KEY_KP_ENTER);
-                }
+            char key = keyboard.getNextKey();
+            if (key != 0) {
                 vm.setRegString(String.valueOf((char) key));
             } else {
                 vm.setRegString("");
@@ -2473,44 +2430,44 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapInScanKey implements Function {
+    public final class WrapInScanKey implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(TextBasicLib.appWindow.getScanKey());
+            vm.getReg().setIntVal(keyboard.getNextScanKey());
         }
     }
 
-    public static final class WrapClearKeys implements Function {
+    public final class WrapClearKeys implements Function {
         public void run(TomVM vm) {
-            appWindow.clearKeyBuffers();
+            keyboard.clearKeyBuffers();
         }
     }
 
-    public static final class WrapShowCursor implements Function {
+    public final class WrapShowCursor implements Function {
         public void run(TomVM vm) {
             appText.showCursor();
-            redraw();
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapHideCursor implements Function {
+    public final class WrapHideCursor implements Function {
         public void run(TomVM vm) {
             appText.hideCursor();
-            redraw();
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapKeyDown implements Function {
+    public final class WrapKeyDown implements Function {
         public void run(TomVM vm) {
             String s = vm.getStringParam(1);
             if (s.isEmpty()) {
                 vm.getReg().setIntVal(0);
             } else {
-                vm.getReg().setIntVal(appWindow.isKeyDown(s.charAt(0)) ? -1 : 0);
+                vm.getReg().setIntVal(keyboard.isKeyDown(s.charAt(0)) ? -1 : 0);
             }
         }
     }
 
-    public static final class WrapScanKeyDown implements Function {
+    public final class WrapScanKeyDown implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             // Windows version of Basic4GL only supports index range 0 - 255,
@@ -2518,12 +2475,12 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             if (index < 0 || index > Character.MAX_VALUE) {
                 vm.getReg().setIntVal(0);
             } else {
-                vm.getReg().setIntVal(appWindow.isKeyDown((char) index) ? -1 : 0);
+                vm.getReg().setIntVal(keyboard.isScanKeyDown((char) index) ? -1 : 0);
             }
         }
     }
 
-    public static final class WrapCharAt implements Function {
+    public final class WrapCharAt implements Function {
         public void run(TomVM vm) {
             char c = appText.getTextAt(vm.getIntParam(2), vm.getIntParam(1));
             if (c == 0) {
@@ -2534,7 +2491,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapColour implements Function {
+    public final class WrapColour implements Function {
         public void run(TomVM vm) {
             appText.setColour(GLTextGrid.makeColour(
                     vm.getIntParam(3).shortValue(),
@@ -2543,66 +2500,62 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapFont implements Function {
+    public final class WrapFont implements Function {
         public void run(TomVM vm) {
             appText.setTexture(vm.getIntParam(1));
         }
     }
 
-    public static final class WrapDefaultFont implements Function {
+    public final class WrapDefaultFont implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(appText.getDefaultTexture());
         }
     }
 
-    public static final class WrapMouseX implements Function {
+    public final class WrapMouseX implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((float) appWindow.getMouseX()) / appWindow.getWidth());
+            vm.getReg().setRealVal(((float) mouse.getX()) / windowManager.getWindowWidth());
         }
     }
 
-    public static final class WrapMouseY implements Function {
+    public final class WrapMouseY implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((float) appWindow.getMouseY()) / appWindow.getHeight());
+            vm.getReg().setRealVal(((float) mouse.getY()) / windowManager.getWindowHeight());
         }
     }
 
-    public static final class WrapMouseXD implements Function {
+    public final class WrapMouseXD implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((float) appWindow.getMouseXD()) / appWindow.getWidth() * 2f);
+            vm.getReg().setRealVal(((float) mouse.getXD()) / windowManager.getWindowWidth() * 2f);
         }
     }
 
-    public static final class WrapMouseYD implements Function {
+    public final class WrapMouseYD implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((float) appWindow.getMouseYD()) / appWindow.getHeight() * 2f);
+            vm.getReg().setRealVal(((float) mouse.getYD()) / windowManager.getWindowHeight() * 2f);
         }
     }
 
-    public static final class WrapMouseButton implements Function {
+    public final class WrapMouseButton implements Function {
         public void run(TomVM vm) {
             int button = vm.getIntParam(1);
-            if (button >= 0 && button <= 2) {
-                vm.getReg().setIntVal(appWindow.getMouseButton(button) ? -1 : 0);
-            } else {
-                vm.getReg().setIntVal(0);
-            }
+            vm.getReg().setIntVal(mouse.getButton(button) ? -1 : 0);
         }
     }
 
-    public static final class WrapMouseWheel implements Function {
+    public final class WrapMouseWheel implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(appWindow.getMouseWheel());
+            vm.getReg().setIntVal(mouse.getWheelDelta());
         }
     }
 
-    public static final class WrapCursorCol implements Function {
+    public final class WrapCursorCol implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(appText.getCursorX());
         }
     }
 
-    public static final class WrapCursorRow implements Function {
+    public final class WrapCursorRow implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(appText.getCursorY());
         }
@@ -2616,7 +2569,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             TextBasicLib.spriteCount++;
 
             // Add to sprite engine (so we can draw it)
-            ((GLSpriteEngine) appText).addSprite(sprite);
+            spriteEngine.addSprite(sprite);
 
             // Add to store (so we can track it), and return index to VM
             boundSprite = sprites.alloc(sprite);
@@ -2636,7 +2589,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             TextBasicLib.spriteCount++;
 
             // Add to sprite engine (so we can draw it)
-            ((GLSpriteEngine) appText).addSprite(tileMap);
+            spriteEngine.addSprite(tileMap);
 
             // Add to store (so we can track it), and return index to VM
             boundSprite = sprites.alloc(tileMap);
@@ -2653,7 +2606,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
 
             // Allocate sprite
             createSprite(vm);
-            TextBasicLib.redraw();
+            contentManager.changeMade();
         }
     }
 
@@ -2665,7 +2618,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             if (sprite != null) {
                 sprite.setTexture(vm.getIntParam(1));
             }
-            TextBasicLib.redraw();
+            contentManager.changeMade();
         }
     }
 
@@ -2686,7 +2639,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             if (sprite != null) {
                 sprite.setTextures(textures);
             }
-            TextBasicLib.redraw();
+            contentManager.changeMade();
         }
     }
 
@@ -2695,7 +2648,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
 
             // Allocate sprite
             createTileMap(vm);
-            TextBasicLib.redraw();
+            contentManager.changeMade();
         }
     }
 
@@ -2707,7 +2660,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             if (sprite != null) {
                 sprite.setTexture(vm.getIntParam(1));
             }
-            TextBasicLib.redraw();
+            contentManager.changeMade();
         }
     }
 
@@ -2728,32 +2681,32 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             if (sprite != null) {
                 sprite.setTextures(textures);
             }
-            TextBasicLib.redraw();
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapDeleteSprite implements Function {
+    public final class WrapDeleteSprite implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             if (isBasicSprite(index)) {
                 TextBasicLib.sprites.free(index);
                 TextBasicLib.spriteCount--;
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapBindSprite implements Function {
+    public final class WrapBindSprite implements Function {
         public void run(TomVM vm) {
             TextBasicLib.boundSprite = vm.getIntParam(1);
         }
     }
 
-    public static final class WrapSprSetTexture implements Function {
+    public final class WrapSprSetTexture implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).setTexture(vm.getIntParam(1));
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
@@ -2763,16 +2716,16 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             Vector<Integer> textures = new Vector<>();
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) && getTextures(vm, 1, textures)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).setTextures(textures);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprAddTexture implements Function {
+    public final class WrapSprAddTexture implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).addTexture(vm.getIntParam(1));
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
@@ -2782,34 +2735,34 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
             Vector<Integer> textures = new Vector<>();
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) && getTextures(vm, 1, textures)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).addTextures(textures);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetFrame implements Function {
+    public final class WrapSprSetFrame implements Function {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 getSprite(TextBasicLib.boundSprite).setFrame(vm.getRealParam(1));
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetX implements Function {
+    public final class WrapSprSetX implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetY implements Function {
+    public final class WrapSprSetY implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
@@ -2820,44 +2773,44 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
                 readVec(vm, 1);
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX = vec[0];
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY = vec[1];
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetPos_2 implements Function {
+    public final class WrapSprSetPos_2 implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX = vm.getRealParam(2);
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetZOrder implements Function {
+    public final class WrapSprSetZOrder implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).setZOrder(vm.getRealParam(1));
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetXSize implements Function {
+    public final class WrapSprSetXSize implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeX = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetYSize implements Function {
+    public final class WrapSprSetYSize implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeY = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
@@ -2868,80 +2821,80 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
                 readVec(vm, 1);
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeX = vec[0];
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeY = vec[1];
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetSize_2 implements Function {
+    public final class WrapSprSetSize_2 implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeX = vm.getRealParam(2);
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeY = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetScale implements Function {
+    public final class WrapSprSetScale implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).scale = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetXCentre implements Function {
+    public final class WrapSprSetXCentre implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerX = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetYCentre implements Function {
+    public final class WrapSprSetYCentre implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerY = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetXFlip implements Function {
+    public final class WrapSprSetXFlip implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipX = vm.getIntParam(1) != 0;
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetYFlip implements Function {
+    public final class WrapSprSetYFlip implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipY = vm.getIntParam(1) != 0;
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetVisible implements Function {
+    public final class WrapSprSetVisible implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).visible = vm.getIntParam(1) != 0;
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetAngle implements Function {
+    public final class WrapSprSetAngle implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).angle = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
@@ -2959,62 +2912,62 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
                     TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[i] = vec[i];
                 }
 
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetColour_2 implements Function {
+    public final class WrapSprSetColour_2 implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[0] = vm.getRealParam(3);
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[1] = vm.getRealParam(2);
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[2] = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetColour_3 implements Function {
+    public final class WrapSprSetColour_3 implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[0] = vm.getRealParam(4);
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[1] = vm.getRealParam(3);
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[2] = vm.getRealParam(2);
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[3] = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetAlpha implements Function {
+    public final class WrapSprSetAlpha implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[3] = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetParallax implements Function {
+    public final class WrapSprSetParallax implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).parallax = vm.getIntParam(1) != 0;
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetSolid implements Function {
+    public final class WrapSprSetSolid implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).solid = vm.getIntParam(1) != 0;
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapResizeSpriteArea implements Function {
+    public final class WrapResizeSpriteArea implements Function {
         public void run(TomVM vm) {
             int width = vm.getRealParam(2).intValue(),
                     height = vm.getRealParam(1).intValue();
@@ -3022,24 +2975,24 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
                 vm.functionError("Width and height must both be greater than 0");
                 return;
             }
-            ((GLSpriteEngine) TextBasicLib.appText).setWidth(width);
-            ((GLSpriteEngine) TextBasicLib.appText).setHeight(height);
+            spriteEngine.setWidth(width);
+            spriteEngine.setHeight(height);
         }
     }
 
-    public static final class WrapSpriteAreaWidth implements Function {
+    public final class WrapSpriteAreaWidth implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).getWidth());
+            vm.getReg().setRealVal(spriteEngine.getWidth());
         }
     }
 
-    public static final class WrapSpriteAreaHeight implements Function {
+    public final class WrapSpriteAreaHeight implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).getHeight());
+            vm.getReg().setRealVal(spriteEngine.getHeight());
         }
     }
 
-    public static final class WrapSprFrame implements Function {
+    public final class WrapSprFrame implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3049,7 +3002,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprX implements Function {
+    public final class WrapSprX implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3059,7 +3012,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprY implements Function {
+    public final class WrapSprY implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3069,7 +3022,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprPos implements Function {
+    public final class WrapSprPos implements Function {
         public void run(TomVM vm) {
             Float[] result = {0f, 0f};
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
@@ -3080,7 +3033,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprZOrder implements Function {
+    public final class WrapSprZOrder implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3092,7 +3045,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprXSize implements Function {
+    public final class WrapSprXSize implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3102,7 +3055,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprYSize implements Function {
+    public final class WrapSprYSize implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3112,7 +3065,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprScale implements Function {
+    public final class WrapSprScale implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3122,7 +3075,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprXCentre implements Function {
+    public final class WrapSprXCentre implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3132,7 +3085,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprYCentre implements Function {
+    public final class WrapSprYCentre implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3142,7 +3095,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprXFlip implements Function {
+    public final class WrapSprXFlip implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3152,7 +3105,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprYFlip implements Function {
+    public final class WrapSprYFlip implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3162,7 +3115,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprVisible implements Function {
+    public final class WrapSprVisible implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3172,7 +3125,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprAngle implements Function {
+    public final class WrapSprAngle implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3182,7 +3135,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprColour implements Function {
+    public final class WrapSprColour implements Function {
         public void run(TomVM vm) {
             Float[] result = {0f, 0f, 0f, 0f};
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
@@ -3194,7 +3147,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprAlpha implements Function {
+    public final class WrapSprAlpha implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3204,7 +3157,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprParallax implements Function {
+    public final class WrapSprParallax implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3214,7 +3167,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprSolid implements Function {
+    public final class WrapSprSolid implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3224,7 +3177,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprLeft implements Function {
+    public final class WrapSprLeft implements Function {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 GLSprite sprite = getSprite(TextBasicLib.boundSprite);
@@ -3235,7 +3188,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprRight implements Function {
+    public final class WrapSprRight implements Function {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 GLSprite sprite = getSprite(TextBasicLib.boundSprite);
@@ -3246,7 +3199,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprTop implements Function {
+    public final class WrapSprTop implements Function {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 GLSprite sprite = getSprite(TextBasicLib.boundSprite);
@@ -3257,7 +3210,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprBottom implements Function {
+    public final class WrapSprBottom implements Function {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 GLSprite sprite = getSprite(TextBasicLib.boundSprite);
@@ -3268,19 +3221,19 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprXVel implements Function {
+    public final class WrapSprXVel implements Function {
         public void run(TomVM vm) {
             vm.getReg().setRealVal(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).xd : 0);
         }
     }
 
-    public static final class WrapSprYVel implements Function {
+    public final class WrapSprYVel implements Function {
         public void run(TomVM vm) {
             vm.getReg().setRealVal(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).yd : 0);
         }
     }
 
-    public static final class WrapSprVel implements Function {
+    public final class WrapSprVel implements Function {
         public void run(TomVM vm) {
             Float[] result = {0f, 0f};
             if (isSprite(TextBasicLib.boundSprite)) {
@@ -3291,19 +3244,19 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprSpin implements Function {
+    public final class WrapSprSpin implements Function {
         public void run(TomVM vm) {
             vm.getReg().setRealVal(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).angled : 0);
         }
     }
 
-    public static final class WrapSprAnimSpeed implements Function {
+    public final class WrapSprAnimSpeed implements Function {
         public void run(TomVM vm) {
             vm.getReg().setRealVal(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).angled : 0);
         }
     }
 
-    public static final class WrapSprAnimLoop implements Function {
+    public final class WrapSprAnimLoop implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3313,7 +3266,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprAnimDone implements Function {
+    public final class WrapSprAnimDone implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setRealVal(
@@ -3323,14 +3276,14 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprFrame_2 implements Function {
+    public final class WrapSprFrame_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setRealVal(isSprite(index) ? getSprite(index).getFrame() : 0);
         }
     }
 
-    public static final class WrapSprX_2 implements Function {
+    public final class WrapSprX_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3341,7 +3294,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprY_2 implements Function {
+    public final class WrapSprY_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3352,7 +3305,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprPos_2 implements Function {
+    public final class WrapSprPos_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             Float[] result = {0f, 0f};
@@ -3364,7 +3317,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprZOrder_2 implements Function {
+    public final class WrapSprZOrder_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3375,7 +3328,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprXSize_2 implements Function {
+    public final class WrapSprXSize_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3386,7 +3339,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprYSize_2 implements Function {
+    public final class WrapSprYSize_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3397,7 +3350,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprScale_2 implements Function {
+    public final class WrapSprScale_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3408,7 +3361,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprXCentre_2 implements Function {
+    public final class WrapSprXCentre_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3419,7 +3372,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprYCentre_2 implements Function {
+    public final class WrapSprYCentre_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3430,7 +3383,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprXFlip_2 implements Function {
+    public final class WrapSprXFlip_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3441,7 +3394,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprYFlip_2 implements Function {
+    public final class WrapSprYFlip_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3452,7 +3405,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprVisible_2 implements Function {
+    public final class WrapSprVisible_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3463,7 +3416,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprAngle_2 implements Function {
+    public final class WrapSprAngle_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3474,7 +3427,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprColour_2 implements Function {
+    public final class WrapSprColour_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             Float[] result = {0f, 0f, 0f, 0f};
@@ -3488,7 +3441,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprAlpha_2 implements Function {
+    public final class WrapSprAlpha_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3499,7 +3452,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprParallax_2 implements Function {
+    public final class WrapSprParallax_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3510,7 +3463,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprSolid_2 implements Function {
+    public final class WrapSprSolid_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3521,7 +3474,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprLeft_2 implements Function {
+    public final class WrapSprLeft_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             if (isSprite(index)) {
@@ -3533,7 +3486,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprRight_2 implements Function {
+    public final class WrapSprRight_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             if (isSprite(index)) {
@@ -3545,7 +3498,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprTop_2 implements Function {
+    public final class WrapSprTop_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             if (isSprite(index)) {
@@ -3557,7 +3510,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprBottom_2 implements Function {
+    public final class WrapSprBottom_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             if (isSprite(index)) {
@@ -3569,21 +3522,21 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprXVel_2 implements Function {
+    public final class WrapSprXVel_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setRealVal(isSprite(index) ? getSprite(index).xd : 0);
         }
     }
 
-    public static final class WrapSprYVel_2 implements Function {
+    public final class WrapSprYVel_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setRealVal(isSprite(index) ? getSprite(index).yd : 0);
         }
     }
 
-    public static final class WrapSprVel_2 implements Function {
+    public final class WrapSprVel_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             Float[] result = {0f, 0f};
@@ -3595,35 +3548,35 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprSpin_2 implements Function {
+    public final class WrapSprSpin_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setRealVal(isSprite(index) ? getSprite(index).angled : 0);
         }
     }
 
-    public static final class WrapSprAnimSpeed_2 implements Function {
+    public final class WrapSprAnimSpeed_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setRealVal(isSprite(index) ? getSprite(index).framed : 0);
         }
     }
 
-    public static final class WrapSprAnimLoop_2 implements Function {
+    public final class WrapSprAnimLoop_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setRealVal(isSprite(index) ? (getSprite(index).animLoop ? -1f : 0) : 0);
         }
     }
 
-    public static final class WrapSprAnimDone_2 implements Function {
+    public final class WrapSprAnimDone_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setRealVal(isSprite(index) ? (getSprite(index).isAnimationDone() ? -1f : 0) : 0);
         }
     }
 
-    public static final class WrapSprSetXVel implements Function {
+    public final class WrapSprSetXVel implements Function {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 getSprite(TextBasicLib.boundSprite).xd = vm.getRealParam(1);
@@ -3631,7 +3584,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprSetYVel implements Function {
+    public final class WrapSprSetYVel implements Function {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 getSprite(TextBasicLib.boundSprite).yd = vm.getRealParam(1);
@@ -3645,22 +3598,22 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
                 readVec(vm, 1);
                 getSprite(TextBasicLib.boundSprite).xd = vec[0];
                 getSprite(TextBasicLib.boundSprite).yd = vec[1];
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetVel_2 implements Function {
+    public final class WrapSprSetVel_2 implements Function {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 getSprite(TextBasicLib.boundSprite).xd = vm.getRealParam(2);
                 getSprite(TextBasicLib.boundSprite).yd = vm.getRealParam(1);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetSpin implements Function {
+    public final class WrapSprSetSpin implements Function {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 getSprite(TextBasicLib.boundSprite).angled = vm.getRealParam(1);
@@ -3668,7 +3621,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprSetAnimSpeed implements Function {
+    public final class WrapSprSetAnimSpeed implements Function {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 getSprite(TextBasicLib.boundSprite).framed = vm.getRealParam(1);
@@ -3676,7 +3629,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprSetAnimLoop implements Function {
+    public final class WrapSprSetAnimLoop implements Function {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 getSprite(TextBasicLib.boundSprite).animLoop = vm.getIntParam(1) != 0;
@@ -3684,21 +3637,21 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapAnimateSprites implements Function {
+    public final class WrapAnimateSprites implements Function {
         public void run(TomVM vm) {
-            ((GLSpriteEngine) TextBasicLib.appText).animate();
-            TextBasicLib.redraw();
+            spriteEngine.animate();
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapAnimateSpriteFrames implements Function {
+    public final class WrapAnimateSpriteFrames implements Function {
         public void run(TomVM vm) {
-            ((GLSpriteEngine) TextBasicLib.appText).animateFrames();
-            TextBasicLib.redraw();
+            spriteEngine.animateFrames();
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapCopySprite implements Function {
+    public final class WrapCopySprite implements Function {
         public void run(TomVM vm) {
 
             // CopySprite (dest, source)
@@ -3715,12 +3668,12 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
                 } else if (isTileMap(TextBasicLib.boundSprite)) {
                     getTileMap(TextBasicLib.boundSprite).copy(getTileMap(index));
                 }
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprType implements Function {
+    public final class WrapSprType implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setIntVal(
@@ -3732,7 +3685,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprXTiles implements Function {
+    public final class WrapSprXTiles implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setIntVal(
@@ -3742,7 +3695,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprYTiles implements Function {
+    public final class WrapSprYTiles implements Function {
         public void run(TomVM vm) {
             vm.getReg()
                     .setIntVal(
@@ -3752,7 +3705,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprType_2 implements Function {
+    public final class WrapSprType_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg()
@@ -3763,21 +3716,21 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprXTiles_2 implements Function {
+    public final class WrapSprXTiles_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setIntVal(isTileMap(index) ? getTileMap(index).getTilesX() : 0);
         }
     }
 
-    public static final class WrapSprYTiles_2 implements Function {
+    public final class WrapSprYTiles_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.getReg().setIntVal(isTileMap(index) ? getTileMap(index).getTilesY() : 0);
         }
     }
 
-    public static final class WrapSprSetTiles implements Function {
+    public final class WrapSprSetTiles implements Function {
         public void run(TomVM vm) {
 
             if (isTileMap(TextBasicLib.boundSprite)) {
@@ -3789,30 +3742,30 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
 
                 // Set
                 getTileMap(TextBasicLib.boundSprite).setTiles(xSize.get(0), ySize.get(0), tiles);
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetXRepeat implements Function {
+    public final class WrapSprSetXRepeat implements Function {
         public void run(TomVM vm) {
             if (isTileMap(TextBasicLib.boundSprite)) {
                 getTileMap(TextBasicLib.boundSprite).repeatX = vm.getIntParam(1) != 0;
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprSetYRepeat implements Function {
+    public final class WrapSprSetYRepeat implements Function {
         public void run(TomVM vm) {
             if (isTileMap(TextBasicLib.boundSprite)) {
                 getTileMap(TextBasicLib.boundSprite).repeatY = vm.getIntParam(1) != 0;
-                TextBasicLib.redraw();
+                contentManager.changeMade();
             }
         }
     }
 
-    public static final class WrapSprXRepeat implements Function {
+    public final class WrapSprXRepeat implements Function {
         public void run(TomVM vm) {
             if (isTileMap(TextBasicLib.boundSprite)) {
                 vm.getReg().setIntVal(getTileMap(TextBasicLib.boundSprite).repeatX ? -1 : 0);
@@ -3822,7 +3775,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprYRepeat implements Function {
+    public final class WrapSprYRepeat implements Function {
         public void run(TomVM vm) {
             if (isTileMap(TextBasicLib.boundSprite)) {
                 vm.getReg().setIntVal(getTileMap(TextBasicLib.boundSprite).repeatY ? -1 : 0);
@@ -3832,7 +3785,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprXRepeat_2 implements Function {
+    public final class WrapSprXRepeat_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             if (isTileMap(index)) {
@@ -3843,7 +3796,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprYRepeat_2 implements Function {
+    public final class WrapSprYRepeat_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             if (isTileMap(index)) {
@@ -3854,133 +3807,132 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
         }
     }
 
-    public static final class WrapSprCameraSetX implements Function {
+    public final class WrapSprCameraSetX implements Function {
         public void run(TomVM vm) {
-            ((GLSpriteEngine) appText).camX = vm.getRealParam(1);
-            TextBasicLib.redraw();
+            spriteEngine.camX = vm.getRealParam(1);
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapSprCameraSetY implements Function {
+    public final class WrapSprCameraSetY implements Function {
         public void run(TomVM vm) {
-            ((GLSpriteEngine) appText).camY = vm.getRealParam(1);
-            TextBasicLib.redraw();
+            spriteEngine.camY = vm.getRealParam(1);
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapSprCameraSetZ implements Function {
+    public final class WrapSprCameraSetZ implements Function {
         public void run(TomVM vm) {
-            ((GLSpriteEngine) appText).camZ = vm.getRealParam(1);
-            TextBasicLib.redraw();
+            spriteEngine.camZ = vm.getRealParam(1);
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapSprCameraSetPos implements Function {
+    public final class WrapSprCameraSetPos implements Function {
         public void run(TomVM vm) {
-            ((GLSpriteEngine) TextBasicLib.appText).camX = vm.getRealParam(2);
-            ((GLSpriteEngine) TextBasicLib.appText).camY = vm.getRealParam(1);
-            TextBasicLib.redraw();
+            spriteEngine.camX = vm.getRealParam(2);
+            spriteEngine.camY = vm.getRealParam(1);
+            contentManager.changeMade();
         }
     }
 
     public final class WrapSprCameraSetPos_2 implements Function {
         public void run(TomVM vm) {
             readVec(vm, 1);
-            ((GLSpriteEngine) TextBasicLib.appText).camX = vec[0];
-            ((GLSpriteEngine) TextBasicLib.appText).camY = vec[1];
-            TextBasicLib.redraw();
+            spriteEngine.camX = vec[0];
+            spriteEngine.camY = vec[1];
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapSprCameraSetAngle implements Function {
+    public final class WrapSprCameraSetAngle implements Function {
         public void run(TomVM vm) {
-            ((GLSpriteEngine) TextBasicLib.appText).camAngle = vm.getRealParam(1);
-            TextBasicLib.redraw();
+            spriteEngine.camAngle = vm.getRealParam(1);
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapSprCameraX implements Function {
+    public final class WrapSprCameraX implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).camX);
+            vm.getReg().setRealVal(spriteEngine.camX);
         }
     }
 
-    public static final class WrapSprCameraY implements Function {
+    public final class WrapSprCameraY implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).camY);
+            vm.getReg().setRealVal(spriteEngine.camY);
         }
     }
 
-    public static final class WrapSprCameraZ implements Function {
+    public final class WrapSprCameraZ implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).camZ);
+            vm.getReg().setRealVal(spriteEngine.camZ);
         }
     }
 
-    public static final class WrapSprCameraPos implements Function {
+    public final class WrapSprCameraPos implements Function {
         public void run(TomVM vm) {
             Float[] result = {0f, 0f};
-            result[0] = ((GLSpriteEngine) TextBasicLib.appText).camX;
-            result[1] = ((GLSpriteEngine) TextBasicLib.appText).camY;
+            result[0] = spriteEngine.camX;
+            result[1] = spriteEngine.camY;
             vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
         }
     }
 
-    public static final class WrapSprCameraAngle implements Function {
+    public final class WrapSprCameraAngle implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).camAngle);
+            vm.getReg().setRealVal(spriteEngine.camAngle);
         }
     }
 
-    public static final class WrapSprCameraFOV implements Function {
+    public final class WrapSprCameraFOV implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((GLSpriteEngine) TextBasicLib.appText).getFOV());
+            vm.getReg().setRealVal(spriteEngine.getFOV());
         }
     }
 
-    public static final class WrapSprCameraSetFOV implements Function {
+    public final class WrapSprCameraSetFOV implements Function {
         public void run(TomVM vm) {
-            ((GLSpriteEngine) TextBasicLib.appText).setFOV(vm.getRealParam(1));
-            TextBasicLib.redraw();
+            spriteEngine.setFOV(vm.getRealParam(1));
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapClearLine implements Function {
+    public final class WrapClearLine implements Function {
         public void run(TomVM vm) {
-            TextBasicLib.appText.clearLine();
-            TextBasicLib.redraw();
+            appText.clearLine();
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapClearRegion implements Function {
+    public final class WrapClearRegion implements Function {
         public void run(TomVM vm) {
-            TextBasicLib.appText.clearRegion(
-                    vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
-            TextBasicLib.redraw();
+            appText.clearRegion(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapTextScroll implements Function {
+    public final class WrapTextScroll implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(TextBasicLib.appText.getScroll() ? 1 : 0);
+            vm.getReg().setIntVal(appText.getScroll() ? 1 : 0);
         }
     }
 
-    public static final class WrapSetTextScroll implements Function {
+    public final class WrapSetTextScroll implements Function {
         public void run(TomVM vm) {
-            TextBasicLib.appText.setScroll(vm.getIntParam(1) == 1);
+            appText.setScroll(vm.getIntParam(1) == 1);
         }
     }
 
-    public static final class WrapClearSprites implements Function {
+    public final class WrapClearSprites implements Function {
         public void run(TomVM vm) {
             TextBasicLib.sprites.clear();
             TextBasicLib.spriteCount = 0;
-            TextBasicLib.redraw();
+            contentManager.changeMade();
         }
     }
 
-    public static final class WrapSprSetBlendFunc implements Function {
+    public final class WrapSprSetBlendFunc implements Function {
         public void run(TomVM vm) {
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)) {
                 GLBasicSprite sprite = TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite);
@@ -3991,7 +3943,7 @@ public class TextBasicLib implements FunctionLibrary, TextAdapter, IGLRenderer {
     }
 
     // DLLFUNC
-    public static final class WrapSpriteCount implements Function {
+    public final class WrapSpriteCount implements Function {
         public void run(TomVM vm) {
             vm.getReg().setIntVal(TextBasicLib.spriteCount);
         }

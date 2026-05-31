@@ -11,6 +11,10 @@ import java.nio.file.Paths;
  * Created by Nate on 11/1/2015.
  */
 public class FileOpener extends HasErrorState {
+    private static final String DEFAULT_APP_DATA_FOLDER_NAME = "Basic4GL";
+
+    public static final String ERROR_DIRECTORY_ALREADY_EXISTS = "Directory already exists";
+
     private String parentDirectory;
     private final EmbeddedFiles embeddedFiles;
 
@@ -268,5 +272,42 @@ public class FileOpener extends HasErrorState {
 
     public String getParentDirectory() {
         return parentDirectory;
+    }
+
+    public String getAppDataFolder(boolean allUsers) {
+        String appDataFolder;
+        if (allUsers) {
+            appDataFolder = System.getenv("ProgramData");
+        } else {
+            appDataFolder = System.getenv("APPDATA");
+        }
+        if (appDataFolder == null || appDataFolder.isEmpty()) {
+            setError("Failed to get AppData folder");
+            return "";
+        }
+        return FileUtil.separatorsToSystem(appDataFolder);
+    }
+
+    public String getAppDataFolderName() {
+        return DEFAULT_APP_DATA_FOLDER_NAME;
+    }
+
+    public boolean createDirectory(String pathname) {
+        pathname = FileUtil.separatorsToSystem(pathname);
+
+        clearError();
+
+        File file = new File(parentDirectory, pathname);
+        if (file.exists()) {
+            setError(ERROR_DIRECTORY_ALREADY_EXISTS);
+            return false;
+        } else {
+            if (file.mkdirs()) {
+                return true;
+            } else {
+                setError("Failed to create directory");
+                return false;
+            }
+        }
     }
 }

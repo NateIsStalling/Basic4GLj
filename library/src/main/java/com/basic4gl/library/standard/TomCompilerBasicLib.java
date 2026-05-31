@@ -3,22 +3,22 @@
 
 package com.basic4gl.library.standard;
 
-import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
-import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
+import static com.basic4gl.runtime.types.BasicValType.*;
 import static com.basic4gl.runtime.types.OpCode.*;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.compiler.util.IVMDriverAccess;
 import com.basic4gl.lib.util.*;
-import com.basic4gl.runtime.core.standard.IB4GLCompiler;
+import com.basic4gl.runtime.CodeBlock;
 import com.basic4gl.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.Value;
+import com.basic4gl.runtime.core.standard.IB4GLCompiler;
+import com.basic4gl.runtime.types.Constant;
+import com.basic4gl.runtime.types.FunctionSpecification;
+import com.basic4gl.runtime.types.ParamTypeList;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.Mutable;
@@ -135,6 +135,37 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
                     true,
                     VTP_INT,
                     true,
+                    false,
+                    null)
+        });
+        s.put("getfunctionbyname", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapGetFunctionByName.class,
+                    new ParamTypeList(new ValType(VTP_STRING)),
+                    true,
+                    true,
+                    VTP_UNTYPED_FUNC_PTR,
+                    false,
+                    false,
+                    null),
+            new FunctionSpecification(
+                    WrapGetFunctionByName2.class,
+                    new ParamTypeList(new ValType(VTP_STRING), new ValType(VTP_INT)),
+                    true,
+                    true,
+                    VTP_UNTYPED_FUNC_PTR,
+                    false,
+                    false,
+                    null)
+        });
+        s.put("getcodeblockbyname", new FunctionSpecification[] {
+            new FunctionSpecification(
+                    WrapGetCodeBlockByName.class,
+                    new ParamTypeList(new ValType(VTP_STRING)),
+                    true,
+                    true,
+                    VTP_INT,
+                    false,
                     false,
                     null)
         });
@@ -743,6 +774,59 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
             // Restore symbol prefix
             comp.setSymbolPrefix(oldPrefix);
+        }
+    }
+
+    public final class WrapGetFunctionByName implements Function {
+        public void run(TomVM vm) {
+            String name = vm.getStringParam(1).toLowerCase();
+
+            // Lookup function
+            Map<String, Integer> index = comp.getGlobalUserFunctionIndex();
+            Integer i = index.getOrDefault(name, null);
+
+            // Return function number + 1 if found, or 0 if not.
+            // (0 is reserved to mean "null" function pointer. Adding 1 to the function number
+            // allows us to distinguish null from a legitimate reference to function # 0)
+            vm.getReg().setIntVal(i != null ? i + 1 : 0);
+        }
+    }
+
+    public final class WrapGetFunctionByName2 implements Function {
+        public void run(TomVM vm) {
+            String name = vm.getStringParam(2).toLowerCase();
+            int codeBlockIndex = vm.getIntParam(1);
+
+            // Lookup code block
+            if (!vm.isCodeBlockValid(codeBlockIndex)) {
+                vm.functionError("Invalid code block index");
+                return;
+            }
+            CodeBlock codeBlock = vm.getCodeBlock(codeBlockIndex);
+
+            // Lookup function
+            HashMap<String, Integer> index = codeBlock.userFunctions;
+            Integer i = index.getOrDefault(name, null);
+
+            // Return function number + 1 if found, or 0 if not.
+            // (0 is reserved to mean "null" function pointer. Adding 1 to the function number
+            // allows us to distinguish null from a legitimate reference to function # 0)
+            vm.getReg().setIntVal(i != null ? i + 1 : 0);
+        }
+    }
+
+    public final class WrapGetCodeBlockByName implements Function {
+        public void run(TomVM vm) {
+            String filename = FileUtil.separatorsToSystem(vm.getStringParam(1));
+            // Look for matching code block
+            for (int i = 1; vm.isCodeBlockValid(i); i++) {
+                if (vm.getCodeBlock(i).filenameEquals(filename)) {
+                    vm.getReg().setIntVal(i);
+                    return;
+                }
+            }
+
+            vm.getReg().setIntVal(0);
         }
     }
 }

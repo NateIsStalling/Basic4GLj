@@ -256,7 +256,6 @@ public class OpCode {
      */
     public static final short OP_CHECK_FUNC_PTR = 0x52;
 
-
     // endregion
 
     // region Operations

@@ -1,10 +1,10 @@
-package com.basic4gl.library.desktopgl;
+package com.basic4gl.library.desktopgl.content;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
-import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
 import com.basic4gl.lib.util.FileOpener;
+import com.basic4gl.library.desktopgl.util.GLUtil;
 import com.basic4gl.runtime.HasErrorState;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -53,7 +53,7 @@ public class GLTextGrid extends HasErrorState {
         return r | (long) g << 8 | (long) b << 16 | (long) alpha << 24;
     }
 
-    GLTextGrid(String texFile, FileOpener files, int rows, int cols, int texRows, int texCols) {
+    public GLTextGrid(String texFile, FileOpener files, int rows, int cols, int texRows, int texCols) {
         this.rows = rows;
         columns = cols;
         textureRows = texRows;
@@ -76,8 +76,8 @@ public class GLTextGrid extends HasErrorState {
         scroll = true;
 
         // Load charset texture
-        glPushAttrib(GL_ALL_ATTRIB_BITS);
-        glEnable(GL_TEXTURE_2D);
+        //        glPushAttrib(GL_ALL_ATTRIB_BITS);
+        //        glEnable(GL_TEXTURE_2D);
         LoadImage.init(files);
         IntBuffer w = BufferUtils.createIntBuffer(1);
         IntBuffer h = BufferUtils.createIntBuffer(1);
@@ -87,7 +87,7 @@ public class GLTextGrid extends HasErrorState {
             setError("Error loading bitmap: " + texFile);
             return;
         }
-        uploadCharsetTexture();
+        //        uploadCharsetTexture();
 
         // Calculate character size (in texture coordinates)
         charXSize = 1.0 / textureColumns;
@@ -101,7 +101,7 @@ public class GLTextGrid extends HasErrorState {
 
         // TODO 12/16/2020 - glDisable may be needed; GLTextGrid seems to be causing issues with
         // GL_QUADS, SaveGLState might not be working as expected
-        glDisable(GL_TEXTURE_2D);
+        //        glDisable(GL_TEXTURE_2D);
     }
 
     protected void saveGLState() {
@@ -303,11 +303,68 @@ public class GLTextGrid extends HasErrorState {
         return columns;
     }
 
+    public char[] getChars() {
+        return chars;
+    }
     // Drawing
-    public void draw(byte flags) {
-        saveGLState();
-        internalDraw(flags);
-        restoreGLState();
+    public void draw() {
+
+        // Create perspective transform
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        GLUtil.gluOrtho2D(0, 0, 1, 1);
+
+        // Clear model view matrix (to identity)
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        // Iterate through character map
+        int index = 0;
+        double xStep = 2.0 / columns, // Character size on screen in screen coordinates
+                yStep = 2.0 / rows;
+        long lastTex = 0;
+
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < columns; x++) {
+
+                // Get current and previous character
+                char c = chars[index];
+                colours.position(index * (Long.SIZE / Byte.SIZE));
+                int tex = textures[index];
+
+                // Redraw character if changed
+                // Find character 2D position in texture
+                if (c != ' ') {
+                    int charx = c % textureColumns, chary = c / textureColumns;
+
+                    // Convert to texture coordinates
+                    double tx = charx * charXSize + OFFSET, ty = 1.0 - (chary + 1) * charYSize + OFFSET;
+
+                    // Find screen coordinates
+                    double screenX = x * xStep - 1.0, screenY = 1.0 - (y + 1) * yStep;
+
+                    // Bind appropriate texture
+                    if (tex != lastTex) {
+                        glBindTexture(GL_TEXTURE_2D, tex);
+                        lastTex = tex;
+                    }
+
+                    // Write character
+                    glColor4ubv(colours);
+                    glBegin(GL_QUADS);
+                    glTexCoord2d(tx, ty);
+                    glVertex2d(screenX, screenY);
+                    glTexCoord2d(tx + charXSize, ty);
+                    glVertex2d(screenX + xStep, screenY);
+                    glTexCoord2d(tx + charXSize, ty + charYSize);
+                    glVertex2d(screenX + xStep, screenY + yStep);
+                    glTexCoord2d(tx, ty + charYSize);
+                    glVertex2d(screenX, screenY + yStep);
+                    glEnd();
+                }
+                index++;
+            }
+        }
     }
 
     // Scrolling
@@ -366,6 +423,10 @@ public class GLTextGrid extends HasErrorState {
 
     public void hideCursor() {
         showCursor = false;
+    }
+
+    public boolean isCursorShowing() {
+        return showCursor;
     }
 
     public void setCursorPosition(int x, int y) {
@@ -610,129 +671,24 @@ public class GLTextGrid extends HasErrorState {
         return texture;
     }
 
-    // Input commands
-
-    /**
-     * Allows user to type in a string. Returns string upon exit.
-     * @param window
-     * @return
-     */
-    public String getString(GLWindow window) {
-
-        assertTrue(window != null);
-        colours.rewind();
-        LongBuffer col = colours.asLongBuffer();
-
-        // Record leftmost cursor position
-        // Cursor can not be moved further left than that point
-        int left = cursorX;
-        boolean saveCursor = showCursor;
-        showCursor = true;
-
-        // Perform UI
-        boolean done = false;
-        while (!(window.isClosing() || done)) {
-
-            glClear(GL_COLOR_BUFFER_BIT);
-            draw((byte) 0xff);
-            window.swapBuffers();
-
-            // Keyboard input
-            int c = 0, sc = 0;
-            while (c == 0 && sc == 0 && !window.isClosing()) {
-                sc = window.getScanKey();
-                if (sc == 0) {
-                    c = window.getKey();
-                }
-                // Go easy on the processor
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                // Keep window responsive
-                glfwPollEvents();
-            }
-            if (window.isClosing()) {
-                return "";
-            }
-            switch (sc) {
-                case GLFW_KEY_LEFT:
-                    if (cursorX > left) {
-                        cursorX--;
-                    }
-                    break;
-                case GLFW_KEY_RIGHT:
-                    if (cursorX < columns - 1) {
-                        cursorX++;
-                    }
-                    break;
-                case GLFW_KEY_DELETE:
-                    delete();
-                    break;
-                case GLFW_KEY_BACKSPACE:
-                    if (cursorX > left) {
-                        backspace();
-                    }
-                    break;
-            }
-            if (sc == GLFW_KEY_ENTER || sc == GLFW_KEY_KP_ENTER) {
-                // Input$ consumed Enter to submit; do not leak it to subsequent inkey$ calls.
-                window.discardLeadingKeyIf('\r', '\n');
-                done = true;
-            }
-            if (c >= ' ') {
-                if (cursorX < columns - 1 && insert()) {
-                    chars[cursorY * columns + cursorX] = (char) c;
-                    col.put(cursorY * columns + cursorX, currentColour);
-                    textures[cursorY * columns + cursorX] = currentTexture;
-                    cursorX++;
-                }
-            }
-            // Go easy on the processor
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            // Keep window responsive
-            glfwPollEvents();
-        }
-        if (window.isClosing()) {
-            return "";
-        }
-        // Extract string
-        int lineOffset = cursorY * columns;
-        int right = columns;
-        while (right > left && chars[lineOffset + right - 1] <= ' ') // Trim spaces from right
-        {
-            right--;
-        }
-        while (left < right && chars[lineOffset + left] <= ' ') // Trim spaces from left
-        {
-            left++;
-        }
-        String result = "";
-        for (int i = left; i < right; i++) {
-            result += chars[lineOffset + i];
-        }
-
-        // Restore cursor, perform newline and update screen
-        newLine();
-        showCursor = saveCursor;
-        glClear(GL_COLOR_BUFFER_BIT);
-        draw((byte) 0xff);
-        window.swapBuffers();
-
-        return result;
-    }
-
     /**
      * release image from memory
      */
-    void destroy() {
+    public void destroy() {
         /*if (this.image != null)
         	stbi_image_free(this.image.getPixels());
         this.image = null;*/
+    }
+
+    public void deleteCharsetTexture() {
+
+        int texture = this.texture;
+        ByteBuffer buffer = BufferUtils.createByteBuffer(Integer.SIZE / Byte.SIZE);
+        buffer.asIntBuffer().put(texture);
+        buffer.rewind();
+        glDeleteTextures(buffer.asIntBuffer());
+
+        this.texture = 0;
+        this.currentTexture = 0;
     }
 }

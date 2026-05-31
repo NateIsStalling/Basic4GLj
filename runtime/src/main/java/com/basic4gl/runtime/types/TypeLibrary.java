@@ -195,15 +195,13 @@ public class TypeLibrary implements Streamable {
         return getCurrentStruc();
     }
 
-    public Structure makeStrucCurrent(String name)
-    {
+    public Structure makeStrucCurrent(String name) {
         assertTrue(isStrucStored(name));
         currentStrucIndex = getStrucIndex(name);
         return getCurrentStruc();
     }
 
-    public void defineExistingStruc()
-    {
+    public void defineExistingStruc() {
         assertTrue(!getCurrentStruc().isDefined);
         getCurrentStruc().firstFieldIndex = fields.size();
     }

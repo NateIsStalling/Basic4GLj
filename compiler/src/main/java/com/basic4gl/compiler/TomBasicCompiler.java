@@ -6,10 +6,10 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import com.basic4gl.compiler.FlowControl.FlowControlType;
 import com.basic4gl.compiler.Token.TokenType;
-import com.basic4gl.runtime.plugin.ExtendedFunctionSpecification;
 import com.basic4gl.compiler.util.*;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.runtime.*;
+import com.basic4gl.runtime.plugin.ExtendedFunctionSpecification;
 import com.basic4gl.runtime.plugin.PluginManager;
 import com.basic4gl.runtime.stackframe.RuntimeFunction;
 import com.basic4gl.runtime.stackframe.UserFunc;
@@ -61,6 +61,7 @@ public class TomBasicCompiler extends HasErrorState {
      * Operator overload function names
      */
     private final Map<Integer, String> operatorOverloads;
+
     private final ArrayList<String> reservedWords;
     /**
      * Permanent constants.
@@ -77,6 +78,7 @@ public class TomBasicCompiler extends HasErrorState {
      * Maps function name to index of function (in functions array)
      */
     private final Map<String, List<Integer>> functionIndex;
+
     private LanguageSyntax syntax;
     /**
      * Prefix all symbols with this text
@@ -110,6 +112,7 @@ public class TomBasicCompiler extends HasErrorState {
      * Flow control structure stack
      */
     private final Vector<FlowControl> flowControls;
+
     private Token token;
     /**
      * True if next instruction must be separated by a colon (or newline)
@@ -119,6 +122,7 @@ public class TomBasicCompiler extends HasErrorState {
      * True if need to generate code to free temporary data before the next instruction
      */
     private boolean freeTempData;
+
     private int lastLine, lastCol;
     private boolean inFunction;
     private final InstructionPosition functionStart;
@@ -148,12 +152,8 @@ public class TomBasicCompiler extends HasErrorState {
      */
     private int currentFunction; //
 
-    /**
-     * Prototype of function being declared.
-     */
-//    private UserFuncPrototype userFuncPrototype;
-
     private final Vector<com.basic4gl.compiler.RuntimeFunction> runtimeFunctions;
+
     private final Map<String, Integer> runtimeFunctionIndex;
     private int currentCodeBlockIndex;
 
@@ -169,6 +169,10 @@ public class TomBasicCompiler extends HasErrorState {
 
     public List<String> getReservedWords() {
         return reservedWords;
+    }
+
+    public Map<String, Integer> getGlobalUserFunctionIndex() {
+        return globalUserFunctionIndex;
     }
 
     /**
@@ -646,7 +650,8 @@ public class TomBasicCompiler extends HasErrorState {
         reservedWords.add("bindcode");
         reservedWords.add("exec");
         reservedWords.add("include");
-        reservedWords.add("arraymax");		// Library mechanism doesn't support any-type parameters. Compiler needs to treat arraymax() as a special case
+        reservedWords.add("arraymax"); // Library mechanism doesn't support any-type parameters. Compiler needs to treat
+        // arraymax() as a special case
         reservedWords.add("begincodeblock");
         reservedWords.add("endcodeblock");
     }
@@ -956,9 +961,9 @@ public class TomBasicCompiler extends HasErrorState {
         return isCaseSensitive;
     }
 
-     public PluginManager getPlugins() {
+    public PluginManager getPlugins() {
         return this.plugins;
-     }
+    }
 
     // Constants
     public void addConstant(String name, Constant c) {
@@ -1054,8 +1059,8 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Check Plugin constants
-         Constant compConst = new Constant();
-         return (this.plugins.findConstant(text) != null);
+        Constant compConst = new Constant();
+        return (this.plugins.findConstant(text) != null);
     }
 
     public boolean isBinaryOperator(String text) {
@@ -1093,9 +1098,7 @@ public class TomBasicCompiler extends HasErrorState {
     public int getDefaultDataBasicValType() {
         // In traditional suffix mode, the default data type is floating point.
         // Otherwise the default Basic4GL data type is integer.
-        return syntax == LS_TRADITIONAL_SUFFIX
-                ? BasicValType.VTP_REAL
-                : BasicValType.VTP_INT;
+        return syntax == LS_TRADITIONAL_SUFFIX ? BasicValType.VTP_REAL : BasicValType.VTP_INT;
     }
     // Misc
     boolean labelExists(String labelText) {
@@ -1326,12 +1329,9 @@ public class TomBasicCompiler extends HasErrorState {
         return true;
     }
 
-    boolean checkFwdDeclStructures()
-    {
-        for (Structure s : vm.getDataTypes().getStructures())
-        {
-            if (!s.isDefined)
-            {
+    boolean checkFwdDeclStructures() {
+        for (Structure s : vm.getDataTypes().getStructures()) {
+            if (!s.isDefined) {
                 setError("Structure '" + s.name + "' was DECLAREd, but not implemented");
                 return false;
             }
@@ -1340,10 +1340,8 @@ public class TomBasicCompiler extends HasErrorState {
         return true;
     }
 
-    boolean checkUnclosedCodeBlock()
-    {
-        if (currentCodeBlockIndex != 0)
-        {
+    boolean checkUnclosedCodeBlock() {
+        if (currentCodeBlockIndex != 0) {
             setError("'begincodeblock' without 'endcodeblock'");
             return false;
         }
@@ -1361,12 +1359,10 @@ public class TomBasicCompiler extends HasErrorState {
     /**
      * Add forced or conditional timesharing break op-code if necessary
      */
-    void addTimeshareOpCode(FunctionSpecification fn)
-    {
+    void addTimeshareOpCode(FunctionSpecification fn) {
         if (fn.getTimeshare()) {
             addInstruction(OpCode.OP_TIMESHARE, BasicValType.VTP_INT, new Value());
-        }
-        else if (fn.getConditionalTimeshare()) {
+        } else if (fn.getConditionalTimeshare()) {
             addInstruction(OpCode.OP_COND_TIMESHARE, BasicValType.VTP_INT, new Value());
         }
     }
@@ -1390,10 +1386,12 @@ public class TomBasicCompiler extends HasErrorState {
 
     private void addFunctionCallInstruction(ExtendedFunctionSpecification spec) {
         // Generate code to call function
-        if (spec.isBuiltin())
-        {
+        if (spec.isBuiltin()) {
             // Builtin function
-            addInstruction(OpCode.OP_CALL_FUNC, BasicValType.VTP_INT, new Value(spec.getSpecification().getIndex()));
+            addInstruction(
+                    OpCode.OP_CALL_FUNC,
+                    BasicValType.VTP_INT,
+                    new Value(spec.getSpecification().getIndex()));
         } else {
             // DLL function
             // Note: The DLL index is encoded as the high byte.
@@ -1402,7 +1400,8 @@ public class TomBasicCompiler extends HasErrorState {
             addInstruction(
                     OpCode.OP_CALL_DLL,
                     BasicValType.VTP_INT,
-                    new Value((spec.getPluginIndex() << 24) | (spec.getSpecification().getIndex() & 0x00ffffff)));
+                    new Value((spec.getPluginIndex() << 24)
+                            | (spec.getSpecification().getIndex() & 0x00ffffff)));
         }
     }
 
@@ -1533,8 +1532,7 @@ public class TomBasicCompiler extends HasErrorState {
                 if (!compileEndUserFunction(false)) {
                     return false;
                 }
-            } else
-            {
+            } else {
                 // Otherwise is "End" program instruction
                 addInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
             }
@@ -1612,8 +1610,7 @@ public class TomBasicCompiler extends HasErrorState {
             if (!compileBeginCodeBlock()) {
                 return false;
             }
-        }
-        else if (token.getText().equals("endcodeblock")) {
+        } else if (token.getText().equals("endcodeblock")) {
             if (!compileEndCodeBlock()) {
                 return false;
             }
@@ -1709,8 +1706,7 @@ public class TomBasicCompiler extends HasErrorState {
         return true;
     }
 
-    private boolean compileBeginCodeBlock()
-    {
+    private boolean compileBeginCodeBlock() {
         // A code block is compiled to mimic how the code would be compiled at runtime.
         // The compiler will allocate a code block number, and insert "jump around" and
         // "return" op codes around the compiled code.
@@ -1725,21 +1721,18 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Code blocks cannot be nested.
         // Check we are in the main code block.
-        if (currentCodeBlockIndex != 0)
-        {
+        if (currentCodeBlockIndex != 0) {
             setError("Must end previous code block with 'endcodeblock' before beginning a new one");
             return false;
         }
 
         // Also cannot start a code block within a function or flow control
-        if (inFunction)
-        {
+        if (inFunction) {
             setError("Cannot begin a code block inside a user function");
             return false;
         }
 
-        if (!flowControls.isEmpty())
-        {
+        if (!flowControls.isEmpty()) {
             setError("Cannot begin a code block inside a flow control structure");
             return false;
         }
@@ -1760,7 +1753,8 @@ public class TomBasicCompiler extends HasErrorState {
         // To match runtime compilation code block will be terminated with OP_RETURN.
         // Therefore we can't just let execution carry on into the code block from the
         // previous instruction. Instead we generate a jump around.
-        addInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(0));				// Offset will be filled in when code block ends
+        addInstruction(
+                OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(0)); // Offset will be filled in when code block ends
 
         // Allocate new code block
         currentCodeBlockIndex = vm.newCodeBlock();
@@ -1769,28 +1763,23 @@ public class TomBasicCompiler extends HasErrorState {
         return true;
     }
 
-    boolean compileEndCodeBlock()
-    {
+    boolean compileEndCodeBlock() {
         // Must be inside code block
-        if (currentCodeBlockIndex == 0)
-        {
+        if (currentCodeBlockIndex == 0) {
             setError("'endcodeblock' without 'begincodeblock'");
             return false;
         }
 
         // Also cannot end a code block within a function or flow control
-        if (inFunction)
-        {
+        if (inFunction) {
             setError("Cannot end a code block inside a user function");
             return false;
         }
 
-        if (!flowControls.isEmpty())
-        {
+        if (!flowControls.isEmpty()) {
             setError("Cannot end a code block inside a flow control structure");
             return false;
         }
-
 
         // Skip ENDCODEBLOCK
         if (!getToken()) {
@@ -1802,7 +1791,7 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Set "jump around offset"
         int jumpOpCode = getCurrentCodeBlock().programOffset - 1;
-        vm.getInstruction(jumpOpCode).value = new Value((int)vm.getInstructionCount());
+        vm.getInstruction(jumpOpCode).value = new Value((int) vm.getInstructionCount());
 
         // Resume compiling main code block
         currentCodeBlockIndex = 0;
@@ -1858,14 +1847,12 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Skip structure name
-        if (!getToken())
-        {
+        if (!getToken()) {
             return false;
         }
 
         // Require : or new line
-        if (!skipSeparators())
-        {
+        if (!skipSeparators()) {
             return false;
         }
 
@@ -1990,12 +1977,11 @@ public class TomBasicCompiler extends HasErrorState {
                     return false;
                 }
 
-                // Embedded structures must be fully defined (pointers to declared but undefined structures are okay though)
-                if (type.pointerLevel == 0 && type.basicType >= 0)
-                {
+                // Embedded structures must be fully defined (pointers to declared but undefined structures are okay
+                // though)
+                if (type.pointerLevel == 0 && type.basicType >= 0) {
                     Structure s = vm.getDataTypes().getStructures().get(type.basicType);
-                    if (!s.isDefined)
-                    {
+                    if (!s.isDefined) {
                         setError("Cannot include not yet implemented structure '" + s.name + "'");
                         return false;
                     }
@@ -2043,8 +2029,7 @@ public class TomBasicCompiler extends HasErrorState {
 
                         // Var already created (earlier), so fall through
                         // to allocation code generation
-                    } else
-                    {
+                    } else {
                         // Create new variable
                         varIndex = getCurrentUserFunctionPrototype().newLocalVar(name, type);
                     }
@@ -2264,12 +2249,10 @@ public class TomBasicCompiler extends HasErrorState {
             type.get().basicType = BasicValType.VTP_REAL;
         } else if (token.getText().equals("string")) {
             type.get().basicType = BasicValType.VTP_STRING;
-        }
-        else if (token.getText().equals("function") || token.getText().equals("sub"))
-        {
+        } else if (token.getText().equals("function") || token.getText().equals("sub")) {
             // Function or sub
             return compileUserFunction(UserFunctionType.UFT_POINTER, type);
-        }else {
+        } else {
 
             // Look for recognised structure name
             String structureName = symbolPrefix + token.getText();
@@ -2617,10 +2600,10 @@ public class TomBasicCompiler extends HasErrorState {
                 if (!compileDerefs()) {
                     return false;
                 }
-            } else if (token.getText().equals("(") &&
-                    regType.basicType == BasicValType.VTP_FUNC_PTR &&
-                    regType.pointerLevel == 0 &&
-                    regType.arrayLevel == 0) {
+            } else if (token.getText().equals("(")
+                    && regType.basicType == BasicValType.VTP_FUNC_PTR
+                    && regType.pointerLevel == 0
+                    && regType.arrayLevel == 0) {
 
                 // Function pointer variable call
                 if (!compileUserFunctionCall(false, false, true)) {
@@ -2846,15 +2829,16 @@ public class TomBasicCompiler extends HasErrorState {
         if (o.operator.params == 1) {
 
             // Try overloaded operator functions first
-            if (o.operator.type == OperType.OT_OPERATOR && compileOverloadedOperator(o.operator.getOpCode(), FunctionType.FT_OPERATOR_UNARY)) {
+            if (o.operator.type == OperType.OT_OPERATOR
+                    && compileOverloadedOperator(o.operator.getOpCode(), FunctionType.FT_OPERATOR_UNARY)) {
                 return true;
             }
 
             // NOTE: commented out in newer versions of the original compiler code
             // Try plug in language extension first
-            //if (compileExtendedUnOperation(o.operator.opCode)) {
+            // if (compileExtendedUnOperation(o.operator.opCode)) {
             //    return true;
-            //}
+            // }
 
             // Can only operate on basic types.
             // (This will change once vector and matrix routines have been
@@ -2886,14 +2870,15 @@ public class TomBasicCompiler extends HasErrorState {
             }
 
             // Try overloaded operator functions first
-            if (o.operator.type == OperType.OT_OPERATOR && compileOverloadedOperator(o.operator.getOpCode(), FunctionType.FT_OPERATOR_BINARY)) {
+            if (o.operator.type == OperType.OT_OPERATOR
+                    && compileOverloadedOperator(o.operator.getOpCode(), FunctionType.FT_OPERATOR_BINARY)) {
                 return true;
             }
             // NOTE: commented out in newer versions of the original compiler code
             // Try plug in language extension first
-            //if (compileExtendedBinOperation(o.operator.opCode)) {
+            // if (compileExtendedBinOperation(o.operator.opCode)) {
             //    return true;
-            //}
+            // }
 
             // Ensure operands are equal type. Generate code to convert one if
             // necessary.
@@ -2934,10 +2919,9 @@ public class TomBasicCompiler extends HasErrorState {
                 }
 
                 // Make sure prototypes are compatible
-			    UserFuncPrototype p1 = vm.getUserFunctionPrototypes().get(regType.prototypeIndex);
+                UserFuncPrototype p1 = vm.getUserFunctionPrototypes().get(regType.prototypeIndex);
                 UserFuncPrototype p2 = vm.getUserFunctionPrototypes().get(reg2Type.prototypeIndex);
-                if (!p1.isCompatibleWith(p2))
-                {
+                if (!p1.isCompatibleWith(p2)) {
                     setError("Function pointer types are not compatible");
                     return false;
                 }
@@ -2975,8 +2959,8 @@ public class TomBasicCompiler extends HasErrorState {
                 if (o.operator.type == OperType.OT_BOOLOPERATOR || o.operator.type == OperType.OT_LAZYBOOLOPERATOR) {
                     highest = BasicValType.VTP_INT;
                 }
-                if ((syntax == LS_TRADITIONAL || syntax == LS_TRADITIONAL_SUFFIX) && o.operator.opCode == OpCode.OP_OP_DIV)
-                {
+                if ((syntax == LS_TRADITIONAL || syntax == LS_TRADITIONAL_SUFFIX)
+                        && o.operator.opCode == OpCode.OP_OP_DIV) {
                     // 14-Aug-05 Tom: In traditional mode, division is always
                     // between floating pt numbers
                     highest = BasicValType.VTP_REAL;
@@ -3012,8 +2996,7 @@ public class TomBasicCompiler extends HasErrorState {
         return true;
     }
 
-    private boolean compileOverloadedOperator(int opCode, FunctionType type)
-    {
+    private boolean compileOverloadedOperator(int opCode, FunctionType type) {
         // Look for operator overload
         String overloadFn = "";
         if (operatorOverloads.containsKey(opCode)) {
@@ -3064,8 +3047,7 @@ public class TomBasicCompiler extends HasErrorState {
             // Special case, left bracket
             if (token.getText().equals("(")) {
                 // Brackets bind looser than anything else
-                operatorStack.add(
-                        new StackedOperator(new Operator(OperType.OT_LBRACKET, OpCode.OP_NOP, 0, -10000)));
+                operatorStack.add(new StackedOperator(new Operator(OperType.OT_LBRACKET, OpCode.OP_NOP, 0, -10000)));
             }
 
             // Otherwise look for recognised unary operator
@@ -3105,7 +3087,8 @@ public class TomBasicCompiler extends HasErrorState {
             return compileUserFunctionCall(true, false, false);
         } else if (token.getTokenType() == TokenType.CTT_RUNTIME_FUNCTION) {
             return compileUserFunctionCall(true, true, false);
-        } else if (token.getTokenType() == TokenType.CTT_KEYWORD && token.getText().equals("arraymax")) {
+        } else if (token.getTokenType() == TokenType.CTT_KEYWORD
+                && token.getText().equals("arraymax")) {
             return compileArrayMax();
         }
 
@@ -3136,7 +3119,8 @@ public class TomBasicCompiler extends HasErrorState {
 
                 // Allocate new string constant
                 String text;
-                // TODO - 2026-04-23 Need to review this code. original source used `m_text.substr (1, m_token.m_text.length () - 1)`
+                // TODO - 2026-04-23 Need to review this code. original source used `m_text.substr (1,
+                // m_token.m_text.length () - 1)`
                 text = token.getText().substring(1, token.getText().length()); // Remove S prefix
                 int index = vm.storeStringConstant(text);
 
@@ -3192,21 +3176,19 @@ public class TomBasicCompiler extends HasErrorState {
     private boolean compileConvert(int basictype) {
 
         // Convert reg to given type
-        if (regType.matchesType(basictype))
-        {
+        if (regType.matchesType(basictype)) {
             // Already same type
             return true;
         }
 
-
         // Can convert function pointer, untyped function pointer or null to a function pointer.
         // Note: Calling code is responsible for ensuring functions have compatible prototypes
         // (and emitting the appropriate runtime check if necessary)
-        if (basictype == BasicValType.VTP_FUNC_PTR &&
-            (regType.getPhysicalPointerLevel() == 0 && regType.basicType == BasicValType.VTP_FUNC_PTR
-                ||  regType.getPhysicalPointerLevel() == 0 && regType.basicType == BasicValType.VTP_UNTYPED_FUNC_PTR
-                ||	regType.getPhysicalPointerLevel() == 1 && regType.isNull()))
-        {
+        if (basictype == BasicValType.VTP_FUNC_PTR
+                && (regType.getPhysicalPointerLevel() == 0 && regType.basicType == BasicValType.VTP_FUNC_PTR
+                        || regType.getPhysicalPointerLevel() == 0
+                                && regType.basicType == BasicValType.VTP_UNTYPED_FUNC_PTR
+                        || regType.getPhysicalPointerLevel() == 1 && regType.isNull())) {
             return true;
         }
 
@@ -3327,7 +3309,7 @@ public class TomBasicCompiler extends HasErrorState {
             }
             // For function pointers, also need to verify that the prototypes are compatible
             if (type.basicType == BasicValType.VTP_FUNC_PTR && prevRegType.basicType == BasicValType.VTP_FUNC_PTR) {
-    			UserFuncPrototype p1 = vm.getUserFunctionPrototypes().get(type.prototypeIndex);
+                UserFuncPrototype p1 = vm.getUserFunctionPrototypes().get(type.prototypeIndex);
                 UserFuncPrototype p2 = vm.getUserFunctionPrototypes().get(prevRegType.prototypeIndex);
                 if (p1.isCompatibleWith(p2)) {
                     return true;
@@ -3369,7 +3351,7 @@ public class TomBasicCompiler extends HasErrorState {
             }
             // For function pointers, also need to verify that the prototypes are compatible
             if (type.basicType == BasicValType.VTP_FUNC_PTR && prevRegType.basicType == BasicValType.VTP_FUNC_PTR) {
-			    UserFuncPrototype p1 = vm.getUserFunctionPrototypes().get(type.prototypeIndex);
+                UserFuncPrototype p1 = vm.getUserFunctionPrototypes().get(type.prototypeIndex);
                 UserFuncPrototype p2 = vm.getUserFunctionPrototypes().get(prevRegType.prototypeIndex);
                 if (p1.isCompatibleWith(p2)) {
                     return true;
@@ -3477,23 +3459,19 @@ public class TomBasicCompiler extends HasErrorState {
             }
 
             // Extra checking required for function pointers.
-            if (reg2Type.basicType == BasicValType.VTP_FUNC_PTR)
-            {
+            if (reg2Type.basicType == BasicValType.VTP_FUNC_PTR) {
                 // Function pointer assignment requires function prototypes be compatible
-                if (regType.basicType == BasicValType.VTP_FUNC_PTR)
-                {
-				    UserFuncPrototype p1 = vm.getUserFunctionPrototypes().get(reg2Type.prototypeIndex);
+                if (regType.basicType == BasicValType.VTP_FUNC_PTR) {
+                    UserFuncPrototype p1 = vm.getUserFunctionPrototypes().get(reg2Type.prototypeIndex);
                     UserFuncPrototype p2 = vm.getUserFunctionPrototypes().get(prevRegType.prototypeIndex);
-                    if (!p1.isCompatibleWith(p2))
-                    {
+                    if (!p1.isCompatibleWith(p2)) {
                         setError("Types do not match");
                         return false;
                     }
                 }
 
                 // Assigning an untyped function pointer requires a run-time type check
-                if (regType.basicType == BasicValType.VTP_UNTYPED_FUNC_PTR)
-                {
+                if (regType.basicType == BasicValType.VTP_UNTYPED_FUNC_PTR) {
                     addInstruction(OpCode.OP_CHECK_FUNC_PTR, BasicValType.VTP_INT, new Value(reg2Type.prototypeIndex));
                 }
             }
@@ -4230,22 +4208,24 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     @Deprecated() // Need to review if this is still used or replace with addFunctions
-    public void addFunction (String name,
-                                 Function          func,
-                                 ParamTypeList   params,
-                                 boolean isFunction,
-                                 boolean brackets, ValType           returnType,
-                                 boolean                timeshare,
-                                 boolean                freeTempData,
-                                 ParamValidationCallback paramValidationCallback,
-                                 boolean				conditionalTimeshare) {
+    public void addFunction(
+            String name,
+            Function func,
+            ParamTypeList params,
+            boolean isFunction,
+            boolean brackets,
+            ValType returnType,
+            boolean timeshare,
+            boolean freeTempData,
+            ParamValidationCallback paramValidationCallback,
+            boolean conditionalTimeshare) {
 
         // Register wrapper function to virtual machine
-        int vmIndex = vm.addFunction (func);
+        int vmIndex = vm.addFunction(func);
 
         // Register function spec to compiler
-        int specIndex = functions.size ();
-        FunctionSpecification spec = new FunctionSpecification (
+        int specIndex = functions.size();
+        FunctionSpecification spec = new FunctionSpecification(
                 func.getClass(),
                 params,
                 brackets,
@@ -4256,7 +4236,7 @@ public class TomBasicCompiler extends HasErrorState {
                 paramValidationCallback);
         spec.setIndex(vmIndex);
         spec.setConditionalTimeshare(conditionalTimeshare);
-        functions.add (spec);
+        functions.add(spec);
 
         // Add function name -> function spec mapping
         List<Integer> l = functionIndex.get(name.toLowerCase());
@@ -4330,14 +4310,12 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Filter out non functions if a result is needed.
-        if (needResult)
-        {
+        if (needResult) {
             functions = Arrays.stream(functions)
                     .filter(fn -> fn != null && fn.getSpecification().isFunction())
                     .toArray(ExtendedFunctionSpecification[]::new);
             functionCount = functions.length;
-            if (functionCount == 0)
-            {
+            if (functionCount == 0) {
                 setError(name + " does not return a value");
                 return false;
             }
@@ -4345,7 +4323,7 @@ public class TomBasicCompiler extends HasErrorState {
         // Brackets are required if any remaining overload requires brackets.
         // (We need to decide up front whether a '(' is the function brackets or part of the first parameter expression.
         // It gets too complicated if we try to handle some overloads that require brackets and some that don't.)
-        boolean brackets = Arrays.stream(functions).anyMatch(fn ->{
+        boolean brackets = Arrays.stream(functions).anyMatch(fn -> {
             if (fn == null) {
                 return false;
             }
@@ -4354,13 +4332,17 @@ public class TomBasicCompiler extends HasErrorState {
                 return false;
             }
             // Traditional syntax: Don't require brackets for subs or no-param functions
-            if ((syntax == LS_TRADITIONAL || syntax == LS_TRADITIONAL_SUFFIX) && (!fn.getSpecification().isFunction() || fn.getSpecification().getParamTypes().getParams().isEmpty())) {
+            if ((syntax == LS_TRADITIONAL || syntax == LS_TRADITIONAL_SUFFIX)
+                    && (!fn.getSpecification().isFunction()
+                            || fn.getSpecification().getParamTypes().getParams().isEmpty())) {
                 return false;
             }
             return true;
         });
 
-        boolean isNoParamFunction = functionCount == 1 && functions[0].getSpecification().isFunction() && functions[0].getSpecification().getParamTypes().getParams().size() == 0;
+        boolean isNoParamFunction = functionCount == 1
+                && functions[0].getSpecification().isFunction()
+                && functions[0].getSpecification().getParamTypes().getParams().size() == 0;
 
         // Expect opening bracket
         if (type == FunctionType.FT_NORMAL && brackets) {
@@ -4384,16 +4366,25 @@ public class TomBasicCompiler extends HasErrorState {
         // pushCount > count.
         int pushCount = 0;
 
-        while (functionCount > 0 &&
-            ((type == FunctionType.FT_NORMAL && !token.getText().equals(")") && !atSeparatorOrSpecial () && !isNoParamFunction)		// Exit criteria for normal functions
-                || (type == FunctionType.FT_OPERATOR_UNARY && count < 1)															// Exit criteria for unary functions
-                || (type == FunctionType.FT_OPERATOR_BINARY && count < 2))) {														// Exit criteria for binary functions
+        while (functionCount > 0
+                && ((type == FunctionType.FT_NORMAL
+                                && !token.getText().equals(")")
+                                && !atSeparatorOrSpecial()
+                                && !isNoParamFunction) // Exit criteria for normal functions
+                        || (type == FunctionType.FT_OPERATOR_UNARY && count < 1) // Exit criteria for unary functions
+                        || (type == FunctionType.FT_OPERATOR_BINARY
+                                && count < 2))) { // Exit criteria for binary functions
 
             // Trim functions with less parameters than we have found
             int src, dst;
             dst = 0;
             for (src = 0; src < functionCount; src++) {
-                if (functions[src].getSpecification().getParamTypes().getParams().size() > count) {
+                if (functions[src]
+                                .getSpecification()
+                                .getParamTypes()
+                                .getParams()
+                                .size()
+                        > count) {
                     functions[dst++] = functions[src];
                 }
             }
@@ -4425,8 +4416,7 @@ public class TomBasicCompiler extends HasErrorState {
             first = false;
 
             // Generate code to evaluate parameter
-            switch (type)
-            {
+            switch (type) {
                 case FT_NORMAL:
                     if (!compileExpression()) {
                         return false;
@@ -4449,15 +4439,21 @@ public class TomBasicCompiler extends HasErrorState {
             boolean isAnyType = false;
             int i;
             for (i = 0; i < functionCount && matchIndex < 0; i++) {
-                ValType valType = new ValType(
-                        functions[i].getSpecification().getParamTypes().getParams().get(count));
+                ValType valType = new ValType(functions[i]
+                        .getSpecification()
+                        .getParamTypes()
+                        .getParams()
+                        .get(count));
 
                 // Check for undefined type parameter
                 if (valType.matchesType(BasicValType.VTP_UNDEFINED)) {
 
                     // Function definition indicates whether parameter type is
                     // valid via a compiler time callback function.
-                    if (functions[i].getSpecification().getParamValidationCallback().run(count, regType)) {
+                    if (functions[i]
+                            .getSpecification()
+                            .getParamValidationCallback()
+                            .run(count, regType)) {
 
                         // Found "any type" match
                         matchIndex = i;
@@ -4483,8 +4479,11 @@ public class TomBasicCompiler extends HasErrorState {
                 // Clear any errors that non-matching instances might have set.
                 clearError();
 
-                ValType valType = new ValType(
-                        functions[matchIndex].getSpecification().getParamTypes().getParams().get(count));
+                ValType valType = new ValType(functions[matchIndex]
+                        .getSpecification()
+                        .getParamTypes()
+                        .getParams()
+                        .get(count));
 
                 // Filter out all functions whose "count" parameter doesn't
                 // match "type".
@@ -4496,7 +4495,10 @@ public class TomBasicCompiler extends HasErrorState {
                         // parameter, then all other overloads must be an
                         // "any type"
                         // parameter.
-                        if (functions[src].getSpecification().getParamValidationCallback().run(count, regType)) {
+                        if (functions[src]
+                                .getSpecification()
+                                .getParamValidationCallback()
+                                .run(count, regType)) {
                             functions[dst++] = functions[src];
                         }
                     } else {
@@ -4946,8 +4948,7 @@ public class TomBasicCompiler extends HasErrorState {
     private boolean compileData() {
 
         // Skip "data"
-        if (!getToken(false, true))
-        {
+        if (!getToken(false, true)) {
             // Use "DATA" mode read
             return false;
         }
@@ -5099,8 +5100,7 @@ public class TomBasicCompiler extends HasErrorState {
         return true;
     }
 
-    private boolean compileArrayMax()
-    {
+    private boolean compileArrayMax() {
         // Skip "arraymax"
         if (!getToken()) {
             return false;
@@ -5121,15 +5121,13 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Expect this to be an array
-        if (regType.arrayLevel == 0)
-        {
+        if (regType.arrayLevel == 0) {
             setError("Expected an array");
             return false;
         }
 
         // Closing ")"
-        if (!token.getText().equals(")"))
-        {
+        if (!token.getText().equals(")")) {
             setError("Expected ')'");
             return false;
         }
@@ -5166,8 +5164,7 @@ public class TomBasicCompiler extends HasErrorState {
         return true;
     }
 
-    int getFnPointerPrototypeIndex(UserFuncPrototype prototype)
-    {
+    int getFnPointerPrototypeIndex(UserFuncPrototype prototype) {
         // TODO: Optimise with hash lookup?
 
         // Look for existing matching prototype
@@ -5182,9 +5179,7 @@ public class TomBasicCompiler extends HasErrorState {
         return prototypes.size() - 1;
     }
 
-
-    boolean compileUserFunctionAddress()
-    {
+    boolean compileUserFunctionAddress() {
         // Current token must be the user function name
         assertTrue(token.getTokenType() == TokenType.CTT_USER_FUNCTION);
 
@@ -5210,11 +5205,10 @@ public class TomBasicCompiler extends HasErrorState {
         return true;
     }
 
-    boolean checkTypeIsDefined(ValType type)
-    {
+    boolean checkTypeIsDefined(ValType type) {
         // Check that field data type has been fully defined
         if (type.basicType >= 0) {
-		    Structure struc = vm.getDataTypes().getStructures().get(type.basicType);
+            Structure struc = vm.getDataTypes().getStructures().get(type.basicType);
             if (!struc.isDefined) {
                 setError("Structure type '" + struc.name + "' has not been defined yet");
                 return false;
@@ -5342,9 +5336,13 @@ public class TomBasicCompiler extends HasErrorState {
         plugins.findFunctions(name, extFunctions, countRef, TC_MAXOVERLOADEDFUNCTIONS);
         int count = countRef.get();
         for (int i = 0; i < count; i++) {
-            Vector<ValType> params = extFunctions[i].getSpecification().getParamTypes().getParams();
-            if ((params.isEmpty() && !hasParam) ||
-                    (params.size() == 1 && hasParam && (paramBasicValType == BasicValType.VTP_UNDEFINED || params.get(0).basicType == paramBasicValType))) {
+            Vector<ValType> params =
+                    extFunctions[i].getSpecification().getParamTypes().getParams();
+            if ((params.isEmpty() && !hasParam)
+                    || (params.size() == 1
+                            && hasParam
+                            && (paramBasicValType == BasicValType.VTP_UNDEFINED
+                                    || params.get(0).basicType == paramBasicValType))) {
                 return extFunctions[i];
             }
         }
@@ -5359,9 +5357,11 @@ public class TomBasicCompiler extends HasErrorState {
             for (Integer i : l) {
                 FunctionSpecification spec = functions.get(i);
                 Vector<ValType> params = spec.getParamTypes().getParams();
-                if ((params.isEmpty() && !hasParam) ||
-                        (params.size() == 1 && hasParam && (paramBasicValType == BasicValType.VTP_UNDEFINED || params.get(0).basicType == paramBasicValType)))
-                {
+                if ((params.isEmpty() && !hasParam)
+                        || (params.size() == 1
+                                && hasParam
+                                && (paramBasicValType == BasicValType.VTP_UNDEFINED
+                                        || params.get(0).basicType == paramBasicValType))) {
                     result.setSpecification(spec);
                     return result;
                 }
@@ -5373,8 +5373,6 @@ public class TomBasicCompiler extends HasErrorState {
         result.setSpecification(null);
         return result;
     }
-
-
 
     private boolean compilePrint(boolean forceNewLine) {
 
@@ -5438,7 +5436,7 @@ public class TomBasicCompiler extends HasErrorState {
 
         // Find print/printr function
         boolean newLine = forceNewLine
-                || ((syntax == LS_TRADITIONAL || syntax == LS_TRADITIONAL_PRINT|| syntax == LS_TRADITIONAL_SUFFIX)
+                || ((syntax == LS_TRADITIONAL || syntax == LS_TRADITIONAL_PRINT || syntax == LS_TRADITIONAL_SUFFIX)
                         && !foundSemiColon);
 
         if (!newLine && operandCount == 0) // Nothing to print?
@@ -5448,8 +5446,7 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         ExtendedFunctionSpecification spec = findFunction2(
-                newLine ? "printr" : "print",
-                operandCount == 1 ? BasicValType.VTP_STRING : BasicValType.VTP_UNDEFINED);
+                newLine ? "printr" : "print", operandCount == 1 ? BasicValType.VTP_STRING : BasicValType.VTP_UNDEFINED);
         if (spec.getSpecification() == null) {
             return false;
         }
@@ -5633,8 +5630,7 @@ public class TomBasicCompiler extends HasErrorState {
         return true;
     }
 
-    boolean compileFwdDecl()
-    {
+    boolean compileFwdDecl() {
         // Skip "declare"
         if (!getToken()) {
             return false;
@@ -5929,10 +5925,7 @@ public class TomBasicCompiler extends HasErrorState {
             // Create jump-past-function op-code
             functionJumpOver = vm.getInstructionCount();
             // Jump target will be fixed up when "endfunction" is compiled
-            addInstruction(
-                    OpCode.OP_JUMP,
-                    BasicValType.VTP_INT,
-                    new Value(0));
+            addInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(0));
 
             if (isRuntimeFunction(name)) {
 
@@ -6025,11 +6018,9 @@ public class TomBasicCompiler extends HasErrorState {
         return true;
     }
 
-    boolean compileStructureFwdDecl()
-    {
+    boolean compileStructureFwdDecl() {
         // Expect "struc" or "type"
-        if (!token.getText().equals("struc") && !token.getText().equals("type"))
-        {
+        if (!token.getText().equals("struc") && !token.getText().equals("type")) {
             setError("Expected 'struc' or 'type'");
             return false;
         }
@@ -6132,18 +6123,18 @@ public class TomBasicCompiler extends HasErrorState {
     }
 
     private boolean compileUserFunctionCall(boolean mustReturnValue, boolean isRuntimeFunc, boolean isFunctionPtr) {
-        assertTrue(isFunctionPtr || (!isRuntimeFunc && token.getTokenType() == TokenType.CTT_USER_FUNCTION)
+        assertTrue(isFunctionPtr
+                || (!isRuntimeFunc && token.getTokenType() == TokenType.CTT_USER_FUNCTION)
                 || (isRuntimeFunc && token.getTokenType() == TokenType.CTT_RUNTIME_FUNCTION));
-        assertTrue(isFunctionPtr || (!isRuntimeFunc && isUserFunction(token.getText()))
+        assertTrue(isFunctionPtr
+                || (!isRuntimeFunc && isUserFunction(token.getText()))
                 || (isRuntimeFunc && isRuntimeFunction(token.getText())));
-
 
         String name = "";
         int index = -1;
         int prototypeIndex;
 
-        if (isFunctionPtr)
-        {
+        if (isFunctionPtr) {
             // Look at function pointer type to get prototype index
             assertTrue(regType.basicType == BasicValType.VTP_FUNC_PTR);
             assertTrue(regType.pointerLevel == 0);
@@ -6463,7 +6454,7 @@ public class TomBasicCompiler extends HasErrorState {
         try {
 
             // Unload any plugins
-             plugins.clear();
+            plugins.clear();
 
             // Clear current program (if any)
             clearProgram();
