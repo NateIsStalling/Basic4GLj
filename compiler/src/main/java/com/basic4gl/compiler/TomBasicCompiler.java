@@ -5723,7 +5723,7 @@ public class TomBasicCompiler extends HasErrorState {
         Mutable<ValType> typeRef = new Mutable<>(type);
         Mutable<String> nameRef = new Mutable<>(name);
 
-        if (funcType == UserFunctionType.UFT_POINTER) {
+        if (funcType != UserFunctionType.UFT_POINTER) {
             // Note: Pointers to function types don't have a name.
             // Which also means they don't have anything to suffix with a data type.
             // (Return type can be declared after the function definition, with "as").

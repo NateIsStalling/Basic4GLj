@@ -142,8 +142,9 @@ task debugAll {
         println(rootProject.ext.get("libraryJarPath"))
         println(rootProject.ext.get("debugServerJarPath"))
         run {
-        args rootProject.ext.get("libraryJarPath"),
-            rootProject.ext.get("debugServerJarPath")
+            args rootProject.ext.get("libraryJarPath"),
+                rootProject.ext.get("debugServerJarPath")
+            // debug = true
         }
     }
 }
