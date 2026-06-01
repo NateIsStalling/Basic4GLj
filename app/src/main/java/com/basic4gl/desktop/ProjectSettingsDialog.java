@@ -3,6 +3,7 @@ package com.basic4gl.desktop;
 import com.basic4gl.lib.util.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.*;
@@ -15,6 +16,7 @@ import javax.swing.border.MatteBorder;
 public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigurationChangeListener {
 
     private static final String BUILD_SETTINGS_CARD = "Build Settings";
+    private static final String PROGRAM_ARGUMENTS_CARD = "Program Arguments";
     private static final String SAFE_MODE_CARD = "Safe Mode";
 
     private final JDialog dialog;
@@ -81,6 +83,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
 
         DefaultListModel<String> sections = new DefaultListModel<>();
         sections.addElement(BUILD_SETTINGS_CARD);
+        sections.addElement(PROGRAM_ARGUMENTS_CARD);
         sections.addElement(SAFE_MODE_CARD);
         JList<String> sectionsList = new JList<>(sections);
         sectionsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -161,8 +164,27 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         safeModeFooter.add(safeModeCheckbox, BorderLayout.WEST);
         safeModeSettingsCard.add(safeModeFooter, BorderLayout.SOUTH);
 
+        // Program arguments card
+        JPanel programArgumentsCard = new JPanel(new BorderLayout(0, 12));
+        programArgumentsCard.setBorder(new EmptyBorder(12, 12, 12, 12));
+        programArgumentsCard.add(
+                createSectionHeader(
+                        "Program Arguments",
+                        "Enter one argument per line to pass to programs run from the IDE."),
+                BorderLayout.NORTH);
+
+        JTextArea argumentsTextArea = new JTextArea();
+        argumentsTextArea.setLineWrap(false);
+        argumentsTextArea.setTabSize(4);
+        argumentsTextArea.setText(String.join(System.lineSeparator(), appSettings.getProgramArguments()));
+
+        JScrollPane argumentsScrollPane = new JScrollPane(argumentsTextArea);
+        configureSmoothScrolling(argumentsScrollPane);
+        programArgumentsCard.add(createTitledPanel("Arguments", argumentsScrollPane), BorderLayout.CENTER);
+
         cardsPane.add(buildSettingsCard, BUILD_SETTINGS_CARD);
         cardsPane.add(safeModeSettingsCard, SAFE_MODE_CARD);
+        cardsPane.add(programArgumentsCard, PROGRAM_ARGUMENTS_CARD);
 
         JScrollPane sectionsScrollPane = new JScrollPane(sectionsList);
         sectionsScrollPane.setBorder(new MatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground")));
@@ -204,8 +226,8 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         buttonPane.add(cancelButton);
 
         // Action listeners
-        applyButton.addActionListener(e -> applyChanges(safeModeCheckbox, false));
-        okButton.addActionListener(e -> applyChanges(safeModeCheckbox, true));
+        applyButton.addActionListener(e -> applyChanges(safeModeCheckbox, argumentsTextArea, false));
+        okButton.addActionListener(e -> applyChanges(safeModeCheckbox, argumentsTextArea, true));
         cancelButton.addActionListener(e -> ProjectSettingsDialog.this.setVisible(false));
 
         builderComboBox.addActionListener(e -> {
@@ -275,15 +297,35 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         scrollPane.setWheelScrollingEnabled(true);
     }
 
-    private void applyChanges(JCheckBox safeModeCheckbox, boolean closeDialog) {
+    private void applyChanges(JCheckBox safeModeCheckbox, JTextArea argumentsTextArea, boolean closeDialog) {
         if (currentBuilder >= 0) {
             configPane.applyConfig();
         }
 
         appSettings.setSandboxModeEnabled(safeModeCheckbox.isSelected());
+        appSettings.setProgramArguments(parseProgramArguments(argumentsTextArea.getText()));
         if (closeDialog) {
             setVisible(false);
         }
+    }
+
+    private List<String> parseProgramArguments(String text) {
+        List<String> args = new ArrayList<>();
+        if (text == null || text.isEmpty()) {
+            return args;
+        }
+
+        String[] lines = text.split("\\R", -1);
+        for (String line : lines) {
+            if (line == null) {
+                continue;
+            }
+            if (line.trim().isEmpty()) {
+                continue;
+            }
+            args.add(line);
+        }
+        return args;
     }
 
     private void selectBuilder(int builderIndex) {

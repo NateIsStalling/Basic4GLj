@@ -1,5 +1,9 @@
 package com.basic4gl.lib.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class EditorAppSettings implements IConfigurableAppSettings {
 
     private static final boolean DEFAULT_SANDBOX_MODE = true;
@@ -9,6 +13,8 @@ public class EditorAppSettings implements IConfigurableAppSettings {
     private boolean isSandboxModeEnabled = DEFAULT_SANDBOX_MODE;
 
     private int syntax = DEFAULT_SYNTAX;
+
+    private List<String> programArguments = new ArrayList<>();
 
     @Override
     public boolean isSandboxModeEnabled() {
@@ -21,6 +27,11 @@ public class EditorAppSettings implements IConfigurableAppSettings {
     }
 
     @Override
+    public List<String> getProgramArguments() {
+        return Collections.unmodifiableList(programArguments);
+    }
+
+    @Override
     public void setSandboxModeEnabled(boolean enabled) {
         isSandboxModeEnabled = enabled;
     }
@@ -28,5 +39,11 @@ public class EditorAppSettings implements IConfigurableAppSettings {
     @Override
     public void setSyntax(int syntax) {
         this.syntax = syntax;
+    }
+
+    @Override
+    public void setProgramArguments(List<String> programArguments) {
+        this.programArguments =
+                programArguments == null ? new ArrayList<>() : new ArrayList<>(programArguments);
     }
 }

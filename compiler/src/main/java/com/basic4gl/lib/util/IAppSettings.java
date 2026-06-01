@@ -1,5 +1,7 @@
 package com.basic4gl.lib.util;
 
+import java.util.List;
+
 /**
  * Interface to application settings used by routines and function libraries
  */
@@ -18,4 +20,9 @@ public interface IAppSettings {
      * Returns the selected language dialect.
      */
     int getSyntax(); // TODO evaluate usage, see TomBasicCompiler.LanguageSyntax.LS_BASIC4GL
+
+    /**
+     * Returns user-defined command-line arguments passed to programs run from the IDE.
+     */
+    List<String> getProgramArguments();
 }

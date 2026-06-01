@@ -170,6 +170,12 @@ public class RunHandler {
                     + ", program may not support debugging.");
         }
 
+        if (appSettings.getProgramArguments() != null && !appSettings.getProgramArguments().isEmpty()) {
+            // '--' marks the end of target/debug options so user args are always passed through as-is.
+            runnerArgs.add("--");
+            runnerArgs.addAll(appSettings.getProgramArguments());
+        }
+
         // Output window is being run as a java jar file
         if (libraryBinPath.endsWith(".jar")) {
             ArrayList<String> jvmArgs = new ArrayList<>(Arrays.asList(
