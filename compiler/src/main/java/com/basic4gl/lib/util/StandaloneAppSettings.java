@@ -1,5 +1,8 @@
 package com.basic4gl.lib.util;
 
+import java.util.Collections;
+import java.util.List;
+
 public class StandaloneAppSettings implements IAppSettings {
     // Standalone applications are NOT sandboxed.
     private static final boolean DEFAULT_SANDBOX_MODE = false;
@@ -15,5 +18,10 @@ public class StandaloneAppSettings implements IAppSettings {
     @Override
     public int getSyntax() {
         return DEFAULT_SYNTAX;
+    }
+
+    @Override
+    public List<String> getProgramArguments() {
+        return Collections.emptyList();
     }
 }
