@@ -7,6 +7,7 @@ import com.basic4gl.lib.util.ITargetCommandLineOptions;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 import java.io.*;
+import java.net.ServerSocket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -128,19 +129,6 @@ public class RunHandler {
             String vmPath,
             String configPath,
             String lineMappingPath) {
-
-        // TODO not sure how to cancel any suspended java apps that fail to connect to a debugger yet
-        final String jvmDebugSuspend =
-                "n"; // "y"; // y/n whether the JVM should suspend and wait for a debugger to attach or not
-        final String jvmDebugPort = "8080"; // TODO make this configurable
-        final String jvmDebugArgs = "-agentlib:jdwp=transport=dt_socket,"
-                + "address="
-                + jvmDebugPort
-                + ","
-                + "server=y,"
-                + "suspend="
-                + jvmDebugSuspend;
-
         String applicationStoragePath =
                 System.getProperty("user.home") + System.getProperty("file.separator") + "Basic4GLj";
 
@@ -178,9 +166,16 @@ public class RunHandler {
 
         // Output window is being run as a java jar file
         if (libraryBinPath.endsWith(".jar")) {
-            ArrayList<String> jvmArgs = new ArrayList<>(Arrays.asList(
-                    "java", jvmDebugArgs // TODO make this configurable
-                    ));
+            ArrayList<String> jvmArgs = new ArrayList<>(Arrays.asList("java"));
+
+            if (appSettings.getJvmArguments() != null && !appSettings.getJvmArguments().isEmpty()) {
+                jvmArgs.addAll(appSettings.getJvmArguments());
+            }
+
+            if (appSettings.isJvmDebuggingEnabled()) {
+                int sessionDebugPort = resolveJvmDebugPort(appSettings);
+                jvmArgs.add(buildJvmDebugArgs(sessionDebugPort, appSettings.isJvmDebugSuspendUntilAttach()));
+            }
 
             if (SystemUtils.IS_OS_MAC) {
                 jvmArgs.add("-XstartOnFirstThread"); // needed for GLFW
@@ -195,6 +190,41 @@ public class RunHandler {
 
         // Output window is an executable binary; java parameters are not required
         return runnerArgs.toArray(new String[0]);
+    }
+
+    private static String buildJvmDebugArgs(int debugPort, boolean suspendUntilAttach) {
+        return "-agentlib:jdwp=transport=dt_socket,address="
+                + debugPort
+                + ",server=y,suspend="
+                + (suspendUntilAttach ? "y" : "n");
+    }
+
+    private static int resolveJvmDebugPort(IAppSettings appSettings) {
+        Integer override = appSettings.getJvmDebugPortOverride();
+        if (isValidPort(override)) {
+            return override;
+        }
+
+        Integer sessionPort = findAvailableTcpPort();
+        if (isValidPort(sessionPort)) {
+            return sessionPort;
+        }
+
+        // Last-resort fallback keeps launch behavior predictable even if ephemeral allocation fails.
+        return 8080;
+    }
+
+    private static Integer findAvailableTcpPort() {
+        try (ServerSocket socket = new ServerSocket(0)) {
+            socket.setReuseAddress(true);
+            return socket.getLocalPort();
+        } catch (IOException ignored) {
+            return null;
+        }
+    }
+
+    private static boolean isValidPort(Integer port) {
+        return port != null && port >= 1 && port <= 65535;
     }
 
     private static void addTargetOption(ArrayList<String> args, String option) {

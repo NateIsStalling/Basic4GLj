@@ -25,4 +25,24 @@ public interface IAppSettings {
      * Returns user-defined command-line arguments passed to programs run from the IDE.
      */
     List<String> getProgramArguments();
+
+    /**
+     * Returns user-defined JVM arguments passed to java when the run target is a jar.
+     */
+    List<String> getJvmArguments();
+
+    /**
+     * Returns true if launched jar targets should include JDWP debug agent parameters.
+     */
+    boolean isJvmDebuggingEnabled();
+
+    /**
+     * Returns true if JDWP should suspend the launched JVM until a debugger attaches.
+     */
+    boolean isJvmDebugSuspendUntilAttach();
+
+    /**
+     * Returns an optional JDWP port override. Null means use an internal session-selected port.
+     */
+    Integer getJvmDebugPortOverride();
 }

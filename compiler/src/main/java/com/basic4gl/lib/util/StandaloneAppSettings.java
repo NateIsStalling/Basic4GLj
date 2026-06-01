@@ -24,4 +24,24 @@ public class StandaloneAppSettings implements IAppSettings {
     public List<String> getProgramArguments() {
         return Collections.emptyList();
     }
+
+    @Override
+    public List<String> getJvmArguments() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean isJvmDebuggingEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean isJvmDebugSuspendUntilAttach() {
+        return false;
+    }
+
+    @Override
+    public Integer getJvmDebugPortOverride() {
+        return null;
+    }
 }

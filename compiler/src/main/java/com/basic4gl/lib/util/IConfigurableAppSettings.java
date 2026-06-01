@@ -8,4 +8,12 @@ public interface IConfigurableAppSettings extends IAppSettings {
     void setSyntax(int syntax);
 
     void setProgramArguments(List<String> programArguments);
+
+    void setJvmArguments(List<String> jvmArguments);
+
+    void setJvmDebuggingEnabled(boolean enabled);
+
+    void setJvmDebugSuspendUntilAttach(boolean enabled);
+
+    void setJvmDebugPortOverride(Integer port);
 }
