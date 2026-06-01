@@ -30,6 +30,22 @@ public class FileOpener extends HasErrorState {
         return child.startsWith(parent);
     }
 
+    private boolean isInAppDataFolder(Path fullPath, boolean allUsers) {
+        String existingError = getError();
+        String appData = getAppDataFolder(allUsers);
+        if (appData == null || appData.isEmpty()) {
+            // Missing app data should not override the access-policy error in checkFilesFolder.
+            if (existingError == null || existingError.isEmpty()) {
+                clearError();
+            } else {
+                setError(existingError);
+            }
+            return false;
+        }
+        Path appDataPath = Paths.get(appData, getAppDataFolderName()).normalize().toAbsolutePath();
+        return fullPath.startsWith(appDataPath);
+    }
+
     String extractStoredFile(String filename) {
         filename = FileUtil.separatorsToSystem(filename);
         Exception exception = null;
@@ -100,24 +116,20 @@ public class FileOpener extends HasErrorState {
         filename = FileUtil.separatorsToSystem(filename);
 
         File file = new File(filename);
-        if (file.isAbsolute()) {
-            Path path = Paths.get(file.getAbsolutePath()).normalize();
-            if (!isChild(path, parentDirectory)) {
-                setError("You can only open files in the current directory or below.");
-                return false;
-            }
-        } else {
+        if (!file.isAbsolute()) {
             file = new File(parentDirectory, filename);
         }
 
-        if (file.exists()) {
-            System.out.println("file found! " + filename);
+        Path fullPath = file.toPath().normalize().toAbsolutePath();
+        if (isChild(fullPath, parentDirectory)
+                || isInAppDataFolder(fullPath, false)
+                || isInAppDataFolder(fullPath, true)) {
             return true;
-        } else {
-            System.out.println("parent " + parentDirectory);
-            setError("You can only open files in the current directory or below.");
-            return false;
         }
+
+        setError(
+                "You can only open files in the current directory or below, or in the Basic4GL App Data folder.");
+        return false;
     }
 
     // Both functions return a newly allocated stream if successful, or NULL if not (use the Error()
@@ -161,9 +173,7 @@ public class FileOpener extends HasErrorState {
             Exception exception = null;
 
             try {
-                if (file.exists()) {
-                    stream = new FileOutputStream(file);
-                }
+                stream = new FileOutputStream(file);
             } catch (Exception e) {
                 e.printStackTrace();
                 exception = e;
