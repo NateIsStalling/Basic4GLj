@@ -30,6 +30,7 @@ import java.util.*;
  * Functions for compiling and executing code at runtime.
  */
 public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDriverAccess {
+    private static final String COMPILE_FILENAME_DEFAULT = "";
     @Override
     public Map<String, Constant> constants() {
         return null;
@@ -206,14 +207,8 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         // Save pointer to compiler and window
         TomCompilerBasicLib.comp = comp;
 
-        // TODO Work on extension interfaces
         // Hookup and register compiler plugin adapter
-        /*comp.Plugins().RegisterInterface(
-        static_cast < IB4GLCompiler * > (compilerAdapter),
-        "IB4GLCompiler",
-        IB4GLCOMPILER_MAJOR,
-        IB4GLCOMPILER_MINOR,
-        null);*/
+        comp.getPlugins().registerInterface(new CompilerPluginAdapter(), "IB4GLCompiler", 1, 0, null);
 
         // Register initialisation function
         TomCompilerBasicLib.comp.getVM().addInitFunction(new InitFunc());
@@ -259,7 +254,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             comp.getParser().getSourceCode().add(sourceText);
 
             // Compile it
-            return doNewCompile(vm);
+            return doNewCompile(vm, COMPILE_FILENAME_DEFAULT);
         }
 
         public String getErrorText() {
@@ -348,7 +343,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
      * - Comp adds an OP_RETURN to the end of the code, rather than an OP_END.
      * - Exec is a built-in keyword that effectively GOSUBs to the code.
      */
-    int doNewCompile(TomVM vm) {
+    int doNewCompile(TomVM vm, String filename) {
 
         com.basic4gl.compiler.TomBasicCompiler.RollbackPoint rollbackPoint = comp.getRollbackPoint();
         comp.clearError();
@@ -370,6 +365,11 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             assertTrue(vm.getInstructionCount() > 0);
             assertTrue(vm.getInstruction(vm.getInstructionCount() - 1).opCode == OP_END);
             vm.setInstruction(vm.getInstructionCount() - 1, new Instruction(OP_RETURN, VTP_INT, new Value(), 0, 0));
+
+            // Write filename into new code block
+            CodeBlock block = comp.getCurrentCodeBlock();
+            block.setFilename(filename);
+
             // No error
             clearError();
 
@@ -453,11 +453,11 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         vm.gotoInstruction(saveIP);
     }
 
-    void doCompile(TomVM vm, boolean useOldMethod) {
+    void doCompile(TomVM vm, boolean useOldMethod, String filename) {
         if (useOldMethod) {
             doOldCompile(vm);
         } else {
-            vm.getReg().setIntVal(doNewCompile(vm));
+            vm.getReg().setIntVal(doNewCompile(vm, filename));
         }
     }
 
@@ -467,7 +467,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         comp.getParser().getSourceCode().add(text);
 
         // Compile it
-        doCompile(vm, useOldMethod);
+        doCompile(vm, useOldMethod, COMPILE_FILENAME_DEFAULT);
     }
 
     void doCompileList(TomVM vm, int index, boolean useOldMethod) {
@@ -494,7 +494,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         }
 
         // Compile it
-        doCompile(vm, useOldMethod);
+        doCompile(vm, useOldMethod, COMPILE_FILENAME_DEFAULT);
     }
 
     void doCompileFile(TomVM vm, String filename, boolean useOldMethod) {
@@ -513,8 +513,6 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             // Read file into parser
             comp.getParser().getSourceCode().clear();
 
-            byte[] buffer = new byte[4096];
-            int remaining, read;
             // Read file in chunks
             try (BufferedReader br = new BufferedReader(new InputStreamReader(file))) {
                 String line;
@@ -526,9 +524,12 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
             } catch (IOException e) {
                 e.printStackTrace();
+                error = e.getMessage();
+                vm.getReg().setIntVal(0);
+                return;
             }
             // Compile it
-            doCompile(vm, useOldMethod);
+            doCompile(vm, useOldMethod, filename);
         }
     }
 
