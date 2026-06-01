@@ -12,14 +12,35 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.SystemUtils;
 
 public class RunHandler {
+
+    public static class LaunchInfo {
+        private final Integer jvmDebugPort;
+        private final boolean suspendedUntilDebuggerAttach;
+
+        public LaunchInfo(Integer jvmDebugPort, boolean suspendedUntilDebuggerAttach) {
+            this.jvmDebugPort = jvmDebugPort;
+            this.suspendedUntilDebuggerAttach = suspendedUntilDebuggerAttach;
+        }
+
+        public Integer getJvmDebugPort() {
+            return jvmDebugPort;
+        }
+
+        public boolean isSuspendedUntilDebuggerAttach() {
+            return suspendedUntilDebuggerAttach;
+        }
+    }
 
     private final IApplicationHost host;
     private final TomBasicCompiler compiler;
     private final Preprocessor preprocessor;
     private final IAppSettings appSettings;
+    private final Object launchedProcessLock = new Object();
+    private Process launchedProcess;
 
     public RunHandler(
             IApplicationHost host, IAppSettings appSettings, TomBasicCompiler compiler, Preprocessor preprocessor) {
@@ -29,13 +50,13 @@ public class RunHandler {
         this.preprocessor = preprocessor;
     }
 
-    public void launchRemote(Library builder, String currentDirectory, String libraryBinPath) {
+    public LaunchInfo launchRemote(Library builder, String currentDirectory, String libraryBinPath) {
 
         // TODO 12/2020 replacing Continue();
 
         // Compile and run program from start
         if (!host.compile()) {
-            return;
+            return new LaunchInfo(null, false);
         }
 
         try {
@@ -72,9 +93,13 @@ public class RunHandler {
                     vm.getAbsolutePath(),
                     config.getAbsolutePath(),
                     lineMapping.getAbsolutePath());
+            String jvmDebugArgs = findJvmDebugArgs(commandArgs);
 
             // Start output window
             final Process process = new ProcessBuilder(commandArgs).start();
+            synchronized (launchedProcessLock) {
+                launchedProcess = process;
+            }
 
             // Automatically close GL window when editor closes
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -116,8 +141,33 @@ public class RunHandler {
                 }
             });
             thread.start();
+
+            return new LaunchInfo(extractJvmDebugPort(jvmDebugArgs), isJvmDebugSuspendEnabled(jvmDebugArgs));
         } catch (IOException e) {
             e.printStackTrace();
+            return new LaunchInfo(null, false);
+        }
+    }
+
+    public void terminateLaunchedProcess() {
+        Process processToTerminate;
+        synchronized (launchedProcessLock) {
+            processToTerminate = launchedProcess;
+            launchedProcess = null;
+        }
+
+        if (processToTerminate == null || !processToTerminate.isAlive()) {
+            return;
+        }
+
+        processToTerminate.destroy();
+        try {
+            if (!processToTerminate.waitFor(500, TimeUnit.MILLISECONDS)) {
+                processToTerminate.destroyForcibly();
+            }
+        } catch (InterruptedException interruptedException) {
+            Thread.currentThread().interrupt();
+            processToTerminate.destroyForcibly();
         }
     }
 
@@ -225,6 +275,53 @@ public class RunHandler {
 
     private static boolean isValidPort(Integer port) {
         return port != null && port >= 1 && port <= 65535;
+    }
+
+    private static String findJvmDebugArgs(String[] commandArgs) {
+        if (commandArgs == null) {
+            return null;
+        }
+        for (String arg : commandArgs) {
+            if (arg != null && arg.startsWith("-agentlib:jdwp=")) {
+                return arg;
+            }
+        }
+        return null;
+    }
+
+    private static Integer extractJvmDebugPort(String jvmDebugArgs) {
+        if (jvmDebugArgs == null) {
+            return null;
+        }
+
+        int addressIndex = jvmDebugArgs.indexOf("address=");
+        if (addressIndex < 0) {
+            return null;
+        }
+
+        int valueStartIndex = addressIndex + "address=".length();
+        int valueEndIndex = jvmDebugArgs.indexOf(',', valueStartIndex);
+        if (valueEndIndex < 0) {
+            valueEndIndex = jvmDebugArgs.length();
+        }
+
+        String addressValue = jvmDebugArgs.substring(valueStartIndex, valueEndIndex).trim();
+        if (addressValue.isEmpty()) {
+            return null;
+        }
+
+        int lastColonIndex = addressValue.lastIndexOf(':');
+        String portValue = lastColonIndex >= 0 ? addressValue.substring(lastColonIndex + 1) : addressValue;
+        try {
+            int port = Integer.parseInt(portValue);
+            return isValidPort(port) ? port : null;
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private static boolean isJvmDebugSuspendEnabled(String jvmDebugArgs) {
+        return jvmDebugArgs != null && jvmDebugArgs.contains("suspend=y");
     }
 
     private static void addTargetOption(ArrayList<String> args, String option) {

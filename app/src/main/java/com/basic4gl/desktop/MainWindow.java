@@ -217,8 +217,8 @@ public class MainWindow
                 file.createNewFile();
             }
             out = new PrintStream(new FileOutputStream(file.getAbsolutePath(), true), true);
-            System.setOut(out);
-            System.setErr(out);
+//            System.setOut(out);
+//            System.setErr(out);
         } catch (IOException e) {
             System.err.println("Unable to log to file");
             e.printStackTrace();
@@ -1344,27 +1344,28 @@ public class MainWindow
                 mainPane.setTopComponent(emptyTabPanel);
                 break;
             case AP_STOPPED:
-                setClosingTabsEnabled(true);
+                boolean waitingForDebuggerAttach = basicEditor != null && basicEditor.isWaitingForDebuggerAttach();
+                setClosingTabsEnabled(!waitingForDebuggerAttach);
 
-                settingsMenuItem.setEnabled(true);
-                settingsButton.setEnabled(true);
+                settingsMenuItem.setEnabled(!waitingForDebuggerAttach);
+                settingsButton.setEnabled(!waitingForDebuggerAttach);
 
-                exportMenuItem.setEnabled(true);
-                exportButton.setEnabled(true);
+                exportMenuItem.setEnabled(!waitingForDebuggerAttach);
+                exportButton.setEnabled(!waitingForDebuggerAttach);
 
-                newMenuItem.setEnabled(true);
-                openMenuItem.setEnabled(true);
-                newButton.setEnabled(true);
-                openButton.setEnabled(true);
+                newMenuItem.setEnabled(!waitingForDebuggerAttach);
+                openMenuItem.setEnabled(!waitingForDebuggerAttach);
+                newButton.setEnabled(!waitingForDebuggerAttach);
+                openButton.setEnabled(!waitingForDebuggerAttach);
 
-                cutMenuItem.setEnabled(true);
-                pasteMenuItem.setEnabled(true);
-                undoMenuItem.setEnabled(true);
-                redoMenuItem.setEnabled(true);
+                cutMenuItem.setEnabled(!waitingForDebuggerAttach);
+                pasteMenuItem.setEnabled(!waitingForDebuggerAttach);
+                undoMenuItem.setEnabled(!waitingForDebuggerAttach);
+                redoMenuItem.setEnabled(!waitingForDebuggerAttach);
 
-                fileManager.setReadOnly(false);
-                runMenuItem.setText("Run Program");
-                runButton.setIcon(createImageIcon(ICON_RUN_APP));
+                fileManager.setReadOnly(waitingForDebuggerAttach);
+                runMenuItem.setText(waitingForDebuggerAttach ? "Stop Program" : "Run Program");
+                runButton.setIcon(createImageIcon(waitingForDebuggerAttach ? ICON_STOP_APP : ICON_RUN_APP));
                 break;
 
             case AP_RUNNING:

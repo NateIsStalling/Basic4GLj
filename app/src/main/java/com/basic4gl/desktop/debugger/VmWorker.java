@@ -63,7 +63,15 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
             //                lib.init(mVM);
             //            }
             adapter = new DebugClientAdapter(this, DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
-            adapter.connect();
+            while (!this.isCancelled() && !adapter.connect()) {
+                // Debugee may still be waiting for JDWP attach; retry until connected or cancelled.
+                Thread.sleep(100);
+            }
+
+            if (this.isCancelled()) {
+                return null;
+            }
+
             remoteDebugger = new RemoteDebugger(adapter);
 
             debuggerTaskCallback.onDebuggerConnected();
@@ -93,7 +101,9 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            adapter.stop();
+            if (adapter != null) {
+                adapter.stop();
+            }
             remoteDebugger = null;
 
             debuggerTaskCallback.onDebuggerDisconnected();

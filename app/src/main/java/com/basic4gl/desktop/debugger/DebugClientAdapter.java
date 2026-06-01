@@ -26,7 +26,7 @@ public class DebugClientAdapter implements IDebugCommandListener {
         this.debugServerPort = debugServerPort;
     }
 
-    public void connect() {
+    public boolean connect() {
 
         URI uri = URI.create("ws://localhost:" + debugServerPort + "/debug/");
 
@@ -39,8 +39,14 @@ public class DebugClientAdapter implements IDebugCommandListener {
 
             // Attempt Connect
             session = container.connectToServer(clientEndpoint, uri);
+            return session != null && session.isOpen();
         } catch (Throwable t) {
-            t.printStackTrace(System.err);
+            session = null;
+            if (container != null) {
+                LifeCycle.stop(container);
+            }
+            container = null;
+            return false;
         }
     }
 
@@ -58,7 +64,9 @@ public class DebugClientAdapter implements IDebugCommandListener {
             // This is to free up threads and resources that the
             // JSR-356 container allocates. But unfortunately
             // the JSR-356 spec does not handle lifecycles (yet)
-            LifeCycle.stop(container);
+            if (container != null) {
+                LifeCycle.stop(container);
+            }
         }
     }
 

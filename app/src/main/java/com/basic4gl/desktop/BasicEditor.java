@@ -80,6 +80,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
     // Editor state
     private ApMode mode = ApMode.AP_STOPPED;
+    private boolean waitingForDebuggerAttach = false;
+    private RunHandler activeRunHandler;
 
     private final List<String> watchList = new ArrayList<>();
 
@@ -192,18 +194,20 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         //                libraryPath
         // TODO fix run
 
-        if (mode == ApMode.AP_STOPPED) {
+        if (mode == ApMode.AP_STOPPED && !waitingForDebuggerAttach) {
             // Compile and run program from start
             reset();
             show(new DebugCallback());
             Library builder = libraries.get(builders.get(currentBuilder));
             RunHandler handler = new RunHandler(this, appSettings, compiler, preprocessor);
-            handler.launchRemote(
+            activeRunHandler = handler;
+            RunHandler.LaunchInfo launchInfo = handler.launchRemote(
                     builder, fileManager.getCurrentDirectory(), libraryPath); // 12/2020 testing new continue()
+            updateWaitingForDebuggerStatus(launchInfo);
 
         } else {
             // Stop program completely.
-            vmWorker.stopApplication();
+            stopOrCancelRunningApplication();
         }
     }
 
@@ -215,13 +219,20 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
                 break;
 
             case AP_STOPPED:
+                if (waitingForDebuggerAttach) {
+                    stopOrCancelRunningApplication();
+                    break;
+                }
+
                 // When stopped, Play is exactly the same as Run
                 reset();
                 show(new DebugCallback());
                 Library builder = libraries.get(builders.get(currentBuilder));
                 RunHandler handler = new RunHandler(this, appSettings, compiler, preprocessor);
-                handler.launchRemote(
+                activeRunHandler = handler;
+                RunHandler.LaunchInfo launchInfo = handler.launchRemote(
                         builder, fileManager.getCurrentDirectory(), libraryPath); // 12/2020 testing new continue()
+                updateWaitingForDebuggerStatus(launchInfo);
 
                 break;
 
@@ -423,6 +434,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
     public void reset() {
         compiler.getVM().pause();
+        if (activeRunHandler != null) {
+            activeRunHandler.terminateLaunchedProcess();
+            activeRunHandler = null;
+        }
         if (vmWorker != null) {
             // TODO 1/2023 need to restart the existing app to free up the JVM port used for debugging
             vmWorker.terminateApplication();
@@ -1028,6 +1043,43 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         return mode;
     }
 
+    public boolean isWaitingForDebuggerAttach() {
+        return waitingForDebuggerAttach;
+    }
+
+    private void updateWaitingForDebuggerStatus(RunHandler.LaunchInfo launchInfo) {
+        waitingForDebuggerAttach =
+                launchInfo != null && launchInfo.isSuspendedUntilDebuggerAttach() && launchInfo.getJvmDebugPort() != null;
+        if (!waitingForDebuggerAttach) {
+            return;
+        }
+
+        presenter.setCompilerStatus("Waiting for debugger to attach on port " + launchInfo.getJvmDebugPort() + "...");
+        presenter.refreshActions(mode);
+        presenter.refreshDebugDisplays(mode);
+    }
+
+    private void stopOrCancelRunningApplication() {
+        if (vmWorker != null) {
+            vmWorker.stopApplication();
+        }
+
+        // AP_STOPPED with an active handler means launch is pending (for example suspend=y before debugger attach).
+        if (waitingForDebuggerAttach || (mode == ApMode.AP_STOPPED && activeRunHandler != null)) {
+            if (activeRunHandler != null) {
+                activeRunHandler.terminateLaunchedProcess();
+                activeRunHandler = null;
+            }
+            if (vmWorker != null) {
+                vmWorker.cancel(true);
+            }
+            waitingForDebuggerAttach = false;
+            presenter.setCompilerStatus("Debugger attach cancelled.");
+            presenter.refreshActions(mode);
+            presenter.refreshDebugDisplays(mode);
+        }
+    }
+
     public void setMode(ApMode mode) {
         this.mode = mode;
     }
@@ -1041,6 +1093,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
         @Override
         public void onDebuggerConnected() {
+            waitingForDebuggerAttach = false;
 
             vmWorker.beginSessionConfiguration();
 
@@ -1205,6 +1258,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
         @Override
         public void onDebuggerDisconnected() {
+            waitingForDebuggerAttach = false;
+            activeRunHandler = null;
             setMode(ApMode.AP_STOPPED, callbackMessage.getVMStatus());
         }
 
