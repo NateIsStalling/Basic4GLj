@@ -190,7 +190,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         advancedRunDebugCard.add(
                 createSectionHeader(
                         "JVM Settings",
-                        "Configure JVM launch options for jar targets. Leave debug port blank to auto-select per run."),
+                        "Configure JVM launch options for .jar targets."),
                 BorderLayout.NORTH);
 
         JPanel advancedBody = new JPanel(new BorderLayout(0, 12));
@@ -213,19 +213,20 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         debugOptionsConstraints.anchor = GridBagConstraints.WEST;
         debugOptionsConstraints.insets = new Insets(0, 0, 8, 0);
 
-        JCheckBox enableJvmDebugCheckbox = new JCheckBox("Enable JVM debug agent (JDWP)");
+        JCheckBox enableJvmDebugCheckbox = new JCheckBox("Enable JDWP debugger");
         enableJvmDebugCheckbox.setSelected(appSettings.isJvmDebuggingEnabled());
         debugOptionsPanel.add(enableJvmDebugCheckbox, debugOptionsConstraints);
 
         debugOptionsConstraints.gridy++;
-        JCheckBox waitForAttachCheckbox = new JCheckBox("Wait for debugger attach before starting (suspend)");
+        JCheckBox waitForAttachCheckbox = new JCheckBox("Suspend until debugger attaches");
         waitForAttachCheckbox.setSelected(appSettings.isJvmDebugSuspendUntilAttach());
         debugOptionsPanel.add(waitForAttachCheckbox, debugOptionsConstraints);
 
         debugOptionsConstraints.gridy++;
         debugOptionsConstraints.gridwidth = 1;
         debugOptionsConstraints.insets = new Insets(0, 0, 0, 10);
-        debugOptionsPanel.add(new JLabel("Debug Port Override"), debugOptionsConstraints);
+        JLabel debugPortLabel = new JLabel("Debug Port (Optional)");
+        debugOptionsPanel.add(debugPortLabel, debugOptionsConstraints);
 
         debugOptionsConstraints.gridx = 1;
         debugOptionsConstraints.weightx = 1.0;
@@ -233,8 +234,31 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         JTextField debugPortField = new JTextField();
         Integer jvmDebugPortOverride = appSettings.getJvmDebugPortOverride();
         debugPortField.setText(jvmDebugPortOverride == null ? "" : Integer.toString(jvmDebugPortOverride));
-        debugPortField.setToolTipText("Optional: leave empty to auto-select a free debug port per run session.");
+        debugPortField.setToolTipText("Leave empty to auto-select a free debug port for each run session.");
         debugOptionsPanel.add(debugPortField, debugOptionsConstraints);
+
+        debugOptionsConstraints.gridx = 1;
+        debugOptionsConstraints.gridy++;
+        debugOptionsConstraints.weightx = 1.0;
+        debugOptionsConstraints.fill = GridBagConstraints.HORIZONTAL;
+        debugOptionsConstraints.insets = new Insets(4, 0, 0, 0);
+        JLabel debugPortHintLabel = new JLabel("Leave blank to auto-select an available port each run.");
+        debugPortHintLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+        debugOptionsPanel.add(debugPortHintLabel, debugOptionsConstraints);
+
+        enableJvmDebugCheckbox.addActionListener(
+                e -> updateJvmDebugControlsEnabled(
+                        enableJvmDebugCheckbox,
+                        waitForAttachCheckbox,
+                        debugPortLabel,
+                        debugPortField,
+                        debugPortHintLabel));
+        updateJvmDebugControlsEnabled(
+                enableJvmDebugCheckbox,
+                waitForAttachCheckbox,
+                debugPortLabel,
+                debugPortField,
+                debugPortHintLabel);
 
         advancedBody.add(createTitledPanel("Debugger", debugOptionsPanel), BorderLayout.SOUTH);
         advancedRunDebugCard.add(advancedBody, BorderLayout.CENTER);
@@ -443,6 +467,19 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         } catch (NumberFormatException ignored) {
             return null;
         }
+    }
+
+    private void updateJvmDebugControlsEnabled(
+            JCheckBox enableJvmDebugCheckbox,
+            JCheckBox waitForAttachCheckbox,
+            JLabel debugPortLabel,
+            JTextField debugPortField,
+            JLabel debugPortHintLabel) {
+        boolean jvmDebuggingEnabled = enableJvmDebugCheckbox.isSelected();
+        waitForAttachCheckbox.setEnabled(jvmDebuggingEnabled);
+        debugPortLabel.setEnabled(jvmDebuggingEnabled);
+        debugPortField.setEnabled(jvmDebuggingEnabled);
+        debugPortHintLabel.setEnabled(jvmDebuggingEnabled);
     }
 
     private void selectBuilder(int builderIndex) {
