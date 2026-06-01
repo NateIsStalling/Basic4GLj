@@ -46,6 +46,14 @@ public class GLFWKeyboard extends OpenGLKeyboard {
     }
 
     int scanKeyFromGLFWKey(int key, boolean ignoreLeftRight) {
+        // Alphanumeric keys map directly to Windows VK values expected by ScanKeyDown.
+        if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z) {
+            return 'A' + (key - GLFW_KEY_A);
+        }
+        if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9) {
+            return '0' + (key - GLFW_KEY_0);
+        }
+
         switch (key) {
             case GLFW_KEY_BACKSPACE:
                 return VK_BACK;
