@@ -194,7 +194,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         //                libraryPath
         // TODO fix run
 
-        if (mode == ApMode.AP_STOPPED && !waitingForDebuggerAttach) {
+        if (mode == ApMode.AP_STOPPED && !waitingForDebuggerAttach && activeRunHandler == null) {
             // Compile and run program from start
             reset();
             show(new DebugCallback());
@@ -219,7 +219,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
                 break;
 
             case AP_STOPPED:
-                if (waitingForDebuggerAttach) {
+                if (waitingForDebuggerAttach || activeRunHandler != null) {
                     stopOrCancelRunningApplication();
                     break;
                 }
