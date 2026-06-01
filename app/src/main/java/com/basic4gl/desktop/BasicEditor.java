@@ -395,6 +395,12 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
     public void setMode(ApMode mode, VMStatus vmStatus) {
 
+        // Runtime transitioned out of pending-launch state.
+        if (mode == ApMode.AP_RUNNING || mode == ApMode.AP_STOPPED) {
+            waitingForDebuggerAttach = false;
+            activeRunHandler = null;
+        }
+
         // Set the mMode parameter.
         // Handles sending the appropriate notifications to the plugins,
         // updating the UI and status messages.
