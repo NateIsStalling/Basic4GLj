@@ -9,6 +9,8 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * Created by Nate on 2/5/2015.
@@ -246,13 +248,41 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         debugPortHintLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
         debugOptionsPanel.add(debugPortHintLabel, debugOptionsConstraints);
 
+        debugOptionsConstraints.gridy++;
+        debugOptionsConstraints.insets = new Insets(6, 0, 0, 0);
+        JLabel debugPortErrorLabel = new JLabel(" ");
+        debugPortErrorLabel.setForeground(new Color(176, 0, 32));
+        debugOptionsPanel.add(debugPortErrorLabel, debugOptionsConstraints);
+
+        debugPortField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                clearDebugPortError(debugPortErrorLabel);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                clearDebugPortError(debugPortErrorLabel);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                clearDebugPortError(debugPortErrorLabel);
+            }
+        });
+
         enableJvmDebugCheckbox.addActionListener(
-                e -> updateJvmDebugControlsEnabled(
-                        enableJvmDebugCheckbox,
-                        waitForAttachCheckbox,
-                        debugPortLabel,
-                        debugPortField,
-                        debugPortHintLabel));
+                e -> {
+                    if (!enableJvmDebugCheckbox.isSelected()) {
+                        clearDebugPortError(debugPortErrorLabel);
+                    }
+                    updateJvmDebugControlsEnabled(
+                            enableJvmDebugCheckbox,
+                            waitForAttachCheckbox,
+                            debugPortLabel,
+                            debugPortField,
+                            debugPortHintLabel);
+                });
         updateJvmDebugControlsEnabled(
                 enableJvmDebugCheckbox,
                 waitForAttachCheckbox,
@@ -265,7 +295,14 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
 
         JButton resetAdvancedDefaultsButton = new JButton("Reset To Defaults");
         resetAdvancedDefaultsButton.addActionListener(
-                e -> resetAdvancedDefaults(jvmArgumentsTextArea, enableJvmDebugCheckbox, waitForAttachCheckbox, debugPortField));
+                e -> resetAdvancedDefaults(
+                        jvmArgumentsTextArea,
+                        enableJvmDebugCheckbox,
+                        waitForAttachCheckbox,
+                        debugPortLabel,
+                        debugPortField,
+                        debugPortHintLabel,
+                        debugPortErrorLabel));
         JPanel advancedFooter = new JPanel(new BorderLayout());
         advancedFooter.add(resetAdvancedDefaultsButton, BorderLayout.WEST);
         advancedRunDebugCard.add(advancedFooter, BorderLayout.SOUTH);
@@ -322,6 +359,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
                 enableJvmDebugCheckbox,
                 waitForAttachCheckbox,
                 debugPortField,
+                debugPortErrorLabel,
                 false));
         okButton.addActionListener(e -> applyChanges(
                 safeModeCheckbox,
@@ -330,6 +368,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
                 enableJvmDebugCheckbox,
                 waitForAttachCheckbox,
                 debugPortField,
+                debugPortErrorLabel,
                 true));
         cancelButton.addActionListener(e -> ProjectSettingsDialog.this.setVisible(false));
 
@@ -407,31 +446,57 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
             JCheckBox enableJvmDebugCheckbox,
             JCheckBox waitForAttachCheckbox,
             JTextField debugPortField,
+            JLabel debugPortErrorLabel,
             boolean closeDialog) {
-        if (currentBuilder >= 0) {
-            configPane.applyConfig();
+        Integer parsedDebugPort = null;
+        if (enableJvmDebugCheckbox.isSelected()) {
+            try {
+                parsedDebugPort = parseOptionalPortOrThrow(debugPortField.getText());
+            } catch (IllegalArgumentException ex) {
+                Integer previousPort = appSettings.getJvmDebugPortOverride();
+                debugPortField.setText(previousPort == null ? "" : Integer.toString(previousPort));
+                showDebugPortError(debugPortErrorLabel, ex.getMessage());
+                debugPortField.requestFocusInWindow();
+                debugPortField.selectAll();
+                return;
+            }
         }
+        clearDebugPortError(debugPortErrorLabel);
 
-        appSettings.setSandboxModeEnabled(safeModeCheckbox.isSelected());
-        appSettings.setProgramArguments(parseProgramArguments(argumentsTextArea.getText()));
-        appSettings.setJvmArguments(parseProgramArguments(jvmArgumentsTextArea.getText()));
-        appSettings.setJvmDebuggingEnabled(enableJvmDebugCheckbox.isSelected());
-        appSettings.setJvmDebugSuspendUntilAttach(waitForAttachCheckbox.isSelected());
-        appSettings.setJvmDebugPortOverride(parseOptionalPort(debugPortField.getText()));
-        if (closeDialog) {
-            setVisible(false);
-        }
-    }
+         if (currentBuilder >= 0) {
+             configPane.applyConfig();
+         }
+
+         appSettings.setSandboxModeEnabled(safeModeCheckbox.isSelected());
+         appSettings.setProgramArguments(parseProgramArguments(argumentsTextArea.getText()));
+         appSettings.setJvmArguments(parseProgramArguments(jvmArgumentsTextArea.getText()));
+         appSettings.setJvmDebuggingEnabled(enableJvmDebugCheckbox.isSelected());
+         appSettings.setJvmDebugSuspendUntilAttach(waitForAttachCheckbox.isSelected());
+         appSettings.setJvmDebugPortOverride(parsedDebugPort);
+         if (closeDialog) {
+             setVisible(false);
+         }
+     }
 
     private void resetAdvancedDefaults(
             JTextArea jvmArgumentsTextArea,
             JCheckBox enableJvmDebugCheckbox,
             JCheckBox waitForAttachCheckbox,
-            JTextField debugPortField) {
+            JLabel debugPortLabel,
+            JTextField debugPortField,
+            JLabel debugPortHintLabel,
+            JLabel debugPortErrorLabel) {
         jvmArgumentsTextArea.setText("");
         enableJvmDebugCheckbox.setSelected(false);
         waitForAttachCheckbox.setSelected(false);
         debugPortField.setText("");
+        clearDebugPortError(debugPortErrorLabel);
+        updateJvmDebugControlsEnabled(
+                enableJvmDebugCheckbox,
+                waitForAttachCheckbox,
+                debugPortLabel,
+                debugPortField,
+                debugPortHintLabel);
     }
 
     private List<String> parseProgramArguments(String text) {
@@ -453,7 +518,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         return args;
     }
 
-    private Integer parseOptionalPort(String text) {
+    private Integer parseOptionalPortOrThrow(String text) {
         if (text == null || text.trim().isEmpty()) {
             return null;
         }
@@ -461,12 +526,20 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         try {
             int port = Integer.parseInt(text.trim());
             if (port < 1 || port > 65535) {
-                return null;
+                throw new IllegalArgumentException("Debug port must be between 1 and 65535, or left blank.");
             }
             return port;
-        } catch (NumberFormatException ignored) {
-            return null;
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Debug port must be a whole number between 1 and 65535, or left blank.");
         }
+    }
+
+    private void showDebugPortError(JLabel debugPortErrorLabel, String message) {
+        debugPortErrorLabel.setText(message == null || message.trim().isEmpty() ? "Invalid debug port." : message);
+    }
+
+    private void clearDebugPortError(JLabel debugPortErrorLabel) {
+        debugPortErrorLabel.setText(" ");
     }
 
     private void updateJvmDebugControlsEnabled(
@@ -557,3 +630,4 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         builder.setConfiguration(configuration);
     }
 }
+
