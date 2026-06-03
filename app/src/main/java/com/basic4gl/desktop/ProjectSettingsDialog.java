@@ -448,7 +448,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
             JTextField debugPortField,
             JLabel debugPortErrorLabel,
             boolean closeDialog) {
-        Integer parsedDebugPort = null;
+        Integer parsedDebugPort = appSettings.getJvmDebugPortOverride();
         if (enableJvmDebugCheckbox.isSelected()) {
             try {
                 parsedDebugPort = parseOptionalPortOrThrow(debugPortField.getText());
