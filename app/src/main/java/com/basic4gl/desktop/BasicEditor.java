@@ -1126,7 +1126,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         return "Program exited before debugger attached.";
     }
 
-    private void stopOrCancelRunningApplication() {
+    public void stopOrCancelRunningApplication() {
         if (vmWorker != null) {
             vmWorker.stopApplication();
         }
@@ -1141,14 +1141,11 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
             if (vmWorker != null) {
                 vmWorker.cancel(true);
             }
-            setMode(ApMode.AP_STOPPED, null);
-            presenter.refreshActions(mode);
-            presenter.refreshDebugDisplays(mode);
         }
-    }
 
-    public void setMode(ApMode mode) {
-        this.mode = mode;
+        setMode(ApMode.AP_STOPPED, null);
+        presenter.refreshActions(mode);
+        presenter.refreshDebugDisplays(mode);
     }
 
     public List<Library> getLibraries() {

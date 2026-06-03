@@ -777,9 +777,11 @@ public class MainWindow
     }
 
     private void tryCloseWindow() {
-        // Stop program running
-        if (basicEditor.getMode() == ApMode.AP_RUNNING || basicEditor.getMode() == ApMode.AP_PAUSED) {
-            basicEditor.setMode(ApMode.AP_STOPPED, null);
+        // Stop or cancel active runtime before allowing close.
+        if (basicEditor.getMode() == ApMode.AP_RUNNING
+                || basicEditor.getMode() == ApMode.AP_PAUSED
+                || basicEditor.getMode() == ApMode.AP_WAITING) {
+            basicEditor.stopOrCancelRunningApplication();
             return;
         }
 

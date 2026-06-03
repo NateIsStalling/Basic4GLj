@@ -175,7 +175,7 @@ public class RunHandler {
 
     public boolean hasLaunchedProcess() {
         synchronized (launchedProcessLock) {
-            return launchedProcess != null;
+            return launchedProcess != null && launchedProcess.isAlive();
         }
     }
 
