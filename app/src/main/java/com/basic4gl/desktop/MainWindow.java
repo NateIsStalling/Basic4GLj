@@ -1344,28 +1344,41 @@ public class MainWindow
                 mainPane.setTopComponent(emptyTabPanel);
                 break;
             case AP_STOPPED:
-                boolean waitingForDebuggerAttach = basicEditor != null && basicEditor.isWaitingForDebuggerAttach();
-                setClosingTabsEnabled(!waitingForDebuggerAttach);
+                setClosingTabsEnabled(true);
+                settingsMenuItem.setEnabled(true);
+                settingsButton.setEnabled(true);
+                exportMenuItem.setEnabled(true);
+                exportButton.setEnabled(true);
+                newMenuItem.setEnabled(true);
+                openMenuItem.setEnabled(true);
+                newButton.setEnabled(true);
+                openButton.setEnabled(true);
+                cutMenuItem.setEnabled(true);
+                pasteMenuItem.setEnabled(true);
+                undoMenuItem.setEnabled(true);
+                redoMenuItem.setEnabled(true);
+                fileManager.setReadOnly(false);
+                runMenuItem.setText("Run Program");
+                runButton.setIcon(createImageIcon(ICON_RUN_APP));
+                break;
 
-                settingsMenuItem.setEnabled(!waitingForDebuggerAttach);
-                settingsButton.setEnabled(!waitingForDebuggerAttach);
-
-                exportMenuItem.setEnabled(!waitingForDebuggerAttach);
-                exportButton.setEnabled(!waitingForDebuggerAttach);
-
-                newMenuItem.setEnabled(!waitingForDebuggerAttach);
-                openMenuItem.setEnabled(!waitingForDebuggerAttach);
-                newButton.setEnabled(!waitingForDebuggerAttach);
-                openButton.setEnabled(!waitingForDebuggerAttach);
-
-                cutMenuItem.setEnabled(!waitingForDebuggerAttach);
-                pasteMenuItem.setEnabled(!waitingForDebuggerAttach);
-                undoMenuItem.setEnabled(!waitingForDebuggerAttach);
-                redoMenuItem.setEnabled(!waitingForDebuggerAttach);
-
-                fileManager.setReadOnly(waitingForDebuggerAttach);
-                runMenuItem.setText(waitingForDebuggerAttach ? "Stop Program" : "Run Program");
-                runButton.setIcon(createImageIcon(waitingForDebuggerAttach ? ICON_STOP_APP : ICON_RUN_APP));
+            case AP_WAITING:
+                setClosingTabsEnabled(false);
+                settingsMenuItem.setEnabled(false);
+                settingsButton.setEnabled(false);
+                exportMenuItem.setEnabled(false);
+                exportButton.setEnabled(false);
+                newMenuItem.setEnabled(false);
+                openMenuItem.setEnabled(false);
+                newButton.setEnabled(false);
+                openButton.setEnabled(false);
+                cutMenuItem.setEnabled(false);
+                pasteMenuItem.setEnabled(false);
+                undoMenuItem.setEnabled(false);
+                redoMenuItem.setEnabled(false);
+                fileManager.setReadOnly(true);
+                runMenuItem.setText("Stop Program");
+                runButton.setIcon(createImageIcon(ICON_STOP_APP));
                 break;
 
             case AP_RUNNING:
@@ -1420,9 +1433,10 @@ public class MainWindow
 
         if (mode != ApMode.AP_CLOSED) {
             playButton.setIcon(mode == ApMode.AP_RUNNING ? createImageIcon(ICON_PAUSE) : createImageIcon(ICON_PLAY));
-            playButton.setEnabled(true);
-            stepOverButton.setEnabled(mode != ApMode.AP_RUNNING);
-            stepInButton.setEnabled(mode != ApMode.AP_RUNNING);
+            playButton.setEnabled(mode != ApMode.AP_WAITING);
+            playPauseMenuItem.setEnabled(mode != ApMode.AP_WAITING);
+            stepOverButton.setEnabled(mode != ApMode.AP_RUNNING && mode != ApMode.AP_WAITING);
+            stepInButton.setEnabled(mode != ApMode.AP_RUNNING && mode != ApMode.AP_WAITING);
 
             // TODO 12/2022 determine appropriate state for mStepOutButton;
             // does the editor even need to care about UserCallStack size with remote debugger protocol
