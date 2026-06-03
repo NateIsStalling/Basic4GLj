@@ -48,7 +48,7 @@ public class RunHandlerTest {
         String[] args = invokeBuildCommandArgs(settings, "library.jar");
         String command = String.join(" ", args);
 
-        assertTrue(command.contains("-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y"));
+        assertTrue(command.contains("-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:5005,server=y,suspend=y"));
     }
 
     private String[] invokeBuildCommandArgs(IAppSettings settings, String libraryBinPath) throws Exception {

@@ -20,6 +20,7 @@ import org.apache.commons.lang3.SystemUtils;
 public class RunHandler {
 
     private static final int MAX_CAPTURED_STDERR_LINES = 60;
+    private static final String JDWP_BIND_HOST = "127.0.0.1";
 
     private final IApplicationHost host;
     private final TomBasicCompiler compiler;
@@ -279,6 +280,8 @@ public class RunHandler {
 
     private static String buildJvmDebugArgs(int debugPort, boolean suspendUntilAttach) {
         return "-agentlib:jdwp=transport=dt_socket,address="
+                + JDWP_BIND_HOST
+                + ":"
                 + debugPort
                 + ",server=y,suspend="
                 + (suspendUntilAttach ? "y" : "n");
