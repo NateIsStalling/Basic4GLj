@@ -244,7 +244,8 @@ public class RunHandler {
                     + ", program may not support debugging.");
         }
 
-        if (appSettings.getProgramArguments() != null && !appSettings.getProgramArguments().isEmpty()) {
+        if (appSettings.getProgramArguments() != null
+                && !appSettings.getProgramArguments().isEmpty()) {
             // '--' marks the end of target/debug options so user args are always passed through as-is.
             runnerArgs.add("--");
             runnerArgs.addAll(appSettings.getProgramArguments());
@@ -254,7 +255,8 @@ public class RunHandler {
         if (libraryBinPath.endsWith(".jar")) {
             ArrayList<String> jvmArgs = new ArrayList<>(Arrays.asList("java"));
 
-            if (appSettings.getJvmArguments() != null && !appSettings.getJvmArguments().isEmpty()) {
+            if (appSettings.getJvmArguments() != null
+                    && !appSettings.getJvmArguments().isEmpty()) {
                 jvmArgs.addAll(appSettings.getJvmArguments());
             }
 
@@ -344,7 +346,8 @@ public class RunHandler {
             valueEndIndex = jvmDebugArgs.length();
         }
 
-        String addressValue = jvmDebugArgs.substring(valueStartIndex, valueEndIndex).trim();
+        String addressValue =
+                jvmDebugArgs.substring(valueStartIndex, valueEndIndex).trim();
         if (addressValue.isEmpty()) {
             return null;
         }

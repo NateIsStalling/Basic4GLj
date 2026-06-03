@@ -173,8 +173,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         programArgumentsCard.setBorder(new EmptyBorder(12, 12, 12, 12));
         programArgumentsCard.add(
                 createSectionHeader(
-                        "Program Arguments",
-                        "Enter one argument per line to pass to programs run from the IDE."),
+                        "Program Arguments", "Enter one argument per line to pass to programs run from the IDE."),
                 BorderLayout.NORTH);
 
         JTextArea argumentsTextArea = new JTextArea();
@@ -190,9 +189,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         JPanel advancedRunDebugCard = new JPanel(new BorderLayout(0, 12));
         advancedRunDebugCard.setBorder(new EmptyBorder(12, 12, 12, 12));
         advancedRunDebugCard.add(
-                createSectionHeader(
-                        "JVM Settings",
-                        "Configure JVM launch options for .jar targets."),
+                createSectionHeader("JVM Settings", "Configure JVM launch options for .jar targets."),
                 BorderLayout.NORTH);
 
         JPanel advancedBody = new JPanel(new BorderLayout(0, 12));
@@ -271,38 +268,28 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
             }
         });
 
-        enableJvmDebugCheckbox.addActionListener(
-                e -> {
-                    if (!enableJvmDebugCheckbox.isSelected()) {
-                        clearDebugPortError(debugPortErrorLabel);
-                    }
-                    updateJvmDebugControlsEnabled(
-                            enableJvmDebugCheckbox,
-                            waitForAttachCheckbox,
-                            debugPortLabel,
-                            debugPortField,
-                            debugPortHintLabel);
-                });
+        enableJvmDebugCheckbox.addActionListener(e -> {
+            if (!enableJvmDebugCheckbox.isSelected()) {
+                clearDebugPortError(debugPortErrorLabel);
+            }
+            updateJvmDebugControlsEnabled(
+                    enableJvmDebugCheckbox, waitForAttachCheckbox, debugPortLabel, debugPortField, debugPortHintLabel);
+        });
         updateJvmDebugControlsEnabled(
-                enableJvmDebugCheckbox,
-                waitForAttachCheckbox,
-                debugPortLabel,
-                debugPortField,
-                debugPortHintLabel);
+                enableJvmDebugCheckbox, waitForAttachCheckbox, debugPortLabel, debugPortField, debugPortHintLabel);
 
         advancedBody.add(createTitledPanel("Debugger", debugOptionsPanel), BorderLayout.SOUTH);
         advancedRunDebugCard.add(advancedBody, BorderLayout.CENTER);
 
         JButton resetAdvancedDefaultsButton = new JButton("Reset To Defaults");
-        resetAdvancedDefaultsButton.addActionListener(
-                e -> resetAdvancedDefaults(
-                        jvmArgumentsTextArea,
-                        enableJvmDebugCheckbox,
-                        waitForAttachCheckbox,
-                        debugPortLabel,
-                        debugPortField,
-                        debugPortHintLabel,
-                        debugPortErrorLabel));
+        resetAdvancedDefaultsButton.addActionListener(e -> resetAdvancedDefaults(
+                jvmArgumentsTextArea,
+                enableJvmDebugCheckbox,
+                waitForAttachCheckbox,
+                debugPortLabel,
+                debugPortField,
+                debugPortHintLabel,
+                debugPortErrorLabel));
         JPanel advancedFooter = new JPanel(new BorderLayout());
         advancedFooter.add(resetAdvancedDefaultsButton, BorderLayout.WEST);
         advancedRunDebugCard.add(advancedFooter, BorderLayout.SOUTH);
@@ -463,20 +450,20 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         }
         clearDebugPortError(debugPortErrorLabel);
 
-         if (currentBuilder >= 0) {
-             configPane.applyConfig();
-         }
+        if (currentBuilder >= 0) {
+            configPane.applyConfig();
+        }
 
-         appSettings.setSandboxModeEnabled(safeModeCheckbox.isSelected());
-         appSettings.setProgramArguments(parseProgramArguments(argumentsTextArea.getText()));
-         appSettings.setJvmArguments(parseProgramArguments(jvmArgumentsTextArea.getText()));
-         appSettings.setJvmDebuggingEnabled(enableJvmDebugCheckbox.isSelected());
-         appSettings.setJvmDebugSuspendUntilAttach(waitForAttachCheckbox.isSelected());
-         appSettings.setJvmDebugPortOverride(parsedDebugPort);
-         if (closeDialog) {
-             setVisible(false);
-         }
-     }
+        appSettings.setSandboxModeEnabled(safeModeCheckbox.isSelected());
+        appSettings.setProgramArguments(parseProgramArguments(argumentsTextArea.getText()));
+        appSettings.setJvmArguments(parseProgramArguments(jvmArgumentsTextArea.getText()));
+        appSettings.setJvmDebuggingEnabled(enableJvmDebugCheckbox.isSelected());
+        appSettings.setJvmDebugSuspendUntilAttach(waitForAttachCheckbox.isSelected());
+        appSettings.setJvmDebugPortOverride(parsedDebugPort);
+        if (closeDialog) {
+            setVisible(false);
+        }
+    }
 
     private void resetAdvancedDefaults(
             JTextArea jvmArgumentsTextArea,
@@ -492,11 +479,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         debugPortField.setText("");
         clearDebugPortError(debugPortErrorLabel);
         updateJvmDebugControlsEnabled(
-                enableJvmDebugCheckbox,
-                waitForAttachCheckbox,
-                debugPortLabel,
-                debugPortField,
-                debugPortHintLabel);
+                enableJvmDebugCheckbox, waitForAttachCheckbox, debugPortLabel, debugPortField, debugPortHintLabel);
     }
 
     private List<String> parseProgramArguments(String text) {
@@ -513,7 +496,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
             if (line.trim().isEmpty()) {
                 continue;
             }
-            args.add(line);
+            args.add(line.trim());
         }
         return args;
     }
@@ -630,4 +613,3 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         builder.setConfiguration(configuration);
     }
 }
-

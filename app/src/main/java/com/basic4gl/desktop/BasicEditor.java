@@ -1067,8 +1067,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     }
 
     private void updateWaitingForDebuggerStatus(LaunchInfo launchInfo) {
-        boolean isSuspendedAttachLaunch =
-                launchInfo != null && launchInfo.isSuspendedUntilDebuggerAttach() && launchInfo.getJvmDebugPort() != null;
+        boolean isSuspendedAttachLaunch = launchInfo != null
+                && launchInfo.isSuspendedUntilDebuggerAttach()
+                && launchInfo.getJvmDebugPort() != null;
         if (!isSuspendedAttachLaunch) {
             return;
         }
@@ -1081,7 +1082,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         }
 
         setMode(ApMode.AP_WAITING, null);
-        presenter.setCompilerStatus("Waiting for JVM debugger to attach on port " + launchInfo.getJvmDebugPort() + "...");
+        presenter.setCompilerStatus(
+                "Waiting for JVM debugger to attach on port " + launchInfo.getJvmDebugPort() + "...");
     }
 
     private void onRunProcessExit(RunHandler handler, Integer exitCode, String stderr) {

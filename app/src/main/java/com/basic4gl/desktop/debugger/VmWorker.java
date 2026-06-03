@@ -64,7 +64,7 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
             //            }
             adapter = new DebugClientAdapter(this, DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
             while (!this.isCancelled() && !adapter.connect()) {
-                // Debugee may still be waiting for JDWP attach; retry until connected or canceled.
+                // Debuggee may still be waiting for JDWP attach; retry until connected or canceled.
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ie) {
@@ -83,10 +83,10 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
 
             // Debugger is attached
             while (!this.isCancelled()
-                // TODO 1/2023 need to keep connection alive while debugee is idle
-                //                    && (mMessage.getStatus() == CallbackMessage.STOPPED
-                //                    || mMessage.getStatus() == CallbackMessage.WORKING
-                //                    || mMessage.getStatus() == CallbackMessage.PAUSED)
+            // TODO 1/2023 need to keep connection alive while debugee is idle
+            //                    && (mMessage.getStatus() == CallbackMessage.STOPPED
+            //                    || mMessage.getStatus() == CallbackMessage.WORKING
+            //                    || mMessage.getStatus() == CallbackMessage.PAUSED)
             ) {
                 // idle thread;
                 try {
