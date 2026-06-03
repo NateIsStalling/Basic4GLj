@@ -7,18 +7,30 @@ import com.basic4gl.lib.util.ITargetCommandLineOptions;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 import java.io.*;
+import java.net.ServerSocket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.SystemUtils;
 
 public class RunHandler {
+
+    private static final int MAX_CAPTURED_STDERR_LINES = 60;
+    private static final String JDWP_BIND_HOST = "127.0.0.1";
 
     private final IApplicationHost host;
     private final TomBasicCompiler compiler;
     private final Preprocessor preprocessor;
     private final IAppSettings appSettings;
+    private final Object launchedProcessLock = new Object();
+    private final Object stderrLock = new Object();
+    private Process launchedProcess;
+    private final Deque<String> recentStderrLines = new ArrayDeque<>();
+    private volatile IProcessExitListener processExitListener;
 
     public RunHandler(
             IApplicationHost host, IAppSettings appSettings, TomBasicCompiler compiler, Preprocessor preprocessor) {
@@ -28,13 +40,13 @@ public class RunHandler {
         this.preprocessor = preprocessor;
     }
 
-    public void launchRemote(Library builder, String currentDirectory, String libraryBinPath) {
+    public LaunchInfo launchRemote(Library builder, String currentDirectory, String libraryBinPath) {
 
         // TODO 12/2020 replacing Continue();
 
         // Compile and run program from start
         if (!host.compile()) {
-            return;
+            return new LaunchInfo(null, false);
         }
 
         try {
@@ -71,9 +83,21 @@ public class RunHandler {
                     vm.getAbsolutePath(),
                     config.getAbsolutePath(),
                     lineMapping.getAbsolutePath());
+            String jvmDebugArgs = findJvmDebugArgs(commandArgs);
+            clearCapturedStderr();
 
             // Start output window
             final Process process = new ProcessBuilder(commandArgs).start();
+            synchronized (launchedProcessLock) {
+                launchedProcess = process;
+            }
+
+            process.onExit().thenAccept(exitedProcess -> {
+                IProcessExitListener listener = processExitListener;
+                if (listener != null) {
+                    listener.onProcessExited(this, exitedProcess.exitValue(), getCapturedStderr());
+                }
+            });
 
             // Automatically close GL window when editor closes
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -92,7 +116,8 @@ public class RunHandler {
                 public void run() {
                     try {
                         String err;
-                        while ((err = errinput.readLine()) != null && process.isAlive()) {
+                        while ((err = errinput.readLine()) != null) {
+                            captureStderrLine(err);
                             System.err.println(err);
                         }
                     } catch (IOException e) {
@@ -106,7 +131,7 @@ public class RunHandler {
                 public void run() {
                     try {
                         String err;
-                        while ((err = input.readLine()) != null && process.isAlive()) {
+                        while ((err = input.readLine()) != null) {
                             System.out.println(err);
                         }
                     } catch (IOException e) {
@@ -115,8 +140,70 @@ public class RunHandler {
                 }
             });
             thread.start();
+
+            return new LaunchInfo(extractJvmDebugPort(jvmDebugArgs), isJvmDebugSuspendEnabled(jvmDebugArgs));
         } catch (IOException e) {
             e.printStackTrace();
+            return new LaunchInfo(null, false);
+        }
+    }
+
+    public void terminateLaunchedProcess() {
+        Process processToTerminate;
+        synchronized (launchedProcessLock) {
+            processToTerminate = launchedProcess;
+            launchedProcess = null;
+        }
+
+        if (processToTerminate == null || !processToTerminate.isAlive()) {
+            return;
+        }
+
+        processToTerminate.destroy();
+        try {
+            if (!processToTerminate.waitFor(500, TimeUnit.MILLISECONDS)) {
+                processToTerminate.destroyForcibly();
+            }
+        } catch (InterruptedException interruptedException) {
+            Thread.currentThread().interrupt();
+            processToTerminate.destroyForcibly();
+        }
+    }
+
+    public void setProcessExitListener(IProcessExitListener listener) {
+        processExitListener = listener;
+    }
+
+    public boolean hasLaunchedProcess() {
+        synchronized (launchedProcessLock) {
+            return launchedProcess != null && launchedProcess.isAlive();
+        }
+    }
+
+    public String getCapturedStderr() {
+        synchronized (stderrLock) {
+            if (recentStderrLines.isEmpty()) {
+                return "";
+            }
+            return String.join(System.lineSeparator(), recentStderrLines);
+        }
+    }
+
+    private void clearCapturedStderr() {
+        synchronized (stderrLock) {
+            recentStderrLines.clear();
+        }
+    }
+
+    private void captureStderrLine(String line) {
+        if (line == null) {
+            return;
+        }
+        synchronized (stderrLock) {
+            if (recentStderrLines.size() >= MAX_CAPTURED_STDERR_LINES) {
+                recentStderrLines.removeFirst();
+            }
+            recentStderrLines.addLast(line);
         }
     }
 
@@ -128,19 +215,6 @@ public class RunHandler {
             String vmPath,
             String configPath,
             String lineMappingPath) {
-
-        // TODO not sure how to cancel any suspended java apps that fail to connect to a debugger yet
-        final String jvmDebugSuspend =
-                "n"; // "y"; // y/n whether the JVM should suspend and wait for a debugger to attach or not
-        final String jvmDebugPort = "8080"; // TODO make this configurable
-        final String jvmDebugArgs = "-agentlib:jdwp=transport=dt_socket,"
-                + "address="
-                + jvmDebugPort
-                + ","
-                + "server=y,"
-                + "suspend="
-                + jvmDebugSuspend;
-
         String applicationStoragePath =
                 System.getProperty("user.home") + System.getProperty("file.separator") + "Basic4GLj";
 
@@ -170,7 +244,8 @@ public class RunHandler {
                     + ", program may not support debugging.");
         }
 
-        if (appSettings.getProgramArguments() != null && !appSettings.getProgramArguments().isEmpty()) {
+        if (appSettings.getProgramArguments() != null
+                && !appSettings.getProgramArguments().isEmpty()) {
             // '--' marks the end of target/debug options so user args are always passed through as-is.
             runnerArgs.add("--");
             runnerArgs.addAll(appSettings.getProgramArguments());
@@ -178,9 +253,17 @@ public class RunHandler {
 
         // Output window is being run as a java jar file
         if (libraryBinPath.endsWith(".jar")) {
-            ArrayList<String> jvmArgs = new ArrayList<>(Arrays.asList(
-                    "java", jvmDebugArgs // TODO make this configurable
-                    ));
+            ArrayList<String> jvmArgs = new ArrayList<>(Arrays.asList("java"));
+
+            if (appSettings.getJvmArguments() != null
+                    && !appSettings.getJvmArguments().isEmpty()) {
+                jvmArgs.addAll(appSettings.getJvmArguments());
+            }
+
+            if (appSettings.isJvmDebuggingEnabled()) {
+                int sessionDebugPort = resolveJvmDebugPort(appSettings);
+                jvmArgs.add(buildJvmDebugArgs(sessionDebugPort, appSettings.isJvmDebugSuspendUntilAttach()));
+            }
 
             if (SystemUtils.IS_OS_MAC) {
                 jvmArgs.add("-XstartOnFirstThread"); // needed for GLFW
@@ -195,6 +278,92 @@ public class RunHandler {
 
         // Output window is an executable binary; java parameters are not required
         return runnerArgs.toArray(new String[0]);
+    }
+
+    private static String buildJvmDebugArgs(int debugPort, boolean suspendUntilAttach) {
+        return "-agentlib:jdwp=transport=dt_socket,address="
+                + JDWP_BIND_HOST
+                + ":"
+                + debugPort
+                + ",server=y,suspend="
+                + (suspendUntilAttach ? "y" : "n");
+    }
+
+    private static int resolveJvmDebugPort(IAppSettings appSettings) {
+        Integer override = appSettings.getJvmDebugPortOverride();
+        if (isValidPort(override)) {
+            return override;
+        }
+
+        Integer sessionPort = findAvailableTcpPort();
+        if (isValidPort(sessionPort)) {
+            return sessionPort;
+        }
+
+        // Last-resort fallback keeps launch behavior predictable even if ephemeral allocation fails.
+        return 8080;
+    }
+
+    private static Integer findAvailableTcpPort() {
+        try (ServerSocket socket = new ServerSocket()) {
+            socket.setReuseAddress(true);
+            socket.bind(new java.net.InetSocketAddress(0));
+            return socket.getLocalPort();
+        } catch (IOException ignored) {
+            return null;
+        }
+    }
+
+    private static boolean isValidPort(Integer port) {
+        return port != null && port >= 1 && port <= 65535;
+    }
+
+    private static String findJvmDebugArgs(String[] commandArgs) {
+        if (commandArgs == null) {
+            return null;
+        }
+        for (String arg : commandArgs) {
+            if (arg != null && arg.startsWith("-agentlib:jdwp=")) {
+                return arg;
+            }
+        }
+        return null;
+    }
+
+    private static Integer extractJvmDebugPort(String jvmDebugArgs) {
+        if (jvmDebugArgs == null) {
+            return null;
+        }
+
+        int addressIndex = jvmDebugArgs.indexOf("address=");
+        if (addressIndex < 0) {
+            return null;
+        }
+
+        int valueStartIndex = addressIndex + "address=".length();
+        int valueEndIndex = jvmDebugArgs.indexOf(',', valueStartIndex);
+        if (valueEndIndex < 0) {
+            valueEndIndex = jvmDebugArgs.length();
+        }
+
+        String addressValue =
+                jvmDebugArgs.substring(valueStartIndex, valueEndIndex).trim();
+        if (addressValue.isEmpty()) {
+            return null;
+        }
+
+        int lastColonIndex = addressValue.lastIndexOf(':');
+        String portValue = lastColonIndex >= 0 ? addressValue.substring(lastColonIndex + 1) : addressValue;
+        try {
+            int port = Integer.parseInt(portValue);
+            return isValidPort(port) ? port : null;
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private static boolean isJvmDebugSuspendEnabled(String jvmDebugArgs) {
+        return jvmDebugArgs != null && jvmDebugArgs.contains("suspend=y");
     }
 
     private static void addTargetOption(ArrayList<String> args, String option) {

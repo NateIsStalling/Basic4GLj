@@ -777,9 +777,11 @@ public class MainWindow
     }
 
     private void tryCloseWindow() {
-        // Stop program running
-        if (basicEditor.getMode() == ApMode.AP_RUNNING || basicEditor.getMode() == ApMode.AP_PAUSED) {
-            basicEditor.setMode(ApMode.AP_STOPPED, null);
+        // Stop or cancel active runtime before allowing close.
+        if (basicEditor.getMode() == ApMode.AP_RUNNING
+                || basicEditor.getMode() == ApMode.AP_PAUSED
+                || basicEditor.getMode() == ApMode.AP_WAITING) {
+            basicEditor.stopOrCancelRunningApplication();
             return;
         }
 
@@ -1345,26 +1347,40 @@ public class MainWindow
                 break;
             case AP_STOPPED:
                 setClosingTabsEnabled(true);
-
                 settingsMenuItem.setEnabled(true);
                 settingsButton.setEnabled(true);
-
                 exportMenuItem.setEnabled(true);
                 exportButton.setEnabled(true);
-
                 newMenuItem.setEnabled(true);
                 openMenuItem.setEnabled(true);
                 newButton.setEnabled(true);
                 openButton.setEnabled(true);
-
                 cutMenuItem.setEnabled(true);
                 pasteMenuItem.setEnabled(true);
                 undoMenuItem.setEnabled(true);
                 redoMenuItem.setEnabled(true);
-
                 fileManager.setReadOnly(false);
                 runMenuItem.setText("Run Program");
                 runButton.setIcon(createImageIcon(ICON_RUN_APP));
+                break;
+
+            case AP_WAITING:
+                setClosingTabsEnabled(false);
+                settingsMenuItem.setEnabled(false);
+                settingsButton.setEnabled(false);
+                exportMenuItem.setEnabled(false);
+                exportButton.setEnabled(false);
+                newMenuItem.setEnabled(false);
+                openMenuItem.setEnabled(false);
+                newButton.setEnabled(false);
+                openButton.setEnabled(false);
+                cutMenuItem.setEnabled(false);
+                pasteMenuItem.setEnabled(false);
+                undoMenuItem.setEnabled(false);
+                redoMenuItem.setEnabled(false);
+                fileManager.setReadOnly(true);
+                runMenuItem.setText("Stop Program");
+                runButton.setIcon(createImageIcon(ICON_STOP_APP));
                 break;
 
             case AP_RUNNING:
@@ -1419,9 +1435,10 @@ public class MainWindow
 
         if (mode != ApMode.AP_CLOSED) {
             playButton.setIcon(mode == ApMode.AP_RUNNING ? createImageIcon(ICON_PAUSE) : createImageIcon(ICON_PLAY));
-            playButton.setEnabled(true);
-            stepOverButton.setEnabled(mode != ApMode.AP_RUNNING);
-            stepInButton.setEnabled(mode != ApMode.AP_RUNNING);
+            playButton.setEnabled(mode != ApMode.AP_WAITING);
+            playPauseMenuItem.setEnabled(mode != ApMode.AP_WAITING);
+            stepOverButton.setEnabled(mode != ApMode.AP_RUNNING && mode != ApMode.AP_WAITING);
+            stepInButton.setEnabled(mode != ApMode.AP_RUNNING && mode != ApMode.AP_WAITING);
 
             // TODO 12/2022 determine appropriate state for mStepOutButton;
             // does the editor even need to care about UserCallStack size with remote debugger protocol
