@@ -10,37 +10,26 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.SystemUtils;
 
 public class RunHandler {
 
-    public static class LaunchInfo {
-        private final Integer jvmDebugPort;
-        private final boolean suspendedUntilDebuggerAttach;
-
-        public LaunchInfo(Integer jvmDebugPort, boolean suspendedUntilDebuggerAttach) {
-            this.jvmDebugPort = jvmDebugPort;
-            this.suspendedUntilDebuggerAttach = suspendedUntilDebuggerAttach;
-        }
-
-        public Integer getJvmDebugPort() {
-            return jvmDebugPort;
-        }
-
-        public boolean isSuspendedUntilDebuggerAttach() {
-            return suspendedUntilDebuggerAttach;
-        }
-    }
+    private static final int MAX_CAPTURED_STDERR_LINES = 60;
 
     private final IApplicationHost host;
     private final TomBasicCompiler compiler;
     private final Preprocessor preprocessor;
     private final IAppSettings appSettings;
     private final Object launchedProcessLock = new Object();
+    private final Object stderrLock = new Object();
     private Process launchedProcess;
+    private final Deque<String> recentStderrLines = new ArrayDeque<>();
+    private volatile IProcessExitListener processExitListener;
 
     public RunHandler(
             IApplicationHost host, IAppSettings appSettings, TomBasicCompiler compiler, Preprocessor preprocessor) {
@@ -94,12 +83,20 @@ public class RunHandler {
                     config.getAbsolutePath(),
                     lineMapping.getAbsolutePath());
             String jvmDebugArgs = findJvmDebugArgs(commandArgs);
+            clearCapturedStderr();
 
             // Start output window
             final Process process = new ProcessBuilder(commandArgs).start();
             synchronized (launchedProcessLock) {
                 launchedProcess = process;
             }
+
+            process.onExit().thenAccept(exitedProcess -> {
+                IProcessExitListener listener = processExitListener;
+                if (listener != null) {
+                    listener.onProcessExited(this, exitedProcess.exitValue(), getCapturedStderr());
+                }
+            });
 
             // Automatically close GL window when editor closes
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -118,7 +115,8 @@ public class RunHandler {
                 public void run() {
                     try {
                         String err;
-                        while ((err = errinput.readLine()) != null && process.isAlive()) {
+                        while ((err = errinput.readLine()) != null) {
+                            captureStderrLine(err);
                             System.err.println(err);
                         }
                     } catch (IOException e) {
@@ -132,7 +130,7 @@ public class RunHandler {
                 public void run() {
                     try {
                         String err;
-                        while ((err = input.readLine()) != null && process.isAlive()) {
+                        while ((err = input.readLine()) != null) {
                             System.out.println(err);
                         }
                     } catch (IOException e) {
@@ -168,6 +166,43 @@ public class RunHandler {
         } catch (InterruptedException interruptedException) {
             Thread.currentThread().interrupt();
             processToTerminate.destroyForcibly();
+        }
+    }
+
+    public void setProcessExitListener(IProcessExitListener listener) {
+        processExitListener = listener;
+    }
+
+    public boolean hasLaunchedProcess() {
+        synchronized (launchedProcessLock) {
+            return launchedProcess != null;
+        }
+    }
+
+    public String getCapturedStderr() {
+        synchronized (stderrLock) {
+            if (recentStderrLines.isEmpty()) {
+                return "";
+            }
+            return String.join(System.lineSeparator(), recentStderrLines);
+        }
+    }
+
+    private void clearCapturedStderr() {
+        synchronized (stderrLock) {
+            recentStderrLines.clear();
+        }
+    }
+
+    private void captureStderrLine(String line) {
+        if (line == null) {
+            return;
+        }
+        synchronized (stderrLock) {
+            if (recentStderrLines.size() >= MAX_CAPTURED_STDERR_LINES) {
+                recentStderrLines.removeFirst();
+            }
+            recentStderrLines.addLast(line);
         }
     }
 
