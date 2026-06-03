@@ -300,8 +300,9 @@ public class RunHandler {
     }
 
     private static Integer findAvailableTcpPort() {
-        try (ServerSocket socket = new ServerSocket(0)) {
+        try (ServerSocket socket = new ServerSocket()) {
             socket.setReuseAddress(true);
+            socket.bind(new java.net.InetSocketAddress(0));
             return socket.getLocalPort();
         } catch (IOException ignored) {
             return null;

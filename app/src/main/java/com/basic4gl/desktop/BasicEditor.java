@@ -204,6 +204,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
             LaunchInfo launchInfo = handler.launchRemote(
                     builder, fileManager.getCurrentDirectory(), libraryPath); // 12/2020 testing new continue()
             activeRunHandler = handler.hasLaunchedProcess() ? handler : null;
+            if (activeRunHandler == null && vmWorker != null) {
+                vmWorker.cancel(true);
+            }
             updateWaitingForDebuggerStatus(launchInfo);
 
         } else {
@@ -233,6 +236,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
                 LaunchInfo launchInfo = handler.launchRemote(
                         builder, fileManager.getCurrentDirectory(), libraryPath); // 12/2020 testing new continue()
                 activeRunHandler = handler.hasLaunchedProcess() ? handler : null;
+                if (activeRunHandler == null && vmWorker != null) {
+                    vmWorker.cancel(true);
+                }
                 updateWaitingForDebuggerStatus(launchInfo);
 
                 break;

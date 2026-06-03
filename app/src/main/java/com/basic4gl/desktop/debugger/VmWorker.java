@@ -98,7 +98,6 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
             //                    : mVM.getError()));
             // TODO 12/2022 is this still needed?
             //            driver.onPostExecute();
-        } catch (InterruptedException ignored) {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
