@@ -3,10 +3,9 @@ package com.basic4gl.runtime;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import com.basic4gl.runtime.types.*;
-import com.basic4gl.runtime.util.CollectionUtil;
 import com.basic4gl.runtime.util.Mutable;
 import java.nio.*;
-import java.util.*;
+import java.util.List;
 
 /**
  * VM Data
@@ -37,7 +36,7 @@ import java.util.*;
  */
 public class Data {
 
-    private final ArrayList<Value> data;
+    private final ValueBufferList data;
     private int tempData;
     private int stackTop;
     private final int permanent;
@@ -61,10 +60,7 @@ public class Data {
         int top = size();
         int newSize = size() + count;
         if (count > 0) {
-            CollectionUtil.resize(data, newSize);
-            for (int i = top; i < newSize; i++) {
-                data.set(i, new Value());
-            }
+            data.resize(newSize);
         }
         return top;
     }
@@ -84,11 +80,11 @@ public class Data {
         // Initialize data
         this.maxDataSize = maxDataSize;
         permanent = stackSize;
-        data = new ArrayList<>();
+        data = new ValueBufferList(stackSize, ByteOrder.LITTLE_ENDIAN);
         clear();
     }
 
-    public ArrayList<Value> data() {
+    public ValueBufferList data() {
         return data;
     }
 
@@ -117,11 +113,7 @@ public class Data {
         data.clear();
 
         // Allocate stack
-        int temp = size();
-        CollectionUtil.resize(data, permanent);
-        for (int i = temp; i < permanent; i++) {
-            data.set(i, new Value());
-        }
+        data.resize(permanent);
 
         // Clear temp data
         tempData = 1;
@@ -196,10 +188,7 @@ public class Data {
         int top = data.size();
         int newSize = data.size() + count;
         if (count > 0) {
-            CollectionUtil.resize(data, newSize);
-            for (int i = top; i < newSize; i++) {
-                data.set(i, new Value());
-            }
+            data.resize(newSize);
         }
         return top;
     }

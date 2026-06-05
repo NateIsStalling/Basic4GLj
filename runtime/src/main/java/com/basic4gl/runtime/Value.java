@@ -4,7 +4,6 @@ import com.basic4gl.runtime.util.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * Used to store a single value.
@@ -16,23 +15,21 @@ import java.nio.ByteBuffer;
  * porting note: had directive `#pragma pack (push, 1)`
  */
 public class Value implements Streamable {
-    private boolean isInt;
-    private Integer intVal;
-    private Float realVal;
+    private int rawBits;
 
     public Value() { // Default constructor
-        isInt = true;
-        intVal = 0;
-        realVal = 0f;
+        rawBits = 0;
     }
 
     Value(final Value v) { // Copy constructor
-        isInt = v.isInt;
-        intVal = v.intVal;
-        realVal = v.realVal;
+        rawBits = v.getIntVal();
     }
 
     public Value(Integer intVal) {
+        setIntVal(intVal);
+    }
+
+    public Value(int intVal) {
         setIntVal(intVal);
     }
 
@@ -40,40 +37,52 @@ public class Value implements Streamable {
         setRealVal(realVal);
     }
 
+    public Value(float realVal) {
+        setRealVal(realVal);
+    }
+
     public int getIntVal() {
-        return intVal.intValue();
+        return rawBits;
     }
 
     public float getRealVal() {
-        return realVal.floatValue();
+        return Float.intBitsToFloat(rawBits);
     }
 
     public void setIntVal(Integer val) {
-        isInt = true;
-        intVal = val;
-        realVal = val.floatValue();
+        setIntVal(val.intValue());
+    }
+
+    public void setIntVal(int val) {
+        rawBits = val;
     }
 
     public void setRealVal(Float val) {
-        isInt = false;
-        intVal = val.intValue();
-        realVal = val;
+        setRealVal(val.floatValue());
+    }
+
+    public void setRealVal(float val) {
+        rawBits = Float.floatToRawIntBits(val);
     }
 
     public void setVal(Integer val) {
-        isInt = true;
+        setIntVal(val);
+    }
+
+    public void setVal(int val) {
         setIntVal(val);
     }
 
     public void setVal(Float val) {
-        isInt = false;
+        setRealVal(val);
+    }
+
+    public void setVal(float val) {
         setRealVal(val);
     }
 
     public void setVal(Value val) {
-        isInt = val.isInt;
-        intVal = val.intVal;
-        realVal = val.realVal;
+        rawBits = val.getIntVal();
     }
 
     // Streaming
@@ -83,20 +92,11 @@ public class Value implements Streamable {
         // 1. We are unioning two data types together.
         // 2. We don't know at stream time what data type it is.
         // buffer.order( ByteOrder.LITTLE_ENDIAN);
-        if (isInt) {
-            stream.writeInt(intVal);
-        } else
-        // stream.write(ByteBuffer.allocate(4).putFloat(realVal).array());
-        {
-            stream.writeFloat(realVal);
-        }
+        stream.writeInt(rawBits);
     }
 
     public boolean streamIn(DataInputStream stream) throws IOException {
-        byte[] b = new byte[Float.SIZE / Byte.SIZE];
-        stream.read(b);
-        intVal = ByteBuffer.wrap(b).getInt();
-        realVal = ByteBuffer.wrap(b).getFloat();
+        rawBits = stream.readInt();
         return true;
     }
 }
