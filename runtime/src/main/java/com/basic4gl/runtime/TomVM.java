@@ -403,18 +403,19 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Dereference reg.
                     if (getReg().getIntVal() != 0) {
-                        assertTrue(data.isIndexValid(getReg().getIntVal()));
+                        int regAddr = getReg().getIntVal();
+                        assertTrue(data.isIndexValid(regAddr));
                         // Find value that reg points to
-                        Value val = data.data().get(getReg().getIntVal());
+                        int rawValue = data.data().getIntValue(regAddr);
                         switch (instruction.basicVarType) {
                             case BasicValType.VTP_INT:
                             case BasicValType.VTP_REAL:
-                                setReg(val);
+                                getReg().setIntVal(rawValue);
                                 ip++; // Proceed to next instruction
                                 continue step;
                             case BasicValType.VTP_STRING:
-                                assertTrue(stringStore.isIndexValid(val.getIntVal()));
-                                setRegString(stringStore.getValueAt(val.getIntVal()));
+                                assertTrue(stringStore.isIndexValid(rawValue));
+                                setRegString(stringStore.getValueAt(rawValue));
                                 ip++; // Proceed to next instruction
                                 continue step;
                             default:
@@ -495,25 +496,26 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Save reg into [reg2]
                     if (getReg2().getIntVal() > 0) {
-                        assertTrue(data.isIndexValid(getReg2().getIntVal()));
-                        Value dest = data.data().get(getReg2().getIntVal());
+                        int destAddr = getReg2().getIntVal();
+                        assertTrue(data.isIndexValid(destAddr));
                         switch (instruction.basicVarType) {
                             case BasicValType.VTP_INT:
                             case BasicValType.VTP_REAL:
-                                // mData.Data().set(mReg2.getIntVal(), new Value(mReg));
-                                dest.setVal(getReg());
+                                data.data().setIntValue(destAddr, getReg().getIntVal());
 
                                 ip++; // Proceed to next instruction
                                 continue step;
                             case BasicValType.VTP_STRING:
 
                                 // Allocate string space if necessary
-                                if (dest.getIntVal() == 0) {
-                                    dest.setIntVal(stringStore.alloc());
+                                int stringIndex = data.data().getIntValue(destAddr);
+                                if (stringIndex == 0) {
+                                    stringIndex = stringStore.alloc();
+                                    data.data().setIntValue(destAddr, stringIndex);
                                 }
 
                                 // Copy string value
-                                stringStore.setValue(dest.getIntVal(), getRegString());
+                                stringStore.setValue(stringIndex, getRegString());
                                 ip++; // Proceed to next instruction
                                 continue step;
                             default:
@@ -1241,21 +1243,19 @@ public class TomVM extends HasErrorState implements Streamable {
                     CollectionUtil.last(userCallStack).localVarDataOffsets.set(paramIndex, dataIndex);
 
                     // Transfer register value to parameter
-                    Value dest = data.data().get(dataIndex);
                     switch (instruction.basicVarType) {
                         case BasicValType.VTP_INT:
                         case BasicValType.VTP_REAL:
-                            // TODO Confirm value is properly set
-                            // TODO Check other "dest" variables
-                            dest.setVal(getReg());
+                            data.data().setIntValue(dataIndex, getReg().getIntVal());
                             break;
                         case BasicValType.VTP_STRING:
 
                             // Allocate string space
-                            dest.setIntVal(stringStore.alloc());
+                            int stringIndex = stringStore.alloc();
+                            data.data().setIntValue(dataIndex, stringIndex);
 
                             // Copy string value
-                            stringStore.setValue(dest.getIntVal(), getRegString());
+                            stringStore.setValue(stringIndex, getRegString());
                             break;
                         default:
                             assertTrue(false);
@@ -1406,9 +1406,7 @@ public class TomVM extends HasErrorState implements Streamable {
         assertTrue(data.isIndexValid(sourceIndex + size - 1));
         assertTrue(data.isIndexValid(destIndex));
         assertTrue(data.isIndexValid(destIndex + size - 1));
-        for (int i = 0; i < size; i++) {
-            data.data().setIntValue(destIndex + i, data.data().getIntValue(sourceIndex + i));
-        }
+        data.data().copyInts(sourceIndex, destIndex, size);
     }
 
     void copyStructure(int sourceIndex, int destIndex, ValType type) {
@@ -1526,13 +1524,14 @@ public class TomVM extends HasErrorState implements Streamable {
                 assertTrue(data.isIndexValid(s + 1));
                 assertTrue(data.isIndexValid(d));
                 assertTrue(data.isIndexValid(d + 1));
-                if (data.data().get(s).getIntVal() != data.data().get(d).getIntVal()) {
+                int sourceElements = data.data().getIntValue(s);
+                if (sourceElements != data.data().getIntValue(d)) {
                     setError(ERR_ARRAY_SIZE_MISMATCH);
                     return false;
                 }
 
                 // Update data size
-                size *= data.data().get(s).getIntVal();
+                size *= sourceElements;
                 size += 2;
 
                 // Point to first element in array
@@ -1567,7 +1566,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // Type is a pointer?
         if (type.pointerLevel > 0) {
-            return checkPointer(destIndex, data.data().get(index).getIntVal());
+            return checkPointer(destIndex, data.data().getIntValue(index));
         }
 
         // Type is not a pointer, but contains one or more pointers.
@@ -1577,8 +1576,8 @@ public class TomVM extends HasErrorState implements Streamable {
         if (type.arrayLevel > 0) {
 
             // Find and check elements
-            int elements = data.data().get(index).getIntVal();
-            int elementSize = data.data().get(index + 1).getIntVal();
+            int elements = data.data().getIntValue(index);
+            int elementSize = data.data().getIntValue(index + 1);
             int arrayStart = index + 2;
 
             // Calculate element type

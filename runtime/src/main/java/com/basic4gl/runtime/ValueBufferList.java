@@ -60,6 +60,33 @@ public class ValueBufferList extends AbstractList<Value> implements RandomAccess
         floatBuffer.put(index, value);
     }
 
+    public void fillInts(int startIndex, int length, int value) {
+        checkRange(startIndex, length);
+        for (int i = 0; i < length; i++) {
+            intBuffer.put(startIndex + i, value);
+        }
+    }
+
+    public void copyInts(int sourceIndex, int destIndex, int length) {
+        checkRange(sourceIndex, length);
+        checkRange(destIndex, length);
+        if (length == 0 || sourceIndex == destIndex) {
+            return;
+        }
+
+        // Use memmove-like behavior when source and destination overlap.
+        if (destIndex > sourceIndex && destIndex < sourceIndex + length) {
+            for (int i = length - 1; i >= 0; i--) {
+                intBuffer.put(destIndex + i, intBuffer.get(sourceIndex + i));
+            }
+            return;
+        }
+
+        for (int i = 0; i < length; i++) {
+            intBuffer.put(destIndex + i, intBuffer.get(sourceIndex + i));
+        }
+    }
+
     public void resize(int newSize) {
         if (newSize < 0) {
             throw new IllegalArgumentException("newSize must be >= 0");
@@ -143,6 +170,16 @@ public class ValueBufferList extends AbstractList<Value> implements RandomAccess
     private void checkElementIndex(int index) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Index: " + index + ", size: " + size);
+        }
+    }
+
+    private void checkRange(int startIndex, int length) {
+        if (length < 0) {
+            throw new IllegalArgumentException("length must be >= 0");
+        }
+        if (startIndex < 0 || startIndex + length > size) {
+            throw new IndexOutOfBoundsException(
+                    "startIndex: " + startIndex + ", length: " + length + ", size: " + size);
         }
     }
 

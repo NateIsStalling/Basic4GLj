@@ -211,9 +211,7 @@ public class Data {
         stackTop -= count;
 
         // Initialize data
-        for (int i = 0; i < count; i++) {
-            data.setIntValue(stackTop + i, 0);
-        }
+        data.fillInts(stackTop, count, 0);
 
         // Return index of start of data
         return stackTop;
@@ -239,9 +237,7 @@ public class Data {
 
         // Initialize data
         if (initData) {
-            for (int i = 0; i < count; i++) {
-                data.setIntValue(top + i, 0);
-            }
+            data.fillInts(top, count, 0);
         }
 
         // Return index of start of data
