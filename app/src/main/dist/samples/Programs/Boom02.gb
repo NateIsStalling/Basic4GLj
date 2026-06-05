@@ -29,6 +29,7 @@ dim i,j
 dim time  ' Current time
 dim t1,t2 ' Starting and ending time variables
 dim frames, timer, fps
+dim now, elapsed
 
 dim xpos(count) ' Xposition
 dim ypos(count) ' Yposition
@@ -162,16 +163,18 @@ next
 glEnd ()
 
 frames = frames + 1
-locate 0, 0: print fps + "   "
+locate 0, 0: print "FPS: " + fps + "   "
 DrawText ()
 
 ' Display output
 SwapBuffers ()
 
-if frames >= 100 then
-    fps = Int (frames / ((TickCount () - timer) / 1000.0))
+now = TickCount ()
+elapsed = now - timer
+if elapsed >= 250 then
+    fps = Int ((frames * 1000.0) / elapsed)
     frames = 0
-    timer = TickCount ()
+    timer = now
 endif
 
 time = time + 1
