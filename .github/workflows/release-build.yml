@@ -188,7 +188,7 @@ jobs:
 
   build-macos-intel-installer:
     name: Build Installer on MacOS (Intel)
-    runs-on: macos-13
+    runs-on: macos-15-intel
     steps:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
