@@ -42,7 +42,8 @@ public class FileOpener extends HasErrorState {
             }
             return false;
         }
-        Path appDataPath = Paths.get(appData, getAppDataFolderName()).normalize().toAbsolutePath();
+        Path appDataPath =
+                Paths.get(appData, getAppDataFolderName()).normalize().toAbsolutePath();
         return fullPath.startsWith(appDataPath);
     }
 
@@ -127,8 +128,7 @@ public class FileOpener extends HasErrorState {
             return true;
         }
 
-        setError(
-                "You can only open files in the current directory or below, or in the Basic4GL App Data folder.");
+        setError("You can only open files in the current directory or below, or in the Basic4GL App Data folder.");
         return false;
     }
 

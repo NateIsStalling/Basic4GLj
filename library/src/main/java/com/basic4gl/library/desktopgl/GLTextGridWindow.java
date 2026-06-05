@@ -30,7 +30,6 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.commons.cli.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
 
 public class GLTextGridWindow extends HasErrorState
         implements Target, IVMDriver, IFileAccess, ITargetCommandLineOptions {
