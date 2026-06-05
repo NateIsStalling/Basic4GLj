@@ -1457,19 +1457,18 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // If type is basic string, copy string value
         if (type.matchesType(BasicValType.VTP_STRING)) {
-            Value src = data.data().get(sourceIndex);
-            Value dest = data.data().get(destIndex);
-            if (src.getIntVal() > 0 || dest.getIntVal() > 0) {
+            int srcStringIndex = data.data().getIntValue(sourceIndex);
+            int destStringIndex = data.data().getIntValue(destIndex);
+            if (srcStringIndex > 0 || destStringIndex > 0) {
 
                 // Allocate string space if necessary
-                if (dest.getIntVal() == 0) {
-                    dest.setIntVal(stringStore.alloc());
+                if (destStringIndex == 0) {
+                    destStringIndex = stringStore.alloc();
+                    data.data().setIntValue(destIndex, destStringIndex);
                 }
 
                 // Copy string value
-                stringStore.setValue(
-                        dest.getIntVal(),
-                        stringStore.getValueAt(data.data().get(sourceIndex).getIntVal()));
+                stringStore.setValue(destStringIndex, stringStore.getValueAt(srcStringIndex));
             }
         }
 
@@ -2030,7 +2029,7 @@ public class TomVM extends HasErrorState implements Streamable {
             {
                 assertTrue(data.isIndexValid(val.getIntVal()));
             }
-            val.setVal(data.data().get(val.getIntVal()));
+            val.setIntVal(data.data().getIntValue(val.getIntVal()));
         }
     }
 
@@ -2074,8 +2073,8 @@ public class TomVM extends HasErrorState implements Streamable {
             assertTrue(data.isIndexValid(dataIndex + 1));
 
             // Read array header
-            int elements = data.data().get(dataIndex).getIntVal();
-            int elementSize = data.data().get(dataIndex + 1).getIntVal();
+            int elements = data.data().getIntValue(dataIndex);
+            int elementSize = data.data().getIntValue(dataIndex + 1);
             int arrayStart = dataIndex + 2;
 
             // Enumerate elements
@@ -2214,8 +2213,8 @@ public class TomVM extends HasErrorState implements Streamable {
         if (type.pointerLevel == 0 && type.arrayLevel > 0) {
             // Calculate actual array size
             // Array is prefixed by element count and element size.
-            return data.data().get(sourceIndex).getIntVal()
-                            * data.data().get(sourceIndex + 1).getIntVal()
+            return data.data().getIntValue(sourceIndex)
+                            * data.data().getIntValue(sourceIndex + 1)
                     + 2;
         } else {
             return dataTypes.getDataSize(type);
@@ -2274,18 +2273,18 @@ public class TomVM extends HasErrorState implements Streamable {
         // Type IS string case
         if (type.matchesType(BasicValType.VTP_STRING)) {
 
-            Value val = data.data().get(dataIndex);
+            int stringIndex = data.data().getIntValue(dataIndex);
             // Empty strings (index 0) can be ignored
-            if (val.getIntVal() != 0) {
+            if (stringIndex != 0) {
 
                 // Allocate new string
                 int newStringIndex = stringStore.alloc();
 
                 // Copy previous string
-                stringStore.setValue(newStringIndex, stringStore.getValueAt(val.getIntVal()));
+                stringStore.setValue(newStringIndex, stringStore.getValueAt(stringIndex));
 
                 // Point to new string
-                val.setIntVal(newStringIndex);
+                data.data().setIntValue(dataIndex, newStringIndex);
             }
         }
 
@@ -2293,8 +2292,8 @@ public class TomVM extends HasErrorState implements Streamable {
         else if (type.arrayLevel > 0) {
 
             // Read array header
-            int elements = data.data().get(dataIndex).getIntVal();
-            int elementSize = data.data().get(dataIndex + 1).getIntVal();
+            int elements = data.data().getIntValue(dataIndex);
+            int elementSize = data.data().getIntValue(dataIndex + 1);
             int arrayStart = dataIndex + 2;
 
             // Calculate element type
@@ -2437,7 +2436,7 @@ public class TomVM extends HasErrorState implements Streamable {
             // Type IS string case
 
             // Deallocate the string (if allocated)
-            int stringIndex = data.data().get(index).getIntVal();
+            int stringIndex = data.data().getIntValue(index);
             if (stringIndex != 0) {
                 stringStore.freeAtIndex(stringIndex);
             }
@@ -2446,8 +2445,8 @@ public class TomVM extends HasErrorState implements Streamable {
             // Array case
             ValType elementType = new ValType(type);
             elementType.arrayLevel--;
-            int count = data.data().get(index).getIntVal();
-            int elementSize = data.data().get(index + 1).getIntVal();
+            int count = data.data().getIntValue(index);
+            int elementSize = data.data().getIntValue(index + 1);
             int arrayStart = index + 2;
 
             // Don't destroy if in protected range
