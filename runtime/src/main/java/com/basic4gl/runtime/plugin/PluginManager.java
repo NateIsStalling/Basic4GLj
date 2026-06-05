@@ -5,12 +5,13 @@ import com.basic4gl.runtime.util.Mutable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
 public abstract class PluginManager {
 
-    protected Vector<PluginLibrary> plugins = new Vector<>();
+    protected ArrayList<PluginLibrary> plugins = new ArrayList<>();
     protected String error;
     protected HashMap<String, PluginSharedInterface> sharedInterfaces = new HashMap<>();
     protected boolean isStandaloneExe;
@@ -72,7 +73,7 @@ public abstract class PluginManager {
      * Loaded libraries
      * @return PluginLibrary collection of loaded libraries.
      */
-    public Vector<PluginLibrary> getLoadedLibraries() {
+    public ArrayList<PluginLibrary> getLoadedLibraries() {
         return plugins;
     }
 

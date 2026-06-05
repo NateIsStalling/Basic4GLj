@@ -1,6 +1,7 @@
 package com.basic4gl.runtime.stackframe;
 
-import java.util.Vector;
+import com.basic4gl.runtime.util.CollectionUtil;
+import java.util.ArrayList;
 
 /**
  * Stack frame created when a user function is called.
@@ -24,10 +25,10 @@ public class UserFuncStackFrame {
     // Elements 0..paramCount-1 are parameters, paramCount..size()-1 are local
     // variables.
     // (also ignored for GOSUBs)
-    public Vector<Integer> localVarDataOffsets;
+    public ArrayList<Integer> localVarDataOffsets;
 
     public UserFuncStackFrame() {
-        localVarDataOffsets = new Vector<>();
+        localVarDataOffsets = new ArrayList<>();
     }
 
     public void initForGosub(int returnAddress) {
@@ -43,7 +44,7 @@ public class UserFuncStackFrame {
         // Allocate local variable data offsets
         int oldSize = localVarDataOffsets.size();
         int newSize = prototype.localVarTypes.size();
-        localVarDataOffsets.setSize(newSize);
+        CollectionUtil.resize(localVarDataOffsets, newSize);
         for (int i = oldSize; i < newSize; i++) {
             localVarDataOffsets.set(i, 0);
         }

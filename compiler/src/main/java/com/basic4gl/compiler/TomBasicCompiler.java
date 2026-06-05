@@ -16,6 +16,7 @@ import com.basic4gl.runtime.stackframe.UserFunc;
 import com.basic4gl.runtime.stackframe.UserFuncPrototype;
 import com.basic4gl.runtime.types.*;
 import com.basic4gl.runtime.util.Function;
+import com.basic4gl.runtime.util.CollectionUtil;
 import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
@@ -72,8 +73,8 @@ public class TomBasicCompiler extends HasErrorState {
      */
     private final Map<String, Constant> programConstants;
 
-    private final Vector<Library> libraries = new Vector<>();
-    private final Vector<FunctionSpecification> functions;
+    private final ArrayList<Library> libraries = new ArrayList<>();
+    private final ArrayList<FunctionSpecification> functions;
     /**
      * Maps function name to index of function (in functions array)
      */
@@ -87,8 +88,8 @@ public class TomBasicCompiler extends HasErrorState {
 
     // Compiler state
     private ValType regType, reg2Type;
-    private final Vector<ValType> operandStack;
-    private final Vector<StackedOperator> operatorStack;
+    private final ArrayList<ValType> operandStack;
+    private final ArrayList<StackedOperator> operatorStack;
 
     StackedOperator getOperatorTOS() {
         return operatorStack.get(operatorStack.size() - 1);
@@ -103,15 +104,15 @@ public class TomBasicCompiler extends HasErrorState {
     /**
      * Jumps to fix up
      */
-    private final Vector<Jump> jumps;
+    private final ArrayList<Jump> jumps;
     /**
      * Resets to fix up
      */
-    private final Vector<Jump> resets;
+    private final ArrayList<Jump> resets;
     /**
      * Flow control structure stack
      */
-    private final Vector<FlowControl> flowControls;
+    private final ArrayList<FlowControl> flowControls;
 
     private Token token;
     /**
@@ -152,7 +153,7 @@ public class TomBasicCompiler extends HasErrorState {
      */
     private int currentFunction; //
 
-    private final Vector<com.basic4gl.compiler.RuntimeFunction> runtimeFunctions;
+    private final ArrayList<com.basic4gl.compiler.RuntimeFunction> runtimeFunctions;
 
     private final Map<String, Integer> runtimeFunctionIndex;
     private int currentCodeBlockIndex;
@@ -161,11 +162,11 @@ public class TomBasicCompiler extends HasErrorState {
     /**
      * Unary operator extensions
      */
-    private final Vector<UnaryOperatorExtension> unaryOperatorExtensions;
+    private final ArrayList<UnaryOperatorExtension> unaryOperatorExtensions;
     /**
      * Binary operator extensions
      */
-    private final Vector<BinaryOperatorExtension> binaryOperatorExtensions;
+    private final ArrayList<BinaryOperatorExtension> binaryOperatorExtensions;
 
     public List<String> getReservedWords() {
         return reservedWords;
@@ -527,11 +528,11 @@ public class TomBasicCompiler extends HasErrorState {
         isCaseSensitive = caseSensitive;
         syntax = LS_BASIC4GL;
 
-        operandStack = new Vector<>();
-        operatorStack = new Vector<>();
-        jumps = new Vector<>();
-        resets = new Vector<>();
-        flowControls = new Vector<>();
+        operandStack = new ArrayList<>();
+        operatorStack = new ArrayList<>();
+        jumps = new ArrayList<>();
+        resets = new ArrayList<>();
+        flowControls = new ArrayList<>();
 
         binaryOperators = new HashMap<>();
         operatorOverloads = new HashMap<>();
@@ -553,11 +554,11 @@ public class TomBasicCompiler extends HasErrorState {
         visibleUserFunctionIndex = new HashMap<>();
         userFunctionReverseIndex = new HashMap<>();
         runtimeFunctionIndex = new HashMap<>();
-        runtimeFunctions = new Vector<>();
-        functions = new Vector<>();
+        runtimeFunctions = new ArrayList<>();
+        functions = new ArrayList<>();
 
-        unaryOperatorExtensions = new Vector<>();
-        binaryOperatorExtensions = new Vector<>();
+        unaryOperatorExtensions = new ArrayList<>();
+        binaryOperatorExtensions = new ArrayList<>();
 
         functionStart = new InstructionPosition();
 
@@ -1015,11 +1016,11 @@ public class TomBasicCompiler extends HasErrorState {
         return runtimeFunctionIndex.containsKey(name.toLowerCase());
     }
 
-    public Vector<Library> getLibraries() {
+    public ArrayList<Library> getLibraries() {
         return libraries;
     }
 
-    public Vector<FunctionSpecification> getFunctions() {
+    public ArrayList<FunctionSpecification> getFunctions() {
         return functions;
     }
 
@@ -1246,7 +1247,7 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Remove runtime functions
-        runtimeFunctions.setSize(rollbackPoint.runtimeFunctionCount);
+        CollectionUtil.resize(runtimeFunctions, rollbackPoint.runtimeFunctionCount);
 
         for (Iterator<Map.Entry<String, Integer>> it =
                         runtimeFunctionIndex.entrySet().iterator();
@@ -3164,7 +3165,7 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Retrieve pushed value type
-        reg2Type.setType(operandStack.lastElement());
+        reg2Type.setType(CollectionUtil.last(operandStack));
         operandStack.remove(operandStack.size() - 1);
 
         // Generate pop code
@@ -5168,7 +5169,7 @@ public class TomBasicCompiler extends HasErrorState {
         // TODO: Optimise with hash lookup?
 
         // Look for existing matching prototype
-        Vector<UserFuncPrototype> prototypes = vm.getUserFunctionPrototypes();
+        ArrayList<UserFuncPrototype> prototypes = vm.getUserFunctionPrototypes();
         for (int i = 0; i < prototypes.size(); i++) {
             if (prototypes.get(i).isCompatibleWith(prototype)) {
                 return i;
@@ -5336,7 +5337,7 @@ public class TomBasicCompiler extends HasErrorState {
         plugins.findFunctions(name, extFunctions, countRef, TC_MAXOVERLOADEDFUNCTIONS);
         int count = countRef.get();
         for (int i = 0; i < count; i++) {
-            Vector<ValType> params =
+            ArrayList<ValType> params =
                     extFunctions[i].getSpecification().getParamTypes().getParams();
             if ((params.isEmpty() && !hasParam)
                     || (params.size() == 1
@@ -5356,7 +5357,7 @@ public class TomBasicCompiler extends HasErrorState {
         if (l != null) {
             for (Integer i : l) {
                 FunctionSpecification spec = functions.get(i);
-                Vector<ValType> params = spec.getParamTypes().getParams();
+                ArrayList<ValType> params = spec.getParamTypes().getParams();
                 if ((params.isEmpty() && !hasParam)
                         || (params.size() == 1
                                 && hasParam
@@ -5863,8 +5864,8 @@ public class TomBasicCompiler extends HasErrorState {
         }
 
         // Store function, and get its index (in currentFunction)
-        Vector<UserFunc> functions = vm.getUserFunctions();
-        Vector<UserFuncPrototype> prototypes = vm.getUserFunctionPrototypes();
+        ArrayList<UserFunc> functions = vm.getUserFunctions();
+        ArrayList<UserFuncPrototype> prototypes = vm.getUserFunctionPrototypes();
 
         if (funcType == UserFunctionType.UFT_FWDDECLARATION) {
             // Forward declaration.
@@ -6517,7 +6518,7 @@ public class TomBasicCompiler extends HasErrorState {
             // it is
             // absent, we are bundling them into the same #ifdef
             int count = (int) Streaming.readLong(stream);
-            runtimeFunctions.setSize(count);
+            CollectionUtil.resize(runtimeFunctions, count);
             for (int i = 0; i < count; i++) {
                 com.basic4gl.compiler.RuntimeFunction function = new com.basic4gl.compiler.RuntimeFunction();
                 function.streamIn(stream);

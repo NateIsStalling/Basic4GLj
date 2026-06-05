@@ -3,6 +3,7 @@ package com.basic4gl.runtime;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import com.basic4gl.runtime.stackframe.RuntimeFunction;
+import com.basic4gl.runtime.util.CollectionUtil;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import java.io.DataInputStream;
@@ -24,7 +25,7 @@ public class CodeBlock implements Streamable {
 
     private String filename = "";
 
-    public Vector<RuntimeFunction> runtimeFunctions = new Vector<>();
+    public ArrayList<RuntimeFunction> runtimeFunctions = new ArrayList<>();
     public HashMap<String, Integer> userFunctions = new HashMap<>();
 
     public CodeBlock() {
@@ -34,7 +35,7 @@ public class CodeBlock implements Streamable {
     public void setLengthAtLeast(int length) {
         int size = runtimeFunctions.size();
         if (size < length) {
-            runtimeFunctions.setSize(length);
+            CollectionUtil.resize(runtimeFunctions, length);
             for (int i = size; i < length; i++) {
                 runtimeFunctions.set(i, new RuntimeFunction());
             }
@@ -72,7 +73,7 @@ public class CodeBlock implements Streamable {
 
         programOffset = (int) Streaming.readLong(stream);
         int count = (int) Streaming.readLong(stream);
-        runtimeFunctions.setSize(count);
+        CollectionUtil.resize(runtimeFunctions, count);
 
         for (int i = 0; i < count; i++) {
             runtimeFunctions.set(i, new RuntimeFunction());

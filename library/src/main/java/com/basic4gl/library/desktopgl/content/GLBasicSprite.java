@@ -2,7 +2,7 @@ package com.basic4gl.library.desktopgl.content;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-import java.util.Vector;
+import java.util.ArrayList;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -24,7 +24,7 @@ public abstract class GLBasicSprite {
         setTexture(tex);
     }
 
-    public GLBasicSprite(Vector<Integer> tex) {
+    public GLBasicSprite(ArrayList<Integer> tex) {
         setDefaults();
         setTextures(tex);
     }
@@ -173,7 +173,7 @@ public abstract class GLBasicSprite {
     public float[] color = new float[4];
     public int srcBlend, dstBlend;
 
-    protected Vector<Integer> textures = new Vector<>();
+    protected ArrayList<Integer> textures = new ArrayList<>();
 
     // Class type identification
     public abstract GLSpriteEngine.GLSpriteType getGLSpriteType();
@@ -222,7 +222,7 @@ public abstract class GLBasicSprite {
         checkFrame();
     }
 
-    public void addTextures(Vector<Integer> t) {
+    public void addTextures(ArrayList<Integer> t) {
         textures.addAll(t); // Append textures to end
         checkFrame();
     }
@@ -232,7 +232,7 @@ public abstract class GLBasicSprite {
         addTexture(t);
     }
 
-    public void setTextures(Vector<Integer> t) {
+    public void setTextures(ArrayList<Integer> t) {
         textures.clear();
         addTextures(t);
     }

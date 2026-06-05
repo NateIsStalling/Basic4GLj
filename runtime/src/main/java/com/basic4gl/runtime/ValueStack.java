@@ -2,19 +2,20 @@ package com.basic4gl.runtime;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-import java.util.Vector;
+import com.basic4gl.runtime.util.CollectionUtil;
+import java.util.ArrayList;
 
 /**
  * Used to stack values for reverse-Polish expression evaluation, or as
  * function parameters.
  */
 public class ValueStack {
-    private final Vector<Value> data;
+    private final ArrayList<Value> data;
     private final Store<String> strings;
 
     public ValueStack(Store<String> strings) {
         this.strings = strings;
-        data = new Vector<>();
+        data = new ArrayList<>();
     }
 
     public boolean isEmpty() {
@@ -71,6 +72,6 @@ public class ValueStack {
     }
 
     public void resize(int size) {
-        data.setSize(size);
+        CollectionUtil.resize(data, size);
     }
 }

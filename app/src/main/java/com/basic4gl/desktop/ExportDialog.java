@@ -28,7 +28,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
     private final TomBasicCompiler compiler;
     private final Preprocessor preprocessor;
     private final TomVM vm;
-    private final Vector<FileEditor> fileEditors;
+    private final ArrayList<FileEditor> fileEditors;
 
     private final JDialog dialog;
     private final JDialog libraryInfoDialog;
@@ -56,7 +56,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
             Frame parent,
             TomBasicCompiler compiler,
             Preprocessor preprocessor,
-            Vector<FileEditor> editors,
+            ArrayList<FileEditor> editors,
             String exportBaseDirectory) {
 
         this.compiler = compiler;

@@ -6,25 +6,25 @@ import java.util.*;
  * ParamTypeList
  */
 public class ParamTypeList {
-    private final Vector<ValType> params;
+    private final ArrayList<ValType> params;
 
     public ParamTypeList() {
-        params = new Vector<>();
+        params = new ArrayList<>();
     }
 
     public ParamTypeList(ParamTypeList list) {
-        params = new Vector<>();
+        params = new ArrayList<>();
         for (ValType val : list.params) {
             params.add(new ValType(val));
         }
     }
 
     public ParamTypeList(ValType... type) {
-        params = new Vector<>(Arrays.asList(type));
+        params = new ArrayList<>(Arrays.asList(type));
     }
 
     public ParamTypeList(Integer... type) {
-        params = new Vector<>();
+        params = new ArrayList<>();
         for (int i = 0; i < type.length; i++) {
             params.add(new ValType(type[i]));
         }
@@ -34,7 +34,7 @@ public class ParamTypeList {
         params.add(val);
     }
 
-    public Vector<ValType> getParams() {
+    public ArrayList<ValType> getParams() {
         return params;
     }
 }

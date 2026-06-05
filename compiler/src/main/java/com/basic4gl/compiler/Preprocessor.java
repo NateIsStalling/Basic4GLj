@@ -10,6 +10,7 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
 import com.basic4gl.compiler.util.ISourceFile;
 import com.basic4gl.compiler.util.ISourceFileServer;
 import com.basic4gl.runtime.HasErrorState;
+import com.basic4gl.runtime.util.CollectionUtil;
 import java.io.File;
 import java.util.*;
 
@@ -28,7 +29,7 @@ public class Preprocessor extends HasErrorState {
 
     // Stack of currently opened files.
     // openFiles.back() is the current file being parsed
-    private final Vector<ISourceFile> openFiles = new Vector<>();
+    private final ArrayList<ISourceFile> openFiles = new ArrayList<>();
 
     // Filenames of visited source files. (To prevent circular includes)
     private final List<String> visitedFiles = new ArrayList<>();
@@ -102,16 +103,16 @@ public class Preprocessor extends HasErrorState {
         // Process files
         while (!openFiles.isEmpty() && !hasError()) {
             // Check for Eof
-            if (openFiles.lastElement().isEof()) {
+            if (CollectionUtil.last(openFiles).isEof()) {
 
                 // Close innermost file
-                openFiles.lastElement().release();
+                CollectionUtil.last(openFiles).release();
                 openFiles.remove(openFiles.size() - 1);
             } else {
 
                 // Read a line from the source file
-                int lineNo = openFiles.lastElement().getLineNumber();
-                String line = openFiles.lastElement().getNextLine();
+                int lineNo = CollectionUtil.last(openFiles).getLineNumber();
+                String line = CollectionUtil.last(openFiles).getNextLine();
 
                 // Check for #include
                 boolean include = (line.length() >= 8
@@ -144,7 +145,7 @@ public class Preprocessor extends HasErrorState {
                 } else {
                     // Not an #include line
                     // Add to parser, and line number map
-                    lineNumberMap.addLine(openFiles.lastElement().getFilename(), lineNo);
+                    lineNumberMap.addLine(CollectionUtil.last(openFiles).getFilename(), lineNo);
                     parser.getSourceCode().add(line);
                 }
             }

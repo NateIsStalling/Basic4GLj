@@ -29,7 +29,7 @@ public class Standard implements FunctionLibrary {
     private static int maxCatchupTime = DEF_MAX_CATCHUP_TIME;
     private static int catchupTime = maxCatchupTime - 1;
     private static Random rnd;
-    private static Vector<String> mArguments;
+    private static ArrayList<String> mArguments;
     private static long performanceFreq;
 
     @Override
@@ -54,7 +54,7 @@ public class Standard implements FunctionLibrary {
         maxCatchupTime = DEF_MAX_CATCHUP_TIME;
         catchupTime = maxCatchupTime - 1;
 
-        mArguments = new Vector<>();
+        mArguments = new ArrayList<>();
         if (args != null) {
             mArguments.addAll(Arrays.asList(args));
         }
@@ -464,11 +464,11 @@ public class Standard implements FunctionLibrary {
         }
     }
 
-    void setProgramArguments(Vector<String> arguments) {
+    void setProgramArguments(ArrayList<String> arguments) {
         mArguments = arguments;
     }
 
-    Vector<String> getProgramArguments() {
+    ArrayList<String> getProgramArguments() {
         return mArguments;
     }
 

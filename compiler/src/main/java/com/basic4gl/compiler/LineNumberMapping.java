@@ -4,9 +4,9 @@ import com.basic4gl.compiler.util.SourcePosition;
 import com.basic4gl.runtime.util.ILineNumberMapping;
 import com.basic4gl.runtime.util.Mutable;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * Compiler line number mapping.
@@ -15,10 +15,10 @@ import java.util.Vector;
  * Used by debugging code so that lines correctly match up with program addresses.
  */
 public class LineNumberMapping extends ILineNumberMapping implements Serializable {
-    private final Vector<String> filenames = new Vector<>();
+    private final ArrayList<String> filenames = new ArrayList<>();
     private final Map<String, Integer> filenameLookup = new HashMap<>();
-    private final Vector<SourcePosition> mapping = new Vector<>();
-    private final Vector<Vector<Integer>> reverseMapping = new Vector<>();
+    private final ArrayList<SourcePosition> mapping = new ArrayList<>();
+    private final ArrayList<ArrayList<Integer>> reverseMapping = new ArrayList<>();
 
     int getFileIndex(String filename) {
 
@@ -30,7 +30,7 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
             int index = filenames.size();
             filenameLookup.put(filename, index);
             filenames.add(filename);
-            reverseMapping.add(new Vector<>());
+            reverseMapping.add(new ArrayList<>());
             return index;
         }
     }

@@ -1275,14 +1275,14 @@ public class OpenGLBasicLib implements FunctionLibrary {
         // dst.rewind();
     }
 
-    static Vector<Image> loadTexStripImages(String filename, int frameXSize, int frameYSize) {
+    static ArrayList<Image> loadTexStripImages(String filename, int frameXSize, int frameYSize) {
 
         // Load main image
         Image image = LoadImage.loadImage(filename);
         if (image != null) {
 
             // Split into frames
-            Vector<Image> images = LoadImage.splitImageStrip(image, frameXSize, frameYSize);
+            ArrayList<Image> images = LoadImage.splitImageStrip(image, frameXSize, frameYSize);
 
             // Process images
             if (usingTransparentCol) {
@@ -1293,18 +1293,18 @@ public class OpenGLBasicLib implements FunctionLibrary {
             }
 
             if (truncateBlankFrames) {
-                while (images.size() > 1 && LoadImage.isImageBlank(images.lastElement())) {
-                    images.remove(images.lastElement());
+                while (images.size() > 1 && LoadImage.isImageBlank(images.get(images.size() - 1))) {
+                    images.remove(images.size() - 1);
                 }
             }
 
             return images;
         } else {
-            return new Vector<>();
+            return new ArrayList<>();
         }
     }
 
-    static void deleteImages(Vector<Image> images) {
+    static void deleteImages(ArrayList<Image> images) {
         for (Image i : images) {
             i.getPixels().clear().limit(0);
         }
@@ -1318,7 +1318,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     static int getTexStripFrames(String filename, int frameXSize, int frameYSize) {
 
         // Load image
-        Vector<Image> images = loadTexStripImages(filename, frameXSize, frameYSize);
+        ArrayList<Image> images = loadTexStripImages(filename, frameXSize, frameYSize);
 
         // Count frames
         int result = images.size();
@@ -1327,21 +1327,21 @@ public class OpenGLBasicLib implements FunctionLibrary {
         return result;
     }
 
-    static Vector<Integer> loadTexStrip(String filename) {
+    static ArrayList<Integer> loadTexStrip(String filename) {
         return loadTexStrip(filename, 0, 0);
     }
 
-    static Vector<Integer> loadTexStrip(String filename, int frameXSize) {
+    static ArrayList<Integer> loadTexStrip(String filename, int frameXSize) {
         return loadTexStrip(filename, frameXSize, 0);
     }
 
-    static Vector<Integer> loadTexStrip(String filename, int frameXSize, int frameYSize) {
+    static ArrayList<Integer> loadTexStrip(String filename, int frameXSize, int frameYSize) {
 
         // Load images
-        Vector<Image> images = loadTexStripImages(filename, frameXSize, frameYSize);
+        ArrayList<Image> images = loadTexStripImages(filename, frameXSize, frameYSize);
 
         // Upload into textures
-        Vector<Integer> textures = new Vector<>();
+        ArrayList<Integer> textures = new ArrayList<>();
         for (int i = 0; i < images.size(); i++) {
             // TODO Confirm texture dimensions are powers of 2
             // images.set(i, ResizeImageForOpenGL(images.get(i)));
@@ -1673,7 +1673,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     public static final class WrapLoadTexStrip implements Function {
         public void run(TomVM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
-            Vector<Integer> texs = OpenGLBasicLib.loadTexStrip(vm.getStringParam(1));
+            ArrayList<Integer> texs = OpenGLBasicLib.loadTexStrip(vm.getStringParam(1));
 
             // Convert to array and return
             if (!texs.isEmpty()) {
@@ -1695,7 +1695,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     public static final class WrapLoadTexStrip2 implements Function {
         public void run(TomVM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
-            Vector<Integer> texs =
+            ArrayList<Integer> texs =
                     OpenGLBasicLib.loadTexStrip(vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1));
 
             // Convert to array and return

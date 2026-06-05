@@ -14,7 +14,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * Virtual machine for Basic4GL
@@ -65,11 +64,11 @@ public class TomVM extends HasErrorState implements Streamable {
     /**
      * functions are standard functions where the parameters are pushed to the stack.
      */
-    public Vector<Function> functions;
+    public ArrayList<Function> functions;
     /**
      * Initialisation functions
      */
-    private final Vector<Function> initFunctions;
+    private final ArrayList<Function> initFunctions;
     // Registers
     /**
      * Register values (when int or float)
@@ -98,15 +97,15 @@ public class TomVM extends HasErrorState implements Streamable {
     /**
      * Call stack for user functions
      */
-    private final Vector<UserFuncStackFrame> userCallStack;
+    private final ArrayList<UserFuncStackFrame> userCallStack;
 
     // Individual code blocks
-    private final Vector<CodeBlock> codeBlocks;
+    private final ArrayList<CodeBlock> codeBlocks;
     private int boundCodeBlock;
 
     // Data destruction
-    private final Vector<StackDestructor> stackDestructors;
-    private final Vector<StackDestructor> tempDestructors;
+    private final ArrayList<StackDestructor> stackDestructors;
+    private final ArrayList<StackDestructor> tempDestructors;
 
     // Plugins
     private final PluginManager plugins;
@@ -122,12 +121,12 @@ public class TomVM extends HasErrorState implements Streamable {
     /**
      * Constant strings declared in program
      */
-    private final Vector<String> stringConstants;
+    private final ArrayList<String> stringConstants;
 
     private final Store<String> stringStore;
     private final List<Resources> resources;
-    private final Vector<UserFuncPrototype> userFunctionPrototypes;
-    private final Vector<UserFunc> userFunctions;
+    private final ArrayList<UserFuncPrototype> userFunctionPrototypes;
+    private final ArrayList<UserFunc> userFunctions;
 
     // Program data
 
@@ -135,12 +134,12 @@ public class TomVM extends HasErrorState implements Streamable {
      * General purpose program data
      * <p>(e.g declared with "DATA" keyword in BASIC)
      */
-    private final Vector<ProgramDataElement> programData;
+    private final ArrayList<ProgramDataElement> programData;
 
     private int programDataOffset;
 
     // Instructions
-    private final Vector<Instruction> codeInstructions;
+    private final ArrayList<Instruction> codeInstructions;
     private final ValTypeSet typeSet;
 
     /**
@@ -195,21 +194,21 @@ public class TomVM extends HasErrorState implements Streamable {
 
         stringStore = new Store<>("");
         stack = new ValueStack(stringStore);
-        userCallStack = new Vector<>();
-        stackDestructors = new Vector<>();
-        tempDestructors = new Vector<>();
+        userCallStack = new ArrayList<>();
+        stackDestructors = new ArrayList<>();
+        tempDestructors = new ArrayList<>();
 
-        programData = new Vector<>();
-        codeBlocks = new Vector<>();
-        stringConstants = new Vector<>();
+        programData = new ArrayList<>();
+        codeBlocks = new ArrayList<>();
+        stringConstants = new ArrayList<>();
 
         typeSet = new ValTypeSet();
 
-        codeInstructions = new Vector<>();
-        functions = new Vector<>();
-        initFunctions = new Vector<>();
-        userFunctions = new Vector<>();
-        userFunctionPrototypes = new Vector<>();
+        codeInstructions = new ArrayList<>();
+        functions = new ArrayList<>();
+        initFunctions = new ArrayList<>();
+        userFunctions = new ArrayList<>();
+        userFunctionPrototypes = new ArrayList<>();
         patchedBreakPoints = new ArrayList<>();
         tempBreakPoints = new ArrayList<>();
 
@@ -946,7 +945,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Push stack frame, with return address
                     userCallStack.add(new UserFuncStackFrame());
-                    UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                    UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
                     stackFrame.initForGosub(ip + 1);
 
                     // Jump to subroutine
@@ -964,9 +963,9 @@ public class TomVM extends HasErrorState implements Streamable {
                     }
                     // -1 means GOSUB. Should be impossible to execute
                     // an OpCode.OP_RETURN if stack top is not a GOSUB
-                    assertTrue(userCallStack.lastElement().userFuncIndex == -1);
+                    assertTrue(CollectionUtil.last(userCallStack).userFuncIndex == -1);
 
-                    tempI = userCallStack.lastElement().returnAddr;
+                    tempI = CollectionUtil.last(userCallStack).returnAddr;
                     userCallStack.remove(userCallStack.size() - 1);
                     if (tempI >= codeInstructions.size()) {
                         setError(ERR_STACK_ERROR);
@@ -1005,7 +1004,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Create and initialize stack frame
                     int funcIndex = instruction.value.getIntVal();
                     userCallStack.add(new UserFuncStackFrame());
-                    UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                    UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
                     stackFrame.initForUserFunction(
                             userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex), funcIndex);
 
@@ -1115,7 +1114,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Create and initialize stack frame
                     userCallStack.add(new UserFuncStackFrame());
-                    UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                    UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
                     stackFrame.initForUserFunction(
                             userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex), funcIndex);
 
@@ -1131,7 +1130,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_CALL_USER_FUNC: {
 
                     // Call user defined function
-                    UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                    UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
                     UserFunc userFunc = userFunctions.get(stackFrame.userFuncIndex);
 
                     // Make active
@@ -1148,7 +1147,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     assertTrue(!userCallStack.isEmpty());
 
                     // Find current stack frame
-                    UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                    UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
                     assertTrue(stackFrame.userFuncIndex >= 0);
 
                     // Restore previous stack frame data
@@ -1200,7 +1199,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                             // Push stack frame, with return address
                             userCallStack.add(new UserFuncStackFrame());
-                            UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                            UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
                             stackFrame.initForGosub(ip + 1);
 
                             // Jump to subroutine
@@ -1241,7 +1240,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Initialize parameter
                     assertTrue(!userCallStack.isEmpty());
-                    userCallStack.lastElement().localVarDataOffsets.set(paramIndex, dataIndex);
+                    CollectionUtil.last(userCallStack).localVarDataOffsets.set(paramIndex, dataIndex);
 
                     // Transfer register value to parameter
                     Value dest = data.data().get(dataIndex);
@@ -1326,12 +1325,14 @@ public class TomVM extends HasErrorState implements Streamable {
                     } else if (ptr < data.getTempData()) {
 
                         // Pointer into temp data found
-                        assertTrue(tempDestructors.isEmpty() || tempDestructors.lastElement().addr < ptr);
+                        assertTrue(
+                                tempDestructors.isEmpty() || CollectionUtil.last(tempDestructors).addr < ptr);
                         tempDestructors.add(new StackDestructor(ptr, instruction.value.getIntVal()));
                     } else if (ptr >= data.getStackTop() && ptr < data.getPermanent()) {
 
                         // Pointer into stack data found
-                        assertTrue(stackDestructors.isEmpty() || stackDestructors.lastElement().addr > ptr);
+                        assertTrue(
+                                stackDestructors.isEmpty() || CollectionUtil.last(stackDestructors).addr > ptr);
                         stackDestructors.add(new StackDestructor(ptr, instruction.value.getIntVal()));
                     }
                     ip++; // Proceed to next instruction
@@ -1357,7 +1358,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Save register pointer into param pointer
                     assertTrue(!userCallStack.isEmpty());
                     userCallStack
-                            .lastElement()
+                            .get(userCallStack.size() - 1)
                             .localVarDataOffsets
                             .set(instruction.value.getIntVal(), getReg().getIntVal());
 
@@ -1642,7 +1643,7 @@ public class TomVM extends HasErrorState implements Streamable {
             // Such pointers can only be stored in variables in the current
             // stack frame.
             if (userCallStack.isEmpty()
-                    || !(dest >= data.getStackTop() && dest < userCallStack.lastElement().prevStackTop)) {
+                    || !(dest >= data.getStackTop() && dest < CollectionUtil.last(userCallStack).prevStackTop)) {
                 return false;
             }
         }
@@ -1845,7 +1846,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     if (!userCallStack.isEmpty()) // Look at call stack and place
                     // breakpoint on return
                     {
-                        dest = userCallStack.lastElement().returnAddr;
+                        dest = CollectionUtil.last(userCallStack).returnAddr;
                     }
                     break;
                 case OpCode.OP_CREATE_USER_FRAME:
@@ -1873,7 +1874,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // Call stack must contain at least 1 return
         if (!userCallStack.isEmpty()) {
-            int returnAddr = userCallStack.lastElement().returnAddr;
+            int returnAddr = CollectionUtil.last(userCallStack).returnAddr;
             if (returnAddr < codeInstructions.size()) { // Validate it
                 // Place breakpoint
                 tempBreakPoints.add(makeTempBreakPoint(returnAddr));
@@ -1944,16 +1945,16 @@ public class TomVM extends HasErrorState implements Streamable {
             stack.resize(state.getStackTop());
         }
         if (state.getUserFuncStackTop() < userCallStack.size()) {
-            userCallStack.setSize(state.getUserFuncStackTop());
+            CollectionUtil.resize(userCallStack, state.getUserFuncStackTop());
         }
         currentUserFrame = state.getCurrentUserFrame();
 
         // Top of program
         if (state.getCodeSize() < codeInstructions.size()) {
-            codeInstructions.setSize(state.getCodeSize());
+            CollectionUtil.resize(codeInstructions, state.getCodeSize());
         }
         if (state.getCodeBlockCount() < codeBlocks.size()) {
-            codeBlocks.setSize(state.getCodeBlockCount());
+            CollectionUtil.resize(codeBlocks, state.getCodeBlockCount());
         }
 
         // Var data
@@ -2393,8 +2394,8 @@ public class TomVM extends HasErrorState implements Streamable {
         int newTop = data.getTempDataLock();
 
         // Run destrution logic over data that is about to be deallocated.
-        while (!tempDestructors.isEmpty() && tempDestructors.lastElement().addr >= newTop) {
-            destroyData(tempDestructors.lastElement(), protect);
+        while (!tempDestructors.isEmpty() && CollectionUtil.last(tempDestructors).addr >= newTop) {
+            destroyData(CollectionUtil.last(tempDestructors), protect);
             tempDestructors.remove(tempDestructors.size() - 1);
         }
 
@@ -2406,8 +2407,8 @@ public class TomVM extends HasErrorState implements Streamable {
     void unwindStack(int newTop) {
 
         // Run destruction logic over data that is about to be deallocated.
-        while (!stackDestructors.isEmpty() && stackDestructors.lastElement().addr < newTop) {
-            destroyData(stackDestructors.lastElement(), new ProtectedStackRange());
+        while (!stackDestructors.isEmpty() && CollectionUtil.last(stackDestructors).addr < newTop) {
+            destroyData(CollectionUtil.last(stackDestructors), new ProtectedStackRange());
             stackDestructors.remove(stackDestructors.size() - 1);
         }
 
@@ -2506,7 +2507,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
     public CodeBlock getCurrentCodeBlock() {
         assertTrue(!codeBlocks.isEmpty());
-        return codeBlocks.lastElement();
+        return CollectionUtil.last(codeBlocks);
     }
 
     public int getCurrentCodeBlockIndex() {
@@ -2544,12 +2545,12 @@ public class TomVM extends HasErrorState implements Streamable {
     public void rollback(RollbackPoint rollbackPoint) {
 
         // Rollback virtual machine
-        codeBlocks.setSize(rollbackPoint.codeBlockCount);
+        CollectionUtil.resize(codeBlocks, rollbackPoint.codeBlockCount);
         boundCodeBlock = rollbackPoint.boundCodeBlock;
-        userFunctionPrototypes.setSize(rollbackPoint.functionPrototypeCount);
-        userFunctions.setSize(rollbackPoint.functionCount);
-        programData.setSize(rollbackPoint.dataCount);
-        codeInstructions.setSize(rollbackPoint.instructionCount);
+        CollectionUtil.resize(userFunctionPrototypes, rollbackPoint.functionPrototypeCount);
+        CollectionUtil.resize(userFunctions, rollbackPoint.functionCount);
+        CollectionUtil.resize(programData, rollbackPoint.dataCount);
+        CollectionUtil.resize(codeInstructions, rollbackPoint.instructionCount);
     }
 
     // Streaming
@@ -2631,7 +2632,7 @@ public class TomVM extends HasErrorState implements Streamable {
         int count, i;
         count = (int) Streaming.readLong(stream);
         if (count != -1) {
-            stringConstants.setSize(count);
+            CollectionUtil.resize(stringConstants, count);
             for (i = 0; i < count; i++) {
                 stringConstants.set(i, Streaming.readString(stream));
             }
@@ -2642,7 +2643,7 @@ public class TomVM extends HasErrorState implements Streamable {
         // Program code
         count = (int) Streaming.readLong(stream);
         if (count != -1) {
-            codeInstructions.setSize(count);
+            CollectionUtil.resize(codeInstructions, count);
             for (i = 0; i < count; i++) {
                 codeInstructions.set(i, new Instruction());
                 codeInstructions.get(i).streamIn(stream);
@@ -2651,7 +2652,7 @@ public class TomVM extends HasErrorState implements Streamable {
         // Program data (for "DATA" statements)
         count = (int) Streaming.readLong(stream);
         if (count != -1) {
-            programData.setSize(count);
+            CollectionUtil.resize(programData, count);
             for (i = 0; i < count; i++) {
                 programData.set(i, new ProgramDataElement());
                 programData.get(i).streamIn(stream);
@@ -2660,7 +2661,7 @@ public class TomVM extends HasErrorState implements Streamable {
         // User function prototypes
         count = (int) Streaming.readLong(stream);
         if (count != -1) {
-            userFunctionPrototypes.setSize(count);
+            CollectionUtil.resize(userFunctionPrototypes, count);
             for (i = 0; i < count; i++) {
                 userFunctionPrototypes.set(i, new UserFuncPrototype());
                 userFunctionPrototypes.get(i).streamIn(stream);
@@ -2669,7 +2670,7 @@ public class TomVM extends HasErrorState implements Streamable {
         // User functions
         count = (int) Streaming.readLong(stream);
         if (count != -1) {
-            userFunctions.setSize(count);
+            CollectionUtil.resize(userFunctions, count);
             for (i = 0; i < count; i++) {
                 userFunctions.set(i, new UserFunc());
                 userFunctions.get(i).streamIn(stream);
@@ -2678,7 +2679,7 @@ public class TomVM extends HasErrorState implements Streamable {
         // Code blocks
         count = (int) Streaming.readLong(stream);
         if (count != -1) {
-            codeBlocks.setSize(count);
+            CollectionUtil.resize(codeBlocks, count);
             for (i = 0; i < count; i++) {
                 codeBlocks.set(i, new CodeBlock());
                 codeBlocks.get(i).streamIn(stream);
@@ -2785,20 +2786,20 @@ public class TomVM extends HasErrorState implements Streamable {
         return variables;
     }
 
-    public Vector<ProgramDataElement> getProgramData() {
+    public ArrayList<ProgramDataElement> getProgramData() {
         return programData;
     }
 
     // User functions
-    public Vector<UserFuncPrototype> getUserFunctionPrototypes() {
+    public ArrayList<UserFuncPrototype> getUserFunctionPrototypes() {
         return userFunctionPrototypes;
     }
 
-    public Vector<UserFunc> getUserFunctions() {
+    public ArrayList<UserFunc> getUserFunctions() {
         return userFunctions;
     }
 
-    public Vector<UserFuncStackFrame> getUserCallStack() {
+    public ArrayList<UserFuncStackFrame> getUserCallStack() {
         return userCallStack;
     }
 
@@ -2907,7 +2908,7 @@ public class TomVM extends HasErrorState implements Streamable {
         programData.add(d);
     }
 
-    public Vector<String> getStringConstants() {
+    public ArrayList<String> getStringConstants() {
         return stringConstants;
     }
 

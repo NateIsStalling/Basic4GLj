@@ -6,7 +6,7 @@ import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.runtime.types.ValType;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import java.awt.*;
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.*;
 
 /**
@@ -151,7 +151,7 @@ public class ReferenceWindow {
                     line += " ";
                 }
                 boolean needComma = false;
-                Vector<ValType> params = spec.getParamTypes().getParams();
+                ArrayList<ValType> params = spec.getParamTypes().getParams();
                 if (params != null) {
                     for (ValType type : params) {
                         if (needComma) {

@@ -2232,7 +2232,7 @@ public class TextBasicLib implements FunctionLibrary {
         return null;
     }
 
-    boolean getTextures(TomVM vm, int paramIndex, Vector<Integer> dest) {
+    boolean getTextures(TomVM vm, int paramIndex, ArrayList<Integer> dest) {
 
         // Read in texture array and convert to vector (for storage in sprite)
         int[] frames = new int[65536];
@@ -2284,7 +2284,7 @@ public class TextBasicLib implements FunctionLibrary {
         return (GLTileMap) getBasicSprite(index);
     }
 
-    public static void getTiles(TomVM vm, int paramIndex, IntBuffer xSize, IntBuffer ySize, Vector<Integer> dest) {
+    public static void getTiles(TomVM vm, int paramIndex, IntBuffer xSize, IntBuffer ySize, ArrayList<Integer> dest) {
 
         // Read in texture array and convert to vector (for storage in sprite)
         int index = vm.getIntParam(paramIndex);
@@ -2627,7 +2627,7 @@ public class TextBasicLib implements FunctionLibrary {
 
             // Allocate sprite and set an array of textures
             // Read textures
-            Vector<Integer> textures = new Vector<>();
+            ArrayList<Integer> textures = new ArrayList<>();
             if (!getTextures(vm, 1, textures)) {
                 return;
             }
@@ -2669,7 +2669,7 @@ public class TextBasicLib implements FunctionLibrary {
 
             // Allocate sprite and set an array of textures
             // Read textures
-            Vector<Integer> textures = new Vector<>();
+            ArrayList<Integer> textures = new ArrayList<>();
             if (!getTextures(vm, 1, textures)) {
                 return;
             }
@@ -2713,7 +2713,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprSetTextures implements Function {
         public void run(TomVM vm) {
-            Vector<Integer> textures = new Vector<>();
+            ArrayList<Integer> textures = new ArrayList<>();
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) && getTextures(vm, 1, textures)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).setTextures(textures);
                 contentManager.changeMade();
@@ -2732,7 +2732,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprAddTextures implements Function {
         public void run(TomVM vm) {
-            Vector<Integer> textures = new Vector<>();
+            ArrayList<Integer> textures = new ArrayList<>();
             if (TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite) && getTextures(vm, 1, textures)) {
                 TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).addTextures(textures);
                 contentManager.changeMade();
@@ -3736,7 +3736,7 @@ public class TextBasicLib implements FunctionLibrary {
             if (isTileMap(TextBasicLib.boundSprite)) {
 
                 // Get tiles from array param
-                Vector<Integer> tiles = new Vector<>();
+                ArrayList<Integer> tiles = new ArrayList<>();
                 IntBuffer xSize = BufferUtils.createIntBuffer(1), ySize = BufferUtils.createIntBuffer(1);
                 TextBasicLib.getTiles(vm, 1, xSize, ySize, tiles);
 

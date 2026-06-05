@@ -8,7 +8,7 @@ import com.basic4gl.runtime.util.SourceUserBreakPt;
 import java.util.*;
 
 public class Debugger extends IVMDebugger {
-    private final Vector<SourceUserBreakPt> userBreakPoints = new Vector<>();
+    private final ArrayList<SourceUserBreakPt> userBreakPoints = new ArrayList<>();
     private final ILineNumberMapping lineNumberMapping;
 
     // Return breakpoint position or mUserBreakPts.end() if not found.

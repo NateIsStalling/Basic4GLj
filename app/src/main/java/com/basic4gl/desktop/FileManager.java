@@ -4,12 +4,12 @@ import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.util.IFileManager;
 import com.basic4gl.runtime.util.Mutable;
 import java.io.File;
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.*;
 
 public class FileManager implements IFileManager {
 
-    private final Vector<FileEditor> fileEditors = new Vector<>();
+    private final ArrayList<FileEditor> fileEditors = new ArrayList<>();
 
     private String currentDirectory; // Current working directory
 
@@ -191,7 +191,7 @@ public class FileManager implements IFileManager {
         this.runDirectory = runDirectory;
     }
 
-    public Vector<FileEditor> getFileEditors() {
+    public ArrayList<FileEditor> getFileEditors() {
         return fileEditors;
     }
 }

@@ -1,11 +1,12 @@
 package com.basic4gl.runtime.types;
 
+import com.basic4gl.runtime.util.CollectionUtil;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * A small number of VM op-codes operate on VmValType advanced data types
@@ -14,10 +15,10 @@ import java.util.Vector;
  */
 public class ValTypeSet implements Streamable {
 
-    private final Vector<ValType> valTypes;
+    private final ArrayList<ValType> valTypes;
 
     public ValTypeSet() {
-        valTypes = new Vector<>();
+        valTypes = new ArrayList<>();
     }
 
     public void clear() {
@@ -65,7 +66,7 @@ public class ValTypeSet implements Streamable {
         int count;
         count = (int) Streaming.readLong(stream);
 
-        valTypes.setSize(count);
+        CollectionUtil.resize(valTypes, count);
         for (int i = 0; i < count; i++) {
             valTypes.set(i, new ValType());
             valTypes.get(i).streamIn(stream);

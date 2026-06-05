@@ -4,6 +4,7 @@ import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.ValType;
+import com.basic4gl.runtime.util.CollectionUtil;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import java.io.DataInputStream;
@@ -19,7 +20,7 @@ public class UserFuncPrototype implements Streamable {
     // Paramter and local variable types
     // 0..paramCount-1 -> Parameters
     // paramCount..localVarTypes.size()-1 -> Local variables
-    public Vector<ValType> localVarTypes; // Local variable data types
+    public ArrayList<ValType> localVarTypes; // Local variable data types
     public Map<String, Integer> localVarIndex; // Name->index lookup (parameters and
     // local vars)
     public int paramCount;
@@ -27,7 +28,7 @@ public class UserFuncPrototype implements Streamable {
     public ValType returnValType;
 
     public UserFuncPrototype() {
-        localVarTypes = new Vector<>();
+        localVarTypes = new ArrayList<>();
         localVarIndex = new HashMap<>();
         reset();
     }
@@ -202,7 +203,7 @@ public class UserFuncPrototype implements Streamable {
 
         // Parameters/local variables
         int count = (int) Streaming.readLong(stream);
-        localVarTypes.setSize(count);
+        CollectionUtil.resize(localVarTypes, count);
         for (int i = 0; i < localVarTypes.size(); i++) {
             // #ifdef STREAM_NAMES
             String name = Streaming.readString(stream);

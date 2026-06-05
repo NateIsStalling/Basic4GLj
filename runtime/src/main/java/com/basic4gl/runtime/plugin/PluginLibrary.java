@@ -6,6 +6,7 @@ import com.basic4gl.runtime.types.Constant;
 import com.basic4gl.runtime.types.FunctionSpecification;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Assert;
+import com.basic4gl.runtime.util.CollectionUtil;
 import com.basic4gl.runtime.util.Mutable;
 import java.util.*;
 
@@ -54,7 +55,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     private final HashMap<String, Constant> constants;
 
     // Plugin functions
-    private final Vector<Basic4GLFunction> functions = new Vector<>();
+    private final ArrayList<Basic4GLFunction> functions = new ArrayList<>();
     private final HashMap<String, List<Integer>> functionLookup = new HashMap<>(); // Maps function name to index
 
     // Function specifications
@@ -62,11 +63,11 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     // The first version uses the plugin structure index when referring to structures
     // (for return types or parameter types). The second uses the virtual machine
     // structure index.
-    private final Vector<FunctionSpecification> pluginFunctionSpecs = new Vector<>();
-    private final Vector<FunctionSpecification> vmFunctionSpecs = new Vector<>();
+    private final ArrayList<FunctionSpecification> pluginFunctionSpecs = new ArrayList<>();
+    private final ArrayList<FunctionSpecification> vmFunctionSpecs = new ArrayList<>();
 
     // Resource stores
-    private final Vector<Basic4GLObjectStore> objectStores = new Vector();
+    private final ArrayList<Basic4GLObjectStore> objectStores = new ArrayList<>();
 
     // Structure building
     private PluginStructure currentStructure;
@@ -294,7 +295,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     public void modParamArray(byte dimensions) {
         // Find last added param
         if (currentSpec.getParamTypes().getParams().size() > 0) {
-            ValType param = currentSpec.getParamTypes().getParams().lastElement();
+            ValType param = CollectionUtil.last(currentSpec.getParamTypes().getParams());
 
             // Convert into array
             param.arrayLevel = dimensions;
@@ -304,7 +305,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     public void modParamPointer(byte level) {
         // Find last added param
         if (currentSpec.getParamTypes().getParams().size() > 0) {
-            ValType param = currentSpec.getParamTypes().getParams().lastElement();
+            ValType param = CollectionUtil.last(currentSpec.getParamTypes().getParams());
 
             // Convert into pointer
             param.pointerLevel = level;
@@ -314,7 +315,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     public void modParamReference() {
         // Find last added param
         if (currentSpec.getParamTypes().getParams().size() > 0) {
-            ValType param = currentSpec.getParamTypes().getParams().lastElement();
+            ValType param = CollectionUtil.last(currentSpec.getParamTypes().getParams());
 
             // Convert into by-reference param
             if (!param.isByRef) {
@@ -416,7 +417,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         return plugin;
     }
 
-    public Vector<FunctionSpecification> getFunctionSpecs() {
+    public ArrayList<FunctionSpecification> getFunctionSpecs() {
         return pluginFunctionSpecs;
     }
 
@@ -619,7 +620,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         return functionLookup;
     }
 
-    Vector<FunctionSpecification> getVMFunctionSpecs() {
+    ArrayList<FunctionSpecification> getVMFunctionSpecs() {
         return vmFunctionSpecs;
     }
 }

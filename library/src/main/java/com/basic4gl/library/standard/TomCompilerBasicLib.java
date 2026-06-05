@@ -314,7 +314,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
     private static String error = "";
     private static int errorLine = 0, errorCol = 0;
-    private static final Vector<Integer> runtimeRoutines = new Vector<>();
+    private static final ArrayList<Integer> runtimeRoutines = new ArrayList<>();
 
     ////////////////////////////////////////////////////////////////////////////////
     //  Helper routines

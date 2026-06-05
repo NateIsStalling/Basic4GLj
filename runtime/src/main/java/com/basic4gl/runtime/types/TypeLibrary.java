@@ -3,32 +3,33 @@ package com.basic4gl.runtime.types;
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
 import com.basic4gl.runtime.TomVM;
+import com.basic4gl.runtime.util.CollectionUtil;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * Used to store structure definitions, and operate on data types
  */
 public class TypeLibrary implements Streamable {
-    private final Vector<StructureField> fields;
-    private final Vector<Structure> structures;
+    private final ArrayList<StructureField> fields;
+    private final ArrayList<Structure> structures;
 
     private int currentStrucIndex;
 
     public TypeLibrary() {
-        fields = new Vector<>();
-        structures = new Vector<>();
+        fields = new ArrayList<>();
+        structures = new ArrayList<>();
     }
 
-    public Vector<StructureField> getFields() {
+    public ArrayList<StructureField> getFields() {
         return fields;
     }
 
-    public Vector<Structure> getStructures() {
+    public ArrayList<Structure> getStructures() {
         return structures;
     }
 
@@ -176,7 +177,7 @@ public class TypeLibrary implements Streamable {
         // Current  structure must have at least 1 field
         assertTrue(fields.size() > getCurrentStruc().firstFieldIndex);
 
-        return fields.lastElement();
+        return CollectionUtil.last(fields);
     }
 
     /**
@@ -301,7 +302,7 @@ public class TypeLibrary implements Streamable {
 
         // Read fields
         count = (int) Streaming.readLong(stream);
-        fields.setSize(count);
+        CollectionUtil.resize(fields, count);
         for (i = 0; i < count; i++) {
             fields.set(i, new StructureField());
             fields.get(i).streamIn(stream);
@@ -309,7 +310,7 @@ public class TypeLibrary implements Streamable {
 
         // Read structures
         count = (int) Streaming.readLong(stream);
-        structures.setSize(count);
+        CollectionUtil.resize(structures, count);
         for (i = 0; i < count; i++) {
             structures.set(i, new Structure());
             structures.get(i).streamIn(stream);

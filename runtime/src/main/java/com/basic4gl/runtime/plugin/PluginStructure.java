@@ -5,6 +5,8 @@ import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.PLUGIN_BASIC4
 import com.basic4gl.runtime.types.TypeLibrary;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Assert;
+
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Vector;
 
@@ -13,7 +15,7 @@ public class PluginStructure {
     // Structure definition
     private final String name;
     private final int versionMajor, versionMinor;
-    private final Vector<PluginStructureField> fields = new Vector<>();
+    private final ArrayList<PluginStructureField> fields = new ArrayList<>();
 
     // Index of corresponding Basic4GL structure type in compiler/virtual machine.
     // Note: This is valid only while compiling, or while the program is running,

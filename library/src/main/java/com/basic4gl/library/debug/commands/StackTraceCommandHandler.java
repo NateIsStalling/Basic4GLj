@@ -5,7 +5,7 @@ import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.stackframe.UserFuncStackFrame;
 import com.google.gson.Gson;
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.websocket.Session;
 
 public class StackTraceCommandHandler {
@@ -18,7 +18,7 @@ public class StackTraceCommandHandler {
     }
 
     public void handle(Session session) {
-        Vector<UserFuncStackFrame> callStack = vm.getUserCallStack();
+        ArrayList<UserFuncStackFrame> callStack = vm.getUserCallStack();
         StackTraceCallback callback = new StackTraceCallback();
 
         for (UserFuncStackFrame stackFrame : callStack) {
