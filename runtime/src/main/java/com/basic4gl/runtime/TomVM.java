@@ -448,17 +448,15 @@ public class TomVM extends HasErrorState implements Streamable {
                         // 1)
                         // Second value is size of array element.
                         // Array data immediately follows header
-                        if (getReg().getIntVal() >= 0
-                                && getReg().getIntVal()
-                                        < data.data().get(getReg2().getIntVal()).getIntVal()) {
-                            assertTrue(
-                                    data.data().get(getReg2().getIntVal() + 1).getIntVal() >= 0);
+                        int arrayHeader = getReg2().getIntVal();
+                        int elementCount = data.data().getIntValue(arrayHeader);
+                        int elementSize = data.data().getIntValue(arrayHeader + 1);
+                        if (getReg().getIntVal() >= 0 && getReg().getIntVal() < elementCount) {
+                            assertTrue(elementSize >= 0);
                             getReg().setIntVal(getReg2().getIntVal()
                                     + 2
                                     + getReg().getIntVal()
-                                            * data.data()
-                                                    .get(getReg2().getIntVal() + 1)
-                                                    .getIntVal());
+                                            * elementSize);
 
                             ip++; // Proceed to next instruction
                             continue step;
@@ -1409,7 +1407,7 @@ public class TomVM extends HasErrorState implements Streamable {
         assertTrue(data.isIndexValid(destIndex));
         assertTrue(data.isIndexValid(destIndex + size - 1));
         for (int i = 0; i < size; i++) {
-            data.data().set(destIndex + i, new Value(data.data().get(sourceIndex + i)));
+            data.data().setIntValue(destIndex + i, data.data().getIntValue(sourceIndex + i));
         }
     }
 
@@ -1435,18 +1433,18 @@ public class TomVM extends HasErrorState implements Streamable {
         assertTrue(type.arrayLevel > 0);
         assertTrue(data.isIndexValid(sourceIndex));
         assertTrue(data.isIndexValid(destIndex));
-        assertTrue(data.data().get(sourceIndex).getIntVal()
-                == data.data().get(destIndex).getIntVal()); // Array sizes match
-        assertTrue(data.data().get(sourceIndex + 1).getIntVal()
-                == data.data().get(destIndex + 1).getIntVal()); // Element sizes match
+        int sourceElementCount = data.data().getIntValue(sourceIndex);
+        int sourceElementSize = data.data().getIntValue(sourceIndex + 1);
+        assertTrue(sourceElementCount == data.data().getIntValue(destIndex)); // Array sizes match
+        assertTrue(sourceElementSize == data.data().getIntValue(destIndex + 1)); // Element sizes match
 
         // Find element type and size
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
-        int elementSize = data.data().get(sourceIndex + 1).getIntVal();
+        int elementSize = sourceElementSize;
 
         // Copy elements
-        for (int i = 0; i < data.data().get(sourceIndex).getIntVal(); i++) {
+        for (int i = 0; i < sourceElementCount; i++) {
             if (elementType.arrayLevel > 0) {
                 copyArray(sourceIndex + 2 + i * elementSize, destIndex + 2 + i * elementSize, elementType);
             } else {
@@ -1479,7 +1477,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // If type is basic, or pointer then just copy value
         else if (type.isBasicType() || type.getVirtualPointerLevel() > 0) {
-            data.data().set(destIndex, new Value(data.data().get(sourceIndex)));
+            data.data().setIntValue(destIndex, data.data().getIntValue(sourceIndex));
         }
 
         // If contains no strings, can just block copy

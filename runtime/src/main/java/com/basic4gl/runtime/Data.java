@@ -153,9 +153,9 @@ public class Data {
             assertTrue(isIndexValid(i + 1));
 
             // First value = # of elements
-            data.get(i).setIntVal(type.arrayDimensions[type.arrayLevel - 1]);
+            data.setIntValue(i, type.arrayDimensions[type.arrayLevel - 1]);
             // Second value = element size
-            data.get(i + 1).setIntVal(elementSize);
+            data.setIntValue(i + 1, elementSize);
 
             // Initialise elements (if necessary)
             if (typeLib.containsArray(elementType)) {
@@ -212,7 +212,7 @@ public class Data {
 
         // Initialize data
         for (int i = 0; i < count; i++) {
-            data.set(stackTop + i, new Value());
+            data.setIntValue(stackTop + i, 0);
         }
 
         // Return index of start of data
@@ -240,7 +240,7 @@ public class Data {
         // Initialize data
         if (initData) {
             for (int i = 0; i < count; i++) {
-                data.set(top + i, new Value());
+                data.setIntValue(top + i, 0);
             }
         }
 
