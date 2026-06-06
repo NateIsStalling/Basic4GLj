@@ -163,6 +163,7 @@ next
 glEnd ()
 
 frames = frames + 1
+locate 0, 0: print "FPS:               "
 locate 0, 0: print "FPS: " + fps + "   "
 DrawText ()
 
