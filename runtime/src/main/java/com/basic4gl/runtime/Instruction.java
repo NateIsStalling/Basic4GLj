@@ -7,6 +7,7 @@ import com.basic4gl.runtime.util.Streaming;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Instruction
@@ -21,67 +22,85 @@ import java.io.IOException;
  */
 public class Instruction implements Streamable {
 
-    /**
-     * Instruction value
-     */
-    public Value value;
+	/**
+	 * Instruction value
+	 */
+	public Value value;
 
-    /**
-     * For debugging
-     */
-    public int sourceLine;
+	/**
+	 * For debugging
+	 */
+	public int sourceLine;
 
-    public int sourceChar;
-    public short opCode; // (vmOpCode)
-    public int basicVarType; // (vmBasicVarType)
+	public int sourceChar;
+	public short opCode; // (vmOpCode)
+	public int basicVarType; // (vmBasicVarType)
 
-    public Instruction() {
-        opCode = OpCode.OP_NOP;
-        // TODO Original source initializes with 0 instead of -1
-        basicVarType = BasicValType.VTP_UNDEFINED;
-        sourceLine = 0;
-        sourceChar = 0;
-        value = new Value();
-    }
+	public Instruction() {
+		opCode = OpCode.OP_NOP;
+		// TODO Original source initializes with 0 instead of -1
+		basicVarType = BasicValType.VTP_UNDEFINED;
+		sourceLine = 0;
+		sourceChar = 0;
+		value = new Value();
+	}
 
-    public Instruction(Instruction i) {
-        opCode = i.opCode;
-        basicVarType = i.basicVarType;
-        sourceChar = i.sourceChar;
-        sourceLine = i.sourceLine;
-        value = i.value;
-    }
+	public Instruction(Instruction i) {
+		opCode = i.opCode;
+		basicVarType = i.basicVarType;
+		sourceChar = i.sourceChar;
+		sourceLine = i.sourceLine;
+		value = i.value;
+	}
 
-    public Instruction(short opCode, int type, Value val) {
-        this(opCode, type, val, 0, 0);
-    }
+	public Instruction(short opCode, int type, Value val) {
+		this(opCode, type, val, 0, 0);
+	}
 
-    public Instruction(short opCode, int type, Value val, int sourceLine, int sourceChar) {
-        this.opCode = opCode;
-        basicVarType = type;
-        value = val;
-        this.sourceLine = sourceLine;
-        this.sourceChar = sourceChar;
-    }
+	public Instruction(short opCode, int type, Value val, int sourceLine, int sourceChar) {
+		this.opCode = opCode;
+		basicVarType = type;
+		value = val;
+		this.sourceLine = sourceLine;
+		this.sourceChar = sourceChar;
+	}
 
-    // Streaming
-    // #ifdef VM_STATE_STREAMING
-    public void streamOut(DataOutputStream stream) throws IOException {
-        Streaming.writeShort(stream, opCode);
-        Streaming.writeLong(stream, basicVarType);
-        value.streamOut(stream);
+	public String toString() {
+		return "<Instruction " + OpCode.vmOpCodeName(this.opCode) + " " + this.value + ">";
+	}
 
-        Streaming.writeLong(stream, sourceLine);
-        Streaming.writeLong(stream, sourceChar);
-    }
+	// Given a list of instructions, construct a string with the disassembled code.
+	public static String disassemble(List<Instruction> instructions) {
+		StringBuilder sb = new StringBuilder();
+		for (final Instruction i : instructions) {
+			sb.append(OpCode.vmOpCodeName(i.opCode));
+			sb.append(" ");
+			sb.append(BasicValType.getName(i.basicVarType));
+			sb.append(" ");
+			sb.append(i.value);
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
 
-    public boolean streamIn(DataInputStream stream) throws IOException {
-        opCode = Streaming.readShort(stream);
-        basicVarType = (int) Streaming.readLong(stream);
-        value.streamIn(stream);
+	// Streaming
+	// #ifdef VM_STATE_STREAMING
+	public void streamOut(DataOutputStream stream) throws IOException {
+		Streaming.writeShort(stream, opCode);
+		Streaming.writeLong(stream, basicVarType);
+		value.streamOut(stream);
 
-        sourceLine = (int) Streaming.readLong(stream);
-        sourceChar = (int) Streaming.readLong(stream);
-        return true;
-    }
+		Streaming.writeLong(stream, sourceLine);
+		Streaming.writeLong(stream, sourceChar);
+	}
+
+	public boolean streamIn(DataInputStream stream) throws IOException {
+		opCode = Streaming.readShort(stream);
+		basicVarType = (int) Streaming.readLong(stream);
+		value.streamIn(stream);
+
+		sourceLine = (int) Streaming.readLong(stream);
+		sourceChar = (int) Streaming.readLong(stream);
+		return true;
+	}
 }

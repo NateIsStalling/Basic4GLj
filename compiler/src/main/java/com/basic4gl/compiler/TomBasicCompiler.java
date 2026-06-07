@@ -710,6 +710,14 @@ public class TomBasicCompiler extends HasErrorState {
         runtimeFunctions.clear();
     }
 
+	// Load a source file, preprocessing it and setting the parser to read
+	// the entire program.
+	public boolean load(ISourceFile file) {
+		clearProgram();
+		Preprocessor pp = new Preprocessor();
+		return pp.preprocess(file, this.parser);
+	}
+
     public boolean compile() {
 
         // Clear existing program
@@ -6544,4 +6552,6 @@ public class TomBasicCompiler extends HasErrorState {
         }
         return true;
     }
+
+
 }
