@@ -32,11 +32,6 @@ public class IntegrationTest {
 		this.compiler = new TomBasicCompiler(vm, pm);
 	}
 
-	public IntegrationTest(boolean printDisassembly) {
-		this();
-		this.printDisassembly = printDisassembly;
-	}
-
 	@AfterEach
 	void tearDown() {
 		this.compiler.clearProgram();
@@ -56,7 +51,12 @@ public class IntegrationTest {
 
 	@Test
 	void compilesDimStatement() {
-		assertCodeCompiles("DIM var as string\n");
+		String program = "dim var$\n" +
+				"var$ = \"hello world!\"\n" +
+				"print var$\n";
+		assertCodeCompiles(program);
+		assertTrue(this.vm.getVariables().containsVariable("var"),
+				"Variable should be created in the VM.");
 	}
 
 	// Helper assertions
@@ -64,10 +64,21 @@ public class IntegrationTest {
 	void assertCodeCompiles(String source) {
 		NullSourceFile sf = new NullSourceFile("");
 		assertTrue(this.compiler.load(sf));
-		assertTrue(this.compiler.compile());
+		this.compiler.compile();
 		if (printDisassembly) {
-			System.out.println("Main program disassembly: ");
+			System.out.println("Input program: ");
+			System.out.println("```");
+			System.out.print(source);
+			System.out.println("```");
+
+			System.out.println("Output: ");
+			System.out.println("Variables: ");
+			System.out.println(vm.getVariables());
+
+			System.out.println("Disassembly: ");
 			System.out.println(Instruction.disassemble(Arrays.asList(this.vm.getInstructions())));
 		}
+
+		assertFalse(this.compiler.hasError(), this.compiler.getError());
 	}
 }
