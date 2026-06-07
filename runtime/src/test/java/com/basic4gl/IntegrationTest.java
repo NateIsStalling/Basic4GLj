@@ -62,7 +62,7 @@ public class IntegrationTest {
 	// Helper assertions
 
 	void assertCodeCompiles(String source) {
-		NullSourceFile sf = new NullSourceFile("");
+		NullSourceFile sf = new NullSourceFile(source);
 		assertTrue(this.compiler.load(sf));
 		this.compiler.compile();
 		if (printDisassembly) {
