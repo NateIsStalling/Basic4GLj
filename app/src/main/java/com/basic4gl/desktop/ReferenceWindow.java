@@ -92,6 +92,16 @@ public class ReferenceWindow {
             case BasicValType.VTP_STRING:
                 result += "string";
                 break;
+            case BasicValType.VTP_NULL:
+                result += "null";
+                break;
+            case BasicValType.VTP_FUNC_PTR:
+            case BasicValType.VTP_UNTYPED_FUNC_PTR:
+                result +=  "function";
+                break;
+            case BasicValType.VTP_VOID:
+                result +=  "";
+                break;
             default:
                 result += "???";
         }
@@ -115,6 +125,16 @@ public class ReferenceWindow {
                 break;
             case BasicValType.VTP_STRING:
                 result += "string";
+                break;
+            case BasicValType.VTP_NULL:
+                result += "null";
+                break;
+            case BasicValType.VTP_FUNC_PTR:
+            case BasicValType.VTP_UNTYPED_FUNC_PTR:
+                result +=  "function";
+                break;
+            case BasicValType.VTP_VOID:
+                result +=  "";
                 break;
             default:
                 result += "???";
