@@ -83,7 +83,6 @@ public class VariableCollection implements Streamable {
 		// Streaming
 		@Override
 		public void streamOut(DataOutputStream stream) throws IOException {
-
 			Streaming.writeString(stream, name);
 			Streaming.writeLong(stream, dataIndex);
 
@@ -91,11 +90,14 @@ public class VariableCollection implements Streamable {
 		}
 
 		public boolean streamIn(DataInputStream stream) throws IOException {
-
 			name = Streaming.readString(stream);
 			dataIndex = (int) Streaming.readLong(stream);
 
 			type.streamIn(stream);
+
+			return true;
+		}
+	}
 
     private final ArrayList<Variable> variables;
     private final Data data;

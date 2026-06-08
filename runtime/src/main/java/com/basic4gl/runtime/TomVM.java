@@ -463,7 +463,7 @@ public class TomVM extends HasErrorState implements Streamable {
                             case BasicValType.VTP_INT:
                             case BasicValType.VTP_REAL:
                             case BasicValType.VTP_FUNC_PTR:
-                                setReg(val);
+								regValue = (rawValue);
                                 ip++; // Proceed to next instruction
                                 continue step;
                             case BasicValType.VTP_STRING:
@@ -556,7 +556,7 @@ public class TomVM extends HasErrorState implements Streamable {
                             case BasicValType.VTP_REAL:
                             case BasicValType.VTP_FUNC_PTR:
                                 // mData.Data().set(mReg2.getIntVal(), new Value(mReg));
-                                dest.setVal(getReg());
+								data.data().setIntValue(destAddr, regValue);
 
                                 ip++; // Proceed to next instruction
                                 continue step;
@@ -1340,7 +1340,7 @@ public class TomVM extends HasErrorState implements Streamable {
                         case BasicValType.VTP_FUNC_PTR:
                             // TODO Confirm value is properly set
                             // TODO Check other "dest" variables
-                            dest.setVal(getReg());
+                            data.data().setIntValue(dataIndex, regValue);
                             break;
                         case BasicValType.VTP_STRING:
 
@@ -2829,7 +2829,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
     public InstructionPosition getIPInSourceCode() {
         //assertTrue(isIPValid());
-        return new InstructionPosition(codeInstructions.get(ip).sourceLine, codeInstructions.get(ip).sourceChar);
+        return new InstructionPosition(0, codeInstructions.get(ip).sourceLine, codeInstructions.get(ip).sourceChar);
     }
 
     public void bindCodeBlock(int index) {

@@ -21,4 +21,11 @@ public class SourcePosition implements Serializable {
 		fileLineNumber = c.fileLineNumber;
 	}
 
+	public int getFileIndex() {
+		return fileIndex;
+	}
+
+	public int getFileLineNumber() {
+		return fileLineNumber;
+	}
 }

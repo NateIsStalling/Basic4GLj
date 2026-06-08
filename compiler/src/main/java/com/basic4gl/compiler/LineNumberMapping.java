@@ -70,7 +70,7 @@ public class LineNumberMapping extends ILineNumberMapping implements Serializabl
 		// Append mapping entry
 		int fileIndex = getFileIndex(filename);
 		int mainLineNo = mapping.size();
-		mapping.add(new InstructionPosition(fileIndex, fileLineNo, 0));
+		mapping.add(new SourcePosition(fileIndex, fileLineNo));
 
 		// Append reverse-mapping entry
 		while (reverseMapping.get(fileIndex).size() <= fileLineNo) {
