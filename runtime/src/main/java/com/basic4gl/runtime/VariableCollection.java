@@ -115,6 +115,14 @@ public class VariableCollection implements Streamable {
         return variables;
     }
 
+	public Variable getVariable(String name) {
+		return variables.get(this.getVariableIndex(name));
+	}
+
+	public Variable getVariable(int index) {
+		return variables.get(index);
+	}
+
 	/**
 	 * Data
 	 */

@@ -85,9 +85,29 @@ public class Value implements Streamable {
         rawBits = val.getIntVal();
     }
 
-    // Streaming
-    public void streamOut(DataOutputStream stream) throws IOException {
+	//
+	// Overrides for Object methods
+	//
 
+	@Override
+	public String toString() {
+		return this.rawBits.toString();
+	}
+
+	@Override
+	public boolean equals(Object thatObject) {
+		if (!(thatObject instanceof Value)) {
+			return false;
+		}
+		Value that = (Value) thatObject;
+		return this.rawBits == that.rawBits;
+	}
+
+	//
+	// Streamable implementation.
+	//
+
+    public void streamOut(DataOutputStream stream) throws IOException {
         // There may be some potential cross-platform streaming issues because:
         // 1. We are unioning two data types together.
         // 2. We don't know at stream time what data type it is.

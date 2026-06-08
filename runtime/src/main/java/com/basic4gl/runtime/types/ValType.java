@@ -28,344 +28,369 @@ import java.util.Objects;
  */
 public class ValType implements Streamable {
 
-    public int basicType; // Basic type
-    /**
-     * 0 = value, 1 = array, 2 = 2D array
-     */
-    public byte arrayLevel;
-    /**
-     * 0 = value, 1 = pointer to value, 2 = pointer to pointer to value, ...
-     */
-    public byte pointerLevel;
+	public int basicType; // Basic type
+	/**
+	 * 0 = value, 1 = array, 2 = 2D array
+	 */
+	public byte arrayLevel;
+	/**
+	 * 0 = value, 1 = pointer to value, 2 = pointer to pointer to value, ...
+	 */
+	public byte pointerLevel;
 
-    public boolean isByRef;
+	public boolean isByRef;
 
-    /**
-     * # of elements in each array dimension
-     */
-    public int[] arrayDimensions = new int[TomVM.ARRAY_MAX_DIMENSIONS];
+	/**
+	 * # of elements in each array dimension
+	 */
+	public int[] arrayDimensions = new int[TomVM.ARRAY_MAX_DIMENSIONS];
 
-    /**
-     * Index of function prototype. Valid when basicType = VTP_FUNC_PTR
-     */
-    public int prototypeIndex;
+	/**
+	 * Index of function prototype. Valid when basicType = VTP_FUNC_PTR
+	 */
+	public int prototypeIndex;
 
-    public ValType() {
-        setType(VTP_UNDEFINED);
-    }
+	public ValType() {
+		setType(VTP_UNDEFINED);
+	}
 
-    public ValType(int type) {
-        setType(type);
-    }
+	public ValType(int type) {
+		setType(type);
+	}
 
-    public ValType(ValType type) {
-        setType(type);
-    }
+	public ValType(ValType type) {
+		setType(type);
+	}
 
-    public ValType(int type, byte array) {
-        this(type, array, (byte) 0, false);
-    }
+	public ValType(int type, byte array) {
+		this(type, array, (byte) 0, false);
+	}
 
-    public ValType(int type, byte array, byte pointer, boolean byRef) {
-        setType(type, array, pointer, byRef);
-    }
+	public ValType(int type, byte array, byte pointer, boolean byRef) {
+		setType(type, array, pointer, byRef);
+	}
 
-    public boolean isFuncPtr() {
-        return basicType == VTP_FUNC_PTR && pointerLevel == 0 && arrayLevel == 0;
-    }
+	public boolean isFuncPtr() {
+		return basicType == VTP_FUNC_PTR && pointerLevel == 0 && arrayLevel == 0;
+	}
 
-    /**
-     * Displaying basic types and values
-     * @param type
-     * @return
-     */
-    static String getBasicValTypeName(int type) {
-        if (type < 0) {
-            switch (type) {
-                case VTP_INT:
-                    return "INT";
-                case VTP_REAL:
-                    return "REAL";
-                case VTP_STRING:
-                    return "STRING";
-                case VTP_NULL:
-                    return "null";
-                case VTP_UNDEFINED:
-                    return "UNDEFINED";
-                default:
-                    return "???";
-            }
-        } else {
-            return "ADVANCED TYPE";
-        }
-    }
+	/**
+	 * Displaying basic types and values
+	 * 
+	 * @param type
+	 * @return
+	 */
+	static String getBasicValTypeName(int type) {
+		if (type < 0) {
+			switch (type) {
+				case VTP_INT:
+					return "INT";
+				case VTP_REAL:
+					return "REAL";
+				case VTP_STRING:
+					return "STRING";
+				case VTP_NULL:
+					return "null";
+				case VTP_UNDEFINED:
+					return "UNDEFINED";
+				default:
+					return "???";
+			}
+		} else {
+			return "ADVANCED TYPE";
+		}
+	}
 
-    public ValType setType(int type) {
-        return setType(type, (byte) 0, (byte) 0, false);
-    }
+	public ValType setType(int type) {
+		return setType(type, (byte) 0, (byte) 0, false);
+	}
 
-    public ValType setType(int type, byte array, byte pointer, boolean byRef) {
-        assertTrue(array <= TomVM.ARRAY_MAX_DIMENSIONS);
-        basicType = type;
-        arrayLevel = array;
-        pointerLevel = pointer;
-        isByRef = byRef;
-        prototypeIndex = -1;
+	public ValType setType(int type, byte array, byte pointer, boolean byRef) {
+		assertTrue(array <= TomVM.ARRAY_MAX_DIMENSIONS);
+		basicType = type;
+		arrayLevel = array;
+		pointerLevel = pointer;
+		isByRef = byRef;
+		prototypeIndex = -1;
 
-        Arrays.fill(arrayDimensions, 0);
-        return this;
-    }
+		Arrays.fill(arrayDimensions, 0);
+		return this;
+	}
 
-    public ValType setType(ValType t) {
-        basicType = t.basicType;
-        arrayLevel = t.arrayLevel;
-        pointerLevel = t.pointerLevel;
-        isByRef = t.isByRef;
-        prototypeIndex = t.prototypeIndex;
+	public ValType setType(ValType t) {
+		basicType = t.basicType;
+		arrayLevel = t.arrayLevel;
+		pointerLevel = t.pointerLevel;
+		isByRef = t.isByRef;
+		prototypeIndex = t.prototypeIndex;
 
-        arrayDimensions = Arrays.copyOf(t.arrayDimensions, TomVM.ARRAY_MAX_DIMENSIONS);
-        return this;
-    }
+		arrayDimensions = Arrays.copyOf(t.arrayDimensions, TomVM.ARRAY_MAX_DIMENSIONS);
+		return this;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ValType valType = (ValType) o;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		ValType valType = (ValType) o;
 
-        // TODO generated return basicType == valType.basicType && arrayLevel == valType.arrayLevel &&
-        // pointerLevel == valType.pointerLevel && isByRef == valType.isByRef &&
-        // Arrays.equals(arrayDimensions, valType.arrayDimensions);
+		// TODO generated return basicType == valType.basicType && arrayLevel ==
+		// valType.arrayLevel &&
+		// pointerLevel == valType.pointerLevel && isByRef == valType.isByRef &&
+		// Arrays.equals(arrayDimensions, valType.arrayDimensions);
 
-        // Return true if types match
-        // Compare basic types and array and pointer levels
-        if (basicType != valType.basicType
-                || arrayLevel != valType.arrayLevel
-                || pointerLevel != valType.pointerLevel) {
-            return false;
-        }
+		// Return true if types match
+		// Compare basic types and array and pointer levels
+		if (basicType != valType.basicType
+				|| arrayLevel != valType.arrayLevel
+				|| pointerLevel != valType.pointerLevel) {
+			return false;
+		}
 
-        // Compare array dimensions (if not a pointer)
-        if (pointerLevel == 0) {
-            for (int i = 0; i < arrayLevel; i++) {
-                if (arrayDimensions[i] != valType.arrayDimensions[i]) {
-                    return false;
-                }
-            }
-        }
+		// Compare array dimensions (if not a pointer)
+		if (pointerLevel == 0) {
+			for (int i = 0; i < arrayLevel; i++) {
+				if (arrayDimensions[i] != valType.arrayDimensions[i]) {
+					return false;
+				}
+			}
+		}
 
-        // Check prototype index if function pointer
-        if (basicType == VTP_FUNC_PTR && prototypeIndex != valType.prototypeIndex) {
-            return false;
-        }
+		// Check prototype index if function pointer
+		if (basicType == VTP_FUNC_PTR && prototypeIndex != valType.prototypeIndex) {
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(basicType, arrayLevel, pointerLevel, isByRef);
-        result = 31 * result + Arrays.hashCode(arrayDimensions);
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		int result = Objects.hash(basicType, arrayLevel, pointerLevel, isByRef);
+		result = 31 * result + Arrays.hashCode(arrayDimensions);
+		return result;
+	}
 
-    public boolean matchesType(int type) {
-        return equals(new ValType(type));
-    }
+	@Override
+	public String toString() {
+		String out = "";
+		// '&' at the beginning for pointers
+		for (int i = 0; i < this.pointerLevel; i++) {
+			out += "&";
+		}
+		out += ValType.getBasicValTypeName(this.basicType);
+		for (int i = 0; i < this.arrayLevel; i++) {
+			out += "(" + this.arrayDimensions[i] + ")";
+		}
+		return out;
+	}
 
-    /**
-     * Equals returns true if the types are identical in implementation.
-     * This means it will return true if one is a pointer and the other
-     * is a reference (as both are the same internally).
-     *
-     * Porting Note: The overloaded == operator uses {@link #equals(Object)} function.
-     *
-     * @param type
-     * @return returns false if one is a pointer and the other is a reference.
-     */
-    public boolean exactEquals(ValType type) {
+	public boolean matchesType(int type) {
+		return equals(new ValType(type));
+	}
 
-        if (!equals(type)) {
-            return false;
-        }
+	/**
+	 * Equals returns true if the types are identical in implementation.
+	 * This means it will return true if one is a pointer and the other
+	 * is a reference (as both are the same internally).
+	 *
+	 * Porting Note: The overloaded == operator uses {@link #equals(Object)}
+	 * function.
+	 *
+	 * @param type
+	 * @return returns false if one is a pointer and the other is a reference.
+	 */
+	public boolean exactEquals(ValType type) {
 
-        return isByRef == type.isByRef;
-    }
+		if (!equals(type)) {
+			return false;
+		}
 
-    public boolean exactEquals(int type) {
-        return exactEquals(new ValType(type));
-    }
+		return isByRef == type.isByRef;
+	}
 
-    public boolean isNull() {
-        return basicType == VTP_NULL;
-    }
+	public boolean exactEquals(int type) {
+		return exactEquals(new ValType(type));
+	}
 
-    public int getPhysicalPointerLevel() {
-        return pointerLevel;
-    }
+	public boolean isNull() {
+		return basicType == VTP_NULL;
+	}
 
-    public int getVirtualPointerLevel() {
-        return pointerLevel + (isByRef ? -1 : 0);
-    }
+	public int getPhysicalPointerLevel() {
+		return pointerLevel;
+	}
 
-    public void addDimension(int elements) {
-        assertTrue(arrayLevel < TomVM.ARRAY_MAX_DIMENSIONS);
-        assertTrue(elements > 0);
+	public int getVirtualPointerLevel() {
+		return pointerLevel + (isByRef ? -1 : 0);
+	}
 
-        // Bump up existing elements
-        for (int i = arrayLevel; i > 0; i--) {
-            arrayDimensions[i] = arrayDimensions[i - 1];
-        }
-        arrayLevel++;
+	public void addDimension(int elements) {
+		assertTrue(arrayLevel < TomVM.ARRAY_MAX_DIMENSIONS);
+		assertTrue(elements > 0);
 
-        // Add new element count at dimension 0
-        arrayDimensions[0] = elements;
-    }
+		// Bump up existing elements
+		for (int i = arrayLevel; i > 0; i--) {
+			arrayDimensions[i] = arrayDimensions[i - 1];
+		}
+		arrayLevel++;
 
-    /**
-     * Calculate the array size based on the element size
-     * @param elementSize
-     * @return array size
-     */
-    public int getArraySize(int elementSize) {
+		// Add new element count at dimension 0
+		arrayDimensions[0] = elements;
+	}
 
-        int result = elementSize;
+	/**
+	 * Calculate the array size based on the element size
+	 * 
+	 * @param elementSize
+	 * @return array size
+	 */
+	public int getArraySize(int elementSize) {
 
-        // Note: Array data format is
-        // Data Data size (# 4 byte values)
-        // ---- ---------
-        // * Count 1
-        // * Element size 1
-        // * Element 0 Element size
-        // * Element 1 Element size
-        // ...
-        // * Element Count - 1 Element size
-        //
-        // Thus total storage size (for 1D array) = 2 + (Count * Element
-        // size)
-        // An N+1 dimension array is simply an array of N dimension arrays.
+		int result = elementSize;
 
-        for (int i = 0; i < arrayLevel; i++) {
-            result *= arrayDimensions[i];
-            result += 2;
-        }
+		// Note: Array data format is
+		// Data Data size (# 4 byte values)
+		// ---- ---------
+		// * Count 1
+		// * Element size 1
+		// * Element 0 Element size
+		// * Element 1 Element size
+		// ...
+		// * Element Count - 1 Element size
+		//
+		// Thus total storage size (for 1D array) = 2 + (Count * Element
+		// size)
+		// An N+1 dimension array is simply an array of N dimension arrays.
 
-        return result;
-    }
+		for (int i = 0; i < arrayLevel; i++) {
+			result *= arrayDimensions[i];
+			result += 2;
+		}
 
-    /**
-     * This is logically equivalent to "ArraySize (elementSize) > size",
-     * except ArraySize can fail if the calculated size doesn't fit into an integer.
-     *
-     * A major goal of Basic4GL is to provide a safe environment to experiment
-     * in without worrying about breaking things.
-     * Therefore we want to prevent people from trying to allocate
-     * unrealistic amounts of memory.
-     * Thus we check array sizes upon allocation/declaration.
-     * @param size
-     * @param elementSize
-     * @return Returns true if the array size is bigger than size.
-     */
-    public boolean isArraySizeBiggerThan(int size, int elementSize) {
+		return result;
+	}
 
-        int arraySize = elementSize;
-        if (arraySize > size) {
-            return true;
-        }
+	/**
+	 * This is logically equivalent to "ArraySize (elementSize) > size",
+	 * except ArraySize can fail if the calculated size doesn't fit into an integer.
+	 *
+	 * A major goal of Basic4GL is to provide a safe environment to experiment
+	 * in without worrying about breaking things.
+	 * Therefore we want to prevent people from trying to allocate
+	 * unrealistic amounts of memory.
+	 * Thus we check array sizes upon allocation/declaration.
+	 * 
+	 * @param size
+	 * @param elementSize
+	 * @return Returns true if the array size is bigger than size.
+	 */
+	public boolean isArraySizeBiggerThan(int size, int elementSize) {
 
-        for (int i = 0; i < arrayLevel; i++) {
-            if (size < 2 || (size - 2) / arrayDimensions[i] < arraySize) {
-                return true;
-            }
-            arraySize *= arrayDimensions[i];
-            arraySize += 2;
-        }
+		int arraySize = elementSize;
+		if (arraySize > size) {
+			return true;
+		}
 
-        return false;
-    }
+		for (int i = 0; i < arrayLevel; i++) {
+			if (size < 2 || (size - 2) / arrayDimensions[i] < arraySize) {
+				return true;
+			}
+			arraySize *= arrayDimensions[i];
+			arraySize += 2;
+		}
 
-    /**
-     * Pointers fit in a register, or single basic types
-     * @return
-     */
-    public boolean canStoreInRegister() {
-        return pointerLevel > 0 || (arrayLevel == 0 && basicType < 0);
-    }
+		return false;
+	}
 
-    /**
-     * Return the actual type that will be stored in a register when
-     * referring to data of this type.
-     * For values that fit into a register, the register type is the
-     * same as the original type represented.
-     *
-     * For large values like structures and arrays, the register will
-     * store an implicit reference to the data instead.
-     */
-    public ValType getRegisterType() {
+	/**
+	 * Pointers fit in a register, or single basic types
+	 * 
+	 * @return
+	 */
+	public boolean canStoreInRegister() {
+		return pointerLevel > 0 || (arrayLevel == 0 && basicType < 0);
+	}
 
-        // Copy this value type
-        ValType result = new ValType(this);
+	/**
+	 * Return the actual type that will be stored in a register when
+	 * referring to data of this type.
+	 * For values that fit into a register, the register type is the
+	 * same as the original type represented.
+	 *
+	 * For large values like structures and arrays, the register will
+	 * store an implicit reference to the data instead.
+	 */
+	public ValType getRegisterType() {
 
-        // Check if type is an array or structure
-        if (!result.canStoreInRegister()) {
+		// Copy this value type
+		ValType result = new ValType(this);
 
-            // A structure or array cannot fit into a register.
-            // What is stored is an implicit by-reference pointer.
-            result.pointerLevel++;
-            result.isByRef = true;
-        }
+		// Check if type is an array or structure
+		if (!result.canStoreInRegister()) {
 
-        return result;
-    }
+			// A structure or array cannot fit into a register.
+			// What is stored is an implicit by-reference pointer.
+			result.pointerLevel++;
+			result.isByRef = true;
+		}
 
-    /**
-     * Type of actual data stored inside virtual machine register.
-     * @return
-     */
-    public int getStoredType() {
-        if (pointerLevel == 0 && arrayLevel == 0) {
-            return basicType;
-        } else {
-            return VTP_INT;
-        }
-    }
+		return result;
+	}
 
-    public boolean isBasicType() {
-        return pointerLevel == 0 && arrayLevel == 0 && basicType < 0;
-    }
+	/**
+	 * Type of actual data stored inside virtual machine register.
+	 * 
+	 * @return
+	 */
+	public int getStoredType() {
+		if (pointerLevel == 0 && arrayLevel == 0) {
+			return basicType;
+		} else {
+			return VTP_INT;
+		}
+	}
 
-    // Streaming
-    public void streamOut(DataOutputStream stream) throws IOException {
+	public boolean isBasicType() {
+		return pointerLevel == 0 && arrayLevel == 0 && basicType < 0;
+	}
 
-        // Write VmValType to stream
-        Streaming.writeLong(stream, basicType);
+	// Streaming
+	public void streamOut(DataOutputStream stream) throws IOException {
 
-        Streaming.writeByte(stream, arrayLevel);
-        Streaming.writeByte(stream, pointerLevel);
-        Streaming.writeByte(stream, (byte) (isByRef ? 1 : 0));
+		// Write VmValType to stream
+		Streaming.writeLong(stream, basicType);
 
-        for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++) {
-            Streaming.writeLong(stream, arrayDimensions[i]);
-        }
+		Streaming.writeByte(stream, arrayLevel);
+		Streaming.writeByte(stream, pointerLevel);
+		Streaming.writeByte(stream, (byte) (isByRef ? 1 : 0));
 
-        // NOTE: prototypeIndex is not streamed, as it is only relevant at compile time, and is not used at runtime.
-    }
+		for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++) {
+			Streaming.writeLong(stream, arrayDimensions[i]);
+		}
 
-    public boolean streamIn(DataInputStream stream) throws IOException {
+		// NOTE: prototypeIndex is not streamed, as it is only relevant at compile time,
+		// and is not used at runtime.
+	}
 
-        // Read VmValType from stream
-        basicType = (int) Streaming.readLong(stream);
+	public boolean streamIn(DataInputStream stream) throws IOException {
 
-        arrayLevel = Streaming.readByte(stream);
-        pointerLevel = Streaming.readByte(stream);
-        isByRef = Streaming.readByte(stream) == 1;
+		// Read VmValType from stream
+		basicType = (int) Streaming.readLong(stream);
 
-        for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++) {
-            arrayDimensions[i] = (int) Streaming.readLong(stream);
-        }
+		arrayLevel = Streaming.readByte(stream);
+		pointerLevel = Streaming.readByte(stream);
+		isByRef = Streaming.readByte(stream) == 1;
 
-        // NOTE: prototypeIndex is not streamed, as it is only relevant at compile time, and is not used at runtime.
+		for (int i = 0; i < TomVM.ARRAY_MAX_DIMENSIONS; i++) {
+			arrayDimensions[i] = (int) Streaming.readLong(stream);
+		}
 
-        return true;
-    }
+		// NOTE: prototypeIndex is not streamed, as it is only relevant at compile time,
+		// and is not used at runtime.
+
+		return true;
+	}
 }

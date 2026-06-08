@@ -5,18 +5,18 @@ package com.basic4gl.compiler.util;
  * disabled or unavailable.
  * It simulates reading a single content string as a line.
  */
-public final class NullSourceFile implements ISourceFile {
+public final class StringSourceFile implements ISourceFile {
 
-	private final String content;
-	private boolean isConsumed = false;
+	private final String[] lines;
+	private int currentLine;
 
 	/**
 	 * Initialize the NullSourceFile with a single fixed string as the content.
 	 * 
 	 * @param content The dummy content for the "file".
 	 */
-	public NullSourceFile(String content) {
-		this.content = content;
+	public StringSourceFile(String content) {
+		this.lines = content.split("\\r?\\n");
 	}
 
 	/**
@@ -26,11 +26,9 @@ public final class NullSourceFile implements ISourceFile {
 	 */
 	@Override
 	public String getNextLine() {
-		if (!isConsumed) {
-			isConsumed = true;
-			return content;
-		}
-		return null;
+		String line = lines[currentLine];
+		currentLine++;
+		return line;
 	}
 
 	/**
@@ -46,7 +44,7 @@ public final class NullSourceFile implements ISourceFile {
 	 */
 	@Override
 	public int getLineNumber() {
-		return 0;
+		return currentLine;
 	}
 
 	/**
@@ -54,7 +52,7 @@ public final class NullSourceFile implements ISourceFile {
 	 */
 	@Override
 	public boolean isEof() {
-		return isConsumed;
+		return currentLine >= lines.length;
 	}
 
 	/**
