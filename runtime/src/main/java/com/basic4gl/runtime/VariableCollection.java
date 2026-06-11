@@ -85,7 +85,6 @@ public class VariableCollection implements Streamable {
 		public void streamOut(DataOutputStream stream) throws IOException {
 			Streaming.writeString(stream, name);
 			Streaming.writeLong(stream, dataIndex);
-
 			type.streamOut(stream);
 		}
 

@@ -6409,6 +6409,10 @@ public class TomBasicCompiler extends HasErrorState {
         return name == null ? "???" : name;
     }
 
+	public Constant getUserDefinedConstant(String name) {
+		return this.programConstants.get(name.toLowerCase());
+	}
+
     // State streaming
     public void streamOut(DataOutputStream stream) {
         try {

@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id("com.diffplug.spotless") version "7.0.2"
+	id 'jacoco'
 }
 
 group 'com.basic4gl'
