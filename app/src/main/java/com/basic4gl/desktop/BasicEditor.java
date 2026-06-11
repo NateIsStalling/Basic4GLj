@@ -2,6 +2,7 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.compiler.types.LanguageSyntax;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.ErrorCallback;
 import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
@@ -72,7 +73,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
     // State
     // TODO this may need to be moved into appSettings
-    private TomBasicCompiler.LanguageSyntax languageSyntax = TomBasicCompiler.LanguageSyntax.LS_BASIC4GL;
+    private LanguageSyntax languageSyntax = LanguageSyntax.LS_BASIC4GL;
 
     // Libraries
     private final List<Library> libraries = new ArrayList<>();

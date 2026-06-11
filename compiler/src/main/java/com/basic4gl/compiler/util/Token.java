@@ -1,6 +1,6 @@
-package com.basic4gl.compiler;
+package com.basic4gl.compiler.util;
 
-class Token {
+public class Token {
 
     private String text;
     private TokenType tokenType;
@@ -11,6 +11,21 @@ class Token {
 
     private int line;
     private int col;
+
+    public Token() {}
+
+    public Token(String text, TokenType tokenType, int valType, boolean newLine, int line, int col) {
+        this.text = text;
+        this.tokenType = tokenType;
+        this.valType = valType;
+        this.newLine = newLine;
+        this.line = line;
+        this.col = col;
+    }
+
+    public Token(Token source) {
+        this(source.text, source.tokenType, source.valType, source.newLine, source.line, source.col);
+    }
 
     public String getText() {
         return text;
@@ -40,7 +55,7 @@ class Token {
     }
 
     /**
-     * True if immediately preceeded by newline
+     * True if immediately preceded by newline
      */
     public boolean isNewLine() {
         return newLine;

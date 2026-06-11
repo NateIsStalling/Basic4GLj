@@ -2,7 +2,8 @@ package com.basic4gl.compiler;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-import com.basic4gl.compiler.Token.TokenType;
+import com.basic4gl.compiler.util.Token;
+import com.basic4gl.compiler.util.Token.TokenType;
 import com.basic4gl.runtime.HasErrorState;
 import com.basic4gl.runtime.types.BasicValType;
 import java.util.*;
