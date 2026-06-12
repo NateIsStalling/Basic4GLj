@@ -2,7 +2,7 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.util.IFileManager;
-import com.basic4gl.runtime.util.Mutable;
+import com.basic4gl.language.core.internal.Mutable;
 import java.io.File;
 import java.util.Vector;
 import javax.swing.*;

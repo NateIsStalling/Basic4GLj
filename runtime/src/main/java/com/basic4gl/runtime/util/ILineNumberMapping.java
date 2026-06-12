@@ -1,4 +1,5 @@
 package com.basic4gl.runtime.util;
+import com.basic4gl.language.core.internal.Mutable;
 
 /**
  * Used to map line numbers in source files to line numbers of the main file

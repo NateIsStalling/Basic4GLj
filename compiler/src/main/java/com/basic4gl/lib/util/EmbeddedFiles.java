@@ -14,7 +14,6 @@ import java.util.Map;
  */
 public class EmbeddedFiles {
     private String parentDirectory; // Parent directory
-    //    private Map<String,EmbeddedFile> files = new HashMap<>();
 
     private final Map<String, File> tempFiles = new HashMap<>();
 

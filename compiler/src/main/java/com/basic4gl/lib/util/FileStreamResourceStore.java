@@ -1,6 +1,6 @@
 package com.basic4gl.lib.util;
 
-import com.basic4gl.runtime.util.PointerResourceStore;
+import com.basic4gl.language.core.runtime.PointerResourceStore;
 
 public class FileStreamResourceStore extends PointerResourceStore<FileStream> {
     @Override

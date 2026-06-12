@@ -5,7 +5,7 @@ package com.basic4gl.compiler;
 	Basic4GL compiler pre-processor.
 */
 
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import com.basic4gl.compiler.util.ISourceFile;
 import com.basic4gl.compiler.util.ISourceFileServer;

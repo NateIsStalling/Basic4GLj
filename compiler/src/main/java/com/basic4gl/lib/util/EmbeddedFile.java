@@ -1,6 +1,6 @@
 package com.basic4gl.lib.util;
 
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import java.io.FileInputStream;
 import java.nio.ByteBuffer;

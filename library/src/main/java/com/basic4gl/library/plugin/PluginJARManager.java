@@ -1,7 +1,12 @@
 package com.basic4gl.library.plugin;
 
-import com.basic4gl.runtime.plugin.*;
-import com.basic4gl.runtime.util.Streaming;
+import com.basic4gl.language.core.util.Streaming;
+import com.basic4gl.language.spi.PlatformMetadataPolicy;
+import com.basic4gl.language.spi.PluginLibrary;
+import com.basic4gl.language.spi.PluginManager;
+import com.basic4gl.language.spi.PluginVersion;
+import com.basic4gl.language.spi.PluginSharedInterface;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;

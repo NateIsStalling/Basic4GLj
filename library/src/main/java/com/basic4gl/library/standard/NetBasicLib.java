@@ -1,9 +1,9 @@
 package com.basic4gl.library.standard;
 
 import static com.basic4gl.library.netlib4games.NetLogger.initDebugNetLogger;
-import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
-import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.types.BasicValType.VTP_INT;
+import static com.basic4gl.language.core.types.BasicValType.VTP_STRING;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.lib.util.FileStreamResourceStore;
@@ -17,9 +17,9 @@ import com.basic4gl.library.standard.net.NetConnectionStore;
 import com.basic4gl.library.standard.net.NetMessageStream;
 import com.basic4gl.library.standard.net.NetServerStore;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.types.ParamTypeList;
+import com.basic4gl.language.core.types.Constant;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ParamTypeList;
 import com.basic4gl.runtime.util.Function;
 import java.io.*;
 import java.net.DatagramPacket;

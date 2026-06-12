@@ -1,8 +1,8 @@
 package com.basic4gl.compiler;
 
 
-import com.basic4gl.runtime.util.Streamable;
-import com.basic4gl.runtime.util.Streaming;
+import com.basic4gl.language.core.util.Streamable;
+import com.basic4gl.language.core.util.Streaming;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

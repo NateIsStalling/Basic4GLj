@@ -4,7 +4,7 @@ import static com.basic4gl.compiler.types.LanguageSyntax.*;
 
 import com.basic4gl.compiler.types.FunctionType;
 import com.basic4gl.compiler.types.LanguageSyntax;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import com.basic4gl.compiler.FlowControl.FlowControlType;
 import com.basic4gl.compiler.types.OperType;
@@ -14,15 +14,16 @@ import com.basic4gl.compiler.util.Token.TokenType;
 import com.basic4gl.compiler.util.*;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.runtime.*;
-import com.basic4gl.runtime.plugin.ExtendedFunctionSpecification;
-import com.basic4gl.runtime.plugin.PluginManager;
+import com.basic4gl.language.core.runtime.Value;
+import com.basic4gl.language.core.types.*;
+import com.basic4gl.language.spi.ExtendedFunctionSpecification;
+import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.runtime.stackframe.RuntimeFunction;
 import com.basic4gl.runtime.stackframe.UserFunc;
 import com.basic4gl.runtime.stackframe.UserFuncPrototype;
-import com.basic4gl.runtime.types.*;
 import com.basic4gl.runtime.util.Function;
-import com.basic4gl.runtime.util.Mutable;
-import com.basic4gl.runtime.util.Streaming;
+import com.basic4gl.language.core.internal.Mutable;
+import com.basic4gl.language.core.util.Streaming;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -1959,9 +1960,9 @@ public class TomBasicCompiler extends HasErrorState {
             while (token.getText().equals("(") || foundComma) {
 
                 // Room for one more dimension?
-                if (type.get().arrayLevel >= TomVM.ARRAY_MAX_DIMENSIONS) {
+                if (type.get().arrayLevel >= ArrayConstants.ARRAY_MAX_DIMENSIONS) {
                     setError("Arrays cannot have more than "
-                            + String.valueOf(TomVM.ARRAY_MAX_DIMENSIONS)
+                            + String.valueOf(ArrayConstants.ARRAY_MAX_DIMENSIONS)
                             + " dimensions.");
                     return false;
                 }
@@ -5475,9 +5476,9 @@ public class TomBasicCompiler extends HasErrorState {
             while (token.getText().equals("(")) {
 
                 // Room for one more dimension?
-                if (type.arrayLevel >= TomVM.ARRAY_MAX_DIMENSIONS) {
+                if (type.arrayLevel >= ArrayConstants.ARRAY_MAX_DIMENSIONS) {
                     setError((String) "Arrays cannot have more than "
-                            + String.valueOf(TomVM.ARRAY_MAX_DIMENSIONS)
+                            + String.valueOf(ArrayConstants.ARRAY_MAX_DIMENSIONS)
                             + " dimensions.");
                     return false;
                 }

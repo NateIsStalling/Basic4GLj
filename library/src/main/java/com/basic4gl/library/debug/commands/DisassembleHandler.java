@@ -1,6 +1,6 @@
 package com.basic4gl.library.debug.commands;
 
-import static com.basic4gl.runtime.types.OpCode.*;
+import static com.basic4gl.language.core.types.OpCode.*;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
@@ -11,10 +11,10 @@ import com.basic4gl.debug.protocol.types.Source;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.BasicValType;
-import com.basic4gl.runtime.types.OpCode;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.OpCode;
 import com.basic4gl.runtime.util.ILineNumberMapping;
-import com.basic4gl.runtime.util.Mutable;
+import com.basic4gl.language.core.internal.Mutable;
 import com.google.gson.Gson;
 import java.util.stream.IntStream;
 import javax.websocket.Session;

@@ -1,7 +1,7 @@
 package com.basic4gl.lib.util;
 
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.FunctionSpecification;
+import com.basic4gl.language.core.types.Constant;
+import com.basic4gl.language.core.types.FunctionSpecification;
 import java.util.HashMap;
 import java.util.Map;
 

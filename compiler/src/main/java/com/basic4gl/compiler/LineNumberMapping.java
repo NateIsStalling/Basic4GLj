@@ -2,7 +2,7 @@ package com.basic4gl.compiler;
 
 import com.basic4gl.compiler.util.SourcePosition;
 import com.basic4gl.runtime.util.ILineNumberMapping;
-import com.basic4gl.runtime.util.Mutable;
+import com.basic4gl.language.core.internal.Mutable;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;

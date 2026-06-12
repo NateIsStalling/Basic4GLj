@@ -3,25 +3,22 @@
 
 package com.basic4gl.library.standard;
 
-import static com.basic4gl.runtime.types.BasicValType.*;
-import static com.basic4gl.runtime.types.OpCode.*;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.types.BasicValType.*;
+import static com.basic4gl.language.core.types.OpCode.*;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.compiler.util.IVMDriverAccess;
+import com.basic4gl.language.core.runtime.Value;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.CodeBlock;
 import com.basic4gl.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.Value;
 import com.basic4gl.runtime.core.standard.IB4GLCompiler;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.types.ParamTypeList;
-import com.basic4gl.runtime.types.ValType;
+import com.basic4gl.language.core.types.*;
 import com.basic4gl.runtime.util.Function;
-import com.basic4gl.runtime.util.Mutable;
+import com.basic4gl.language.core.internal.Mutable;
 import java.io.*;
 import java.nio.IntBuffer;
 import java.util.*;

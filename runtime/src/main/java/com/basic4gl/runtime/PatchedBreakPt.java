@@ -1,6 +1,6 @@
 package com.basic4gl.runtime;
 
-import com.basic4gl.runtime.types.OpCode;
+import com.basic4gl.language.core.types.OpCode;
 
 public class PatchedBreakPt {
 

@@ -1,13 +1,17 @@
 package com.basic4gl.runtime;
 
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
-import com.basic4gl.runtime.VariableCollection.Variable;
-import com.basic4gl.runtime.plugin.Basic4GLRuntime;
-import com.basic4gl.runtime.plugin.PluginManager;
+import com.basic4gl.language.core.internal.Mutable;
+import com.basic4gl.language.core.runtime.*;
+import com.basic4gl.language.core.types.*;
+import com.basic4gl.language.core.util.Streamable;
+import com.basic4gl.language.core.types.VariableCollection.Variable;
+import com.basic4gl.language.core.util.Streaming;
+import com.basic4gl.language.spi.Basic4GLRuntime;
+import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.runtime.plugin.TomVMPluginAdapter;
 import com.basic4gl.runtime.stackframe.*;
-import com.basic4gl.runtime.types.*;
 import com.basic4gl.runtime.util.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -31,7 +35,6 @@ public class TomVM extends HasErrorState implements Streamable {
     public static final int MAX_STACK = 250000;
 
     public static final int DATA_TO_STRING_MAX_CHARS = 800; // Any more gets annoying...
-    public static final int ARRAY_MAX_DIMENSIONS = 10; // Maximum dimensions in an array
 
     public static final String STREAM_HEADER = "Basic4GL stream";
     public static final int STREAM_VERSION = 3;

@@ -7,3 +7,7 @@ include 'debugServer'
 include 'debugProtocol'
 include 'plugin'
 
+
+include 'language-core'
+include 'language-spi'
+include 'language-server'

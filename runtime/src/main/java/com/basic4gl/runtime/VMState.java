@@ -1,6 +1,6 @@
 package com.basic4gl.runtime;
 
-import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
+import com.basic4gl.language.core.runtime.*;
 
 /**
  * Used to save virtual machine state.

@@ -1,7 +1,7 @@
 package com.basic4gl.library.standard.net;
 
 import com.basic4gl.library.netlib4games.udp.NetListenLowUDP;
-import com.basic4gl.runtime.util.PointerResourceStore;
+import com.basic4gl.language.core.runtime.PointerResourceStore;
 
 /**
  * Stores NetListenLow network servers.

@@ -2,7 +2,7 @@ package com.basic4gl.compiler;
 
 
 import com.basic4gl.compiler.types.OperType;
-import com.basic4gl.runtime.types.OpCode;
+import com.basic4gl.language.core.types.OpCode;
 
 /**
  * Used for tracking which operators are about to be applied to operands.
