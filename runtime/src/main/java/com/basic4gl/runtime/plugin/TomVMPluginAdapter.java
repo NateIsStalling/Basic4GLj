@@ -2,10 +2,11 @@ package com.basic4gl.runtime.plugin;
 
 import static com.basic4gl.language.core.types.ArrayConstants.ARRAY_MAX_DIMENSIONS;
 
+import com.basic4gl.language.core.extensions.Basic4GLRuntime;
 import com.basic4gl.language.core.internal.Assert;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
-import com.basic4gl.language.core.runtime.Basic4GLLongRunningFunction;
+import com.basic4gl.language.core.extensions.Basic4GLLongRunningFunction;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.language.spi.*;

@@ -1,4 +1,4 @@
-package com.basic4gl.language.core.runtime;
+package com.basic4gl.language.core.extensions;
 
 /**
  * Interface to a BASIC function that suspends Basic4GL execution until it completes.

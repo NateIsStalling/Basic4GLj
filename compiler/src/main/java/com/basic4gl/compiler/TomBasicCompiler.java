@@ -12,17 +12,18 @@ import com.basic4gl.compiler.util.*;
 import com.basic4gl.compiler.util.RollbackPoint;
 import com.basic4gl.compiler.util.Token.TokenType;
 import com.basic4gl.language.core.internal.Mutable;
-import com.basic4gl.language.core.runtime.Value;
+import com.basic4gl.language.core.runtime.*;
+import com.basic4gl.language.core.streaming.ProgramStreamable;
 import com.basic4gl.language.core.streaming.Streaming;
 import com.basic4gl.language.core.types.*;
 import com.basic4gl.language.spi.ExtendedFunctionSpecification;
 import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.runtime.*;
-import com.basic4gl.runtime.stackframe.RuntimeFunction;
-import com.basic4gl.runtime.stackframe.UserFunc;
-import com.basic4gl.runtime.stackframe.UserFuncPrototype;
-import com.basic4gl.runtime.util.Function;
+import com.basic4gl.language.core.stackframe.RuntimeFunction;
+import com.basic4gl.language.core.stackframe.UserFunc;
+import com.basic4gl.language.core.stackframe.UserFuncPrototype;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -33,7 +34,7 @@ import java.util.*;
  * Basic4GL v2 language compiler.
  * Used to compile source code in BASIC language to TomVM Op codes.
  */
-public class TomBasicCompiler extends HasErrorState {
+public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErrorState {
     static final LanguageSyntax DEFAULT_SYNTAX = LS_BASIC4GL;
 
     /**
@@ -43,7 +44,7 @@ public class TomBasicCompiler extends HasErrorState {
     static final int TC_MAXOVERLOADEDFUNCTIONS = 256;
 
     // Virtual machine
-    private final TomVM vm;
+    private final ProgramStreamable vm;
 
     // Parser
     private final Parser parser;
@@ -529,7 +530,7 @@ public class TomBasicCompiler extends HasErrorState {
 
                 // Find instruction
                 assertTrue(jump.getJumpInstruction() < vm.getInstructionCount());
-                Instruction instr = vm.getInstruction(jump.getJumpInstruction());
+                com.basic4gl.language.core.runtime.Instruction instr = vm.getInstruction(jump.getJumpInstruction());
 
                 // Point token to goto instruction, so that it will be displayed
                 // if there is an error.
@@ -551,7 +552,7 @@ public class TomBasicCompiler extends HasErrorState {
 
                 // Find instruction
                 assertTrue(jump.getJumpInstruction() < vm.getInstructionCount());
-                Instruction instr = vm.getInstruction(jump.getJumpInstruction());
+                com.basic4gl.language.core.runtime.Instruction instr = vm.getInstruction(jump.getJumpInstruction());
 
                 // Point token to reset instruction, so that it will be
                 // displayed
@@ -612,7 +613,8 @@ public class TomBasicCompiler extends HasErrorState {
         return isBuiltinFunction(name) || this.plugins.isPluginFunction(name);
     }
 
-    public TomVM getVM() {
+    public ProgramStreamable getVM() {
+        //TODO fix this!
         return vm;
     }
 
@@ -4919,41 +4921,17 @@ public class TomBasicCompiler extends HasErrorState {
         // Add "end program" opcode, so we can safely evaluate it
         addInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
 
-        // Setup virtual machine to execute expression
-        // Note: Expressions can't branch or loop, and it's very difficult to
-        // write one that evaluates to a large number of op-codes.
-        // Therefore we won't worry
-        // about processing windows messages or checking for pause state etc.
-        vm.clearError();
-        vm.gotoInstruction(expressionStart);
-        try {
-            do {
-                vm.continueVM(1000);
-            } while (!vm.hasError() && !vm.isDone());
-        } catch (Exception e) {
-            setError("Error evaluating constant expression");
+        Register expressionResult = vm.evaluateExpression(expressionStart);
+        if (expressionResult == null) {
             return false;
         }
-        if (vm.hasError()) {
-            setError("Error evaluating constant expression");
-            return false;
-        }
-
-        // Now we have the result type of the constant expression,
-        // AND the virtual machine has its value stored in the register.
-
-        // Roll back all the expression op-codes
-        vm.gotoInstruction(0);
-        vm.rollbackProgram(expressionStart);
-
         // Set return values
         basictype.set(regType.basicType);
         if (basictype.get() == BasicValType.VTP_STRING) {
-            stringResult.set(vm.getRegString());
+            stringResult.set(expressionResult.getStringValue());
         } else {
-            result.set(vm.getReg());
+            result.set(expressionResult.getValue());
         }
-
         return true;
     }
 

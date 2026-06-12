@@ -5,10 +5,11 @@ import static com.basic4gl.language.core.types.BasicValType.VTP_STRING;
 import static com.basic4gl.lib.util.FileOpener.ERROR_DIRECTORY_ALREADY_EXISTS;
 
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.*;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.util.Function;
+import com.basic4gl.language.core.runtime.Function;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -413,7 +414,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
 
     // Pre-run initialisation
     public final class Init implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Clear error state
             lastError = "";
@@ -422,19 +423,19 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapOpenFileRead implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(internalOpenFileRead(vm.getStringParam(1)));
         }
     }
 
     public final class WrapOpenFileWrite implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(internalOpenFileWrite(vm.getStringParam(1)));
         }
     }
 
     public final class WrapCloseFile implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int handle = vm.getIntParam(1);
             if (handle > 0 && fileStreams.isIndexStored(handle)) {
                 fileStreams.free(handle);
@@ -446,7 +447,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapWriteChar implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!getOutputStream(vm.getIntParam(2))) {
                 return;
             }
@@ -466,7 +467,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapWriteString implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!getOutputStream(vm.getIntParam(2))) {
                 return;
             }
@@ -487,7 +488,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapWriteLine implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!getOutputStream(vm.getIntParam(2))) {
                 return;
             }
@@ -508,7 +509,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapWriteByte implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!getOutputStream(vm.getIntParam(2))) {
                 return;
             }
@@ -526,7 +527,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapWriteWord implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!getOutputStream(vm.getIntParam(2))) {
                 return;
             }
@@ -547,7 +548,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapWriteInt implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!getOutputStream(vm.getIntParam(2))) {
                 return;
             }
@@ -568,7 +569,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapWriteFloat implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!getOutputStream(vm.getIntParam(2))) {
                 return;
             }
@@ -589,7 +590,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapWriteDouble implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!getOutputStream(vm.getIntParam(2))) {
                 return;
             }
@@ -610,7 +611,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapReadLine implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegString("");
             StringBuilder regString = new StringBuilder();
             if (!getInputStream(vm.getIntParam(1))) {
@@ -652,7 +653,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapReadChar implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegString("");
             if (!getInputStream(vm.getIntParam(1))) {
                 return;
@@ -674,7 +675,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapReadByte implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(0);
             if (!getInputStream(vm.getIntParam(1))) {
                 return;
@@ -696,7 +697,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapReadWord implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(0);
             if (!getInputStream(vm.getIntParam(1))) {
                 return;
@@ -723,7 +724,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapReadInt implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(0);
             if (!getInputStream(vm.getIntParam(1))) {
                 return;
@@ -750,7 +751,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapReadFloat implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(0);
             if (!getInputStream(vm.getIntParam(1))) {
                 return;
@@ -777,7 +778,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapReadDouble implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(0);
             if (!getInputStream(vm.getIntParam(1))) {
                 return;
@@ -804,7 +805,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapSeek implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!getStream(vm.getIntParam(2))) {
                 return;
             }
@@ -827,7 +828,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapReadText implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Read a string of non whitespace tokens
             if (!getInputStream(vm.getIntParam(2))) {
@@ -877,7 +878,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapFindFirstFile implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Close any previous find
             closeFind();
@@ -939,7 +940,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapFindNextFile implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Return data
             if (findFileHandle != -1 && findFileCollection != null && findFileHandle < findFileCollection.size()) {
@@ -953,13 +954,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapFindClose implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             closeFind();
         }
     }
 
     public final class WrapDeleteFile implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             String filename = vm.getStringParam(1);
             if (files.delete(filename, isSandboxMode())) {
                 lastError = "";
@@ -972,13 +973,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapFileError implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegString(lastError);
         }
     }
 
     public final class WrapEndOfFile implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(-1);
             if (!getStream(vm.getIntParam(1))) {
                 return;
@@ -997,7 +998,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapOpenAppDataRead implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg()
                     .setIntVal(internalOpenAppDataRead(
                             vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));
@@ -1005,7 +1006,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapOpenAppDataWrite implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg()
                     .setIntVal(internalOpenAppDataWrite(
                             vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));

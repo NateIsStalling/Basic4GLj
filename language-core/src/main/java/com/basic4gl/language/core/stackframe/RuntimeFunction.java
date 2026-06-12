@@ -1,4 +1,4 @@
-package com.basic4gl.runtime.stackframe;
+package com.basic4gl.language.core.stackframe;
 
 import com.basic4gl.language.core.streaming.Streamable;
 import com.basic4gl.language.core.streaming.Streaming;

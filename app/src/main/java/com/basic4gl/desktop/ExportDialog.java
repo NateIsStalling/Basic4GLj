@@ -27,7 +27,6 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChangeListener {
     private final TomBasicCompiler compiler;
     private final Preprocessor preprocessor;
-    private final TomVM vm;
     private final Vector<FileEditor> fileEditors;
 
     private final JDialog dialog;
@@ -61,7 +60,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
         this.compiler = compiler;
         this.preprocessor = preprocessor;
-        vm = this.compiler.getVM();
+
         fileEditors = editors;
         this.exportBaseDirectory = FileUtil.separatorsToSystem(exportBaseDirectory);
 

@@ -9,7 +9,7 @@ import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.OpCode;
 import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.VMState;
+import com.basic4gl.language.core.runtime.VMState;
 import com.google.gson.Gson;
 import javax.websocket.Session;
 

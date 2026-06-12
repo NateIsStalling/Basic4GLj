@@ -5,7 +5,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 import com.basic4gl.lib.util.FileOpener;
 import com.basic4gl.library.desktopgl.util.GLUtil;
-import com.basic4gl.runtime.HasErrorState;
+import com.basic4gl.language.core.runtime.HasErrorState;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;

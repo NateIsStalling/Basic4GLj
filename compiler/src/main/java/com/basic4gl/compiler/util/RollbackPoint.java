@@ -10,18 +10,18 @@ package com.basic4gl.compiler.util;
  */
 public class RollbackPoint {
 
-    private com.basic4gl.runtime.RollbackPoint vmRollback;
+    private com.basic4gl.language.core.runtime.RollbackPoint vmRollback;
 
     private int runtimeFunctionCount;
 
     /**
      * Virtual machine rollback
      */
-    public com.basic4gl.runtime.RollbackPoint getVmRollback() {
+    public com.basic4gl.language.core.runtime.RollbackPoint getVmRollback() {
         return vmRollback;
     }
 
-    public void setVmRollback(com.basic4gl.runtime.RollbackPoint vmRollback) {
+    public void setVmRollback(com.basic4gl.language.core.runtime.RollbackPoint vmRollback) {
         this.vmRollback = vmRollback;
     }
 

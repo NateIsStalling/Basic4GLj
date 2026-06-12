@@ -4,15 +4,18 @@ import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
-import com.basic4gl.language.core.runtime.Basic4GLLongRunningFunction;
-import com.basic4gl.language.core.streaming.Streamable;
+import com.basic4gl.language.core.extensions.Basic4GLLongRunningFunction;
+import com.basic4gl.language.core.stackframe.ProtectedStackRange;
+import com.basic4gl.language.core.stackframe.StackDestructor;
+import com.basic4gl.language.core.stackframe.UserFunc;
+import com.basic4gl.language.core.stackframe.UserFuncStackFrame;
+import com.basic4gl.language.core.streaming.ProgramStreamable;
 import com.basic4gl.language.core.streaming.Streaming;
 import com.basic4gl.language.core.types.*;
 import com.basic4gl.language.core.types.VariableCollection.Variable;
-import com.basic4gl.language.spi.Basic4GLRuntime;
+import com.basic4gl.language.core.extensions.Basic4GLRuntime;
 import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.runtime.plugin.TomVMPluginAdapter;
-import com.basic4gl.runtime.stackframe.*;
 import com.basic4gl.runtime.util.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -24,7 +27,7 @@ import java.util.Vector;
 /**
  * Virtual machine for Basic4GL
  */
-public class TomVM extends HasErrorState implements Streamable {
+public class TomVM extends HasErrorState implements VM, ProgramStreamable {
     // Constants
 
     public static final int VM_STEPS = 1000;
@@ -130,7 +133,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
     private final Store<String> stringStore;
     private final List<Resources> resources;
-    private final Vector<UserFuncPrototype> userFunctionPrototypes;
+    private final Vector<com.basic4gl.language.core.stackframe.UserFuncPrototype> userFunctionPrototypes;
     private final Vector<UserFunc> userFunctions;
 
     // Program data
@@ -388,7 +391,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Find current stack frame
                     assertTrue(currentUserFrame >= 0);
                     assertTrue(currentUserFrame < userCallStack.size());
-                    UserFuncStackFrame currentFrame = userCallStack.get(currentUserFrame);
+                    com.basic4gl.language.core.stackframe.UserFuncStackFrame currentFrame = userCallStack.get(currentUserFrame);
 
                     // Find variable
                     int index = instruction.value.getIntVal();
@@ -583,9 +586,9 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Find current stack frame
                     assertTrue(currentUserFrame >= 0);
                     assertTrue(currentUserFrame < userCallStack.size());
-                    UserFuncStackFrame currentFrame = userCallStack.get(currentUserFrame);
+                    com.basic4gl.language.core.stackframe.UserFuncStackFrame currentFrame = userCallStack.get(currentUserFrame);
                     UserFunc userFunc = userFunctions.get(currentFrame.userFuncIndex);
-                    UserFuncPrototype prototype = userFunctionPrototypes.get(userFunc.prototypeIndex);
+                    com.basic4gl.language.core.stackframe.UserFuncPrototype prototype = userFunctionPrototypes.get(userFunc.prototypeIndex);
 
                     // Find variable type
                     int index = instruction.value.getIntVal();
@@ -951,8 +954,8 @@ public class TomVM extends HasErrorState implements Streamable {
                     }
 
                     // Push stack frame, with return address
-                    userCallStack.add(new UserFuncStackFrame());
-                    UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                    userCallStack.add(new com.basic4gl.language.core.stackframe.UserFuncStackFrame());
+                    com.basic4gl.language.core.stackframe.UserFuncStackFrame stackFrame = userCallStack.lastElement();
                     stackFrame.initForGosub(ip + 1);
 
                     // Jump to subroutine
@@ -1010,8 +1013,8 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Create and initialize stack frame
                     int funcIndex = instruction.value.getIntVal();
-                    userCallStack.add(new UserFuncStackFrame());
-                    UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                    userCallStack.add(new com.basic4gl.language.core.stackframe.UserFuncStackFrame());
+                    com.basic4gl.language.core.stackframe.UserFuncStackFrame stackFrame = userCallStack.lastElement();
                     stackFrame.initForUserFunction(
                             userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex), funcIndex);
 
@@ -1045,7 +1048,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     // (+1 is so that we can use 0 for null)
                     int funcIndex = reg.getIntVal() - 1;
 
-                    UserFuncStackFrame stackFrame = new UserFuncStackFrame();
+                    com.basic4gl.language.core.stackframe.UserFuncStackFrame stackFrame = new com.basic4gl.language.core.stackframe.UserFuncStackFrame();
                     userCallStack.add(stackFrame);
 
                     stackFrame.initForUserFunction(
@@ -1074,9 +1077,9 @@ public class TomVM extends HasErrorState implements Streamable {
                     int funcIndex = reg.getIntVal() - 1;
 
                     // Check function prototype is compatible with prototype referenced by instruction
-                    UserFuncPrototype srcProto =
+                    com.basic4gl.language.core.stackframe.UserFuncPrototype srcProto =
                             userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex);
-                    UserFuncPrototype dstProto = userFunctionPrototypes.get(instruction.value.getIntVal());
+                    com.basic4gl.language.core.stackframe.UserFuncPrototype dstProto = userFunctionPrototypes.get(instruction.value.getIntVal());
 
                     if (!srcProto.isCompatibleWith(dstProto)) {
                         setError(ERR_FUNC_PTR_INCOMPATIBLE);
@@ -1120,8 +1123,8 @@ public class TomVM extends HasErrorState implements Streamable {
                     }
 
                     // Create and initialize stack frame
-                    userCallStack.add(new UserFuncStackFrame());
-                    UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                    userCallStack.add(new com.basic4gl.language.core.stackframe.UserFuncStackFrame());
+                    com.basic4gl.language.core.stackframe.UserFuncStackFrame stackFrame = userCallStack.lastElement();
                     stackFrame.initForUserFunction(
                             userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex), funcIndex);
 
@@ -1137,7 +1140,7 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_CALL_USER_FUNC: {
 
                     // Call user defined function
-                    UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                    com.basic4gl.language.core.stackframe.UserFuncStackFrame stackFrame = userCallStack.lastElement();
                     UserFunc userFunc = userFunctions.get(stackFrame.userFuncIndex);
 
                     // Make active
@@ -1154,7 +1157,7 @@ public class TomVM extends HasErrorState implements Streamable {
                     assertTrue(!userCallStack.isEmpty());
 
                     // Find current stack frame
-                    UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                    com.basic4gl.language.core.stackframe.UserFuncStackFrame stackFrame = userCallStack.lastElement();
                     assertTrue(stackFrame.userFuncIndex >= 0);
 
                     // Restore previous stack frame data
@@ -1205,8 +1208,8 @@ public class TomVM extends HasErrorState implements Streamable {
                             }
 
                             // Push stack frame, with return address
-                            userCallStack.add(new UserFuncStackFrame());
-                            UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                            userCallStack.add(new com.basic4gl.language.core.stackframe.UserFuncStackFrame());
+                            com.basic4gl.language.core.stackframe.UserFuncStackFrame stackFrame = userCallStack.lastElement();
                             stackFrame.initForGosub(ip + 1);
 
                             // Jump to subroutine
@@ -2517,6 +2520,39 @@ public class TomVM extends HasErrorState implements Streamable {
         return codeBlocks.lastElement();
     }
 
+    @Override
+    public Register evaluateExpression(int expressionStart) {
+
+        // Setup virtual machine to execute expression
+        // Note: Expressions can't branch or loop, and it's very difficult to
+        // write one that evaluates to a large number of op-codes.
+        // Therefore we won't worry
+        // about processing windows messages or checking for pause state etc.
+        clearError();
+        gotoInstruction(expressionStart);
+        try {
+            do {
+                continueVM(1000);
+            } while (!hasError() && !isDone());
+        } catch (Exception e) {
+            setError("Error evaluating constant expression");
+            return null;
+        }
+        if (hasError()) {
+            setError("Error evaluating constant expression");
+            return null;
+        }
+
+        // Now we have the result type of the constant expression,
+        // AND the virtual machine has its value stored in the register.
+
+        // Roll back all the expression op-codes
+        gotoInstruction(0);
+        rollbackProgram(expressionStart);
+
+        return new Register(getReg(), getRegString());
+    }
+
     public int getCurrentCodeBlockIndex() {
         assertTrue(!codeBlocks.isEmpty());
         return codeBlocks.size() - 1;
@@ -2670,7 +2706,7 @@ public class TomVM extends HasErrorState implements Streamable {
         if (count != -1) {
             userFunctionPrototypes.setSize(count);
             for (i = 0; i < count; i++) {
-                userFunctionPrototypes.set(i, new UserFuncPrototype());
+                userFunctionPrototypes.set(i, new com.basic4gl.language.core.stackframe.UserFuncPrototype());
                 userFunctionPrototypes.get(i).streamIn(stream);
             }
         }
@@ -2740,6 +2776,11 @@ public class TomVM extends HasErrorState implements Streamable {
         return ip;
     }
 
+    @Override
+    public ProgramStreamable stream() {
+        return this;
+    }
+
     public Value getReg() {
         return reg;
     }
@@ -2798,7 +2839,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
 
     // User functions
-    public Vector<UserFuncPrototype> getUserFunctionPrototypes() {
+    public Vector<com.basic4gl.language.core.stackframe.UserFuncPrototype> getUserFunctionPrototypes() {
         return userFunctionPrototypes;
     }
 
@@ -2806,7 +2847,7 @@ public class TomVM extends HasErrorState implements Streamable {
         return userFunctions;
     }
 
-    public Vector<UserFuncStackFrame> getUserCallStack() {
+    public Vector<com.basic4gl.language.core.stackframe.UserFuncStackFrame> getUserCallStack() {
         return userCallStack;
     }
 

@@ -1,4 +1,4 @@
-package com.basic4gl.runtime.stackframe;
+package com.basic4gl.language.core.stackframe;
 
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 

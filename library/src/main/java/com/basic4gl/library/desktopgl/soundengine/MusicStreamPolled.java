@@ -5,7 +5,7 @@ import static com.basic4gl.library.desktopgl.soundengine.util.STBVorbisUtil.getV
 import static org.lwjgl.stb.STBVorbis.*;
 
 import com.basic4gl.library.desktopgl.soundengine.util.ALUtil;
-import com.basic4gl.runtime.HasErrorState;
+import com.basic4gl.language.core.runtime.HasErrorState;
 import java.io.File;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;

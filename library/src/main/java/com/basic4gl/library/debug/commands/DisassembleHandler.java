@@ -12,7 +12,7 @@ import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.OpCode;
 import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.Instruction;
+import com.basic4gl.language.core.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.util.ILineNumberMapping;
 import com.google.gson.Gson;

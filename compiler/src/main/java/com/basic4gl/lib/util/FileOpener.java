@@ -1,6 +1,6 @@
 package com.basic4gl.lib.util;
 
-import com.basic4gl.runtime.HasErrorState;
+import com.basic4gl.language.core.runtime.HasErrorState;
 import java.io.*;
 import java.net.URL;
 import java.nio.IntBuffer;

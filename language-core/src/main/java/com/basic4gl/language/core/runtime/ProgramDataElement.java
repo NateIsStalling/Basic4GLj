@@ -1,6 +1,5 @@
-package com.basic4gl.runtime;
+package com.basic4gl.language.core.runtime;
 
-import com.basic4gl.language.core.runtime.Value;
 import com.basic4gl.language.core.streaming.Streamable;
 import com.basic4gl.language.core.streaming.Streaming;
 import java.io.DataInputStream;
@@ -10,7 +9,7 @@ import java.io.IOException;
 /**
  * General purpose program data (as allocated with "DATA" statement in BASIC).
  */
-class ProgramDataElement implements Streamable {
+public class ProgramDataElement implements Streamable {
     private int basicType;
     private Value value;
 

@@ -1,4 +1,4 @@
-package com.basic4gl.runtime.stackframe;
+package com.basic4gl.language.core.stackframe;
 
 /**
  * Indicates a range of data on the stack protected from destruction.

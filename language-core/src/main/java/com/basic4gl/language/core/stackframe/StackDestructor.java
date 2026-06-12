@@ -1,4 +1,4 @@
-package com.basic4gl.runtime.stackframe;
+package com.basic4gl.language.core.stackframe;
 
 /**
  * Indicates data in the function or temp stack area that needs to be destroyed

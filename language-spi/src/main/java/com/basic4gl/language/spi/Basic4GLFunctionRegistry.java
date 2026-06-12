@@ -1,4 +1,5 @@
 package com.basic4gl.language.spi;
+import com.basic4gl.language.core.extensions.Basic4GLFunction;
 
 /**
  * Used to register functions to Basic4GL.

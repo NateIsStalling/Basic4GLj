@@ -1,6 +1,5 @@
-package com.basic4gl.language.spi;
+package com.basic4gl.language.core.extensions;
 
-import com.basic4gl.language.core.runtime.Basic4GLLongRunningFunction;
 import java.nio.ByteBuffer;
 
 /**

@@ -2,6 +2,7 @@ package com.basic4gl.library.desktopgl;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.language.core.runtime.ResourceStore;
+import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
@@ -11,7 +12,7 @@ import com.basic4gl.library.desktopgl.soundengine.Basic4GLSoundLibrary;
 import com.basic4gl.library.desktopgl.soundengine.Sound;
 import com.basic4gl.library.desktopgl.soundengine.SoundLibrary;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.util.Function;
+import com.basic4gl.language.core.runtime.Function;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     ////////////////////////////////////////////////////////////////////////////////
     //  Init function
     public final class InitLibFunction implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (library != null) {
                 library.reset();
             }
@@ -240,7 +241,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
     // region Runtime function wrappers
     public class WrapLoadSound implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (checkSoundEngine()) {
 
                 // Load sound file
@@ -259,7 +260,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public class WrapDeleteSound implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (checkSoundEngine()) {
                 int handle = vm.getIntParam(1);
                 if (handle > 0 && sounds.isIndexStored(handle)) {
@@ -270,7 +271,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public class WrapPlaySound implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (checkSoundEngine()) {
                 int handle = vm.getIntParam(1);
                 if (handle > 0 && sounds.isIndexStored(handle)) {
@@ -285,7 +286,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public class WrapPlaySound2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (checkSoundEngine()) {
                 int handle = vm.getIntParam(3);
                 if (handle > 0 && sounds.isIndexStored(handle)) {
@@ -302,7 +303,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public class WrapStopSounds implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (checkSoundEngine()) {
                 library.stopSounds();
             }
@@ -310,7 +311,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public class WrapPlayMusic implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (checkSoundEngine()) {
                 String filename = files.getFileAbsolutePath(vm.getStringParam(1));
                 library.playMusic(filename, 1, false);
@@ -319,7 +320,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public class WrapPlayMusic2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (checkSoundEngine()) {
                 String filename = files.getFileAbsolutePath(vm.getStringParam(3));
                 library.playMusic(filename, vm.getRealParam(2), vm.getIntParam(1) != 0);
@@ -328,7 +329,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public class WrapStopMusic implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (checkSoundEngine()) {
                 library.stopMusic();
             }
@@ -336,13 +337,13 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public class WrapMusicPlaying implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(checkSoundEngine() && library.isMusicPlaying() ? -1 : 0);
         }
     }
 
     public class WrapSetMusicVolume implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (checkSoundEngine()) {
                 library.setMusicVolume(vm.getRealParam(1));
             }
@@ -350,7 +351,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public class WrapSoundError implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (checkSoundEngine()) {
                 StringBuilder buffer = new StringBuilder();
                 library.getError(buffer);
@@ -362,7 +363,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public class WrapStopSoundVoice implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (checkSoundEngine()) {
                 library.stopSoundVoice(vm.getIntParam(1));
             }
