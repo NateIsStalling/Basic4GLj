@@ -1,4 +1,5 @@
 package com.basic4gl.runtime.util;
+
 import com.basic4gl.language.core.internal.Mutable;
 
 /**

@@ -1,18 +1,18 @@
 package com.basic4gl.library.standard;
 
-import static com.basic4gl.language.core.types.BasicValType.VTP_REAL;
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
+import static com.basic4gl.language.core.types.BasicValType.VTP_REAL;
 
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
-import com.basic4gl.runtime.TomVM;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
 import com.basic4gl.language.core.types.ParamTypeList;
 import com.basic4gl.language.core.types.ValType;
+import com.basic4gl.lib.util.FunctionLibrary;
+import com.basic4gl.lib.util.IAppSettings;
+import com.basic4gl.lib.util.IServiceCollection;
+import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.util.Function;
 import java.util.Arrays;
 import java.util.HashMap;

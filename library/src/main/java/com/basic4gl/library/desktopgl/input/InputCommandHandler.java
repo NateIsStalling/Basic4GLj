@@ -2,10 +2,10 @@ package com.basic4gl.library.desktopgl.input;
 
 import static org.lwjgl.system.windows.User32.*;
 
+import com.basic4gl.language.core.runtime.Basic4GLLongRunningFunction;
 import com.basic4gl.library.desktopgl.content.Content2DManager;
 import com.basic4gl.library.desktopgl.content.GLTextGrid;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.language.core.runtime.Basic4GLLongRunningFunction;
 
 public class InputCommandHandler implements Basic4GLLongRunningFunction {
     private TomVM vm;

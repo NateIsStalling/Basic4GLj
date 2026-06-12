@@ -1,8 +1,8 @@
 package com.basic4gl.library.desktopgl.util;
 
 import com.basic4gl.language.core.runtime.Data;
-import com.basic4gl.runtime.TomVM;
 import com.basic4gl.language.core.types.ValType;
+import com.basic4gl.runtime.TomVM;
 import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 

@@ -1,13 +1,13 @@
 package com.basic4gl.library.standard;
 
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.*;
-import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.runtime.TomVM;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
 import com.basic4gl.language.core.types.ParamTypeList;
+import com.basic4gl.lib.util.*;
+import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
+import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.util.Function;
 import java.util.HashMap;
 import java.util.List;

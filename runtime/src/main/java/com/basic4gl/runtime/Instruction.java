@@ -1,10 +1,10 @@
 package com.basic4gl.runtime;
 
 import com.basic4gl.language.core.runtime.Value;
-import com.basic4gl.language.core.types.BasicValType;
-import com.basic4gl.language.core.types.OpCode;
 import com.basic4gl.language.core.streaming.Streamable;
 import com.basic4gl.language.core.streaming.Streaming;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.OpCode;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

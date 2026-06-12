@@ -1,6 +1,5 @@
 package com.basic4gl.compiler;
 
-
 import com.basic4gl.compiler.types.OperType;
 import com.basic4gl.language.core.types.OpCode;
 

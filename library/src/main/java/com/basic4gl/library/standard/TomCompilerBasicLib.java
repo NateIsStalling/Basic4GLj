@@ -3,22 +3,22 @@
 
 package com.basic4gl.library.standard;
 
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
 import static com.basic4gl.language.core.types.BasicValType.*;
 import static com.basic4gl.language.core.types.OpCode.*;
-import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.compiler.util.IVMDriverAccess;
+import com.basic4gl.language.core.extensions.standard.IB4GLCompiler;
+import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.Value;
+import com.basic4gl.language.core.types.*;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.CodeBlock;
 import com.basic4gl.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.language.core.extensions.standard.IB4GLCompiler;
-import com.basic4gl.language.core.types.*;
 import com.basic4gl.runtime.util.Function;
-import com.basic4gl.language.core.internal.Mutable;
 import java.io.*;
 import java.nio.IntBuffer;
 import java.util.*;
@@ -28,6 +28,7 @@ import java.util.*;
  */
 public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDriverAccess {
     private static final String COMPILE_FILENAME_DEFAULT = "";
+
     @Override
     public Map<String, Constant> constants() {
         return null;

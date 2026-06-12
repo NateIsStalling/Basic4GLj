@@ -4,9 +4,8 @@ import com.basic4gl.language.core.streaming.Streaming;
 import com.basic4gl.language.spi.PlatformMetadataPolicy;
 import com.basic4gl.language.spi.PluginLibrary;
 import com.basic4gl.language.spi.PluginManager;
-import com.basic4gl.language.spi.PluginVersion;
 import com.basic4gl.language.spi.PluginSharedInterface;
-
+import com.basic4gl.language.spi.PluginVersion;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;

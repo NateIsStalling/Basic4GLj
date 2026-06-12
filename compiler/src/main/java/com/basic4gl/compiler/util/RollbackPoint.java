@@ -1,6 +1,5 @@
 package com.basic4gl.compiler.util;
 
-
 /**
  * Allows the compiler to rollback cleanly if an error occurs during
  * compilation. Used during runtime compilation to ensure the compiler

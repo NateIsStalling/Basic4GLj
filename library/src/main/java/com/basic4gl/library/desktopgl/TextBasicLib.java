@@ -1,13 +1,21 @@
 package com.basic4gl.library.desktopgl;
 
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
 import static com.basic4gl.library.desktopgl.content.GLSpriteEngine.DRAW_SPRITES_BEHIND;
 import static com.basic4gl.library.desktopgl.content.GLSpriteEngine.DRAW_SPRITES_INFRONT;
 import static com.basic4gl.library.desktopgl.content.GLTextGrid.DRAW_TEXT;
-import static com.basic4gl.language.core.internal.Assert.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.windows.User32.*;
 
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLText;
+import com.basic4gl.language.core.runtime.Basic4GLLongRunningFunction;
+import com.basic4gl.language.core.runtime.Data;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.Constant;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ParamTypeList;
+import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
@@ -17,15 +25,7 @@ import com.basic4gl.library.desktopgl.input.InputCommandHandler;
 import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
 import com.basic4gl.library.desktopgl.input.OpenGLMouse;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLText;
-import com.basic4gl.language.core.types.BasicValType;
-import com.basic4gl.language.core.types.Constant;
-import com.basic4gl.language.core.types.FunctionSpecification;
-import com.basic4gl.language.core.types.ParamTypeList;
-import com.basic4gl.language.core.types.ValType;
-import com.basic4gl.language.core.runtime.Basic4GLLongRunningFunction;
 import com.basic4gl.runtime.util.Function;
 import java.nio.IntBuffer;
 import java.util.*;

@@ -1,8 +1,8 @@
 package com.basic4gl.library.standard;
 
-import static com.basic4gl.lib.util.FileOpener.ERROR_DIRECTORY_ALREADY_EXISTS;
 import static com.basic4gl.language.core.types.BasicValType.VTP_INT;
 import static com.basic4gl.language.core.types.BasicValType.VTP_STRING;
+import static com.basic4gl.lib.util.FileOpener.ERROR_DIRECTORY_ALREADY_EXISTS;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.language.core.types.*;

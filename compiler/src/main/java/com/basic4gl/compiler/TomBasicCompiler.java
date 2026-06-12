@@ -1,29 +1,28 @@
 package com.basic4gl.compiler;
 
 import static com.basic4gl.compiler.types.LanguageSyntax.*;
-
-import com.basic4gl.compiler.types.FunctionType;
-import com.basic4gl.compiler.types.LanguageSyntax;
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import com.basic4gl.compiler.FlowControl.FlowControlType;
+import com.basic4gl.compiler.types.FunctionType;
+import com.basic4gl.compiler.types.LanguageSyntax;
 import com.basic4gl.compiler.types.OperType;
 import com.basic4gl.compiler.types.UserFunctionType;
+import com.basic4gl.compiler.util.*;
 import com.basic4gl.compiler.util.RollbackPoint;
 import com.basic4gl.compiler.util.Token.TokenType;
-import com.basic4gl.compiler.util.*;
-import com.basic4gl.lib.util.Library;
-import com.basic4gl.runtime.*;
+import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.Value;
+import com.basic4gl.language.core.streaming.Streaming;
 import com.basic4gl.language.core.types.*;
 import com.basic4gl.language.spi.ExtendedFunctionSpecification;
 import com.basic4gl.language.spi.PluginManager;
+import com.basic4gl.lib.util.Library;
+import com.basic4gl.runtime.*;
 import com.basic4gl.runtime.stackframe.RuntimeFunction;
 import com.basic4gl.runtime.stackframe.UserFunc;
 import com.basic4gl.runtime.stackframe.UserFuncPrototype;
 import com.basic4gl.runtime.util.Function;
-import com.basic4gl.language.core.internal.Mutable;
-import com.basic4gl.language.core.streaming.Streaming;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -2514,7 +2513,8 @@ public class TomBasicCompiler extends HasErrorState {
 
             // Special case, boolean operator.
             // Must convert to boolean first
-            if (o.getOperator().getType() == OperType.OT_BOOLOPERATOR || o.getOperator().getType() == OperType.OT_LAZYBOOLOPERATOR) {
+            if (o.getOperator().getType() == OperType.OT_BOOLOPERATOR
+                    || o.getOperator().getType() == OperType.OT_LAZYBOOLOPERATOR) {
                 compileConvert(BasicValType.VTP_INT);
             }
 
@@ -2552,7 +2552,8 @@ public class TomBasicCompiler extends HasErrorState {
 
                 // Can compare null to any pointer type. However, operator must
                 // be '=' or '<>'
-                if (o.getOperator().getOpCode() != OpCode.OP_OP_EQUAL && o.getOperator().getOpCode() != OpCode.OP_OP_NOT_EQUAL) {
+                if (o.getOperator().getOpCode() != OpCode.OP_OP_EQUAL
+                        && o.getOperator().getOpCode() != OpCode.OP_OP_NOT_EQUAL) {
                     setError("Operator cannot be applied to this data type");
                     return false;
                 }
@@ -2577,7 +2578,8 @@ public class TomBasicCompiler extends HasErrorState {
             } else if (regType.isFuncPtr() && reg2Type.isFuncPtr()) {
                 // Can compare function pointers to other function pointers with compatible prototypes.
                 // Operator must be '=' or '<>'.
-                if (o.getOperator().getOpCode() != OpCode.OP_OP_EQUAL && o.getOperator().getOpCode() != OpCode.OP_OP_NOT_EQUAL) {
+                if (o.getOperator().getOpCode() != OpCode.OP_OP_EQUAL
+                        && o.getOperator().getOpCode() != OpCode.OP_OP_NOT_EQUAL) {
                     setError("Operator cannot be applied to this data type");
                     return false;
                 }
@@ -2597,7 +2599,8 @@ public class TomBasicCompiler extends HasErrorState {
                 // Can compare 2 pointers. However operator must be '=' or '<>'
                 // and
                 // pointer types must be exactly the same
-                if (o.getOperator().getOpCode() != OpCode.OP_OP_EQUAL && o.getOperator().getOpCode() != OpCode.OP_OP_NOT_EQUAL) {
+                if (o.getOperator().getOpCode() != OpCode.OP_OP_EQUAL
+                        && o.getOperator().getOpCode() != OpCode.OP_OP_NOT_EQUAL) {
                     setError("Operator cannot be applied to this data type");
                     return false;
                 }
@@ -2620,7 +2623,8 @@ public class TomBasicCompiler extends HasErrorState {
                 if (reg2Type.basicType > highest) {
                     highest = reg2Type.basicType;
                 }
-                if (o.getOperator().getType() == OperType.OT_BOOLOPERATOR || o.getOperator().getType() == OperType.OT_LAZYBOOLOPERATOR) {
+                if (o.getOperator().getType() == OperType.OT_BOOLOPERATOR
+                        || o.getOperator().getType() == OperType.OT_LAZYBOOLOPERATOR) {
                     highest = BasicValType.VTP_INT;
                 }
                 if ((syntax == LS_TRADITIONAL || syntax == LS_TRADITIONAL_SUFFIX)
