@@ -12,6 +12,8 @@ repositories {
 dependencies {
     implementation fileTree(dir: "libs", include: "*.jar")
 
+    implementation project(":language-core")
+    implementation project(":language-spi")
     implementation project(":runtime")
 }
 

@@ -1,6 +1,6 @@
 package com.basic4gl.library.desktopgl.glfw;
 
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
 
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;

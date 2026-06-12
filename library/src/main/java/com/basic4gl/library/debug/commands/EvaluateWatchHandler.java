@@ -4,12 +4,12 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
 import com.basic4gl.debug.protocol.commands.EvaluateWatchCommand;
+import com.basic4gl.language.core.internal.Mutable;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.OpCode;
+import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.VMState;
-import com.basic4gl.runtime.types.BasicValType;
-import com.basic4gl.runtime.types.OpCode;
-import com.basic4gl.runtime.types.ValType;
-import com.basic4gl.runtime.util.Mutable;
+import com.basic4gl.language.core.runtime.VMState;
 import com.google.gson.Gson;
 import javax.websocket.Session;
 

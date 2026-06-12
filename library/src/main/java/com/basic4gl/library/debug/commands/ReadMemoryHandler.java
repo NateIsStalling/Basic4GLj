@@ -2,8 +2,8 @@ package com.basic4gl.library.debug.commands;
 
 import com.basic4gl.debug.protocol.callbacks.ReadMemoryCallback;
 import com.basic4gl.debug.protocol.commands.ReadMemoryCommand;
+import com.basic4gl.language.core.runtime.Value;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.Value;
 import com.google.gson.Gson;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

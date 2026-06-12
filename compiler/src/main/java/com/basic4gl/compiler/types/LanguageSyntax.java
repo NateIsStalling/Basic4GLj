@@ -25,4 +25,3 @@ public enum LanguageSyntax {
         return type;
     }
 }
-

@@ -1,9 +1,9 @@
 package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.runtime.types.BasicValType;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.types.ValType;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ValType;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import java.awt.*;
 import java.util.Vector;
@@ -97,10 +97,10 @@ public class ReferenceWindow {
                 break;
             case BasicValType.VTP_FUNC_PTR:
             case BasicValType.VTP_UNTYPED_FUNC_PTR:
-                result +=  "function";
+                result += "function";
                 break;
             case BasicValType.VTP_VOID:
-                result +=  "";
+                result += "";
                 break;
             default:
                 result += "???";
@@ -131,10 +131,10 @@ public class ReferenceWindow {
                 break;
             case BasicValType.VTP_FUNC_PTR:
             case BasicValType.VTP_UNTYPED_FUNC_PTR:
-                result +=  "function";
+                result += "function";
                 break;
             case BasicValType.VTP_VOID:
-                result +=  "";
+                result += "";
                 break;
             default:
                 result += "???";

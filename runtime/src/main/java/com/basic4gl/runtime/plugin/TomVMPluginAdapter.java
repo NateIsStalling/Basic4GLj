@@ -1,16 +1,16 @@
 package com.basic4gl.runtime.plugin;
 
-import static com.basic4gl.runtime.TomVM.ARRAY_MAX_DIMENSIONS;
-import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.*;
+import static com.basic4gl.language.core.types.ArrayConstants.ARRAY_MAX_DIMENSIONS;
 
-import com.basic4gl.runtime.Data;
+import com.basic4gl.language.core.extensions.Basic4GLRuntime;
+import com.basic4gl.language.core.internal.Assert;
+import com.basic4gl.language.core.internal.Mutable;
+import com.basic4gl.language.core.runtime.*;
+import com.basic4gl.language.core.extensions.Basic4GLLongRunningFunction;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.ValType;
+import com.basic4gl.language.spi.*;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.Value;
-import com.basic4gl.runtime.types.BasicValType;
-import com.basic4gl.runtime.types.ValType;
-import com.basic4gl.runtime.util.Assert;
-import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
-import com.basic4gl.runtime.util.Mutable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -300,37 +300,37 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
         int strIndex, len;
         String str;
         switch (type.getBaseType()) {
-            case PLUGIN_BASIC4GL_EXT_BYTE:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_BYTE:
                 // Copy Basic4GL int to C byte
                 cData.put((byte) value.getIntVal());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_WORD:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_WORD:
                 // Copy Basic4GL int to C word (int16_t)
                 cData.putChar((char) value.getIntVal());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_INT:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_INT:
                 // Copy Basic4GL int to C int
                 cData.putInt(value.getIntVal());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_INT64:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_INT64:
                 // Copy Basic4GL int to C 64bit integer (int64_t)
                 cData.putLong(value.getIntVal());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_FLOAT:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_FLOAT:
                 // Copy Basic4GL real to C float
                 cData.putFloat(value.getRealVal());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_DOUBLE:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_DOUBLE:
                 // Copy Basic4GL real to C double
                 cData.putDouble(value.getRealVal());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_STRING:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_STRING:
 
                 // Fetch string
                 strIndex = value.getIntVal();
@@ -355,7 +355,8 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
         Assert.assertTrue(type.getArrayLevel() == 0);
         Assert.assertTrue(type.getBaseType() < 0);
 
-        if (type.getBaseType() == PLUGIN_BASIC4GL_EXT_PADDING) cData.position(cData.position() + type.getStringSize());
+        if (type.getBaseType() == Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING)
+            cData.position(cData.position() + type.getStringSize());
         else {
             CValueFromBasicValue(type, cData, vm.getData().data().get(basicDataIndex.get()));
             basicDataIndex.set(basicDataIndex.get() + 1);
@@ -435,22 +436,22 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
 
         int strIndex;
         switch (type.getBaseType()) {
-            case PLUGIN_BASIC4GL_EXT_BYTE:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_BYTE:
                 // Copy C byte to Basic4GL int
                 value.setIntVal((int) cData.get());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_WORD:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_WORD:
                 // Copy Basic4GL int to C word (int16_t)
                 value.setIntVal((int) cData.getChar());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_INT:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_INT:
                 // Copy Basic4GL int to C int
                 value.setIntVal(cData.getInt());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_INT64:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_INT64:
                 // Copy Basic4GL int to C 64bit integer (int64_t)
                 // TODO review for casting/truncation errors;
                 //  original source looks like it has a potential bug with value.IntVal() = *((int64_t*)cData), where
@@ -458,17 +459,17 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
                 value.setIntVal((int) cData.getLong());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_FLOAT:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_FLOAT:
                 // Copy Basic4GL real to C float
                 value.setRealVal(cData.getFloat());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_DOUBLE:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_DOUBLE:
                 // Copy Basic4GL real to C double
                 value.setRealVal((float) cData.getDouble());
                 break;
 
-            case PLUGIN_BASIC4GL_EXT_STRING:
+            case Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_STRING:
 
                 // Allocate string handle (if necessary)
                 strIndex = value.getIntVal();
@@ -492,7 +493,8 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
         Assert.assertTrue(type.getArrayLevel() == 0);
         Assert.assertTrue(type.getBaseType() < 0);
 
-        if (type.getBaseType() == PLUGIN_BASIC4GL_EXT_PADDING) cData.position(cData.position() + type.getStringSize());
+        if (type.getBaseType() == Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING)
+            cData.position(cData.position() + type.getStringSize());
         else {
             BasicValueFromCValue(type, vm.getData().data().get(basicDataIndex.get()), cData);
             basicDataIndex.set(basicDataIndex.get() + 1);
@@ -729,7 +731,7 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
         if (currentType.getArrayLevel() == 0 && currentType.getPointerLevel() == 0 && currentType.getBaseType() < 0) {
 
             // Special case! String values are written to RegString
-            if (currentType.getBaseType() == PLUGIN_BASIC4GL_EXT_STRING) {
+            if (currentType.getBaseType() == Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_STRING) {
                 vm.setRegString(readCString(src, currentType.getStringSize()));
             } else {
                 BasicValueFromCValue(currentType, vm.getReg(), src);

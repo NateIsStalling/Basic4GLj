@@ -5,15 +5,16 @@ import static org.lwjgl.opengl.GL11.glFrustum;
 import static org.lwjgl.opengl.GL11.glOrtho;
 
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.language.core.runtime.VM;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.Constant;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ParamTypeList;
 import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.BasicValType;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.types.ParamTypeList;
-import com.basic4gl.runtime.util.Function;
+import com.basic4gl.language.core.runtime.Function;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -231,7 +232,7 @@ public class GLUBasicLib implements FunctionLibrary {
 
     public static final class WrapgluOrtho2D implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             // gluOrtho2D();   //Replaced with glOrtho
             glOrtho(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1), -1, 1);
         }
@@ -239,7 +240,7 @@ public class GLUBasicLib implements FunctionLibrary {
 
     public static final class WrapgluPerspective implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             // gluPerspective(); //Replaced with glFrustrum
 
             perspectiveGL(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
@@ -254,7 +255,7 @@ public class GLUBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapgluLookAt implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double eyeX = vm.getRealParam(9);
             double eyeY = vm.getRealParam(8);
             double eyeZ = vm.getRealParam(7);

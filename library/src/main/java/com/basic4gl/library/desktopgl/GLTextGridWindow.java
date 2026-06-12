@@ -20,16 +20,15 @@ import com.basic4gl.library.desktopgl.input.OpenGLMouse;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.HasErrorState;
+import com.basic4gl.language.core.runtime.HasErrorState;
 import com.basic4gl.runtime.InstructionPosition;
 import com.basic4gl.runtime.TomVM;
 import java.io.*;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-import org.apache.commons.cli.*;
+
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
 
 public class GLTextGridWindow extends HasErrorState
         implements Target, IVMDriver, IFileAccess, ITargetCommandLineOptions {
@@ -87,7 +86,7 @@ public class GLTextGridWindow extends HasErrorState
     public static Library getInstance(TomBasicCompiler compiler) {
         GLTextGridWindow instance = new GLTextGridWindow();
         instance.compiler = compiler;
-        instance.vm = compiler.getVM();
+        instance.vm = null; // TODO 6/12/2026 review this
         return instance;
     }
 
@@ -186,9 +185,10 @@ public class GLTextGridWindow extends HasErrorState
         instance.plugins = new PluginJARManager(isStandalone);
         instance.plugins.setDirectory(options.currentDirectory);
 
-        instance.compiler = new TomBasicCompiler(new TomVM(instance.plugins, debugger), instance.plugins);
+        TomVM vm = new TomVM(instance.plugins, debugger);
+        instance.compiler = new TomBasicCompiler(vm, instance.plugins);
 
-        instance.vm = instance.compiler.getVM();
+        instance.vm = vm;
         instance.services = new ServiceCollection();
         instance.libraries = new ArrayList<>();
 

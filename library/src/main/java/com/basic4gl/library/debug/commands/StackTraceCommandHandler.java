@@ -3,7 +3,7 @@ package com.basic4gl.library.debug.commands;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.stackframe.UserFuncStackFrame;
+import com.basic4gl.language.core.stackframe.UserFuncStackFrame;
 import com.google.gson.Gson;
 import java.util.Vector;
 import javax.websocket.Session;

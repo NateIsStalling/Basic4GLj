@@ -1,6 +1,5 @@
 package com.basic4gl.compiler.util;
 
-
 // Misc
 public class ParserPosition {
     private int line;

@@ -19,6 +19,8 @@ dependencies {
 
     implementation project(":runtime")
     implementation project(":compiler")
+    implementation project(":language-core")
+    implementation project(":language-spi")
 
     implementation project(":debugProtocol")
 

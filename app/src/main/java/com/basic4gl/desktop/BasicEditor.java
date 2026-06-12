@@ -456,7 +456,6 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     }
 
     public void reset() {
-        compiler.getVM().pause();
         clearAttachWaitFailureWatch();
         if (activeRunHandler != null) {
             activeRunHandler.terminateLaunchedProcess();

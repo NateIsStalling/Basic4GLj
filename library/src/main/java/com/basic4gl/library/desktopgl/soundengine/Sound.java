@@ -1,7 +1,7 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
 import com.basic4gl.library.desktopgl.soundengine.util.ALUtil;
-import com.basic4gl.runtime.HasErrorState;
+import com.basic4gl.language.core.runtime.HasErrorState;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;

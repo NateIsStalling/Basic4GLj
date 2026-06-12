@@ -1,8 +1,9 @@
 package com.basic4gl.library.desktopgl.util;
 
-import com.basic4gl.runtime.Data;
+import com.basic4gl.language.core.runtime.Data;
+import com.basic4gl.language.core.runtime.VM;
+import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.ValType;
 import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 
@@ -10,7 +11,7 @@ import org.lwjgl.opengl.GL11;
  * Created by Nate on 4/19/2015.
  */
 public class Routines {
-    public static boolean validateSizeParam(TomVM vm, int paramIndex) {
+    public static boolean validateSizeParam(VM vm, int paramIndex) {
         int size = vm.getIntParam(paramIndex);
         if (size <= 0) // If size is 0, do nothing.
         {
@@ -25,8 +26,7 @@ public class Routines {
         return true;
     }
 
-    public static int readArrayDynamic(
-            TomVM vm, int paramIndex, ValType type, int cType, ByteBuffer array, int maxSize) {
+    public static int readArrayDynamic(VM vm, int paramIndex, ValType type, int cType, ByteBuffer array, int maxSize) {
 
         // Use the appropriate template function for the given type
         switch (cType) {
