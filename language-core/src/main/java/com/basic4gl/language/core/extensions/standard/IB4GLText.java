@@ -1,4 +1,4 @@
-package com.basic4gl.runtime.core.standard;
+package com.basic4gl.language.core.extensions.standard;
 
 /**
  * Interface to the Basic4GL text mechanism.

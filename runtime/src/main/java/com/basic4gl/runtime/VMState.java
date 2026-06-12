@@ -1,5 +1,6 @@
 package com.basic4gl.runtime;
 
+import com.basic4gl.language.core.runtime.Basic4GLLongRunningFunction;
 import com.basic4gl.language.core.runtime.*;
 
 /**

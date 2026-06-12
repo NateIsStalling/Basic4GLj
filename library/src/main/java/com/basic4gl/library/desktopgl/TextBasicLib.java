@@ -19,7 +19,7 @@ import com.basic4gl.library.desktopgl.input.OpenGLMouse;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.core.opengl.IB4GLOpenGLText;
+import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLText;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;

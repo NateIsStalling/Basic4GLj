@@ -15,7 +15,7 @@ import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.CodeBlock;
 import com.basic4gl.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.core.standard.IB4GLCompiler;
+import com.basic4gl.language.core.extensions.standard.IB4GLCompiler;
 import com.basic4gl.language.core.types.*;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.language.core.internal.Mutable;

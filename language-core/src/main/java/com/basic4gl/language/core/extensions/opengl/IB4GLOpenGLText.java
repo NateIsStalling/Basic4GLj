@@ -1,6 +1,6 @@
-package com.basic4gl.runtime.core.opengl;
+package com.basic4gl.language.core.extensions.opengl;
 
-import com.basic4gl.runtime.core.standard.IB4GLText;
+import com.basic4gl.language.core.extensions.standard.IB4GLText;
 
 /**
  * Created by Nate on 11/2/2015.

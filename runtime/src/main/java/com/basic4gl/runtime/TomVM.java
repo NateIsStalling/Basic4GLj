@@ -2,12 +2,13 @@ package com.basic4gl.runtime;
 
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
+import com.basic4gl.language.core.runtime.Basic4GLLongRunningFunction;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
 import com.basic4gl.language.core.types.*;
-import com.basic4gl.language.core.util.Streamable;
+import com.basic4gl.language.core.streaming.Streamable;
 import com.basic4gl.language.core.types.VariableCollection.Variable;
-import com.basic4gl.language.core.util.Streaming;
+import com.basic4gl.language.core.streaming.Streaming;
 import com.basic4gl.language.spi.Basic4GLRuntime;
 import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.runtime.plugin.TomVMPluginAdapter;

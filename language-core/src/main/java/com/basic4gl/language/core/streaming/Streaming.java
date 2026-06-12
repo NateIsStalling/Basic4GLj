@@ -1,4 +1,4 @@
-package com.basic4gl.language.core.util;
+package com.basic4gl.language.core.streaming;
 
 import java.io.*;
 import java.nio.charset.Charset;

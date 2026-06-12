@@ -1,6 +1,6 @@
 package com.basic4gl.language.core.runtime;
 
-import com.basic4gl.language.core.util.Streamable;
+import com.basic4gl.language.core.streaming.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

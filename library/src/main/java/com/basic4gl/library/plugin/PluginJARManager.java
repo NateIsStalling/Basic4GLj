@@ -1,6 +1,6 @@
 package com.basic4gl.library.plugin;
 
-import com.basic4gl.language.core.util.Streaming;
+import com.basic4gl.language.core.streaming.Streaming;
 import com.basic4gl.language.spi.PlatformMetadataPolicy;
 import com.basic4gl.language.spi.PluginLibrary;
 import com.basic4gl.language.spi.PluginManager;

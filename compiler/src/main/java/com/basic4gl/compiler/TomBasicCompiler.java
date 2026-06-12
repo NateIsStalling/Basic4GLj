@@ -23,7 +23,7 @@ import com.basic4gl.runtime.stackframe.UserFunc;
 import com.basic4gl.runtime.stackframe.UserFuncPrototype;
 import com.basic4gl.runtime.util.Function;
 import com.basic4gl.language.core.internal.Mutable;
-import com.basic4gl.language.core.util.Streaming;
+import com.basic4gl.language.core.streaming.Streaming;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
