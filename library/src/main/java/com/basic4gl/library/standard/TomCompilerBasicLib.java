@@ -345,7 +345,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
      */
     int doNewCompile(TomVM vm, String filename) {
 
-        com.basic4gl.compiler.TomBasicCompiler.RollbackPoint rollbackPoint = comp.getRollbackPoint();
+        com.basic4gl.compiler.util.RollbackPoint rollbackPoint = comp.getRollbackPoint();
         comp.clearError();
         long saveIP = vm.getIP();
 
