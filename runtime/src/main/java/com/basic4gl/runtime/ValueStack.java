@@ -34,12 +34,12 @@ public class ValueStack {
         push(index); // Create stack index
     }
 
-    public Integer tos() {
+    public int tos() {
         assertTrue(!isEmpty());
         return data[size - 1];
     }
 
-    public Integer pop() {
+    public int pop() {
         assertTrue(!isEmpty());
         return data[--size];
     }
@@ -67,7 +67,7 @@ public class ValueStack {
         return size;
     }
 
-    public Integer get(int index) {
+    public int get(int index) {
         assertTrue(index >= 0 && index < size && index < data.length);
         return data[index];
     }

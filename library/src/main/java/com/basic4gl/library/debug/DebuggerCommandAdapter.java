@@ -90,9 +90,8 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
 
     @Override
     public void message(DebuggerCallbackMessage message) {
-        if (true)
-        return;
-
+//        if (true)
+//            return;
         if (message == null) {
             return;
         }

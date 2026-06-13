@@ -26,6 +26,7 @@ import org.lwjgl.BufferUtils;
  */
 public class GLBasicLib_gl implements FunctionLibrary {
 
+    static final boolean nullGlMode = false;
     private ByteBuffer byteBuffer16;
     private ShortBuffer shortBuffer16;
     private IntBuffer intBuffer16;
@@ -6211,6 +6212,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglColor4f implements Function {
 
         public void run(TomVM vm) {
+            if (nullGlMode) {
+                return;
+            }
             glColor4f(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
@@ -10379,6 +10383,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglTexCoord2f implements Function {
         public void run(TomVM vm) {
+            if (nullGlMode) {
+                return;
+            }
             glTexCoord2f(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
@@ -11272,6 +11279,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglVertex2f implements Function {
         public void run(TomVM vm) {
+            if (nullGlMode) {
+                return;
+            }
             glVertex2f(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
