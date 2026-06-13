@@ -65,12 +65,7 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
             adapter = new DebugClientAdapter(this, DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
             while (!this.isCancelled() && !adapter.connect()) {
                 // Debuggee may still be waiting for JDWP attach; retry until connected or canceled.
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
+                Thread.sleep(100);
             }
 
             if (this.isCancelled()) {
@@ -83,18 +78,13 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
 
             // Debugger is attached
             while (!this.isCancelled()
-            // TODO 1/2023 need to keep connection alive while debugee is idle
-            //                    && (mMessage.getStatus() == CallbackMessage.STOPPED
-            //                    || mMessage.getStatus() == CallbackMessage.WORKING
-            //                    || mMessage.getStatus() == CallbackMessage.PAUSED)
+                // TODO 1/2023 need to keep connection alive while debugee is idle
+                //                    && (mMessage.getStatus() == CallbackMessage.STOPPED
+                //                    || mMessage.getStatus() == CallbackMessage.WORKING
+                //                    || mMessage.getStatus() == CallbackMessage.PAUSED)
             ) {
                 // idle thread;
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
+                Thread.sleep(100);
             }
 
             // TODO 12/2022 remove this; handled by socket callbacks
@@ -108,6 +98,8 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
             //                    : mVM.getError()));
             // TODO 12/2022 is this still needed?
             //            driver.onPostExecute();
+        } catch (InterruptedException ex) {
+            // expected; do nothing
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
