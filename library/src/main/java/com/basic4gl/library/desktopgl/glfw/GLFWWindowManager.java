@@ -8,6 +8,7 @@ import com.basic4gl.library.desktopgl.window.OpenGLWindowParams;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
@@ -150,7 +151,7 @@ public class GLFWWindowManager extends OpenGLWindowManager {
 
         // Make OpenGL context current
         glfwMakeContextCurrent(window);
-
+        org.lwjgl.glfw.GLFW.glfwSwapInterval(0);
         // Initialize OpenGL bindings before any framebuffer-driven GL state updates.
         // This line is critical for LWJGL's interoperation with GLFW's
         // OpenGL context, or any context that is managed externally.

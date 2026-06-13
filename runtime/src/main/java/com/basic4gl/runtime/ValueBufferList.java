@@ -29,7 +29,7 @@ public class ValueBufferList extends AbstractList<Value> implements RandomAccess
 
     public ValueBufferList(int initialCapacity, ByteOrder byteOrder) {
         this.byteOrder = byteOrder == null ? ByteOrder.LITTLE_ENDIAN : byteOrder;
-        this.byteBuffer = ByteBuffer.allocate(Math.max(0, initialCapacity) * BYTES_PER_VALUE).order(this.byteOrder);
+        this.byteBuffer = ByteBuffer.allocateDirect(Math.max(0, initialCapacity) * BYTES_PER_VALUE).order(this.byteOrder);
         this.intBuffer = this.byteBuffer.asIntBuffer();
         this.floatBuffer = this.byteBuffer.asFloatBuffer();
         this.valueViews = new ArrayList<>();
@@ -113,7 +113,7 @@ public class ValueBufferList extends AbstractList<Value> implements RandomAccess
         }
 
         int newCapacity = Math.max(minCapacity, Math.max(4, intBuffer.capacity() * 2));
-        ByteBuffer newByteBuffer = ByteBuffer.allocate(newCapacity * BYTES_PER_VALUE).order(byteOrder);
+        ByteBuffer newByteBuffer = ByteBuffer.allocateDirect(newCapacity * BYTES_PER_VALUE).order(byteOrder);
         IntBuffer newIntBuffer = newByteBuffer.asIntBuffer();
         for (int i = 0; i < size; i++) {
             newIntBuffer.put(i, intBuffer.get(i));
@@ -182,6 +182,7 @@ public class ValueBufferList extends AbstractList<Value> implements RandomAccess
                     "startIndex: " + startIndex + ", length: " + length + ", size: " + size);
         }
     }
+
 
     private final class ValueView extends Value {
         private final int index;

@@ -2,76 +2,100 @@ package com.basic4gl.runtime;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-import com.basic4gl.runtime.util.CollectionUtil;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * Used to stack values for reverse-Polish expression evaluation, or as
  * function parameters.
  */
 public class ValueStack {
-    private final ArrayList<Value> data;
+    private int[] data;
+    private int size;
     private final Store<String> strings;
 
     public ValueStack(Store<String> strings) {
         this.strings = strings;
-        data = new ArrayList<>();
+        data = new int[10000000];
     }
 
     public boolean isEmpty() {
-        return data.isEmpty();
+        return size == 0;
     }
 
-    public void push(Value v) { // Push v as NON string
-        data.add(new Value(v));
+    public void push(int v) { // Push v as NON string
+        data[size++] = v;
     }
 
     public void pushString(String str) {
         int index = strings.alloc(); // Allocate string
         strings.setValue(index, str); // Copy value
-        data.add(new Value(index)); // Create stack index
+        push(index); // Create stack index
     }
 
-    public Value tos() {
+    public Integer tos() {
         assertTrue(!isEmpty());
-        return data.get(data.size() - 1);
+        return data[size - 1];
     }
 
-    public Value pop() {
-        Value v = tos();
-        data.remove(data.size() - 1);
-
-        return v;
+    public Integer pop() {
+        assertTrue(!isEmpty());
+        return data[--size];
     }
 
     public String popString() {
         assertTrue(!isEmpty());
         String str;
         // Copy string value from stack
-        int index = tos().getIntVal();
+        int index = tos();
         assertTrue(strings.isIndexValid(index));
         str = strings.getValueAt(index);
         // Deallocate stacked string
         strings.freeAtIndex(index);
 
         // Remove stack element
-        data.remove(data.size() - 1);
+        pop();
         return str;
     }
 
     public void clear() {
-        data.clear();
+        size = 0;
     }
 
     public int size() {
-        return data.size();
+        return size;
     }
 
-    public Value get(int index) {
-        return data.get(index);
+    public Integer get(int index) {
+        assertTrue(index >= 0 && index < size && index < data.length);
+        return data[index];
     }
 
+    private void ensureCapacity(int minCapacity) {
+        if (minCapacity <= data.length) {
+            return;
+        }
+
+        int newCapacity = data.length;
+
+        while (newCapacity < minCapacity) {
+            newCapacity *= 2;
+        }
+
+        data = Arrays.copyOf(data, newCapacity);
+    }
     public void resize(int size) {
-        CollectionUtil.resize(data, size);
+        int oldSize = this.size;
+
+        if (size > data.length) {
+            ensureCapacity(size);
+        }
+
+        if (size > oldSize) {
+            Arrays.fill(data, oldSize, size, 0);
+        }
+
+        this.size = size;
     }
 }

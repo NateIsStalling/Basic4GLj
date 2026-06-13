@@ -28,6 +28,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import org.apache.commons.cli.*;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 
@@ -728,6 +729,8 @@ public class GLTextGridWindow extends HasErrorState
 
         lib.init(vm, services, appSettings, programArgs);
     }
+    double lastPollTime = org.lwjgl.glfw.GLFW.glfwGetTime();
+    double pollInterval = 1.0 / 60.0;
 
     public boolean handleEvents() {
 
@@ -737,7 +740,12 @@ public class GLTextGridWindow extends HasErrorState
         }
 
         // Keep window responsive during loops
-        glfwPollEvents();
+        double currentTime = GLFW.glfwGetTime();
+
+        if (currentTime - lastPollTime >= pollInterval) {
+            GLFW.glfwPollEvents();
+            lastPollTime = currentTime;
+        }
         return true; // all went well
     }
 
