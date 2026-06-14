@@ -2376,7 +2376,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapDrawText2 implements Function {
         public void run(TomVM vm) {
-            contentManager.draw(vm.getIntParam(1).byteValue());
+            contentManager.draw((byte) vm.getIntParam(1));
         }
     }
 
@@ -2494,9 +2494,9 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapColour implements Function {
         public void run(TomVM vm) {
             appText.setColour(GLTextGrid.makeColour(
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue()));
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1)));
         }
     }
 
@@ -2969,8 +2969,8 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapResizeSpriteArea implements Function {
         public void run(TomVM vm) {
-            int width = vm.getRealParam(2).intValue(),
-                    height = vm.getRealParam(1).intValue();
+            int width = (int) vm.getRealParam(2),
+                    height = (int) vm.getRealParam(1);
             if (width <= 0 || height <= 0) {
                 vm.functionError("Width and height must both be greater than 0");
                 return;

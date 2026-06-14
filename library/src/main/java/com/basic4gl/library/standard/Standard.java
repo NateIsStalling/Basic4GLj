@@ -109,7 +109,7 @@ public class Standard implements FunctionLibrary {
 
     public static final class WrapChr implements Function {
         public void run(TomVM vm) {
-            vm.setRegString(String.valueOf((char) vm.getIntParam(1).intValue()));
+            vm.setRegString(String.valueOf((char) vm.getIntParam(1)));
         }
     }
 

@@ -682,11 +682,11 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
 
         // Simple type?
         if (currentType.getArrayLevel() == 0 && currentType.getPointerLevel() == 0 && currentType.getBaseType() < 0) {
-            CValueFromBasicValue(currentType, dst, vm.getParam(index));
+            CValueFromBasicValue(currentType, dst, new Value(vm.getIntParam(index)));
         } else {
 
             // Dereference
-            int dataIndex = vm.getParam(index).getIntVal();
+            int dataIndex = vm.getIntParam(index);
 
             // Get dereferenced type
             PluginDataType derefType = copyPluginType(currentType);
@@ -705,11 +705,11 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
 
         // Simple type
         if (currentType.getArrayLevel() == 0 && currentType.getPointerLevel() == 0 && currentType.getBaseType() < 0) {
-            BasicValueFromCValue(currentType, vm.getParam(index), src);
+            BasicValueFromCValue(currentType, new Value(vm.getIntParam(index)), src);
         } else {
 
             // Dereference
-            int dataIndex = vm.getParam(index).getIntVal();
+            int dataIndex = vm.getIntParam(index);
 
             // Get dereferenced type
             PluginDataType derefType = copyPluginType(currentType);

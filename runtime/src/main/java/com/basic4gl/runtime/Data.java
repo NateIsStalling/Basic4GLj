@@ -69,7 +69,7 @@ public class Data {
         // Initialize data
         this.maxDataSize = maxDataSize;
         permanent = stackSize;
-        data = new ValueBufferList(stackSize, ByteOrder.LITTLE_ENDIAN);
+        data = new ValueBufferList(stackSize);
         clear();
     }
 

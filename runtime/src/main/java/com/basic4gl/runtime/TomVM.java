@@ -2985,22 +2985,22 @@ public class TomVM extends HasErrorState implements Streamable {
     }
 
     // Called by external functions
-    public Value getParam(int index) {
-        // Read param from param stack.
-        // Index 1 is TOS
-        // Index 2 is TOS - 1
-        // ...
-        //assertTrue(index > 0);
-        //assertTrue(index <= stack.size());
-        return new Value(stack.get(stack.size() - index));
+//    public Value getParam(int index) {
+//        // Read param from param stack.
+//        // Index 1 is TOS
+//        // Index 2 is TOS - 1
+//        // ...
+//        //assertTrue(index > 0);
+//        //assertTrue(index <= stack.size());
+//        return new Value(stack.get(stack.size() - index));
+//    }
+
+    public int getIntParam(int index) {
+        return stack.get(stack.size() - index);//getParam(index).getIntVal();
     }
 
-    public Integer getIntParam(int index) {
-        return getParam(index).getIntVal();
-    }
-
-    public Float getRealParam(int index) {
-        return getParam(index).getRealVal();
+    public float getRealParam(int index) {
+        return intBitsToFloat(getIntParam(index));//getParam(index).getRealVal();
     }
 
     public String getStringParam(int index) {

@@ -1,90 +1,86 @@
 package com.basic4gl.runtime;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.RandomAccess;
 
-/**
- * A contiguous value store backed by a ByteBuffer.
- * Each Value occupies 4 bytes and can be interpreted as either int or float.
- */
+import static java.lang.Float.floatToRawIntBits;
+import static java.lang.Float.intBitsToFloat;
+
 public class ValueBufferList extends AbstractList<Value> implements RandomAccess {
-    private static final int BYTES_PER_VALUE = Integer.BYTES;
-
-    private ByteBuffer byteBuffer;
-    private IntBuffer intBuffer;
-    private FloatBuffer floatBuffer;
-    private final ByteOrder byteOrder;
-
+    private int[] values;
     private int size;
     private final ArrayList<ValueView> valueViews;
 
     public ValueBufferList() {
-        this(0, ByteOrder.LITTLE_ENDIAN);
+        this(0);
     }
 
-    public ValueBufferList(int initialCapacity, ByteOrder byteOrder) {
-        this.byteOrder = byteOrder == null ? ByteOrder.LITTLE_ENDIAN : byteOrder;
-        this.byteBuffer = ByteBuffer.allocateDirect(Math.max(0, initialCapacity) * BYTES_PER_VALUE).order(this.byteOrder);
-        this.intBuffer = this.byteBuffer.asIntBuffer();
-        this.floatBuffer = this.byteBuffer.asFloatBuffer();
-        this.valueViews = new ArrayList<>();
-        this.size = 0;
-    }
-
-    public ByteOrder getByteOrder() {
-        return byteOrder;
+    public ValueBufferList(int initialCapacity) {
+        values = new int[Math.max(0, initialCapacity)];
+        valueViews = new ArrayList<>();
+        size = 0;
     }
 
     public int getIntValue(int index) {
         checkElementIndex(index);
-        return intBuffer.get(index);
+        return values[index];
     }
 
     public void setIntValue(int index, int value) {
         checkElementIndex(index);
-        intBuffer.put(index, value);
+        values[index] = value;
     }
 
     public float getFloatValue(int index) {
         checkElementIndex(index);
-        return floatBuffer.get(index);
+        return intBitsToFloat(values[index]);
     }
 
     public void setFloatValue(int index, float value) {
         checkElementIndex(index);
-        floatBuffer.put(index, value);
+        values[index] = floatToRawIntBits(value);
+    }
+
+    // Use only inside VM/runtime paths that already validated the address.
+    public int getIntValueFast(int index) {
+        return values[index];
+    }
+
+    public void setIntValueFast(int index, int value) {
+        values[index] = value;
+    }
+
+    public float getFloatValueFast(int index) {
+        return intBitsToFloat(values[index]);
+    }
+
+    public void setFloatValueFast(int index, float value) {
+        values[index] = floatToRawIntBits(value);
+    }
+
+    public int[] rawArray() {
+        return values;
     }
 
     public void fillInts(int startIndex, int length, int value) {
         checkRange(startIndex, length);
-        for (int i = 0; i < length; i++) {
-            intBuffer.put(startIndex + i, value);
-        }
+        Arrays.fill(values, startIndex, startIndex + length, value);
+    }
+
+    public void fillIntsFast(int startIndex, int length, int value) {
+        Arrays.fill(values, startIndex, startIndex + length, value);
     }
 
     public void copyInts(int sourceIndex, int destIndex, int length) {
         checkRange(sourceIndex, length);
         checkRange(destIndex, length);
-        if (length == 0 || sourceIndex == destIndex) {
-            return;
-        }
+        System.arraycopy(values, sourceIndex, values, destIndex, length);
+    }
 
-        // Use memmove-like behavior when source and destination overlap.
-        if (destIndex > sourceIndex && destIndex < sourceIndex + length) {
-            for (int i = length - 1; i >= 0; i--) {
-                intBuffer.put(destIndex + i, intBuffer.get(sourceIndex + i));
-            }
-            return;
-        }
-
-        for (int i = 0; i < length; i++) {
-            intBuffer.put(destIndex + i, intBuffer.get(sourceIndex + i));
-        }
+    public void copyIntsFast(int sourceIndex, int destIndex, int length) {
+        System.arraycopy(values, sourceIndex, values, destIndex, length);
     }
 
     public void resize(int newSize) {
@@ -95,9 +91,7 @@ public class ValueBufferList extends AbstractList<Value> implements RandomAccess
         ensureCapacity(newSize);
 
         if (newSize > size) {
-            for (int i = size; i < newSize; i++) {
-                intBuffer.put(i, 0);
-            }
+            Arrays.fill(values, size, newSize, 0);
         }
 
         size = newSize;
@@ -108,20 +102,12 @@ public class ValueBufferList extends AbstractList<Value> implements RandomAccess
     }
 
     public void ensureCapacity(int minCapacity) {
-        if (minCapacity <= intBuffer.capacity()) {
+        if (minCapacity <= values.length) {
             return;
         }
 
-        int newCapacity = Math.max(minCapacity, Math.max(4, intBuffer.capacity() * 2));
-        ByteBuffer newByteBuffer = ByteBuffer.allocateDirect(newCapacity * BYTES_PER_VALUE).order(byteOrder);
-        IntBuffer newIntBuffer = newByteBuffer.asIntBuffer();
-        for (int i = 0; i < size; i++) {
-            newIntBuffer.put(i, intBuffer.get(i));
-        }
-
-        byteBuffer = newByteBuffer;
-        intBuffer = newIntBuffer;
-        floatBuffer = newByteBuffer.asFloatBuffer();
+        int newCapacity = Math.max(minCapacity, Math.max(4, values.length * 2));
+        values = Arrays.copyOf(values, newCapacity);
     }
 
     @Override
@@ -133,12 +119,10 @@ public class ValueBufferList extends AbstractList<Value> implements RandomAccess
     @Override
     public Value set(int index, Value element) {
         checkElementIndex(index);
-        Value previous = new Value(getIntValue(index));
-        if (element == null) {
-            setIntValue(index, 0);
-        } else {
-            setIntValue(index, element.getIntVal());
-        }
+
+        Value previous = new Value(values[index]);
+        values[index] = element == null ? 0 : element.getIntVal();
+
         return previous;
     }
 
@@ -177,12 +161,12 @@ public class ValueBufferList extends AbstractList<Value> implements RandomAccess
         if (length < 0) {
             throw new IllegalArgumentException("length must be >= 0");
         }
+
         if (startIndex < 0 || startIndex + length > size) {
             throw new IndexOutOfBoundsException(
                     "startIndex: " + startIndex + ", length: " + length + ", size: " + size);
         }
     }
-
 
     private final class ValueView extends Value {
         private final int index;
@@ -193,28 +177,27 @@ public class ValueBufferList extends AbstractList<Value> implements RandomAccess
 
         @Override
         public int getIntVal() {
-            return intBuffer.get(index);
+            return values[index];
         }
 
         @Override
         public float getRealVal() {
-            return floatBuffer.get(index);
+            return intBitsToFloat(values[index]);
         }
 
         @Override
         public void setIntVal(int val) {
-            intBuffer.put(index, val);
+            values[index] = val;
         }
 
         @Override
         public void setRealVal(float val) {
-            floatBuffer.put(index, val);
+            values[index] = floatToRawIntBits(val);
         }
 
         @Override
         public void setVal(Value val) {
-            intBuffer.put(index, val == null ? 0 : val.getIntVal());
+            values[index] = val == null ? 0 : val.getIntVal();
         }
     }
 }
-

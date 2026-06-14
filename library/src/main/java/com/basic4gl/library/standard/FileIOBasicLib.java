@@ -513,7 +513,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 return;
             }
 
-            byte element = vm.getIntParam(1).byteValue();
+            byte element = (byte) vm.getIntParam(1);
             Exception exception = null;
             try {
                 stream.out.write(element);
@@ -531,7 +531,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 return;
             }
 
-            short element = vm.getIntParam(1).shortValue();
+            short element = (short) vm.getIntParam(1);
             Exception exception = null;
             try {
                 stream.out.write(ByteBuffer.allocate(2)

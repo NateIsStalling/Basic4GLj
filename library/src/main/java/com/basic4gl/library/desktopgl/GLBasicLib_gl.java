@@ -5701,9 +5701,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             glColor3b(
-                    vm.getIntParam(3).byteValue(),
-                    vm.getIntParam(2).byteValue(),
-                    vm.getIntParam(1).byteValue());
+                    (byte) vm.getIntParam(3),
+                    (byte) vm.getIntParam(2),
+                    (byte) vm.getIntParam(1));
         }
     }
 
@@ -5900,9 +5900,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             glColor3s(
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
@@ -5953,9 +5953,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             // glColor3ub crashes on macOS - remap parameters to glColor3ubv
             byteBuffer16.rewind();
-            byteBuffer16.put(vm.getIntParam(3).byteValue());
-            byteBuffer16.put(vm.getIntParam(2).byteValue());
-            byteBuffer16.put(vm.getIntParam(1).byteValue());
+            byteBuffer16.put((byte) vm.getIntParam(3));
+            byteBuffer16.put((byte) vm.getIntParam(2));
+            byteBuffer16.put((byte) vm.getIntParam(1));
 
             byteBuffer16.rewind();
             glColor3ubv(byteBuffer16);
@@ -6059,9 +6059,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             glColor3us(
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
@@ -6111,10 +6111,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             glColor4b(
-                    vm.getIntParam(4).byteValue(),
-                    vm.getIntParam(3).byteValue(),
-                    vm.getIntParam(2).byteValue(),
-                    vm.getIntParam(1).byteValue());
+                    (byte) vm.getIntParam(4),
+                    (byte) vm.getIntParam(3),
+                    (byte) vm.getIntParam(2),
+                    (byte) vm.getIntParam(1));
         }
     }
 
@@ -6314,10 +6314,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             glColor4s(
-                    vm.getIntParam(4).shortValue(),
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(4),
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
@@ -6368,10 +6368,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
         public void run(TomVM vm) {
             // glColor4ub crashes on macOS - remap parameters to glColor4ubv
             byteBuffer16.rewind();
-            byteBuffer16.put(vm.getIntParam(4).byteValue());
-            byteBuffer16.put(vm.getIntParam(3).byteValue());
-            byteBuffer16.put(vm.getIntParam(2).byteValue());
-            byteBuffer16.put(vm.getIntParam(1).byteValue());
+            byteBuffer16.put((byte) vm.getIntParam(4));
+            byteBuffer16.put((byte) vm.getIntParam(3));
+            byteBuffer16.put((byte) vm.getIntParam(2));
+            byteBuffer16.put((byte) vm.getIntParam(1));
 
             byteBuffer16.rewind();
             glColor4ubv(byteBuffer16);
@@ -6475,10 +6475,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             glColor4us(
-                    vm.getIntParam(4).shortValue(),
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(4),
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
@@ -8052,7 +8052,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglIndexs implements Function {
         public void run(TomVM vm) {
-            glIndexs(vm.getIntParam(1).shortValue());
+            glIndexs((short) vm.getIntParam(1));
         }
     }
 
@@ -8099,7 +8099,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglIndexub implements Function {
         public void run(TomVM vm) {
-            glIndexub(vm.getIntParam(1).byteValue());
+            glIndexub((byte) vm.getIntParam(1));
         }
     }
 
@@ -8358,7 +8358,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglLineStipple implements Function {
 
         public void run(TomVM vm) {
-            glLineStipple(vm.getIntParam(2), vm.getIntParam(1).shortValue());
+            glLineStipple(vm.getIntParam(2), (short) vm.getIntParam(1));
         }
     }
 
@@ -8546,9 +8546,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglNormal3b implements Function {
         public void run(TomVM vm) {
             glNormal3b(
-                    vm.getIntParam(3).byteValue(),
-                    vm.getIntParam(2).byteValue(),
-                    vm.getIntParam(1).byteValue());
+                    (byte) vm.getIntParam(3),
+                    (byte) vm.getIntParam(2),
+                    (byte) vm.getIntParam(1));
         }
     }
 
@@ -8733,9 +8733,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglNormal3s implements Function {
         public void run(TomVM vm) {
             glNormal3s(
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
@@ -9088,7 +9088,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglRasterPos2s implements Function {
 
         public void run(TomVM vm) {
-            glRasterPos2s(vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glRasterPos2s((short) vm.getIntParam(2), (short) vm.getIntParam(1));
         }
     }
 
@@ -9276,9 +9276,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglRasterPos3s implements Function {
         public void run(TomVM vm) {
             glRasterPos3s(
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
@@ -9470,10 +9470,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(TomVM vm) {
             glRasterPos4s(
-                    vm.getIntParam(4).shortValue(),
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(4),
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
@@ -9925,10 +9925,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglRects implements Function {
         public void run(TomVM vm) {
             glRects(
-                    vm.getIntParam(4).shortValue(),
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(4),
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
@@ -10291,7 +10291,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglTexCoord1s implements Function {
 
         public void run(TomVM vm) {
-            glTexCoord1s(vm.getIntParam(1).shortValue());
+            glTexCoord1s((short) vm.getIntParam(1));
         }
     }
 
@@ -10478,7 +10478,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglTexCoord2s implements Function {
         public void run(TomVM vm) {
-            glTexCoord2s(vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glTexCoord2s((short) vm.getIntParam(2), (short) vm.getIntParam(1));
         }
     }
 
@@ -10663,9 +10663,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglTexCoord3s implements Function {
         public void run(TomVM vm) {
             glTexCoord3s(
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
@@ -10850,10 +10850,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglTexCoord4s implements Function {
         public void run(TomVM vm) {
             glTexCoord4s(
-                    vm.getIntParam(4).shortValue(),
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(4),
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
@@ -11374,7 +11374,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglVertex2s implements Function {
         public void run(TomVM vm) {
-            glVertex2s(vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
+            glVertex2s((short) vm.getIntParam(2), (short) vm.getIntParam(1));
         }
     }
 
@@ -11561,9 +11561,9 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglVertex3s implements Function {
         public void run(TomVM vm) {
             glVertex3s(
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
@@ -11748,10 +11748,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglVertex4s implements Function {
         public void run(TomVM vm) {
             glVertex4s(
-                    vm.getIntParam(4).shortValue(),
-                    vm.getIntParam(3).shortValue(),
-                    vm.getIntParam(2).shortValue(),
-                    vm.getIntParam(1).shortValue());
+                    (short) vm.getIntParam(4),
+                    (short) vm.getIntParam(3),
+                    (short) vm.getIntParam(2),
+                    (short) vm.getIntParam(1));
         }
     }
 
