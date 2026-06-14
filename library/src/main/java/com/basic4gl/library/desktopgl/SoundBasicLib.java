@@ -248,12 +248,12 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
                 Sound sound = library.loadSound(filename);
                 if (sound != null) {
-                    vm.getReg().setIntVal(sounds.alloc(sound));
+                    vm.setRegIntVal(sounds.alloc(sound));
                 } else {
-                    vm.getReg().setIntVal(0);
+                    vm.setRegIntVal(0);
                 }
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             }
         }
     }
@@ -274,12 +274,12 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             if (checkSoundEngine()) {
                 int handle = vm.getIntParam(1);
                 if (handle > 0 && sounds.isIndexStored(handle)) {
-                    vm.getReg().setIntVal(library.playSound(sounds.getValueAt(handle), 1, false));
+                    vm.setRegIntVal(library.playSound(sounds.getValueAt(handle), 1, false));
                 } else {
-                    vm.getReg().setIntVal(-1);
+                    vm.setRegIntVal(-1);
                 }
             } else {
-                vm.getReg().setIntVal(-1);
+                vm.setRegIntVal(-1);
             }
         }
     }
@@ -289,14 +289,13 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             if (checkSoundEngine()) {
                 int handle = vm.getIntParam(3);
                 if (handle > 0 && sounds.isIndexStored(handle)) {
-                    vm.getReg()
-                            .setIntVal(library.playSound(
+                    vm.setRegIntVal(library.playSound(
                                     sounds.getValueAt(handle), vm.getRealParam(2), vm.getIntParam(1) != 0));
                 } else {
-                    vm.getReg().setIntVal(-1);
+                    vm.setRegIntVal(-1);
                 }
             } else {
-                vm.getReg().setIntVal(-1);
+                vm.setRegIntVal(-1);
             }
         }
     }
@@ -337,7 +336,7 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
 
     public class WrapMusicPlaying implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(checkSoundEngine() && library.isMusicPlaying() ? -1 : 0);
+            vm.setRegIntVal(checkSoundEngine() && library.isMusicPlaying() ? -1 : 0);
         }
     }
 

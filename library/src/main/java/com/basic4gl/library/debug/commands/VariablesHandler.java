@@ -82,11 +82,11 @@ public class VariablesHandler {
 
     private List<Variable> buildRegisterVariables() {
         List<Variable> mapped = new ArrayList<>();
-        Variable register1 = toVmRow("Register 1", vm.getReg());
+        Variable register1 = toVmRow("Register 1", new Value(vm.getReg()));
         register1.evaluateName = vm.getRegString();
         mapped.add(register1);
 
-        Variable register2 = toVmRow("Register 2", vm.getReg2());
+        Variable register2 = toVmRow("Register 2", new Value(vm.getReg2()));
         register2.evaluateName = vm.getReg2String();
         mapped.add(register2);
 

@@ -237,70 +237,70 @@ public class JoystickBasicLib implements FunctionLibrary {
     public static final class WrapJoyLeft implements Function {
         public void run(TomVM vm) {
             autoPoll();
-            vm.getReg().setIntVal(getJoyX() <= -threshHold ? -1 : 0);
+            vm.setRegIntVal(getJoyX() <= -threshHold ? -1 : 0);
         }
     }
 
     public static final class WrapJoyRight implements Function {
         public void run(TomVM vm) {
             autoPoll();
-            vm.getReg().setIntVal(getJoyX() >= threshHold ? -1 : 0);
+            vm.setRegIntVal(getJoyX() >= threshHold ? -1 : 0);
         }
     }
 
     public static final class WrapJoyUp implements Function {
         public void run(TomVM vm) {
             autoPoll();
-            vm.getReg().setIntVal(getJoyY() <= -threshHold ? -1 : 0);
+            vm.setRegIntVal(getJoyY() <= -threshHold ? -1 : 0);
         }
     }
 
     public static final class WrapJoyDown implements Function {
         public void run(TomVM vm) {
             autoPoll();
-            vm.getReg().setIntVal(getJoyY() >= threshHold ? -1 : 0);
+            vm.setRegIntVal(getJoyY() >= threshHold ? -1 : 0);
         }
     }
 
     public static final class WrapJoyButton0 implements Function {
         public void run(TomVM vm) {
             autoPoll();
-            vm.getReg().setIntVal(buttons != null && buttons.get(0) != 0 ? -1 : 0);
+            vm.setRegIntVal(buttons != null && buttons.get(0) != 0 ? -1 : 0);
         }
     }
 
     public static final class WrapJoyButton1 implements Function {
         public void run(TomVM vm) {
             autoPoll();
-            vm.getReg().setIntVal(buttons != null && buttons.get(1) != 0 ? -1 : 0);
+            vm.setRegIntVal(buttons != null && buttons.get(1) != 0 ? -1 : 0);
         }
     }
 
     public static final class WrapJoyButton2 implements Function {
         public void run(TomVM vm) {
             autoPoll();
-            vm.getReg().setIntVal(buttons != null && buttons.get(2) != 0 ? -1 : 0);
+            vm.setRegIntVal(buttons != null && buttons.get(2) != 0 ? -1 : 0);
         }
     }
 
     public static final class WrapJoyButton3 implements Function {
         public void run(TomVM vm) {
             autoPoll();
-            vm.getReg().setIntVal(buttons != null && buttons.get(3) != 0 ? -1 : 0);
+            vm.setRegIntVal(buttons != null && buttons.get(3) != 0 ? -1 : 0);
         }
     }
 
     public static final class WrapJoyX implements Function {
         public void run(TomVM vm) {
             autoPoll();
-            vm.getReg().setIntVal(getJoyX());
+            vm.setRegIntVal(getJoyX());
         }
     }
 
     public static final class WrapJoyY implements Function {
         public void run(TomVM vm) {
             autoPoll();
-            vm.getReg().setIntVal(getJoyY());
+            vm.setRegIntVal(getJoyY());
         }
     }
 
@@ -309,7 +309,7 @@ public class JoystickBasicLib implements FunctionLibrary {
             autoPoll();
             int index = vm.getIntParam(1);
             if (index >= 0 && index < JOY_BUTTONS) {
-                vm.getReg().setIntVal(buttons != null && buttons.get(index) != 0 ? -1 : 0);
+                vm.setRegIntVal(buttons != null && buttons.get(index) != 0 ? -1 : 0);
             }
         }
     }

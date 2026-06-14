@@ -436,7 +436,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             clearError();
 
             // Register this code block and return handle
-            vm.getReg().setIntVal(runtimeRoutines.size());
+            vm.setRegIntVal(runtimeRoutines.size());
             runtimeRoutines.add((int) offset);
         } else {
 
@@ -446,7 +446,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             errorCol = (int) comp.getTokenColumn();
 
             // Return 0
-            vm.getReg().setIntVal(0);
+            vm.setRegIntVal(0);
         }
 
         // Restore IP
@@ -457,7 +457,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         if (useOldMethod) {
             doOldCompile(vm);
         } else {
-            vm.getReg().setIntVal(doNewCompile(vm, filename));
+            vm.setRegIntVal(doNewCompile(vm, filename));
         }
     }
 
@@ -507,7 +507,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
         if (file == null) {
             error = files.getError();
-            vm.getReg().setIntVal(0);
+            vm.setRegIntVal(0);
         } else {
 
             // Read file into parser
@@ -525,7 +525,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             } catch (IOException e) {
                 e.printStackTrace();
                 error = e.getMessage();
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
                 return;
             }
             // Compile it
@@ -664,7 +664,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             // Validate it
             if (handle < 0 || handle >= runtimeRoutines.size()) {
                 error = "Invalid handle";
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             } else if (handle > 0) {
 
                 // Find code to execute
@@ -691,7 +691,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
                     result = 0;
                 }
             }
-            vm.getReg().setIntVal(result);
+            vm.setRegIntVal(result);
         }
     }
 
@@ -703,13 +703,13 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
     public static final class WrapCompilerErrorLine implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(errorLine);
+            vm.setRegIntVal(errorLine);
         }
     }
 
     public static final class WrapCompilerErrorCol implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(errorCol);
+            vm.setRegIntVal(errorCol);
         }
     }
 
@@ -789,7 +789,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             // Return function number + 1 if found, or 0 if not.
             // (0 is reserved to mean "null" function pointer. Adding 1 to the function number
             // allows us to distinguish null from a legitimate reference to function # 0)
-            vm.getReg().setIntVal(i != null ? i + 1 : 0);
+            vm.setRegIntVal(i != null ? i + 1 : 0);
         }
     }
 
@@ -812,7 +812,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             // Return function number + 1 if found, or 0 if not.
             // (0 is reserved to mean "null" function pointer. Adding 1 to the function number
             // allows us to distinguish null from a legitimate reference to function # 0)
-            vm.getReg().setIntVal(i != null ? i + 1 : 0);
+            vm.setRegIntVal(i != null ? i + 1 : 0);
         }
     }
 
@@ -822,12 +822,12 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             // Look for matching code block
             for (int i = 1; vm.isCodeBlockValid(i); i++) {
                 if (vm.getCodeBlock(i).filenameEquals(filename)) {
-                    vm.getReg().setIntVal(i);
+                    vm.setRegIntVal(i);
                     return;
                 }
             }
 
-            vm.getReg().setIntVal(0);
+            vm.setRegIntVal(0);
         }
     }
 }

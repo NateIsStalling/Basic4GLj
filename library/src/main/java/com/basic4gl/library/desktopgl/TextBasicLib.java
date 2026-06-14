@@ -2402,13 +2402,13 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapTextRows implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(appText.getRows());
+            vm.setRegIntVal(appText.getRows());
         }
     }
 
     public final class WrapTextCols implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(appText.getColumns());
+            vm.setRegIntVal(appText.getColumns());
         }
     }
 
@@ -2432,7 +2432,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapInScanKey implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(keyboard.getNextScanKey());
+            vm.setRegIntVal(keyboard.getNextScanKey());
         }
     }
 
@@ -2460,9 +2460,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             String s = vm.getStringParam(1);
             if (s.isEmpty()) {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             } else {
-                vm.getReg().setIntVal(keyboard.isKeyDown(s.charAt(0)) ? -1 : 0);
+                vm.setRegIntVal(keyboard.isKeyDown(s.charAt(0)) ? -1 : 0);
             }
         }
     }
@@ -2473,9 +2473,9 @@ public class TextBasicLib implements FunctionLibrary {
             // Windows version of Basic4GL only supports index range 0 - 255,
             // though this version uses a different input library that has a wider value range
             if (index < 0 || index > Character.MAX_VALUE) {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             } else {
-                vm.getReg().setIntVal(keyboard.isScanKeyDown((char) index) ? -1 : 0);
+                vm.setRegIntVal(keyboard.isScanKeyDown((char) index) ? -1 : 0);
             }
         }
     }
@@ -2508,56 +2508,56 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapDefaultFont implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(appText.getDefaultTexture());
+            vm.setRegIntVal(appText.getDefaultTexture());
         }
     }
 
     public final class WrapMouseX implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((float) mouse.getX()) / windowManager.getWindowWidth());
+            vm.setRegFloatValue(((float) mouse.getX()) / windowManager.getWindowWidth());
         }
     }
 
     public final class WrapMouseY implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((float) mouse.getY()) / windowManager.getWindowHeight());
+            vm.setRegFloatValue(((float) mouse.getY()) / windowManager.getWindowHeight());
         }
     }
 
     public final class WrapMouseXD implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((float) mouse.getXD()) / windowManager.getWindowWidth() * 2f);
+            vm.setRegFloatValue(((float) mouse.getXD()) / windowManager.getWindowWidth() * 2f);
         }
     }
 
     public final class WrapMouseYD implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(((float) mouse.getYD()) / windowManager.getWindowHeight() * 2f);
+            vm.setRegFloatValue(((float) mouse.getYD()) / windowManager.getWindowHeight() * 2f);
         }
     }
 
     public final class WrapMouseButton implements Function {
         public void run(TomVM vm) {
             int button = vm.getIntParam(1);
-            vm.getReg().setIntVal(mouse.getButton(button) ? -1 : 0);
+            vm.setRegIntVal(mouse.getButton(button) ? -1 : 0);
         }
     }
 
     public final class WrapMouseWheel implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(mouse.getWheelDelta());
+            vm.setRegIntVal(mouse.getWheelDelta());
         }
     }
 
     public final class WrapCursorCol implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(appText.getCursorX());
+            vm.setRegIntVal(appText.getCursorX());
         }
     }
 
     public final class WrapCursorRow implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(appText.getCursorY());
+            vm.setRegIntVal(appText.getCursorY());
         }
     }
 
@@ -2573,10 +2573,10 @@ public class TextBasicLib implements FunctionLibrary {
 
             // Add to store (so we can track it), and return index to VM
             boundSprite = sprites.alloc(sprite);
-            vm.getReg().setIntVal(boundSprite);
+            vm.setRegIntVal(boundSprite);
             return sprite;
         } else {
-            vm.getReg().setIntVal(0);
+            vm.setRegIntVal(0);
             return null;
         }
     }
@@ -2593,10 +2593,10 @@ public class TextBasicLib implements FunctionLibrary {
 
             // Add to store (so we can track it), and return index to VM
             boundSprite = sprites.alloc(tileMap);
-            vm.getReg().setIntVal(boundSprite);
+            vm.setRegIntVal(boundSprite);
             return tileMap;
         } else {
-            vm.getReg().setIntVal(0);
+            vm.setRegIntVal(0);
             return null;
         }
     }
@@ -2982,20 +2982,19 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSpriteAreaWidth implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(spriteEngine.getWidth());
+            vm.setRegFloatValue(spriteEngine.getWidth());
         }
     }
 
     public final class WrapSpriteAreaHeight implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(spriteEngine.getHeight());
+            vm.setRegFloatValue(spriteEngine.getHeight());
         }
     }
 
     public final class WrapSprFrame implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             isSprite(TextBasicLib.boundSprite)
                                     ? getSprite(TextBasicLib.boundSprite).getFrame()
                                     : 0);
@@ -3004,8 +3003,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprX implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX
                                     : 0);
@@ -3014,8 +3012,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprY implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY
                                     : 0);
@@ -3029,14 +3026,13 @@ public class TextBasicLib implements FunctionLibrary {
                 result[0] = TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX;
                 result[1] = TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY;
             }
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
         }
     }
 
     public final class WrapSprZOrder implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? TextBasicLib.sprites
                                             .getValueAt(TextBasicLib.boundSprite)
@@ -3047,8 +3043,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprXSize implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeX
                                     : 0);
@@ -3057,8 +3052,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprYSize implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeY
                                     : 0);
@@ -3067,8 +3061,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprScale implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).scale
                                     : 0);
@@ -3077,8 +3070,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprXCentre implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerX
                                     : 0);
@@ -3087,8 +3079,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprYCentre implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerY
                                     : 0);
@@ -3097,8 +3088,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprXFlip implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipX ? -1f : 0)
                                     : 0);
@@ -3107,8 +3097,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprYFlip implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipY ? -1f : 0)
                                     : 0);
@@ -3117,8 +3106,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprVisible implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).visible ? -1f : 0)
                                     : 0);
@@ -3127,8 +3115,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprAngle implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).angle
                                     : 0);
@@ -3143,14 +3130,13 @@ public class TextBasicLib implements FunctionLibrary {
                     TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[i] = result[i];
                 }
             }
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 4, Arrays.asList(result)));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 4, Arrays.asList(result)));
         }
     }
 
     public final class WrapSprAlpha implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[3]
                                     : 0);
@@ -3159,8 +3145,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprParallax implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).parallax ? -1f : 0)
                                     : 0);
@@ -3169,8 +3154,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprSolid implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
                                     ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).solid ? -1f : 0)
                                     : 0);
@@ -3181,9 +3165,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 GLSprite sprite = getSprite(TextBasicLib.boundSprite);
-                vm.getReg().setRealVal(sprite.positionX + -sprite.centerX * (sprite.sizeX * sprite.scale));
+                vm.setRegFloatValue(sprite.positionX + -sprite.centerX * (sprite.sizeX * sprite.scale));
             } else {
-                vm.getReg().setRealVal(0f);
+                vm.setRegFloatValue(0f);
             }
         }
     }
@@ -3192,9 +3176,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 GLSprite sprite = getSprite(TextBasicLib.boundSprite);
-                vm.getReg().setRealVal(sprite.positionX + (1 - sprite.centerX) * (sprite.sizeX * sprite.scale));
+                vm.setRegFloatValue(sprite.positionX + (1 - sprite.centerX) * (sprite.sizeX * sprite.scale));
             } else {
-                vm.getReg().setRealVal(0f);
+                vm.setRegFloatValue(0f);
             }
         }
     }
@@ -3203,9 +3187,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 GLSprite sprite = getSprite(TextBasicLib.boundSprite);
-                vm.getReg().setRealVal(sprite.positionY + -sprite.centerY * (sprite.sizeY * sprite.scale));
+                vm.setRegFloatValue(sprite.positionY + -sprite.centerY * (sprite.sizeY * sprite.scale));
             } else {
-                vm.getReg().setRealVal(0f);
+                vm.setRegFloatValue(0f);
             }
         }
     }
@@ -3214,22 +3198,22 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             if (isSprite(TextBasicLib.boundSprite)) {
                 GLSprite sprite = getSprite(TextBasicLib.boundSprite);
-                vm.getReg().setRealVal(sprite.positionY + (1 - sprite.centerY) * (sprite.sizeY * sprite.scale));
+                vm.setRegFloatValue(sprite.positionY + (1 - sprite.centerY) * (sprite.sizeY * sprite.scale));
             } else {
-                vm.getReg().setRealVal(0f);
+                vm.setRegFloatValue(0f);
             }
         }
     }
 
     public final class WrapSprXVel implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).xd : 0);
+            vm.setRegFloatValue(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).xd : 0);
         }
     }
 
     public final class WrapSprYVel implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).yd : 0);
+            vm.setRegFloatValue(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).yd : 0);
         }
     }
 
@@ -3240,26 +3224,25 @@ public class TextBasicLib implements FunctionLibrary {
                 result[0] = getSprite(TextBasicLib.boundSprite).xd;
                 result[1] = getSprite(TextBasicLib.boundSprite).yd;
             }
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
         }
     }
 
     public final class WrapSprSpin implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).angled : 0);
+            vm.setRegFloatValue(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).angled : 0);
         }
     }
 
     public final class WrapSprAnimSpeed implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).angled : 0);
+            vm.setRegFloatValue(isSprite(TextBasicLib.boundSprite) ? getSprite(TextBasicLib.boundSprite).angled : 0);
         }
     }
 
     public final class WrapSprAnimLoop implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             isSprite(TextBasicLib.boundSprite)
                                     ? (getSprite(TextBasicLib.boundSprite).animLoop ? -1f : 0)
                                     : 0);
@@ -3268,8 +3251,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprAnimDone implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             isSprite(TextBasicLib.boundSprite)
                                     ? (getSprite(TextBasicLib.boundSprite).isAnimationDone() ? -1f : 0)
                                     : 0);
@@ -3279,15 +3261,14 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprFrame_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setRealVal(isSprite(index) ? getSprite(index).getFrame() : 0);
+            vm.setRegFloatValue(isSprite(index) ? getSprite(index).getFrame() : 0);
         }
     }
 
     public final class WrapSprX_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? TextBasicLib.sprites.getValueAt(index).positionX
                                     : 0);
@@ -3297,8 +3278,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprY_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? TextBasicLib.sprites.getValueAt(index).positionY
                                     : 0);
@@ -3313,15 +3293,14 @@ public class TextBasicLib implements FunctionLibrary {
                 result[0] = TextBasicLib.sprites.getValueAt(index).positionX;
                 result[1] = TextBasicLib.sprites.getValueAt(index).positionY;
             }
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
         }
     }
 
     public final class WrapSprZOrder_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? TextBasicLib.sprites.getValueAt(index).getZOrder()
                                     : 0);
@@ -3331,8 +3310,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprXSize_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? TextBasicLib.sprites.getValueAt(index).sizeX
                                     : 0);
@@ -3342,8 +3320,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprYSize_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? TextBasicLib.sprites.getValueAt(index).sizeY
                                     : 0);
@@ -3353,8 +3330,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprScale_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? TextBasicLib.sprites.getValueAt(index).scale
                                     : 0);
@@ -3364,8 +3340,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprXCentre_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? TextBasicLib.sprites.getValueAt(index).centerX
                                     : 0);
@@ -3375,8 +3350,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprYCentre_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? TextBasicLib.sprites.getValueAt(index).centerY
                                     : 0);
@@ -3386,8 +3360,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprXFlip_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? (TextBasicLib.sprites.getValueAt(index).flipX ? -1f : 0)
                                     : 0);
@@ -3397,8 +3370,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprYFlip_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? (TextBasicLib.sprites.getValueAt(index).flipY ? -1f : 0)
                                     : 0);
@@ -3408,8 +3380,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprVisible_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? (TextBasicLib.sprites.getValueAt(index).visible ? -1f : 0)
                                     : 0);
@@ -3419,8 +3390,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprAngle_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? TextBasicLib.sprites.getValueAt(index).angle
                                     : 0);
@@ -3437,15 +3407,14 @@ public class TextBasicLib implements FunctionLibrary {
                 }
             }
 
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 4, Arrays.asList(result)));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 4, Arrays.asList(result)));
         }
     }
 
     public final class WrapSprAlpha_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? TextBasicLib.sprites.getValueAt(index).color[3]
                                     : 0);
@@ -3455,8 +3424,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprParallax_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? (TextBasicLib.sprites.getValueAt(index).parallax ? -1f : 0)
                                     : 0);
@@ -3466,8 +3434,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprSolid_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setRealVal(
+            vm.setRegFloatValue(
                             TextBasicLib.sprites.isIndexStored(index)
                                     ? (TextBasicLib.sprites.getValueAt(index).solid ? -1f : 0)
                                     : 0);
@@ -3479,9 +3446,9 @@ public class TextBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (isSprite(index)) {
                 GLSprite sprite = getSprite(index);
-                vm.getReg().setRealVal(sprite.positionX + -sprite.centerX * (sprite.sizeX * sprite.scale));
+                vm.setRegFloatValue(sprite.positionX + -sprite.centerX * (sprite.sizeX * sprite.scale));
             } else {
-                vm.getReg().setRealVal(0f);
+                vm.setRegFloatValue(0f);
             }
         }
     }
@@ -3491,9 +3458,9 @@ public class TextBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (isSprite(index)) {
                 GLSprite sprite = getSprite(index);
-                vm.getReg().setRealVal(sprite.positionX + (1 - sprite.centerX) * (sprite.sizeX * sprite.scale));
+                vm.setRegFloatValue(sprite.positionX + (1 - sprite.centerX) * (sprite.sizeX * sprite.scale));
             } else {
-                vm.getReg().setRealVal(0f);
+                vm.setRegFloatValue(0f);
             }
         }
     }
@@ -3503,9 +3470,9 @@ public class TextBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (isSprite(index)) {
                 GLSprite sprite = getSprite(index);
-                vm.getReg().setRealVal(sprite.positionY + -sprite.centerY * (sprite.sizeY * sprite.scale));
+                vm.setRegFloatValue(sprite.positionY + -sprite.centerY * (sprite.sizeY * sprite.scale));
             } else {
-                vm.getReg().setRealVal(0f);
+                vm.setRegFloatValue(0f);
             }
         }
     }
@@ -3515,9 +3482,9 @@ public class TextBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (isSprite(index)) {
                 GLSprite sprite = getSprite(index);
-                vm.getReg().setRealVal(sprite.positionY + (1 - sprite.centerY) * (sprite.sizeY * sprite.scale));
+                vm.setRegFloatValue(sprite.positionY + (1 - sprite.centerY) * (sprite.sizeY * sprite.scale));
             } else {
-                vm.getReg().setRealVal(0f);
+                vm.setRegFloatValue(0f);
             }
         }
     }
@@ -3525,14 +3492,14 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprXVel_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setRealVal(isSprite(index) ? getSprite(index).xd : 0);
+            vm.setRegFloatValue(isSprite(index) ? getSprite(index).xd : 0);
         }
     }
 
     public final class WrapSprYVel_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setRealVal(isSprite(index) ? getSprite(index).yd : 0);
+            vm.setRegFloatValue(isSprite(index) ? getSprite(index).yd : 0);
         }
     }
 
@@ -3544,35 +3511,35 @@ public class TextBasicLib implements FunctionLibrary {
                 result[0] = getSprite(index).xd;
                 result[1] = getSprite(index).yd;
             }
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
         }
     }
 
     public final class WrapSprSpin_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setRealVal(isSprite(index) ? getSprite(index).angled : 0);
+            vm.setRegFloatValue(isSprite(index) ? getSprite(index).angled : 0);
         }
     }
 
     public final class WrapSprAnimSpeed_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setRealVal(isSprite(index) ? getSprite(index).framed : 0);
+            vm.setRegFloatValue(isSprite(index) ? getSprite(index).framed : 0);
         }
     }
 
     public final class WrapSprAnimLoop_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setRealVal(isSprite(index) ? (getSprite(index).animLoop ? -1f : 0) : 0);
+            vm.setRegFloatValue(isSprite(index) ? (getSprite(index).animLoop ? -1f : 0) : 0);
         }
     }
 
     public final class WrapSprAnimDone_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setRealVal(isSprite(index) ? (getSprite(index).isAnimationDone() ? -1f : 0) : 0);
+            vm.setRegFloatValue(isSprite(index) ? (getSprite(index).isAnimationDone() ? -1f : 0) : 0);
         }
     }
 
@@ -3675,8 +3642,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprType implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setIntVal(
+            vm.setRegIntVal(
                             isBasicSprite(TextBasicLib.boundSprite)
                                     ? getBasicSprite(TextBasicLib.boundSprite)
                                             .getGLSpriteType()
@@ -3687,8 +3653,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprXTiles implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setIntVal(
+            vm.setRegIntVal(
                             isTileMap(boundSprite)
                                     ? getTileMap(TextBasicLib.boundSprite).getTilesX()
                                     : 0);
@@ -3697,8 +3662,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprYTiles implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setIntVal(
+            vm.setRegIntVal(
                             isTileMap(boundSprite)
                                     ? getTileMap(TextBasicLib.boundSprite).getTilesY()
                                     : 0);
@@ -3708,8 +3672,7 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprType_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setIntVal(
+            vm.setRegIntVal(
                             isBasicSprite(index)
                                     ? getBasicSprite(index).getGLSpriteType().getType()
                                     : GLSpriteType.SPR_INVALID.getType());
@@ -3719,14 +3682,14 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprXTiles_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setIntVal(isTileMap(index) ? getTileMap(index).getTilesX() : 0);
+            vm.setRegIntVal(isTileMap(index) ? getTileMap(index).getTilesX() : 0);
         }
     }
 
     public final class WrapSprYTiles_2 implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg().setIntVal(isTileMap(index) ? getTileMap(index).getTilesY() : 0);
+            vm.setRegIntVal(isTileMap(index) ? getTileMap(index).getTilesY() : 0);
         }
     }
 
@@ -3768,9 +3731,9 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprXRepeat implements Function {
         public void run(TomVM vm) {
             if (isTileMap(TextBasicLib.boundSprite)) {
-                vm.getReg().setIntVal(getTileMap(TextBasicLib.boundSprite).repeatX ? -1 : 0);
+                vm.setRegIntVal(getTileMap(TextBasicLib.boundSprite).repeatX ? -1 : 0);
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             }
         }
     }
@@ -3778,9 +3741,9 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprYRepeat implements Function {
         public void run(TomVM vm) {
             if (isTileMap(TextBasicLib.boundSprite)) {
-                vm.getReg().setIntVal(getTileMap(TextBasicLib.boundSprite).repeatY ? -1 : 0);
+                vm.setRegIntVal(getTileMap(TextBasicLib.boundSprite).repeatY ? -1 : 0);
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             }
         }
     }
@@ -3789,9 +3752,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             if (isTileMap(index)) {
-                vm.getReg().setIntVal(getTileMap(index).repeatX ? -1 : 0);
+                vm.setRegIntVal(getTileMap(index).repeatX ? -1 : 0);
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             }
         }
     }
@@ -3800,9 +3763,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             if (isTileMap(index)) {
-                vm.getReg().setIntVal(getTileMap(index).repeatY ? -1 : 0);
+                vm.setRegIntVal(getTileMap(index).repeatY ? -1 : 0);
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             }
         }
     }
@@ -3854,19 +3817,19 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapSprCameraX implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(spriteEngine.camX);
+            vm.setRegFloatValue(spriteEngine.camX);
         }
     }
 
     public final class WrapSprCameraY implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(spriteEngine.camY);
+            vm.setRegFloatValue(spriteEngine.camY);
         }
     }
 
     public final class WrapSprCameraZ implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(spriteEngine.camZ);
+            vm.setRegFloatValue(spriteEngine.camZ);
         }
     }
 
@@ -3875,19 +3838,19 @@ public class TextBasicLib implements FunctionLibrary {
             Float[] result = {0f, 0f};
             result[0] = spriteEngine.camX;
             result[1] = spriteEngine.camY;
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, Arrays.asList(result)));
         }
     }
 
     public final class WrapSprCameraAngle implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(spriteEngine.camAngle);
+            vm.setRegFloatValue(spriteEngine.camAngle);
         }
     }
 
     public final class WrapSprCameraFOV implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(spriteEngine.getFOV());
+            vm.setRegFloatValue(spriteEngine.getFOV());
         }
     }
 
@@ -3914,7 +3877,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapTextScroll implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(appText.getScroll() ? 1 : 0);
+            vm.setRegIntVal(appText.getScroll() ? 1 : 0);
         }
     }
 
@@ -3945,7 +3908,7 @@ public class TextBasicLib implements FunctionLibrary {
     // DLLFUNC
     public final class WrapSpriteCount implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(TextBasicLib.spriteCount);
+            vm.setRegIntVal(TextBasicLib.spriteCount);
         }
     }
 }

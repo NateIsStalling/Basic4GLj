@@ -26,7 +26,7 @@ import org.lwjgl.BufferUtils;
  */
 public class GLBasicLib_gl implements FunctionLibrary {
 
-    static final boolean nullGlMode = false;
+    static final boolean nullGlMode = true;
     private ByteBuffer byteBuffer16;
     private ShortBuffer shortBuffer16;
     private IntBuffer intBuffer16;
@@ -5568,7 +5568,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             IntBuffer b1 = a1.asIntBuffer();
             b1.limit(vm.getIntParam(3));
 
-            vm.getReg().setIntVal(glAreTexturesResident(b1, a2) ? 1 : 0);
+            vm.setRegIntVal(glAreTexturesResident(b1, a2) ? 1 : 0);
             Data.writeArray(
                     vm.getData(),
                     vm.getIntParam(2),
@@ -7243,7 +7243,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglGetError implements Function {
 
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(glGetError());
+            vm.setRegIntVal(glGetError());
         }
     }
 
@@ -8154,19 +8154,19 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglIsEnabled implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(glIsEnabled(vm.getIntParam(1)) ? 1 : 0);
+            vm.setRegIntVal(glIsEnabled(vm.getIntParam(1)) ? 1 : 0);
         }
     }
 
     public static final class WrapglIsList implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(glIsList(vm.getIntParam(1)) ? 1 : 0);
+            vm.setRegIntVal(glIsList(vm.getIntParam(1)) ? 1 : 0);
         }
     }
 
     public static final class WrapglIsTexture implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(glIsTexture(vm.getIntParam(1)) ? 1 : 0);
+            vm.setRegIntVal(glIsTexture(vm.getIntParam(1)) ? 1 : 0);
         }
     }
 
@@ -10062,7 +10062,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglRenderMode implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(glRenderMode(vm.getIntParam(1)));
+            vm.setRegIntVal(glRenderMode(vm.getIntParam(1)));
         }
     }
 

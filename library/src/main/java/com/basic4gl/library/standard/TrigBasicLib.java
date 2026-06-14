@@ -847,7 +847,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     static void returnMatrix(TomVM vm) {
-        vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, matrix));
+        vm.setRegIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, matrix));
     }
 
     /**
@@ -909,7 +909,7 @@ public class TrigBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
 
             float[] vec4 = new float[] {vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1)};
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 4, vec4));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 4, vec4));
         }
     }
 
@@ -917,7 +917,7 @@ public class TrigBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
 
             float[] vec3 = new float[] {vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1)};
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 3, vec3));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 3, vec3));
         }
     }
 
@@ -925,7 +925,7 @@ public class TrigBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
 
             float[] vec2 = new float[] {vm.getRealParam(2), vm.getRealParam(1)};
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, vec2));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, vec2));
         }
     }
 
@@ -1054,8 +1054,7 @@ public class TrigBasicLib implements FunctionLibrary {
 
             // Return resulting vector
             // (Vector will be the same length as the first source vector)
-            vm.getReg()
-                    .setIntVal(Data.fillTempRealArray(
+            vm.setRegIntVal(Data.fillTempRealArray(
                             vm.getData(), vm.getDataTypes(), Math.max(Math.max(s1, s2), 3), result));
         }
     }
@@ -1069,7 +1068,7 @@ public class TrigBasicLib implements FunctionLibrary {
             }
 
             // Calculate length
-            vm.getReg().setRealVal(length(v1));
+            vm.setRegFloatValue(length(v1));
         }
     }
 
@@ -1086,7 +1085,7 @@ public class TrigBasicLib implements FunctionLibrary {
             normalize(v1);
 
             // Return resulting vector
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
         }
     }
 
@@ -1099,7 +1098,7 @@ public class TrigBasicLib implements FunctionLibrary {
             }
 
             // Return result
-            vm.getReg().setRealVal(determinant(m1));
+            vm.setRegFloatValue(determinant(m1));
         }
     }
 
@@ -1115,7 +1114,7 @@ public class TrigBasicLib implements FunctionLibrary {
             transpose(m1, m2);
 
             // Create new matrix and assign to register
-            vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m2));
+            vm.setRegIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m2));
         }
     }
 
@@ -1131,7 +1130,7 @@ public class TrigBasicLib implements FunctionLibrary {
             matrixRTInvert(m1, m2);
 
             // Create new matrix and assign to register
-            vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m2));
+            vm.setRegIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m2));
         }
     }
 
@@ -1147,7 +1146,7 @@ public class TrigBasicLib implements FunctionLibrary {
             orthonormalize(m1);
 
             // Create new matrix and assign to register
-            vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m1));
+            vm.setRegIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m1));
         }
     }
 
@@ -1167,7 +1166,7 @@ public class TrigBasicLib implements FunctionLibrary {
         scale(v1, scale);
 
         // Return as temp vector (using original size)
-        vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
+        vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
     }
 
     static void doScaleMatrix(TomVM vm, float scale, int matrixIndex) {
@@ -1181,44 +1180,44 @@ public class TrigBasicLib implements FunctionLibrary {
         scaleMatrix(m1, scale);
 
         // Create new matrix and assign to register
-        vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m1));
+        vm.setRegIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, m1));
     }
 
     public final class OpScaleVec implements Function {
         public void run(TomVM vm) {
-            doScaleVec(vm, vm.getReg().getRealVal(), vm.getReg2().getIntVal());
+            doScaleVec(vm, vm.getRegFloatValue(), vm.getReg2IntVal());
         }
     }
 
     public final class OpScaleVec2 implements Function {
         public void run(TomVM vm) {
-            doScaleVec(vm, vm.getReg2().getRealVal(), vm.getReg().getIntVal());
+            doScaleVec(vm, vm.getReg2FloatValue(), vm.getRegIntVal());
         }
     }
 
     public final class OpDivVec implements Function {
         public void run(TomVM vm) {
             doScaleVec(
-                    vm, (float) (1.0 / vm.getReg().getRealVal()), vm.getReg2().getIntVal());
+                    vm, (float) (1.0 / vm.getRegFloatValue()), vm.getReg2IntVal());
         }
     }
 
     public final class OpScaleMatrix implements Function {
         public void run(TomVM vm) {
-            doScaleMatrix(vm, vm.getReg().getRealVal(), vm.getReg2().getIntVal());
+            doScaleMatrix(vm, vm.getRegFloatValue(), vm.getReg2IntVal());
         }
     }
 
     public final class OpScaleMatrix2 implements Function {
         public void run(TomVM vm) {
-            doScaleMatrix(vm, vm.getReg2().getRealVal(), vm.getReg().getIntVal());
+            doScaleMatrix(vm, vm.getReg2FloatValue(), vm.getRegIntVal());
         }
     }
 
     public final class OpDivMatrix implements Function {
         public void run(TomVM vm) {
             doScaleMatrix(
-                    vm, (float) (1.0 / vm.getReg().getRealVal()), vm.getReg2().getIntVal());
+                    vm, (float) (1.0 / vm.getRegFloatValue()), vm.getReg2IntVal());
         }
     }
 
@@ -1228,12 +1227,12 @@ public class TrigBasicLib implements FunctionLibrary {
             // Matrix at reg2. Vector at reg.
 
             // Read in matrix
-            if (!readMatrix(vm, vm.getReg2().getIntVal(), m1)) {
+            if (!readMatrix(vm, vm.getReg2IntVal(), m1)) {
                 return;
             }
 
             // Read in vector
-            int size = readVec(vm, vm.getReg().getIntVal(), v1);
+            int size = readVec(vm, vm.getRegIntVal(), v1);
             if (size < 0) {
                 return;
             }
@@ -1243,7 +1242,7 @@ public class TrigBasicLib implements FunctionLibrary {
             matrixTimesVec(m1, v1, result);
 
             // Return as temporary vector
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, result));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, result));
         }
     }
 
@@ -1252,8 +1251,8 @@ public class TrigBasicLib implements FunctionLibrary {
 
             // Matrix * Matrix
             // Left matrix at reg2, right matrix at reg1
-            if (!readMatrix(vm, vm.getReg2().getIntVal(), m1)
-                    || !readMatrix(vm, vm.getReg().getIntVal(), m2)) {
+            if (!readMatrix(vm, vm.getReg2IntVal(), m1)
+                    || !readMatrix(vm, vm.getRegIntVal(), m2)) {
                 return;
             }
 
@@ -1262,7 +1261,7 @@ public class TrigBasicLib implements FunctionLibrary {
             matrixTimesMatrix(m1, m2, result);
 
             // Return as temporary matrix
-            vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
+            vm.setRegIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
         }
     }
 
@@ -1272,13 +1271,13 @@ public class TrigBasicLib implements FunctionLibrary {
             // Vector * Vector = dot product
 
             // Fetch vectors
-            if (readVec(vm, vm.getReg2().getIntVal(), v1) < 0
-                    || readVec(vm, vm.getReg().getIntVal(), v2) < 0) {
+            if (readVec(vm, vm.getReg2IntVal(), v1) < 0
+                    || readVec(vm, vm.getRegIntVal(), v2) < 0) {
                 return;
             }
 
             // Return result
-            vm.getReg().setRealVal(dotProduct(v1, v2));
+            vm.setRegFloatValue(dotProduct(v1, v2));
         }
     }
 
@@ -1286,8 +1285,8 @@ public class TrigBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
 
             // Fetch vectors
-            int s1 = readVec(vm, vm.getReg2().getIntVal(), v1),
-                    s2 = readVec(vm, vm.getReg().getIntVal(), v2);
+            int s1 = readVec(vm, vm.getReg2IntVal(), v1),
+                    s2 = readVec(vm, vm.getRegIntVal(), v2);
             if (s1 < 0 || s2 < 0) {
                 return;
             }
@@ -1297,7 +1296,7 @@ public class TrigBasicLib implements FunctionLibrary {
             vecPlus(v1, v2, result);
 
             // Return as temporary vector
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
         }
     }
 
@@ -1305,8 +1304,8 @@ public class TrigBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
 
             // Fetch vectors
-            int s1 = readVec(vm, vm.getReg2().getIntVal(), v1),
-                    s2 = readVec(vm, vm.getReg().getIntVal(), v2);
+            int s1 = readVec(vm, vm.getReg2IntVal(), v1),
+                    s2 = readVec(vm, vm.getRegIntVal(), v2);
             if (s1 < 0 || s2 < 0) {
                 return;
             }
@@ -1316,7 +1315,7 @@ public class TrigBasicLib implements FunctionLibrary {
             vecMinus(v1, v2, result);
 
             // Return as temporary vector
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
         }
     }
 
@@ -1325,8 +1324,8 @@ public class TrigBasicLib implements FunctionLibrary {
 
             // Matrix + Matrix
             // Left matrix at reg2, right matrix at reg1
-            if (!readMatrix(vm, vm.getReg2().getIntVal(), m1)
-                    || !readMatrix(vm, vm.getReg().getIntVal(), m2)) {
+            if (!readMatrix(vm, vm.getReg2IntVal(), m1)
+                    || !readMatrix(vm, vm.getRegIntVal(), m2)) {
                 return;
             }
 
@@ -1335,8 +1334,7 @@ public class TrigBasicLib implements FunctionLibrary {
             matrixPlus(m1, m2, result);
 
             // Return as temporary matrix
-            vm.getReg()
-                    .setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, Arrays.asList(result)));
+            vm.setRegIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, Arrays.asList(result)));
         }
     }
 
@@ -1345,8 +1343,8 @@ public class TrigBasicLib implements FunctionLibrary {
 
             // Matrix - Matrix
             // Left matrix at reg2, right matrix at reg1
-            if (!readMatrix(vm, vm.getReg2().getIntVal(), m1)
-                    || !readMatrix(vm, vm.getReg().getIntVal(), m2)) {
+            if (!readMatrix(vm, vm.getReg2IntVal(), m1)
+                    || !readMatrix(vm, vm.getRegIntVal(), m2)) {
                 return;
             }
 
@@ -1355,20 +1353,19 @@ public class TrigBasicLib implements FunctionLibrary {
             matrixMinus(m1, m2, result);
 
             // Return as temporary matrix
-            vm.getReg()
-                    .setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, Arrays.asList(result)));
+            vm.setRegIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, Arrays.asList(result)));
         }
     }
 
     public final class OpNegVec implements Function {
         public void run(TomVM vm) {
-            doScaleVec(vm, -1, vm.getReg().getIntVal());
+            doScaleVec(vm, -1, vm.getRegIntVal());
         }
     }
 
     public final class OpNegMatrix implements Function {
         public void run(TomVM vm) {
-            doScaleMatrix(vm, -1, vm.getReg().getIntVal());
+            doScaleMatrix(vm, -1, vm.getRegIntVal());
         }
     }
 
@@ -1417,7 +1414,7 @@ public class TrigBasicLib implements FunctionLibrary {
             if (readMatrix(vm, vm.getIntParam(2), m1) && (size = readVec(vm, vm.getIntParam(1), v1)) >= 0) {
                 matrixTimesVec(m1, v1, result);
             }
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, result));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, result));
         }
     }
 
@@ -1431,16 +1428,16 @@ public class TrigBasicLib implements FunctionLibrary {
                     result[i] = 0.0f;
                 }
             }
-            vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
+            vm.setRegIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
         }
     }
 
     public static final class WrapOpVecTimesVec implements Function {
         public void run(TomVM vm) {
             if (readVec(vm, vm.getIntParam(2), v1) >= 0 && readVec(vm, vm.getIntParam(1), v2) >= 0) {
-                vm.getReg().setRealVal(dotProduct(v1, v2));
+                vm.setRegFloatValue(dotProduct(v1, v2));
             } else {
-                vm.getReg().setRealVal(0.0f);
+                vm.setRegFloatValue(0.0f);
             }
         }
     }
@@ -1452,7 +1449,7 @@ public class TrigBasicLib implements FunctionLibrary {
             if ((s1 = readVec(vm, vm.getIntParam(2), v1)) >= 0 && (s2 = readVec(vm, vm.getIntParam(1), v2)) >= 0) {
                 vecPlus(v1, v2, result);
             }
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
         }
     }
 
@@ -1463,7 +1460,7 @@ public class TrigBasicLib implements FunctionLibrary {
             if ((s1 = readVec(vm, vm.getIntParam(2), v1)) >= 0 && (s2 = readVec(vm, vm.getIntParam(1), v2)) >= 0) {
                 vecMinus(v1, v2, result);
             }
-            vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
+            vm.setRegIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), Math.max(s1, s2), result));
         }
     }
 
@@ -1477,7 +1474,7 @@ public class TrigBasicLib implements FunctionLibrary {
                     result[i] = 0.0f;
                 }
             }
-            vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
+            vm.setRegIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
         }
     }
 
@@ -1491,7 +1488,7 @@ public class TrigBasicLib implements FunctionLibrary {
                     result[i] = 0.0f;
                 }
             }
-            vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
+            vm.setRegIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, result));
         }
     }
 

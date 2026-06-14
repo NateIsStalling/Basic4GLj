@@ -1151,7 +1151,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
                 int[] t = new int[tex.asIntBuffer().capacity()];
                 tex.asIntBuffer().get(t);
                 // Return array of textures
-                vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), frameCount.get(0), t));
+                vm.setRegIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), frameCount.get(0), t));
                 return;
             }
         }
@@ -1159,7 +1159,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         // Load failed.
         // Return 1 element array containing a 0.
         int blankFrame = 0;
-        vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, new int[] {blankFrame}));
+        vm.setRegIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, new int[] {blankFrame}));
     }
 
     static int uploadTexture(Image image) {
@@ -1647,7 +1647,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
                 int[] t = new int[tex.asIntBuffer().capacity()];
                 tex.asIntBuffer().get(t);
                 // Return array of textures
-                vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), frameCount.get(0), t));
+                vm.setRegIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), frameCount.get(0), t));
                 return;
             }
         }
@@ -1655,7 +1655,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         // Load failed.
         // Return 1 element array containing a 0.
         int blankFrame = 0;
-        vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, new int[] {blankFrame}));
+        vm.setRegIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, new int[] {blankFrame}));
     }
 
     // endregion
@@ -1665,7 +1665,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
             int texture = OpenGLBasicLib.loadTex(vm.getStringParam(1));
             OpenGLBasicLib.textures.addHandle(texture);
-            vm.getReg().setIntVal(texture);
+            vm.setRegIntVal(texture);
             glPopAttrib();
         }
     }
@@ -1682,11 +1682,11 @@ public class OpenGLBasicLib implements FunctionLibrary {
                     array[i] = texs.get(i);
                     OpenGLBasicLib.textures.addHandle(texs.get(i));
                 }
-                vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), texs.size(), array));
+                vm.setRegIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), texs.size(), array));
             } else {
                 int[] array = new int[1];
                 array[0] = 0;
-                vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, array));
+                vm.setRegIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, array));
             }
             glPopAttrib();
         }
@@ -1705,13 +1705,12 @@ public class OpenGLBasicLib implements FunctionLibrary {
                     array[i] = texs.get(i);
                     OpenGLBasicLib.textures.addHandle(texs.get(i));
                 }
-                vm.getReg()
-                        .setIntVal(Data.fillTempIntArray(
+                vm.setRegIntVal(Data.fillTempIntArray(
                                 vm.getData(), vm.getDataTypes(), texs.size(), Arrays.asList(array)));
             } else {
                 Integer[] array = new Integer[1];
                 array[0] = 0;
-                vm.getReg().setIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, Arrays.asList(array)));
+                vm.setRegIntVal(Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), 1, Arrays.asList(array)));
             }
             glPopAttrib();
         }
@@ -1719,14 +1718,13 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
     public static final class WrapTexStripFrames implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(OpenGLBasicLib.getTexStripFrames(vm.getStringParam(1)));
+            vm.setRegIntVal(OpenGLBasicLib.getTexStripFrames(vm.getStringParam(1)));
         }
     }
 
     public static final class WrapTexStripFrames2 implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setIntVal(OpenGLBasicLib.getTexStripFrames(
+            vm.setRegIntVal(OpenGLBasicLib.getTexStripFrames(
                             vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
         }
     }
@@ -1777,7 +1775,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             glGenTextures(buffer.asIntBuffer());
             texture = buffer.asIntBuffer().get(0);
             OpenGLBasicLib.textures.addHandle(texture);
-            vm.getReg().setIntVal(texture);
+            vm.setRegIntVal(texture);
         }
     }
 
@@ -1791,7 +1789,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
 
             // Load and return non-mipmapped texture
-            vm.getReg().setIntVal(OpenGLBasicLib.loadTexture(vm.getStringParam(1), false));
+            vm.setRegIntVal(OpenGLBasicLib.loadTexture(vm.getStringParam(1), false));
         }
     }
 
@@ -1799,7 +1797,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
 
             // Load and return mipmapped texture
-            vm.getReg().setIntVal(OpenGLBasicLib.loadTexture(vm.getStringParam(1), true));
+            vm.setRegIntVal(OpenGLBasicLib.loadTexture(vm.getStringParam(1), true));
         }
     }
 
@@ -1810,7 +1808,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             Image image = LoadImage.loadImage(vm.getStringParam(1));
 
             // If successful, store it and return handle
-            vm.getReg().setIntVal((image != null) ? OpenGLBasicLib.images.alloc(image) : 0);
+            vm.setRegIntVal((image != null) ? OpenGLBasicLib.images.alloc(image) : 0);
         }
     }
 
@@ -1917,8 +1915,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     public static final class WrapImageWidth implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setIntVal(
+            vm.setRegIntVal(
                             OpenGLBasicLib.images.isIndexStored(index)
                                     ? OpenGLBasicLib.images.getValueAt(index).getWidth()
                                     : 0);
@@ -1928,8 +1925,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     public static final class WrapImageHeight implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setIntVal(
+            vm.setRegIntVal(
                             OpenGLBasicLib.images.isIndexStored(index)
                                     ? OpenGLBasicLib.images.getValueAt(index).getHeight()
                                     : 0);
@@ -1939,8 +1935,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     public static final class WrapImageFormat implements Function {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
-            vm.getReg()
-                    .setIntVal(
+            vm.setRegIntVal(
                             OpenGLBasicLib.images.isIndexStored(index)
                                     ? LoadImage.getImageFormat(OpenGLBasicLib.images.getValueAt(index))
                                     : 0);
@@ -1949,7 +1944,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
     public static final class WrapImageDataType implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(GL_UNSIGNED_BYTE); // Images always stored as unsigned bytes
+            vm.setRegIntVal(GL_UNSIGNED_BYTE); // Images always stored as unsigned bytes
         }
     }
 
@@ -2012,7 +2007,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
     public final class WrapExtensionSupported implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(windowManager.isExtensionSupported(vm.getStringParam(1)) ? 1 : 0);
+            vm.setRegIntVal(windowManager.isExtensionSupported(vm.getStringParam(1)) ? 1 : 0);
         }
     }
 
@@ -2020,19 +2015,19 @@ public class OpenGLBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             IntBuffer units = BufferUtils.createIntBuffer(1);
             glGetIntegerv(ARBMultitexture.GL_MAX_TEXTURE_UNITS_ARB, units);
-            vm.getReg().setIntVal(units.get(0));
+            vm.setRegIntVal(units.get(0));
         }
     }
 
     public final class WrapWindowWidth implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(windowManager.getPendingWindowWidth());
+            vm.setRegIntVal(windowManager.getPendingWindowWidth());
         }
     }
 
     public final class WrapWindowHeight implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(windowManager.getPendingWindowHeight());
+            vm.setRegIntVal(windowManager.getPendingWindowHeight());
         }
     }
 
@@ -2224,7 +2219,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             }
 
             // Return result
-            vm.getReg().setIntVal(base);
+            vm.setRegIntVal(base);
         }
     }
 
@@ -2402,8 +2397,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
     public static final class WrapImageStripFrames implements Function {
         public void run(TomVM vm) {
-            vm.getReg()
-                    .setIntVal(OpenGLBasicLib.imageStripFrames(
+            vm.setRegIntVal(OpenGLBasicLib.imageStripFrames(
                             vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
         }
     }
@@ -2439,14 +2433,14 @@ public class OpenGLBasicLib implements FunctionLibrary {
     public final class OldSquare_WrapImageStripFrames implements Function {
         public void run(TomVM vm) {
             IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, 1024);
-            vm.getReg().setIntVal(getOldSquareImageStripFrames(vm, vm.getStringParam(1), frameSize));
+            vm.setRegIntVal(getOldSquareImageStripFrames(vm, vm.getStringParam(1), frameSize));
         }
     }
 
     public final class OldSquare_WrapImageStripFrames_2 implements Function {
         public void run(TomVM vm) {
             IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, vm.getIntParam(1));
-            vm.getReg().setIntVal(getOldSquareImageStripFrames(vm, vm.getStringParam(2), frameSize));
+            vm.setRegIntVal(getOldSquareImageStripFrames(vm, vm.getStringParam(2), frameSize));
         }
     }
 
@@ -2509,25 +2503,25 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
     public final class WrapWindowFullscreen implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(windowManager.pendingParams.isFullscreen ? -1 : 0);
+            vm.setRegIntVal(windowManager.pendingParams.isFullscreen ? -1 : 0);
         }
     }
 
     public final class WrapWindowBorder implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(windowManager.pendingParams.isBordered ? -1 : 0);
+            vm.setRegIntVal(windowManager.pendingParams.isBordered ? -1 : 0);
         }
     }
 
     public final class WrapWindowBpp implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(windowManager.pendingParams.bpp);
+            vm.setRegIntVal(windowManager.pendingParams.bpp);
         }
     }
 
     public final class WrapWindowStencil implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(windowManager.pendingParams.isStencilBufferRequired ? -1 : 0);
+            vm.setRegIntVal(windowManager.pendingParams.isStencilBufferRequired ? -1 : 0);
         }
     }
 
@@ -2539,7 +2533,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
     public final class WrapWindowResizable implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(windowManager.pendingParams.isResizable ? -1 : 0);
+            vm.setRegIntVal(windowManager.pendingParams.isResizable ? -1 : 0);
         }
     }
 
@@ -2547,7 +2541,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     public final class WrapUpdateWindow implements Function {
         public void run(TomVM vm) {
             windowManager.recreateWindow();
-            vm.getReg().setIntVal(windowManager.hasError() ? 0 : -1);
+            vm.setRegIntVal(windowManager.hasError() ? 0 : -1);
         }
     }
 

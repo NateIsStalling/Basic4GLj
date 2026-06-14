@@ -91,19 +91,19 @@ public class Standard implements FunctionLibrary {
 
     public static final class WrapAbs implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(Math.abs(vm.getRealParam(1)));
+            vm.setRegFloatValue(Math.abs(vm.getRealParam(1)));
         }
     }
 
     public static final class WrapAsc implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal((int) vm.getStringParam(1).charAt(0));
+            vm.setRegIntVal((int) vm.getStringParam(1).charAt(0));
         }
     }
 
     public static final class WrapAtn implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.atan(vm.getRealParam(1)));
+            vm.setRegFloatValue((float) Math.atan(vm.getRealParam(1)));
         }
     }
 
@@ -115,13 +115,13 @@ public class Standard implements FunctionLibrary {
 
     public static final class WrapCos implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.cos(vm.getRealParam(1)));
+            vm.setRegFloatValue((float) Math.cos(vm.getRealParam(1)));
         }
     }
 
     public static final class WrapExp implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.pow(M_E, vm.getRealParam(1)));
+            vm.setRegFloatValue((float) Math.pow(M_E, vm.getRealParam(1)));
         }
     }
 
@@ -135,7 +135,7 @@ public class Standard implements FunctionLibrary {
             {
                 intVal--;
             }
-            vm.getReg().setIntVal(intVal);
+            vm.setRegIntVal(intVal);
         }
     }
 
@@ -155,13 +155,13 @@ public class Standard implements FunctionLibrary {
 
     public static final class WrapLen implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(vm.getStringParam(1).length());
+            vm.setRegIntVal(vm.getStringParam(1).length());
         }
     }
 
     public static final class WrapLog implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.log(vm.getRealParam(1)));
+            vm.setRegFloatValue((float) Math.log(vm.getRealParam(1)));
         }
     }
 
@@ -198,7 +198,7 @@ public class Standard implements FunctionLibrary {
 
     public static final class WrapPow implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.pow(vm.getRealParam(2), vm.getRealParam(1)));
+            vm.setRegFloatValue((float) Math.pow(vm.getRealParam(2), vm.getRealParam(1)));
         }
     }
 
@@ -219,7 +219,7 @@ public class Standard implements FunctionLibrary {
 
     public static final class WrapRnd implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(rnd.nextInt(RAND_MAX));
+            vm.setRegIntVal(rnd.nextInt(RAND_MAX));
         }
     }
 
@@ -239,18 +239,18 @@ public class Standard implements FunctionLibrary {
         public void run(TomVM vm) {
             float i = vm.getRealParam(1);
             if (i < 0) {
-                vm.getReg().setIntVal(-1);
+                vm.setRegIntVal(-1);
             } else if (i == 0) {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             } else {
-                vm.getReg().setIntVal(1);
+                vm.setRegIntVal(1);
             }
         }
     }
 
     public static final class WrapSin implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.sin(vm.getRealParam(1)));
+            vm.setRegFloatValue((float) Math.sin(vm.getRealParam(1)));
         }
     }
 
@@ -258,9 +258,9 @@ public class Standard implements FunctionLibrary {
         public void run(TomVM vm) {
             float param = vm.getRealParam(1);
             if (param < 0) {
-                vm.getReg().setRealVal((float) Math.sqrt(-param));
+                vm.setRegFloatValue((float) Math.sqrt(-param));
             } else {
-                vm.getReg().setRealVal((float) Math.sqrt(param));
+                vm.setRegFloatValue((float) Math.sqrt(param));
             }
         }
     }
@@ -269,9 +269,9 @@ public class Standard implements FunctionLibrary {
         public void run(TomVM vm) {
             float param = vm.getRealParam(1);
             if (param < 0) {
-                vm.getReg().setRealVal((float) Math.sqrt(-param));
+                vm.setRegFloatValue((float) Math.sqrt(-param));
             } else {
-                vm.getReg().setRealVal((float) Math.sqrt(param));
+                vm.setRegFloatValue((float) Math.sqrt(param));
             }
         }
     }
@@ -284,22 +284,22 @@ public class Standard implements FunctionLibrary {
 
     public static final class WrapTan implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.tan(vm.getRealParam(1)));
+            vm.setRegFloatValue((float) Math.tan(vm.getRealParam(1)));
         }
     }
 
     public static final class WrapTanh implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.tanh(vm.getRealParam(1)));
+            vm.setRegFloatValue((float) Math.tanh(vm.getRealParam(1)));
         }
     }
 
     public static final class WrapVal implements Function {
         public void run(TomVM vm) {
             try {
-                vm.getReg().setRealVal(Float.valueOf(vm.getStringParam(1)));
+                vm.setRegFloatValue(Float.valueOf(vm.getStringParam(1)));
             } catch (NumberFormatException e) {
-                vm.getReg().setRealVal(0f);
+                vm.setRegFloatValue(0f);
             }
         }
     }
@@ -373,13 +373,13 @@ public class Standard implements FunctionLibrary {
             long diff = tickCount - lastTickCount;
             if (diff < delay) {
                 catchupTime = 0;
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             } else if (catchupTime >= maxCatchupTime) {
                 lastTickCount = tickCount;
                 catchupTime = 0;
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             } else {
-                vm.getReg().setIntVal(-1);
+                vm.setRegIntVal(-1);
                 lastTickCount += delay;
                 catchupTime += delay;
             }
@@ -389,38 +389,38 @@ public class Standard implements FunctionLibrary {
     // Sin, cos and tan using degrees
     public static final class WrapSinD implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.sin(vm.getRealParam(1) * M_DEG2RAD));
+            vm.setRegFloatValue((float) Math.sin(vm.getRealParam(1) * M_DEG2RAD));
         }
     }
 
     public static final class WrapCosD implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.cos(vm.getRealParam(1) * M_DEG2RAD));
+            vm.setRegFloatValue((float) Math.cos(vm.getRealParam(1) * M_DEG2RAD));
         }
     }
 
     public static final class WrapTanD implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.tan(vm.getRealParam(1) * M_DEG2RAD));
+            vm.setRegFloatValue((float) Math.tan(vm.getRealParam(1) * M_DEG2RAD));
         }
     }
 
     public static final class WrapATanD implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.atan(vm.getRealParam(1)) * M_RAD2DEG);
+            vm.setRegFloatValue((float) Math.atan(vm.getRealParam(1)) * M_RAD2DEG);
         }
     }
 
     public static final class WrapDivByZero implements Function { // TESTING!!! REMOVE
         // LATER!!!
         public void run(TomVM vm) {
-            vm.getReg().setRealVal(vm.getRealParam(1) / 0.0f);
+            vm.setRegFloatValue(vm.getRealParam(1) / 0.0f);
         }
     }
 
     public static final class WrapArgCount implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(mArguments.size());
+            vm.setRegIntVal(mArguments.size());
         }
     }
 
@@ -437,13 +437,13 @@ public class Standard implements FunctionLibrary {
 
     public static final class WrapATan2 implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.atan2(vm.getRealParam(2), vm.getRealParam(1)));
+            vm.setRegFloatValue((float) Math.atan2(vm.getRealParam(2), vm.getRealParam(1)));
         }
     }
 
     public static final class WrapATan2D implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setRealVal((float) Math.atan2(vm.getRealParam(2), vm.getRealParam(1)) * M_RAD2DEG);
+            vm.setRegFloatValue((float) Math.atan2(vm.getRealParam(2), vm.getRealParam(1)) * M_RAD2DEG);
         }
     }
 
@@ -452,7 +452,7 @@ public class Standard implements FunctionLibrary {
             int dataIndex = vm.getIntParam(1);
             // Arrays are prefixed with their array size.
             // Subtract one to get the maximum accepted value.
-            vm.getReg().setIntVal(vm.getData().data().get(dataIndex).getIntVal() - 1);
+            vm.setRegIntVal(vm.getData().data().get(dataIndex).getIntVal() - 1);
         }
     }
 

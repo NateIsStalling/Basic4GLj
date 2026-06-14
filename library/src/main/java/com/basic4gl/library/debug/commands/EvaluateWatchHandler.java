@@ -6,6 +6,7 @@ import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
 import com.basic4gl.debug.protocol.commands.EvaluateWatchCommand;
 import com.basic4gl.runtime.TomVM;
 import com.basic4gl.runtime.VMState;
+import com.basic4gl.runtime.Value;
 import com.basic4gl.runtime.types.BasicValType;
 import com.basic4gl.runtime.types.OpCode;
 import com.basic4gl.runtime.types.ValType;
@@ -154,7 +155,7 @@ public class EvaluateWatchHandler {
             String temp;
             try {
                 Mutable<Integer> maxChars = new Mutable<>(TomVM.DATA_TO_STRING_MAX_CHARS);
-                temp = vm.valToString(vm.getReg(), valType, maxChars);
+                temp = vm.valToString(new Value(vm.getReg()), valType, maxChars);
             } catch (Exception ex) {
 
                 // Floating point errors can be raised when converting floats to string

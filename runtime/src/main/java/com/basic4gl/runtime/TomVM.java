@@ -315,12 +315,12 @@ public class TomVM extends HasErrorState implements Streamable {
             initFunctions.get(i).run(this);
         }
 
-        functionArr = this.functions.toArray(new Function[0]);
         // Move to start of program
         ip = 0;
         paused = false;
     }
     Function[] functionArr;
+
     public void continueVM() {
         // Reduced from 0xffffffff since Java doesn't support unsigned ints
         continueVM(0x7fffffff);
@@ -2762,20 +2762,43 @@ public class TomVM extends HasErrorState implements Streamable {
         return ip;
     }
 
-    public Value getReg() {
-        return new Value(regValue);
+    public int getReg() {
+        return regValue;
     }
 
-    public Value getReg2() {
-        return new Value(reg2Value);
+    public int getReg2() {
+        return reg2Value;
+    }
+    public int getRegIntVal() {
+        return regValue;
     }
 
-    public void setReg(int value) {
+    public int getReg2IntVal() {
+        return reg2Value;
+    }
+
+    public float getRegFloatValue() {
+        return intBitsToFloat(regValue);
+    }
+
+    public float getReg2FloatValue() {
+        return intBitsToFloat(reg2Value);
+    }
+
+    public void setRegIntVal(int value) {
         regValue = value;
     }
 
-    public void setReg2(int value) {
+    public void setReg2IntVal(int value) {
         reg2Value = value;
+    }
+
+    public void setRegFloatValue(float value) {
+        regValue = floatToRawIntBits(value);
+    }
+
+    public void setReg2FloatValue(float value) {
+        reg2Value = floatToRawIntBits(value);
     }
 
     public String getRegString() {
@@ -2951,6 +2974,8 @@ public class TomVM extends HasErrorState implements Streamable {
     public int addFunction(Function func) {
         int result = getFunctionCount();
         functions.add(func);
+
+        functionArr = this.functions.toArray(new Function[0]);
 
         return result;
     }

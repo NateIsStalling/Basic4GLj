@@ -5282,7 +5282,7 @@ public class TomBasicCompiler extends HasErrorState {
         if (basictype.get() == BasicValType.VTP_STRING) {
             stringResult.set(vm.getRegString());
         } else {
-            result.set(vm.getReg());
+            result.set(new Value(vm.getReg()));
         }
 
         return true;

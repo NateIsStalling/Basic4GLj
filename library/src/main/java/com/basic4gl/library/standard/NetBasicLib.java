@@ -325,9 +325,9 @@ public class NetBasicLib implements FunctionLibrary {
             if (!checkError(server)) {
                 serverCount--;
                 server.dispose();
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             } else {
-                vm.getReg().setIntVal(servers.alloc(server));
+                vm.setRegIntVal(servers.alloc(server));
             }
         }
     }
@@ -350,9 +350,9 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && servers.isIndexValid(index)) {
                 NetListenLow server = servers.getValueAt(index);
-                vm.getReg().setIntVal(server.isConnectionPending() ? -1 : 0);
+                vm.setRegIntVal(server.isConnectionPending() ? -1 : 0);
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
                 setLastError("Invalid network server handle");
             }
         }
@@ -371,13 +371,13 @@ public class NetBasicLib implements FunctionLibrary {
                     NetConL2 connection = new NetConL2(server.acceptConnection());
                     if (!checkError(connection)) {
                         connection.dispose();
-                        vm.getReg().setIntVal(0);
+                        vm.setRegIntVal(0);
                     } else {
                         // Store connection
-                        vm.getReg().setIntVal(connections.alloc(connection));
+                        vm.setRegIntVal(connections.alloc(connection));
                     }
                 } else {
-                    vm.getReg().setIntVal(0);
+                    vm.setRegIntVal(0);
                 }
             } else {
                 setLastError("Invalid network server handle");
@@ -415,10 +415,10 @@ public class NetBasicLib implements FunctionLibrary {
             connection.connect(addressString);
             if (!checkError(connection)) {
                 connection.dispose();
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             } else {
                 // Store connection
-                vm.getReg().setIntVal(connections.alloc(connection));
+                vm.setRegIntVal(connections.alloc(connection));
             }
         }
     }
@@ -441,9 +441,9 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
-                vm.getReg().setIntVal(connection.isHandShaking() ? 1 : 0);
+                vm.setRegIntVal(connection.isHandShaking() ? 1 : 0);
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
                 setLastError("Invalid network connection handle");
             }
         }
@@ -456,9 +456,9 @@ public class NetBasicLib implements FunctionLibrary {
             int index = vm.getIntParam(1);
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
-                vm.getReg().setIntVal(connection.isConnected() ? 1 : 0);
+                vm.setRegIntVal(connection.isConnected() ? 1 : 0);
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
                 setLastError("Invalid network connection handle");
             }
         }
@@ -473,9 +473,9 @@ public class NetBasicLib implements FunctionLibrary {
                 NetConL2 connection = connections.getValueAt(index);
 
                 // Check for data
-                vm.getReg().setIntVal(connection.hasDataPending() ? -1 : 0);
+                vm.setRegIntVal(connection.hasDataPending() ? -1 : 0);
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
                 setLastError("Invalid network connection handle");
             }
         }
@@ -508,13 +508,13 @@ public class NetBasicLib implements FunctionLibrary {
                             new NetMessageStream(connections, index, channel, reliable, smoothed, stream);
 
                     // Store it
-                    vm.getReg().setIntVal(fileStreams.alloc(message));
+                    vm.setRegIntVal(fileStreams.alloc(message));
                     message.close();
                 } else {
-                    vm.getReg().setIntVal(0);
+                    vm.setRegIntVal(0);
                 }
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
                 setLastError("Invalid network connection handle");
             }
         }
@@ -528,12 +528,12 @@ public class NetBasicLib implements FunctionLibrary {
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
                 if (connection.hasDataPending()) {
-                    vm.getReg().setIntVal(connection.getPendingChannel());
+                    vm.setRegIntVal(connection.getPendingChannel());
                 } else {
-                    vm.getReg().setIntVal(0);
+                    vm.setRegIntVal(0);
                 }
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
                 setLastError("Invalid network connection handle");
             }
         }
@@ -547,12 +547,12 @@ public class NetBasicLib implements FunctionLibrary {
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
                 if (connection.hasDataPending()) {
-                    vm.getReg().setIntVal(connection.isPendingReliable() ? 1 : 0);
+                    vm.setRegIntVal(connection.isPendingReliable() ? 1 : 0);
                 } else {
-                    vm.getReg().setIntVal(0);
+                    vm.setRegIntVal(0);
                 }
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
                 setLastError("Invalid network connection handle");
             }
         }
@@ -566,12 +566,12 @@ public class NetBasicLib implements FunctionLibrary {
             if (index > 0 && connections.isIndexValid(index)) {
                 NetConL2 connection = connections.getValueAt(index);
                 if (connection.hasDataPending()) {
-                    vm.getReg().setIntVal(connection.isPendingSmoothed() ? 1 : 0);
+                    vm.setRegIntVal(connection.isPendingSmoothed() ? 1 : 0);
                 } else {
-                    vm.getReg().setIntVal(0);
+                    vm.setRegIntVal(0);
                 }
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
                 setLastError("Invalid network connection handle");
             }
         }
@@ -595,13 +595,13 @@ public class NetBasicLib implements FunctionLibrary {
                             connections, index, channel, reliable, smoothed, new ByteArrayOutputStream());
 
                     // Store message
-                    vm.getReg().setIntVal(fileStreams.alloc(message));
+                    vm.setRegIntVal(fileStreams.alloc(message));
                 } else {
-                    vm.getReg().setIntVal(0);
+                    vm.setRegIntVal(0);
                     setLastError("Invalid channel index. Must be 0 - 31.");
                 }
             } else {
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
                 setLastError("Invalid network connection handle");
             }
         }

@@ -546,11 +546,11 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
 
     // Regular return values
     public void setIntResult(int result) {
-        vm.getReg().setIntVal(result);
+        vm.setRegIntVal(result);
     }
 
     public void setFloatResult(float result) {
-        vm.getReg().setRealVal(result);
+        vm.setRegFloatValue(result);
     }
 
     public void setStringResult(String result) {
@@ -611,7 +611,7 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
         WriteIntArray(dataIndex, array, dimensions, dimensionArray);
 
         // Assign array to virtual machine register
-        vm.getReg().setIntVal(dataIndex);
+        vm.setRegIntVal(dataIndex);
     }
 
     public void setFloatArrayResult(float[] array, int dimensions, int dimension0Size, int... otherDimensions) {
@@ -633,7 +633,7 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
         WriteFloatArray(dataIndex, array, dimensions, dimensionArray);
 
         // Assign array to virtual machine register
-        vm.getReg().setIntVal(dataIndex);
+        vm.setRegIntVal(dataIndex);
     }
 
     // General purpose data access routines
@@ -732,7 +732,7 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
             if (currentType.getBaseType() == PLUGIN_BASIC4GL_EXT_STRING) {
                 vm.setRegString(readCString(src, currentType.getStringSize()));
             } else {
-                BasicValueFromCValue(currentType, vm.getReg(), src);
+                BasicValueFromCValue(currentType, new Value(vm.getReg()), src);
             }
         } else {
 
@@ -751,7 +751,7 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
             BasicDataFromCData(derefType, new Mutable<>(dataIndex), src);
 
             // Return reference to result data in register
-            vm.getReg().setIntVal(returnDataIndex);
+            vm.setRegIntVal(returnDataIndex);
         }
     }
 

@@ -168,31 +168,31 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
 
     public static final class WrapTickCount implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal((int) (System.currentTimeMillis() % Integer.MAX_VALUE));
+            vm.setRegIntVal((int) (System.currentTimeMillis() % Integer.MAX_VALUE));
         }
     }
 
     public final class WrapPerformanceCounter implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal((int) (getPerformanceCounter() % Integer.MAX_VALUE));
+            vm.setRegIntVal((int) (getPerformanceCounter() % Integer.MAX_VALUE));
         }
     }
 
     public final class WrapDesktopWidth implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(windowManager.getScreenWidth());
+            vm.setRegIntVal(windowManager.getScreenWidth());
         }
     }
 
     public final class WrapDesktopHeight implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(windowManager.getScreenHeight());
+            vm.setRegIntVal(windowManager.getScreenHeight());
         }
     }
 
     public final class WrapIsWindowClosing implements Function {
         public void run(TomVM vm) {
-            vm.getReg().setIntVal(windowManager.isCloseRequested() ? -1 : 0);
+            vm.setRegIntVal(windowManager.isCloseRequested() ? -1 : 0);
         }
     }
 }
