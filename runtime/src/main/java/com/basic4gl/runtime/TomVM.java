@@ -103,6 +103,8 @@ public class TomVM extends HasErrorState implements Streamable {
      * Call stack for user functions
      */
     private final ArrayList<UserFuncStackFrame> userCallStack;
+    private static final int MAX_FRAME_POOL_SIZE = 1024;
+    private final ArrayList<UserFuncStackFrame> framePool = new ArrayList<>();
 
     // Individual code blocks
     private final ArrayList<CodeBlock> codeBlocks;
@@ -325,7 +327,27 @@ public class TomVM extends HasErrorState implements Streamable {
     }
     Function[] functionArr;
     int[] variableDataIndexes = new int[0];
+    private UserFuncStackFrame acquireFrame() {
+        int size = framePool.size();
 
+        if (size == 0) {
+            return new UserFuncStackFrame();
+        }
+
+        return framePool.remove(size - 1);
+    }
+
+    private void releaseFrame(UserFuncStackFrame frame) {
+        if (frame == null) {
+            return;
+        }
+
+        frame.resetForReuse();
+
+        if (framePool.size() < MAX_FRAME_POOL_SIZE) {
+            framePool.add(frame);
+        }
+    }
     public void continueVM() {
         // Reduced from 0xffffffff since Java doesn't support unsigned ints
         continueVM(0x7fffffff);
@@ -344,6 +366,7 @@ public class TomVM extends HasErrorState implements Streamable {
         int instructionValue;
         int stepCount = 0;
         int tempI;
+        UserFuncStackFrame stackFrame;
 
         // Handle long running functions
         if (longRunningFunction != null) {
@@ -979,9 +1002,9 @@ public class TomVM extends HasErrorState implements Streamable {
                     }
 
                     // Push stack frame, with return address
-                    userCallStack.add(new UserFuncStackFrame());
-                    UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
+                    stackFrame = acquireFrame();
                     stackFrame.initForGosub(ip + 1);
+                    userCallStack.add(stackFrame);
 
                     // Jump to subroutine
                     ip = instructionValue;
@@ -1000,8 +1023,20 @@ public class TomVM extends HasErrorState implements Streamable {
                     // an OpCode.OP_RETURN if stack top is not a GOSUB
                     //assertTrue(CollectionUtil.last(userCallStack).userFuncIndex == -1);
 
-                    tempI = CollectionUtil.last(userCallStack).returnAddr;
-                    userCallStack.remove(userCallStack.size() - 1);
+                    int top = userCallStack.size() - 1;
+                    stackFrame = userCallStack.get(top);
+
+                    // Optional defensive check. Existing code treats this as impossible.
+                    if (stackFrame.userFuncIndex != -1) {
+                        setError(ERR_STACK_ERROR);
+                        break;
+                    }
+
+
+                    tempI = stackFrame.returnAddr;
+                    userCallStack.remove(top);
+                    releaseFrame(stackFrame);
+
                     if (tempI >= codeInstructions.size()) {
                         setError(ERR_STACK_ERROR);
                         break;
@@ -1038,13 +1073,16 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Create and initialize stack frame
                     int funcIndex = instructionValue;
-                    userCallStack.add(new UserFuncStackFrame());
-                    UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
+
+                    stackFrame = acquireFrame();
                     stackFrame.initForUserFunction(
-                            userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex), funcIndex);
+                            userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex),
+                            funcIndex);
+                    userCallStack.add(stackFrame);
 
                     // Save previous stack frame data
-                    Mutable<Integer> tempTop = new Mutable<>(0), tempLock = new Mutable<>(0);
+                    Mutable<Integer> tempTop = new Mutable<>(0);
+                    Mutable<Integer> tempLock = new Mutable<>(0);
                     data.saveState(tempTop, tempLock);
                     stackFrame.prevStackTop = tempTop.get();
                     stackFrame.prevTempDataLock = tempLock.get();
@@ -1073,15 +1111,15 @@ public class TomVM extends HasErrorState implements Streamable {
                     // (+1 is so that we can use 0 for null)
                     int funcIndex = regValue - 1;
 
-                    UserFuncStackFrame stackFrame = new UserFuncStackFrame();
+                    stackFrame = acquireFrame();
+                    stackFrame.initForUserFunction(
+                            userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex),
+                            funcIndex);
                     userCallStack.add(stackFrame);
 
-                    stackFrame.initForUserFunction(
-                            userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex), funcIndex);
-
                     // Save previous stack frame data
-                    Mutable<Integer> stackTopRef = new Mutable<>(stackFrame.prevStackTop);
-                    Mutable<Integer> tempDataLockRef = new Mutable<>(stackFrame.prevTempDataLock);
+                    Mutable<Integer> stackTopRef = new Mutable<>(0);
+                    Mutable<Integer> tempDataLockRef = new Mutable<>(0);
                     data.saveState(stackTopRef, tempDataLockRef);
                     stackFrame.prevStackTop = stackTopRef.get();
                     stackFrame.prevTempDataLock = tempDataLockRef.get();
@@ -1148,10 +1186,11 @@ public class TomVM extends HasErrorState implements Streamable {
                     }
 
                     // Create and initialize stack frame
-                    userCallStack.add(new UserFuncStackFrame());
-                    UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
+                    stackFrame = acquireFrame();
                     stackFrame.initForUserFunction(
-                            userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex), funcIndex);
+                            userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex),
+                            funcIndex);
+                    userCallStack.add(stackFrame);
 
                     // Save previous stack frame data
                     Mutable<Integer> tempTop = new Mutable<>(0), tempLock = new Mutable<>(0);
@@ -1165,7 +1204,9 @@ public class TomVM extends HasErrorState implements Streamable {
                 case OpCode.OP_CALL_USER_FUNC: {
 
                     // Call user defined function
-                    UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
+                    int frameIndex = userCallStack.size() - 1;
+                    stackFrame = userCallStack.get(frameIndex);
+
                     UserFunc userFunc = userFunctions.get(stackFrame.userFuncIndex);
 
                     // Make active
@@ -1182,16 +1223,28 @@ public class TomVM extends HasErrorState implements Streamable {
                     //assertTrue(!userCallStack.isEmpty());
 
                     // Find current stack frame
-                    UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
+                    top = userCallStack.size() - 1;
+                    stackFrame = userCallStack.get(top);
+
+                    boolean doFreeTempData = instructionValue == 1;
+
                     //assertTrue(stackFrame.userFuncIndex >= 0);
 
                     // Restore previous stack frame data
-                    boolean doFreeTempData = instructionValue == 1;
+                    int returnAddr = stackFrame.returnAddr;
+                    int prevCurrentFrame = stackFrame.prevCurrentFrame;
+                    int prevStackTop = stackFrame.prevStackTop;
+                    int prevTempDataLock = stackFrame.prevTempDataLock;
+
                     if (doFreeTempData) {
                         unwindTemp();
                     }
-                    unwindStack(stackFrame.prevStackTop);
-                    data.restoreState(stackFrame.prevStackTop, stackFrame.prevTempDataLock, doFreeTempData);
+
+                    unwindStack(prevStackTop);
+                    data.restoreState(prevStackTop, prevTempDataLock, doFreeTempData);
+
+                    userCallStack.remove(top);
+                    releaseFrame(stackFrame);
 
                     // Return to return address
                     ip = stackFrame.returnAddr;
@@ -1233,9 +1286,9 @@ public class TomVM extends HasErrorState implements Streamable {
                             }
 
                             // Push stack frame, with return address
-                            userCallStack.add(new UserFuncStackFrame());
-                            UserFuncStackFrame stackFrame = CollectionUtil.last(userCallStack);
+                            stackFrame = acquireFrame();
                             stackFrame.initForGosub(ip + 1);
+                            userCallStack.add(stackFrame);
 
                             // Jump to subroutine
                             ip = codeBlock.programOffset;

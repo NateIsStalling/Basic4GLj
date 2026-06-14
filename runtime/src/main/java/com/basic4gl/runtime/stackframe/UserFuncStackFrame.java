@@ -15,37 +15,44 @@ public class UserFuncStackFrame {
     public int returnAddr;
 
     // Previous stack frame info
-    // (ignored for GOSUBs)
+    // Ignored for GOSUBs
     public int prevStackTop;
     public int prevTempDataLock;
     public int prevCurrentFrame;
 
     // Local variables and parameters
     // Stores offset of each variable in data array (0 = unallocated).
-    // Elements 0..paramCount-1 are parameters, paramCount..size()-1 are local
-    // variables.
-    // (also ignored for GOSUBs)
     public ArrayList<Integer> localVarDataOffsets;
 
     public UserFuncStackFrame() {
         localVarDataOffsets = new ArrayList<>();
+        resetForReuse();
     }
 
-    public void initForGosub(int returnAddress) {
+    public void resetForReuse() {
         userFuncIndex = -1;
-        this.returnAddr = returnAddress;
+        returnAddr = -1;
+        prevStackTop = 0;
+        prevTempDataLock = 0;
+        prevCurrentFrame = -1;
         localVarDataOffsets.clear();
     }
 
-    public void initForUserFunction(UserFuncPrototype prototype, int userFuncIndex) {
-        this.userFuncIndex = userFuncIndex;
-        returnAddr = -1;
+    public void initForGosub(int returnAddress) {
+        resetForReuse();
+        userFuncIndex = -1;
+        returnAddr = returnAddress;
+    }
 
-        // Allocate local variable data offsets
-        int oldSize = localVarDataOffsets.size();
+    public void initForUserFunction(UserFuncPrototype prototype, int userFuncIndex) {
+        resetForReuse();
+
+        this.userFuncIndex = userFuncIndex;
+
         int newSize = prototype.localVarTypes.size();
         CollectionUtil.resize(localVarDataOffsets, newSize);
-        for (int i = oldSize; i < newSize; i++) {
+
+        for (int i = 0; i < newSize; i++) {
             localVarDataOffsets.set(i, 0);
         }
     }
