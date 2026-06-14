@@ -26,7 +26,7 @@ import org.lwjgl.BufferUtils;
  */
 public class GLBasicLib_gl implements FunctionLibrary {
 
-    static final boolean nullGlMode = true;
+    static final boolean nullGlMode = false;
     private ByteBuffer byteBuffer16;
     private ShortBuffer shortBuffer16;
     private IntBuffer intBuffer16;
