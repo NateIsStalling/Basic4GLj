@@ -16,6 +16,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -241,6 +242,7 @@ public class TomVM extends HasErrorState implements Streamable {
         // Clear variables, data and data types
         clearVariables();
         variables.clear();
+        variableDataIndexes = new int[0];
         dataTypes.clear();
         programData.clear();
         codeBlocks.clear();
@@ -271,6 +273,8 @@ public class TomVM extends HasErrorState implements Streamable {
      */
     public void clearVariables() {
         variables.deallocate(); // Deallocate variables
+        Arrays.fill(variableDataIndexes, 0);
+
         data.clear(); // Deallocate variable data
         stringStore.clear(); // Clear strings
         stack.clear(); // Clear runtime stacks
@@ -320,6 +324,7 @@ public class TomVM extends HasErrorState implements Streamable {
         paused = false;
     }
     Function[] functionArr;
+    int[] variableDataIndexes = new int[0];
 
     public void continueVM() {
         // Reduced from 0xffffffff since Java doesn't support unsigned ints
@@ -327,7 +332,7 @@ public class TomVM extends HasErrorState implements Streamable {
     }
 
     public void continueVM(int steps) // Continue execution from last position
-            {
+    {
 
         clearError();
         paused = false;
@@ -390,10 +395,11 @@ public class TomVM extends HasErrorState implements Streamable {
                     // Load variable.
                     // Instruction contains index of variable.
                     //assertTrue(variables.isIndexValid(instructionValue));
-                    Variable var = variables.getVariables().get(instructionValue);
-                    if (var.allocated()) {
+//                    Variable var = variables.getVariables().get(instructionValue);
+                    int variableDataIndex = variableDataIndexes[instructionValue];
+                    if (variableDataIndex != 0) {
                         // Load address of variable's data into register
-                        regValue = (var.dataIndex);
+                        regValue = (variableDataIndex);
                         ip++; // Proceed to next instruction
                         continue step;
                     }
@@ -480,7 +486,7 @@ public class TomVM extends HasErrorState implements Streamable {
                             regValue = (reg2Value
                                     + 2
                                     + regValue
-                                            * elementSize);
+                                    * elementSize);
 
                             ip++; // Proceed to next instruction
                             continue step;
@@ -588,6 +594,11 @@ public class TomVM extends HasErrorState implements Streamable {
 
                     // Allocate variable
                     var.allocate(data, dataTypes);
+                    if (instructionValue >= variableDataIndexes.length) {
+                        rebuildVariableDataIndexes();
+                    } else {
+                        variableDataIndexes[instructionValue] = var.dataIndex;
+                    }
 
                     ip++; // Proceed to next instruction
                     continue step;
@@ -1671,6 +1682,17 @@ public class TomVM extends HasErrorState implements Streamable {
         return true;
     }
 
+    private void rebuildVariableDataIndexes() {
+        ArrayList<Variable> vars = variables.getVariables();
+        int[] indexes = new int[vars.size()];
+
+        for (int i = 0; i < vars.size(); i++) {
+            indexes[i] = vars.get(i).dataIndex;
+        }
+
+        variableDataIndexes = indexes;
+    }
+
     boolean popArrayDimensions(ValType type) {
         //assertTrue(dataTypes.isTypeValid(type));
         //assertTrue(type.getVirtualPointerLevel() == 0);
@@ -2243,7 +2265,7 @@ public class TomVM extends HasErrorState implements Streamable {
             // Calculate actual array size
             // Array is prefixed by element count and element size.
             return data.data().getIntValue(sourceIndex)
-                            * data.data().getIntValue(sourceIndex + 1)
+                    * data.data().getIntValue(sourceIndex + 1)
                     + 2;
         } else {
             return dataTypes.getDataSize(type);
@@ -2654,6 +2676,7 @@ public class TomVM extends HasErrorState implements Streamable {
 
         // Variables
         variables.streamIn(stream);
+        rebuildVariableDataIndexes();
 
         // String constants
         int count, i;
