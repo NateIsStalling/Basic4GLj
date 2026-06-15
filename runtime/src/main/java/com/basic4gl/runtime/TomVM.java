@@ -1247,10 +1247,10 @@ public class TomVM extends HasErrorState implements Streamable {
                     releaseFrame(stackFrame);
 
                     // Return to return address
-                    ip = stackFrame.returnAddr;
+                    ip = returnAddr;
 
                     // Make previous frame active
-                    currentUserFrame = stackFrame.prevCurrentFrame;
+                    currentUserFrame = prevCurrentFrame;
 
                     // Remove stack frame
                     userCallStack.remove(userCallStack.size() - 1);
