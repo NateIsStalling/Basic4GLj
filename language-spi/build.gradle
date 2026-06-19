@@ -61,6 +61,23 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            artifactId = 'language-spi'
+            pom {
+                name = 'Basic4GL Language SPI'
+                description = 'Service provider interfaces for Basic4GL language plugins'
+                url = 'https://github.com/NateIsStalling/Basic4GLj'
+                licenses {
+                    license {
+                        name = 'BSD 3-Clause License'
+                        url = 'https://opensource.org/license/bsd-3-clause'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/NateIsStalling/Basic4GLj.git'
+                    developerConnection = 'scm:git:ssh://github.com/NateIsStalling/Basic4GLj.git'
+                    url = 'https://github.com/NateIsStalling/Basic4GLj'
+                }
+            }
         }
     }
     repositories {
