@@ -2,8 +2,6 @@ package com.basic4gl.library.desktopgl.glfw;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.GL_VERSION;
-import static org.lwjgl.opengl.GL11.glGetString;
 
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowParams;
@@ -88,90 +86,107 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         glfwDestroyWindow(window);
         window = 0;
     }
+
     @Override
     protected void internalCreateWindow(OpenGLWindowParams params) {
         assertTrue(window == 0);
 
-        // --- ALL hints must come BEFORE glfwCreateWindow; they only affect the next window. ---
-        glfwDefaultWindowHints(); // reset, since the user can recreate within a session
+        // Some params must specified as "hints"
+        // Note: Must specify them even if set to defaults, because user can change them multiple
+        // times within a single session.
         glfwWindowHint(GLFW_RESIZABLE, params.isResizable ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_DECORATED, params.isBordered ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_STENCIL_BITS, params.isStencilBufferRequired ? 8 : 0);
-        glfwWindowHint(GLFW_DEPTH_BITS, 16);     // base class enables GL_DEPTH_TEST — keep a depth buffer
-        glfwWindowHint(GLFW_SAMPLES, 0);         // no MSAA, matches the WGL pfd
-        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
-
-        // Don't let GLFW upscale the framebuffer on a scaled display. Render at logical size,
-        // the way the DPI-unaware WGL build did. SCALE_TO_MONITOR defaults false; set it explicitly.
-        glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_FALSE);
-        // GLFW 3.4+ only — pins framebuffer to window size on high-DPI. Delete if the constant
-        // doesn't exist in your LWJGL/GLFW version:
-        // glfwWindowHint(GLFW_SCALE_FRAMEBUFFER, GLFW_FALSE);
-
-        // Legacy compatibility context — matches the old plain wglCreateContext path.
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_FALSE);
 
         if (params.isFullscreen && params.bpp == 16) {
-            glfwWindowHint(GLFW_RED_BITS, 5);  glfwWindowHint(GLFW_GREEN_BITS, 6);  glfwWindowHint(GLFW_BLUE_BITS, 5);
+            glfwWindowHint(GLFW_RED_BITS, 5);
+            glfwWindowHint(GLFW_GREEN_BITS, 6);
+            glfwWindowHint(GLFW_BLUE_BITS, 5);
         } else if (params.isFullscreen && params.bpp == 32) {
-            glfwWindowHint(GLFW_RED_BITS, 8);  glfwWindowHint(GLFW_GREEN_BITS, 8);  glfwWindowHint(GLFW_BLUE_BITS, 8);
+            glfwWindowHint(GLFW_RED_BITS, 8);
+            glfwWindowHint(GLFW_GREEN_BITS, 8);
+            glfwWindowHint(GLFW_BLUE_BITS, 8);
         } else {
             glfwWindowHint(GLFW_RED_BITS, GLFW_DONT_CARE);
             glfwWindowHint(GLFW_GREEN_BITS, GLFW_DONT_CARE);
             glfwWindowHint(GLFW_BLUE_BITS, GLFW_DONT_CARE);
         }
 
+        // Dimensions are resolved by OpenGLWindowManager before creation.
         int width = params.width;
         int height = params.height;
-
-        // Fullscreen at desktop resolution => use the monitor's NATIVE video mode.
-        // NOTE: the old code multiplied these by glfwGetMonitorContentScale(), which inflated the
-        // render target above native (≈2.25x at 150% scaling). That multiply is the regression vs the
-        // WGL ChangeDisplaySettings path — it's gone.
         boolean usesDesktopResolution = pendingParams.width == 0 || pendingParams.height == 0;
-        if (width <= 0 || height <= 0 || (params.isFullscreen && usesDesktopResolution)) {
+        if (params.isFullscreen && usesDesktopResolution) {
+            long monitor = glfwGetPrimaryMonitor();
+            FloatBuffer scaleX = BufferUtils.createFloatBuffer(1);
+            FloatBuffer scaleY = BufferUtils.createFloatBuffer(1);
+            glfwGetMonitorContentScale(monitor, scaleX, scaleY);
+            float sx = scaleX.get(0);
+            float sy = scaleY.get(0);
+            if (sx > 1.0f || sy > 1.0f) {
+                width = Math.max(1, Math.round(width * sx));
+                height = Math.max(1, Math.round(height * sy));
+            }
+        }
+        if (width <= 0 || height <= 0) {
             GLFWVidMode mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            if (mode != null) { width = mode.width(); height = mode.height(); }
+            if (mode != null) {
+                width = mode.width();
+                height = mode.height();
+            }
         }
 
-        window = glfwCreateWindow(width, height, params.title,
-                params.isFullscreen ? glfwGetPrimaryMonitor() : 0, 0);
+        // Create the window
+        window = glfwCreateWindow(width, height, params.title, params.isFullscreen ? glfwGetPrimaryMonitor() : 0, 0);
+
         if (window == 0) {
             System.out.println("Failed to create GLFW window");
             setError("Error creating window");
             return;
         }
+
         if (!params.isFullscreen) {
             centerWindowOnPrimaryMonitor(width, height);
         }
 
+        // Make OpenGL context current
         glfwMakeContextCurrent(window);
-        glfwSwapInterval(1); // orthogonal to the perf fix; just restores the old driver-default pacing
+        org.lwjgl.glfw.GLFW.glfwSwapInterval(0);
+        // Initialize OpenGL bindings before any framebuffer-driven GL state updates.
+        // This line is critical for LWJGL's interoperation with GLFW's
+        // OpenGL context, or any context that is managed externally.
+        // LWJGL detects the context that is current in the current thread,
+        // creates the ContextCapabilities instance and makes the OpenGL
+        // bindings available for use.
         GL.createCapabilities();
 
-        // --- One-shot diagnostic. Pull these once, then delete. ---
-        System.out.println("GL_VERSION=" +glGetString(GL_VERSION));
-        System.out.println("GL_RENDERER=" + glGetString(org.lwjgl.opengl.GL11.GL_RENDERER));
-        int[] fbw = new int[1], fbh = new int[1];
-        glfwGetFramebufferSize(window, fbw, fbh);
-        System.out.println("FB=" + fbw[0] + "x" + fbh[0] + " requested=" + width + "x" + height);
-
         refreshWindowSize();
+        // Use drawable framebuffer size (not logical window size) for Retina/high-DPI rendering.
         refreshFramebufferSize();
 
         windowSizeCallback = new GLFWWindowSizeCallback() {
-            @Override public void invoke(long w, int cw, int ch) { updateWindowSize(cw, ch); }
+            @Override
+            public void invoke(long window, int width, int height) {
+                updateWindowSize(width, height);
+            }
         };
         glfwSetWindowSizeCallback(window, windowSizeCallback);
+
         framebufferSizeCallback = new GLFWFramebufferSizeCallback() {
-            @Override public void invoke(long w, int fw, int fh) { updateFramebufferSize(fw, fh); }
+            @Override
+            public void invoke(long window, int width, int height) {
+                updateFramebufferSize(width, height);
+            }
         };
         glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
+        // Fullscreen Retina can settle final drawable size one frame later.
         pendingSizeRefresh = true;
+
+        // Load OpenGL extensions
+        //        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+        //            SetError("gladLoadGLLoader() failed");
+        //        }
     }
 
     @Override
