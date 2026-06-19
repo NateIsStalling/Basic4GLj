@@ -10,13 +10,11 @@ import static com.basic4gl.language.core.types.OpCode.*;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.compiler.util.IVMDriverAccess;
-import com.basic4gl.language.core.extensions.standard.IB4GLCompiler;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
 import com.basic4gl.language.core.types.*;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.TomVM;
-
 import java.io.*;
 import java.nio.IntBuffer;
 import java.util.*;
@@ -205,7 +203,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
         // Hookup and register compiler plugin adapter
         // TODO sort out VM dependency
-//        comp.getPlugins().registerInterface(new CompilerPluginAdapter(), "IB4GLCompiler", 1, 0, null);
+        //        comp.getPlugins().registerInterface(new CompilerPluginAdapter(), "IB4GLCompiler", 1, 0, null);
 
         // Register initialisation function
         TomCompilerBasicLib.comp.getVM().addInitFunction(new InitFunc());
@@ -224,90 +222,90 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         return null;
     }
 
-//    /**
-//     * CompilerPluginAdapter
-//     *
-//     * Exposes the compiler and virtual machine to plugins via the IB4GLCompiler
-//     * interface.
-//     */
-//    public class CompilerPluginAdapter implements IB4GLCompiler {
-//
-//        private int errorLine, errorCol;
-//        private String errorText;
-//
-//        private void clearError() {
-//            errorText = "";
-//            errorLine = 0;
-//            errorCol = 0;
-//        }
-//
-//        // IB4GLCompiler interface
-//        public int compile(String sourceText) {
-//            assertTrue(comp != null);
-//            TomVM vm = comp.getVM();
-//
-//            // Load source text into compiler
-//            comp.getParser().getSourceCode().clear();
-//            comp.getParser().getSourceCode().add(sourceText);
-//
-//            // Compile it
-//            return doNewCompile(vm, COMPILE_FILENAME_DEFAULT);
-//        }
-//
-//        public String getErrorText() {
-//
-//            return errorText;
-//        }
-//
-//        public int getErrorLine() {
-//            return errorLine;
-//        }
-//
-//        public int getErrorColumn() {
-//            return errorCol;
-//        }
-//
-//        public boolean execute(int codeHandle) {
-//            TomVM vm = comp.getVM();
-//
-//            // Check code handle is valid
-//            if (codeHandle == 0 || !vm.isCodeBlockValid(codeHandle)) {
-//                vm.functionError("Invalid code handle");
-//                return false;
-//            }
-//
-//            // Save stack as if a sub is being called.
-//            // This is because we could be in a builtin/plugin function that is in the
-//            // middle of an expression, where temp data is saved to the stack.
-//            // Builtin/plugin functions don't normally protect the existing stack, so
-//            // there may be unprotected temp data that the callback code could trample.
-//            Mutable<Integer> stackTop = new Mutable<>(0), tempDataLock = new Mutable<>(0);
-//            vm.getData().saveState(stackTop, tempDataLock);
-//
-//            // Find code to execute
-//            // 2 op-codes earlier will be the callback hook.
-//            int offset = vm.getCodeBlockOffset(codeHandle) - 2;
-//
-//            // Execute code
-//            internalExecute(vm, offset, true);
-//
-//            // Check for error/end program
-//            if (vm.hasError() || vm.isDone()) {
-//                return false;
-//            }
-//
-//            // Restore stack
-//            vm.getData().restoreState(stackTop.get(), tempDataLock.get(), false);
-//
-//            return true;
-//        }
-//    }
+    //    /**
+    //     * CompilerPluginAdapter
+    //     *
+    //     * Exposes the compiler and virtual machine to plugins via the IB4GLCompiler
+    //     * interface.
+    //     */
+    //    public class CompilerPluginAdapter implements IB4GLCompiler {
+    //
+    //        private int errorLine, errorCol;
+    //        private String errorText;
+    //
+    //        private void clearError() {
+    //            errorText = "";
+    //            errorLine = 0;
+    //            errorCol = 0;
+    //        }
+    //
+    //        // IB4GLCompiler interface
+    //        public int compile(String sourceText) {
+    //            assertTrue(comp != null);
+    //            TomVM vm = comp.getVM();
+    //
+    //            // Load source text into compiler
+    //            comp.getParser().getSourceCode().clear();
+    //            comp.getParser().getSourceCode().add(sourceText);
+    //
+    //            // Compile it
+    //            return doNewCompile(vm, COMPILE_FILENAME_DEFAULT);
+    //        }
+    //
+    //        public String getErrorText() {
+    //
+    //            return errorText;
+    //        }
+    //
+    //        public int getErrorLine() {
+    //            return errorLine;
+    //        }
+    //
+    //        public int getErrorColumn() {
+    //            return errorCol;
+    //        }
+    //
+    //        public boolean execute(int codeHandle) {
+    //            TomVM vm = comp.getVM();
+    //
+    //            // Check code handle is valid
+    //            if (codeHandle == 0 || !vm.isCodeBlockValid(codeHandle)) {
+    //                vm.functionError("Invalid code handle");
+    //                return false;
+    //            }
+    //
+    //            // Save stack as if a sub is being called.
+    //            // This is because we could be in a builtin/plugin function that is in the
+    //            // middle of an expression, where temp data is saved to the stack.
+    //            // Builtin/plugin functions don't normally protect the existing stack, so
+    //            // there may be unprotected temp data that the callback code could trample.
+    //            Mutable<Integer> stackTop = new Mutable<>(0), tempDataLock = new Mutable<>(0);
+    //            vm.getData().saveState(stackTop, tempDataLock);
+    //
+    //            // Find code to execute
+    //            // 2 op-codes earlier will be the callback hook.
+    //            int offset = vm.getCodeBlockOffset(codeHandle) - 2;
+    //
+    //            // Execute code
+    //            internalExecute(vm, offset, true);
+    //
+    //            // Check for error/end program
+    //            if (vm.hasError() || vm.isDone()) {
+    //                return false;
+    //            }
+    //
+    //            // Restore stack
+    //            vm.getData().restoreState(stackTop.get(), tempDataLock.get(), false);
+    //
+    //            return true;
+    //        }
+    //    }
 
     // Globals
     private static TomBasicCompiler comp = null;
     private static IVMDriver host = null;
     private static FileOpener files = null;
-//    private CompilerPluginAdapter compilerAdapter;
+    //    private CompilerPluginAdapter compilerAdapter;
 
     private static String error = "";
     private static int errorLine = 0, errorCol = 0;
@@ -349,10 +347,12 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         // Create hook for builtin/plugin function callbacks.
         // This consists of a GOSUB call to the code to be executed, followed by an
         // END CALLBACK op-code to trigger the return to the calling function.
-        vm.stream().addInstruction(new Instruction(
-                OP_CALL,
-                VTP_INT,
-                new Value((int) vm.stream().getInstructionCount() + 2))); // Add 2 to call the code after these 2 op-codes
+        vm.stream()
+                .addInstruction(new Instruction(
+                        OP_CALL,
+                        VTP_INT,
+                        new Value((int) vm.stream().getInstructionCount()
+                                + 2))); // Add 2 to call the code after these 2 op-codes
         vm.stream().addInstruction(new Instruction(OP_END_CALLBACK, VTP_INT, new Value()));
 
         int codeBlock = 0;
@@ -361,7 +361,10 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             // Replace OP_END with OP_RETURN
             assertTrue(vm.stream().getInstructionCount() > 0);
             assertTrue(vm.stream().getInstruction(vm.stream().getInstructionCount() - 1).opCode == OP_END);
-            vm.stream().setInstruction(vm.stream().getInstructionCount() - 1, new Instruction(OP_RETURN, VTP_INT, new Value(), 0, 0));
+            vm.stream()
+                    .setInstruction(
+                            vm.stream().getInstructionCount() - 1,
+                            new Instruction(OP_RETURN, VTP_INT, new Value(), 0, 0));
 
             // Write filename into new code block
             CodeBlock block = comp.getCurrentCodeBlock();

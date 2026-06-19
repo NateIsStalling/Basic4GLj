@@ -5,7 +5,6 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.basic4gl.lib.util.*;
-import com.basic4gl.runtime.TomVM;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;

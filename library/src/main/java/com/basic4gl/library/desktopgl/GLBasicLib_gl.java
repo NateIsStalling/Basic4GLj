@@ -4,6 +4,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.language.core.runtime.Data;
+import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.Constant;
@@ -15,7 +16,6 @@ import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.library.desktopgl.util.Routines;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.language.core.runtime.Function;
 import java.nio.*;
 import java.util.HashMap;
 import java.util.List;

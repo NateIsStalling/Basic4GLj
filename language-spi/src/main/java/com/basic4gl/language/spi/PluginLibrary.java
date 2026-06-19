@@ -1,9 +1,9 @@
 package com.basic4gl.language.spi;
 
-import com.basic4gl.language.core.types.*;
+import com.basic4gl.language.core.extensions.Basic4GLFunction;
 import com.basic4gl.language.core.internal.Assert;
 import com.basic4gl.language.core.internal.Mutable;
-import com.basic4gl.language.core.extensions.Basic4GLFunction;
+import com.basic4gl.language.core.types.*;
 import java.util.*;
 
 /**

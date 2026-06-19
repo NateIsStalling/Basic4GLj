@@ -2,11 +2,11 @@ package com.basic4gl.language.spi;
 
 import static com.basic4gl.language.spi.Basic4GLExtendedTypeCode.*;
 
+import com.basic4gl.language.core.internal.Assert;
+import com.basic4gl.language.core.runtime.PointerResourceStore;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.TypeLibrary;
 import com.basic4gl.language.core.types.ValType;
-import com.basic4gl.language.core.internal.Assert;
-import com.basic4gl.language.core.runtime.PointerResourceStore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;

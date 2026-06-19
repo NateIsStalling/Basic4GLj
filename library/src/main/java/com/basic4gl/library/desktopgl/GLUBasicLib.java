@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL11.glFrustum;
 import static org.lwjgl.opengl.GL11.glOrtho;
 
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.Constant;
@@ -14,7 +15,6 @@ import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.language.core.runtime.Function;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

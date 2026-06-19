@@ -13,6 +13,9 @@ import com.basic4gl.compiler.util.RollbackPoint;
 import com.basic4gl.compiler.util.Token.TokenType;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
+import com.basic4gl.language.core.stackframe.RuntimeFunction;
+import com.basic4gl.language.core.stackframe.UserFunc;
+import com.basic4gl.language.core.stackframe.UserFuncPrototype;
 import com.basic4gl.language.core.streaming.ProgramStreamable;
 import com.basic4gl.language.core.streaming.Streaming;
 import com.basic4gl.language.core.types.*;
@@ -20,10 +23,6 @@ import com.basic4gl.language.spi.ExtendedFunctionSpecification;
 import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.lib.util.Library;
 import com.basic4gl.runtime.*;
-import com.basic4gl.language.core.stackframe.RuntimeFunction;
-import com.basic4gl.language.core.stackframe.UserFunc;
-import com.basic4gl.language.core.stackframe.UserFuncPrototype;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -614,7 +613,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
     }
 
     public ProgramStreamable getVM() {
-        //TODO fix this!
+        // TODO fix this!
         return vm;
     }
 

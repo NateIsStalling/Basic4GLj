@@ -5,11 +5,11 @@ import static com.basic4gl.language.core.types.BasicValType.VTP_STRING;
 import static com.basic4gl.lib.util.FileOpener.ERROR_DIRECTORY_ALREADY_EXISTS;
 
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.*;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.language.core.runtime.Function;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

@@ -1,8 +1,7 @@
 package com.basic4gl.language.spi;
 
-import com.basic4gl.language.core.types.Constant;
-import com.basic4gl.language.spi.*;
 import com.basic4gl.language.core.internal.Mutable;
+import com.basic4gl.language.core.types.Constant;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

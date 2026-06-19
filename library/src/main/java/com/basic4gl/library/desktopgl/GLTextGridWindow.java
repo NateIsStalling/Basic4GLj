@@ -8,6 +8,8 @@ import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.compiler.util.IVMDriverAccess;
+import com.basic4gl.language.core.runtime.HasErrorState;
+import com.basic4gl.language.core.runtime.InstructionPosition;
 import com.basic4gl.lib.util.*;
 import com.basic4gl.library.debug.DebuggerCommandAdapter;
 import com.basic4gl.library.desktopgl.content.Content2DManager;
@@ -20,14 +22,11 @@ import com.basic4gl.library.desktopgl.input.OpenGLMouse;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.runtime.Debugger;
-import com.basic4gl.language.core.runtime.HasErrorState;
-import com.basic4gl.language.core.runtime.InstructionPosition;
 import com.basic4gl.runtime.TomVM;
 import java.io.*;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 public class GLTextGridWindow extends HasErrorState

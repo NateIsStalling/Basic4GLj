@@ -2,9 +2,10 @@ package com.basic4gl.runtime;
 
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
+import com.basic4gl.language.core.extensions.Basic4GLLongRunningFunction;
+import com.basic4gl.language.core.extensions.Basic4GLRuntime;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
-import com.basic4gl.language.core.extensions.Basic4GLLongRunningFunction;
 import com.basic4gl.language.core.stackframe.ProtectedStackRange;
 import com.basic4gl.language.core.stackframe.StackDestructor;
 import com.basic4gl.language.core.stackframe.UserFunc;
@@ -13,10 +14,8 @@ import com.basic4gl.language.core.streaming.ProgramStreamable;
 import com.basic4gl.language.core.streaming.Streaming;
 import com.basic4gl.language.core.types.*;
 import com.basic4gl.language.core.types.VariableCollection.Variable;
-import com.basic4gl.language.core.extensions.Basic4GLRuntime;
 import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.runtime.plugin.TomVMPluginAdapter;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -391,7 +390,8 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
                     // Find current stack frame
                     assertTrue(currentUserFrame >= 0);
                     assertTrue(currentUserFrame < userCallStack.size());
-                    com.basic4gl.language.core.stackframe.UserFuncStackFrame currentFrame = userCallStack.get(currentUserFrame);
+                    com.basic4gl.language.core.stackframe.UserFuncStackFrame currentFrame =
+                            userCallStack.get(currentUserFrame);
 
                     // Find variable
                     int index = instruction.value.getIntVal();
@@ -586,9 +586,11 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
                     // Find current stack frame
                     assertTrue(currentUserFrame >= 0);
                     assertTrue(currentUserFrame < userCallStack.size());
-                    com.basic4gl.language.core.stackframe.UserFuncStackFrame currentFrame = userCallStack.get(currentUserFrame);
+                    com.basic4gl.language.core.stackframe.UserFuncStackFrame currentFrame =
+                            userCallStack.get(currentUserFrame);
                     UserFunc userFunc = userFunctions.get(currentFrame.userFuncIndex);
-                    com.basic4gl.language.core.stackframe.UserFuncPrototype prototype = userFunctionPrototypes.get(userFunc.prototypeIndex);
+                    com.basic4gl.language.core.stackframe.UserFuncPrototype prototype =
+                            userFunctionPrototypes.get(userFunc.prototypeIndex);
 
                     // Find variable type
                     int index = instruction.value.getIntVal();
@@ -1048,7 +1050,8 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
                     // (+1 is so that we can use 0 for null)
                     int funcIndex = reg.getIntVal() - 1;
 
-                    com.basic4gl.language.core.stackframe.UserFuncStackFrame stackFrame = new com.basic4gl.language.core.stackframe.UserFuncStackFrame();
+                    com.basic4gl.language.core.stackframe.UserFuncStackFrame stackFrame =
+                            new com.basic4gl.language.core.stackframe.UserFuncStackFrame();
                     userCallStack.add(stackFrame);
 
                     stackFrame.initForUserFunction(
@@ -1079,7 +1082,8 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
                     // Check function prototype is compatible with prototype referenced by instruction
                     com.basic4gl.language.core.stackframe.UserFuncPrototype srcProto =
                             userFunctionPrototypes.get(userFunctions.get(funcIndex).prototypeIndex);
-                    com.basic4gl.language.core.stackframe.UserFuncPrototype dstProto = userFunctionPrototypes.get(instruction.value.getIntVal());
+                    com.basic4gl.language.core.stackframe.UserFuncPrototype dstProto =
+                            userFunctionPrototypes.get(instruction.value.getIntVal());
 
                     if (!srcProto.isCompatibleWith(dstProto)) {
                         setError(ERR_FUNC_PTR_INCOMPATIBLE);
@@ -1209,7 +1213,8 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
 
                             // Push stack frame, with return address
                             userCallStack.add(new com.basic4gl.language.core.stackframe.UserFuncStackFrame());
-                            com.basic4gl.language.core.stackframe.UserFuncStackFrame stackFrame = userCallStack.lastElement();
+                            com.basic4gl.language.core.stackframe.UserFuncStackFrame stackFrame =
+                                    userCallStack.lastElement();
                             stackFrame.initForGosub(ip + 1);
 
                             // Jump to subroutine

@@ -4,8 +4,8 @@ import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import com.basic4gl.compiler.util.Token;
 import com.basic4gl.compiler.util.Token.TokenType;
-import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.runtime.HasErrorState;
+import com.basic4gl.language.core.types.BasicValType;
 import java.util.*;
 
 public class Parser extends HasErrorState {

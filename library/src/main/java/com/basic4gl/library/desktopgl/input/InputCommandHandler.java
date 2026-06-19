@@ -6,7 +6,6 @@ import com.basic4gl.language.core.extensions.Basic4GLLongRunningFunction;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.library.desktopgl.content.Content2DManager;
 import com.basic4gl.library.desktopgl.content.GLTextGrid;
-import com.basic4gl.runtime.TomVM;
 
 public class InputCommandHandler implements Basic4GLLongRunningFunction {
     private VM vm;
@@ -119,8 +118,7 @@ public class InputCommandHandler implements Basic4GLLongRunningFunction {
         contentManager.fullRedraw();
     }
 
-    public InputCommandHandler(
-            VM vm, OpenGLKeyboard keyboard, Content2DManager contentManager, GLTextGrid textGrid) {
+    public InputCommandHandler(VM vm, OpenGLKeyboard keyboard, Content2DManager contentManager, GLTextGrid textGrid) {
         this.vm = vm;
         this.keyboard = keyboard;
         this.contentManager = contentManager;

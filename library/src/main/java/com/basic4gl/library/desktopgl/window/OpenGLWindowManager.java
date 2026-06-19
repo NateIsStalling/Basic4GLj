@@ -3,8 +3,8 @@ package com.basic4gl.library.desktopgl.window;
 import static com.basic4gl.library.desktopgl.util.GLUtil.gluPerspective;
 import static org.lwjgl.opengl.GL11.*;
 
-import com.basic4gl.library.desktopgl.util.GLUtil;
 import com.basic4gl.language.core.runtime.HasErrorState;
+import com.basic4gl.library.desktopgl.util.GLUtil;
 import java.util.ArrayList;
 import org.lwjgl.opengl.GL11;
 

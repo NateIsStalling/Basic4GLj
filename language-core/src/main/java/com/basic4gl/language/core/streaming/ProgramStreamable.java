@@ -7,7 +7,6 @@ import com.basic4gl.language.core.stackframe.UserFuncPrototype;
 import com.basic4gl.language.core.types.TypeLibrary;
 import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.language.core.types.VariableCollection;
-
 import java.util.Vector;
 
 public interface ProgramStreamable extends Streamable {

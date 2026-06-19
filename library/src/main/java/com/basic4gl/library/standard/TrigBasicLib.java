@@ -5,6 +5,7 @@ import static com.basic4gl.language.core.types.BasicValType.VTP_REAL;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.language.core.runtime.Data;
+import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
@@ -14,7 +15,6 @@ import com.basic4gl.lib.util.FunctionLibrary;
 import com.basic4gl.lib.util.IAppSettings;
 import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.language.core.runtime.Function;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;

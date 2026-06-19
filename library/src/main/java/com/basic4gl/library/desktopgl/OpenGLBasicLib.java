@@ -7,6 +7,7 @@ import static org.lwjgl.opengl.GL13.*;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.language.core.runtime.Data;
+import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.PointerResourceStore;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.BasicValType;
@@ -23,7 +24,6 @@ import com.basic4gl.library.desktopgl.util.Routines;
 import com.basic4gl.library.desktopgl.util.WindowAdapter;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.language.core.runtime.Function;
 import java.nio.*;
 import java.util.*;
 import org.lwjgl.BufferUtils;

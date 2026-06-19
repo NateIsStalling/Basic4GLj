@@ -1,8 +1,8 @@
 package com.basic4gl.language.spi;
 
+import com.basic4gl.language.core.internal.Assert;
 import com.basic4gl.language.core.types.TypeLibrary;
 import com.basic4gl.language.core.types.ValType;
-import com.basic4gl.language.core.internal.Assert;
 import java.util.Locale;
 import java.util.Vector;
 

@@ -6,6 +6,7 @@ import static com.basic4gl.language.core.types.BasicValType.VTP_STRING;
 import static com.basic4gl.library.netlib4games.NetLogger.initDebugNetLogger;
 
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
@@ -21,7 +22,6 @@ import com.basic4gl.library.standard.net.NetConnectionStore;
 import com.basic4gl.library.standard.net.NetMessageStream;
 import com.basic4gl.library.standard.net.NetServerStore;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.language.core.runtime.Function;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.util.*;

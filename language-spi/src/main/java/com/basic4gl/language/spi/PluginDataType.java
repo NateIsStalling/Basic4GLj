@@ -1,10 +1,7 @@
 package com.basic4gl.language.spi;
 
-import static com.basic4gl.language.spi.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING;
-import static com.basic4gl.language.spi.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_STRING;
-
-import com.basic4gl.language.core.types.ArrayConstants;
 import com.basic4gl.language.core.internal.Assert;
+import com.basic4gl.language.core.types.ArrayConstants;
 
 /**
  * Represents a data type in a plugin structure.
