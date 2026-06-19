@@ -1,10 +1,29 @@
 plugins {
     id 'java'
+    id 'maven-publish'
     id("com.diffplug.spotless") version "7.0.2"
 }
 
 group 'com.basic4gl'
-version '1.0-SNAPSHOT'
+
+def resolveReleaseVersion = {
+    def version = (findProperty('releaseVersion')
+            ?: System.getenv('RELEASE_VERSION')
+            ?: System.getenv('APP_RELEASE_VERSION')
+            ?: System.getenv('BUILD_RELEASE_TAG')
+            ?: System.getenv('GITHUB_REF_NAME'))?.toString()?.trim()
+    if (!version) {
+        return null
+    }
+
+    // Normalize common Git tag shapes to Maven-friendly versions.
+    version = version.replaceFirst('^refs/tags/', '')
+    version = version.replaceFirst('^[vV](?=\\d)', '')
+    version = version.replaceAll('[^0-9A-Za-z._-]', '-')
+    return version
+}
+
+version = resolveReleaseVersion() ?: '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -36,4 +55,23 @@ build.dependsOn spotlessApply
 
 test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name = 'GitHubPackages'
+            def repository = System.getenv('GITHUB_REPOSITORY') ?: ''
+            url = uri("https://maven.pkg.github.com/${repository}")
+            credentials {
+                username = findProperty('gpr.user') ?: System.getenv('GITHUB_ACTOR')
+                password = findProperty('gpr.key') ?: System.getenv('GITHUB_TOKEN')
+            }
+        }
+    }
 }
