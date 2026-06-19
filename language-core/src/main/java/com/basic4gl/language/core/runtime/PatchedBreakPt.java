@@ -1,4 +1,4 @@
-package com.basic4gl.runtime;
+package com.basic4gl.language.core.runtime;
 
 import com.basic4gl.language.core.types.OpCode;
 

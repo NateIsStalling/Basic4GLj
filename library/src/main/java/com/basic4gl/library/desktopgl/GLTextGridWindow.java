@@ -21,7 +21,7 @@ import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.language.core.runtime.HasErrorState;
-import com.basic4gl.runtime.InstructionPosition;
+import com.basic4gl.language.core.runtime.InstructionPosition;
 import com.basic4gl.runtime.TomVM;
 import java.io.*;
 import java.net.URI;

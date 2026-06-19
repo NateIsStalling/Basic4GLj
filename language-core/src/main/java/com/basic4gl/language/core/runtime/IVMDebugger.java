@@ -1,4 +1,4 @@
-package com.basic4gl.runtime.util;
+package com.basic4gl.language.core.runtime;
 
 /**
  * Debugger interface presented to the virtual machine itself.

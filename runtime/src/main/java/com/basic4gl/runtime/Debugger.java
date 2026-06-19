@@ -2,9 +2,9 @@ package com.basic4gl.runtime;
 
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
-import com.basic4gl.runtime.util.ILineNumberMapping;
-import com.basic4gl.runtime.util.IVMDebugger;
-import com.basic4gl.runtime.util.SourceUserBreakPt;
+import com.basic4gl.language.core.runtime.ILineNumberMapping;
+import com.basic4gl.language.core.runtime.IVMDebugger;
+import com.basic4gl.language.core.runtime.SourceUserBreakPt;
 import java.util.*;
 
 public class Debugger extends IVMDebugger {

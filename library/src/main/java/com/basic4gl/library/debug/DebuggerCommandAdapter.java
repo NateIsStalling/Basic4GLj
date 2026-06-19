@@ -15,7 +15,7 @@ import com.basic4gl.lib.util.DebuggerCallbackMessage;
 import com.basic4gl.lib.util.DebuggerTaskCallback;
 import com.basic4gl.library.debug.commands.*;
 import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.InstructionPosition;
+import com.basic4gl.language.core.runtime.InstructionPosition;
 import com.basic4gl.runtime.TomVM;
 import com.google.gson.Gson;
 import java.net.URI;

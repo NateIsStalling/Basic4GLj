@@ -1,6 +1,6 @@
 package com.basic4gl.lib.util;
 
-import com.basic4gl.runtime.InstructionPosition;
+import com.basic4gl.language.core.runtime.InstructionPosition;
 import java.util.Objects;
 
 /**

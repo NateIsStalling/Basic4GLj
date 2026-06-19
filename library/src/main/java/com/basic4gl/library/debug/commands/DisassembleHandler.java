@@ -14,7 +14,7 @@ import com.basic4gl.language.core.types.OpCode;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.language.core.runtime.Instruction;
 import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.util.ILineNumberMapping;
+import com.basic4gl.language.core.runtime.ILineNumberMapping;
 import com.google.gson.Gson;
 import java.util.stream.IntStream;
 import javax.websocket.Session;

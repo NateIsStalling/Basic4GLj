@@ -68,10 +68,11 @@ dependencies {
     runtimeOnly project(':debugServer')
 
     // TODO cleanup project dependencies; would prefer to treat these projects as plugins
-    implementation project(":runtime")
     implementation project(":compiler")
-    implementation project(":library")
     implementation project(":debugProtocol")
+    implementation project(":language-core")
+    implementation project(":library")
+    implementation project(":runtime")
 
     implementation 'com.fifesoft:rsyntaxtextarea:3.3.4'
     implementation 'com.fifesoft:rstaui:3.3.1'

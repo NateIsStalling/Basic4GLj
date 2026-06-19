@@ -16,7 +16,7 @@ import com.basic4gl.language.core.types.VariableCollection.Variable;
 import com.basic4gl.language.core.extensions.Basic4GLRuntime;
 import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.runtime.plugin.TomVMPluginAdapter;
-import com.basic4gl.runtime.util.*;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

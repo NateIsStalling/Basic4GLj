@@ -1,6 +1,5 @@
-package com.basic4gl.runtime.util;
+package com.basic4gl.language.core.runtime;
 
-import com.basic4gl.language.core.runtime.Resources;
 import java.util.HashSet;
 import java.util.Set;
 

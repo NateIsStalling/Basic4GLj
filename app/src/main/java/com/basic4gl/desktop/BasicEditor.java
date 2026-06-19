@@ -21,7 +21,7 @@ import com.basic4gl.lib.util.*;
 import com.basic4gl.library.desktopgl.BuilderDesktopGL;
 import com.basic4gl.library.desktopgl.GLTextGridWindow;
 import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.InstructionPosition;
+import com.basic4gl.language.core.runtime.InstructionPosition;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
