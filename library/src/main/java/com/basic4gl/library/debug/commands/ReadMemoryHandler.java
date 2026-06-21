@@ -2,8 +2,8 @@ package com.basic4gl.library.debug.commands;
 
 import com.basic4gl.debug.protocol.callbacks.ReadMemoryCallback;
 import com.basic4gl.debug.protocol.commands.ReadMemoryCommand;
+import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.runtime.Value;
-import com.basic4gl.runtime.TomVM;
 import com.google.gson.Gson;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -13,10 +13,10 @@ import javax.websocket.Session;
 public class ReadMemoryHandler {
     private static final int BYTES_PER_WORD = 4;
 
-    private final TomVM vm;
+    private final VM vm;
     private final Gson gson;
 
-    public ReadMemoryHandler(TomVM vm, Gson gson) {
+    public ReadMemoryHandler(VM vm, Gson gson) {
         this.vm = vm;
         this.gson = gson;
     }

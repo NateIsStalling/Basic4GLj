@@ -4,7 +4,7 @@ package com.basic4gl.compiler.util;
 public class ParserPosition {
     private int line;
     private int column;
-    private Token token;
+    private com.basic4gl.language.core.types.Token token;
 
     public int getLine() {
         return line;
@@ -22,11 +22,11 @@ public class ParserPosition {
         this.column = column;
     }
 
-    public Token getToken() {
+    public com.basic4gl.language.core.types.Token getToken() {
         return token;
     }
 
-    public void setToken(Token token) {
+    public void setToken(com.basic4gl.language.core.types.Token token) {
         this.token = token;
     }
 }

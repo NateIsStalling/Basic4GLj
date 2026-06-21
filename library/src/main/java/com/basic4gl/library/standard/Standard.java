@@ -1,7 +1,10 @@
 package com.basic4gl.library.standard;
 
-import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.runtime.Function;
+import com.basic4gl.language.core.runtime.IServiceCollection;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.Constant;
@@ -9,10 +12,6 @@ import com.basic4gl.language.core.types.FunctionSpecification;
 import com.basic4gl.language.core.types.ParamTypeList;
 import com.basic4gl.language.core.types.ParamValidationCallback;
 import com.basic4gl.language.core.types.ValType;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
-import com.basic4gl.runtime.TomVM;
 import java.util.*;
 
 public class Standard implements FunctionLibrary {
@@ -46,7 +45,7 @@ public class Standard implements FunctionLibrary {
     // //////////////////////////////////////////////////////////////////////////////
     // Pre-run initialisation
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         /////////////////////
         // Initialise state
         rnd = new Random();
@@ -62,7 +61,7 @@ public class Standard implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {}
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {}
 
     @Override
     public void cleanup() {

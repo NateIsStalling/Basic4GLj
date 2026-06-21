@@ -1,7 +1,5 @@
 package com.basic4gl.library.debug;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.debug.protocol.callbacks.Callback;
 import com.basic4gl.debug.protocol.callbacks.ErrorCallback;
 import com.basic4gl.debug.protocol.commands.*;
@@ -10,13 +8,9 @@ import com.basic4gl.debug.protocol.types.VMStatus;
 import com.basic4gl.debug.websocket.DebugClientSocket;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
 import com.basic4gl.debug.websocket.IDebugCommandListener;
-import com.basic4gl.language.core.runtime.InstructionPosition;
-import com.basic4gl.lib.util.CallbackMessage;
-import com.basic4gl.lib.util.DebuggerCallbackMessage;
-import com.basic4gl.lib.util.DebuggerTaskCallback;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.runtime.*;
 import com.basic4gl.library.debug.commands.*;
-import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.TomVM;
 import com.google.gson.Gson;
 import java.net.URI;
 import javax.websocket.ContainerProvider;
@@ -29,10 +23,10 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
     private static final int MAX_CALLBACK_TEXT_CHARS = 16 * 1024;
 
     private final DebuggerCallbackMessage callbackMessage;
-    private final Debugger debugger;
+    private final IVMDebugger debugger;
     private final IVMDriver vmDriver;
-    private final TomBasicCompiler compiler;
-    private final TomVM vm;
+    private final Basic4GLCompiler compiler;
+    private final VM vm;
 
     private final Gson gson = new Gson();
 
@@ -40,7 +34,7 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
     private Session session;
 
     public DebuggerCommandAdapter(
-            DebuggerCallbackMessage message, Debugger debugger, IVMDriver vmDriver, TomBasicCompiler comp, TomVM vm) {
+            DebuggerCallbackMessage message, IVMDebugger debugger, IVMDriver vmDriver, Basic4GLCompiler comp, VM vm) {
         callbackMessage = message;
         this.debugger = debugger;
         this.vmDriver = vmDriver;
@@ -203,9 +197,9 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
     @Override
     public void onDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
         synchronized (callbackMessage) {
-            com.basic4gl.lib.util.VMStatus vmStatus = null;
+            com.basic4gl.language.core.runtime.VMStatus vmStatus = null;
             if (callback.getVMStatus() != null) {
-                vmStatus = new com.basic4gl.lib.util.VMStatus(
+                vmStatus = new com.basic4gl.language.core.runtime.VMStatus(
                         callback.getVMStatus().isDone(),
                         callback.getVMStatus().hasError(),
                         callback.getVMStatus().getError());

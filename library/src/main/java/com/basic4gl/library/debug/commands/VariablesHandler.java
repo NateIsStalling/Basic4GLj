@@ -5,10 +5,10 @@ import com.basic4gl.debug.protocol.commands.VariablesCommand;
 import com.basic4gl.debug.protocol.types.Variable;
 import com.basic4gl.debug.protocol.types.VariablePresentationHint;
 import com.basic4gl.language.core.internal.Mutable;
+import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.runtime.Value;
 import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.language.core.types.VariableCollection;
-import com.basic4gl.runtime.TomVM;
 import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,17 +18,14 @@ public class VariablesHandler {
     private static final int MAX_MEMORY_ROWS = 128;
     private static final int MAX_VARIABLE_TEXT_CHARS = 500;
     private static final String TRUNCATED_SUFFIX = "... [truncated]";
-    private static final String REFERENCE_VALUE = "[REFERENCE]";
-    private static final String UNALLOCATED_VALUE = "[UNALLOCATED]";
-    private static final String ERROR_VALUE = "[ERROR]";
     private static final String KIND_STACK = "stack";
     private static final String KIND_TEMP = "temp";
     private static final String KIND_ALLOCATED_STRINGS = "allocatedStrings";
 
-    private final TomVM vm;
+    private final VM vm;
     private final Gson gson;
 
-    public VariablesHandler(TomVM vm, Gson gson) {
+    public VariablesHandler(VM vm, Gson gson) {
         this.vm = vm;
         this.gson = gson;
     }
@@ -71,7 +68,7 @@ public class VariablesHandler {
             variable.name = vmVariable.name;
             variable.type =
                     vm.getDataTypes().describeVariable("", vmVariable.type).trim();
-            variable.value = getValueString(vmVariable);
+            variable.value = vm.getValueString(vmVariable);
             variable.evaluateName = vmVariable.name;
             variable.variablesReference = 0;
             applyLazyHintForLargePayload(variable, vmVariable);
@@ -222,30 +219,6 @@ public class VariablesHandler {
         return str != null ? str : "";
     }
 
-    private String getValueString(VariableCollection.Variable vmVariable) {
-        if (!vmVariable.allocated()) {
-            return UNALLOCATED_VALUE;
-        }
-
-        ValType valueType = new ValType(vmVariable.type);
-        Value value;
-
-        if (valueType.isBasicType() || valueType.pointerLevel > 0) {
-            value = vm.getData().data().get(vmVariable.dataIndex);
-        } else {
-            valueType.pointerLevel = 1;
-            valueType.isByRef = true;
-            // TODO: Needing to review why valToString is slow for structured variables. Defer to lazy loading for now
-            return REFERENCE_VALUE;
-        }
-
-        try {
-            Mutable<Integer> maxChars = new Mutable<>(TomVM.DATA_TO_STRING_MAX_CHARS);
-            return vm.valToString(value, valueType, maxChars);
-        } catch (Exception ex) {
-            return ERROR_VALUE;
-        }
-    }
 
     private void message(Session session, String json) {
         if (session != null && session.isOpen()) {

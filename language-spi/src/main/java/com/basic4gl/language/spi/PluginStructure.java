@@ -107,7 +107,7 @@ public class PluginStructure {
             PluginDataType type = field.getDataType();
 
             // Ignore padding fields
-            if (type.getBaseType() != Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING) {
+            if (type.getBaseType() != com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING) {
 
                 // Calculate vm data type
                 ValType vmType = manager.vmTypeFromPluginType(type);

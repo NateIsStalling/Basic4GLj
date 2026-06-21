@@ -1,6 +1,8 @@
 package com.basic4gl.language.spi;
 
 import com.basic4gl.language.core.extensions.Basic4GLFunction;
+import com.basic4gl.language.core.extensions.Basic4GLObjectStore;
+import com.basic4gl.language.core.extensions.Basic4GLObjectStoreListener;
 import com.basic4gl.language.core.internal.Assert;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.types.*;
@@ -11,9 +13,9 @@ import java.util.*;
  * Basic4GL compiler and virtual machine sees it.
  * Can be implemented as a DLL (see PluginDLL), or a local library version
  */
-public class PluginLibrary implements Basic4GLFunctionRegistry {
+public class PluginLibrary implements com.basic4gl.language.core.extensions.Basic4GLFunctionRegistry {
 
-    public static int getBasicValType(Basic4GLTypeCode typeCode) {
+    public static int getBasicValType(com.basic4gl.language.core.extensions.Basic4GLTypeCode typeCode) {
         return switch (typeCode) {
             case INT -> BasicValType.VTP_INT;
             case FLOAT -> BasicValType.VTP_REAL;
@@ -51,7 +53,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     private final HashMap<String, Constant> constants;
 
     // Plugin functions
-    private final Vector<Basic4GLFunction> functions = new Vector<>();
+    private final ArrayList<Basic4GLFunction> functions = new ArrayList<>();
     private final HashMap<String, List<Integer>> functionLookup = new HashMap<>(); // Maps function name to index
 
     // Function specifications
@@ -59,11 +61,11 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     // The first version uses the plugin structure index when referring to structures
     // (for return types or parameter types). The second uses the virtual machine
     // structure index.
-    private final Vector<FunctionSpecification> pluginFunctionSpecs = new Vector<>();
-    private final Vector<FunctionSpecification> vmFunctionSpecs = new Vector<>();
+    private final ArrayList<FunctionSpecification> pluginFunctionSpecs = new ArrayList<>();
+    private final ArrayList<FunctionSpecification> vmFunctionSpecs = new ArrayList<>();
 
     // Resource stores
-    private final Vector<Basic4GLObjectStore> objectStores = new Vector();
+    private final ArrayList<Basic4GLObjectStore> objectStores = new ArrayList<>();
 
     // Structure building
     private PluginStructure currentStructure;
@@ -220,7 +222,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         newFunction(name, function);
     }
 
-    public void registerFunction(String name, Basic4GLFunction function, Basic4GLTypeCode typeCode) {
+    public void registerFunction(String name, Basic4GLFunction function, com.basic4gl.language.core.extensions.Basic4GLTypeCode typeCode) {
 
         // Create new function
         newFunction(name, function);
@@ -231,7 +233,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
     }
 
     public void registerArrayFunction(
-            String name, Basic4GLFunction function, Basic4GLTypeCode typeCode, int dimensions) {
+            String name, Basic4GLFunction function, com.basic4gl.language.core.extensions.Basic4GLTypeCode typeCode, int dimensions) {
 
         // Create new function
         newFunction(name, function);
@@ -276,11 +278,11 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         currentSpec.setConditionalTimeshare(true);
     }
 
-    public void addParam(Basic4GLTypeCode typeCode) {
+    public void addParam(com.basic4gl.language.core.extensions.Basic4GLTypeCode typeCode) {
         currentSpec.getParamTypes().addParam(new ValType(getBasicValType(typeCode)));
     }
 
-    public void addArrayParam(Basic4GLTypeCode typeCode, int dimensions) {
+    public void addArrayParam(com.basic4gl.language.core.extensions.Basic4GLTypeCode typeCode, int dimensions) {
         currentSpec.getParamTypes().addParam(new ValType(getBasicValType(typeCode), (byte) dimensions, (byte) 1, true));
     }
 
@@ -413,7 +415,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         return plugin;
     }
 
-    public Vector<FunctionSpecification> getFunctionSpecs() {
+    public ArrayList<FunctionSpecification> getFunctionSpecs() {
         return pluginFunctionSpecs;
     }
 
@@ -616,7 +618,7 @@ public class PluginLibrary implements Basic4GLFunctionRegistry {
         return functionLookup;
     }
 
-    Vector<FunctionSpecification> getVMFunctionSpecs() {
+    ArrayList<FunctionSpecification> getVMFunctionSpecs() {
         return vmFunctionSpecs;
     }
 }

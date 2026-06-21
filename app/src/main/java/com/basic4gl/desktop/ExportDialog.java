@@ -2,9 +2,14 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.desktop.spi.CallbackMessage;
+import com.basic4gl.desktop.spi.Configuration;
+import com.basic4gl.compiler.util.IAssetExportBuilder;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.util.EditorSourceFile;
-import com.basic4gl.lib.util.*;
+import com.basic4gl.desktop.spi.TaskCallback;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.Library;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -61,7 +66,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         this.preprocessor = preprocessor;
 
         fileEditors = editors;
-        this.exportBaseDirectory = FileUtil.separatorsToSystem(exportBaseDirectory);
+        this.exportBaseDirectory = com.basic4gl.language.adapter.FileUtil.separatorsToSystem(exportBaseDirectory);
 
         dialog = new JDialog(parent);
 
@@ -144,7 +149,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 JFileChooser dialog = new JFileChooser();
                 dialog.setAcceptAllFileFilterUsed(false);
                 for (int i = 0; i < builders.size(); i++) {
-                    Builder builder = (Builder) libraries.get(builders.get(i));
+                    com.basic4gl.desktop.spi.Builder builder = (com.basic4gl.desktop.spi.Builder) libraries.get(builders.get(i));
                     FileNameExtensionFilter filter =
                             new FileNameExtensionFilter(builder.getFileDescription(), builder.getFileExtension());
                     if (i == currentBuilder) {
@@ -343,7 +348,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
         infoTextPane.setText(target.description());
         infoTextPane.setCaretPosition(0);
-        configPane.setConfiguration(new Configuration(((Builder) target).getConfiguration()));
+        configPane.setConfiguration(new Configuration(((com.basic4gl.desktop.spi.Builder) target).getConfiguration()));
         setTargetSettingsEnabled(true);
         exportButton.setEnabled(true);
     }
@@ -368,7 +373,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 compiler.addConstants(((FunctionLibrary) lib).constants());
                 compiler.addFunctions(lib, ((FunctionLibrary) lib).specs());
             }
-            if (lib instanceof Builder) {
+            if (lib instanceof com.basic4gl.desktop.spi.Builder) {
                 builders.add(i);
                 builderComboBox.addItem(this.libraries.get(i).name());
             }
@@ -391,7 +396,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         selectBuilder(selectedBuilder);
 
         embeddedAssetsModel.clear();
-        Builder selected = (Builder) this.libraries.get(builders.get(selectedBuilder));
+        com.basic4gl.desktop.spi.Builder selected = (com.basic4gl.desktop.spi.Builder) this.libraries.get(builders.get(selectedBuilder));
         if (selected instanceof IAssetExportBuilder) {
             for (String asset : ((IAssetExportBuilder) selected).getExportAssets()) {
                 embeddedAssetsModel.addElement(asset);
@@ -451,7 +456,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         return Paths.get("").toAbsolutePath().normalize();
     }
 
-    private void applySelectedAssets(Builder builder) {
+    private void applySelectedAssets(com.basic4gl.desktop.spi.Builder builder) {
         if (!(builder instanceof IAssetExportBuilder)) {
             return;
         }
@@ -500,7 +505,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                     continue;
                 }
 
-                String normalizedLiteral = FileUtil.separatorsToSystem(literal);
+                String normalizedLiteral = com.basic4gl.language.adapter.FileUtil.separatorsToSystem(literal);
                 File candidate = new File(normalizedLiteral);
                 if (!candidate.isAbsolute()) {
                     File baseCandidate = new File(baseDir, normalizedLiteral);
@@ -585,10 +590,10 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 return;
             }
 
-            Builder builder;
+            com.basic4gl.desktop.spi.Builder builder;
             Library lib = libraries.get(builders.get(currentBuilder));
-            if (lib instanceof Builder) {
-                builder = (Builder) lib;
+            if (lib instanceof com.basic4gl.desktop.spi.Builder) {
+                builder = (com.basic4gl.desktop.spi.Builder) lib;
             } else {
                 JOptionPane.showMessageDialog(
                         dialog,
@@ -722,18 +727,18 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
             return;
         }
 
-        Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
+        com.basic4gl.desktop.spi.Builder builder = (com.basic4gl.desktop.spi.Builder) libraries.get(builders.get(currentBuilder));
 
         builder.setConfiguration(configuration);
     }
 
     private class ExportWorker extends SwingWorker<Object, CallbackMessage> {
-        private final Builder builder;
+        private final com.basic4gl.desktop.spi.Builder builder;
         private final File dest;
         private final ExportCallback exportCallback;
         private CallbackMessage callbackMessage;
 
-        public ExportWorker(Builder builder, File dest, ExportCallback callback) {
+        public ExportWorker(com.basic4gl.desktop.spi.Builder builder, File dest, ExportCallback callback) {
             this.builder = builder;
             this.dest = dest;
             exportCallback = callback;

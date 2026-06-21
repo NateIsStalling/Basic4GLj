@@ -5,23 +5,22 @@ import static com.basic4gl.language.core.types.BasicValType.VTP_INT;
 import static com.basic4gl.language.core.types.BasicValType.VTP_STRING;
 import static com.basic4gl.library.netlib4games.NetLogger.initDebugNetLogger;
 
-import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.runtime.Function;
+import com.basic4gl.language.core.runtime.IServiceCollection;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
 import com.basic4gl.language.core.types.ParamTypeList;
-import com.basic4gl.lib.util.FileStreamResourceStore;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
+import com.basic4gl.library.desktopgl.content.FileStreamResourceStore;
 import com.basic4gl.library.netlib4games.*;
 import com.basic4gl.library.netlib4games.udp.NetConLowUDP;
 import com.basic4gl.library.netlib4games.udp.NetListenLowUDP;
 import com.basic4gl.library.standard.net.NetConnectionStore;
 import com.basic4gl.library.standard.net.NetMessageStream;
 import com.basic4gl.library.standard.net.NetServerStore;
-import com.basic4gl.runtime.TomVM;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.util.*;
@@ -239,7 +238,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         if (fileStreams == null) {
             fileStreams = services.getService(FileStreamResourceStore.class);
         }
@@ -260,7 +259,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {
         if (fileStreams == null) {
             fileStreams = services.getService(FileStreamResourceStore.class);
         }
@@ -272,9 +271,9 @@ public class NetBasicLib implements FunctionLibrary {
         }
 
         // Register resources
-        comp.getVM().addResources(fileStreams);
-        comp.getVM().addResources(servers);
-        comp.getVM().addResources(connections);
+        comp.getProgram().addResources(fileStreams);
+        comp.getProgram().addResources(servers);
+        comp.getProgram().addResources(connections);
 
         // Hook into validator
         netConReqValidator = new NetConReqValidatorL1();

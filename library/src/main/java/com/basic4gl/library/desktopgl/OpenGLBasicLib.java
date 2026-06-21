@@ -5,7 +5,8 @@ import static com.basic4gl.language.core.types.BasicValType.VTP_INT;
 import static com.basic4gl.language.core.types.BasicValType.VTP_STRING;
 import static org.lwjgl.opengl.GL13.*;
 
-import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.PointerResourceStore;
@@ -15,15 +16,13 @@ import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
 import com.basic4gl.language.core.types.ParamTypeList;
 import com.basic4gl.language.core.types.ValType;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.runtime.IServiceCollection;
 import com.basic4gl.library.desktopgl.content.Image;
 import com.basic4gl.library.desktopgl.content.LoadImage;
 import com.basic4gl.library.desktopgl.util.Routines;
 import com.basic4gl.library.desktopgl.util.WindowAdapter;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.runtime.TomVM;
 import java.nio.*;
 import java.util.*;
 import org.lwjgl.BufferUtils;
@@ -67,7 +66,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {
 
         // Removed in 2.6.X, as this is now handled by the window manager
         // windowManager.clearKeyBuffers();
@@ -99,7 +98,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {
         if (textures == null) {
             textures = new TextureResourceStore();
         }
@@ -119,7 +118,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             });
             // Register interfaces
             // TODO need to add any missing registerInterface calls for other libraries
-            comp.getPlugins().registerInterface(new WindowAdapter(windowManager), "IB4GLOpenGLWindow", 1, 0, null);
+//            comp.getPlugins().registerInterface(new WindowAdapter(windowManager), "IB4GLOpenGLWindow", 1, 0, null);
         }
     }
 

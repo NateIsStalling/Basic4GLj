@@ -51,7 +51,7 @@ _build artifacts can be found in `/app/build/distributions`_
 To debug the app IDE project along with its dependencies, use the following gradle task:
 > ./gradlew :app:debugAll
 
-_The application depends on the JAR output of its "library" and "debugServer" modules - the `:app:debugAll` task should generate these dependencies_
+_The application depends on the JAR output of its "library" and "debug-server" modules - the `:app:debugAll` task should generate these dependencies_
 
 ## Sound System
 

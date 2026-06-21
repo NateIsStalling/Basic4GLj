@@ -1,15 +1,13 @@
 package com.basic4gl.library.debug.commands;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.IVMDriver;
 import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
 import com.basic4gl.debug.protocol.commands.EvaluateWatchCommand;
-import com.basic4gl.language.core.internal.Mutable;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.runtime.IVMDriver;
+import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.runtime.VMState;
-import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.OpCode;
 import com.basic4gl.language.core.types.ValType;
-import com.basic4gl.runtime.TomVM;
 import com.google.gson.Gson;
 import javax.websocket.Session;
 
@@ -19,12 +17,12 @@ public class EvaluateWatchHandler {
 
     static final String DEFAULT_VALUE = "???";
 
-    private final TomBasicCompiler compiler;
-    private final TomVM vm;
+    private final Basic4GLCompiler compiler;
+    private final VM vm;
     private final IVMDriver vmDriver;
     private final Gson gson;
 
-    public EvaluateWatchHandler(IVMDriver vmDriver, TomBasicCompiler compiler, TomVM vm, Gson gson) {
+    public EvaluateWatchHandler(IVMDriver vmDriver, Basic4GLCompiler compiler, VM vm, Gson gson) {
         this.vmDriver = vmDriver;
         this.compiler = compiler;
         this.vm = vm;
@@ -117,7 +115,7 @@ public class EvaluateWatchHandler {
             }
 
             // Convert expression result to string
-            return displayVariable(valType);
+            return vm.getDisplayVariable(valType);
         } finally {
             vm.setState(state);
             // TODO sync editor UI state
@@ -145,36 +143,6 @@ public class EvaluateWatchHandler {
             //    mVM.Pause ();
         } while ( // mMode == ApMode.AP_RUNNING
         !vm.hasError() && !vm.isDone() && !vm.isPaused() && !vmDriver.isClosing());
-    }
-
-    private String displayVariable(ValType valType) {
-        if (valType.matchesType(BasicValType.VTP_STRING)) { // String is special case.
-            return "\"" + vm.getRegString() + "\""; // Stored in string register.
-        } else {
-            String temp;
-            try {
-                Mutable<Integer> maxChars = new Mutable<>(TomVM.DATA_TO_STRING_MAX_CHARS);
-                temp = vm.valToString(vm.getReg(), valType, maxChars);
-            } catch (Exception ex) {
-
-                // Floating point errors can be raised when converting floats to string
-                /*switch (ex.getCause()) {
-                case EXCEPTION_FLT_DENORMAL_OPERAND:
-                case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-                case EXCEPTION_FLT_INEXACT_RESULT:
-                case EXCEPTION_FLT_INVALID_OPERATION:
-                case EXCEPTION_FLT_OVERFLOW:
-                case EXCEPTION_FLT_STACK_CHECK:
-                case EXCEPTION_FLT_UNDERFLOW:
-                case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                case EXCEPTION_INT_OVERFLOW:
-                	temp = "Floating point exception";
-                default:*/
-                temp = "An exception occurred";
-                // }
-            }
-            return temp;
-        }
     }
 
     private boolean canCallFunc(String context) {

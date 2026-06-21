@@ -1,6 +1,8 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.lib.util.*;
+import com.basic4gl.desktop.spi.Configuration;
+import com.basic4gl.language.core.extensions.Library;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -554,7 +556,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
 
         infoTextPane.setText(target.description());
         infoTextPane.setCaretPosition(0);
-        configPane.setConfiguration(new Configuration(((Builder) target).getConfiguration()));
+        configPane.setConfiguration(new Configuration(((com.basic4gl.desktop.spi.Builder) target).getConfiguration()));
         setBuildSettingsEnabled(true);
     }
 
@@ -575,7 +577,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
 
         int i = 0;
         for (Library lib : this.libraries) {
-            if (lib instanceof Builder) {
+            if (lib instanceof com.basic4gl.desktop.spi.Builder) {
                 builders.add(i);
                 builderComboBox.addItem(this.libraries.get(i).name());
             }
@@ -608,7 +610,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
             return;
         }
 
-        Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
+        com.basic4gl.desktop.spi.Builder builder = (com.basic4gl.desktop.spi.Builder) libraries.get(builders.get(currentBuilder));
 
         builder.setConfiguration(configuration);
     }

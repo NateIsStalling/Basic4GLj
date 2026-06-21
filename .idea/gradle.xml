@@ -10,10 +10,15 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/app-runtime" />
+            <option value="$PROJECT_DIR$/app-spi" />
             <option value="$PROJECT_DIR$/compiler" />
-            <option value="$PROJECT_DIR$/debugProtocol" />
-            <option value="$PROJECT_DIR$/debugServer" />
+            <option value="$PROJECT_DIR$/debug-protocol" />
+            <option value="$PROJECT_DIR$/debug-server" />
+            <option value="$PROJECT_DIR$/language-adapter" />
             <option value="$PROJECT_DIR$/language-core" />
+            <option value="$PROJECT_DIR$/language-runtime" />
+            <option value="$PROJECT_DIR$/language-server" />
             <option value="$PROJECT_DIR$/language-spi" />
             <option value="$PROJECT_DIR$/library" />
             <option value="$PROJECT_DIR$/runtime" />

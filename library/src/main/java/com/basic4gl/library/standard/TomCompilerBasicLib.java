@@ -7,14 +7,16 @@ import static com.basic4gl.language.core.internal.Assert.assertTrue;
 import static com.basic4gl.language.core.types.BasicValType.*;
 import static com.basic4gl.language.core.types.OpCode.*;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.IVMDriver;
-import com.basic4gl.compiler.util.IVMDriverAccess;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
 import com.basic4gl.language.core.types.*;
-import com.basic4gl.lib.util.*;
-import com.basic4gl.runtime.TomVM;
+import com.basic4gl.library.desktopgl.content.FileOpener;
+import com.basic4gl.library.desktopgl.content.FileUtil;
+import com.basic4gl.library.desktopgl.content.IFileAccess;
+
 import java.io.*;
 import java.nio.IntBuffer;
 import java.util.*;
@@ -193,10 +195,10 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {
 
         // Save pointer to compiler and window
         TomCompilerBasicLib.comp = comp;
@@ -206,7 +208,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         //        comp.getPlugins().registerInterface(new CompilerPluginAdapter(), "IB4GLCompiler", 1, 0, null);
 
         // Register initialisation function
-        TomCompilerBasicLib.comp.getVM().addInitFunction(new InitFunc());
+        TomCompilerBasicLib.comp.getProgram().addInitFunction(new InitFunc());
     }
 
     @Override
@@ -302,7 +304,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     //    }
 
     // Globals
-    private static TomBasicCompiler comp = null;
+    private static Basic4GLCompiler comp = null;
     private static IVMDriver host = null;
     private static FileOpener files = null;
     //    private CompilerPluginAdapter compilerAdapter;
@@ -340,7 +342,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
      */
     int doNewCompile(VM vm, String filename) {
 
-        com.basic4gl.compiler.util.RollbackPoint rollbackPoint = comp.getRollbackPoint();
+        RuntimeFunctionRollbackPoint rollbackPoint = comp.getRollbackPoint();
         comp.clearError();
         long saveIP = vm.getIP();
 

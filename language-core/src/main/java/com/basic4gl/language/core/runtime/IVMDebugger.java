@@ -15,4 +15,14 @@ public abstract class IVMDebugger {
      * Note that this is the line number of the breakpoint in the main file.
      */
     public abstract int getUserBreakPointLine(int index);
+
+    public abstract void clearUserBreakPoints(String filename);
+
+    public abstract void addUserBreakPoint(String filename, int line);
+
+    public abstract boolean isUserBreakPoint(String filename, int line);
+
+    public abstract boolean toggleUserBreakPoint(String filename, int line);
+
+    public abstract ILineNumberMapping getLineNumberMapping();
 }

@@ -7,27 +7,26 @@ import static com.basic4gl.library.desktopgl.content.GLTextGrid.DRAW_TEXT;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.windows.User32.*;
 
-import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
 import com.basic4gl.language.core.extensions.Basic4GLLongRunningFunction;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLText;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.language.core.runtime.Function;
+import com.basic4gl.language.core.runtime.IServiceCollection;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
 import com.basic4gl.language.core.types.ParamTypeList;
 import com.basic4gl.language.core.types.ValType;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
 import com.basic4gl.library.desktopgl.content.*;
 import com.basic4gl.library.desktopgl.content.GLSpriteEngine.*;
 import com.basic4gl.library.desktopgl.input.InputCommandHandler;
 import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
 import com.basic4gl.library.desktopgl.input.OpenGLMouse;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.runtime.TomVM;
 import java.nio.IntBuffer;
 import java.util.*;
 import org.lwjgl.BufferUtils;
@@ -66,7 +65,7 @@ public class TextBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         // Text rendering defaults
         contentManager.reset();
         appText.resize(25, 40);
@@ -87,7 +86,7 @@ public class TextBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {
 
         this.spriteEngine = new GLSpriteEngine();
         this.appText = services.getService(GLTextGrid.class);

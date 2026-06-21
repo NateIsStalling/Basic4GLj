@@ -52,7 +52,7 @@ jobs:
           ./gradlew \
             :language-core:publish \
             :language-spi:publish \
-            :runtime:publish \
+            :language-runtime:publish \
             -PreleaseVersion="${RELEASE_VERSION}" \
             --no-daemon
 

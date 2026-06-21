@@ -17,12 +17,10 @@ configurations {
 dependencies {
     implementation fileTree(dir: "libs", include: "*.jar")
 
-    implementation project(":runtime")
-    implementation project(":compiler")
     implementation project(":language-core")
     implementation project(":language-spi")
 
-    implementation project(":debugProtocol")
+    implementation project(":debug-protocol")
 
     // for debugger
     implementation ('com.google.code.gson:gson:2.10')

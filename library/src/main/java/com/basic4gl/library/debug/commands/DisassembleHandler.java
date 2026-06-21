@@ -1,33 +1,30 @@
 package com.basic4gl.library.debug.commands;
 
-import static com.basic4gl.language.core.types.OpCode.*;
-
-import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.commands.DisassembleCommand;
 import com.basic4gl.debug.protocol.types.DisassembleArguments;
 import com.basic4gl.debug.protocol.types.DisassembledInstruction;
 import com.basic4gl.debug.protocol.types.Source;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.ILineNumberMapping;
+import com.basic4gl.language.core.runtime.IVMDebugger;
 import com.basic4gl.language.core.runtime.Instruction;
-import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.OpCode;
-import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.TomVM;
 import com.google.gson.Gson;
 import java.util.stream.IntStream;
 import javax.websocket.Session;
 
 public class DisassembleHandler {
-    private final Debugger debugger;
-    private final TomBasicCompiler compiler;
-    private final TomVM vm;
+    private final IVMDebugger debugger;
+    private final Basic4GLCompiler compiler;
+    private final VM vm;
     private final Gson gson;
 
     private final ILineNumberMapping lineNumberMapping;
 
-    public DisassembleHandler(Debugger debugger, TomBasicCompiler compiler, TomVM vm, Gson gson) {
+    public DisassembleHandler(IVMDebugger debugger, Basic4GLCompiler compiler, VM vm, Gson gson) {
         this.debugger = debugger;
         this.compiler = compiler;
         this.vm = vm;
@@ -91,7 +88,7 @@ public class DisassembleHandler {
     private DisassembledInstruction buildInstruction(Instruction data, int ip, boolean resolveSymbols) {
         DisassembledInstruction result = new DisassembledInstruction();
         result.instruction = OpCode.vmOpCodeName(data.opCode);
-        result.symbol = resolveSymbols ? getOpCodeData(data) : "";
+        result.symbol = resolveSymbols ? vm.getOpCodeData(data, compiler) : "";
         result.instructionBytes = Integer.toHexString(data.opCode);
         result.address = String.valueOf(ip);
         result.line = data.sourceLine;
@@ -130,41 +127,4 @@ public class DisassembleHandler {
         }
     }
 
-    private String getOpCodeData(Instruction i) {
-
-        // Display op-code data
-        // For some op-codes the data type corresponds to the index of a function
-        // or variable etc. To make the code easier to interpret we try to display
-        // these instead, where we can.
-        switch (i.opCode) {
-            case OP_DECLARE:
-            case OP_LOAD_VAR: {
-                int index = i.value.getIntVal();
-                if (vm.getVariables().isIndexValid(index))
-                    return vm.getVariables().getVariables().get(index).name;
-                else return "???";
-            }
-            case OP_CALL_FUNC: {
-                return this.compiler.getFunctionNameAt(i.value.getIntVal()) + "()";
-            }
-            case OP_CALL_DLL: {
-                int index = i.value.getIntVal();
-                return vm.getPlugins().getFunctionName(index >> 24, index & 0x00ffffff) + "()";
-            }
-            case OP_COPY:
-            case OP_ALLOC: {
-                return vm.getDataTypes().describeVariable("", vm.getStoredType(i.value.getIntVal()));
-            }
-            case OP_CREATE_USER_FRAME: {
-                return compiler.getUserFunctionName(i.value.getIntVal()) + "()";
-            }
-            case OP_LOAD_CONST: {
-                if (i.basicVarType == BasicValType.VTP_FUNC_PTR) {
-                    if (i.value.getIntVal() == 0) return "[NULL]";
-                    return compiler.getUserFunctionName(i.value.getIntVal() - 1) + "()";
-                }
-            }
-        }
-        return vm.basicValToString(i.value, i.basicVarType, true);
-    }
 }

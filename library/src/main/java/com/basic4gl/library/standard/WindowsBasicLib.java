@@ -1,15 +1,18 @@
 package com.basic4gl.library.standard;
 
-import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.runtime.Function;
+import com.basic4gl.language.core.runtime.IServiceCollection;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
 import com.basic4gl.language.core.types.ParamTypeList;
-import com.basic4gl.lib.util.*;
+import com.basic4gl.library.desktopgl.content.FileOpener;
+import com.basic4gl.library.desktopgl.content.IFileAccess;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.runtime.TomVM;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,12 +39,12 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         performanceFreq = System.nanoTime();
     }
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {
         windowManager = services.getService(OpenGLWindowManager.class);
     }
 

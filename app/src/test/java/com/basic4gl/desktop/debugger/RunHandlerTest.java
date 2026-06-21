@@ -3,10 +3,9 @@ package com.basic4gl.desktop.debugger;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
-import com.basic4gl.lib.util.Library;
+import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.language.core.runtime.IServiceCollection;
+import com.basic4gl.language.core.extensions.Library;
 import com.basic4gl.runtime.TomVM;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -74,7 +73,7 @@ public class RunHandlerTest {
         public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
 
         @Override
-        public void init(TomBasicCompiler comp, IServiceCollection services) {}
+        public void init(Basic4GLCompiler comp, IServiceCollection services) {}
 
         @Override
         public void cleanup() {}

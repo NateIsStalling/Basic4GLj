@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="1.8" />
+    <bytecodeTargetLevel target="1.8">
+      <module name="Basic4GL.debugProtocol.test" target="17" />
+      <module name="Basic4GL.debugServer.main" target="17" />
+      <module name="Basic4GL.debugServer.test" target="17" />
+      <module name="Basic4GL.runtime.main" target="17" />
+      <module name="Basic4GL.runtime.test" target="17" />
+      <module name="com.basic4gl.debug.protocol.Basic4GL.debugProtocol.main" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>

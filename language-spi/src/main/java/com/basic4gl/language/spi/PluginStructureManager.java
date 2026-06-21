@@ -1,6 +1,6 @@
 package com.basic4gl.language.spi;
 
-import static com.basic4gl.language.spi.Basic4GLExtendedTypeCode.*;
+import static com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.*;
 
 import com.basic4gl.language.core.internal.Assert;
 import com.basic4gl.language.core.runtime.PointerResourceStore;

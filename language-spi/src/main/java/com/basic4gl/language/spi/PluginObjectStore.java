@@ -1,5 +1,7 @@
 package com.basic4gl.language.spi;
 
+import com.basic4gl.language.core.extensions.Basic4GLObjectStore;
+import com.basic4gl.language.core.extensions.Basic4GLObjectStoreListener;
 import com.basic4gl.language.core.runtime.Store;
 
 /**

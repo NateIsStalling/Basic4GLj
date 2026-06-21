@@ -21,7 +21,7 @@ public interface Basic4GLPlugin {
      * @param isStandaloneExe
      * @return
      */
-    boolean load(Basic4GLFunctionRegistry registry, boolean isStandaloneExe);
+    boolean load(com.basic4gl.language.core.extensions.Basic4GLFunctionRegistry registry, boolean isStandaloneExe);
 
     /**
      * Called when the Plugin is about to unload.

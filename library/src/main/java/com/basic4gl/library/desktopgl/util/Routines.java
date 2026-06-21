@@ -3,7 +3,6 @@ package com.basic4gl.library.desktopgl.util;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.ValType;
-import com.basic4gl.runtime.TomVM;
 import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
 
@@ -60,8 +59,7 @@ public class Routines {
         }
     }
 
-    public static int writeArrayDynamic(
-            TomVM vm, int paramIndex, ValType type, int cType, ByteBuffer array, int maxSize) {
+    public static int writeArrayDynamic(VM vm, int paramIndex, ValType type, int cType, ByteBuffer array, int maxSize) {
 
         // Use the appropriate template function for the given type
         switch (cType) {

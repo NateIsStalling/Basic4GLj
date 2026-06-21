@@ -60,7 +60,7 @@ public class PluginDataType {
     // Constructors
     public static PluginDataType padding(int bytes) {
         PluginDataType result = new PluginDataType();
-        result.baseType = Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING;
+        result.baseType = com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING;
         result.stringSize = bytes;
         return result;
     }
@@ -73,7 +73,7 @@ public class PluginDataType {
 
     public static PluginDataType string(int size) {
         PluginDataType result = new PluginDataType();
-        result.baseType = Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_STRING;
+        result.baseType = com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_STRING;
         result.stringSize = size;
         return result;
     }

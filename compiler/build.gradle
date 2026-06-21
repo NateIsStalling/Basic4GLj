@@ -14,7 +14,7 @@ dependencies {
 
     implementation project(":language-core")
     implementation project(":language-spi")
-    implementation project(":runtime")
+    implementation project(":language-runtime")
 }
 
 spotless {

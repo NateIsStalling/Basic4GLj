@@ -17,8 +17,6 @@ import com.basic4gl.desktop.util.*;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.language.core.internal.Mutable;
-import com.basic4gl.lib.util.EditorAppSettings;
-import com.basic4gl.lib.util.IConfigurableAppSettings;
 import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
@@ -182,7 +180,7 @@ public class MainWindow
             if (appHome != null && !appHome.trim().isEmpty()) {
                 File appDirectory = new File(appHome);
                 File outputBin = new File(appDirectory, "lib/library-1.0-SNAPSHOT.jar");
-                File debugServerBin = new File(appDirectory, "lib/debugServer-1.0-SNAPSHOT.jar");
+                File debugServerBin = new File(appDirectory, "lib/debug-server-1.0-SNAPSHOT.jar");
 
                 if (outputBin.exists()) {
                     outputBinPath = outputBin.getAbsolutePath();
@@ -193,11 +191,11 @@ public class MainWindow
                 if (debugServerBin.exists()) {
                     debugServerBinPath = debugServerBin.getAbsolutePath();
                 } else {
-                    debugServerBinPath = "lib/debugServer-1.0-SNAPSHOT.jar";
+                    debugServerBinPath = "lib/debug-server-1.0-SNAPSHOT.jar";
                 }
             } else {
                 outputBinPath = "lib/library-1.0-SNAPSHOT.jar";
-                debugServerBinPath = "lib/debugServer-1.0-SNAPSHOT.jar";
+                debugServerBinPath = "lib/debug-server-1.0-SNAPSHOT.jar";
             }
         }
 

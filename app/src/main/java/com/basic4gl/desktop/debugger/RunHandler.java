@@ -2,10 +2,10 @@ package com.basic4gl.desktop.debugger;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.ITargetCommandLineOptions;
-import com.basic4gl.lib.util.Library;
-import com.basic4gl.library.desktopgl.BuilderDesktopGL;
+import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
+import com.basic4gl.language.core.extensions.Library;
+import com.basic4gl.language.adapter.BuilderDesktopGL;
 import java.io.*;
 import java.net.ServerSocket;
 import java.nio.file.Path;

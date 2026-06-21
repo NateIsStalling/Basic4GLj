@@ -4,7 +4,6 @@ import static com.basic4gl.language.core.internal.Assert.assertTrue;
 import static org.lwjgl.opengl.GL11.*;
 
 import com.basic4gl.language.core.runtime.HasErrorState;
-import com.basic4gl.lib.util.FileOpener;
 import com.basic4gl.library.desktopgl.util.GLUtil;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;

@@ -31,8 +31,8 @@ application {
 // Create a pathing Jar to provide classpath file for Windows distribution; requires JDK 9+
 task pathingJar(type: Jar) {
 
-    dependsOn (":debugServer:jar")
-    dependsOn (":library:jar")
+    dependsOn (":debug-server:jar")
+    dependsOn (":app-runtime:jar")
     archiveAppendix = 'pathing'
     doFirst {
         manifest {
@@ -65,14 +65,17 @@ dependencies {
     // TODO figure out a clean way to depend on the JAR output of these projects;
     //  need to launch these projects as separate Java processes at runtime
     runtimeOnly project(':library')
-    runtimeOnly project(':debugServer')
+    runtimeOnly project(':debug-server')
 
     // TODO cleanup project dependencies; would prefer to treat these projects as plugins
     implementation project(":compiler")
-    implementation project(":debugProtocol")
+    implementation project(":debug-protocol")
+    implementation project(":language-adapter")
     implementation project(":language-core")
     implementation project(":library")
-    implementation project(":runtime")
+    implementation project(":language-runtime")
+
+    implementation project(":app-spi")
 
     implementation 'com.fifesoft:rsyntaxtextarea:3.3.4'
     implementation 'com.fifesoft:rstaui:3.3.1'
@@ -138,8 +141,8 @@ task copyTask() {
 }
 
 task debugAll {
-    dependsOn (":debugServer:jar")
-    dependsOn (":library:jar") {
+    dependsOn (":debug-server:jar")
+    dependsOn (":app-runtime:jar") {
         println(rootProject.ext.get("libraryJarPath"))
         println(rootProject.ext.get("debugServerJarPath"))
         run {
