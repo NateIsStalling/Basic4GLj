@@ -5,8 +5,8 @@ package com.basic4gl.compiler.util;
  * TODO: remove me. this sucks.
  */
 public interface ISourceFileServer {
-	/**
-	 * Open source file and return interface.
-	 */
-	ISourceFile openSourceFile(String filename);
+    /**
+     * Open source file and return interface.
+     */
+    ISourceFile openSourceFile(String filename);
 }

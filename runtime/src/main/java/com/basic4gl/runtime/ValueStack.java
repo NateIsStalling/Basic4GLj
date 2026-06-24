@@ -2,9 +2,7 @@ package com.basic4gl.runtime;
 
 import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Iterator;
 
 /**
  * Used to stack values for reverse-Polish expression evaluation, or as
@@ -85,6 +83,7 @@ public class ValueStack {
 
         data = Arrays.copyOf(data, newCapacity);
     }
+
     public void resize(int size) {
         int oldSize = this.size;
 

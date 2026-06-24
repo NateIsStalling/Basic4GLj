@@ -14,17 +14,17 @@ import java.io.IOException;
  * this array.
  */
 public class Value implements Streamable {
-	/**
-	 * The value, stored as a 32-bit integer.
-	 *
-	 * These are interpreted as 32-bit floats, indexes into a separate string store,
-	 * references to structure types, etc.
-	 */
+    /**
+     * The value, stored as a 32-bit integer.
+     *
+     * These are interpreted as 32-bit floats, indexes into a separate string store,
+     * references to structure types, etc.
+     */
     private int rawBits;
 
-	//
-	// Constructors and conversion from Java values.
-	//
+    //
+    // Constructors and conversion from Java values.
+    //
 
     public Value() {
         rawBits = 0;
@@ -34,7 +34,7 @@ public class Value implements Streamable {
         rawBits = v.getIntVal();
     }
 
-	// Note: we use the unboxed versions here, 
+    // Note: we use the unboxed versions here,
 
     public Value(int intVal) {
         setIntVal(intVal);
@@ -44,11 +44,11 @@ public class Value implements Streamable {
         setRealVal(realVal);
     }
 
-	//
-	// Accessors that interpret the bits stored.
-	//
+    //
+    // Accessors that interpret the bits stored.
+    //
 
-	// A regular old `int` is stored directly.
+    // A regular old `int` is stored directly.
 
     public int getIntVal() {
         return rawBits;
@@ -62,7 +62,7 @@ public class Value implements Streamable {
         rawBits = val;
     }
 
-	// `float` must be cast to and from the bit representation.
+    // `float` must be cast to and from the bit representation.
 
     public float getRealVal() {
         return Float.intBitsToFloat(rawBits);
@@ -76,7 +76,7 @@ public class Value implements Streamable {
         rawBits = Float.floatToRawIntBits(val);
     }
 
-	// General `set` operation.
+    // General `set` operation.
 
     public void setVal(Value val) {
         rawBits = val.getIntVal();
@@ -90,33 +90,33 @@ public class Value implements Streamable {
         setRealVal(val);
     }
 
-	//
-	// Overrides for Object methods
-	//
+    //
+    // Overrides for Object methods
+    //
 
-	/** Convert the value to a string, for easy displaying to users. */
-	@Override
-	public String toString() {
-		return "Value(int: " + this.getIntVal() + ", real:" + this.getRealVal() + ")";
-	}
+    /** Convert the value to a string, for easy displaying to users. */
+    @Override
+    public String toString() {
+        return "Value(int: " + this.getIntVal() + ", real:" + this.getRealVal() + ")";
+    }
 
-	/** Return true if this Value is equal to that Value. */
-	@Override
-	public boolean equals(Object thatObject) {
-		if (!(thatObject instanceof Value)) {
-			return false;
-		}
-		Value that = (Value) thatObject;
-		return this.rawBits == that.rawBits;
-	}
+    /** Return true if this Value is equal to that Value. */
+    @Override
+    public boolean equals(Object thatObject) {
+        if (!(thatObject instanceof Value)) {
+            return false;
+        }
+        Value that = (Value) thatObject;
+        return this.rawBits == that.rawBits;
+    }
 
-	//
-	// Streamable implementation.
-	//
+    //
+    // Streamable implementation.
+    //
 
-	/**
-	 * Write this value to the stream given.
-	 */
+    /**
+     * Write this value to the stream given.
+     */
     public void streamOut(DataOutputStream stream) throws IOException {
         // There may be some potential cross-platform streaming issues because:
         // 1. We are unioning two data types together.
@@ -125,9 +125,9 @@ public class Value implements Streamable {
         stream.writeInt(rawBits);
     }
 
-	/**
-	 * Read a value from the stream.
-	 */
+    /**
+     * Read a value from the stream.
+     */
     public boolean streamIn(DataInputStream stream) throws IOException {
         rawBits = stream.readInt();
         return true;

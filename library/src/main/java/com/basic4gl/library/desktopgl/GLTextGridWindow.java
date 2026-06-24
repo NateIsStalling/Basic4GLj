@@ -728,6 +728,7 @@ public class GLTextGridWindow extends HasErrorState
 
         lib.init(vm, services, appSettings, programArgs);
     }
+
     double lastPollTime = org.lwjgl.glfw.GLFW.glfwGetTime();
     double pollInterval = 1.0 / 60.0;
 

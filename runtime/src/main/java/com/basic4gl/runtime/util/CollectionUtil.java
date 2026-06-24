@@ -25,4 +25,3 @@ public final class CollectionUtil {
         return list.get(list.size() - 1);
     }
 }
-
