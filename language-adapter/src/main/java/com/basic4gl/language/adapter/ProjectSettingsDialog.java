@@ -1,7 +1,7 @@
-package com.basic4gl.desktop;
+package com.basic4gl.language.adapter;
 
+import com.basic4gl.desktop.spi.Builder;
 import com.basic4gl.desktop.spi.Configuration;
-import com.basic4gl.language.core.extensions.Library;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import javax.swing.event.DocumentListener;
 /**
  * Created by Nate on 2/5/2015.
  */
-public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigurationChangeListener {
+public class ProjectSettingsDialog implements com.basic4gl.desktop.spi.ConfigurationFormPanel.IOnConfigurationChangeListener {
 
     private static final String BUILD_SETTINGS_CARD = "Build Settings";
     private static final String PROGRAM_ARGUMENTS_CARD = "Program Arguments";
@@ -33,15 +33,14 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
     private final JTextPane infoTextPane;
 
     // Libraries
-    private java.util.List<Library> libraries;
-    private java.util.List<Integer> builders; // Indexes of libraries that can be launch targets
+    private java.util.List<Builder> builders;
     private int currentBuilder; // Index value of target
 
-    private final ConfigurationFormPanel configPane;
+    private final com.basic4gl.desktop.spi.ConfigurationFormPanel configPane;
 
-    private final IConfigurableAppSettings appSettings;
+    private final com.basic4gl.app.desktop.config.IConfigurableAppSettings appSettings;
 
-    public ProjectSettingsDialog(Frame parent, IConfigurableAppSettings appSettings) {
+    public ProjectSettingsDialog(Frame parent, com.basic4gl.app.desktop.config.IConfigurableAppSettings appSettings) {
 
         this.appSettings = appSettings;
 
@@ -136,7 +135,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         targetSelectionPane.add(libraryInfoButton, targetConstraints);
         buildSettingsBody.add(targetSelectionPane, BorderLayout.NORTH);
 
-        configPane = new ConfigurationFormPanel(this);
+        configPane = new com.basic4gl.desktop.spi.ConfigurationFormPanel(this);
         configPane.setBorder(new EmptyBorder(4, 4, 4, 4));
         JScrollPane targetPropertiesScrollPane = new JScrollPane(configPane);
         targetPropertiesScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -552,9 +551,9 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         }
 
         currentBuilder = builderIndex;
-        Library target = libraries.get(builders.get(currentBuilder));
+        Builder target = builders.get(currentBuilder);
 
-        infoTextPane.setText(target.description());
+        infoTextPane.setText(target.getDescription());
         infoTextPane.setCaretPosition(0);
         configPane.setConfiguration(new Configuration(((com.basic4gl.desktop.spi.Builder) target).getConfiguration()));
         setBuildSettingsEnabled(true);
@@ -570,18 +569,12 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         dialog.setVisible(visible);
     }
 
-    public void setLibraries(java.util.List<Library> libraries, int currentBuilder) {
+    public void setBuilders(java.util.List<Builder> builders, int currentBuilder) {
         builderComboBox.removeAllItems();
-        this.libraries = libraries;
-        builders = new ArrayList<>();
+        this.builders = builders;
 
-        int i = 0;
-        for (Library lib : this.libraries) {
-            if (lib instanceof com.basic4gl.desktop.spi.Builder) {
-                builders.add(i);
-                builderComboBox.addItem(this.libraries.get(i).name());
-            }
-            i++;
+        for (Builder builder : this.builders) {
+            builderComboBox.addItem(builder.getName());
         }
 
         if (builders.isEmpty()) {
@@ -610,7 +603,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
             return;
         }
 
-        com.basic4gl.desktop.spi.Builder builder = (com.basic4gl.desktop.spi.Builder) libraries.get(builders.get(currentBuilder));
+        com.basic4gl.desktop.spi.Builder builder = builders.get(currentBuilder);
 
         builder.setConfiguration(configuration);
     }

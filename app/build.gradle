@@ -77,6 +77,9 @@ dependencies {
 
     implementation project(":app-spi")
 
+    // TODO temporary workaround for project settings dependencies; should be able to remove this once AppSettings is migrated to app-spi interface
+    implementation project(":app-runtime")
+
     implementation 'com.fifesoft:rsyntaxtextarea:3.3.4'
     implementation 'com.fifesoft:rstaui:3.3.1'
 

@@ -1,13 +1,14 @@
 package com.basic4gl.desktop.util;
 
-import com.basic4gl.compiler.util.ISourceFile;
-import com.basic4gl.compiler.util.ISourceFileServer;
+import com.basic4gl.desktop.spi.ISourceFile;
+import com.basic4gl.desktop.spi.SourceFileService;
+
 import java.io.File;
 
 /**
  * Created by Nate on 2/26/2015.
  */
-public class EditorSourceFileServer implements ISourceFileServer {
+public class EditorSourceFileServer implements SourceFileService {
     private final IFileManager fileManager;
 
     public EditorSourceFileServer(IFileManager fileManager) {

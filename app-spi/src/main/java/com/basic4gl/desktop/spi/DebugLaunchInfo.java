@@ -1,10 +1,10 @@
-package com.basic4gl.desktop.debugger;
+package com.basic4gl.desktop.spi;
 
-public class LaunchInfo {
+public class DebugLaunchInfo {
     private final Integer jvmDebugPort;
     private final boolean suspendedUntilDebuggerAttach;
 
-    public LaunchInfo(Integer jvmDebugPort, boolean suspendedUntilDebuggerAttach) {
+    public DebugLaunchInfo(Integer jvmDebugPort, boolean suspendedUntilDebuggerAttach) {
         this.jvmDebugPort = jvmDebugPort;
         this.suspendedUntilDebuggerAttach = suspendedUntilDebuggerAttach;
     }

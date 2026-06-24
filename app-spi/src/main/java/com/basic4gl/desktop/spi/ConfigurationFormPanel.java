@@ -1,6 +1,5 @@
-package com.basic4gl.desktop;
+package com.basic4gl.desktop.spi;
 
-import com.basic4gl.desktop.spi.Configuration;
 import java.awt.*;
 import java.util.ArrayList;
 import javax.swing.*;

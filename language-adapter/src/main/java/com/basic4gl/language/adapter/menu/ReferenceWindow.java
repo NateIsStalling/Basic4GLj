@@ -1,4 +1,4 @@
-package com.basic4gl.desktop;
+package com.basic4gl.language.adapter.menu;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.language.core.types.BasicValType;

@@ -1,4 +1,4 @@
-package com.basic4gl.desktop.util;
+package com.basic4gl.language.adapter.util;
 
 public final class NumberUtil {
     public static Integer parseIntOrNull(String value) {

@@ -4,22 +4,20 @@ import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
 import static com.formdev.flatlaf.FlatClientProperties.*;
 
-import com.basic4gl.compiler.Preprocessor;
-import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
-import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
-import com.basic4gl.desktop.util.*;
+import com.basic4gl.desktop.spi.FileLineNumber;
+import com.basic4gl.desktop.spi.MenuService;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
+import com.basic4gl.language.adapter.Basic4GLEditorPluginAdapter;
+import com.basic4gl.language.adapter.ConfigurationMapper;
+import com.basic4gl.language.adapter.menu.ReferenceWindow;
 import com.basic4gl.language.core.internal.Mutable;
-import com.basic4gl.library.plugin.PluginJARManager;
-import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.TomVM;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
@@ -48,7 +46,8 @@ public class MainWindow
                 IToggleBreakpointListener,
                 IFileEditorActionListener,
                 IFileManagerListener,
-                EmptyTabPanel.IEmptyTabPanelListener {
+                EmptyTabPanel.IEmptyTabPanelListener,
+        MenuService {
 
     private final CaretListener TrackCaretPosition = new CaretListener() {
         @Override
@@ -78,6 +77,7 @@ public class MainWindow
 
     private final JMenu bookmarkSubMenu = new JMenu("Bookmarks");
     private final JMenu breakpointSubMenu = new JMenu("Breakpoints");
+    private final JMenu helpMenu = new JMenu("Help");
 
     // Menu Items
     private final JMenuItem newMenuItem = new JMenuItem("New Program");
@@ -131,10 +131,8 @@ public class MainWindow
     private final DefaultListModel<String> gosubListModel = new DefaultListModel<>();
 
     // Editors
-    private final IConfigurableAppSettings appSettings = new EditorAppSettings();
     private BasicEditor basicEditor;
     private FileManager fileManager;
-    private PluginJARManager plugins;
 
     private IncludeLinkGenerator linkGenerator = new IncludeLinkGenerator(this);
 
@@ -154,6 +152,8 @@ public class MainWindow
     private static String debugServerBinPath;
     private static String outputBinPath;
     private static String applicationStoragePath;
+
+    private Basic4GLEditorPluginAdapter adapter;
 
     public static void main(String[] args) {
         // Location to store logs
@@ -185,7 +185,7 @@ public class MainWindow
                 if (outputBin.exists()) {
                     outputBinPath = outputBin.getAbsolutePath();
                 } else {
-                    outputBinPath = "lib/library-1.0-SNAPSHOT.jar";
+                    outputBinPath = "lib/app-runtime-1.0-SNAPSHOT.jar";
                 }
 
                 if (debugServerBin.exists()) {
@@ -194,7 +194,7 @@ public class MainWindow
                     debugServerBinPath = "lib/debug-server-1.0-SNAPSHOT.jar";
                 }
             } else {
-                outputBinPath = "lib/library-1.0-SNAPSHOT.jar";
+                outputBinPath = "lib/app-runtime-1.0-SNAPSHOT.jar";
                 debugServerBinPath = "lib/debug-server-1.0-SNAPSHOT.jar";
             }
         }
@@ -256,7 +256,7 @@ public class MainWindow
         menuBar.add(debugMenu);
         JMenu appMenu = new JMenu("Application");
         menuBar.add(appMenu);
-        JMenu helpMenu = new JMenu("Help");
+
         menuBar.add(helpMenu);
 
         fileMenu.add(newMenuItem);
@@ -464,11 +464,6 @@ public class MainWindow
         runMenuItem.addActionListener(e -> basicEditor.actionRun());
         settingsMenuItem.addActionListener(e -> {
             showSettings();
-        });
-        functionListMenuItem.addActionListener(e -> {
-            ReferenceWindow window = new ReferenceWindow(frame);
-            window.populate(basicEditor.compiler);
-            window.setVisible(true);
         });
         aboutMenuItem.addActionListener(e -> showAboutDialog());
 
@@ -679,12 +674,8 @@ public class MainWindow
         atmf.putMapping("text/basic4gl", "com.basic4gl.desktop.editor.BasicTokenMaker");
 
         fileManager = new FileManager(this);
-        plugins = new PluginJARManager(false);
-        Preprocessor preprocessor = new Preprocessor(2, new EditorSourceFileServer(fileManager), new DiskFileServer());
-        Debugger debugger = new Debugger(preprocessor.getLineNumberMap());
-        TomVM vm = new TomVM(plugins, debugger);
-        TomBasicCompiler comp = new TomBasicCompiler(vm, plugins);
-        basicEditor = new BasicEditor(outputBinPath, fileManager, this, appSettings, preprocessor, debugger, comp);
+
+        basicEditor = new BasicEditor(outputBinPath, fileManager, this, this);
 
         // TODO Confirm this doesn't break if app is ever signed
         // getParent
@@ -698,8 +689,7 @@ public class MainWindow
         fileManager.setFileDirectory(fileManager.getRunDirectory());
         fileManager.setCurrentDirectory(fileManager.getFileDirectory());
 
-        // TODO review if this should be a config option instead of the current directory
-        plugins.setDirectory(fileManager.getCurrentDirectory());
+        basicEditor.onCurrentDirectoryChanged(fileManager.getCurrentDirectory());
 
         // TODO this should be done as a callback
         refreshActions(basicEditor.getMode());
@@ -726,19 +716,19 @@ public class MainWindow
         }
 
         // Clear source code from parser
-        basicEditor.compiler.getParser().getSourceCode().clear();
+        basicEditor.getCompiler().clear();
 
         if (!basicEditor.loadProgramIntoCompiler()) {
-            compilerStatusLabel.setText(basicEditor.preprocessor.getError());
+            compilerStatusLabel.setText(basicEditor.getPreprocessor().getError());
             return;
         }
         ExportDialog dialog = new ExportDialog(
                 frame,
-                basicEditor.compiler,
-                basicEditor.preprocessor,
+                basicEditor.getCompiler(),
+                basicEditor.getPreprocessor(),
                 fileManager.getFileEditors(),
                 fileManager.getCurrentDirectory());
-        dialog.setLibraries(basicEditor.getLibraries(), basicEditor.currentBuilder);
+        dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
     }
@@ -764,8 +754,9 @@ public class MainWindow
     }
 
     private void showSettings() {
-        ProjectSettingsDialog dialog = new ProjectSettingsDialog(frame, appSettings);
-        dialog.setLibraries(basicEditor.getLibraries(), basicEditor.currentBuilder);
+        // TODO 6/2026 temporary shim - ProjectSettingsDialog should be owned by the main app and pages managed by the adapter project.
+        com.basic4gl.language.adapter.ProjectSettingsDialog dialog = new com.basic4gl.language.adapter.ProjectSettingsDialog(frame, ConfigurationMapper.toAppSettings(basicEditor.getBasic4gl().getAppSettings()));
+        dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
     }
@@ -1077,8 +1068,7 @@ public class MainWindow
         fileManager.setRunDirectory(fileManager.getAppDirectory() + "\\Programs");
 
         // Clear plugins, breakpoints, bookmarks etc
-        this.plugins.clear();
-        basicEditor.debugger.clearUserBreakPoints();
+        basicEditor.onCloseAll();
 
         // Refresh UI
         refreshActions(basicEditor.getMode());
@@ -1156,13 +1146,9 @@ public class MainWindow
         lastSourceColumn = col;
 
         // Place cursor at position corresponding to row, col in post-processed file.
-        // Find corresponding source position
-        Mutable<String> filename = new Mutable<>("");
-        Mutable<Integer> fileRow = new Mutable<>(0);
-        basicEditor.preprocessor.getLineNumberMap().getSourceFromMain(filename, fileRow, row);
-
-        final String file = filename.get();
-        final int r = fileRow.get();
+        FileLineNumber fileLineNumber = basicEditor.getLanguageService().getFileLineNumberFromMain(row);
+        final String file = fileLineNumber.getFilename();
+        final int r = fileLineNumber.getLineNumber();
         final int c = col;
 
         // Find (and show) corresponding editor frame
@@ -1461,7 +1447,7 @@ public class MainWindow
         // Clear debug controls
         gosubListModel.clear();
 
-        for (String label : buildFriendlyCallStackLabels(stackTraceCallback)) {
+        for (String label : adapter.getLanguage().buildFriendlyCallStackLabels(stackTraceCallback)) {
             gosubListModel.addElement(label);
         }
     }
@@ -1469,54 +1455,11 @@ public class MainWindow
     @Override
     public void updateVmViewCallStack(StackTraceCallback stackTraceCallback) {
         if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
-            virtualMachineViewDialog.updateCallStack(toVmViewFriendlyCallStack(stackTraceCallback));
+            virtualMachineViewDialog.updateCallStack(adapter.getLanguage().toVmViewFriendlyCallStack(stackTraceCallback));
         }
     }
 
-    private ArrayList<String> buildFriendlyCallStackLabels(StackTraceCallback stackTraceCallback) {
-        ArrayList<String> labels = new ArrayList<>();
-        labels.add("IP");
 
-        if (stackTraceCallback == null || stackTraceCallback.stackFrames == null) {
-            return labels;
-        }
-
-        int totalFrames = stackTraceCallback.stackFrames.size();
-        for (int i2 = 0; i2 < totalFrames; i2++) {
-            StackFrame frame = stackTraceCallback.stackFrames.get(totalFrames - i2 - 1);
-            labels.add(toFriendlyStackFrameLabel(frame));
-        }
-        return labels;
-    }
-
-    private String toFriendlyStackFrameLabel(StackFrame frame) {
-        // User functions have positive indices.
-        Integer userFuncIndex = NumberUtil.parseIntOrNull(frame.name);
-        if (userFuncIndex == null) {
-            return frame.name;
-        }
-
-        if (userFuncIndex >= 0) {
-            return basicEditor.compiler.getUserFunctionName(userFuncIndex) + "()";
-        }
-
-        Integer returnAddr = NumberUtil.parseIntOrNull(frame.instructionPointer);
-        String gosubLabel = returnAddr != null ? basicEditor.compiler.describeStackCall(returnAddr) : "???";
-        return "gosub " + gosubLabel;
-    }
-
-    private StackTraceCallback toVmViewFriendlyCallStack(StackTraceCallback stackTraceCallback) {
-        StackTraceCallback friendly = new StackTraceCallback();
-        for (String label : buildFriendlyCallStackLabels(stackTraceCallback)) {
-            StackFrame frame = new StackFrame();
-            frame.name = label;
-            frame.source = "";
-            frame.line = 0;
-            friendly.stackFrames.add(frame);
-        }
-        friendly.totalFrames = friendly.stackFrames.size();
-        return friendly;
-    }
 
     @Override
     public void updateVmViewDisassembly(DisassembleCallback disassembleCallback) {
@@ -1668,10 +1611,13 @@ public class MainWindow
 
     @Override
     public void onCurrentDirectoryChanged(String directory) {
-        if (plugins != null) {
-            // TODO review whether plugins should be notified of current directory changes, or if they should just use a
-            // configured directory for loading/saving plugins
-            plugins.setDirectory(directory);
-        }
+        basicEditor.onCurrentDirectoryChanged(directory);
+    }
+
+    @Override
+    public void addHelp(String label, com.basic4gl.desktop.spi.MenuActionListener listener) {
+        JMenuItem helpMenuItem = new JMenuItem(label);
+        helpMenuItem.addActionListener(e -> listener.actionPerformed(frame, e));
+        helpMenu.add(helpMenuItem);
     }
 }
