@@ -67,7 +67,8 @@ public class DebuggerCallbackMessage {
     public boolean setStatus(int status) {
         boolean didChange = this.status != status;
         this.status = status;
-        // setStatus is only called for continue() which does not return an error callback
+        // setStatus is only called for continue() which does not return an error
+        // callback
         this.vmStatus = null;
         return didChange;
     }
@@ -85,7 +86,7 @@ public class DebuggerCallbackMessage {
     }
 
     public void setInstructionPosition(int row, int column) {
-        this.instructionPosition = new InstructionPosition(row, column);
+        this.instructionPosition = new InstructionPosition(0, row, column);
     }
 
     public InstructionPosition getInstructionPosition() {

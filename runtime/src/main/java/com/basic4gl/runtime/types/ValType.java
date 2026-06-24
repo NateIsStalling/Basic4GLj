@@ -76,6 +76,7 @@ public class ValType implements Streamable {
 
     /**
      * Displaying basic types and values
+     *
      * @param type
      * @return
      */
@@ -133,7 +134,8 @@ public class ValType implements Streamable {
         if (o == null || getClass() != o.getClass()) return false;
         ValType valType = (ValType) o;
 
-        // TODO generated return basicType == valType.basicType && arrayLevel == valType.arrayLevel &&
+        // TODO generated return basicType == valType.basicType && arrayLevel ==
+        // valType.arrayLevel &&
         // pointerLevel == valType.pointerLevel && isByRef == valType.isByRef &&
         // Arrays.equals(arrayDimensions, valType.arrayDimensions);
 
@@ -169,6 +171,20 @@ public class ValType implements Streamable {
         return result;
     }
 
+    @Override
+    public String toString() {
+        String out = "";
+        // '&' at the beginning for pointers
+        for (int i = 0; i < this.pointerLevel; i++) {
+            out += "&";
+        }
+        out += ValType.getBasicValTypeName(this.basicType);
+        for (int i = 0; i < this.arrayLevel; i++) {
+            out += "(" + this.arrayDimensions[i] + ")";
+        }
+        return out;
+    }
+
     public boolean matchesType(int type) {
         return equals(new ValType(type));
     }
@@ -178,7 +194,8 @@ public class ValType implements Streamable {
      * This means it will return true if one is a pointer and the other
      * is a reference (as both are the same internally).
      *
-     * Porting Note: The overloaded == operator uses {@link #equals(Object)} function.
+     * Porting Note: The overloaded == operator uses {@link #equals(Object)}
+     * function.
      *
      * @param type
      * @return returns false if one is a pointer and the other is a reference.
@@ -224,6 +241,7 @@ public class ValType implements Streamable {
 
     /**
      * Calculate the array size based on the element size
+     *
      * @param elementSize
      * @return array size
      */
@@ -262,6 +280,7 @@ public class ValType implements Streamable {
      * Therefore we want to prevent people from trying to allocate
      * unrealistic amounts of memory.
      * Thus we check array sizes upon allocation/declaration.
+     *
      * @param size
      * @param elementSize
      * @return Returns true if the array size is bigger than size.
@@ -286,6 +305,7 @@ public class ValType implements Streamable {
 
     /**
      * Pointers fit in a register, or single basic types
+     *
      * @return
      */
     public boolean canStoreInRegister() {
@@ -320,6 +340,7 @@ public class ValType implements Streamable {
 
     /**
      * Type of actual data stored inside virtual machine register.
+     *
      * @return
      */
     public int getStoredType() {
@@ -348,7 +369,8 @@ public class ValType implements Streamable {
             Streaming.writeLong(stream, arrayDimensions[i]);
         }
 
-        // NOTE: prototypeIndex is not streamed, as it is only relevant at compile time, and is not used at runtime.
+        // NOTE: prototypeIndex is not streamed, as it is only relevant at compile time,
+        // and is not used at runtime.
     }
 
     public boolean streamIn(DataInputStream stream) throws IOException {
@@ -364,7 +386,8 @@ public class ValType implements Streamable {
             arrayDimensions[i] = (int) Streaming.readLong(stream);
         }
 
-        // NOTE: prototypeIndex is not streamed, as it is only relevant at compile time, and is not used at runtime.
+        // NOTE: prototypeIndex is not streamed, as it is only relevant at compile time,
+        // and is not used at runtime.
 
         return true;
     }

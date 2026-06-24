@@ -11,8 +11,10 @@ import java.util.Map;
 /**
  * Compiler line number mapping.
  *
- * Maps line numbers of the expanded file back to their corresponding source file.
- * Used by debugging code so that lines correctly match up with program addresses.
+ * Maps line numbers of the expanded file back to their corresponding source
+ * file.
+ * Used by debugging code so that lines correctly match up with program
+ * addresses.
  */
 public class LineNumberMapping extends ILineNumberMapping implements Serializable {
     private final ArrayList<String> filenames = new ArrayList<>();

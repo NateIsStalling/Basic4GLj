@@ -5,10 +5,8 @@ import static com.basic4gl.runtime.plugin.Basic4GLExtendedTypeCode.PLUGIN_BASIC4
 import com.basic4gl.runtime.types.TypeLibrary;
 import com.basic4gl.runtime.types.ValType;
 import com.basic4gl.runtime.util.Assert;
-
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Vector;
 
 public class PluginStructure {
 

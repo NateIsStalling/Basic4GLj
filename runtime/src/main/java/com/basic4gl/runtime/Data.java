@@ -336,9 +336,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Integer.valueOf(
-                                data.data().getIntValue(index + 2 + i))
-                        .byteValue();
+                array[withOffset] =
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).byteValue();
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -347,8 +346,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().getFloatValue(index + 2 + i))
-                        .byteValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).byteValue();
             }
             return elementCount;
         } else {
@@ -414,9 +413,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Integer.valueOf(
-                                data.data().getIntValue(index + 2 + i))
-                        .shortValue();
+                array[withOffset] =
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).shortValue();
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -425,8 +423,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().getFloatValue(index + 2 + i))
-                        .shortValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).shortValue();
             }
             return elementCount;
         } else {
@@ -501,8 +499,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().getFloatValue(index + 2 + i))
-                        .intValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).intValue();
             }
             return elementCount;
         } else {
@@ -568,9 +566,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Integer.valueOf(
-                                data.data().getIntValue(index + 2 + i))
-                        .longValue();
+                array[withOffset] =
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).longValue();
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -579,8 +576,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().getFloatValue(index + 2 + i))
-                        .longValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).longValue();
             }
             return elementCount;
         } else {
@@ -646,9 +643,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Integer.valueOf(
-                                data.data().getIntValue(index + 2 + i))
-                        .doubleValue();
+                array[withOffset] =
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).doubleValue();
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -657,8 +653,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().getFloatValue(index + 2 + i))
-                        .doubleValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).doubleValue();
             }
             return elementCount;
         } else {
@@ -724,9 +720,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Integer.valueOf(
-                                data.data().getIntValue(index + 2 + i))
-                        .floatValue();
+                array[withOffset] =
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).floatValue();
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -735,8 +730,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().getFloatValue(index + 2 + i))
-                        .floatValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).floatValue();
             }
             return elementCount;
         } else {
@@ -791,8 +786,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Integer.valueOf(data.data().getIntValue(index + 2 + i))
-                        .byteValue());
+                buffer.put(
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).byteValue());
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -800,8 +795,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Float.valueOf(data.data().getFloatValue(index + 2 + i))
-                        .byteValue());
+                buffer.put(
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).byteValue());
             }
             return elementCount;
         } else {
@@ -856,8 +851,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Integer.valueOf(data.data().getIntValue(index + 2 + i))
-                        .shortValue());
+                buffer.put(
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).shortValue());
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -865,8 +860,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Float.valueOf(data.data().getFloatValue(index + 2 + i))
-                        .shortValue());
+                buffer.put(
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).shortValue());
             }
             return elementCount;
         } else {
@@ -929,8 +924,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Float.valueOf(data.data().getFloatValue(index + 2 + i))
-                        .intValue());
+                buffer.put(
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).intValue());
             }
             return elementCount;
         } else {
@@ -985,8 +980,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Integer.valueOf(data.data().getIntValue(index + 2 + i))
-                        .longValue());
+                buffer.put(
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).longValue());
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -994,8 +989,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Float.valueOf(data.data().getFloatValue(index + 2 + i))
-                        .longValue());
+                buffer.put(
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).longValue());
             }
             return elementCount;
         } else {
@@ -1050,8 +1045,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Integer.valueOf(data.data().getIntValue(index + 2 + i))
-                        .doubleValue());
+                buffer.put(
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).doubleValue());
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -1059,8 +1054,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Float.valueOf(data.data().getFloatValue(index + 2 + i))
-                        .doubleValue());
+                buffer.put(
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).doubleValue());
             }
             return elementCount;
         } else {
@@ -1115,8 +1110,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Integer.valueOf(data.data().getIntValue(index + 2 + i))
-                        .floatValue());
+                buffer.put(
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).floatValue());
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {

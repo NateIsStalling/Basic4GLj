@@ -75,18 +75,20 @@ public class VariableCollection implements Streamable {
             data.initData(dataIndex, type, typeLib);
         }
 
+        // Display this variable entry for debugging.
+        public String toString() {
+            return this.name + " as " + this.type;
+        }
+
         // Streaming
         @Override
         public void streamOut(DataOutputStream stream) throws IOException {
-
             Streaming.writeString(stream, name);
             Streaming.writeLong(stream, dataIndex);
-
             type.streamOut(stream);
         }
 
         public boolean streamIn(DataInputStream stream) throws IOException {
-
             name = Streaming.readString(stream);
             dataIndex = (int) Streaming.readLong(stream);
 
@@ -112,6 +114,14 @@ public class VariableCollection implements Streamable {
      */
     public ArrayList<Variable> getVariables() {
         return variables;
+    }
+
+    public Variable getVariable(String name) {
+        return variables.get(this.getVariableIndex(name));
+    }
+
+    public Variable getVariable(int index) {
+        return variables.get(index);
     }
 
     /**
@@ -191,6 +201,15 @@ public class VariableCollection implements Streamable {
         var.allocate(data, types);
     }
 
+    // Display this VariableCollection as a string for debugging.
+    public String toString() {
+        String out = "";
+        for (Variable v : this.variables) {
+            out += v + "\n";
+        }
+        return out;
+    }
+
     // Streaming
     public void streamOut(DataOutputStream stream) throws IOException {
 
@@ -205,7 +224,6 @@ public class VariableCollection implements Streamable {
     }
 
     public boolean streamIn(DataInputStream stream) throws IOException {
-
         // Stream in type data
         types.streamIn(stream);
 

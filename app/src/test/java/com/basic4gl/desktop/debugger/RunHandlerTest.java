@@ -20,11 +20,7 @@ public class RunHandlerTest {
     public void buildCommandArgs_jarLaunch_includesConfiguredJvmOptionsWithoutDebugAgentWhenDisabled()
             throws Exception {
         IAppSettings settings = new TestAppSettings(
-                false,
-                false,
-                null,
-                Arrays.asList("-Xmx512m", "-Ddemo=true"),
-                Arrays.asList("one", "two"));
+                false, false, null, Arrays.asList("-Xmx512m", "-Ddemo=true"), Arrays.asList("one", "two"));
 
         String[] args = invokeBuildCommandArgs(settings, "library.jar");
         String command = String.join(" ", args);
@@ -38,12 +34,7 @@ public class RunHandlerTest {
 
     @Test
     public void buildCommandArgs_jarLaunch_usesConfiguredDebugPortAndSuspendOption() throws Exception {
-        IAppSettings settings = new TestAppSettings(
-                true,
-                true,
-                5005,
-                Collections.emptyList(),
-                Collections.emptyList());
+        IAppSettings settings = new TestAppSettings(true, true, 5005, Collections.emptyList(), Collections.emptyList());
 
         String[] args = invokeBuildCommandArgs(settings, "library.jar");
         String command = String.join(" ", args);
@@ -64,14 +55,7 @@ public class RunHandlerTest {
         buildCommandArgs.setAccessible(true);
 
         Object result = buildCommandArgs.invoke(
-                null,
-                new TestLibrary(),
-                settings,
-                ".",
-                libraryBinPath,
-                "vmPath",
-                "configPath",
-                "lineMapPath");
+                null, new TestLibrary(), settings, ".", libraryBinPath, "vmPath", "configPath", "lineMapPath");
         return (String[]) result;
     }
 
@@ -162,4 +146,3 @@ public class RunHandlerTest {
         }
     }
 }
-

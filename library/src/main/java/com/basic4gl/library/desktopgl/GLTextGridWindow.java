@@ -30,7 +30,6 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.commons.cli.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
 
 public class GLTextGridWindow extends HasErrorState
         implements Target, IVMDriver, IFileAccess, ITargetCommandLineOptions {
@@ -729,6 +728,7 @@ public class GLTextGridWindow extends HasErrorState
 
         lib.init(vm, services, appSettings, programArgs);
     }
+
     double lastPollTime = org.lwjgl.glfw.GLFW.glfwGetTime();
     double pollInterval = 1.0 / 60.0;
 

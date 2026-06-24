@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 /**
  * Source file and line number before pre-processing
+ *
+ * TODO: This and InstructionPosition are the same.
  */
 public class SourcePosition implements Serializable {
     private int fileIndex;
@@ -25,13 +27,5 @@ public class SourcePosition implements Serializable {
 
     public int getFileLineNumber() {
         return fileLineNumber;
-    }
-
-    public void setFileIndex(int fileIndex) {
-        this.fileIndex = fileIndex;
-    }
-
-    public void setFileLineNumber(int fileLineNo) {
-        fileLineNumber = fileLineNo;
     }
 }
