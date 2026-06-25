@@ -182,7 +182,7 @@ public class MainWindow
             if (appHome != null && !appHome.trim().isEmpty()) {
                 File appDirectory = new File(appHome);
                 File outputBin = new File(appDirectory, "lib/library-1.0-SNAPSHOT.jar");
-                File debugServerBin = new File(appDirectory, "lib/debugServer-1.0-SNAPSHOT.jar");
+                File debugServerBin = new File(appDirectory, "lib/debug-server-1.0-SNAPSHOT.jar");
 
                 if (outputBin.exists()) {
                     outputBinPath = outputBin.getAbsolutePath();
@@ -193,11 +193,11 @@ public class MainWindow
                 if (debugServerBin.exists()) {
                     debugServerBinPath = debugServerBin.getAbsolutePath();
                 } else {
-                    debugServerBinPath = "lib/debugServer-1.0-SNAPSHOT.jar";
+                    debugServerBinPath = "lib/debug-server-1.0-SNAPSHOT.jar";
                 }
             } else {
                 outputBinPath = "lib/library-1.0-SNAPSHOT.jar";
-                debugServerBinPath = "lib/debugServer-1.0-SNAPSHOT.jar";
+                debugServerBinPath = "lib/debug-server-1.0-SNAPSHOT.jar";
             }
         }
 
