@@ -58,35 +58,6 @@ task copyToLib( type: Copy ) {
     from configurations.release
 }
 
-jar {
-    dependsOn copyToLib
-
-    def classPath = configurations.release.files.collect { it.name }.join(' ')
-
-    from {
-        (configurations.release).collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-
-    manifest {
-        attributes (
-            'Main-Class': 'com.basic4gl.library.desktopgl.GLTextGridWindow',
-            'Class-Path': classPath
-        )
-    }
-
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    exclude 'META-INF/.RSA', 'META-INF/.SF', 'META-INF/*.DSA'
-
-    rootProject.ext.set("libraryJarPath", jar.archiveFile.get())
-
-    doLast {
-        new File(projectDir, "class-path.txt").text = classPath
-    }
-}
-
 test {
     useJUnitPlatform()
 }
