@@ -18,7 +18,6 @@
             <option value="$PROJECT_DIR$/language-adapter" />
             <option value="$PROJECT_DIR$/language-core" />
             <option value="$PROJECT_DIR$/language-runtime" />
-            <option value="$PROJECT_DIR$/language-server" />
             <option value="$PROJECT_DIR$/language-spi" />
             <option value="$PROJECT_DIR$/library" />
             <option value="$PROJECT_DIR$/runtime" />

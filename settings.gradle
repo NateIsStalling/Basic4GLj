@@ -9,7 +9,6 @@ include 'debug-protocol'
 
 include 'language-core'
 include 'language-spi'
-include 'language-server'
 include 'language-adapter'
 include 'app-spi'
 include 'app-runtime'
