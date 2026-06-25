@@ -30,6 +30,6 @@ tasks.register('copyJarsForJPackage', Copy) {
     into layout.buildDir.dir("libs")
     from project(":library").layout.buildDirectory.dir("libs")
     into layout.buildDir.dir("libs")
-    from project(":debugServer").layout.buildDirectory.dir("libs")
+    from project(":debug-server").layout.buildDirectory.dir("libs")
     into layout.buildDir.dir("libs")
 }
