@@ -86,7 +86,8 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
             return new Builder[0];
         }
 
-        Builder builder = new BuilderDesktopGL();
+        // TODO DesktopTarget needs implementation
+        Builder builder = BuilderDesktopGL.getInstance(new DesktopTarget(compiler));
         builder.init(context.files());
 
         return new Builder[] {
@@ -121,6 +122,8 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
     @Override
     public void onLoad(PluginContext context) {
         super.onLoad(context);
+
+        this.context = context;
 
         context.menus().addHelp("Function List",(parent, e) -> {
             ReferenceWindow window = new ReferenceWindow(parent);

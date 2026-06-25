@@ -11,6 +11,8 @@ import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.extensions.Library;
 import com.basic4gl.language.core.runtime.IServiceCollection;
 import com.basic4gl.language.core.runtime.VM;
+import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -34,11 +36,11 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder {
     private final List<String> exportAssets = new ArrayList<>();
     private String exportAssetBaseDirectory;
 
-//    public static Library getInstance(TomBasicCompiler compiler) {
-//        BuilderDesktopGL instance = new BuilderDesktopGL();
-//        instance.target = (GLTextGridWindow) GLTextGridWindow.getInstance(compiler);
-//        return instance;
-//    }
+    public static Builder getInstance(DesktopTarget target) {
+        BuilderDesktopGL instance = new BuilderDesktopGL();
+        instance.target = target;
+        return instance;
+    }
 
     @Override
     public String getFileDescription() {

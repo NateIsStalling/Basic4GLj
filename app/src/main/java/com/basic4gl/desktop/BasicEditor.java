@@ -63,7 +63,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     // State
 
     // Libraries
-    private final List<Integer> builders = new ArrayList<>(); // Indexes of libraries that can be launch targets
+    private final List<Builder> builders = new ArrayList<>();
     public int currentBuilder = -1; // Index of mTarget in mTargets
 
     // Editor state
@@ -93,13 +93,14 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     }
 
     public void initLibraries() {
+        fileOpener = new FileOpener(fileManager.getCurrentDirectory());
 
+        basic4gl.onLoad(this);
+        Collections.addAll(builders, basic4gl.getBuilders());
         // Set default target
         if (!builders.isEmpty()) {
             currentBuilder = 0;
         }
-        basic4gl.onLoad(this);
-
         // Initialize highlighting
         // mKeywords = new HashMap<String,Color>();
         BasicTokenMaker.reservedWords.clear();
@@ -1095,8 +1096,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     @Override
     public Builder currentBuilder() {
         // TODO make configurable
-        // Library builder = libraries.get(builders.get(currentBuilder));
-        Builder builder = new BuilderDesktopGL();
+        Builder builder = basic4gl.getBuilders()[currentBuilder];
         builder.init(fileOpener);
         return builder;
     }

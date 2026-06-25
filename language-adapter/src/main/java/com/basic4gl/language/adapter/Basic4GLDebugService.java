@@ -5,6 +5,7 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.desktop.spi.IProcessExitListener;
 import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.spi.Builder;
+import com.basic4gl.desktop.spi.Target;
 import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
 import com.basic4gl.runtime.Debugger;
@@ -88,7 +89,7 @@ public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugServi
         }
 
         String[] commandArgs = buildCommandArgs(
-                builder,
+                builder.getTarget(),
                 appSettings,
                 currentDirectory,
                 libraryBinPath,
@@ -240,7 +241,7 @@ public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugServi
     }
 
     private static String[] buildCommandArgs(
-            Builder library,
+            Target buildTarget,
             IAppSettings appSettings,
             String currentDirectory,
             String libraryBinPath,
@@ -258,7 +259,7 @@ public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugServi
 
         runnerArgs.add(libraryBinPath);
 
-        if (library instanceof ITargetCommandLineOptions target) {
+        if (buildTarget instanceof ITargetCommandLineOptions target) {
             addTargetOption(runnerArgs, target.getProgramFilePathCommandLineOption(), vmPath);
             addTargetOption(runnerArgs, target.getConfigFilePathCommandLineOption(), configPath);
             addTargetOption(runnerArgs, target.getLineMappingFilePathCommandLineOption(), lineMappingPath);
