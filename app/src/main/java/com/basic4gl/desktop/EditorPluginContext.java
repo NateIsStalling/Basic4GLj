@@ -1,12 +1,12 @@
-//package com.basic4gl.desktop;
+// package com.basic4gl.desktop;
 //
-//import com.basic4gl.desktop.spi.DialogService;
-//import com.basic4gl.desktop.spi.FileOpener;
-//import com.basic4gl.desktop.spi.SourceFileService;
-//import com.basic4gl.language.adapter.EditorAdapter;
-//import com.basic4gl.language.core.runtime.IFileOpener;
+// import com.basic4gl.desktop.spi.DialogService;
+// import com.basic4gl.desktop.spi.FileOpener;
+// import com.basic4gl.desktop.spi.SourceFileService;
+// import com.basic4gl.language.adapter.EditorAdapter;
+// import com.basic4gl.language.core.runtime.IFileOpener;
 //
-//public class EditorPluginContext implements com.basic4gl.desktop.spi.PluginContext {
+// public class EditorPluginContext implements com.basic4gl.desktop.spi.PluginContext {
 //    private EditorAdapter editorAdapter;
 //    private IStandaloneSettings settings;
 //    private IFileOpener fileOpener;
@@ -46,4 +46,4 @@
 //    public SourceFileService[] fileServices() {
 //        return new SourceFileService[0];
 //    }
-//}
+// }

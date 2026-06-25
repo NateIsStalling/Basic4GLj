@@ -1,11 +1,5 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.desktop.spi.*;
-import com.basic4gl.desktop.util.*;
-import com.basic4gl.language.adapter.Basic4GLEditorPluginAdapter;
-import com.basic4gl.language.adapter.BuilderDesktopGL;
-import com.basic4gl.language.adapter.ConfigurationMapper;
-import com.basic4gl.language.core.runtime.CallbackMessage;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.ErrorCallback;
 import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
@@ -17,9 +11,11 @@ import com.basic4gl.debug.protocol.types.Variable;
 import com.basic4gl.desktop.debugger.*;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
 import com.basic4gl.desktop.editor.FileEditor;
+import com.basic4gl.desktop.spi.*;
+import com.basic4gl.desktop.util.*;
+import com.basic4gl.language.adapter.Basic4GLEditorPluginAdapter;
+import com.basic4gl.language.core.runtime.CallbackMessage;
 import com.basic4gl.language.core.runtime.InstructionPosition;
-import org.apache.commons.lang3.SystemUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -27,6 +23,7 @@ import java.nio.ByteOrder;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.SwingUtilities;
+import org.apache.commons.lang3.SystemUtils;
 
 public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider, PluginContext {
 
@@ -52,11 +49,11 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     private final List<DisassembledInstruction> disassemblyPages = new ArrayList<>();
     private Integer activeDisassemblyRootRequestId = null;
 
-
     // Virtual machine and compiler
     private VmWorker vmWorker; // Debugging
     private com.basic4gl.desktop.spi.FileOpener fileOpener;
-    private final com.basic4gl.language.core.runtime.DebuggerCallbackMessage callbackMessage = new com.basic4gl.language.core.runtime.DebuggerCallbackMessage();
+    private final com.basic4gl.language.core.runtime.DebuggerCallbackMessage callbackMessage =
+            new com.basic4gl.language.core.runtime.DebuggerCallbackMessage();
 
     private EditorSettings settings = null;
 
@@ -81,10 +78,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     private final Basic4GLEditorPluginAdapter basic4gl;
 
     public BasicEditor(
-            String libraryPath,
-            FileManager fileManager,
-            IEditorPresenter presenter,
-            MenuService menuService) {
+            String libraryPath, FileManager fileManager, IEditorPresenter presenter, MenuService menuService) {
         this.libraryPath = libraryPath;
         this.fileManager = fileManager;
         this.presenter = presenter;
@@ -133,8 +127,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
             reset();
             show(new DebugCallback());
             RunHandler handler = new RunHandler(this, basic4gl.getDebug());
-            com.basic4gl.desktop.spi.DebugLaunchInfo launchInfo = handler.launchRemote(); // 12/2020 testing new continue()
-            activeRunHandler =  basic4gl.getDebug().hasLaunchedProcess() ? handler : null;
+            com.basic4gl.desktop.spi.DebugLaunchInfo launchInfo =
+                    handler.launchRemote(); // 12/2020 testing new continue()
+            activeRunHandler = basic4gl.getDebug().hasLaunchedProcess() ? handler : null;
             if (activeRunHandler == null && vmWorker != null) {
                 vmWorker.cancel(true);
             }
@@ -163,7 +158,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
                 reset();
                 show(new DebugCallback());
                 RunHandler handler = new RunHandler(this, basic4gl.getDebug());
-                com.basic4gl.desktop.spi.DebugLaunchInfo launchInfo = handler.launchRemote(); // 12/2020 testing new continue()
+                com.basic4gl.desktop.spi.DebugLaunchInfo launchInfo =
+                        handler.launchRemote(); // 12/2020 testing new continue()
                 activeRunHandler = basic4gl.getDebug().hasLaunchedProcess() ? handler : null;
                 if (activeRunHandler == null && vmWorker != null) {
                     vmWorker.cancel(true);
@@ -263,8 +259,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         // TODO Get editor assigned as main file
         int mainFiledIndex = 0;
 
-        return basic4gl.getPreprocessor().preprocess(
-                new EditorSourceFile(fileManager.getEditor(mainFiledIndex), fileManager.getFilename(mainFiledIndex)));
+        return basic4gl.getPreprocessor()
+                .preprocess(new EditorSourceFile(
+                        fileManager.getEditor(mainFiledIndex), fileManager.getFilename(mainFiledIndex)));
     }
 
     @Override
@@ -294,7 +291,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         // VMView().RefreshVMView();
 
         if (basic4gl.getCompiler().hasError()) {
-            presenter.placeCursorAtProcessed(basic4gl.getCompiler().getTokenLine().intValue(), basic4gl.getCompiler().getTokenColumn().intValue());
+            presenter.placeCursorAtProcessed(
+                    basic4gl.getCompiler().getTokenLine().intValue(),
+                    basic4gl.getCompiler().getTokenColumn().intValue());
             presenter.setCompilerStatus(basic4gl.getCompiler().getError());
 
             return false;
@@ -723,8 +722,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     }
 
     private String formatReadMemoryRange(ReadMemoryPageRequest request) {
-        int heapBase = parseMemoryAddress(
-                request.memoryReference, basic4gl.getDebug().getPermanent());
+        int heapBase =
+                parseMemoryAddress(request.memoryReference, basic4gl.getDebug().getPermanent());
         int startAddress = heapBase + Math.max(0, request.offsetBytes / 4);
         int wordCount = Math.max(1, request.countBytes / 4);
         int endAddress = startAddress + wordCount - 1;
@@ -1075,11 +1074,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         presenter.refreshDebugDisplays(mode);
     }
 
-
     @Override
     public DialogService dialogs() {
 
-        //TODO implement dialogs for plugins
+        // TODO implement dialogs for plugins
         return null;
     }
 
@@ -1113,9 +1111,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
 
     @Override
     public SourceFileService[] fileServices() {
-        return new SourceFileService[] {
-            new EditorSourceFileServer(fileManager), new DiskFileServer()
-        };
+        return new SourceFileService[] {new EditorSourceFileServer(fileManager), new DiskFileServer()};
     }
 
     @Override

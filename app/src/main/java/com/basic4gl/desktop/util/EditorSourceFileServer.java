@@ -2,7 +2,6 @@ package com.basic4gl.desktop.util;
 
 import com.basic4gl.desktop.spi.ISourceFile;
 import com.basic4gl.desktop.spi.SourceFileService;
-
 import java.io.File;
 
 /**

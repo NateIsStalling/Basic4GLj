@@ -1,8 +1,8 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.desktop.spi.*;
 import com.basic4gl.compiler.util.IAssetExportBuilder;
 import com.basic4gl.desktop.editor.FileEditor;
+import com.basic4gl.desktop.spi.*;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import java.awt.*;
@@ -358,11 +358,12 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         builderComboBox.removeAllItems();
         this.builders = builders;
         for (Builder builder : this.builders) {
-            // TODO 6/2026 need to review why this cared about FunctionLibrary here - this should be handled elsewhere already
-//            if (lib instanceof FunctionLibrary) {
-//                compiler.addConstants(((FunctionLibrary) lib).constants());
-//                compiler.addFunctions(lib, ((FunctionLibrary) lib).specs());
-//            }
+            // TODO 6/2026 need to review why this cared about FunctionLibrary here - this should be handled elsewhere
+            // already
+            //            if (lib instanceof FunctionLibrary) {
+            //                compiler.addConstants(((FunctionLibrary) lib).constants());
+            //                compiler.addFunctions(lib, ((FunctionLibrary) lib).specs());
+            //            }
             builderComboBox.addItem(builder.getName());
         }
 
@@ -714,7 +715,11 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         private final ExportCallback exportCallback;
         private CallbackMessage callbackMessage;
 
-        public ExportWorker(CompilerService compiler, com.basic4gl.desktop.spi.Builder builder, File dest, ExportCallback callback) {
+        public ExportWorker(
+                CompilerService compiler,
+                com.basic4gl.desktop.spi.Builder builder,
+                File dest,
+                ExportCallback callback) {
             this.compiler = compiler;
             this.builder = builder;
             this.dest = dest;
@@ -774,7 +779,6 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         // Program control
         private boolean compile() {
 
-
             // Clear source code from parser
             compiler.clear();
 
@@ -804,10 +808,8 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         // Compilation and execution routines
         private boolean loadProgramIntoCompiler() {
             // TODO Get editor assigned as main file
-            return preprocessor.preprocess(
-                    new EditorSourceFile(
-                            fileEditors.get(0).getEditorPane(),
-                            fileEditors.get(0).getFilePath()));
+            return preprocessor.preprocess(new EditorSourceFile(
+                    fileEditors.get(0).getEditorPane(), fileEditors.get(0).getFilePath()));
         }
     }
 

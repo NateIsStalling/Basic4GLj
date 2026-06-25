@@ -4,7 +4,6 @@ import com.basic4gl.debug.protocol.callbacks.Callback;
 import com.basic4gl.debug.protocol.types.InstructionPosition;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
 import com.basic4gl.language.core.extensions.Library;
-
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.*;
@@ -129,7 +128,8 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
                     callback.getVMStatus().getError());
         }
         com.basic4gl.language.core.runtime.DebuggerCallbackMessage message =
-                new com.basic4gl.language.core.runtime.DebuggerCallbackMessage(callback.getStatus(), callback.getText(), vmStatus);
+                new com.basic4gl.language.core.runtime.DebuggerCallbackMessage(
+                        callback.getStatus(), callback.getText(), vmStatus);
 
         InstructionPosition instructionPosition = callback.getSourcePosition();
         if (instructionPosition != null) {

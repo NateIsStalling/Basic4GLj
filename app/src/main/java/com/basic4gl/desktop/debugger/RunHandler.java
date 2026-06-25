@@ -2,25 +2,14 @@ package com.basic4gl.desktop.debugger;
 
 import com.basic4gl.desktop.spi.DebugService;
 import com.basic4gl.desktop.spi.IProcessExitListener;
-import com.basic4gl.language.core.extensions.IAppSettings;
-import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
-import com.basic4gl.language.core.extensions.Library;
-
 import java.io.*;
-import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang3.SystemUtils;
 
 public class RunHandler {
-
 
     private final IApplicationHost host;
     private final DebugService debugger;
 
-    public RunHandler(
-            IApplicationHost host, DebugService debugger) {
+    public RunHandler(IApplicationHost host, DebugService debugger) {
         this.host = host;
         this.debugger = debugger;
     }

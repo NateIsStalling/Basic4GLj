@@ -96,8 +96,8 @@ public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugServi
                 vm.getAbsolutePath(),
                 config.getAbsolutePath(),
                 lineMapping.getAbsolutePath(),
-                isMacOS,
-                defaultDebugPort);
+                defaultDebugPort,
+                isMacOS);
         String jvmDebugArgs = findJvmDebugArgs(commandArgs);
         clearCapturedStderr();
 
@@ -248,8 +248,8 @@ public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugServi
             String vmPath,
             String configPath,
             String lineMappingPath,
-            boolean isMacOS,
-            String defaultDebugServerPort) {
+            String defaultDebugServerPort,
+            boolean isMacOS) {
         String applicationStoragePath =
                 System.getProperty("user.home") + System.getProperty("file.separator") + "Basic4GLj";
 

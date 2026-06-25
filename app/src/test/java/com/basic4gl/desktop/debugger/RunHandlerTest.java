@@ -3,10 +3,13 @@ package com.basic4gl.desktop.debugger;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.basic4gl.language.adapter.Basic4GLDebugService;
+import com.basic4gl.desktop.spi.Configuration;
+import com.basic4gl.desktop.spi.Target;
 import com.basic4gl.language.core.extensions.IAppSettings;
-import com.basic4gl.language.core.runtime.IServiceCollection;
-import com.basic4gl.language.core.extensions.Library;
-import com.basic4gl.runtime.TomVM;
+import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,23 +45,25 @@ public class RunHandlerTest {
     }
 
     private String[] invokeBuildCommandArgs(IAppSettings settings, String libraryBinPath) throws Exception {
-        Method buildCommandArgs = RunHandler.class.getDeclaredMethod(
+        Method buildCommandArgs = Basic4GLDebugService.class.getDeclaredMethod(
                 "buildCommandArgs",
-                Library.class,
+                Target.class,
                 IAppSettings.class,
                 String.class,
                 String.class,
                 String.class,
                 String.class,
-                String.class);
+                String.class,
+                String.class,
+                boolean.class);
         buildCommandArgs.setAccessible(true);
 
         Object result = buildCommandArgs.invoke(
-                null, new TestLibrary(), settings, ".", libraryBinPath, "vmPath", "configPath", "lineMapPath");
+                null, new TestTarget(), settings, ".", libraryBinPath, "vmPath", "configPath", "lineMapPath", "0000", false);
         return (String[]) result;
     }
 
-    private static class TestLibrary implements Library {
+    private static class TestTarget implements Target, ITargetCommandLineOptions {
         @Override
         public String name() {
             return "Test Library";
@@ -70,10 +75,29 @@ public class RunHandlerTest {
         }
 
         @Override
-        public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
+        public Configuration getSettings() {
+            return null;
+        }
 
         @Override
-        public void init(Basic4GLCompiler comp, IServiceCollection services) {}
+        public Configuration getConfiguration() {
+            return null;
+        }
+
+        @Override
+        public void setConfiguration(Configuration config) {}
+
+        @Override
+        public void loadConfiguration(InputStream stream) {}
+
+        @Override
+        public void saveConfiguration(OutputStream stream) {}
+
+        @Override
+        public void saveState(OutputStream stream) {}
+
+        @Override
+        public void loadState(InputStream stream) {}
 
         @Override
         public void cleanup() {}
@@ -86,6 +110,44 @@ public class RunHandlerTest {
         @Override
         public List<String> getClassPathObjects() {
             return Collections.emptyList();
+        }
+
+        @Override
+        public void reset() {}
+
+        @Override
+        public String getConfigFilePathCommandLineOption() {
+            return "cfg";
+        }
+
+        @Override
+        public String getLineMappingFilePathCommandLineOption() {
+            return "linemap";
+        }
+
+        @Override
+        public String getLogFilePathCommandLineOption() {
+            return "log";
+        }
+
+        @Override
+        public String getParentDirectoryCommandLineOption() {
+            return "parent";
+        }
+
+        @Override
+        public String getProgramFilePathCommandLineOption() {
+            return "vm";
+        }
+
+        @Override
+        public String getDebuggerPortCommandLineOption() {
+            return "debug";
+        }
+
+        @Override
+        public String getSandboxModeEnabledOption() {
+            return "sandbox";
         }
     }
 
