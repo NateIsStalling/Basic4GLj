@@ -210,7 +210,7 @@ public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugServi
 
     @Override
     public void insertDeleteLines(String filename, int fileLineNo, int delta) {
-
+        debugger.insertDeleteLines(filename, fileLineNo, delta);
     }
 
     public String getCapturedStderr() {

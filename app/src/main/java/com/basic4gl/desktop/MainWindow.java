@@ -15,7 +15,6 @@ import com.basic4gl.desktop.spi.MenuService;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
-import com.basic4gl.language.adapter.Basic4GLEditorPluginAdapter;
 import com.basic4gl.language.core.internal.Mutable;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
@@ -151,8 +150,6 @@ public class MainWindow
     private static String debugServerBinPath;
     private static String outputBinPath;
     private static String applicationStoragePath;
-
-    private Basic4GLEditorPluginAdapter adapter;
 
     public static void main(String[] args) {
         // Location to store logs
@@ -1451,7 +1448,7 @@ public class MainWindow
         // Clear debug controls
         gosubListModel.clear();
 
-        for (String label : adapter.getLanguage().buildFriendlyCallStackLabels(stackTraceCallback)) {
+        for (String label : basicEditor.getLanguageService().buildFriendlyCallStackLabels(stackTraceCallback)) {
             gosubListModel.addElement(label);
         }
     }
@@ -1460,7 +1457,7 @@ public class MainWindow
     public void updateVmViewCallStack(StackTraceCallback stackTraceCallback) {
         if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
             virtualMachineViewDialog.updateCallStack(
-                    adapter.getLanguage().toVmViewFriendlyCallStack(stackTraceCallback));
+                    basicEditor.getLanguageService().toVmViewFriendlyCallStack(stackTraceCallback));
         }
     }
 
