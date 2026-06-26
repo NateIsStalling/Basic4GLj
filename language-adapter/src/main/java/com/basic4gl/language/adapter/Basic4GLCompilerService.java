@@ -10,8 +10,9 @@ import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.spi.Target;
 import com.basic4gl.language.core.extensions.FunctionLibrary;
 import com.basic4gl.language.core.extensions.Library;
-import com.basic4gl.language.core.runtime.IFileOpener;
 import com.basic4gl.language.core.runtime.IServiceCollection;
+import com.basic4gl.library.desktopgl.content.FileOpener;
+import com.basic4gl.library.desktopgl.content.IFileAccess;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +69,7 @@ public class Basic4GLCompilerService implements CompilerService {
 //        targets.add(GLTextGridWindow.getInstance(compiler));
 //        builders.add(BuilderDesktopGL.getInstance(compiler));
 
-        IFileOpener fileOpener = new FileOpenerAdapter(context.files());
+        FileOpener fileOpener = new FileOpener(context.files().getParentDirectory());
         // TODO Add more libraries
         int i = 0;
         for (Library lib : libraries) {
