@@ -24,6 +24,7 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
     private final PreprocessorService preprocessorService;
     // Runtime settings
     private final IConfigurableAppSettings appSettings = new EditorAppSettings();
+    private Builder[] builders = new Builder[0];
 
     private PluginContext context;
 
@@ -86,13 +87,18 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
             return new Builder[0];
         }
 
+        if (builders.length > 0) {
+            return builders;
+        }
+
         // TODO DesktopTarget needs implementation
         Builder builder = BuilderDesktopGL.getInstance(new DesktopTarget(compiler));
         builder.init(context.files());
 
-        return new Builder[] {
+        builders = new Builder[] {
             builder
         };
+        return builders;
     }
 
     @Override
@@ -124,6 +130,7 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
         super.onLoad(context);
 
         this.context = context;
+        this.builders = new Builder[0];
 
         context.menus().addHelp("Function List",(parent, e) -> {
             ReferenceWindow window = new ReferenceWindow(parent);
@@ -135,5 +142,9 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
     @Override
     public Configuration getAppSettings() {
         return ConfigurationMapper.toEditorConfiguration(appSettings);
+    }
+
+    public IConfigurableAppSettings getConfigurableAppSettings() {
+        return appSettings;
     }
 }

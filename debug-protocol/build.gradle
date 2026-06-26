@@ -1,10 +1,29 @@
 plugins {
     id 'java'
+    id 'maven-publish'
     id("com.diffplug.spotless") version "7.0.2"
 }
 
-group 'com.basic4gl.debug.protocol'
-version '1.0-SNAPSHOT'
+group = 'com.basic4gl'
+
+def resolveReleaseVersion = {
+    def version = (findProperty('releaseVersion')
+            ?: System.getenv('RELEASE_VERSION')
+            ?: System.getenv('APP_RELEASE_VERSION')
+            ?: System.getenv('BUILD_RELEASE_TAG')
+            ?: System.getenv('GITHUB_REF_NAME'))?.toString()?.trim()
+    if (!version) {
+        return null
+    }
+
+    // Normalize common Git tag shapes to Maven-friendly versions.
+    version = version.replaceFirst('^refs/tags/', '')
+    version = version.replaceFirst('^[vV](?=\\d)', '')
+    version = version.replaceAll('[^0-9A-Za-z._-]', '-')
+    return version
+}
+
+version = resolveReleaseVersion() ?: '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -37,4 +56,40 @@ build.dependsOn spotlessApply
 
 test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = 'debug-protocol'
+            pom {
+                name = 'Basic4GL Debug Protocol'
+                description = 'Interfaces and models for Basic4GL debug protocol'
+                url = 'https://github.com/NateIsStalling/Basic4GLj'
+                licenses {
+                    license {
+                        name = 'BSD 3-Clause License'
+                        url = 'https://opensource.org/license/bsd-3-clause'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/NateIsStalling/Basic4GLj.git'
+                    developerConnection = 'scm:git:ssh://github.com/NateIsStalling/Basic4GLj.git'
+                    url = 'https://github.com/NateIsStalling/Basic4GLj'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'GitHubPackages'
+            def repository = System.getenv('GITHUB_REPOSITORY') ?: ''
+            url = uri("https://maven.pkg.github.com/${repository}")
+            credentials {
+                username = findProperty('gpr.user') ?: System.getenv('GITHUB_ACTOR')
+                password = findProperty('gpr.key') ?: System.getenv('GITHUB_TOKEN')
+            }
+        }
+    }
 }

@@ -20,7 +20,6 @@
             <option value="$PROJECT_DIR$/language-runtime" />
             <option value="$PROJECT_DIR$/language-spi" />
             <option value="$PROJECT_DIR$/library" />
-            <option value="$PROJECT_DIR$/runtime" />
           </set>
         </option>
       </GradleProjectSettings>

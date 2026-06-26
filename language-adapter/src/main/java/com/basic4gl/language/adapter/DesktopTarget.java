@@ -1,5 +1,6 @@
 package com.basic4gl.language.adapter;
 
+import com.basic4gl.app.desktop.GLTextGridWindow;
 import com.basic4gl.app.desktop.config.IStandaloneSettings;
 import com.basic4gl.app.desktop.config.StandaloneCommandLineOptionsParser;
 import com.basic4gl.app.desktop.config.StandaloneSettings;
@@ -9,6 +10,7 @@ import com.basic4gl.desktop.spi.Target;
 import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -87,6 +89,11 @@ public class DesktopTarget implements Target, ITargetCommandLineOptions {
     public void cleanup() {
 
     }
+
+    public Type getMainClass() {
+        return GLTextGridWindow.class;
+    }
+
 
     @Override
     public List<String> getDependencies() {

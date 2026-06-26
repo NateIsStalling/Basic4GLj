@@ -181,7 +181,7 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder {
 
             manifest.getMainAttributes().put(Attributes.Name.CLASS_PATH, classpath);
             manifest.getMainAttributes()
-                    .put(Attributes.Name.MAIN_CLASS, this.target.getClass().getName());
+                    .put(Attributes.Name.MAIN_CLASS, this.target.getMainClass().getTypeName());
 
             zipEntry = new ZipEntry(jar.getName());
             zipEntry.setTime(System.currentTimeMillis());
@@ -194,7 +194,9 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder {
             System.out.println("Adding source files");
             List<String> files = new ArrayList<>();
             // TODO Only add required classes
+            files.add("com/basic4gl/app");
             files.add("com/basic4gl/compiler");
+            files.add("com/basic4gl/language");
             files.add("com/basic4gl/lib"); // TODO this namespace should be renamed..
             files.add("com/basic4gl/library");
             files.add("com/basic4gl/util");

@@ -50,6 +50,8 @@ jobs:
           RELEASE_VERSION: ${{ steps.version.outputs.release_version }}
         run: |
           ./gradlew \
+            :app-spi:publish \
+            :debug-protocol:publish \
             :language-core:publish \
             :language-spi:publish \
             :language-runtime:publish \

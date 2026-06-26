@@ -90,6 +90,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         fileOpener = new FileOpener(fileManager.getCurrentDirectory());
 
         basic4gl.onLoad(this);
+        builders.clear();
         Collections.addAll(builders, basic4gl.getBuilders());
         // Set default target
         if (!builders.isEmpty()) {
@@ -1093,8 +1094,13 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
 
     @Override
     public Builder currentBuilder() {
-        // TODO make configurable
-        Builder builder = basic4gl.getBuilders()[currentBuilder];
+        if (builders.isEmpty()) {
+            throw new IllegalStateException("No builders are available.");
+        }
+        if (currentBuilder < 0 || currentBuilder >= builders.size()) {
+            currentBuilder = 0;
+        }
+        Builder builder = builders.get(currentBuilder);
         builder.init(fileOpener);
         return builder;
     }
@@ -1145,7 +1151,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     }
 
     public List<Builder> getBuilders() {
-        return Arrays.asList(basic4gl.getBuilders());
+        return builders;
     }
 
     // TODO temporary shim - migrating towards settings being plugin oriented

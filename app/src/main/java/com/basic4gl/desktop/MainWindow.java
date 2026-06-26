@@ -14,8 +14,8 @@ import com.basic4gl.desktop.spi.FileLineNumber;
 import com.basic4gl.desktop.spi.MenuService;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
+import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
 import com.basic4gl.language.adapter.Basic4GLEditorPluginAdapter;
-import com.basic4gl.language.adapter.ConfigurationMapper;
 import com.basic4gl.language.core.internal.Mutable;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
@@ -755,11 +755,11 @@ public class MainWindow
     private void showSettings() {
         // TODO 6/2026 temporary shim - ProjectSettingsDialog should be owned by the main app and pages managed by the
         // adapter project.
+        IConfigurableAppSettings appSettings = basicEditor.getBasic4gl().getConfigurableAppSettings();
         com.basic4gl.language.adapter.ProjectSettingsDialog dialog =
                 new com.basic4gl.language.adapter.ProjectSettingsDialog(
                         frame,
-                        ConfigurationMapper.toAppSettings(
-                                basicEditor.getBasic4gl().getAppSettings()));
+                        appSettings);
         dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
