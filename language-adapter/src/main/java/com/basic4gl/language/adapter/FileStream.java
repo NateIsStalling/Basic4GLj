@@ -1,6 +1,7 @@
 package com.basic4gl.language.adapter;
 
 import java.io.*;
+import java.util.Objects;
 
 /**
  * Created by Nate on 11/17/2015.
@@ -24,8 +25,21 @@ public class FileStream {
         this.out = out;
     }
 
-    boolean equals(FileStream s) {
-        return this.in.equals(s.in) && this.out.equals(s.out);
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof FileStream)) {
+            return false;
+        }
+        FileStream s = (FileStream) other;
+        return Objects.equals(in, s.in) && Objects.equals(out, s.out);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(in, out);
     }
 
     public void close() {
