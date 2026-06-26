@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'maven-publish'
     id("com.diffplug.spotless") version "7.0.2"
 }
@@ -30,7 +30,7 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":language-core"))
+    api(project(":language-core"))
 
     testImplementation platform('org.junit:junit-bom:6.0.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
