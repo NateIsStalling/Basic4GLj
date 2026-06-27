@@ -1,6 +1,6 @@
 package com.basic4gl.desktop.debugger;
 
-import com.basic4gl.lib.util.Library;
+import com.basic4gl.language.core.extensions.Library;
 import java.util.List;
 
 public interface IDebugger {

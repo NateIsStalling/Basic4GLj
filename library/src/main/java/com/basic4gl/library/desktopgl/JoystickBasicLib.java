@@ -3,17 +3,17 @@ package com.basic4gl.library.desktopgl;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.windows.User32.*;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.language.core.runtime.Function;
+import com.basic4gl.language.core.runtime.IServiceCollection;
+import com.basic4gl.language.core.runtime.VM;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.Constant;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ParamTypeList;
 import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
-import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.BasicValType;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.types.ParamTypeList;
-import com.basic4gl.runtime.util.Function;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
@@ -58,14 +58,14 @@ public class JoystickBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {
         keyboard = services.getService(OpenGLKeyboard.class);
 
         // Init function
-        comp.getVM()
+        comp.getProgram()
                 .addInitFunction(
                         new InitLibFunction()); // This function will be called before Basic4GL runs any program
     }
@@ -218,7 +218,7 @@ public class JoystickBasicLib implements FunctionLibrary {
     }
 
     public static final class InitLibFunction implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             // This function is called everytime a Basic4GL program starts.
             // Reset joystick related state.
             autoPoll = true; // Automatically Poll joystick whenever it is accessed
@@ -228,84 +228,84 @@ public class JoystickBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapUpdateJoystick implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll = false; // Explicitly polling the joystick disables automatic polling
             pollJoystick();
         }
     }
 
     public static final class WrapJoyLeft implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
             vm.getReg().setIntVal(getJoyX() <= -threshHold ? -1 : 0);
         }
     }
 
     public static final class WrapJoyRight implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
             vm.getReg().setIntVal(getJoyX() >= threshHold ? -1 : 0);
         }
     }
 
     public static final class WrapJoyUp implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
             vm.getReg().setIntVal(getJoyY() <= -threshHold ? -1 : 0);
         }
     }
 
     public static final class WrapJoyDown implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
             vm.getReg().setIntVal(getJoyY() >= threshHold ? -1 : 0);
         }
     }
 
     public static final class WrapJoyButton0 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
             vm.getReg().setIntVal(buttons != null && buttons.get(0) != 0 ? -1 : 0);
         }
     }
 
     public static final class WrapJoyButton1 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
             vm.getReg().setIntVal(buttons != null && buttons.get(1) != 0 ? -1 : 0);
         }
     }
 
     public static final class WrapJoyButton2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
             vm.getReg().setIntVal(buttons != null && buttons.get(2) != 0 ? -1 : 0);
         }
     }
 
     public static final class WrapJoyButton3 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
             vm.getReg().setIntVal(buttons != null && buttons.get(3) != 0 ? -1 : 0);
         }
     }
 
     public static final class WrapJoyX implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
             vm.getReg().setIntVal(getJoyX());
         }
     }
 
     public static final class WrapJoyY implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
             vm.getReg().setIntVal(getJoyY());
         }
     }
 
     public static final class WrapJoyButton implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
             int index = vm.getIntParam(1);
             if (index >= 0 && index < JOY_BUTTONS) {
@@ -315,7 +315,7 @@ public class JoystickBasicLib implements FunctionLibrary {
     }
 
     public final class WrapJoyKeys implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             autoPoll();
 
             // Create fake keypresses based on the joystick state

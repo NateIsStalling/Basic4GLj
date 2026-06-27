@@ -2,17 +2,17 @@ package com.basic4gl.library.debug.commands;
 
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.types.StackFrame;
-import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.stackframe.UserFuncStackFrame;
+import com.basic4gl.language.core.runtime.VM;
+import com.basic4gl.language.core.stackframe.UserFuncStackFrame;
 import com.google.gson.Gson;
 import java.util.Vector;
 import javax.websocket.Session;
 
 public class StackTraceCommandHandler {
-    private final TomVM vm;
+    private final VM vm;
     private final Gson gson;
 
-    public StackTraceCommandHandler(TomVM vm, Gson gson) {
+    public StackTraceCommandHandler(VM vm, Gson gson) {
         this.vm = vm;
         this.gson = gson;
     }

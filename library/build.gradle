@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id("com.diffplug.spotless") version "7.0.2"
 }
 
@@ -15,12 +15,12 @@ configurations {
 }
 
 dependencies {
-    implementation fileTree(dir: "libs", include: "*.jar")
+    api fileTree(dir: "libs", include: "*.jar")
 
-    implementation project(":runtime")
-    implementation project(":compiler")
+    api project(":language-core")
+    api project(":language-spi")
 
-    implementation project(":debug-protocol")
+    api project(":debug-protocol")
 
     // for debugger
     implementation ('com.google.code.gson:gson:2.10')
@@ -56,35 +56,6 @@ build.dependsOn spotlessApply
 task copyToLib( type: Copy ) {
     into "$buildDir/libs/lib"
     from configurations.release
-}
-
-jar {
-    dependsOn copyToLib
-
-    def classPath = configurations.release.files.collect { it.name }.join(' ')
-
-    from {
-        (configurations.release).collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-
-    manifest {
-        attributes (
-            'Main-Class': 'com.basic4gl.library.desktopgl.GLTextGridWindow',
-            'Class-Path': classPath
-        )
-    }
-
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-    exclude 'META-INF/.RSA', 'META-INF/.SF', 'META-INF/*.DSA'
-
-    rootProject.ext.set("libraryJarPath", jar.archiveFile.get())
-
-    doLast {
-        new File(projectDir, "class-path.txt").text = classPath
-    }
 }
 
 test {

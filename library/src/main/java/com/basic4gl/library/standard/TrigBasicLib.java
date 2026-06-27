@@ -1,19 +1,19 @@
 package com.basic4gl.library.standard;
 
-import static com.basic4gl.runtime.types.BasicValType.VTP_REAL;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
+import static com.basic4gl.language.core.types.BasicValType.VTP_REAL;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
-import com.basic4gl.runtime.Data;
-import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.types.ParamTypeList;
-import com.basic4gl.runtime.types.ValType;
-import com.basic4gl.runtime.util.Function;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.language.core.runtime.Data;
+import com.basic4gl.language.core.runtime.Function;
+import com.basic4gl.language.core.runtime.IServiceCollection;
+import com.basic4gl.language.core.runtime.VM;
+import com.basic4gl.language.core.types.Constant;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ParamTypeList;
+import com.basic4gl.language.core.types.ValType;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -40,10 +40,10 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {}
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {}
 
     @Override
     public void cleanup() {
@@ -846,7 +846,7 @@ public class TrigBasicLib implements FunctionLibrary {
         matrix[15] = 1;
     }
 
-    static void returnMatrix(TomVM vm) {
+    static void returnMatrix(VM vm) {
         vm.getReg().setIntVal(Data.fillTempRealArray2D(vm.getData(), vm.getDataTypes(), 4, 4, matrix));
     }
 
@@ -860,7 +860,7 @@ public class TrigBasicLib implements FunctionLibrary {
      * @param v
      * @return vector size, or -1 if error
      */
-    static int readVec(TomVM vm, int index, float[] v) {
+    static int readVec(VM vm, int index, float[] v) {
         assertTrue(v != null);
 
         int size = Data.getArrayDimensionSize(vm.getData(), index, 0);
@@ -887,7 +887,7 @@ public class TrigBasicLib implements FunctionLibrary {
      * @param m
      * @return
      */
-    static boolean readMatrix(TomVM vm, int index, float[] m) {
+    static boolean readMatrix(VM vm, int index, float[] m) {
         assertTrue(m != null);
 
         if (Data.getArrayDimensionSize(vm.getData(), index, 0) != 4
@@ -906,7 +906,7 @@ public class TrigBasicLib implements FunctionLibrary {
     // region Function wrappers
 
     public static final class WrapVec4 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             float[] vec4 = new float[] {vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1)};
             vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 4, vec4));
@@ -914,7 +914,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapVec3 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             float[] vec3 = new float[] {vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1)};
             vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 3, vec3));
@@ -922,7 +922,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapVec2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             float[] vec2 = new float[] {vm.getRealParam(2), vm.getRealParam(1)};
             vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), 2, vec2));
@@ -930,7 +930,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapMatrixZero implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             clearMatrix();
             returnMatrix(vm);
@@ -938,7 +938,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapMatrixIdentity implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             identity();
             returnMatrix(vm);
@@ -946,7 +946,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapMatrixScale implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             scale(vm.getRealParam(1));
             returnMatrix(vm);
@@ -954,7 +954,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapMatrixScale_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             scale(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
             returnMatrix(vm);
@@ -962,7 +962,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapMatrixTranslate implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             translate(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
             returnMatrix(vm);
@@ -970,28 +970,28 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapMatrixRotateX implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             rotateX(vm.getRealParam(1));
             returnMatrix(vm);
         }
     }
 
     public static final class WrapMatrixRotateY implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             rotateY(vm.getRealParam(1));
             returnMatrix(vm);
         }
     }
 
     public static final class WrapMatrixRotateZ implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             rotateZ(vm.getRealParam(1));
             returnMatrix(vm);
         }
     }
 
     public static final class WrapMatrixRotate implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             if (readVec(vm, vm.getIntParam(1), v1) < 0) {
                 return;
@@ -1002,7 +1002,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapMatrixBasis implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             clearMatrix();
             matrix[15] = 1;
@@ -1029,7 +1029,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapMatrixCrossProduct implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             if (readVec(vm, vm.getIntParam(1), v1) < 0) {
                 return;
@@ -1040,7 +1040,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapCross implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Fetch vectors
             int s1 = readVec(vm, vm.getIntParam(2), v1), s2 = readVec(vm, vm.getIntParam(1), v2);
@@ -1061,7 +1061,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapLength implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Fetch vector
             if (readVec(vm, vm.getIntParam(1), v1) < 0) {
@@ -1074,7 +1074,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapNormalize implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Fetch vector
             int size = readVec(vm, vm.getIntParam(1), v1);
@@ -1091,7 +1091,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapDeterminant implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Fetch matrix
             if (!readMatrix(vm, vm.getIntParam(1), m1)) {
@@ -1104,7 +1104,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapTranspose implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Fetch matrix
             if (!readMatrix(vm, vm.getIntParam(1), m1)) {
@@ -1120,7 +1120,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapRTInvert implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Fetch matrix
             if (!readMatrix(vm, vm.getIntParam(1), m1)) {
@@ -1136,7 +1136,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapOrthonormalize implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Fetch matrix
             if (!readMatrix(vm, vm.getIntParam(1), m1)) {
@@ -1155,7 +1155,7 @@ public class TrigBasicLib implements FunctionLibrary {
 
     // region Overloaded operators
 
-    static void doScaleVec(TomVM vm, float scale, int vecIndex) {
+    static void doScaleVec(VM vm, float scale, int vecIndex) {
 
         // Extract data
         int size = readVec(vm, vecIndex, v1);
@@ -1170,7 +1170,7 @@ public class TrigBasicLib implements FunctionLibrary {
         vm.getReg().setIntVal(Data.fillTempRealArray(vm.getData(), vm.getDataTypes(), size, v1));
     }
 
-    static void doScaleMatrix(TomVM vm, float scale, int matrixIndex) {
+    static void doScaleMatrix(VM vm, float scale, int matrixIndex) {
 
         // Read in matrix
         if (!readMatrix(vm, matrixIndex, m1)) {
@@ -1185,45 +1185,45 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public final class OpScaleVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleVec(vm, vm.getReg().getRealVal(), vm.getReg2().getIntVal());
         }
     }
 
     public final class OpScaleVec2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleVec(vm, vm.getReg2().getRealVal(), vm.getReg().getIntVal());
         }
     }
 
     public final class OpDivVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleVec(
                     vm, (float) (1.0 / vm.getReg().getRealVal()), vm.getReg2().getIntVal());
         }
     }
 
     public final class OpScaleMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleMatrix(vm, vm.getReg().getRealVal(), vm.getReg2().getIntVal());
         }
     }
 
     public final class OpScaleMatrix2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleMatrix(vm, vm.getReg2().getRealVal(), vm.getReg().getIntVal());
         }
     }
 
     public final class OpDivMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleMatrix(
                     vm, (float) (1.0 / vm.getReg().getRealVal()), vm.getReg2().getIntVal());
         }
     }
 
     public static final class OpMatrixVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Matrix at reg2. Vector at reg.
 
@@ -1248,7 +1248,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class OpMatrixMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Matrix * Matrix
             // Left matrix at reg2, right matrix at reg1
@@ -1267,7 +1267,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class OpVecVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Vector * Vector = dot product
 
@@ -1283,7 +1283,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class OpVecPlusVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Fetch vectors
             int s1 = readVec(vm, vm.getReg2().getIntVal(), v1),
@@ -1302,7 +1302,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class OpVecMinusVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Fetch vectors
             int s1 = readVec(vm, vm.getReg2().getIntVal(), v1),
@@ -1321,7 +1321,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class OpMatrixPlusMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Matrix + Matrix
             // Left matrix at reg2, right matrix at reg1
@@ -1341,7 +1341,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class OpMatrixMinusMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Matrix - Matrix
             // Left matrix at reg2, right matrix at reg1
@@ -1361,13 +1361,13 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public final class OpNegVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleVec(vm, -1, vm.getReg().getIntVal());
         }
     }
 
     public final class OpNegMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleMatrix(vm, -1, vm.getReg().getIntVal());
         }
     }
@@ -1375,43 +1375,43 @@ public class TrigBasicLib implements FunctionLibrary {
     // Operator function wrappers
 
     public static final class WrapOpVecTimesScalar implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleVec(vm, vm.getRealParam(1), vm.getIntParam(2));
         }
     }
 
     public static final class WrapOpScalarTimesVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleVec(vm, vm.getRealParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapOpMatrixTimesScalar implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleMatrix(vm, vm.getRealParam(1), vm.getIntParam(2));
         }
     }
 
     public static final class WrapOpScalarTimesMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleMatrix(vm, vm.getRealParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapOpVecDivScalar implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleVec(vm, 1.0f / vm.getRealParam(1), vm.getIntParam(2));
         }
     }
 
     public static final class WrapOpMatrixDivScalar implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleMatrix(vm, 1.0f / vm.getRealParam(1), vm.getIntParam(2));
         }
     }
 
     public static final class WrapOpMatrixTimesVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] result = new float[] {0.0f, 0.0f, 0.0f, 0.0f};
             int size = 4;
             if (readMatrix(vm, vm.getIntParam(2), m1) && (size = readVec(vm, vm.getIntParam(1), v1)) >= 0) {
@@ -1422,7 +1422,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapOpMatrixTimesMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] result = new float[16];
             if (readMatrix(vm, vm.getIntParam(2), m1) && readMatrix(vm, vm.getIntParam(1), m2)) {
                 matrixTimesMatrix(m1, m2, result);
@@ -1436,7 +1436,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapOpVecTimesVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (readVec(vm, vm.getIntParam(2), v1) >= 0 && readVec(vm, vm.getIntParam(1), v2) >= 0) {
                 vm.getReg().setRealVal(dotProduct(v1, v2));
             } else {
@@ -1446,7 +1446,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapOpVecPlusVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] result = new float[] {0.0f, 0.0f, 0.0f, 0.0f};
             int s1 = 4, s2 = 4;
             if ((s1 = readVec(vm, vm.getIntParam(2), v1)) >= 0 && (s2 = readVec(vm, vm.getIntParam(1), v2)) >= 0) {
@@ -1457,7 +1457,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapOpVecMinusVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] result = new float[] {0.0f, 0.0f, 0.0f, 0.0f};
             int s1 = 4, s2 = 4;
             if ((s1 = readVec(vm, vm.getIntParam(2), v1)) >= 0 && (s2 = readVec(vm, vm.getIntParam(1), v2)) >= 0) {
@@ -1468,7 +1468,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapOpMatrixPlusMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] result = new float[16];
             if (readMatrix(vm, vm.getIntParam(2), m1) && readMatrix(vm, vm.getIntParam(1), m2)) {
                 matrixPlus(m1, m2, result);
@@ -1482,7 +1482,7 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapOpMatrixMinusMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] result = new float[16];
             if (readMatrix(vm, vm.getIntParam(2), m1) && readMatrix(vm, vm.getIntParam(1), m2)) {
                 matrixMinus(m1, m2, result);
@@ -1496,13 +1496,13 @@ public class TrigBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapOpNegVec implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleVec(vm, -1.0f, vm.getIntParam(1));
         }
     }
 
     public static final class WrapOpNegMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doScaleMatrix(vm, -1.0f, vm.getIntParam(1));
         }
     }

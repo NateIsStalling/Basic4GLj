@@ -2,13 +2,13 @@ package com.basic4gl.library.desktopgl.input;
 
 import static org.lwjgl.system.windows.User32.*;
 
+import com.basic4gl.language.core.extensions.Basic4GLLongRunningFunction;
+import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.library.desktopgl.content.Content2DManager;
 import com.basic4gl.library.desktopgl.content.GLTextGrid;
-import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.util.Basic4GLLongRunningFunction;
 
 public class InputCommandHandler implements Basic4GLLongRunningFunction {
-    private TomVM vm;
+    private VM vm;
     private OpenGLKeyboard keyboard;
     private Content2DManager contentManager;
     private GLTextGrid textGrid;
@@ -118,8 +118,7 @@ public class InputCommandHandler implements Basic4GLLongRunningFunction {
         contentManager.fullRedraw();
     }
 
-    public InputCommandHandler(
-            TomVM vm, OpenGLKeyboard keyboard, Content2DManager contentManager, GLTextGrid textGrid) {
+    public InputCommandHandler(VM vm, OpenGLKeyboard keyboard, Content2DManager contentManager, GLTextGrid textGrid) {
         this.vm = vm;
         this.keyboard = keyboard;
         this.contentManager = contentManager;

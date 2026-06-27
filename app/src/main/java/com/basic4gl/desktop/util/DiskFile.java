@@ -1,6 +1,6 @@
 package com.basic4gl.desktop.util;
 
-import com.basic4gl.compiler.util.ISourceFile;
+import com.basic4gl.desktop.spi.ISourceFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.*;

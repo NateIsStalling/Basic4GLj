@@ -1,14 +1,18 @@
 package com.basic4gl.library.standard;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.*;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.language.core.runtime.Function;
+import com.basic4gl.language.core.runtime.IServiceCollection;
+import com.basic4gl.language.core.runtime.VM;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.Constant;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ParamTypeList;
+import com.basic4gl.library.desktopgl.content.FileOpener;
+import com.basic4gl.library.desktopgl.content.IFileAccess;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.BasicValType;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.types.ParamTypeList;
-import com.basic4gl.runtime.util.Function;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +39,12 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         performanceFreq = System.nanoTime();
     }
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {
         windowManager = services.getService(OpenGLWindowManager.class);
     }
 
@@ -146,13 +150,13 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public final class WrapBeep implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             windowManager.beep();
         }
     }
 
     public static final class WrapSleep implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int msec = vm.getIntParam(1);
             if (msec > 5000) {
                 msec = 5000;
@@ -167,31 +171,31 @@ public class WindowsBasicLib implements FunctionLibrary, IFileAccess {
     }
 
     public static final class WrapTickCount implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal((int) (System.currentTimeMillis() % Integer.MAX_VALUE));
         }
     }
 
     public final class WrapPerformanceCounter implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal((int) (getPerformanceCounter() % Integer.MAX_VALUE));
         }
     }
 
     public final class WrapDesktopWidth implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(windowManager.getScreenWidth());
         }
     }
 
     public final class WrapDesktopHeight implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(windowManager.getScreenHeight());
         }
     }
 
     public final class WrapIsWindowClosing implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(windowManager.isCloseRequested() ? -1 : 0);
         }
     }

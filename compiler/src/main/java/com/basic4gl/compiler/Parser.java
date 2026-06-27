@@ -1,14 +1,14 @@
 package com.basic4gl.compiler;
 
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
-import com.basic4gl.compiler.util.Token;
-import com.basic4gl.compiler.util.Token.TokenType;
-import com.basic4gl.runtime.HasErrorState;
-import com.basic4gl.runtime.types.BasicValType;
+import com.basic4gl.language.core.runtime.HasErrorState;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.Token;
+import com.basic4gl.language.core.types.Token.TokenType;
 import java.util.*;
 
-public class Parser extends HasErrorState {
+public class Parser extends HasErrorState implements com.basic4gl.language.core.extensions.Basic4GLParser {
 
     // Text
     private final Vector<String> sourceCode;
@@ -31,7 +31,8 @@ public class Parser extends HasErrorState {
     }
 
     // Reading
-    char getChar(boolean inString) {
+    @Override
+    public char getChar(boolean inString) {
         char c = peekChar(inString); // Read character
         if (c == 13) { // Advance position
             column = 0;
@@ -46,7 +47,8 @@ public class Parser extends HasErrorState {
         return c;
     }
 
-    char peekChar(boolean inString) {
+    @Override
+    public char peekChar(boolean inString) {
         if (isEof()) // End of file
         {
             return 0;
@@ -62,23 +64,28 @@ public class Parser extends HasErrorState {
         }
     }
 
-    String getText() {
+    @Override
+    public String getText() {
         assertTrue(!isEof());
         return sourceCode.get(line);
     }
 
-    boolean isNumber(char c) {
+    @Override
+    public boolean isNumber(char c) {
         return ((c >= '0' && c <= '9') || c == '.');
     }
 
-    boolean isComparison(char c) {
+    @Override
+    public boolean isComparison(char c) {
         return c == '<' || c == '=' || c == '>';
     }
 
+    @Override
     public Vector<String> getSourceCode() {
         return sourceCode;
     }
 
+    @Override
     public void setPos(int line, int col) {
         setNormal();
         this.line = line;
@@ -86,18 +93,22 @@ public class Parser extends HasErrorState {
         clearError();
     }
 
+    @Override
     public void reset() {
         setPos(0, 0);
     }
 
+    @Override
     public int getLine() {
         return line;
     }
 
+    @Override
     public int getColumn() {
         return column;
     }
 
+    @Override
     public boolean isEof() {
         if (isSpecialMode) {
             return specialColumn >= specialText.length();
@@ -106,10 +117,12 @@ public class Parser extends HasErrorState {
         }
     }
 
+    @Override
     public Token nextToken() {
         return nextToken(false, false);
     }
 
+    @Override
     public Token nextToken(boolean skipEOL, boolean dataMode) {
 
         clearError();
@@ -352,10 +365,12 @@ public class Parser extends HasErrorState {
         return t;
     }
 
+    @Override
     public Token peekToken() {
         return peekToken(false, false);
     }
 
+    @Override
     public Token peekToken(boolean skipEOL, boolean dataMode) {
 
         // Save position
@@ -379,14 +394,17 @@ public class Parser extends HasErrorState {
     // (Slightly different parsing rules apply.)
 
     // Special mode
+    @Override
     public boolean isSpecialMode() {
         return isSpecialMode;
     }
 
+    @Override
     public void setSpecial(String text) {
         setSpecial(text, -1, -1);
     }
 
+    @Override
     public void setSpecial(String text, int line, int col) {
         isSpecialMode = true;
         specialText = text;

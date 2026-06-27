@@ -3,7 +3,7 @@ package com.basic4gl.desktop.debugger;
 import com.basic4gl.debug.protocol.callbacks.Callback;
 import com.basic4gl.debug.protocol.types.InstructionPosition;
 import com.basic4gl.debug.websocket.IDebugCallbackListener;
-import com.basic4gl.lib.util.*;
+import com.basic4gl.language.core.extensions.Library;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.*;
@@ -14,7 +14,7 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
 
     private RemoteDebugger remoteDebugger;
 
-    private DebuggerTaskCallback debuggerTaskCallback;
+    private com.basic4gl.language.core.runtime.DebuggerTaskCallback debuggerTaskCallback;
     private CountDownLatch completionLatch;
 
     public VmWorker(IFileProvider fileOpener) {
@@ -29,7 +29,7 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
         return completionLatch;
     }
 
-    public void setCallbacks(DebuggerTaskCallback callbacks) {
+    public void setCallbacks(com.basic4gl.language.core.runtime.DebuggerTaskCallback callbacks) {
         debuggerTaskCallback = callbacks;
     }
 
@@ -37,8 +37,8 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
     protected void process(List<Object> chunks) {
         super.process(chunks);
         for (Object message : chunks) {
-            if (message instanceof DebuggerCallbackMessage) {
-                debuggerTaskCallback.message((DebuggerCallbackMessage) message);
+            if (message instanceof com.basic4gl.language.core.runtime.DebuggerCallbackMessage) {
+                debuggerTaskCallback.message((com.basic4gl.language.core.runtime.DebuggerCallbackMessage) message);
             } else {
                 debuggerTaskCallback.messageObject(message);
             }
@@ -78,10 +78,10 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
 
             // Debugger is attached
             while (!this.isCancelled()
-                // TODO 1/2023 need to keep connection alive while debugee is idle
-                //                    && (mMessage.getStatus() == CallbackMessage.STOPPED
-                //                    || mMessage.getStatus() == CallbackMessage.WORKING
-                //                    || mMessage.getStatus() == CallbackMessage.PAUSED)
+            // TODO 1/2023 need to keep connection alive while debugee is idle
+            //                    && (mMessage.getStatus() == CallbackMessage.STOPPED
+            //                    || mMessage.getStatus() == CallbackMessage.WORKING
+            //                    || mMessage.getStatus() == CallbackMessage.PAUSED)
             ) {
                 // idle thread;
                 Thread.sleep(100);
@@ -120,15 +120,16 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
 
     public void onDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {
 
-        VMStatus vmStatus = null;
+        com.basic4gl.language.core.runtime.VMStatus vmStatus = null;
         if (callback.getVMStatus() != null) {
-            vmStatus = new VMStatus(
+            vmStatus = new com.basic4gl.language.core.runtime.VMStatus(
                     callback.getVMStatus().isDone(),
                     callback.getVMStatus().hasError(),
                     callback.getVMStatus().getError());
         }
-        DebuggerCallbackMessage message =
-                new DebuggerCallbackMessage(callback.getStatus(), callback.getText(), vmStatus);
+        com.basic4gl.language.core.runtime.DebuggerCallbackMessage message =
+                new com.basic4gl.language.core.runtime.DebuggerCallbackMessage(
+                        callback.getStatus(), callback.getText(), vmStatus);
 
         InstructionPosition instructionPosition = callback.getSourcePosition();
         if (instructionPosition != null) {

@@ -3,25 +3,19 @@
 
 package com.basic4gl.library.standard;
 
-import static com.basic4gl.runtime.types.BasicValType.*;
-import static com.basic4gl.runtime.types.OpCode.*;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
+import static com.basic4gl.language.core.types.BasicValType.*;
+import static com.basic4gl.language.core.types.OpCode.*;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.util.IVMDriver;
-import com.basic4gl.compiler.util.IVMDriverAccess;
-import com.basic4gl.lib.util.*;
-import com.basic4gl.runtime.CodeBlock;
-import com.basic4gl.runtime.Instruction;
-import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.Value;
-import com.basic4gl.runtime.core.standard.IB4GLCompiler;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.types.ParamTypeList;
-import com.basic4gl.runtime.types.ValType;
-import com.basic4gl.runtime.util.Function;
-import com.basic4gl.runtime.util.Mutable;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.language.core.internal.Mutable;
+import com.basic4gl.language.core.runtime.*;
+import com.basic4gl.language.core.types.*;
+import com.basic4gl.library.desktopgl.content.FileOpener;
+import com.basic4gl.library.desktopgl.content.FileUtil;
+import com.basic4gl.library.desktopgl.content.IFileAccess;
 import java.io.*;
 import java.nio.IntBuffer;
 import java.util.*;
@@ -31,6 +25,7 @@ import java.util.*;
  */
 public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDriverAccess {
     private static final String COMPILE_FILENAME_DEFAULT = "";
+
     @Override
     public Map<String, Constant> constants() {
         return null;
@@ -199,19 +194,20 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {
 
         // Save pointer to compiler and window
         TomCompilerBasicLib.comp = comp;
 
         // Hookup and register compiler plugin adapter
-        comp.getPlugins().registerInterface(new CompilerPluginAdapter(), "IB4GLCompiler", 1, 0, null);
+        // TODO sort out VM dependency
+        //        comp.getPlugins().registerInterface(new CompilerPluginAdapter(), "IB4GLCompiler", 1, 0, null);
 
         // Register initialisation function
-        TomCompilerBasicLib.comp.getVM().addInitFunction(new InitFunc());
+        TomCompilerBasicLib.comp.getProgram().addInitFunction(new InitFunc());
     }
 
     @Override
@@ -227,90 +223,90 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         return null;
     }
 
-    /**
-     * CompilerPluginAdapter
-     *
-     * Exposes the compiler and virtual machine to plugins via the IB4GLCompiler
-     * interface.
-     */
-    public class CompilerPluginAdapter implements IB4GLCompiler {
-
-        private int errorLine, errorCol;
-        private String errorText;
-
-        private void clearError() {
-            errorText = "";
-            errorLine = 0;
-            errorCol = 0;
-        }
-
-        // IB4GLCompiler interface
-        public int compile(String sourceText) {
-            assertTrue(comp != null);
-            TomVM vm = comp.getVM();
-
-            // Load source text into compiler
-            comp.getParser().getSourceCode().clear();
-            comp.getParser().getSourceCode().add(sourceText);
-
-            // Compile it
-            return doNewCompile(vm, COMPILE_FILENAME_DEFAULT);
-        }
-
-        public String getErrorText() {
-
-            return errorText;
-        }
-
-        public int getErrorLine() {
-            return errorLine;
-        }
-
-        public int getErrorColumn() {
-            return errorCol;
-        }
-
-        public boolean execute(int codeHandle) {
-            TomVM vm = comp.getVM();
-
-            // Check code handle is valid
-            if (codeHandle == 0 || !vm.isCodeBlockValid(codeHandle)) {
-                vm.functionError("Invalid code handle");
-                return false;
-            }
-
-            // Save stack as if a sub is being called.
-            // This is because we could be in a builtin/plugin function that is in the
-            // middle of an expression, where temp data is saved to the stack.
-            // Builtin/plugin functions don't normally protect the existing stack, so
-            // there may be unprotected temp data that the callback code could trample.
-            Mutable<Integer> stackTop = new Mutable<>(0), tempDataLock = new Mutable<>(0);
-            vm.getData().saveState(stackTop, tempDataLock);
-
-            // Find code to execute
-            // 2 op-codes earlier will be the callback hook.
-            int offset = vm.getCodeBlockOffset(codeHandle) - 2;
-
-            // Execute code
-            internalExecute(vm, offset, true);
-
-            // Check for error/end program
-            if (vm.hasError() || vm.isDone()) {
-                return false;
-            }
-
-            // Restore stack
-            vm.getData().restoreState(stackTop.get(), tempDataLock.get(), false);
-
-            return true;
-        }
-    }
+    //    /**
+    //     * CompilerPluginAdapter
+    //     *
+    //     * Exposes the compiler and virtual machine to plugins via the IB4GLCompiler
+    //     * interface.
+    //     */
+    //    public class CompilerPluginAdapter implements IB4GLCompiler {
+    //
+    //        private int errorLine, errorCol;
+    //        private String errorText;
+    //
+    //        private void clearError() {
+    //            errorText = "";
+    //            errorLine = 0;
+    //            errorCol = 0;
+    //        }
+    //
+    //        // IB4GLCompiler interface
+    //        public int compile(String sourceText) {
+    //            assertTrue(comp != null);
+    //            TomVM vm = comp.getVM();
+    //
+    //            // Load source text into compiler
+    //            comp.getParser().getSourceCode().clear();
+    //            comp.getParser().getSourceCode().add(sourceText);
+    //
+    //            // Compile it
+    //            return doNewCompile(vm, COMPILE_FILENAME_DEFAULT);
+    //        }
+    //
+    //        public String getErrorText() {
+    //
+    //            return errorText;
+    //        }
+    //
+    //        public int getErrorLine() {
+    //            return errorLine;
+    //        }
+    //
+    //        public int getErrorColumn() {
+    //            return errorCol;
+    //        }
+    //
+    //        public boolean execute(int codeHandle) {
+    //            TomVM vm = comp.getVM();
+    //
+    //            // Check code handle is valid
+    //            if (codeHandle == 0 || !vm.isCodeBlockValid(codeHandle)) {
+    //                vm.functionError("Invalid code handle");
+    //                return false;
+    //            }
+    //
+    //            // Save stack as if a sub is being called.
+    //            // This is because we could be in a builtin/plugin function that is in the
+    //            // middle of an expression, where temp data is saved to the stack.
+    //            // Builtin/plugin functions don't normally protect the existing stack, so
+    //            // there may be unprotected temp data that the callback code could trample.
+    //            Mutable<Integer> stackTop = new Mutable<>(0), tempDataLock = new Mutable<>(0);
+    //            vm.getData().saveState(stackTop, tempDataLock);
+    //
+    //            // Find code to execute
+    //            // 2 op-codes earlier will be the callback hook.
+    //            int offset = vm.getCodeBlockOffset(codeHandle) - 2;
+    //
+    //            // Execute code
+    //            internalExecute(vm, offset, true);
+    //
+    //            // Check for error/end program
+    //            if (vm.hasError() || vm.isDone()) {
+    //                return false;
+    //            }
+    //
+    //            // Restore stack
+    //            vm.getData().restoreState(stackTop.get(), tempDataLock.get(), false);
+    //
+    //            return true;
+    //        }
+    //    }
 
     // Globals
-    private static TomBasicCompiler comp = null;
+    private static Basic4GLCompiler comp = null;
     private static IVMDriver host = null;
     private static FileOpener files = null;
-    private CompilerPluginAdapter compilerAdapter;
+    //    private CompilerPluginAdapter compilerAdapter;
 
     private static String error = "";
     private static int errorLine = 0, errorCol = 0;
@@ -328,7 +324,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
      * Init function
      */
     public static class InitFunc implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             runtimeRoutines.clear();
             runtimeRoutines.add(0);
             clearError();
@@ -343,28 +339,33 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
      * - Comp adds an OP_RETURN to the end of the code, rather than an OP_END.
      * - Exec is a built-in keyword that effectively GOSUBs to the code.
      */
-    int doNewCompile(TomVM vm, String filename) {
+    int doNewCompile(VM vm, String filename) {
 
-        com.basic4gl.compiler.util.RollbackPoint rollbackPoint = comp.getRollbackPoint();
+        RuntimeFunctionRollbackPoint rollbackPoint = comp.getRollbackPoint();
         comp.clearError();
         long saveIP = vm.getIP();
 
         // Create hook for builtin/plugin function callbacks.
         // This consists of a GOSUB call to the code to be executed, followed by an
         // END CALLBACK op-code to trigger the return to the calling function.
-        vm.addInstruction(new Instruction(
-                OP_CALL,
-                VTP_INT,
-                new Value((int) vm.getInstructionCount() + 2))); // Add 2 to call the code after these 2 op-codes
-        vm.addInstruction(new Instruction(OP_END_CALLBACK, VTP_INT, new Value()));
+        vm.stream()
+                .addInstruction(new Instruction(
+                        OP_CALL,
+                        VTP_INT,
+                        new Value((int) vm.stream().getInstructionCount()
+                                + 2))); // Add 2 to call the code after these 2 op-codes
+        vm.stream().addInstruction(new Instruction(OP_END_CALLBACK, VTP_INT, new Value()));
 
         int codeBlock = 0;
         if (comp.compileOntoEnd()) {
 
             // Replace OP_END with OP_RETURN
-            assertTrue(vm.getInstructionCount() > 0);
-            assertTrue(vm.getInstruction(vm.getInstructionCount() - 1).opCode == OP_END);
-            vm.setInstruction(vm.getInstructionCount() - 1, new Instruction(OP_RETURN, VTP_INT, new Value(), 0, 0));
+            assertTrue(vm.stream().getInstructionCount() > 0);
+            assertTrue(vm.stream().getInstruction(vm.stream().getInstructionCount() - 1).opCode == OP_END);
+            vm.stream()
+                    .setInstruction(
+                            vm.stream().getInstructionCount() - 1,
+                            new Instruction(OP_RETURN, VTP_INT, new Value(), 0, 0));
 
             // Write filename into new code block
             CodeBlock block = comp.getCurrentCodeBlock();
@@ -374,7 +375,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             clearError();
 
             // Return code block index
-            codeBlock = vm.getCurrentCodeBlockIndex();
+            codeBlock = vm.stream().getCurrentCodeBlockIndex();
         } else {
 
             // Set error
@@ -407,8 +408,8 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
      *
      * The new commands 'comp' and 'exec' can be used instead.
      */
-    boolean checkForFunctions(TomVM vm) {
-        if (!vm.getUserFunctionPrototypes().isEmpty()) {
+    boolean checkForFunctions(VM vm) {
+        if (!vm.stream().getUserFunctionPrototypes().isEmpty()) {
             vm.functionError("'Compile' and 'Execute' cannot be used in programs that have functions/subs. Use 'Comp'"
                     + " and 'Exec' instead");
             return false;
@@ -417,7 +418,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         }
     }
 
-    void doOldCompile(TomVM vm) {
+    void doOldCompile(VM vm) {
 
         // Not allowed in programs with functions/subs (see note in CheckForFunctions)
         if (!checkForFunctions(vm)) {
@@ -425,7 +426,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         }
 
         // Compiled code will be added to end of program
-        long offset = vm.getInstructionCount();
+        long offset = vm.stream().getInstructionCount();
 
         // Attempt to compile text and append to end of existing program
         comp.clearError();
@@ -453,7 +454,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         vm.gotoInstruction(saveIP);
     }
 
-    void doCompile(TomVM vm, boolean useOldMethod, String filename) {
+    void doCompile(VM vm, boolean useOldMethod, String filename) {
         if (useOldMethod) {
             doOldCompile(vm);
         } else {
@@ -461,7 +462,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         }
     }
 
-    void doCompileText(TomVM vm, String text, boolean useOldMethod) {
+    void doCompileText(VM vm, String text, boolean useOldMethod) {
         // Load it into compiler
         comp.getParser().getSourceCode().clear();
         comp.getParser().getSourceCode().add(text);
@@ -470,7 +471,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         doCompile(vm, useOldMethod, COMPILE_FILENAME_DEFAULT);
     }
 
-    void doCompileList(TomVM vm, int index, boolean useOldMethod) {
+    void doCompileList(VM vm, int index, boolean useOldMethod) {
 
         // Find array size
         int arraySize = vm.getData().data().get(index).getIntVal();
@@ -497,7 +498,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         doCompile(vm, useOldMethod, COMPILE_FILENAME_DEFAULT);
     }
 
-    void doCompileFile(TomVM vm, String filename, boolean useOldMethod) {
+    void doCompileFile(VM vm, String filename, boolean useOldMethod) {
         clearError();
 
         // Attempt to open file
@@ -533,11 +534,11 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         }
     }
 
-    void internalExecute(TomVM vm, int offset) {
+    void internalExecute(VM vm, int offset) {
         internalExecute(vm, offset, false);
     }
 
-    void internalExecute(TomVM vm, int offset, boolean isCallback) {
+    void internalExecute(VM vm, int offset, boolean isCallback) {
 
         // Move IP to offset
         int saveIP = vm.getIP(); // (Save current IP)
@@ -586,13 +587,13 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     public final class WrapCompile implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doCompileText(vm, vm.getStringParam(1), true);
         }
     }
 
     public final class WrapCompile2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             // Set compiler symbol prefix
             String oldPrefix = comp.getSymbolPrefix();
             comp.setSymbolPrefix(comp.getSymbolPrefix() + vm.getStringParam(1));
@@ -606,13 +607,13 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     public final class WrapCompileList implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doCompileList(vm, vm.getIntParam(1), true);
         }
     }
 
     public final class WrapCompileList2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Set compiler symbol prefix
             String oldPrefix = comp.getSymbolPrefix();
@@ -627,13 +628,13 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     public final class WrapCompileFile implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doCompileFile(vm, vm.getStringParam(1), true);
         }
     }
 
     public final class WrapCompileFile2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Set compiler symbol prefix
             String oldPrefix = comp.getSymbolPrefix();
@@ -648,7 +649,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     public final class WrapExecute implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Not allowed in programs with functions/subs (see note in CheckForFunctions)
             if (!checkForFunctions(vm)) {
@@ -674,19 +675,19 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
                 internalExecute(vm, offset);
 
                 // Copy error text
-                if (vm.hasError()) {
+                if (vm.stream().hasError()) {
 
                     // Copy error to error variables
-                    error = vm.getError();
+                    error = vm.stream().getError();
                     Mutable<Integer> errorLineWrapper = new Mutable<>(errorLine),
                             errorColWrapper = new Mutable<>(errorCol);
-                    vm.getIPInSourceCode(errorLineWrapper, errorColWrapper);
+                    vm.stream().getIPInSourceCode(errorLineWrapper, errorColWrapper);
                     errorLine = errorLineWrapper.get();
                     errorCol = errorColWrapper.get();
 
                     // Clear error from virtual machine, so that parent program can keep
                     // on running.
-                    vm.clearError();
+                    vm.stream().clearError();
 
                     result = 0;
                 }
@@ -696,19 +697,19 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     public static final class WrapCompilerError implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegString(error);
         }
     }
 
     public static final class WrapCompilerErrorLine implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(errorLine);
         }
     }
 
     public static final class WrapCompilerErrorCol implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.getReg().setIntVal(errorCol);
         }
     }
@@ -717,13 +718,13 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     // New runtime compilation methods
 
     public final class WrapComp implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doCompileText(vm, vm.getStringParam(1), false);
         }
     }
 
     public final class WrapComp2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             // Set compiler symbol prefix
             String oldPrefix = comp.getSymbolPrefix();
             comp.setSymbolPrefix(comp.getSymbolPrefix() + vm.getStringParam(1));
@@ -737,13 +738,13 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     public final class WrapCompList implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doCompileList(vm, vm.getIntParam(1), false);
         }
     }
 
     public final class WrapCompList2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Set compiler symbol prefix
             String oldPrefix = comp.getSymbolPrefix();
@@ -758,13 +759,13 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     public final class WrapCompFile implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             doCompileFile(vm, vm.getStringParam(1), false);
         }
     }
 
     public final class WrapCompFile2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Set compiler symbol prefix
             String oldPrefix = comp.getSymbolPrefix();
@@ -779,7 +780,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     public final class WrapGetFunctionByName implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             String name = vm.getStringParam(1).toLowerCase();
 
             // Lookup function
@@ -794,16 +795,16 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     public final class WrapGetFunctionByName2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             String name = vm.getStringParam(2).toLowerCase();
             int codeBlockIndex = vm.getIntParam(1);
 
             // Lookup code block
-            if (!vm.isCodeBlockValid(codeBlockIndex)) {
+            if (!vm.stream().isCodeBlockValid(codeBlockIndex)) {
                 vm.functionError("Invalid code block index");
                 return;
             }
-            CodeBlock codeBlock = vm.getCodeBlock(codeBlockIndex);
+            CodeBlock codeBlock = vm.stream().getCodeBlock(codeBlockIndex);
 
             // Lookup function
             HashMap<String, Integer> index = codeBlock.userFunctions;
@@ -817,11 +818,11 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     public final class WrapGetCodeBlockByName implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             String filename = FileUtil.separatorsToSystem(vm.getStringParam(1));
             // Look for matching code block
-            for (int i = 1; vm.isCodeBlockValid(i); i++) {
-                if (vm.getCodeBlock(i).filenameEquals(filename)) {
+            for (int i = 1; vm.stream().isCodeBlockValid(i); i++) {
+                if (vm.stream().getCodeBlock(i).filenameEquals(filename)) {
                     vm.getReg().setIntVal(i);
                     return;
                 }

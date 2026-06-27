@@ -1,8 +1,7 @@
 package com.basic4gl.library.desktopgl.content;
 
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
-import com.basic4gl.lib.util.FileOpener;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;

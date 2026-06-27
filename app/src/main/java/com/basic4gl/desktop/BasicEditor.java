@@ -1,8 +1,5 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.compiler.Preprocessor;
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.compiler.types.LanguageSyntax;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.ErrorCallback;
 import com.basic4gl.debug.protocol.callbacks.EvaluateWatchCallback;
@@ -14,14 +11,11 @@ import com.basic4gl.debug.protocol.types.Variable;
 import com.basic4gl.desktop.debugger.*;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
 import com.basic4gl.desktop.editor.FileEditor;
-import com.basic4gl.desktop.util.EditorSourceFile;
-import com.basic4gl.desktop.util.EditorUtil;
-import com.basic4gl.desktop.util.MainEditor;
-import com.basic4gl.lib.util.*;
-import com.basic4gl.library.desktopgl.BuilderDesktopGL;
-import com.basic4gl.library.desktopgl.GLTextGridWindow;
-import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.InstructionPosition;
+import com.basic4gl.desktop.spi.*;
+import com.basic4gl.desktop.util.*;
+import com.basic4gl.language.adapter.Basic4GLEditorPluginAdapter;
+import com.basic4gl.language.core.runtime.CallbackMessage;
+import com.basic4gl.language.core.runtime.InstructionPosition;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -29,8 +23,9 @@ import java.nio.ByteOrder;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.SwingUtilities;
+import org.apache.commons.lang3.SystemUtils;
 
-public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider {
+public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider, PluginContext {
 
     private static final int GLOBAL_VARIABLES_PAGE_SIZE = 128;
     private static final int MEMORY_VARIABLES_PAGE_SIZE = 64;
@@ -54,30 +49,18 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     private final List<DisassembledInstruction> disassemblyPages = new ArrayList<>();
     private Integer activeDisassemblyRootRequestId = null;
 
-    // Runtime settings
-    private final IConfigurableAppSettings appSettings;
-
     // Virtual machine and compiler
     private VmWorker vmWorker; // Debugging
-    public TomBasicCompiler compiler; // Compiler
-    private FileOpener fileOpener;
-    private final DebuggerCallbackMessage callbackMessage = new DebuggerCallbackMessage();
+    private com.basic4gl.desktop.spi.FileOpener fileOpener;
+    private final com.basic4gl.language.core.runtime.DebuggerCallbackMessage callbackMessage =
+            new com.basic4gl.language.core.runtime.DebuggerCallbackMessage();
 
     private EditorSettings settings = null;
 
-    // Preprocessor
-    public Preprocessor preprocessor;
-
-    // Debugger
-    public Debugger debugger;
-
     // State
-    // TODO this may need to be moved into appSettings
-    private LanguageSyntax languageSyntax = LanguageSyntax.LS_BASIC4GL;
 
     // Libraries
-    private final List<Library> libraries = new ArrayList<>();
-    private final List<Integer> builders = new ArrayList<>(); // Indexes of libraries that can be launch targets
+    private final List<Builder> builders = new ArrayList<>();
     public int currentBuilder = -1; // Index of mTarget in mTargets
 
     // Editor state
@@ -88,105 +71,50 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     private final List<String> watchList = new ArrayList<>();
 
     private final FileManager fileManager;
+    private final MenuService menuService;
 
     private String libraryPath;
 
+    private final Basic4GLEditorPluginAdapter basic4gl;
+
     public BasicEditor(
-            String libraryPath,
-            FileManager fileManager,
-            IEditorPresenter presenter,
-            IConfigurableAppSettings appSettings,
-            Preprocessor preprocessor,
-            Debugger debugger,
-            TomBasicCompiler compiler) {
+            String libraryPath, FileManager fileManager, IEditorPresenter presenter, MenuService menuService) {
         this.libraryPath = libraryPath;
         this.fileManager = fileManager;
         this.presenter = presenter;
-        this.appSettings = appSettings;
-        this.preprocessor = preprocessor;
-        this.debugger = debugger;
-        this.compiler = compiler;
+        this.menuService = menuService;
+        this.basic4gl = new Basic4GLEditorPluginAdapter(this);
     }
 
     public void initLibraries() {
-        // TODO Implement standard libraries
-        // Plug in constant and function libraries
-        /*
-         * InitTomStdBasicLib (mComp); // Standard library
-         * InitTomWindowsBasicLib (mComp, &m_files); // Windows specific
-         * library InitTomOpenGLBasicLib (mComp, m_glWin, &m_files); // OpenGL
-         * InitTomTextBasicLib (mComp, m_glWin, m_glText); // Basic
-         * text/sprites InitGLBasicLib_gl (mComp); InitGLBasicLib_glu (mComp);
-         * InitTomJoystickBasicLib (mComp, m_glWin); // Joystick support
-         * InitTomTrigBasicLib (mComp); // Trigonometry library
-         * InitTomFileIOBasicLib (mComp, &m_files); // File I/O library
-         * InitTomNetBasicLib (mComp); // Networking
-         */
-
-        IServiceCollection tempServices = new ServiceCollection();
-
-        // TODO Load libraries dynamically
-        libraries.add(new com.basic4gl.library.standard.Standard());
-        libraries.add(new com.basic4gl.library.standard.WindowsBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.OpenGLBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.TextBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.GLBasicLib_gl());
-        libraries.add(new com.basic4gl.library.desktopgl.GLUBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.JoystickBasicLib());
-        libraries.add(new com.basic4gl.library.standard.TrigBasicLib());
-        libraries.add(new com.basic4gl.library.standard.FileIOBasicLib());
-        libraries.add(new com.basic4gl.library.standard.NetBasicLib());
-        libraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
-        libraries.add(new com.basic4gl.library.standard.TomCompilerBasicLib());
-
-        libraries.add(GLTextGridWindow.getInstance(compiler));
-        libraries.add(BuilderDesktopGL.getInstance(compiler));
-
         fileOpener = new FileOpener(fileManager.getCurrentDirectory());
-        // TODO Add more libraries
-        int i = 0;
-        for (Library lib : libraries) {
-            lib.init(compiler, tempServices); // Allow libraries to register function overloads
-            if (lib instanceof IFileAccess) {
-                // Allows libraries to read from directories
-                ((IFileAccess) lib).init(fileOpener);
-            }
-            if (lib instanceof FunctionLibrary) {
-                compiler.addConstants(((FunctionLibrary) lib).constants());
-                compiler.addFunctions(lib, ((FunctionLibrary) lib).specs());
-            }
-            if (lib instanceof Builder) {
-                builders.add(i);
-            }
-            i++;
-        }
+
+        basic4gl.onLoad(this);
+        builders.clear();
+        Collections.addAll(builders, basic4gl.getBuilders());
         // Set default target
         if (!builders.isEmpty()) {
             currentBuilder = 0;
         }
-
         // Initialize highlighting
         // mKeywords = new HashMap<String,Color>();
         BasicTokenMaker.reservedWords.clear();
         BasicTokenMaker.functions.clear();
         BasicTokenMaker.constants.clear();
         BasicTokenMaker.operators.clear();
-        for (String s : compiler.getReservedWords()) {
+        for (String s : basic4gl.getLanguage().getReservedWords()) {
             BasicTokenMaker.reservedWords.add(s);
         }
 
-        for (String s : compiler.getConstants().keySet()) {
+        for (String s : basic4gl.getLanguage().getConstants()) {
             BasicTokenMaker.constants.add(s);
         }
 
-        for (String s : compiler.getFunctionIndex().keySet()) {
+        for (String s : basic4gl.getLanguage().getFunctions()) {
             BasicTokenMaker.functions.add(s);
         }
 
-        for (String s : compiler.getBinaryOperators()) {
-            BasicTokenMaker.operators.add(s);
-        }
-        for (String s : compiler.getUnaryOperators()) {
+        for (String s : basic4gl.getLanguage().getOperators()) {
             BasicTokenMaker.operators.add(s);
         }
     }
@@ -195,16 +123,14 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
         //                libraryPath
         // TODO fix run
-
         if (mode == ApMode.AP_STOPPED && activeRunHandler == null) {
             // Compile and run program from start
             reset();
             show(new DebugCallback());
-            Library builder = libraries.get(builders.get(currentBuilder));
-            RunHandler handler = new RunHandler(this, appSettings, compiler, preprocessor);
-            LaunchInfo launchInfo = handler.launchRemote(
-                    builder, fileManager.getCurrentDirectory(), libraryPath); // 12/2020 testing new continue()
-            activeRunHandler = handler.hasLaunchedProcess() ? handler : null;
+            RunHandler handler = new RunHandler(this, basic4gl.getDebug());
+            com.basic4gl.desktop.spi.DebugLaunchInfo launchInfo =
+                    handler.launchRemote(); // 12/2020 testing new continue()
+            activeRunHandler = basic4gl.getDebug().hasLaunchedProcess() ? handler : null;
             if (activeRunHandler == null && vmWorker != null) {
                 vmWorker.cancel(true);
             }
@@ -232,11 +158,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
                 // When stopped, Play is exactly the same as Run
                 reset();
                 show(new DebugCallback());
-                Library builder = libraries.get(builders.get(currentBuilder));
-                RunHandler handler = new RunHandler(this, appSettings, compiler, preprocessor);
-                LaunchInfo launchInfo = handler.launchRemote(
-                        builder, fileManager.getCurrentDirectory(), libraryPath); // 12/2020 testing new continue()
-                activeRunHandler = handler.hasLaunchedProcess() ? handler : null;
+                RunHandler handler = new RunHandler(this, basic4gl.getDebug());
+                com.basic4gl.desktop.spi.DebugLaunchInfo launchInfo =
+                        handler.launchRemote(); // 12/2020 testing new continue()
+                activeRunHandler = basic4gl.getDebug().hasLaunchedProcess() ? handler : null;
                 if (activeRunHandler == null && vmWorker != null) {
                     vmWorker.cancel(true);
                 }
@@ -290,12 +215,12 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         }
 
         // Convert to corresponding position in source file
-        return preprocessor.getLineNumberMap().getSourceFromMain(filename, instructionPosition.getSourceLine());
+        return basic4gl.getLanguage().getSourceFromMain(filename, instructionPosition.getSourceLine());
     }
 
     @Override
     public int isBreakpt(String filename, int line) {
-        return debugger.isUserBreakPoint(filename, line) ? 1 : 0;
+        return basic4gl.getDebug().isUserBreakPoint(filename, line) ? 1 : 0;
     }
 
     @Override
@@ -319,7 +244,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
 
     @Override
     public void insertDeleteLines(String filename, int fileLineNo, int delta) {
-        debugger.insertDeleteLines(filename, fileLineNo, delta);
+        basic4gl.getDebug().insertDeleteLines(filename, fileLineNo, delta);
     }
 
     @Override
@@ -335,9 +260,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         // TODO Get editor assigned as main file
         int mainFiledIndex = 0;
 
-        return preprocessor.preprocess(
-                new EditorSourceFile(fileManager.getEditor(mainFiledIndex), fileManager.getFilename(mainFiledIndex)),
-                compiler.getParser());
+        return basic4gl.getPreprocessor()
+                .preprocess(new EditorSourceFile(
+                        fileManager.getEditor(mainFiledIndex), fileManager.getFilename(mainFiledIndex)));
     }
 
     @Override
@@ -350,26 +275,27 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         }
 
         // VM is not running
-        final VMStatus vmStatus = null;
+        final com.basic4gl.language.core.runtime.VMStatus vmStatus = null;
         setMode(ApMode.AP_STOPPED, vmStatus);
 
         // Compile
         if (!loadProgramIntoCompiler()) {
-            presenter.placeCursorAtProcessed(
-                    compiler.getParser().getSourceCode().size() - 1, 0);
-            presenter.setCompilerStatus(preprocessor.getError());
+            presenter.placeCursorAtProcessed(basic4gl.getCompiler().getParserLinePosition(), 0);
+            presenter.setCompilerStatus(basic4gl.getPreprocessor().getError());
             return false;
         }
-        compiler.clearError();
-        compiler.compile();
+        basic4gl.getCompiler().clearError();
+        basic4gl.getCompiler().compile();
 
         // Inform virtual machine view that code has changed
         // TODO add VM viewer
         // VMView().RefreshVMView();
 
-        if (compiler.hasError()) {
-            presenter.placeCursorAtProcessed((int) compiler.getTokenLine(), (int) compiler.getTokenColumn());
-            presenter.setCompilerStatus(compiler.getError());
+        if (basic4gl.getCompiler().hasError()) {
+            presenter.placeCursorAtProcessed(
+                    basic4gl.getCompiler().getTokenLine().intValue(),
+                    basic4gl.getCompiler().getTokenColumn().intValue());
+            presenter.setCompilerStatus(basic4gl.getCompiler().getError());
 
             return false;
         }
@@ -405,7 +331,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         //        }
     }
 
-    public void setMode(ApMode mode, VMStatus vmStatus) {
+    public void setMode(ApMode mode, com.basic4gl.language.core.runtime.VMStatus vmStatus) {
 
         if (mode != ApMode.AP_WAITING) {
             clearAttachWaitFailureWatch();
@@ -456,7 +382,6 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     }
 
     public void reset() {
-        compiler.getVM().pause();
         clearAttachWaitFailureWatch();
         if (activeRunHandler != null) {
             activeRunHandler.terminateLaunchedProcess();
@@ -498,7 +423,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         activeReadMemoryReference = null;
     }
 
-    public void show(DebuggerTaskCallback callbacks) {
+    public void show(com.basic4gl.language.core.runtime.DebuggerTaskCallback callbacks) {
         vmWorker.setCallbacks(callbacks);
         vmWorker.execute();
     }
@@ -603,7 +528,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         activeReadMemoryRootRequestId = null;
         activeReadMemoryReference = null;
 
-        int heapBase = compiler.getVM().getData().getPermanent();
+        int heapBase = basic4gl.getDebug().getPermanent();
         String memoryReference = Integer.toString(heapBase);
         int rootRequestId = queueReadMemoryPage(memoryReference, 0, HEAP_MEMORY_PAGE_BYTES, null);
         if (rootRequestId > 0) {
@@ -722,8 +647,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     }
 
     private Variable[] mapHeapMemoryToVariables(List<Byte> bytes, String memoryReference) {
-        int heapBase =
-                parseMemoryAddress(memoryReference, compiler.getVM().getData().getPermanent());
+        int heapBase = parseMemoryAddress(memoryReference, basic4gl.getDebug().getPermanent());
         int rowCount = bytes.size() / 4;
         Variable[] mapped = new Variable[rowCount];
         ByteBuffer buffer = ByteBuffer.allocate(bytes.size()).order(ByteOrder.LITTLE_ENDIAN);
@@ -799,8 +723,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
     }
 
     private String formatReadMemoryRange(ReadMemoryPageRequest request) {
-        int heapBase = parseMemoryAddress(
-                request.memoryReference, compiler.getVM().getData().getPermanent());
+        int heapBase =
+                parseMemoryAddress(request.memoryReference, basic4gl.getDebug().getPermanent());
         int startAddress = heapBase + Math.max(0, request.offsetBytes / 4);
         int wordCount = Math.max(1, request.countBytes / 4);
         int endAddress = startAddress + wordCount - 1;
@@ -987,7 +911,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         }
 
         if ("stack".equals(scope)) {
-            int stackEnd = compiler.getVM().getData().getPermanent();
+            int stackEnd = basic4gl.getDebug().getPermanent();
             int first = stackEnd - 1 - safeStart;
             int last = first - safeCount + 1;
             return "[" + first + " - " + last + "]";
@@ -1067,7 +991,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         return mode;
     }
 
-    private void updateWaitingForDebuggerStatus(LaunchInfo launchInfo) {
+    private void updateWaitingForDebuggerStatus(com.basic4gl.desktop.spi.DebugLaunchInfo launchInfo) {
         boolean isSuspendedAttachLaunch = launchInfo != null
                 && launchInfo.isSuspendedUntilDebuggerAttach()
                 && launchInfo.getJvmDebugPort() != null;
@@ -1078,8 +1002,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         RunHandler handler = activeRunHandler;
         if (handler != null) {
             awaitingDebuggerAttach = true;
-            handler.setProcessExitListener((source, exitCode, stderrOutput) ->
-                    SwingUtilities.invokeLater(() -> onRunProcessExit(source, exitCode, stderrOutput)));
+            handler.setProcessExitListener((sender, exitCode, stderrOutput) ->
+                    SwingUtilities.invokeLater(() -> onRunProcessExit(sender, exitCode, stderrOutput)));
         }
 
         setMode(ApMode.AP_WAITING, null);
@@ -1087,8 +1011,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
                 "Waiting for JVM debugger to attach on port " + launchInfo.getJvmDebugPort() + "...");
     }
 
-    private void onRunProcessExit(RunHandler handler, Integer exitCode, String stderr) {
-        if (!awaitingDebuggerAttach || mode != ApMode.AP_WAITING || activeRunHandler != handler) {
+    private void onRunProcessExit(Object sender, Integer exitCode, String stderr) {
+        if (!awaitingDebuggerAttach || mode != ApMode.AP_WAITING || activeRunHandler != sender) {
             return;
         }
 
@@ -1151,12 +1075,92 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         presenter.refreshDebugDisplays(mode);
     }
 
-    public List<Library> getLibraries() {
-        return libraries;
+    @Override
+    public DialogService dialogs() {
+
+        // TODO implement dialogs for plugins
+        return null;
+    }
+
+    @Override
+    public MenuService menus() {
+        return menuService;
+    }
+
+    @Override
+    public FileOpener files() {
+        return fileOpener;
+    }
+
+    @Override
+    public Builder currentBuilder() {
+        if (builders.isEmpty()) {
+            throw new IllegalStateException("No builders are available.");
+        }
+        if (currentBuilder < 0 || currentBuilder >= builders.size()) {
+            currentBuilder = 0;
+        }
+        Builder builder = builders.get(currentBuilder);
+        builder.init(fileOpener);
+        return builder;
+    }
+
+    @Override
+    public String currentDirectory() {
+        return fileManager.getCurrentDirectory();
+    }
+
+    @Override
+    public String getLibraryPath() {
+        return libraryPath;
+    }
+
+    @Override
+    public SourceFileService[] fileServices() {
+        return new SourceFileService[] {new EditorSourceFileServer(fileManager), new DiskFileServer()};
+    }
+
+    @Override
+    public boolean isMacOS() {
+        return SystemUtils.IS_OS_MAC;
+    }
+
+    @Override
+    public String getDefaultDebuggerPort() {
+        return DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT;
+    }
+
+    public void onCloseAll() {
+        basic4gl.onCloseAll();
+    }
+
+    public void onCurrentDirectoryChanged(String directory) {
+        basic4gl.onCurrentDirectoryChanged(directory);
+    }
+
+    public PreprocessorService getPreprocessor() {
+        return basic4gl.getPreprocessor();
+    }
+
+    public CompilerService getCompiler() {
+        return basic4gl.getCompiler();
+    }
+
+    public LanguageService getLanguageService() {
+        return basic4gl.getLanguage();
+    }
+
+    public List<Builder> getBuilders() {
+        return builders;
+    }
+
+    // TODO temporary shim - migrating towards settings being plugin oriented
+    public Basic4GLEditorPluginAdapter getBasic4gl() {
+        return basic4gl;
     }
 
     // TODO Reimplement callbacks
-    public class DebugCallback implements DebuggerTaskCallback {
+    public class DebugCallback implements com.basic4gl.language.core.runtime.DebuggerTaskCallback {
 
         @Override
         public void onDebuggerConnected() {
@@ -1175,7 +1179,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
         }
 
         @Override
-        public void message(DebuggerCallbackMessage message) {
+        public void message(com.basic4gl.language.core.runtime.DebuggerCallbackMessage message) {
             if (message == null) {
                 return;
             }
@@ -1184,7 +1188,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider 
                 return;
             }
 
-            VMStatus vmStatus = message.getVMStatus();
+            com.basic4gl.language.core.runtime.VMStatus vmStatus = message.getVMStatus();
 
             InstructionPosition instructionPosition = message.getInstructionPosition();
             if (instructionPosition != null) {

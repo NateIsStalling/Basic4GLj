@@ -1,7 +1,7 @@
 package com.basic4gl.library.desktopgl.util;
 
+import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLWindow;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.runtime.core.opengl.IB4GLOpenGLWindow;
 
 /**
  * Window interface for plugins

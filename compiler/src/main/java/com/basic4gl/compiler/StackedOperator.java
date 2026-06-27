@@ -1,6 +1,5 @@
 package com.basic4gl.compiler;
 
-
 class StackedOperator {
     private Operator operator;
 

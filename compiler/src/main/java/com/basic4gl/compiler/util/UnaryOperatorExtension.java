@@ -1,7 +1,7 @@
 package com.basic4gl.compiler.util;
 
-import com.basic4gl.runtime.types.ValType;
-import com.basic4gl.runtime.util.Mutable;
+import com.basic4gl.language.core.internal.Mutable;
+import com.basic4gl.language.core.types.ValType;
 
 /**
  * Language extension: Operator overloading

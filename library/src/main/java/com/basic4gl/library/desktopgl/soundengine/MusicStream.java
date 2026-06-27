@@ -1,7 +1,7 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
+import com.basic4gl.language.core.runtime.HasErrorState;
 import com.basic4gl.library.desktopgl.soundengine.util.ThreadEvent;
-import com.basic4gl.runtime.HasErrorState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;

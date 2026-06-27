@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+    id("com.diffplug.spotless") version "7.0.2"
+}
+
+group = 'com.basic4gl'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":app-runtime")
+    implementation project(":app-spi")
+    implementation project(":language-core")
+    implementation project(":language-spi")
+    implementation project(":library")
+    implementation project(":compiler")
+    implementation project(":language-runtime")
+
+    implementation 'com.formdev:flatlaf:3.5.4'
+    // for FlatDesktop Java 8 backports
+    implementation 'com.formdev:flatlaf-extras:3.5.4'
+
+    testImplementation platform('org.junit:junit-bom:6.0.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}

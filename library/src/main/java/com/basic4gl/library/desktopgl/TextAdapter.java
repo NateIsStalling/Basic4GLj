@@ -1,6 +1,6 @@
 package com.basic4gl.library.desktopgl;
 
-import com.basic4gl.runtime.core.opengl.IB4GLOpenGLText;
+import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLText;
 
 /**
  * Interface for plugins

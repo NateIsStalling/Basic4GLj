@@ -15,9 +15,7 @@ configurations {
 }
 
 dependencies {
-    implementation project(":compiler")
     implementation project(":debug-protocol")
-    implementation project(":runtime")
 
     implementation ('com.google.code.gson:gson:2.10')
 
