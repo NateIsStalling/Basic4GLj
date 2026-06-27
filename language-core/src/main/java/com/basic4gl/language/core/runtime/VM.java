@@ -7,7 +7,6 @@ import com.basic4gl.language.core.streaming.ProgramStreamable;
 import com.basic4gl.language.core.types.TypeLibrary;
 import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.language.core.types.VariableCollection;
-
 import java.util.Vector;
 
 public interface VM {
@@ -83,7 +82,6 @@ public interface VM {
     String getReg2String();
 
     Store<String> getStringStore();
-
 
     // TODO would prefer to not expose Mutable and try to keep it within the internal package
     String valToString(Value value, ValType valueType, Mutable<Integer> maxChars);

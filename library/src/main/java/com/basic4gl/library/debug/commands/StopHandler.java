@@ -1,6 +1,5 @@
 package com.basic4gl.library.debug.commands;
 
-
 import com.basic4gl.language.core.runtime.IVMDriver;
 
 public class StopHandler {

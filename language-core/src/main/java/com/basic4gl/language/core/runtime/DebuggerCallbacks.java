@@ -1,6 +1,5 @@
 package com.basic4gl.language.core.runtime;
 
-
 /**
  * Created by Nate on 11/23/2015.
  */
@@ -48,7 +47,8 @@ public abstract class DebuggerCallbacks {
         if (vm.isIPValid()) {
             instructionPosition = vm.getIPInSourceCode();
         }
-        com.basic4gl.language.core.runtime.VMStatus vmStatus = new com.basic4gl.language.core.runtime.VMStatus(vm.isDone(), vm.hasError(), abbreviate(vm.getError(), MAX_STATUS_ERROR_CHARS));
+        com.basic4gl.language.core.runtime.VMStatus vmStatus = new com.basic4gl.language.core.runtime.VMStatus(
+                vm.isDone(), vm.hasError(), abbreviate(vm.getError(), MAX_STATUS_ERROR_CHARS));
         callbackMessage.setMessage(CallbackMessage.PAUSED, message, vmStatus);
         callbackMessage.setInstructionPosition(instructionPosition);
 
@@ -85,9 +85,10 @@ public abstract class DebuggerCallbacks {
         com.basic4gl.language.core.runtime.DebuggerCallbackMessage debuggerCallbackMessage = null;
 
         if (message != null) {
-            com.basic4gl.language.core.runtime.VMStatus vmStatus =
-                    new com.basic4gl.language.core.runtime.VMStatus(vm.isDone(), vm.hasError(), abbreviate(vm.getError(), MAX_STATUS_ERROR_CHARS));
-            debuggerCallbackMessage = new com.basic4gl.language.core.runtime.DebuggerCallbackMessage(message.getStatus(), message.getText(), vmStatus);
+            com.basic4gl.language.core.runtime.VMStatus vmStatus = new com.basic4gl.language.core.runtime.VMStatus(
+                    vm.isDone(), vm.hasError(), abbreviate(vm.getError(), MAX_STATUS_ERROR_CHARS));
+            debuggerCallbackMessage = new com.basic4gl.language.core.runtime.DebuggerCallbackMessage(
+                    message.getStatus(), message.getText(), vmStatus);
         }
         callbackMessage.setMessage(debuggerCallbackMessage);
         taskCallback.message(debuggerCallbackMessage);

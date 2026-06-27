@@ -16,7 +16,6 @@ import com.basic4gl.language.core.types.*;
 import com.basic4gl.library.desktopgl.content.FileOpener;
 import com.basic4gl.library.desktopgl.content.FileUtil;
 import com.basic4gl.library.desktopgl.content.IFileAccess;
-
 import java.io.*;
 import java.nio.IntBuffer;
 import java.util.*;

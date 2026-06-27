@@ -2,7 +2,6 @@ package com.basic4gl.language.core.extensions;
 
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
-
 import java.util.HashMap;
 import java.util.Map;
 

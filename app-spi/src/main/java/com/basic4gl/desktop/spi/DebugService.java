@@ -6,6 +6,7 @@ public interface DebugService {
     public Integer getPermanent();
 
     DebugLaunchInfo start(Object sender);
+
     boolean hasLaunchedProcess();
 
     boolean isUserBreakPoint(String filename, int line);

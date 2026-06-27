@@ -4,7 +4,6 @@ import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.debug.protocol.commands.VariablesCommand;
 import com.basic4gl.debug.protocol.types.Variable;
 import com.basic4gl.debug.protocol.types.VariablePresentationHint;
-import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.runtime.Value;
 import com.basic4gl.language.core.types.ValType;
@@ -218,7 +217,6 @@ public class VariablesHandler {
         String str = vm.getString(index);
         return str != null ? str : "";
     }
-
 
     private void message(Session session, String json) {
         if (session != null && session.isOpen()) {

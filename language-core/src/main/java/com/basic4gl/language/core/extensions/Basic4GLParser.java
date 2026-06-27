@@ -1,7 +1,6 @@
 package com.basic4gl.language.core.extensions;
 
 import com.basic4gl.language.core.types.Token;
-
 import java.util.Vector;
 
 public interface Basic4GLParser {

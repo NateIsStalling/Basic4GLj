@@ -9,18 +9,18 @@ import com.basic4gl.compiler.types.LanguageSyntax;
 import com.basic4gl.compiler.types.OperType;
 import com.basic4gl.compiler.types.UserFunctionType;
 import com.basic4gl.compiler.util.*;
-import com.basic4gl.language.core.runtime.RuntimeFunctionRollbackPoint;
-import com.basic4gl.language.core.types.Token.TokenType;
 import com.basic4gl.language.core.extensions.Basic4GLCompiler;
 import com.basic4gl.language.core.extensions.Library;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
+import com.basic4gl.language.core.runtime.RuntimeFunctionRollbackPoint;
 import com.basic4gl.language.core.stackframe.RuntimeFunction;
 import com.basic4gl.language.core.stackframe.UserFunc;
 import com.basic4gl.language.core.stackframe.UserFuncPrototype;
 import com.basic4gl.language.core.streaming.ProgramStreamable;
 import com.basic4gl.language.core.streaming.Streaming;
 import com.basic4gl.language.core.types.*;
+import com.basic4gl.language.core.types.Token.TokenType;
 import com.basic4gl.language.spi.ExtendedFunctionSpecification;
 import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.runtime.*;
@@ -34,7 +34,8 @@ import java.util.*;
  * Basic4GL v2 language compiler.
  * Used to compile source code in BASIC language to TomVM Op codes.
  */
-public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErrorState implements Basic4GLCompiler, IFunctionIndex {
+public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErrorState
+        implements Basic4GLCompiler, IFunctionIndex {
     static final LanguageSyntax DEFAULT_SYNTAX = LS_BASIC4GL;
 
     /**
@@ -530,7 +531,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
 
                 // Find instruction
                 assertTrue(jump.getJumpInstruction() < program.getInstructionCount());
-                com.basic4gl.language.core.runtime.Instruction instr = program.getInstruction(jump.getJumpInstruction());
+                com.basic4gl.language.core.runtime.Instruction instr =
+                        program.getInstruction(jump.getJumpInstruction());
 
                 // Point token to goto instruction, so that it will be displayed
                 // if there is an error.
@@ -552,7 +554,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
 
                 // Find instruction
                 assertTrue(jump.getJumpInstruction() < program.getInstructionCount());
-                com.basic4gl.language.core.runtime.Instruction instr = program.getInstruction(jump.getJumpInstruction());
+                com.basic4gl.language.core.runtime.Instruction instr =
+                        program.getInstruction(jump.getJumpInstruction());
 
                 // Point token to reset instruction, so that it will be
                 // displayed
@@ -625,7 +628,6 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
     public boolean isCaseSensitive() {
         return isCaseSensitive;
     }
-
 
     public PluginManager getPlugins() {
         return this.plugins;
@@ -1102,7 +1104,9 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
             // Create new label
             addLabel(
                     labelName,
-                    new Label(program.getInstructionCount(), program.getProgramData().size()));
+                    new Label(
+                            program.getInstructionCount(),
+                            program.getProgramData().size()));
 
             // Skip label
             if (!getToken()) {
@@ -3187,7 +3191,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
                             program.getStoreTypeIndex(dataType)));
                 }
 
-                addInstruction(OpCode.OP_COPY, BasicValType.VTP_INT, new Value((int) program.getStoreTypeIndex(regType)));
+                addInstruction(
+                        OpCode.OP_COPY, BasicValType.VTP_INT, new Value((int) program.getStoreTypeIndex(regType)));
             } else {
                 setError("Types do not match");
                 return false;
@@ -3319,7 +3324,14 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
 
         // Push else to flow control stack
         flowControls.add(new FlowControl(
-                FlowControlType.FCT_ELSE, program.getInstructionCount(), 0, line, col, top.impliedEndif, "", top.blockIf));
+                FlowControlType.FCT_ELSE,
+                program.getInstructionCount(),
+                0,
+                line,
+                col,
+                top.impliedEndif,
+                "",
+                top.blockIf));
 
         // Generate code to jump around else block
         addInstruction(OpCode.OP_JUMP, BasicValType.VTP_INT, new Value(0));
@@ -3692,7 +3704,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
             }
 
             // Create flow control structure
-            flowControls.add(new FlowControl(FlowControlType.FCT_DO_PRE, program.getInstructionCount(), loopPos, line, col));
+            flowControls.add(
+                    new FlowControl(FlowControlType.FCT_DO_PRE, program.getInstructionCount(), loopPos, line, col));
 
             // Create conditional jump
             addInstruction(negative ? OpCode.OP_JUMP_TRUE : OpCode.OP_JUMP_FALSE, BasicValType.VTP_INT, new Value(0));
@@ -4197,8 +4210,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
                 // If parameter is an "any type" then generate code to push the
                 // parameter type to the stack.
                 if (isAnyType) {
-                    addInstruction(
-                            OpCode.OP_LOAD_CONST, BasicValType.VTP_INT, new Value((int) program.getStoreTypeIndex(regType)));
+                    addInstruction(OpCode.OP_LOAD_CONST, BasicValType.VTP_INT, new Value((int)
+                            program.getStoreTypeIndex(regType)));
                     regType.setType(BasicValType.VTP_INT);
                     compilePush();
                     pushCount++;
@@ -4254,8 +4267,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
             // in the "temp" area. If the data contains strings, they will need
             // to be "destroyed" when temp data is unwound.
             if (!regType.canStoreInRegister() && program.getDataTypes().containsString(regType)) {
-                addInstruction(
-                        OpCode.OP_REG_DESTRUCTOR, BasicValType.VTP_INT, new Value((int) program.getStoreTypeIndex(regType)));
+                addInstruction(OpCode.OP_REG_DESTRUCTOR, BasicValType.VTP_INT, new Value((int)
+                        program.getStoreTypeIndex(regType)));
             }
 
             if (!compileDataLookup(false)) {
@@ -5980,8 +5993,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
                     && regType.isByRef
                     && regType.arrayLevel == type.arrayLevel
                     && regType.basicType == type.basicType) {
-                addInstruction(
-                        OpCode.OP_COPY_USER_STACK, BasicValType.VTP_INT, new Value((int) program.getStoreTypeIndex(type)));
+                addInstruction(OpCode.OP_COPY_USER_STACK, BasicValType.VTP_INT, new Value((int)
+                        program.getStoreTypeIndex(type)));
                 addInstruction(OpCode.OP_SAVE_PARAM_PTR, BasicValType.VTP_INT, new Value(i));
             } else {
                 setError("Types do not match");
@@ -5992,7 +6005,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         // Data containing strings will need to be "destroyed" when the stack
         // unwinds.
         if (program.getDataTypes().containsString(type)) {
-            addInstruction(OpCode.OP_REG_DESTRUCTOR, BasicValType.VTP_INT, new Value((int) program.getStoreTypeIndex(type)));
+            addInstruction(
+                    OpCode.OP_REG_DESTRUCTOR, BasicValType.VTP_INT, new Value((int) program.getStoreTypeIndex(type)));
         }
 
         return true;
@@ -6019,8 +6033,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
                 if (!type.canStoreInRegister()) {
 
                     // Add instruction to move that data into temp data
-                    addInstruction(
-                            OpCode.OP_MOVE_TEMP, BasicValType.VTP_INT, new Value((int) program.getStoreTypeIndex(type)));
+                    addInstruction(OpCode.OP_MOVE_TEMP, BasicValType.VTP_INT, new Value((int)
+                            program.getStoreTypeIndex(type)));
 
                     // Add return-from-function OP-code
                     // Note: The 0 in the instruction value indicates that temp

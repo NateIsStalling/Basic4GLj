@@ -11,7 +11,6 @@ import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.language.spi.*;
 import com.basic4gl.runtime.TomVM;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -356,7 +355,8 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
         Assert.assertTrue(type.getArrayLevel() == 0);
         Assert.assertTrue(type.getBaseType() < 0);
 
-        if (type.getBaseType() == com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING)
+        if (type.getBaseType()
+                == com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING)
             cData.position(cData.position() + type.getStringSize());
         else {
             CValueFromBasicValue(type, cData, vm.getData().data().get(basicDataIndex.get()));
@@ -494,7 +494,8 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
         Assert.assertTrue(type.getArrayLevel() == 0);
         Assert.assertTrue(type.getBaseType() < 0);
 
-        if (type.getBaseType() == com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING)
+        if (type.getBaseType()
+                == com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_PADDING)
             cData.position(cData.position() + type.getStringSize());
         else {
             BasicValueFromCValue(type, vm.getData().data().get(basicDataIndex.get()), cData);
@@ -732,7 +733,8 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
         if (currentType.getArrayLevel() == 0 && currentType.getPointerLevel() == 0 && currentType.getBaseType() < 0) {
 
             // Special case! String values are written to RegString
-            if (currentType.getBaseType() == com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_STRING) {
+            if (currentType.getBaseType()
+                    == com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_STRING) {
                 vm.setRegString(readCString(src, currentType.getStringSize()));
             } else {
                 BasicValueFromCValue(currentType, vm.getReg(), src);

@@ -7,14 +7,13 @@ import com.basic4gl.language.core.streaming.ProgramStreamable;
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
 import com.basic4gl.language.core.types.ValType;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
 public interface Basic4GLCompiler extends IFunctionIndex {
-//    Basic4GLFunctionRegistry getPlugins();
+    //    Basic4GLFunctionRegistry getPlugins();
 
     ProgramStreamable getProgram();
 
@@ -54,5 +53,5 @@ public interface Basic4GLCompiler extends IFunctionIndex {
 
     ArrayList<Library> getLibraries();
 
-//    com.basic4gl.compiler.Parser getParser();
+    //    com.basic4gl.compiler.Parser getParser();
 }

@@ -56,6 +56,10 @@ public class FileOpenerAdapter extends HasErrorState implements IFileOpener {
         return parent.openRead(filename, filesFolder);
     }
 
+    public FileInputStream openRead(String filename, boolean filesFolder, IntBuffer length) {
+        return parent.openRead(filename, filesFolder, length);
+    }
+
     public FileOutputStream openWrite(String filename) {
         return openWrite(filename, true);
     }
@@ -64,9 +68,6 @@ public class FileOpenerAdapter extends HasErrorState implements IFileOpener {
         return parent.openWrite(filename, filesFolder);
     }
 
-    public FileInputStream openRead(String filename, boolean filesFolder, IntBuffer length) {
-        return parent.openRead(filename, filesFolder, length);
-    }
 
     // The following function returns a filename that can be opened in read mode.
     // If the input filename corresponds to an embedded file, the embedded file

@@ -5,6 +5,9 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 import com.basic4gl.app.desktop.config.*;
+import com.basic4gl.app.desktop.glfw.GLFWKeyboard;
+import com.basic4gl.app.desktop.glfw.GLFWMouse;
+import com.basic4gl.app.desktop.glfw.GLFWWindowManager;
 import com.basic4gl.compiler.LineNumberMapping;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.language.core.extensions.Basic4GLCompiler;
@@ -12,28 +15,24 @@ import com.basic4gl.language.core.extensions.FunctionLibrary;
 import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.extensions.Library;
 import com.basic4gl.language.core.runtime.*;
+import com.basic4gl.language.core.runtime.Configuration;
 import com.basic4gl.library.debug.DebuggerCommandAdapter;
 import com.basic4gl.library.desktopgl.content.Content2DManager;
 import com.basic4gl.library.desktopgl.content.FileOpener;
 import com.basic4gl.library.desktopgl.content.GLTextGrid;
 import com.basic4gl.library.desktopgl.content.IFileAccess;
-import com.basic4gl.app.desktop.glfw.GLFWKeyboard;
-import com.basic4gl.app.desktop.glfw.GLFWMouse;
-import com.basic4gl.app.desktop.glfw.GLFWWindowManager;
 import com.basic4gl.library.desktopgl.input.OpenGLKeyboard;
 import com.basic4gl.library.desktopgl.input.OpenGLMouse;
-import com.basic4gl.language.core.runtime.Configuration;
 import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
 import com.basic4gl.library.desktopgl.util.Target;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import com.basic4gl.library.plugin.PluginJARManager;
+import com.basic4gl.runtime.Debugger;
+import com.basic4gl.runtime.TomVM;
 import java.io.*;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-
-import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.TomVM;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 public class GLTextGridWindow extends HasErrorState
@@ -89,12 +88,12 @@ public class GLTextGridWindow extends HasErrorState
 
     public GLTextGridWindow() {}
 
-//    public static Library getInstance(TomBasicCompiler compiler) {
-//        GLTextGridWindow instance = new GLTextGridWindow();
-//        instance.compiler = compiler;
-//        instance.vm = compiler.getProgram(); // TODO 6/12/2026 review this
-//        return instance;
-//    }
+    //    public static Library getInstance(TomBasicCompiler compiler) {
+    //        GLTextGridWindow instance = new GLTextGridWindow();
+    //        instance.compiler = compiler;
+    //        instance.vm = compiler.getProgram(); // TODO 6/12/2026 review this
+    //        return instance;
+    //    }
 
     /*
     //Constructor from C++ source for reference

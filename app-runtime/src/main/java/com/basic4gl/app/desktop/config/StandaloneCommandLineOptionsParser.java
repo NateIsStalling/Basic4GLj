@@ -1,11 +1,10 @@
 package com.basic4gl.app.desktop.config;
 
+import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-
-import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
 import org.apache.commons.cli.*;
 
 public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOptions {

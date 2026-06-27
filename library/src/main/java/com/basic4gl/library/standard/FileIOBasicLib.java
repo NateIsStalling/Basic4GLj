@@ -12,7 +12,6 @@ import com.basic4gl.language.core.runtime.IServiceCollection;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.*;
 import com.basic4gl.library.desktopgl.content.*;
-
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

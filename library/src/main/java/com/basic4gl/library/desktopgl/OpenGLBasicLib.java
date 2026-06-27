@@ -6,9 +6,11 @@ import static com.basic4gl.language.core.types.BasicValType.VTP_STRING;
 import static org.lwjgl.opengl.GL13.*;
 
 import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
 import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.language.core.runtime.Function;
+import com.basic4gl.language.core.runtime.IServiceCollection;
 import com.basic4gl.language.core.runtime.PointerResourceStore;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.BasicValType;
@@ -16,12 +18,9 @@ import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
 import com.basic4gl.language.core.types.ParamTypeList;
 import com.basic4gl.language.core.types.ValType;
-import com.basic4gl.language.core.extensions.FunctionLibrary;
-import com.basic4gl.language.core.runtime.IServiceCollection;
 import com.basic4gl.library.desktopgl.content.Image;
 import com.basic4gl.library.desktopgl.content.LoadImage;
 import com.basic4gl.library.desktopgl.util.Routines;
-import com.basic4gl.library.desktopgl.util.WindowAdapter;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import java.nio.*;
 import java.util.*;
@@ -118,7 +117,8 @@ public class OpenGLBasicLib implements FunctionLibrary {
             });
             // Register interfaces
             // TODO need to add any missing registerInterface calls for other libraries
-//            comp.getPlugins().registerInterface(new WindowAdapter(windowManager), "IB4GLOpenGLWindow", 1, 0, null);
+            //            comp.getPlugins().registerInterface(new WindowAdapter(windowManager), "IB4GLOpenGLWindow", 1,
+            // 0, null);
         }
     }
 

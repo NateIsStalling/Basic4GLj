@@ -2,10 +2,10 @@ package com.basic4gl.compiler;
 
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
-import com.basic4gl.language.core.types.Token;
-import com.basic4gl.language.core.types.Token.TokenType;
 import com.basic4gl.language.core.runtime.HasErrorState;
 import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.Token;
+import com.basic4gl.language.core.types.Token.TokenType;
 import java.util.*;
 
 public class Parser extends HasErrorState implements com.basic4gl.language.core.extensions.Basic4GLParser {

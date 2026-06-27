@@ -1,6 +1,5 @@
 package com.basic4gl.library.desktopgl.content;
 
-
 /**
  * Created by Nate on 11/18/2015.
  */

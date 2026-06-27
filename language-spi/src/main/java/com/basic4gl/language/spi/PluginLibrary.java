@@ -222,7 +222,8 @@ public class PluginLibrary implements com.basic4gl.language.core.extensions.Basi
         newFunction(name, function);
     }
 
-    public void registerFunction(String name, Basic4GLFunction function, com.basic4gl.language.core.extensions.Basic4GLTypeCode typeCode) {
+    public void registerFunction(
+            String name, Basic4GLFunction function, com.basic4gl.language.core.extensions.Basic4GLTypeCode typeCode) {
 
         // Create new function
         newFunction(name, function);
@@ -233,7 +234,10 @@ public class PluginLibrary implements com.basic4gl.language.core.extensions.Basi
     }
 
     public void registerArrayFunction(
-            String name, Basic4GLFunction function, com.basic4gl.language.core.extensions.Basic4GLTypeCode typeCode, int dimensions) {
+            String name,
+            Basic4GLFunction function,
+            com.basic4gl.language.core.extensions.Basic4GLTypeCode typeCode,
+            int dimensions) {
 
         // Create new function
         newFunction(name, function);

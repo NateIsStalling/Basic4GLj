@@ -2,13 +2,13 @@ package com.basic4gl.desktop.spi;
 
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.types.StackFrame;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public interface LanguageService {
 
     public void onLoad(PluginContext context);
+
     public void onUnload();
 
     public List<String> getReservedWords();

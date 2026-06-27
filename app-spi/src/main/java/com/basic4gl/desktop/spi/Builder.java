@@ -13,7 +13,9 @@ import java.io.OutputStream;
 public abstract class Builder implements IFileAccess {
 
     public abstract String getName();
+
     public abstract String getDescription();
+
     public abstract String getVersion();
 
     public abstract String getAuthor();

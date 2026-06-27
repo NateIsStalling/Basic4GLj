@@ -3,9 +3,9 @@ package com.basic4gl.desktop.debugger;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.basic4gl.language.adapter.Basic4GLDebugService;
 import com.basic4gl.desktop.spi.Configuration;
 import com.basic4gl.desktop.spi.Target;
+import com.basic4gl.language.adapter.Basic4GLDebugService;
 import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
 import java.io.InputStream;
@@ -59,7 +59,16 @@ public class RunHandlerTest {
         buildCommandArgs.setAccessible(true);
 
         Object result = buildCommandArgs.invoke(
-                null, new TestTarget(), settings, ".", libraryBinPath, "vmPath", "configPath", "lineMapPath", "0000", false);
+                null,
+                new TestTarget(),
+                settings,
+                ".",
+                libraryBinPath,
+                "vmPath",
+                "configPath",
+                "lineMapPath",
+                "0000",
+                false);
         return (String[]) result;
     }
 

@@ -4,6 +4,7 @@ import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
 import static com.formdev.flatlaf.FlatClientProperties.*;
 
+import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
@@ -14,7 +15,6 @@ import com.basic4gl.desktop.spi.FileLineNumber;
 import com.basic4gl.desktop.spi.MenuService;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
-import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
 import com.basic4gl.language.core.internal.Mutable;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
@@ -754,9 +754,7 @@ public class MainWindow
         // adapter project.
         IConfigurableAppSettings appSettings = basicEditor.getBasic4gl().getConfigurableAppSettings();
         com.basic4gl.language.adapter.ProjectSettingsDialog dialog =
-                new com.basic4gl.language.adapter.ProjectSettingsDialog(
-                        frame,
-                        appSettings);
+                new com.basic4gl.language.adapter.ProjectSettingsDialog(frame, appSettings);
         dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
