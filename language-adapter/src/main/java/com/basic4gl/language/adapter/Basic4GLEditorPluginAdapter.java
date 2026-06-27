@@ -144,6 +144,13 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
         return ConfigurationMapper.toEditorConfiguration(appSettings);
     }
 
+    @Override
+    public ProjectSettingsPage[] getProjectSettingsPages() {
+        return new ProjectSettingsPage[] {
+            new SafeModeProjectSettingsPage(appSettings), new JvmProjectSettingsPage(appSettings)
+        };
+    }
+
     public IConfigurableAppSettings getConfigurableAppSettings() {
         return appSettings;
     }

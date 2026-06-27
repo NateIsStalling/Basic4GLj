@@ -4,7 +4,6 @@ import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
 import static com.formdev.flatlaf.FlatClientProperties.*;
 
-import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
@@ -13,6 +12,7 @@ import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
 import com.basic4gl.desktop.spi.FileLineNumber;
 import com.basic4gl.desktop.spi.MenuService;
+import com.basic4gl.desktop.spi.ProjectSettingsPage;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.language.core.internal.Mutable;
@@ -750,11 +750,10 @@ public class MainWindow
     }
 
     private void showSettings() {
-        // TODO 6/2026 temporary shim - ProjectSettingsDialog should be owned by the main app and pages managed by the
-        // adapter project.
-        IConfigurableAppSettings appSettings = basicEditor.getBasic4gl().getConfigurableAppSettings();
-        com.basic4gl.language.adapter.ProjectSettingsDialog dialog =
-                new com.basic4gl.language.adapter.ProjectSettingsDialog(frame, appSettings);
+        List<ProjectSettingsPage> contributedPages =
+                Arrays.asList(basicEditor.getBasic4gl().getProjectSettingsPages());
+        ProjectSettingsDialog dialog = new ProjectSettingsDialog(
+                frame, basicEditor.getBasic4gl().getConfigurableAppSettings(), contributedPages);
         dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();

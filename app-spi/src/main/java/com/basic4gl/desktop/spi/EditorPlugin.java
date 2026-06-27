@@ -51,4 +51,8 @@ public abstract class EditorPlugin {
     public Configuration getAppSettings() {
         return null;
     }
+
+    public ProjectSettingsPage[] getProjectSettingsPages() {
+        return new ProjectSettingsPage[0];
+    }
 }
