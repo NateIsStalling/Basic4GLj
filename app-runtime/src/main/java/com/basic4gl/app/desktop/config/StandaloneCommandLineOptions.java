@@ -13,6 +13,7 @@ public class StandaloneCommandLineOptions {
     public String configFile = "/" + CONFIG_FILE;
     public String mappingFile = null;
     public String currentDirectory = null;
+    public String pluginDirectory = null;
     public String debugServerPort = null;
     public String logFilePath = null;
 

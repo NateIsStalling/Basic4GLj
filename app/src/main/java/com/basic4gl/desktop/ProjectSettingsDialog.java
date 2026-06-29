@@ -27,6 +27,7 @@ public class ProjectSettingsDialog
     private com.basic4gl.desktop.spi.ConfigurationFormPanel configPane;
     private final IConfigurableAppSettings appSettings;
     private final List<ProjectSettingsPage> contributedPages;
+    private final Runnable onSettingsApplied;
 
     private List<Builder> builders;
     private int currentBuilder;
@@ -34,8 +35,10 @@ public class ProjectSettingsDialog
     public ProjectSettingsDialog(
             Frame parent,
             IConfigurableAppSettings appSettings,
-            List<ProjectSettingsPage> contributedProjectSettingsPages) {
+            List<ProjectSettingsPage> contributedProjectSettingsPages,
+            Runnable onSettingsApplied) {
         this.appSettings = appSettings;
+        this.onSettingsApplied = onSettingsApplied;
         this.contributedPages = new ArrayList<>(contributedProjectSettingsPages);
         this.contributedPages.sort(Comparator.comparingInt(ProjectSettingsPage::getSortOrder)
                 .thenComparing(ProjectSettingsPage::getPageTitle, String.CASE_INSENSITIVE_ORDER));
@@ -298,6 +301,9 @@ public class ProjectSettingsDialog
         try {
             for (ProjectSettingsPage page : contributedPages) {
                 page.onApply();
+            }
+            if (onSettingsApplied != null) {
+                onSettingsApplied.run();
             }
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(

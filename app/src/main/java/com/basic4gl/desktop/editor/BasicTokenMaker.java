@@ -19,6 +19,8 @@ public class BasicTokenMaker extends AbstractTokenMaker {
     public static final List<String> constants = new ArrayList<>();
     public static final List<String> operators = new ArrayList<>();
 
+    private static TokenMap tokenMap = new TokenMap(true);
+
     @Override
     public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {
         // This assumes all keywords, etc. were parsed as "identifiers."
@@ -33,8 +35,14 @@ public class BasicTokenMaker extends AbstractTokenMaker {
 
     @Override
     public TokenMap getWordsToHighlight() {
-        TokenMap tokenMap = new TokenMap(true);
+        tokenMap = new TokenMap(true);
 
+        refreshTokenMap();
+
+        return tokenMap;
+    }
+
+    public static void refreshTokenMap() {
         for (String token : reservedWords) {
             tokenMap.put(token, Token.RESERVED_WORD);
         }
@@ -50,8 +58,6 @@ public class BasicTokenMaker extends AbstractTokenMaker {
         for (String token : operators) {
             tokenMap.put(token, Token.OPERATOR);
         }
-
-        return tokenMap;
     }
 
     @Override

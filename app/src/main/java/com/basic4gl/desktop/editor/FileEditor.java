@@ -654,6 +654,17 @@ public class FileEditor implements SearchListener {
         return editorPane;
     }
 
+    public void refreshSyntaxHighlighting() {
+        // RSyntaxTextArea does not expose a direct TokenMaker invalidation API.
+        // Flip style away and back to force a fresh token maker/tokenization pass.
+        editorPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
+        editorPane.setSyntaxEditingStyle("text/basic4gl");
+
+        editorPane.invalidate();
+        editorPane.revalidate();
+        editorPane.repaint();
+    }
+
     public boolean canRedo() {
         return editorPane.canRedo();
     }

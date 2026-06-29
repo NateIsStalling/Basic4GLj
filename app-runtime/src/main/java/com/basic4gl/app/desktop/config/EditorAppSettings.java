@@ -21,6 +21,8 @@ public class EditorAppSettings implements IConfigurableAppSettings {
     private boolean isJvmDebuggingEnabled = DEFAULT_JVM_DEBUG_ENABLED;
     private boolean isJvmDebugSuspendUntilAttach = DEFAULT_JVM_DEBUG_SUSPEND;
     private Integer jvmDebugPortOverride = null;
+    private String pluginDirectory = null;
+    private String pluginMavenLink = null;
 
     @Override
     public boolean isSandboxModeEnabled() {
@@ -58,6 +60,16 @@ public class EditorAppSettings implements IConfigurableAppSettings {
     }
 
     @Override
+    public String getPluginDirectory() {
+        return pluginDirectory;
+    }
+
+    @Override
+    public String getPluginMavenLink() {
+        return pluginMavenLink;
+    }
+
+    @Override
     public void setSandboxModeEnabled(boolean enabled) {
         isSandboxModeEnabled = enabled;
     }
@@ -90,5 +102,25 @@ public class EditorAppSettings implements IConfigurableAppSettings {
     @Override
     public void setJvmDebugPortOverride(Integer port) {
         jvmDebugPortOverride = port;
+    }
+
+    @Override
+    public void setPluginDirectory(String directory) {
+        if (directory == null) {
+            pluginDirectory = null;
+            return;
+        }
+        String trimmed = directory.trim();
+        pluginDirectory = trimmed.isEmpty() ? null : trimmed;
+    }
+
+    @Override
+    public void setPluginMavenLink(String mavenLink) {
+        if (mavenLink == null) {
+            pluginMavenLink = null;
+            return;
+        }
+        String trimmed = mavenLink.trim();
+        pluginMavenLink = trimmed.isEmpty() ? null : trimmed;
     }
 }

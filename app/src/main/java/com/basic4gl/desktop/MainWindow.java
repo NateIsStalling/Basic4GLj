@@ -745,6 +745,16 @@ public class MainWindow
         clearRecentMenuItem.setEnabled(!files.isEmpty());
     }
 
+    @Override
+    public void refreshSyntaxHighlighting() {
+        if (fileManager == null) {
+            return;
+        }
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            editor.refreshSyntaxHighlighting();
+        }
+    }
+
     private void showAboutDialog() {
         new AboutDialog(frame);
     }
@@ -753,7 +763,10 @@ public class MainWindow
         List<ProjectSettingsPage> contributedPages =
                 Arrays.asList(basicEditor.getBasic4gl().getProjectSettingsPages());
         ProjectSettingsDialog dialog = new ProjectSettingsDialog(
-                frame, basicEditor.getBasic4gl().getConfigurableAppSettings(), contributedPages);
+                frame,
+                basicEditor.getBasic4gl().getConfigurableAppSettings(),
+                contributedPages,
+                basicEditor::refreshSyntaxHighlighting);
         dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();

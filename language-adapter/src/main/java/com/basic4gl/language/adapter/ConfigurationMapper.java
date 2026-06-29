@@ -14,6 +14,8 @@ public class ConfigurationMapper {
     private static final int APP_SETTING_JVM_DEBUG_ENABLED = 5;
     private static final int APP_SETTING_JVM_DEBUG_SUSPEND = 6;
     private static final int APP_SETTING_JVM_DEBUG_PORT = 7;
+    private static final int APP_SETTING_PLUGIN_DIRECTORY = 8;
+    private static final int APP_SETTING_PLUGIN_MAVEN_LINK = 9;
 
     public static Configuration toEditorConfiguration(com.basic4gl.language.core.runtime.Configuration config) {
         if (config == null) {
@@ -47,6 +49,14 @@ public class ConfigurationMapper {
                 Boolean.toString(config.isJvmDebugSuspendUntilAttach()));
         Integer debugPort = config.getJvmDebugPortOverride();
         settings.addSetting(new String[] {"Debug Port Override"}, Configuration.PARAM_STRING, debugPort == null ? "" : debugPort.toString());
+        settings.addSetting(
+                new String[] {"Plugin Directory"},
+                Configuration.PARAM_STRING,
+                config.getPluginDirectory() == null ? "" : config.getPluginDirectory());
+        settings.addSetting(
+                new String[] {"Plugin Maven Link"},
+                Configuration.PARAM_STRING,
+                config.getPluginMavenLink() == null ? "" : config.getPluginMavenLink());
         return settings;
     }
 
@@ -88,6 +98,9 @@ public class ConfigurationMapper {
             settings.setJvmDebugPortOverride(null);
         }
 
+        settings.setPluginDirectory(getValueOrNull(config, APP_SETTING_PLUGIN_DIRECTORY));
+        settings.setPluginMavenLink(getValueOrNull(config, APP_SETTING_PLUGIN_MAVEN_LINK));
+
         return settings;
     }
 
@@ -121,4 +134,3 @@ public class ConfigurationMapper {
         return config.getValue(index);
     }
 }
-

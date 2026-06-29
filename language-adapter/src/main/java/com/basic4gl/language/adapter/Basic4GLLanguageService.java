@@ -13,8 +13,11 @@ import com.basic4gl.language.core.extensions.FunctionLibrary;
 import com.basic4gl.language.core.extensions.Library;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.IServiceCollection;
+import com.basic4gl.language.spi.PluginManager;
+import com.basic4gl.language.spi.PluginLibrary;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -22,10 +25,12 @@ public class Basic4GLLanguageService implements LanguageService {
 
     private final TomBasicCompiler compiler;
     private final Preprocessor preprocessor;
+    private final PluginManager pluginManager;
 
-    Basic4GLLanguageService(TomBasicCompiler compiler, Preprocessor preprocessor) {
+    Basic4GLLanguageService(TomBasicCompiler compiler, Preprocessor preprocessor, PluginManager pluginManager) {
         this.compiler = compiler;
         this.preprocessor = preprocessor;
+        this.pluginManager = pluginManager;
     }
 
     @Override
@@ -50,7 +55,16 @@ public class Basic4GLLanguageService implements LanguageService {
 
     @Override
     public List<String> getFunctions() {
-        return new ArrayList<>(compiler.getFunctionIndex().keySet());
+        LinkedHashSet<String> functions = new LinkedHashSet<>(compiler.getFunctionIndex().keySet());
+        for (PluginLibrary library : pluginManager.getLoadedLibraries()) {
+            for (int i = 0; i < library.count(); i++) {
+                String functionName = library.getFunctionName(i);
+                if (functionName != null && !functionName.isBlank()) {
+                    functions.add(functionName.toLowerCase());
+                }
+            }
+        }
+        return new ArrayList<>(functions);
     }
 
     @Override

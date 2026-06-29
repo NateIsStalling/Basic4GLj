@@ -277,4 +277,9 @@ public class DesktopTarget implements Target, ITargetCommandLineOptions {
     public String getSandboxModeEnabledOption() {
         return cliParser.getSandboxModeEnabledOption();
     }
+
+    @Override
+    public String getPluginDirectoryOption() {
+        return cliParser.getPluginDirectoryOption();
+    }
 }

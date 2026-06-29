@@ -188,7 +188,14 @@ public class GLTextGridWindow extends HasErrorState
         instance.fileOpener.setParentDirectory(options.currentDirectory);
 
         instance.plugins = new PluginJARManager(isStandalone);
-        instance.plugins.setDirectory(options.currentDirectory);
+        String pluginDirectory = options.pluginDirectory != null
+                        && !options.pluginDirectory.trim().isEmpty()
+                ? options.pluginDirectory
+                : options.currentDirectory;
+        if (instance.appSettings instanceof IConfigurableAppSettings configurableAppSettings) {
+            configurableAppSettings.setPluginDirectory(pluginDirectory);
+        }
+        instance.plugins.setDirectory(pluginDirectory);
 
         TomVM vm = new TomVM(instance.plugins, debugger);
         instance.compiler = new TomBasicCompiler(vm, instance.plugins);
@@ -923,5 +930,10 @@ public class GLTextGridWindow extends HasErrorState
     @Override
     public String getSandboxModeEnabledOption() {
         return cliParser.getSandboxModeEnabledOption();
+    }
+
+    @Override
+    public String getPluginDirectoryOption() {
+        return cliParser.getPluginDirectoryOption();
     }
 }

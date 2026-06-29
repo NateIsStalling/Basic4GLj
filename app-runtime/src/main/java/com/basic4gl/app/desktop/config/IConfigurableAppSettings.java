@@ -16,4 +16,8 @@ public interface IConfigurableAppSettings extends com.basic4gl.language.core.ext
     void setJvmDebugSuspendUntilAttach(boolean enabled);
 
     void setJvmDebugPortOverride(Integer port);
+
+    void setPluginDirectory(String directory);
+
+    void setPluginMavenLink(String mavenLink);
 }

@@ -84,6 +84,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         this.presenter = presenter;
         this.menuService = menuService;
         this.basic4gl = new Basic4GLEditorPluginAdapter(this);
+        this.basic4gl.setOnPluginStateChanged(this::refreshSyntaxHighlighting);
     }
 
     public void initLibraries() {
@@ -96,8 +97,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         if (!builders.isEmpty()) {
             currentBuilder = 0;
         }
-        // Initialize highlighting
-        // mKeywords = new HashMap<String,Color>();
+        refreshSyntaxHighlighting();
+    }
+
+    public void refreshSyntaxHighlighting() {
         BasicTokenMaker.reservedWords.clear();
         BasicTokenMaker.functions.clear();
         BasicTokenMaker.constants.clear();
@@ -117,6 +120,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         for (String s : basic4gl.getLanguage().getOperators()) {
             BasicTokenMaker.operators.add(s);
         }
+        presenter.refreshSyntaxHighlighting();
     }
 
     public void actionRun() {

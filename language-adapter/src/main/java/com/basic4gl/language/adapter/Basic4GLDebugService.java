@@ -270,6 +270,11 @@ public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugServi
                     target.getDebuggerPortCommandLineOption(),
                     defaultDebugServerPort);
 
+            String pluginDirectory = appSettings.getPluginDirectory();
+            if (pluginDirectory != null && !pluginDirectory.trim().isEmpty()) {
+                addTargetOption(runnerArgs, target.getPluginDirectoryOption(), pluginDirectory);
+            }
+
             if (appSettings.isSandboxModeEnabled()) {
                 addTargetOption(runnerArgs, target.getSandboxModeEnabledOption());
             }

@@ -14,6 +14,7 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
     static final String LINE_MAPPING_FILE_PATH_OPTION = "m";
     static final String LOG_FILE_PATH_OPTION = "logfile";
     static final String PARENT_DIRECTORY_OPTION = "parent";
+    static final String PLUGIN_DIRECTORY_OPTION = "pluginsdir";
     static final String DEBUGGER_PORT_OPTION = "d";
     static final String SAFE_MODE_OPTION = "s";
 
@@ -26,6 +27,7 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
     private Option mappingFileOption;
     private Option stateFileOption;
     private Option parentPathOption;
+    private Option pluginDirectoryOption;
     private Option debugPortOption;
 
     public StandaloneCommandLineOptionsParser() {
@@ -75,6 +77,13 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
                 .desc("use given directory path for program parent directory")
                 .build();
 
+        pluginDirectoryOption = Option.builder(PLUGIN_DIRECTORY_OPTION)
+                .longOpt("plugins-dir")
+                .argName("directory")
+                .hasArg()
+                .desc("use given directory path for plugin jars")
+                .build();
+
         debugPortOption = Option.builder(DEBUGGER_PORT_OPTION)
                 .longOpt("debugger-port")
                 .argName("port")
@@ -90,6 +99,7 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
         options.addOption(mappingFileOption);
         options.addOption(logFileOption);
         options.addOption(parentPathOption);
+        options.addOption(pluginDirectoryOption);
         options.addOption(debugPortOption);
     }
 
@@ -107,6 +117,7 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
             result.mappingFile = cmd.getOptionValue(mappingFileOption, null);
             result.logFilePath = cmd.getOptionValue(logFileOption, null);
             result.currentDirectory = cmd.getOptionValue(parentPathOption, null);
+            result.pluginDirectory = cmd.getOptionValue(pluginDirectoryOption, null);
             result.debugServerPort = cmd.getOptionValue(debugPortOption, null);
 
             result.isSafeModeEnabled = cmd.hasOption(safeModeOption);
@@ -197,5 +208,10 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
     @Override
     public String getSandboxModeEnabledOption() {
         return SAFE_MODE_OPTION;
+    }
+
+    @Override
+    public String getPluginDirectoryOption() {
+        return PLUGIN_DIRECTORY_OPTION;
     }
 }

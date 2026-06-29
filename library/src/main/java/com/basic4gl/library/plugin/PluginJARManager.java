@@ -245,4 +245,8 @@ public class PluginJARManager extends PluginManager {
         if (!this.directory.isEmpty() && this.directory.charAt(this.directory.length() - 1) != File.separatorChar)
             this.directory += File.separatorChar;
     }
+
+    public String getDirectory() {
+        return directory;
+    }
 }
