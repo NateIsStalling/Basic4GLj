@@ -123,7 +123,7 @@ public class Basic4GLCompilerService implements CompilerService {
 
     @Override
     public boolean hasError() {
-        return false;
+        return compiler.hasError();
     }
 
     @Override
