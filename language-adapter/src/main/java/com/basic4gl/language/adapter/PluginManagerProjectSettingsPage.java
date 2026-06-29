@@ -6,8 +6,6 @@ import com.basic4gl.library.plugin.PluginJARFile;
 import com.basic4gl.library.plugin.PluginJARManager;
 import java.awt.*;
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -29,7 +27,6 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
     private JComponent pageComponent;
     private JTextField pluginDirectoryField;
-    private JTextField mavenLinkField;
     private DefaultTableModel pluginTableModel;
     private JTable pluginTable;
     private JLabel statusLabel;
@@ -63,7 +60,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
     @Override
     public String getPageDescription() {
-        return "Manage local plugin JARs and optional Maven source metadata.";
+        return "Manage local plugin JARs.";
     }
 
     @Override
@@ -126,35 +123,6 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         gbc.insets = new Insets(0, 0, 8, 0);
         directoryPanel.add(refreshButton, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.insets = new Insets(0, 0, 6, 8);
-        directoryPanel.add(new JLabel("Maven Link"), gbc);
-
-        mavenLinkField = new JTextField(appSettings.getPluginMavenLink() == null ? "" : appSettings.getPluginMavenLink());
-        gbc.gridx = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        directoryPanel.add(mavenLinkField, gbc);
-
-        JButton openLinkButton = new JButton("Open");
-        openLinkButton.addActionListener(e -> openMavenLink());
-        gbc.gridx = 2;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0;
-        gbc.insets = new Insets(0, 0, 6, 0);
-        directoryPanel.add(openLinkButton, gbc);
-
-        JLabel mavenHintLabel = new JLabel("Maven link is metadata only. Remote plugins are not auto-downloaded.");
-        mavenHintLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
-        gbc.gridx = 1;
-        gbc.gridy = 3;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        directoryPanel.add(mavenHintLabel, gbc);
-        gbc.gridwidth = 1;
-
         container.add(directoryPanel, BorderLayout.NORTH);
 
         pluginTableModel = new DefaultTableModel(new Object[] {"Loaded", "Plugin JAR", "Version", "Description"}, 0) {
@@ -214,14 +182,8 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         }
         Map<String, Boolean> desiredLoadStates = snapshotDesiredLoadStates();
         String pluginDirectory = normalizeNullable(pluginDirectoryField.getText());
-        String mavenLink = normalizeNullable(mavenLinkField.getText());
-
-        if (mavenLink != null) {
-            validateMavenLink(mavenLink);
-        }
 
         appSettings.setPluginDirectory(pluginDirectory);
-        appSettings.setPluginMavenLink(mavenLink);
         onSettingsApplied.run();
 
         refreshPluginTable();
@@ -263,33 +225,6 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         }
         if (chooser.showOpenDialog(pageComponent) == JFileChooser.APPROVE_OPTION) {
             pluginDirectoryField.setText(chooser.getSelectedFile().getAbsolutePath());
-        }
-    }
-
-    private void openMavenLink() {
-        String link = normalizeNullable(mavenLinkField.getText());
-        if (link == null) {
-            return;
-        }
-        try {
-            validateMavenLink(link);
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().browse(URI.create(link));
-            }
-        } catch (Exception ex) {
-            statusLabel.setText(ex.getMessage());
-        }
-    }
-
-    private void validateMavenLink(String mavenLink) {
-        try {
-            URI uri = new URI(mavenLink);
-            String scheme = uri.getScheme();
-            if (scheme == null || (!scheme.equalsIgnoreCase("https") && !scheme.equalsIgnoreCase("http"))) {
-                throw new IllegalArgumentException("Maven link must be an http(s) URL.");
-            }
-        } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException("Maven link must be a valid URL.");
         }
     }
 

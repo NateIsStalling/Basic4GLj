@@ -31,6 +31,63 @@ public class PluginJAR extends PluginLibrary {
     private String errorMessage;
     private PluginMetadata metadata;
 
+    public static PluginJARFile inspectFileDetails(String path, String filename, PlatformMetadataPolicy platformMetadataPolicy) {
+        PluginJARFile details = new PluginJARFile();
+        details.setFilename(filename);
+        details.setLoaded(false);
+        details.setDescription(filename);
+        details.setVersion(new PluginVersion(0, 0));
+
+        try {
+            Path jarPath = Path.of(path, filename);
+            if (!Files.exists(jarPath)) {
+                details.setDescription("JAR file not found: " + jarPath);
+                return details;
+            }
+
+            URL jarUrl = jarPath.toUri().toURL();
+            try (URLClassLoader loader =
+                    URLClassLoader.newInstance(new URL[] {jarUrl}, Thread.currentThread().getContextClassLoader())) {
+                ServiceLoader<Basic4GLPluginProvider> providerLoader = ServiceLoader.load(Basic4GLPluginProvider.class, loader);
+
+                for (Basic4GLPluginProvider provider : providerLoader) {
+                    PluginMetadata metadata;
+                    try {
+                        metadata = provider.metadata();
+                    } catch (Exception e) {
+                        details.setDescription("Plugin metadata failed to load: " + e.getMessage());
+                        return details;
+                    }
+
+                    if (metadata == null) {
+                        details.setDescription("Plugin metadata is missing: " + provider.getClass().getName());
+                        return details;
+                    }
+
+                    String pluginName = resolvePluginName(metadata, filename);
+                    applyMetadataToDetails(details, metadata, pluginName);
+
+                    String compatibilityError =
+                            validateMetadataCompatibility(metadata, pluginName, platformMetadataPolicy);
+                    if (compatibilityError != null) {
+                        details.setDescription(compatibilityError);
+                    }
+
+                    return details;
+                }
+            }
+
+            details.setDescription("Invalid plugin '" + filename + "'");
+            return details;
+        } catch (UnsupportedClassVersionError e) {
+            details.setDescription("Plugin failed to load: " + e.getMessage());
+            return details;
+        } catch (Exception e) {
+            details.setDescription("ServiceLoader discovery failed: " + e.getMessage());
+            return details;
+        }
+    }
+
     /**
      * Load and initialize a plugin JAR from the given path.
      *
@@ -105,42 +162,18 @@ public class PluginJAR extends PluginLibrary {
                     return false;
                 }
 
-                // Validate host plugin API version compatibility.
-                if (!metadata.isApiCompatible(
-                        Basic4GLPluginProvider.PLUGIN_API_VERSION_MAJOR,
-                        Basic4GLPluginProvider.PLUGIN_API_VERSION_MINOR)) {
-                    String pluginName =
-                            metadata.name() == null || metadata.name().isBlank() ? filename : metadata.name();
-                    errorMessage = "Plugin '" + pluginName + "' requires plugin API >= "
-                            + metadata.minApiMajor() + "." + metadata.minApiMinor()
-                            + ", but current plugin API version is "
-                            + Basic4GLPluginProvider.PLUGIN_API_VERSION_MAJOR + "."
-                            + Basic4GLPluginProvider.PLUGIN_API_VERSION_MINOR;
-                    return false;
-                }
+                String pluginName = resolvePluginName(metadata, filename);
 
                 // Store metadata in fileDetails
                 this.metadata = metadata;
-                fileDetails.setDescription(
-                        metadata.description() == null || metadata.description().isBlank()
-                                ? metadata.name()
-                                : metadata.description());
-                fileDetails.setVersion(new PluginVersion(metadata.majorVersion(), metadata.minorVersion()));
+                applyMetadataToDetails(fileDetails, metadata, pluginName);
 
-                // Validate platform support
-                if (metadata.platformSupport() == null) {
-                    PlatformMetadataPolicy policy = manager.getPlatformMetadataPolicy();
-                    if (policy == PlatformMetadataPolicy.STRICT_BLOCK) {
-                        errorMessage = "Plugin '" + metadata.name() + "' did not provide platform support metadata";
-                        return false;
-                    }
-                } else {
-                    if (!metadata.platformSupport().supportsCurrent()) {
-                        errorMessage = "Plugin '" + metadata.name() + "' does not support "
-                                + PlatformId.current().id() + "-"
-                                + CpuArch.current().primary();
-                        return false;
-                    }
+                // Validate compatibility
+                String compatibilityError =
+                        validateMetadataCompatibility(metadata, pluginName, manager.getPlatformMetadataPolicy());
+                if (compatibilityError != null) {
+                    errorMessage = compatibilityError;
+                    return false;
                 }
 
                 // Create plugin instance
@@ -171,6 +204,41 @@ public class PluginJAR extends PluginLibrary {
             errorMessage = "ServiceLoader discovery failed: " + e.getMessage();
             return false;
         }
+    }
+
+    private static String resolvePluginName(PluginMetadata metadata, String fallbackFilename) {
+        return metadata.name() == null || metadata.name().isBlank() ? fallbackFilename : metadata.name();
+    }
+
+    private static void applyMetadataToDetails(PluginJARFile details, PluginMetadata metadata, String pluginName) {
+        details.setDescription(
+                metadata.description() == null || metadata.description().isBlank() ? pluginName : metadata.description());
+        details.setVersion(new PluginVersion(metadata.majorVersion(), metadata.minorVersion()));
+    }
+
+    private static String validateMetadataCompatibility(
+            PluginMetadata metadata, String pluginName, PlatformMetadataPolicy platformMetadataPolicy) {
+        if (!metadata.isApiCompatible(
+                Basic4GLPluginProvider.PLUGIN_API_VERSION_MAJOR, Basic4GLPluginProvider.PLUGIN_API_VERSION_MINOR)) {
+            return "Plugin '" + pluginName + "' requires plugin API >= " + metadata.minApiMajor() + "."
+                    + metadata.minApiMinor() + ", but current plugin API version is "
+                    + Basic4GLPluginProvider.PLUGIN_API_VERSION_MAJOR + "."
+                    + Basic4GLPluginProvider.PLUGIN_API_VERSION_MINOR;
+        }
+
+        if (metadata.platformSupport() == null) {
+            if (platformMetadataPolicy == PlatformMetadataPolicy.STRICT_BLOCK) {
+                return "Plugin '" + pluginName + "' did not provide platform support metadata";
+            }
+            return null;
+        }
+
+        if (!metadata.platformSupport().supportsCurrent()) {
+            return "Plugin '" + pluginName + "' does not support "
+                    + PlatformId.current().id() + "-" + CpuArch.current().primary();
+        }
+
+        return null;
     }
 
     @Override

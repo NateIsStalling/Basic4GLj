@@ -57,7 +57,6 @@ class ConfigurationMapperTest {
         source.setJvmDebugSuspendUntilAttach(true);
         source.setJvmDebugPortOverride(5005);
         source.setPluginDirectory("/tmp/plugins");
-        source.setPluginMavenLink("https://repo1.maven.org/maven2");
 
         Configuration configuration = ConfigurationMapper.toEditorConfiguration(source);
         IConfigurableAppSettings mapped = ConfigurationMapper.toAppSettings(configuration);
@@ -70,7 +69,6 @@ class ConfigurationMapperTest {
         assertTrue(mapped.isJvmDebugSuspendUntilAttach());
         assertEquals(5005, mapped.getJvmDebugPortOverride());
         assertEquals("/tmp/plugins", mapped.getPluginDirectory());
-        assertEquals("https://repo1.maven.org/maven2", mapped.getPluginMavenLink());
     }
 
     @Test
@@ -90,6 +88,5 @@ class ConfigurationMapperTest {
         assertTrue(mapped.isSandboxModeEnabled());
         assertNull(mapped.getJvmDebugPortOverride());
         assertNull(mapped.getPluginDirectory());
-        assertNull(mapped.getPluginMavenLink());
     }
 }

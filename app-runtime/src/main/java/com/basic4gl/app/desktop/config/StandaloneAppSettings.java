@@ -51,8 +51,4 @@ public class StandaloneAppSettings implements IAppSettings {
         return null;
     }
 
-    @Override
-    public String getPluginMavenLink() {
-        return null;
-    }
 }

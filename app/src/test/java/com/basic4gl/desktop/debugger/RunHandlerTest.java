@@ -225,9 +225,5 @@ public class RunHandlerTest {
             return null;
         }
 
-        @Override
-        public String getPluginMavenLink() {
-            return null;
-        }
     }
 }

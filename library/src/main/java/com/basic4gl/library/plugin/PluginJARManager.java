@@ -73,6 +73,7 @@ public class PluginJARManager extends PluginManager {
      */
     public Vector<PluginJARFile> getJARFiles() {
         Vector<PluginJARFile> result = new Vector<>();
+        error = null;
 
         Path dirPath = Path.of(directory);
         if (!Files.isDirectory(dirPath)) {
@@ -89,12 +90,7 @@ public class PluginJARManager extends PluginManager {
                     continue;
                 }
 
-                PluginJARFile details = new PluginJARFile();
-                details.setFilename(filename);
-                details.setLoaded(false);
-                details.setDescription(filename);
-                details.setVersion(new PluginVersion(0, 0));
-                result.add(details);
+                result.add(PluginJAR.inspectFileDetails(directory, filename, platformMetadataPolicy));
             }
         } catch (IOException e) {
             error = "Failed to scan plugin directory '" + directory + "': " + e.getMessage();

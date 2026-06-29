@@ -19,5 +19,4 @@ public interface IConfigurableAppSettings extends com.basic4gl.language.core.ext
 
     void setPluginDirectory(String directory);
 
-    void setPluginMavenLink(String mavenLink);
 }

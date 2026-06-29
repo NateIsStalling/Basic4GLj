@@ -52,9 +52,4 @@ public interface IAppSettings {
      */
     String getPluginDirectory();
 
-    /**
-     * Returns an optional Maven repository/link value for plugin sourcing metadata.
-     * This is informational unless the host explicitly implements remote resolution.
-     */
-    String getPluginMavenLink();
 }
