@@ -617,7 +617,6 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
     }
 
     public ProgramStreamable getProgram() {
-        // TODO fix this!
         return program;
     }
 
@@ -4669,7 +4668,10 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
                 if (token.getValType() == BasicValType.VTP_STRING) {
 
                     // Allocate new string constant
-                    String text = token.getText().substring(1, token.getText().length() - 1); // Remove S prefix
+                    // Remove S prefix
+                    String text = !token.getText().isEmpty()
+                        ? token.getText().substring(1)
+                        : "";
                     v.setIntVal(program.storeStringConstant(text));
                 } else if (token.getValType() == BasicValType.VTP_INT) {
                     v.setIntVal(Cast.toInt(token.getText()));

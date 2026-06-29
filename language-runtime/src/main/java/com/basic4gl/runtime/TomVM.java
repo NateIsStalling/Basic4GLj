@@ -4,6 +4,7 @@ import static com.basic4gl.language.core.internal.Assert.assertTrue;
 import static com.basic4gl.language.core.types.OpCode.*;
 import static com.basic4gl.language.core.types.OpCode.OP_LOAD_CONST;
 
+import com.basic4gl.language.core.extensions.Basic4GLFunction;
 import com.basic4gl.language.core.extensions.Basic4GLLongRunningFunction;
 import com.basic4gl.language.core.extensions.Basic4GLRuntime;
 import com.basic4gl.language.core.internal.Mutable;
@@ -379,8 +380,11 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
         continueVM(0x7fffffff);
     }
 
-    public void continueVM(int steps) // Continue execution from last position
-            {
+    /**
+     * Continue execution from last position
+     * @param steps
+     */
+    public void continueVM(int steps) {
 
         clearError();
         paused = false;
@@ -1055,11 +1059,12 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
 
                     // Call plugin function
                     int index = instruction.value.getIntVal();
-                    this.plugins
+
+                    Basic4GLFunction function = this.plugins
                             .getLoadedLibraries()
                             .get(index >> 24)
-                            .getFunction(index & 0x00ffffff)
-                            .run(this.pluginRuntime);
+                            .getFunction(index & 0x00ffffff);
+                    function.run(this.pluginRuntime);
 
                     if (!hasError()) {
                         ip++; // Proceed to next instruction
