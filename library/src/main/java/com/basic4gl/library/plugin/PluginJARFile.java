@@ -9,14 +9,16 @@ public class PluginJARFile {
     private String filename;
     private String description;
     private boolean loaded;
+    private boolean compatible = true;
     private PluginVersion version;
 
     public PluginJARFile() {}
 
-    public PluginJARFile(String filename, String description, boolean loaded, PluginVersion version) {
+    public PluginJARFile(String filename, String description, boolean loaded, boolean compatible, PluginVersion version) {
         this.filename = filename;
         this.description = description;
         this.loaded = loaded;
+        this.compatible = compatible;
         this.version = version;
     }
 
@@ -42,6 +44,14 @@ public class PluginJARFile {
 
     public void setLoaded(boolean loaded) {
         this.loaded = loaded;
+    }
+
+    public boolean isCompatible() {
+        return compatible;
+    }
+
+    public void setCompatible(boolean compatible) {
+        this.compatible = compatible;
     }
 
     public PluginVersion getVersion() {

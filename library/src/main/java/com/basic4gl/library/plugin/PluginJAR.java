@@ -35,12 +35,14 @@ public class PluginJAR extends PluginLibrary {
         PluginJARFile details = new PluginJARFile();
         details.setFilename(filename);
         details.setLoaded(false);
+        details.setCompatible(true);
         details.setDescription(filename);
         details.setVersion(new PluginVersion(0, 0));
 
         try {
             Path jarPath = Path.of(path, filename);
             if (!Files.exists(jarPath)) {
+                details.setCompatible(false);
                 details.setDescription("JAR file not found: " + jarPath);
                 return details;
             }
@@ -55,11 +57,13 @@ public class PluginJAR extends PluginLibrary {
                     try {
                         metadata = provider.metadata();
                     } catch (Exception e) {
+                        details.setCompatible(false);
                         details.setDescription("Plugin metadata failed to load: " + e.getMessage());
                         return details;
                     }
 
                     if (metadata == null) {
+                        details.setCompatible(false);
                         details.setDescription("Plugin metadata is missing: " + provider.getClass().getName());
                         return details;
                     }
@@ -70,6 +74,7 @@ public class PluginJAR extends PluginLibrary {
                     String compatibilityError =
                             validateMetadataCompatibility(metadata, pluginName, platformMetadataPolicy);
                     if (compatibilityError != null) {
+                        details.setCompatible(false);
                         details.setDescription(compatibilityError);
                     }
 
@@ -77,12 +82,15 @@ public class PluginJAR extends PluginLibrary {
                 }
             }
 
+            details.setCompatible(false);
             details.setDescription("Invalid plugin '" + filename + "'");
             return details;
         } catch (UnsupportedClassVersionError e) {
+            details.setCompatible(false);
             details.setDescription("Plugin failed to load: " + e.getMessage());
             return details;
         } catch (Exception e) {
+            details.setCompatible(false);
             details.setDescription("ServiceLoader discovery failed: " + e.getMessage());
             return details;
         }
@@ -172,6 +180,7 @@ public class PluginJAR extends PluginLibrary {
                 String compatibilityError =
                         validateMetadataCompatibility(metadata, pluginName, manager.getPlatformMetadataPolicy());
                 if (compatibilityError != null) {
+                    fileDetails.setCompatible(false);
                     errorMessage = compatibilityError;
                     return false;
                 }
@@ -211,6 +220,7 @@ public class PluginJAR extends PluginLibrary {
     }
 
     private static void applyMetadataToDetails(PluginJARFile details, PluginMetadata metadata, String pluginName) {
+        details.setCompatible(true);
         details.setDescription(
                 metadata.description() == null || metadata.description().isBlank() ? pluginName : metadata.description());
         details.setVersion(new PluginVersion(metadata.majorVersion(), metadata.minorVersion()));

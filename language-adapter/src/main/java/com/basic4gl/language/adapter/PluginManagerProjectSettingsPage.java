@@ -9,9 +9,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -31,6 +33,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
     private JTable pluginTable;
     private JLabel statusLabel;
     private final Map<String, String> rowErrorsByJar = new HashMap<>();
+    private final Set<String> incompatiblePluginRows = new HashSet<>();
     private boolean suppressPluginTableEvents = false;
     private Timer pluginDirectoryRefreshTimer;
     private String lastScannedDirectory;
@@ -136,10 +139,30 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 0;
+                return column == 0 && !isIncompatibleRow(row);
             }
         };
-        pluginTable = new JTable(pluginTableModel);
+        pluginTable = new JTable(pluginTableModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                Component component = super.prepareRenderer(renderer, row, column);
+                boolean incompatible = isIncompatibleRow(row);
+
+                if (isCellSelected(row, column)) {
+                    component.setBackground(getSelectionBackground());
+                    component.setForeground(incompatible
+                            ? UIManager.getColor("Label.disabledForeground")
+                            : getSelectionForeground());
+                } else {
+                    component.setBackground(getBackground());
+                    component.setForeground(incompatible
+                            ? UIManager.getColor("Label.disabledForeground")
+                            : getForeground());
+                }
+                component.setEnabled(!incompatible);
+                return component;
+            }
+        };
         pluginTable.setFillsViewportHeight(true);
         pluginTable.getColumnModel().getColumn(0).setMaxWidth(70);
         pluginTable.getColumnModel().getColumn(1).setPreferredWidth(180);
@@ -247,13 +270,17 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         pluginManager.setDirectory(directory);
         List<PluginJARFile> jarFiles = new ArrayList<>(pluginManager.getJARFiles());
         jarFiles.sort(Comparator.comparing(PluginJARFile::getFilename, String.CASE_INSENSITIVE_ORDER));
+        incompatiblePluginRows.clear();
 
         suppressPluginTableEvents = true;
         for (PluginJARFile file : jarFiles) {
+            if (!file.isCompatible()) {
+                incompatiblePluginRows.add(file.getFilename());
+            }
             String version =
                     file.getVersion() == null ? "-" : file.getVersion().getMajorVersion() + "." + file.getVersion().getMinorVersion();
             String rowDescription = resolveDescription(file);
-            pluginTableModel.addRow(new Object[] {file.isLoaded(), file.getFilename(), version, rowDescription});
+            pluginTableModel.addRow(new Object[] {file.isLoaded() && file.isCompatible(), file.getFilename(), version, rowDescription});
         }
         suppressPluginTableEvents = false;
 
@@ -296,7 +323,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             }
             Boolean desired = desiredLoadStates.get(filename);
             if (desired != null) {
-                pluginTableModel.setValueAt(desired, i, 0);
+                pluginTableModel.setValueAt(desired && !isIncompatibleFilename(filename), i, 0);
             }
         }
         suppressPluginTableEvents = false;
@@ -310,6 +337,14 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         boolean shouldBeLoaded = Boolean.TRUE.equals(pluginTableModel.getValueAt(row, 0));
         String filename = (String) pluginTableModel.getValueAt(row, 1);
         if (filename == null || filename.isBlank()) {
+            return;
+        }
+        if (isIncompatibleFilename(filename)) {
+            if (shouldBeLoaded) {
+                suppressPluginTableEvents = true;
+                pluginTableModel.setValueAt(false, row, 0);
+                suppressPluginTableEvents = false;
+            }
             return;
         }
         boolean isLoaded = pluginManager.isLoaded(filename);
@@ -358,9 +393,14 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         String version =
                 jarFile.getVersion() == null ? "-" : jarFile.getVersion().getMajorVersion() + "." + jarFile.getVersion().getMinorVersion();
         String description = resolveDescription(jarFile);
+        if (!jarFile.isCompatible()) {
+            incompatiblePluginRows.add(filename);
+        } else {
+            incompatiblePluginRows.remove(filename);
+        }
 
         suppressPluginTableEvents = true;
-        pluginTableModel.setValueAt(jarFile.isLoaded(), row, 0);
+        pluginTableModel.setValueAt(jarFile.isLoaded() && jarFile.isCompatible(), row, 0);
         pluginTableModel.setValueAt(version, row, 2);
         pluginTableModel.setValueAt(description, row, 3);
         suppressPluginTableEvents = false;
@@ -386,5 +426,17 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             pluginDirectoryRefreshTimer.setRepeats(false);
         }
         pluginDirectoryRefreshTimer.restart();
+    }
+
+    private boolean isIncompatibleRow(int row) {
+        if (row < 0 || row >= pluginTableModel.getRowCount()) {
+            return false;
+        }
+        String filename = (String) pluginTableModel.getValueAt(row, 1);
+        return isIncompatibleFilename(filename);
+    }
+
+    private boolean isIncompatibleFilename(String filename) {
+        return filename != null && incompatiblePluginRows.contains(filename);
     }
 }
