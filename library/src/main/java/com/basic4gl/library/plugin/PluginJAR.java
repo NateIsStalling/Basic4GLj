@@ -96,12 +96,12 @@ public class PluginJAR extends PluginLibrary {
                 try {
                     metadata = provider.metadata();
                 } catch (Exception e) {
-                    errorMessage = "Provider.metadata() failed: " + e.getMessage();
+                    errorMessage = "Plugin metadata failed to load: " + e.getMessage();
                     return false;
                 }
 
                 if (metadata == null) {
-                    errorMessage = "Provider.metadata() returned null";
+                    errorMessage = "Plugin metadata is missing: " + provider.getClass().getName();
                     return false;
                 }
 
@@ -147,12 +147,12 @@ public class PluginJAR extends PluginLibrary {
                 try {
                     plugin = provider.createPlugin();
                 } catch (Exception e) {
-                    errorMessage = "Provider.createPlugin() failed: " + e.getMessage();
+                    errorMessage = "Plugin failed to load: " + e.getMessage();
                     return false;
                 }
 
                 if (plugin == null) {
-                    errorMessage = "Provider.createPlugin() returned null";
+                    errorMessage = "Plugin failed to load";
                     return false;
                 }
 
@@ -161,9 +161,12 @@ public class PluginJAR extends PluginLibrary {
             }
 
             // No providers found in JAR
-            errorMessage = "No providers found in " + filename;
+            errorMessage = "Invalid plugin '" + filename + "'";
             return false;
-
+        } catch (UnsupportedClassVersionError e) {
+            // Plugin was likely compiled with an unsupported JVM version (ie: newer version)
+            errorMessage = "Plugin failed to load: " + e.getMessage();
+            return false;
         } catch (Exception e) {
             errorMessage = "ServiceLoader discovery failed: " + e.getMessage();
             return false;
