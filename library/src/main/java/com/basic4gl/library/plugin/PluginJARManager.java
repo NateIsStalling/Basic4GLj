@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +117,73 @@ public class PluginJARManager extends PluginManager {
      */
     public boolean isLoaded(String filename) {
         return find(filename) != null;
+    }
+
+    public PluginJARDetails getPluginDetails(String filename) {
+        if (filename == null || filename.isBlank()) {
+            return new PluginJARDetails(
+                    "",
+                    "Invalid plugin name",
+                    "No plugin filename was provided.",
+                    false,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    "");
+        }
+
+        PluginJAR loadedJar = find(filename);
+        if (loadedJar != null) {
+            return loadedJar.toDetails();
+        }
+
+        PluginJARFile fileDetails = PluginJAR.inspectFileDetails(directory, filename, platformMetadataPolicy);
+        if (fileDetails == null || !fileDetails.isCompatible()) {
+            String summary = fileDetails == null || fileDetails.getDescription() == null
+                    ? filename
+                    : fileDetails.getDescription();
+            return new PluginJARDetails(
+                    filename,
+                    summary,
+                    "Load this plugin to inspect callable members.",
+                    false,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    "");
+        }
+
+        PluginJARManager inspector = new PluginJARManager(isStandaloneExe);
+        inspector.setPlatformMetadataPolicy(platformMetadataPolicy);
+        inspector.setDirectory(directory);
+
+        if (!inspector.loadPlugin(filename)) {
+            String loadError = inspector.getError();
+            return new PluginJARDetails(
+                    filename,
+                    loadError == null || loadError.isBlank() ? "Failed to inspect plugin" : loadError,
+                    "The plugin could not be loaded for inspection.",
+                    false,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    "");
+        }
+
+        PluginJAR inspected = inspector.find(filename);
+        PluginJARDetails details;
+        if (inspected == null) {
+            details = new PluginJARDetails(
+                    filename,
+                    "Failed to inspect plugin",
+                    "Plugin loaded but no details were available.",
+                    false,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    "");
+        } else {
+            details = inspected.toDetails();
+        }
+
+        inspector.clear();
+        return details;
     }
 
     public PlatformMetadataPolicy getPlatformMetadataPolicy() {

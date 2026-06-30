@@ -2,9 +2,11 @@ package com.basic4gl.language.adapter;
 
 import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
 import com.basic4gl.desktop.spi.ProjectSettingsPage;
+import com.basic4gl.library.plugin.PluginJARDetails;
 import com.basic4gl.library.plugin.PluginJARFile;
 import com.basic4gl.library.plugin.PluginJARManager;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,7 +20,10 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 
 public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
     private final IConfigurableAppSettings appSettings;
@@ -128,7 +133,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
         container.add(directoryPanel, BorderLayout.NORTH);
 
-        pluginTableModel = new DefaultTableModel(new Object[] {"Loaded", "Plugin JAR", "Version", "Description"}, 0) {
+        pluginTableModel = new DefaultTableModel(new Object[] {"Loaded", "Plugin JAR", "Version", "Description", "Details"}, 0) {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 if (columnIndex == 0) {
@@ -139,7 +144,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 0 && !isIncompatibleRow(row);
+                return (column == 0 || column == 4) && !isIncompatibleRow(row);
             }
         };
         pluginTable = new JTable(pluginTableModel) {
@@ -159,7 +164,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
                             ? UIManager.getColor("Label.disabledForeground")
                             : getForeground());
                 }
-                component.setEnabled(!incompatible);
+                component.setEnabled(true);
                 return component;
             }
         };
@@ -168,6 +173,10 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         pluginTable.getColumnModel().getColumn(1).setPreferredWidth(180);
         pluginTable.getColumnModel().getColumn(2).setPreferredWidth(90);
         pluginTable.getColumnModel().getColumn(3).setPreferredWidth(360);
+        pluginTable.getColumnModel().getColumn(4).setPreferredWidth(120);
+        pluginTable.getColumnModel().getColumn(4).setMaxWidth(140);
+        pluginTable.getColumnModel().getColumn(4).setCellRenderer(new DetailsButtonRenderer());
+        pluginTable.getColumnModel().getColumn(4).setCellEditor(new DetailsButtonEditor());
         pluginTableModel.addTableModelListener(e -> {
             if (suppressPluginTableEvents || e.getType() != TableModelEvent.UPDATE || e.getColumn() != 0) {
                 return;
@@ -280,7 +289,13 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             String version =
                     file.getVersion() == null ? "-" : file.getVersion().getMajorVersion() + "." + file.getVersion().getMinorVersion();
             String rowDescription = resolveDescription(file);
-            pluginTableModel.addRow(new Object[] {file.isLoaded() && file.isCompatible(), file.getFilename(), version, rowDescription});
+            pluginTableModel.addRow(new Object[] {
+                file.isLoaded() && file.isCompatible(),
+                file.getFilename(),
+                version,
+                rowDescription,
+                "View Details"
+            });
         }
         suppressPluginTableEvents = false;
 
@@ -403,6 +418,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         pluginTableModel.setValueAt(jarFile.isLoaded() && jarFile.isCompatible(), row, 0);
         pluginTableModel.setValueAt(version, row, 2);
         pluginTableModel.setValueAt(description, row, 3);
+        pluginTableModel.setValueAt("View Details", row, 4);
         suppressPluginTableEvents = false;
     }
 
@@ -438,5 +454,126 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
     private boolean isIncompatibleFilename(String filename) {
         return filename != null && incompatiblePluginRows.contains(filename);
+    }
+
+    private void showDetailsDialog(int row) {
+        if (row < 0 || row >= pluginTableModel.getRowCount()) {
+            return;
+        }
+        String filename = (String) pluginTableModel.getValueAt(row, 1);
+        if (filename == null || filename.isBlank() || isIncompatibleFilename(filename)) {
+            return;
+        }
+
+        PluginJARDetails details = pluginManager.getPluginDetails(filename);
+        JDialog dialog = new JDialog(
+                SwingUtilities.getWindowAncestor(pageComponent),
+                "Plugin Details: " + filename,
+                Dialog.ModalityType.MODELESS);
+        dialog.setLayout(new BorderLayout(0, 8));
+
+        JTextArea metadataArea = new JTextArea(buildDetailsHeader(details));
+        metadataArea.setEditable(false);
+        metadataArea.setLineWrap(true);
+        metadataArea.setWrapStyleWord(true);
+        metadataArea.setCaretPosition(0);
+        metadataArea.setRows(6);
+        metadataArea.setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
+        dialog.add(metadataArea, BorderLayout.NORTH);
+
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Functions", createListPane(details.getFunctions()));
+        tabs.addTab("Constants", createListPane(details.getConstants()));
+        tabs.addTab("Structures", createTextPane(details.getStructures()));
+        dialog.add(tabs, BorderLayout.CENTER);
+
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> dialog.dispose());
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.add(closeButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.setSize(new Dimension(760, 520));
+        dialog.setLocationRelativeTo(pageComponent);
+        dialog.setVisible(true);
+    }
+
+    private String buildDetailsHeader(PluginJARDetails details) {
+        StringBuilder header = new StringBuilder();
+        header.append("Summary: ").append(details.getMetadataSummary() == null ? "-" : details.getMetadataSummary()).append(System.lineSeparator());
+        header.append("Compatible: ").append(details.isCompatible() ? "Yes" : "No").append(System.lineSeparator());
+        header.append(System.lineSeparator());
+        header.append(details.getMetadataDetails() == null ? "" : details.getMetadataDetails());
+        return header.toString();
+    }
+
+    private JScrollPane createListPane(List<String> entries) {
+        DefaultListModel<String> model = new DefaultListModel<>();
+        if (entries == null || entries.isEmpty()) {
+            model.addElement("(none)");
+        } else {
+            for (String entry : entries) {
+                model.addElement(entry);
+            }
+        }
+        JList<String> list = new JList<>(model);
+        return new JScrollPane(list);
+    }
+
+    private JScrollPane createTextPane(String text) {
+        JTextArea area = new JTextArea(text == null || text.isBlank() ? "(none)" : text);
+        area.setEditable(false);
+        area.setLineWrap(false);
+        area.setCaretPosition(0);
+        return new JScrollPane(area);
+    }
+
+    private class DetailsButtonRenderer extends JButton implements TableCellRenderer {
+        DetailsButtonRenderer() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            boolean incompatible = isIncompatibleRow(row);
+            setText("View Details");
+            setEnabled(!incompatible);
+            if (isSelected) {
+                setBackground(table.getSelectionBackground());
+                setForeground(table.getSelectionForeground());
+            } else {
+                setBackground(UIManager.getColor("Button.background"));
+                setForeground(UIManager.getColor("Button.foreground"));
+            }
+            return this;
+        }
+    }
+
+    private class DetailsButtonEditor extends AbstractCellEditor implements TableCellEditor {
+        private final JButton button = new JButton("View Details");
+        private int row = -1;
+
+        DetailsButtonEditor() {
+            button.addActionListener(this::onClick);
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return "View Details";
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(
+                JTable table, Object value, boolean isSelected, int row, int column) {
+            this.row = row;
+            button.setEnabled(!isIncompatibleRow(row));
+            return button;
+        }
+
+        private void onClick(ActionEvent event) {
+            fireEditingStopped();
+            showDetailsDialog(row);
+        }
     }
 }

@@ -1,11 +1,19 @@
 package com.basic4gl.library.plugin;
 
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.Constant;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.language.spi.*;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 
 /**
@@ -284,6 +292,138 @@ public class PluginJAR extends PluginLibrary {
 
     public PluginMetadata getMetadata() {
         return metadata;
+    }
+
+    public PluginJARDetails toDetails() {
+        List<String> functions = new ArrayList<>();
+        for (int i = 0; i < count(); i++) {
+            String functionName = getFunctionName(i);
+            if (functionName == null || functionName.isBlank()) {
+                continue;
+            }
+
+            FunctionSpecification spec = null;
+            if (i >= 0 && i < getFunctionSpecs().size()) {
+                spec = getFunctionSpecs().get(i);
+            }
+            functions.add(formatFunctionSignature(functionName, spec));
+        }
+        functions.sort(String.CASE_INSENSITIVE_ORDER);
+
+        List<String> constants = new ArrayList<>();
+        for (Map.Entry<String, Constant> entry : getConstants().entrySet()) {
+            Constant constant = entry.getValue();
+            String line = entry.getKey()
+                    + " = ("
+                    + formatType(constant == null ? BasicValType.VTP_UNDEFINED : constant.getType())
+                    + ") "
+                    + (constant == null ? "" : constant.toString());
+            constants.add(line);
+        }
+        constants.sort(String.CASE_INSENSITIVE_ORDER);
+
+        String structures = manager.getStructureManager().describeOwnedStructures(this);
+        String metadataDetails = buildMetadataDetails();
+        String metadataSummary = fileDetails == null || fileDetails.getDescription() == null
+                ? filename
+                : fileDetails.getDescription();
+
+        return new PluginJARDetails(
+                filename,
+                metadataSummary,
+                metadataDetails,
+                fileDetails != null && fileDetails.isCompatible(),
+                functions,
+                constants,
+                structures);
+    }
+
+    private String buildMetadataDetails() {
+        if (metadata == null) {
+            return "No metadata available.";
+        }
+
+        StringBuilder details = new StringBuilder();
+        details.append("Name: ").append(resolvePluginName(metadata, filename)).append(System.lineSeparator());
+        details.append("Version: ").append(metadata.majorVersion()).append(".").append(metadata.minorVersion()).append(System.lineSeparator());
+        details.append("Description: ")
+                .append(metadata.description() == null || metadata.description().isBlank() ? "-" : metadata.description())
+                .append(System.lineSeparator());
+        details.append("Min API: ").append(metadata.minApiMajor()).append(".").append(metadata.minApiMinor()).append(System.lineSeparator());
+        if (metadata.platformSupport() == null) {
+            details.append("Platforms: (unspecified)");
+        } else {
+            List<String> platforms = metadata.platformSupport().supportedPlatforms().stream()
+                    .map(PlatformSupport.Platform::toString)
+                    .sorted(Comparator.naturalOrder())
+                    .toList();
+            details.append("Platforms: ").append(platforms.isEmpty() ? "(none)" : String.join(", ", platforms));
+        }
+        return details.toString();
+    }
+
+    private static String formatFunctionSignature(String name, FunctionSpecification spec) {
+        if (spec == null) {
+            return name;
+        }
+
+        StringBuilder line = new StringBuilder();
+        if (spec.isFunction()) {
+            line.append(formatType(spec.getReturnType())).append(" ");
+        }
+        line.append(name);
+        line.append(spec.hasBrackets() ? "(" : " ");
+
+        boolean needComma = false;
+        if (spec.getParamTypes() != null && spec.getParamTypes().getParams() != null) {
+            for (ValType type : spec.getParamTypes().getParams()) {
+                if (needComma) {
+                    line.append(", ");
+                }
+                line.append(formatType(type));
+                needComma = true;
+            }
+        }
+        if (spec.hasBrackets()) {
+            line.append(")");
+        }
+        return line.toString();
+    }
+
+    private static String formatType(ValType type) {
+        if (type == null) {
+            return "???";
+        }
+
+        StringBuilder result = new StringBuilder();
+        if (type.pointerLevel > 0) {
+            result.append("BYREF ");
+        }
+        switch (type.basicType) {
+            case BasicValType.VTP_INT:
+                result.append("INT");
+                break;
+            case BasicValType.VTP_REAL:
+                result.append("REAL");
+                break;
+            case BasicValType.VTP_STRING:
+                result.append("STRING");
+                break;
+            case BasicValType.VTP_FUNC_PTR:
+            case BasicValType.VTP_UNTYPED_FUNC_PTR:
+                result.append("FUNCTION");
+                break;
+            case BasicValType.VTP_VOID:
+                break;
+            default:
+                result.append("???");
+                break;
+        }
+        return result.toString();
+    }
+
+    private static String formatType(int basicType) {
+        return formatType(new ValType(basicType));
     }
 
     @Override
