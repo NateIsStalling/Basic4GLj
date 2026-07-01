@@ -848,7 +848,11 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
             vm.setRegString("");
             try {
                 while ((c != '\n' || skipNewLines) && c <= ' ') {
-                    c = (char) stream.in.read();
+                    int val = stream.in.read();
+                    if (val == -1) {
+                        break;
+                    }
+                    c = (char) val;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -862,12 +866,18 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
             try {
                 while (c > ' ') {
                     vm.setRegString(vm.getRegString() + c);
-                    c = (char) stream.in.read();
+                    int val = stream.in.read();
+                    if (val == -1) {
+                        break;
+                    }
+                    c = (char) val;
                 }
 
                 // Backup one character, so that we don't skip the following whitespace
-                FileChannel ch = ((FileInputStream) stream.in).getChannel();
-                ch.position(ch.position() - 1);
+                if (!stream.isEof()) {
+                    FileChannel ch = ((FileInputStream) stream.in).getChannel();
+                    ch.position(ch.position() - 1);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 exception = e;
@@ -987,7 +997,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 return;
             }
             try {
-                if ((stream.in != null && (stream.in.available() > 0))
+                if ((stream.in != null && !stream.isEof())
                         || (stream.out != null)) // Todo check if output stream is eof
                 // && (stream.out.available() > 0)))
                 {
