@@ -13,7 +13,11 @@ public class FileServiceAdapter implements ISourceFileServer {
 
     @Override
     public ISourceFile openSourceFile(String s) {
-        return new SourceFile(service.openSourceFile(s));
+        com.basic4gl.desktop.spi.ISourceFile sourceFile = service.openSourceFile(s);
+        if (sourceFile == null) {
+            return null;
+        }
+        return new SourceFile(sourceFile);
     }
 
     static class SourceFile implements ISourceFile {
