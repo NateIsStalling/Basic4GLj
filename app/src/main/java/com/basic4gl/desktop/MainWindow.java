@@ -12,6 +12,7 @@ import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
 import com.basic4gl.desktop.spi.FileLineNumber;
 import com.basic4gl.desktop.spi.MenuService;
+import com.basic4gl.desktop.spi.ProjectExportPage;
 import com.basic4gl.desktop.spi.ProjectSettingsPage;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
@@ -718,12 +719,15 @@ public class MainWindow
             compilerStatusLabel.setText(basicEditor.getPreprocessor().getError());
             return;
         }
+        List<ProjectExportPage> contributedExportPages =
+                Arrays.asList(basicEditor.getBasic4gl().getProjectExportPages());
         ExportDialog dialog = new ExportDialog(
                 frame,
                 basicEditor.getCompiler(),
                 basicEditor.getPreprocessor(),
                 fileManager.getFileEditors(),
-                fileManager.getCurrentDirectory());
+                fileManager.getCurrentDirectory(),
+                contributedExportPages);
         dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();

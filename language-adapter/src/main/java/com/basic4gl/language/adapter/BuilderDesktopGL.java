@@ -5,6 +5,7 @@ import com.basic4gl.app.desktop.config.StandaloneCommandLineOptions;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.Exporter;
 import com.basic4gl.compiler.util.IAssetExportBuilder;
+import com.basic4gl.compiler.util.IPluginExportBuilder;
 import com.basic4gl.desktop.spi.*;
 import com.basic4gl.language.core.extensions.Basic4GLCompiler;
 import com.basic4gl.language.core.extensions.IAppSettings;
@@ -29,11 +30,12 @@ import java.util.zip.ZipOutputStream;
 /**
  * Created by Nate on 8/15/2015.
  */
-public class BuilderDesktopGL extends Builder implements IAssetExportBuilder {
+public class BuilderDesktopGL extends Builder implements IAssetExportBuilder, IPluginExportBuilder {
 
     private DesktopTarget target;
     private FileOpener files;
     private final List<String> exportAssets = new ArrayList<>();
+    private final List<String> exportPlugins = new ArrayList<>();
     private String exportAssetBaseDirectory;
 
     public static Builder getInstance(DesktopTarget target) {
@@ -134,6 +136,9 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder {
 
         // Add selected assets to archive (preserve relative layout where possible)
         addExportAssets(output);
+
+        // Add selected plugin JARs (always flattened under plugins/)
+        addExportPlugins(output);
 
         // Add launcher script
         // TODO add additional scripts for each platform
@@ -331,6 +336,66 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder {
         return configuredFile;
     }
 
+    private void addExportPlugins(ZipOutputStream output) throws IOException {
+        if (exportPlugins.isEmpty()) {
+            return;
+        }
+
+        Set<String> addedEntries = new HashSet<>();
+        byte[] buffer = new byte[8192];
+        for (String configuredPath : exportPlugins) {
+            if (configuredPath == null || configuredPath.isBlank()) {
+                continue;
+            }
+
+            File source = resolvePluginFile(new File(FileUtil.separatorsToSystem(configuredPath)));
+            if (!source.exists() || !source.isFile()) {
+                System.out.println("Plugin JAR not found, skipping: " + configuredPath);
+                continue;
+            }
+
+            String fileName = source.getName();
+            if (fileName.isBlank()) {
+                continue;
+            }
+            String zipPath = "plugins/" + fileName;
+            if (!addedEntries.add(zipPath)) {
+                continue;
+            }
+
+            ZipEntry pluginEntry = new ZipEntry(zipPath);
+            pluginEntry.setTime(source.lastModified());
+            output.putNextEntry(pluginEntry);
+            try (InputStream input = new FileInputStream(source)) {
+                int read;
+                while ((read = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, read);
+                }
+            }
+            output.closeEntry();
+        }
+    }
+
+    private File resolvePluginFile(File configuredFile) {
+        if (configuredFile.isAbsolute()) {
+            return configuredFile;
+        }
+
+        if (exportAssetBaseDirectory != null && !exportAssetBaseDirectory.isBlank()) {
+            return new File(exportAssetBaseDirectory, configuredFile.getPath());
+        }
+
+        if (files != null) {
+            String parentDirectory = files.getParentDirectory();
+            if (parentDirectory != null && !parentDirectory.isBlank()) {
+                return new File(parentDirectory, configuredFile.getPath());
+            }
+        }
+
+        return configuredFile;
+    }
+
+
     @Override
     public void setExportAssets(List<String> assets) {
         exportAssets.clear();
@@ -347,6 +412,20 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder {
     @Override
     public List<String> getExportAssets() {
         return new ArrayList<>(exportAssets);
+    }
+
+
+    @Override
+    public void setExportPlugins(List<String> pluginPaths) {
+        exportPlugins.clear();
+        if (pluginPaths != null) {
+            exportPlugins.addAll(pluginPaths);
+        }
+    }
+
+    @Override
+    public List<String> getExportPlugins() {
+        return new ArrayList<>(exportPlugins);
     }
 
     @Override

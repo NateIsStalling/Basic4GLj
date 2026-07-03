@@ -97,10 +97,14 @@ public class FileOpener extends HasErrorState {
             return "";
         }
         // Return new filename
-        File workingDirectory = parentDirectory != null
-                ? new File(parentDirectory)
-                : Paths.get("").toFile();
+        File workingDirectory = getWorkingDirectory();
         return workingDirectory.toURI().relativize(file.toURI()).getPath();
+    }
+
+    public File getWorkingDirectory() {
+        return parentDirectory != null
+            ? new File(parentDirectory)
+            : Paths.get("").toFile();
     }
 
     /*

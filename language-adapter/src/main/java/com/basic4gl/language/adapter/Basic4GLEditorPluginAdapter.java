@@ -130,6 +130,9 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
     @Override
     public void onCurrentDirectoryChanged(String directory) {
         super.onCurrentDirectoryChanged(directory);
+        if (plugins != null) {
+            plugins.setCurrentDirectory(directory);
+        }
         if (plugins != null && appSettings.getPluginDirectories().isEmpty()) {
             applyPluginSettingsToManager();
         }
@@ -147,6 +150,7 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
             window.populate(compiler);
             window.setVisible(true);
         });
+        plugins.setCurrentDirectory(getDefaultPluginDirectory());
         applyPluginSettingsToManager();
         attemptLoadPluginsFromCurrentDirectory();
     }
@@ -168,6 +172,14 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
                     this::getRecentPluginDirectories,
                     this::applyPluginSettingsToManager,
                     this::notifyPluginStateChanged)
+        };
+    }
+
+
+    @Override
+    public ProjectExportPage[] getProjectExportPages() {
+        return new ProjectExportPage[] {
+            new PluginExportProjectPage(plugins, this::getDefaultPluginDirectory)
         };
     }
 
@@ -280,8 +292,10 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
         if (plugins == null) {
             return;
         }
+        String currentDirectory = normalizeNullable(getDefaultPluginDirectory());
+        plugins.setCurrentDirectory(currentDirectory);
         List<String> prioritized = prioritizePluginDirectories(
-                normalizeNullable(getDefaultPluginDirectory()),
+                currentDirectory,
                 appSettings.getPluginDirectories());
         appSettings.setPluginDirectories(prioritized);
         plugins.setDirectories(prioritized);

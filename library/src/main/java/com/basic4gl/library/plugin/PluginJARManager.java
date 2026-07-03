@@ -26,6 +26,7 @@ import java.util.Vector;
  */
 public class PluginJARManager extends PluginManager {
     private List<String> directories;
+    private String currentDirectory;
     private PlatformMetadataPolicy platformMetadataPolicy = PlatformMetadataPolicy.WARN_IDE_BLOCK_EXPORT;
 
     /**
@@ -53,6 +54,7 @@ public class PluginJARManager extends PluginManager {
     public PluginJARManager(boolean isStandaloneExe) {
         super(isStandaloneExe);
         this.directories = new ArrayList<>();
+        this.currentDirectory = null;
     }
 
     /**
@@ -413,16 +415,42 @@ public class PluginJARManager extends PluginManager {
         return List.copyOf(directories);
     }
 
+    public void setCurrentDirectory(String currentDirectory) {
+        this.currentDirectory = normalizeDirectory(currentDirectory);
+    }
+
+    public String getCurrentDirectory() {
+        return currentDirectory;
+    }
+
     private String findContainingDirectory(String filename) {
         if (filename == null || filename.isBlank()) {
             return null;
         }
+
         for (String directory : directories) {
             Path path = Path.of(directory, filename);
             if (Files.exists(path) && Files.isRegularFile(path)) {
                 return directory;
             }
         }
+
+        String normalizedCurrentDirectory = normalizeDirectory(currentDirectory);
+        if (normalizedCurrentDirectory == null) {
+            return null;
+        }
+
+        for (String directory : directories) {
+            if (directory.equalsIgnoreCase(normalizedCurrentDirectory)) {
+                return null;
+            }
+        }
+
+        Path currentPath = Path.of(normalizedCurrentDirectory, filename);
+        if (Files.exists(currentPath) && Files.isRegularFile(currentPath)) {
+            return normalizedCurrentDirectory;
+        }
+
         return null;
     }
 

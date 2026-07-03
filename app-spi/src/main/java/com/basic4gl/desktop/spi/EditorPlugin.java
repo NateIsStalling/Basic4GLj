@@ -55,4 +55,8 @@ public abstract class EditorPlugin {
     public ProjectSettingsPage[] getProjectSettingsPages() {
         return new ProjectSettingsPage[0];
     }
+
+    public ProjectExportPage[] getProjectExportPages() {
+        return new ProjectExportPage[0];
+    }
 }
