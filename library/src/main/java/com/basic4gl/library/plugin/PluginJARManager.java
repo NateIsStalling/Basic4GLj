@@ -171,16 +171,14 @@ public class PluginJARManager extends PluginManager {
                     "");
         }
 
-        PluginJAR loadedJar = sourceDirectory == null
-                ? find(filename)
-                : findByFilenameAndSource(filename, sourceDirectory);
+        PluginJAR loadedJar =
+                sourceDirectory == null ? find(filename) : findByFilenameAndSource(filename, sourceDirectory);
         if (loadedJar != null) {
             return loadedJar.toDetails();
         }
 
-        String resolvedSourceDirectory = sourceDirectory == null
-                ? findContainingDirectory(filename)
-                : normalizeDirectory(sourceDirectory);
+        String resolvedSourceDirectory =
+                sourceDirectory == null ? findContainingDirectory(filename) : normalizeDirectory(sourceDirectory);
         if (resolvedSourceDirectory == null) {
             return new PluginJARDetails(
                     filename,
@@ -192,7 +190,8 @@ public class PluginJARManager extends PluginManager {
                     "");
         }
 
-        PluginJARFile fileDetails = PluginJAR.inspectFileDetails(resolvedSourceDirectory, filename, platformMetadataPolicy);
+        PluginJARFile fileDetails =
+                PluginJAR.inspectFileDetails(resolvedSourceDirectory, filename, platformMetadataPolicy);
         if (fileDetails == null || !fileDetails.isCompatible()) {
             String summary = fileDetails == null || fileDetails.getDescription() == null
                     ? filename
@@ -294,7 +293,8 @@ public class PluginJARManager extends PluginManager {
     public boolean unloadPlugin(String filename, String sourceDirectory) {
 
         // Find JAR
-        PluginLibrary i = sourceDirectory == null ? findItor(filename) : findByFilenameAndSource(filename, sourceDirectory);
+        PluginLibrary i =
+                sourceDirectory == null ? findItor(filename) : findByFilenameAndSource(filename, sourceDirectory);
         if (i == null) {
             error = "This plugin JAR is not loaded";
             return false;

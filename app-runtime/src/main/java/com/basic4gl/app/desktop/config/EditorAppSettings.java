@@ -138,5 +138,4 @@ public class EditorAppSettings implements IConfigurableAppSettings {
         }
         pluginDirectories = normalized;
     }
-
 }

@@ -32,7 +32,8 @@ public class EditorSettingsFactory {
                     .distinct()
                     .limit(CONFIG_RECENT_FILES_MAX_COUNT)
                     .toList());
-            String currentPluginDirectory = prop.getProperty(CONFIG_PLUGIN_DIRECTORY, "").trim();
+            String currentPluginDirectory =
+                    prop.getProperty(CONFIG_PLUGIN_DIRECTORY, "").trim();
             settings.currentPluginDirectory = currentPluginDirectory.isEmpty() ? null : currentPluginDirectory;
             String recentPluginDirectories = prop.getProperty(CONFIG_RECENT_PLUGIN_DIRECTORIES, "");
             settings.recentPluginDirectories.addAll(Arrays.stream(recentPluginDirectories.split(","))

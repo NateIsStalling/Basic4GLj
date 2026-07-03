@@ -4669,9 +4669,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
 
                     // Allocate new string constant
                     // Remove S prefix
-                    String text = !token.getText().isEmpty()
-                        ? token.getText().substring(1)
-                        : "";
+                    String text = !token.getText().isEmpty() ? token.getText().substring(1) : "";
                     v.setIntVal(program.storeStringConstant(text));
                 } else if (token.getValType() == BasicValType.VTP_INT) {
                     v.setIntVal(Cast.toInt(token.getText()));

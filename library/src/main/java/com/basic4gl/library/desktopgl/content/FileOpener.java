@@ -103,8 +103,8 @@ public class FileOpener extends HasErrorState {
 
     public File getWorkingDirectory() {
         return parentDirectory != null
-            ? new File(parentDirectory)
-            : Paths.get("").toFile();
+                ? new File(parentDirectory)
+                : Paths.get("").toFile();
     }
 
     /*

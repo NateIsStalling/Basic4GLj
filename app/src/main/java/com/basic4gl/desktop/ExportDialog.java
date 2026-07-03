@@ -60,8 +60,8 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
 
         fileEditors = editors;
         this.exportBaseDirectory = com.basic4gl.language.adapter.FileUtil.separatorsToSystem(exportBaseDirectory);
-        this.contributedPages = new ArrayList<>(
-                contributedExportPages == null ? Collections.emptyList() : contributedExportPages);
+        this.contributedPages =
+                new ArrayList<>(contributedExportPages == null ? Collections.emptyList() : contributedExportPages);
         this.contributedPages.sort(Comparator.comparingInt(ProjectExportPage::getSortOrder)
                 .thenComparing(ProjectExportPage::getPageTitle, String.CASE_INSENSITIVE_ORDER));
 
@@ -130,26 +130,17 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         JPanel assetsPane = new JPanel(new BorderLayout(0, 10));
         assetsPane.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        tabs.addTab("File", createExportTab(
-                "File",
-                "Choose where to save the exported project.",
-                filePane));
+        tabs.addTab("File", createExportTab("File", "Choose where to save the exported project.", filePane));
 
-        tabs.addTab("Settings", createExportTab(
-                "Settings",
-                "Configure the selected export target.",
-                targetPane));
+        tabs.addTab("Settings", createExportTab("Settings", "Configure the selected export target.", targetPane));
 
-        tabs.addTab("Assets", createExportTab(
-                "Assets",
-                "Include additional files in the exported package.",
-                assetsPane));
+        tabs.addTab(
+                "Assets", createExportTab("Assets", "Include additional files in the exported package.", assetsPane));
 
         for (ProjectExportPage page : this.contributedPages) {
-            tabs.addTab(page.getPageTitle(), createExportTab(
+            tabs.addTab(
                     page.getPageTitle(),
-                    page.getPageDescription(),
-                    page.createPageComponent()));
+                    createExportTab(page.getPageTitle(), page.getPageDescription(), page.createPageComponent()));
         }
 
         // Configure File tab
@@ -322,6 +313,7 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         dialog.setSize(new Dimension(700, 480));
         dialog.setLocationRelativeTo(parent);
     }
+
     private JPanel createExportTab(String title, String description, JComponent content) {
         JPanel panel = new JPanel(new BorderLayout(0, 12));
         panel.setBorder(new EmptyBorder(12, 12, 12, 12));

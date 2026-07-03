@@ -11,7 +11,6 @@ import com.basic4gl.compiler.util.ISourceFile;
 import com.basic4gl.compiler.util.ISourceFileServer;
 import com.basic4gl.language.core.runtime.HasErrorState;
 import com.basic4gl.language.spi.PluginManager;
-
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -279,7 +278,9 @@ public class Preprocessor extends HasErrorState {
                     return filename;
                 }
                 String pluginNameToken = normalizePluginToken(pluginName);
-                if (pluginNameToken != null && declarationToken != null && pluginNameToken.equalsIgnoreCase(declarationToken)) {
+                if (pluginNameToken != null
+                        && declarationToken != null
+                        && pluginNameToken.equalsIgnoreCase(declarationToken)) {
                     return filename;
                 }
             }
@@ -336,7 +337,8 @@ public class Preprocessor extends HasErrorState {
         return candidates;
     }
 
-    private void appendResolvedPluginCandidates(LinkedHashSet<String> candidates, String declaration, String declarationToken) {
+    private void appendResolvedPluginCandidates(
+            LinkedHashSet<String> candidates, String declaration, String declarationToken) {
         if (pluginManager == null) {
             return;
         }
@@ -367,9 +369,8 @@ public class Preprocessor extends HasErrorState {
                         && ((nameToken != null && nameToken.equals(declarationToken))
                                 || (descriptionToken != null && descriptionToken.equals(declarationToken)));
 
-                boolean filenameStartsWithDeclaration = declarationToken != null
-                        && filenameToken != null
-                        && filenameToken.startsWith(declarationToken);
+                boolean filenameStartsWithDeclaration =
+                        declarationToken != null && filenameToken != null && filenameToken.startsWith(declarationToken);
 
                 if (!matchesResolvedName && !filenameStartsWithDeclaration) {
                     continue;

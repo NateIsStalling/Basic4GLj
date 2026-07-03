@@ -26,5 +26,4 @@ public interface IConfigurableAppSettings extends com.basic4gl.language.core.ext
         }
         setPluginDirectory(directories.get(0));
     }
-
 }

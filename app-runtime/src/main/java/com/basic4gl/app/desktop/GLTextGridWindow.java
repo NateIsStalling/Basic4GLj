@@ -196,12 +196,14 @@ public class GLTextGridWindow extends HasErrorState
             }
         }
         pluginDirectorySet.add(instance.fileOpener.getWorkingDirectory().getAbsolutePath());
-        pluginDirectorySet.add(Path.of(instance.fileOpener.getWorkingDirectory().getAbsolutePath(), "plugins").toString());
+        pluginDirectorySet.add(Path.of(instance.fileOpener.getWorkingDirectory().getAbsolutePath(), "plugins")
+                .toString());
         List<String> pluginDirectories = new ArrayList<>(pluginDirectorySet);
         if (instance.appSettings instanceof IConfigurableAppSettings configurableAppSettings) {
             configurableAppSettings.setPluginDirectories(pluginDirectories);
         }
-        instance.plugins.setCurrentDirectory(instance.fileOpener.getWorkingDirectory().getAbsolutePath());
+        instance.plugins.setCurrentDirectory(
+                instance.fileOpener.getWorkingDirectory().getAbsolutePath());
         instance.plugins.setDirectories(pluginDirectories);
 
         TomVM vm = new TomVM(instance.plugins, debugger);

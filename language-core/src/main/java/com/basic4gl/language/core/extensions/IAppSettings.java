@@ -63,5 +63,4 @@ public interface IAppSettings {
         }
         return List.of(directory);
     }
-
 }

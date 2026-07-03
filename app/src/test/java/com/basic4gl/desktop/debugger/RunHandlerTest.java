@@ -224,6 +224,5 @@ public class RunHandlerTest {
         public String getPluginDirectory() {
             return null;
         }
-
     }
 }

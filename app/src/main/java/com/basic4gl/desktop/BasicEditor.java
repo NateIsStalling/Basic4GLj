@@ -1427,7 +1427,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
 
         basic4gl.restorePluginDirectoryState(
                 settings.currentPluginDirectory,
-                settings.recentPluginDirectories.stream().map(File::getAbsolutePath).toList());
+                settings.recentPluginDirectories.stream()
+                        .map(File::getAbsolutePath)
+                        .toList());
         presenter.setRecentItems(settings.recentFiles);
         settingsLoaded = true;
         syncPluginDirectorySettings();

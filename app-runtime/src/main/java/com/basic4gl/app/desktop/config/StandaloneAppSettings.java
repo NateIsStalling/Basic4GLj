@@ -50,5 +50,4 @@ public class StandaloneAppSettings implements IAppSettings {
     public String getPluginDirectory() {
         return null;
     }
-
 }

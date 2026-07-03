@@ -39,7 +39,8 @@ public class PluginJAR extends PluginLibrary {
     private String errorMessage;
     private PluginMetadata metadata;
 
-    public static PluginJARFile inspectFileDetails(String path, String filename, PlatformMetadataPolicy platformMetadataPolicy) {
+    public static PluginJARFile inspectFileDetails(
+            String path, String filename, PlatformMetadataPolicy platformMetadataPolicy) {
         PluginJARFile details = new PluginJARFile();
         details.setFilename(filename);
         details.setSourceDirectory(path);
@@ -57,9 +58,10 @@ public class PluginJAR extends PluginLibrary {
             }
 
             URL jarUrl = jarPath.toUri().toURL();
-            try (URLClassLoader loader =
-                    URLClassLoader.newInstance(new URL[] {jarUrl}, Thread.currentThread().getContextClassLoader())) {
-                ServiceLoader<Basic4GLPluginProvider> providerLoader = ServiceLoader.load(Basic4GLPluginProvider.class, loader);
+            try (URLClassLoader loader = URLClassLoader.newInstance(
+                    new URL[] {jarUrl}, Thread.currentThread().getContextClassLoader())) {
+                ServiceLoader<Basic4GLPluginProvider> providerLoader =
+                        ServiceLoader.load(Basic4GLPluginProvider.class, loader);
 
                 for (Basic4GLPluginProvider provider : providerLoader) {
                     PluginMetadata metadata;
@@ -73,7 +75,8 @@ public class PluginJAR extends PluginLibrary {
 
                     if (metadata == null) {
                         details.setCompatible(false);
-                        details.setDescription("Plugin metadata is missing: " + provider.getClass().getName());
+                        details.setDescription("Plugin metadata is missing: "
+                                + provider.getClass().getName());
                         return details;
                     }
 
@@ -176,7 +179,8 @@ public class PluginJAR extends PluginLibrary {
                 }
 
                 if (metadata == null) {
-                    errorMessage = "Plugin metadata is missing: " + provider.getClass().getName();
+                    errorMessage =
+                            "Plugin metadata is missing: " + provider.getClass().getName();
                     return false;
                 }
 
@@ -234,7 +238,9 @@ public class PluginJAR extends PluginLibrary {
         // Store plugin name separately for IDE display
         details.setPluginName(pluginName);
         details.setDescription(
-                metadata.description() == null || metadata.description().isBlank() ? pluginName : metadata.description());
+                metadata.description() == null || metadata.description().isBlank()
+                        ? pluginName
+                        : metadata.description());
         details.setVersion(new PluginVersion(metadata.majorVersion(), metadata.minorVersion()));
     }
 
@@ -328,9 +334,8 @@ public class PluginJAR extends PluginLibrary {
 
         String structures = manager.getStructureManager().describeOwnedStructures(this);
         String metadataDetails = buildMetadataDetails();
-        String metadataSummary = fileDetails == null || fileDetails.getDescription() == null
-                ? filename
-                : fileDetails.getDescription();
+        String metadataSummary =
+                fileDetails == null || fileDetails.getDescription() == null ? filename : fileDetails.getDescription();
 
         return new PluginJARDetails(
                 filename,
@@ -349,11 +354,22 @@ public class PluginJAR extends PluginLibrary {
 
         StringBuilder details = new StringBuilder();
         details.append("Name: ").append(resolvePluginName(metadata, filename)).append(System.lineSeparator());
-        details.append("Version: ").append(metadata.majorVersion()).append(".").append(metadata.minorVersion()).append(System.lineSeparator());
-        details.append("Description: ")
-                .append(metadata.description() == null || metadata.description().isBlank() ? "-" : metadata.description())
+        details.append("Version: ")
+                .append(metadata.majorVersion())
+                .append(".")
+                .append(metadata.minorVersion())
                 .append(System.lineSeparator());
-        details.append("Min API: ").append(metadata.minApiMajor()).append(".").append(metadata.minApiMinor()).append(System.lineSeparator());
+        details.append("Description: ")
+                .append(
+                        metadata.description() == null || metadata.description().isBlank()
+                                ? "-"
+                                : metadata.description())
+                .append(System.lineSeparator());
+        details.append("Min API: ")
+                .append(metadata.minApiMajor())
+                .append(".")
+                .append(metadata.minApiMinor())
+                .append(System.lineSeparator());
         if (metadata.platformSupport() == null) {
             details.append("Platforms: (unspecified)");
         } else {
