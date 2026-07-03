@@ -46,6 +46,17 @@ public class PluginJARFile {
         this.description = description;
     }
 
+    // Optional plugin display name extracted from metadata (may be null)
+    private String pluginName;
+
+    public String getPluginName() {
+        return pluginName;
+    }
+
+    public void setPluginName(String pluginName) {
+        this.pluginName = pluginName;
+    }
+
     public boolean isLoaded() {
         return loaded;
     }

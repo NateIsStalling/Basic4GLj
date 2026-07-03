@@ -20,6 +20,7 @@ import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -75,7 +76,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
     @Override
     public String getPageDescription() {
-        return "Manage local plugin JARs.";
+        return "Manage Basic4GL language plugins.";
     }
 
     @Override
@@ -130,7 +131,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
         directoryPanel.add(sourceBodyPanel, BorderLayout.CENTER);
 
-        pluginTableModel = new DefaultTableModel(new Object[] {"Enabled", "Plugin JAR", "Source", "Version", "Description", "Details"}, 0) {
+        pluginTableModel = new DefaultTableModel(new Object[] {"Enabled", "Name", "Source", "Version", "Description", "Details"}, 0) {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 if (columnIndex == 0) {
@@ -166,8 +167,12 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             }
         };
         pluginTable.setFillsViewportHeight(true);
-        pluginTable.getColumnModel().getColumn(0).setMaxWidth(120);
+        pluginTable.getColumnModel().getColumn(0).setMinWidth(90);
+        pluginTable.getColumnModel().getColumn(0).setPreferredWidth(105);
+        pluginTable.getColumnModel().getColumn(0).setMaxWidth(130);
         pluginTable.getColumnModel().getColumn(1).setPreferredWidth(180);
+        // Render column 1 using plugin metadata name when available; model still stores filename
+        pluginTable.getColumnModel().getColumn(1).setCellRenderer(new PluginNameRenderer());
         pluginTable.getColumnModel().removeColumn(pluginTable.getColumnModel().getColumn(2));
         pluginTable.getColumnModel().getColumn(2).setPreferredWidth(90);
         pluginTable.getColumnModel().getColumn(3).setPreferredWidth(300);
@@ -571,6 +576,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
         suppressPluginTableEvents = true;
         pluginTableModel.setValueAt(jarFile.isLoaded() && jarFile.isCompatible(), row, 0);
+        pluginTableModel.setValueAt(jarFile.getFilename(), row, 1);
         pluginTableModel.setValueAt(jarFile.getSourceDirectory(), row, 2);
         pluginTableModel.setValueAt(version, row, 3);
         pluginTableModel.setValueAt(description, row, 4);
@@ -721,14 +727,55 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
                 Dialog.ModalityType.MODELESS);
         dialog.setLayout(new BorderLayout(0, 8));
 
-        JTextArea metadataArea = new JTextArea(buildDetailsHeader(details));
-        metadataArea.setEditable(false);
-        metadataArea.setLineWrap(true);
-        metadataArea.setWrapStyleWord(true);
-        metadataArea.setCaretPosition(0);
-        metadataArea.setRows(6);
-        metadataArea.setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
-        dialog.add(metadataArea, BorderLayout.NORTH);
+        JPanel metadataPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4, 8, 4, 8);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Summary row
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0.0;
+        metadataPanel.add(new JLabel("Summary:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        String summaryText = details.getMetadataSummary() == null || details.getMetadataSummary().isBlank()
+                ? "-"
+                : details.getMetadataSummary();
+        JLabel summaryLabel = new JLabel(summaryText);
+        metadataPanel.add(summaryLabel, gbc);
+
+        // Compatible row
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 0.0;
+        metadataPanel.add(new JLabel("Compatible:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        metadataPanel.add(new JLabel(details.isCompatible() ? "Yes" : "No"), gbc);
+
+        // Metadata details row
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 0.0;
+        gbc.weighty = 0.0;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        metadataPanel.add(new JLabel("Details:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        String metadataDetailsText = details.getMetadataDetails() == null || details.getMetadataDetails().isBlank()
+                ? "-"
+                : details.getMetadataDetails();
+        JLabel metadataDetailsLabel = new JLabel(formatMetadataDetailsHtml(metadataDetailsText));
+        metadataDetailsLabel.setVerticalAlignment(SwingConstants.TOP);
+        metadataPanel.add(metadataDetailsLabel, gbc);
+
+        metadataPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
+        dialog.add(metadataPanel, BorderLayout.NORTH);
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Functions", createListPane(details.getFunctions()));
@@ -747,13 +794,16 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         dialog.setVisible(true);
     }
 
-    private String buildDetailsHeader(PluginJARDetails details) {
-        StringBuilder header = new StringBuilder();
-        header.append("Summary: ").append(details.getMetadataSummary() == null ? "-" : details.getMetadataSummary()).append(System.lineSeparator());
-        header.append("Compatible: ").append(details.isCompatible() ? "Yes" : "No").append(System.lineSeparator());
-        header.append(System.lineSeparator());
-        header.append(details.getMetadataDetails() == null ? "" : details.getMetadataDetails());
-        return header.toString();
+    private String formatMetadataDetailsHtml(String details) {
+        String escaped = escapeHtml(details == null ? "" : details);
+        return "<html>" + escaped.replace(System.lineSeparator(), "<br>").replace("\n", "<br>") + "</html>";
+    }
+
+    private String escapeHtml(String value) {
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
     }
 
     private JScrollPane createListPane(List<String> entries) {
@@ -775,6 +825,41 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         area.setLineWrap(false);
         area.setCaretPosition(0);
         return new JScrollPane(area);
+    }
+
+    private class PluginNameRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            String filename = value == null ? "" : value.toString();
+            int modelRow = row;
+            try {
+                modelRow = table.convertRowIndexToModel(row);
+            } catch (Exception ignored) {
+            }
+            Object srcObj = null;
+            try {
+                srcObj = table.getModel().getValueAt(modelRow, 2);
+            } catch (Exception ignored) {
+            }
+            String source = srcObj == null ? null : srcObj.toString();
+
+            String display = filename;
+            try {
+                for (PluginJARFile f : pluginManager.getJARFiles()) {
+                    String fSrc = f.getSourceDirectory();
+                    if (f.getFilename() != null && f.getFilename().equalsIgnoreCase(filename)
+                            && ((source == null && fSrc == null) || (source != null && fSrc != null && source.equalsIgnoreCase(fSrc)))) {
+                        if (f.isCompatible() && f.getPluginName() != null && !f.getPluginName().isBlank()) {
+                            display = f.getPluginName();
+                        }
+                        break;
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+
+            return super.getTableCellRendererComponent(table, display, isSelected, hasFocus, row, column);
+        }
     }
 
     private class DetailsButtonRenderer extends JButton implements TableCellRenderer {

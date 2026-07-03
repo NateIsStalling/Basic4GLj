@@ -231,6 +231,8 @@ public class PluginJAR extends PluginLibrary {
 
     private static void applyMetadataToDetails(PluginJARFile details, PluginMetadata metadata, String pluginName) {
         details.setCompatible(true);
+        // Store plugin name separately for IDE display
+        details.setPluginName(pluginName);
         details.setDescription(
                 metadata.description() == null || metadata.description().isBlank() ? pluginName : metadata.description());
         details.setVersion(new PluginVersion(metadata.majorVersion(), metadata.minorVersion()));
