@@ -34,10 +34,10 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
     private JComponent pageComponent;
     private DefaultListModel<String> pluginSourceListModel;
     private JList<String> pluginSourceList;
-    private JButton removeSourceButton;
     private JButton addSourceButton;
     private JButton addSourceButtonInstalled;
     private JButton projectDirectoryButton;
+    private JButton removeSourceButton;
     private DefaultTableModel pluginTableModel;
     private JTable pluginTable;
     private JCheckBox showUnsupportedCheckbox;
@@ -87,7 +87,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         JPanel container = new JPanel(new BorderLayout(0, 12));
 
         JPanel directoryPanel = new JPanel(new BorderLayout(8, 8));
-        directoryPanel.setBorder(BorderFactory.createTitledBorder("Plugin Sources"));
+        directoryPanel.setBorder(BorderFactory.createTitledBorder("Plugin Folders"));
 
         pluginSourceListModel = new DefaultListModel<>();
         pluginSourceList = new JList<>(pluginSourceListModel);
@@ -103,26 +103,28 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
         JPanel sourceActionsPanel = new JPanel();
         sourceActionsPanel.setLayout(new BoxLayout(sourceActionsPanel, BoxLayout.Y_AXIS));
-        addSourceButton = new JButton("Add Folder");
+        addSourceButton = new JButton("Add Folder...");
         addSourceButton.addActionListener(e -> addFolder());
-        removeSourceButton = new JButton("Remove");
-        removeSourceButton.addActionListener(e -> removeSelectedSource());
-        projectDirectoryButton = new JButton("Use Project");
+        projectDirectoryButton = new JButton("Add Project Folder");
         projectDirectoryButton.addActionListener(e -> {
             String projectDirectory = normalizeNullable(defaultDirectorySupplier.get());
             if (projectDirectory != null) {
                 addOrMoveSource(projectDirectory);
             }
         });
+        removeSourceButton = new JButton("Remove");
+        removeSourceButton.addActionListener(e -> removeSelectedSource());
 
         sourceActionsPanel.add(addSourceButton);
         sourceActionsPanel.add(Box.createVerticalStrut(12));
-        sourceActionsPanel.add(removeSourceButton);
-        sourceActionsPanel.add(Box.createVerticalStrut(12));
         sourceActionsPanel.add(projectDirectoryButton);
+        sourceActionsPanel.add(Box.createVerticalStrut(12));
+        sourceActionsPanel.add(removeSourceButton);
         sourceActionsPanel.add(Box.createVerticalGlue());
+        normalizeButtonWidths(addSourceButton, removeSourceButton, projectDirectoryButton);
 
         JPanel sourceBodyPanel = new JPanel(new BorderLayout(8, 0));
+        sourceBodyPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         sourceBodyPanel.add(sourceListScrollPane, BorderLayout.CENTER);
         sourceBodyPanel.add(sourceActionsPanel, BorderLayout.EAST);
 
@@ -164,7 +166,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             }
         };
         pluginTable.setFillsViewportHeight(true);
-        pluginTable.getColumnModel().getColumn(0).setMaxWidth(70);
+        pluginTable.getColumnModel().getColumn(0).setMaxWidth(120);
         pluginTable.getColumnModel().getColumn(1).setPreferredWidth(180);
         pluginTable.getColumnModel().removeColumn(pluginTable.getColumnModel().getColumn(2));
         pluginTable.getColumnModel().getColumn(2).setPreferredWidth(90);
@@ -192,17 +194,23 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
         JPanel pluginsPanel = new JPanel(new BorderLayout(0, 8));
         JPanel pluginHeaderPanel = new JPanel(new BorderLayout(8, 0));
-        pluginHeaderPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
-        JPanel pluginHeaderActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        showUnsupportedCheckbox = new JCheckBox("Show unsupported", true);
+        pluginHeaderPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 4, 0));
+        JPanel pluginHeaderActions = new JPanel();
+        pluginHeaderActions.setLayout(new BoxLayout(pluginHeaderActions, BoxLayout.X_AXIS));
+        pluginHeaderActions.setBorder(BorderFactory.createEmptyBorder());
+        showUnsupportedCheckbox = new JCheckBox("Show unsupported", false);
         showUnsupportedCheckbox.addActionListener(e -> refreshPluginTable());
-        addSourceButtonInstalled = new JButton("Add Folder");
-        addSourceButtonInstalled.addActionListener(e -> addFolder());
         JButton refreshPluginsButton = new JButton("Refresh");
         refreshPluginsButton.addActionListener(e -> refreshPluginTable());
+        addSourceButtonInstalled = new JButton("Add Folder...");
+        addSourceButtonInstalled.addActionListener(e -> addFolder());
+        normalizeButtonWidths(addSourceButtonInstalled, refreshPluginsButton);
+        pluginHeaderActions.add(Box.createHorizontalGlue());
         pluginHeaderActions.add(showUnsupportedCheckbox);
-        pluginHeaderActions.add(addSourceButtonInstalled);
+        pluginHeaderActions.add(Box.createHorizontalStrut(8));
         pluginHeaderActions.add(refreshPluginsButton);
+        pluginHeaderActions.add(Box.createHorizontalStrut(8));
+        pluginHeaderActions.add(addSourceButtonInstalled);
         pluginHeaderPanel.add(pluginHeaderActions, BorderLayout.CENTER);
         pluginsPanel.add(pluginHeaderPanel, BorderLayout.NORTH);
         pluginsPanel.add(pluginTableScrollPane, BorderLayout.CENTER);
@@ -384,6 +392,8 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         List<String> directories = getPrioritizedSourceDirectories();
         if (directories.isEmpty()) {
             rowErrorsByJar.clear();
+            incompatiblePluginRows.clear();
+            updateShowUnsupportedLabel(0);
             lastScannedSourcesKey = null;
             statusLabel.setText("Set at least one plugin source to scan for plugin JARs.");
             return;
@@ -423,6 +433,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
                 "View Details"
             });
         }
+        updateShowUnsupportedLabel(incompatiblePluginRows.size());
         suppressPluginTableEvents = false;
 
         if (pluginTableModel.getRowCount() == 0) {
@@ -590,6 +601,41 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             pluginDirectoryRefreshTimer.setRepeats(false);
         }
         pluginDirectoryRefreshTimer.restart();
+    }
+
+    private void updateShowUnsupportedLabel(int unsupportedCount) {
+        if (showUnsupportedCheckbox == null) {
+            return;
+        }
+        showUnsupportedCheckbox.setText("Show unsupported (" + Math.max(0, unsupportedCount) + ")");
+    }
+
+    private void normalizeButtonWidths(AbstractButton... buttons) {
+        int maxWidth = 0;
+        int maxHeight = 0;
+        for (AbstractButton button : buttons) {
+            if (button == null) {
+                continue;
+            }
+            Dimension preferred = button.getPreferredSize();
+            if (preferred == null) {
+                continue;
+            }
+            maxWidth = Math.max(maxWidth, preferred.width);
+            maxHeight = Math.max(maxHeight, preferred.height);
+        }
+        if (maxWidth <= 0 || maxHeight <= 0) {
+            return;
+        }
+        Dimension normalized = new Dimension(maxWidth, maxHeight);
+        for (AbstractButton button : buttons) {
+            if (button == null) {
+                continue;
+            }
+            button.setPreferredSize(normalized);
+            button.setMinimumSize(normalized);
+            button.setMaximumSize(new Dimension(maxWidth, maxHeight));
+        }
     }
 
     private List<String> getPrioritizedSourceDirectories() {
