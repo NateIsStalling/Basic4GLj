@@ -49,9 +49,9 @@ public class ConfigurationMapper {
         Integer debugPort = config.getJvmDebugPortOverride();
         settings.addSetting(new String[] {"Debug Port Override"}, Configuration.PARAM_STRING, debugPort == null ? "" : debugPort.toString());
         settings.addSetting(
-                new String[] {"Plugin Directory"},
+                new String[] {"Plugin Directories"},
                 Configuration.PARAM_STRING,
-                config.getPluginDirectory() == null ? "" : config.getPluginDirectory());
+                serializeArguments(config.getPluginDirectories()));
         return settings;
     }
 
@@ -93,7 +93,7 @@ public class ConfigurationMapper {
             settings.setJvmDebugPortOverride(null);
         }
 
-        settings.setPluginDirectory(getValueOrNull(config, APP_SETTING_PLUGIN_DIRECTORY));
+        settings.setPluginDirectories(parseArguments(getValueOrNull(config, APP_SETTING_PLUGIN_DIRECTORY)));
         return settings;
     }
 

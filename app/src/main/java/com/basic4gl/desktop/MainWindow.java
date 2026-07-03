@@ -992,6 +992,7 @@ public class MainWindow
         }
 
         int index = tabControl.getSelectedIndex();
+        basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
             // TODO Check if index of main file
@@ -1016,6 +1017,7 @@ public class MainWindow
             return false;
         }
 
+        basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
             // TODO Check if main file
@@ -1043,6 +1045,7 @@ public class MainWindow
 
         fileManager.setCurrentDirectory(fileManager.getFileDirectory());
 
+        basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         if (fileManager.getFileEditors().get(index).save(true, fileManager.getCurrentDirectory())) {
             // TODO get current main file
             int main = 0;
@@ -1109,6 +1112,7 @@ public class MainWindow
         File file = edit.getFile();
         if (file != null) {
             basicEditor.notifyFileOpened(file);
+            basicEditor.onFileOpened(edit);
         }
 
         edit.getEditorPane().getDocument().addDocumentListener(new DocumentListener() {

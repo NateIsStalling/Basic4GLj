@@ -52,4 +52,16 @@ public interface IAppSettings {
      */
     String getPluginDirectory();
 
+    /**
+     * Returns configured plugin directories in priority order.
+     * Defaults to the single-value plugin directory API for backward compatibility.
+     */
+    default List<String> getPluginDirectories() {
+        String directory = getPluginDirectory();
+        if (directory == null || directory.isBlank()) {
+            return List.of();
+        }
+        return List.of(directory);
+    }
+
 }

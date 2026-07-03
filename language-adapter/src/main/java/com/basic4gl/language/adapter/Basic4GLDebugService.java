@@ -18,6 +18,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugService {
@@ -270,9 +271,14 @@ public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugServi
                     target.getDebuggerPortCommandLineOption(),
                     defaultDebugServerPort);
 
-            String pluginDirectory = appSettings.getPluginDirectory();
-            if (pluginDirectory != null && !pluginDirectory.trim().isEmpty()) {
-                addTargetOption(runnerArgs, target.getPluginDirectoryOption(), pluginDirectory);
+            List<String> pluginDirectories = appSettings.getPluginDirectories();
+            if (pluginDirectories != null && !pluginDirectories.isEmpty()) {
+                for (String pluginDirectory : pluginDirectories) {
+                    if (pluginDirectory == null || pluginDirectory.trim().isEmpty()) {
+                        continue;
+                    }
+                    addTargetOption(runnerArgs, target.getPluginDirectoryOption(), pluginDirectory);
+                }
             }
 
             if (appSettings.isSandboxModeEnabled()) {

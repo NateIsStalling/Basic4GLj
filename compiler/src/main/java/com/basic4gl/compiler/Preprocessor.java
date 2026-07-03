@@ -22,6 +22,7 @@ import java.util.*;
  * expanding #includes into a single large source file.
  */
 public class Preprocessor extends HasErrorState {
+    private static final String PLUGIN_DIRECTIVE = "#plugin";
 
     // Registered source file servers
     private List<ISourceFileServer> fileServers = new ArrayList<>();
@@ -156,6 +157,22 @@ public class Preprocessor extends HasErrorState {
 
     public LineNumberMapping getLineNumberMap() {
         return lineNumberMap;
+    }
+
+    public static String extractPluginDirectiveValue(String line) {
+        if (line == null) {
+            return null;
+        }
+        String trimmed = line.trim();
+        if (trimmed.length() <= PLUGIN_DIRECTIVE.length()
+                || !trimmed.regionMatches(true, 0, PLUGIN_DIRECTIVE, 0, PLUGIN_DIRECTIVE.length())) {
+            return null;
+        }
+        if (!Character.isWhitespace(trimmed.charAt(PLUGIN_DIRECTIVE.length()))) {
+            return null;
+        }
+        String value = trimmed.substring(PLUGIN_DIRECTIVE.length()).trim();
+        return value.isEmpty() ? null : value;
     }
 
     String separatorsToSystem(String res) {

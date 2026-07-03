@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import org.apache.commons.cli.*;
 
 public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOptions {
@@ -81,7 +84,7 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
                 .longOpt("plugins-dir")
                 .argName("directory")
                 .hasArg()
-                .desc("use given directory path for plugin jars")
+                .desc("use given directory path for plugin jars (repeat for multiple directories)")
                 .build();
 
         debugPortOption = Option.builder(DEBUGGER_PORT_OPTION)
@@ -117,7 +120,9 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
             result.mappingFile = cmd.getOptionValue(mappingFileOption, null);
             result.logFilePath = cmd.getOptionValue(logFileOption, null);
             result.currentDirectory = cmd.getOptionValue(parentPathOption, null);
-            result.pluginDirectory = cmd.getOptionValue(pluginDirectoryOption, null);
+            result.pluginDirectories =
+                    prioritizePluginDirectories(result.currentDirectory, cmd.getOptionValues(pluginDirectoryOption));
+            result.pluginDirectory = result.pluginDirectories.isEmpty() ? null : result.pluginDirectories.get(0);
             result.debugServerPort = cmd.getOptionValue(debugPortOption, null);
 
             result.isSafeModeEnabled = cmd.hasOption(safeModeOption);
@@ -156,6 +161,39 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
             }
         }
         return result;
+    }
+
+    private List<String> prioritizePluginDirectories(String currentDirectory, String[] configuredDirectories) {
+        String normalizedCurrent = normalizeDirectory(currentDirectory);
+        LinkedHashSet<String> deduped = new LinkedHashSet<>();
+
+        if (configuredDirectories != null) {
+            for (String directory : configuredDirectories) {
+                String normalized = normalizeDirectory(directory);
+                if (normalized != null) {
+                    deduped.add(normalized);
+                }
+            }
+        }
+
+        ArrayList<String> ordered = new ArrayList<>();
+        if (normalizedCurrent != null) {
+            ordered.add(normalizedCurrent);
+            deduped.removeIf(existing -> existing.equalsIgnoreCase(normalizedCurrent));
+        }
+
+        ArrayList<String> remaining = new ArrayList<>(deduped);
+        remaining.sort(String.CASE_INSENSITIVE_ORDER);
+        ordered.addAll(remaining);
+        return ordered;
+    }
+
+    private String normalizeDirectory(String directory) {
+        if (directory == null) {
+            return null;
+        }
+        String trimmed = directory.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     public Options getOptions() {

@@ -42,6 +42,7 @@ public class PluginJAR extends PluginLibrary {
     public static PluginJARFile inspectFileDetails(String path, String filename, PlatformMetadataPolicy platformMetadataPolicy) {
         PluginJARFile details = new PluginJARFile();
         details.setFilename(filename);
+        details.setSourceDirectory(path);
         details.setLoaded(false);
         details.setCompatible(true);
         details.setDescription(filename);
@@ -115,9 +116,10 @@ public class PluginJAR extends PluginLibrary {
     public PluginJAR(PluginJARManager manager, String path, String filename, boolean isStandaloneExe) {
         super(manager);
         this.manager = manager;
-        this.filename = filename.toLowerCase();
+        this.filename = filename;
         this.fileDetails = new PluginJARFile();
-        this.fileDetails.setFilename(this.filename);
+        this.fileDetails.setFilename(filename);
+        this.fileDetails.setSourceDirectory(path);
         this.errorMessage = "";
         this.metadata = null;
 

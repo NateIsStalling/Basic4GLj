@@ -55,7 +55,8 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     private final com.basic4gl.language.core.runtime.DebuggerCallbackMessage callbackMessage =
             new com.basic4gl.language.core.runtime.DebuggerCallbackMessage();
 
-    private EditorSettings settings = null;
+    private EditorSettings settings = new EditorSettings();
+    private boolean settingsLoaded = false;
 
     // State
 
@@ -85,6 +86,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         this.menuService = menuService;
         this.basic4gl = new Basic4GLEditorPluginAdapter(this);
         this.basic4gl.setOnPluginStateChanged(this::refreshSyntaxHighlighting);
+        this.basic4gl.setOnPluginDirectoryHistoryChanged(this::syncPluginDirectorySettings);
     }
 
     public void initLibraries() {
@@ -1423,7 +1425,31 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
             e.printStackTrace();
         }
 
+        basic4gl.restorePluginDirectoryState(
+                settings.currentPluginDirectory,
+                settings.recentPluginDirectories.stream().map(File::getAbsolutePath).toList());
         presenter.setRecentItems(settings.recentFiles);
+        settingsLoaded = true;
+        syncPluginDirectorySettings();
+    }
+
+    public void onFileOpened(com.basic4gl.desktop.editor.FileEditor editor) {
+        if (editor == null || editor.getEditorPane() == null) {
+            return;
+        }
+        basic4gl.onFileOpened(editor.getEditorPane().getText());
+        refreshSyntaxHighlighting();
+    }
+
+    public void onFileSaving(com.basic4gl.desktop.editor.FileEditor editor) {
+        if (editor == null || editor.getEditorPane() == null) {
+            return;
+        }
+        String source = editor.getEditorPane().getText();
+        String withPluginDirectives = basic4gl.appendEnabledPluginDirectives(source);
+        if (!withPluginDirectives.equals(source)) {
+            editor.getEditorPane().setText(withPluginDirectives);
+        }
     }
 
     public void notifyFileOpened(File file) {
@@ -1446,5 +1472,15 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
 
     public List<File> getRecentFiles() {
         return settings.recentFiles;
+    }
+
+    private void syncPluginDirectorySettings() {
+        settings.currentPluginDirectory = basic4gl.getActivePluginDirectory();
+        settings.recentPluginDirectories = new ArrayList<>(
+                basic4gl.getRecentPluginDirectories().stream().map(File::new).toList());
+        if (!settingsLoaded) {
+            return;
+        }
+        saveSettings();
     }
 }

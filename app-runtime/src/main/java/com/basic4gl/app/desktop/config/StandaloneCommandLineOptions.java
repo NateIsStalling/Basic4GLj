@@ -1,5 +1,9 @@
 package com.basic4gl.app.desktop.config;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class StandaloneCommandLineOptions {
 
     public static final String CONFIG_FILE = "config.ser"; // Filename for configuration file
@@ -14,6 +18,7 @@ public class StandaloneCommandLineOptions {
     public String mappingFile = null;
     public String currentDirectory = null;
     public String pluginDirectory = null;
+    public List<String> pluginDirectories = new ArrayList<>();
     public String debugServerPort = null;
     public String logFilePath = null;
 
@@ -56,5 +61,9 @@ public class StandaloneCommandLineOptions {
 
     public void setProgramArgs(String[] programArgs) {
         this.programArgs = programArgs;
+    }
+
+    public List<String> getPluginDirectories() {
+        return Collections.unmodifiableList(pluginDirectories);
     }
 }
