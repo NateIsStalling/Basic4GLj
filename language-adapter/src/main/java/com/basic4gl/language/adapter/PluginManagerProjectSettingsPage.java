@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
@@ -34,20 +32,19 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
     private final Runnable onPluginStateChanged;
 
     private JComponent pageComponent;
-    private JTextField pluginDirectoryField;
     private DefaultListModel<String> pluginSourceListModel;
     private JList<String> pluginSourceList;
     private JButton removeSourceButton;
+    private JButton addSourceButton;
+    private JButton addSourceButtonInstalled;
     private JButton projectDirectoryButton;
     private DefaultTableModel pluginTableModel;
     private JTable pluginTable;
-    private JLabel currentSourceLabel;
     private JCheckBox showUnsupportedCheckbox;
     private JLabel statusLabel;
     private final Map<String, String> rowErrorsByJar = new HashMap<>();
     private final Set<String> incompatiblePluginRows = new HashSet<>();
     private boolean suppressPluginTableEvents = false;
-    private boolean suppressDirectoryFieldEvents = false;
     private Timer pluginDirectoryRefreshTimer;
     private String lastScannedSourcesKey;
 
@@ -92,55 +89,12 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         JPanel directoryPanel = new JPanel(new BorderLayout(8, 8));
         directoryPanel.setBorder(BorderFactory.createTitledBorder("Plugin Sources"));
 
-        JPanel sourceEditorPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 0, 6, 8);
-        sourceEditorPanel.add(new JLabel("Source"), gbc);
-
-        pluginDirectoryField = new JTextField(resolveInitialPluginDirectory());
-        pluginDirectoryField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                onPluginDirectoryFieldChanged();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                onPluginDirectoryFieldChanged();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                onPluginDirectoryFieldChanged();
-            }
-        });
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        sourceEditorPanel.add(pluginDirectoryField, gbc);
-
-        JButton browseButton = new JButton("Browse...");
-        browseButton.addActionListener(e -> browseForDirectory());
-        gbc.gridx = 2;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = new Insets(0, 0, 6, 0);
-        sourceEditorPanel.add(browseButton, gbc);
-
         pluginSourceListModel = new DefaultListModel<>();
         pluginSourceList = new JList<>(pluginSourceListModel);
         pluginSourceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         pluginSourceList.addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) {
                 return;
-            }
-            String selected = pluginSourceList.getSelectedValue();
-            if (selected != null) {
-                setPluginDirectoryFieldText(selected);
-                schedulePluginTableRefresh();
             }
             syncSourceActionButtons();
         });
@@ -149,6 +103,8 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
         JPanel sourceActionsPanel = new JPanel();
         sourceActionsPanel.setLayout(new BoxLayout(sourceActionsPanel, BoxLayout.Y_AXIS));
+        addSourceButton = new JButton("Add Folder");
+        addSourceButton.addActionListener(e -> addFolder());
         removeSourceButton = new JButton("Remove");
         removeSourceButton.addActionListener(e -> removeSelectedSource());
         projectDirectoryButton = new JButton("Use Project");
@@ -159,6 +115,8 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             }
         });
 
+        sourceActionsPanel.add(addSourceButton);
+        sourceActionsPanel.add(Box.createVerticalStrut(12));
         sourceActionsPanel.add(removeSourceButton);
         sourceActionsPanel.add(Box.createVerticalStrut(12));
         sourceActionsPanel.add(projectDirectoryButton);
@@ -168,10 +126,9 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         sourceBodyPanel.add(sourceListScrollPane, BorderLayout.CENTER);
         sourceBodyPanel.add(sourceActionsPanel, BorderLayout.EAST);
 
-        directoryPanel.add(sourceEditorPanel, BorderLayout.NORTH);
         directoryPanel.add(sourceBodyPanel, BorderLayout.CENTER);
 
-        pluginTableModel = new DefaultTableModel(new Object[] {"Loaded", "Plugin JAR", "Source", "Version", "Description", "Details"}, 0) {
+        pluginTableModel = new DefaultTableModel(new Object[] {"Enabled", "Plugin JAR", "Source", "Version", "Description", "Details"}, 0) {
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 if (columnIndex == 0) {
@@ -209,13 +166,13 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         pluginTable.setFillsViewportHeight(true);
         pluginTable.getColumnModel().getColumn(0).setMaxWidth(70);
         pluginTable.getColumnModel().getColumn(1).setPreferredWidth(180);
-        pluginTable.getColumnModel().getColumn(2).setPreferredWidth(240);
-        pluginTable.getColumnModel().getColumn(3).setPreferredWidth(90);
-        pluginTable.getColumnModel().getColumn(4).setPreferredWidth(300);
-        pluginTable.getColumnModel().getColumn(5).setPreferredWidth(120);
-        pluginTable.getColumnModel().getColumn(5).setMaxWidth(140);
-        pluginTable.getColumnModel().getColumn(5).setCellRenderer(new DetailsButtonRenderer());
-        pluginTable.getColumnModel().getColumn(5).setCellEditor(new DetailsButtonEditor());
+        pluginTable.getColumnModel().removeColumn(pluginTable.getColumnModel().getColumn(2));
+        pluginTable.getColumnModel().getColumn(2).setPreferredWidth(90);
+        pluginTable.getColumnModel().getColumn(3).setPreferredWidth(300);
+        pluginTable.getColumnModel().getColumn(4).setPreferredWidth(120);
+        pluginTable.getColumnModel().getColumn(4).setMaxWidth(140);
+        pluginTable.getColumnModel().getColumn(4).setCellRenderer(new DetailsButtonRenderer());
+        pluginTable.getColumnModel().getColumn(4).setCellEditor(new DetailsButtonEditor());
         pluginTableModel.addTableModelListener(e -> {
             if (suppressPluginTableEvents || e.getType() != TableModelEvent.UPDATE || e.getColumn() != 0) {
                 return;
@@ -236,17 +193,17 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         JPanel pluginsPanel = new JPanel(new BorderLayout(0, 8));
         JPanel pluginHeaderPanel = new JPanel(new BorderLayout(8, 0));
         pluginHeaderPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
-        pluginHeaderPanel.add(new JLabel("Current Source:"), BorderLayout.WEST);
-        currentSourceLabel = new JLabel("-");
-        pluginHeaderPanel.add(currentSourceLabel, BorderLayout.CENTER);
         JPanel pluginHeaderActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         showUnsupportedCheckbox = new JCheckBox("Show unsupported", true);
         showUnsupportedCheckbox.addActionListener(e -> refreshPluginTable());
+        addSourceButtonInstalled = new JButton("Add Folder");
+        addSourceButtonInstalled.addActionListener(e -> addFolder());
         JButton refreshPluginsButton = new JButton("Refresh");
         refreshPluginsButton.addActionListener(e -> refreshPluginTable());
         pluginHeaderActions.add(showUnsupportedCheckbox);
+        pluginHeaderActions.add(addSourceButtonInstalled);
         pluginHeaderActions.add(refreshPluginsButton);
-        pluginHeaderPanel.add(pluginHeaderActions, BorderLayout.EAST);
+        pluginHeaderPanel.add(pluginHeaderActions, BorderLayout.CENTER);
         pluginsPanel.add(pluginHeaderPanel, BorderLayout.NORTH);
         pluginsPanel.add(pluginTableScrollPane, BorderLayout.CENTER);
 
@@ -255,7 +212,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         pluginsPanel.add(statusLabel, BorderLayout.SOUTH);
 
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Plugins", pluginsPanel);
+        tabs.addTab("Installed", pluginsPanel);
         tabs.addTab("Sources", directoryPanel);
         container.add(tabs, BorderLayout.CENTER);
 
@@ -274,8 +231,6 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             pluginTable.getCellEditor().stopCellEditing();
         }
         Map<String, Boolean> desiredLoadStates = snapshotDesiredLoadStates();
-        String pluginDirectory = normalizeNullable(pluginDirectoryField.getText());
-        addOrMoveSource(pluginDirectory);
         List<String> pluginDirectories = getPrioritizedSourceDirectories();
 
         appSettings.setPluginDirectories(pluginDirectories);
@@ -313,13 +268,18 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    private void browseForDirectory() {
+    private void addFolder() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setDialogTitle("Select Plugin Directory");
-        String currentValue = normalizeNullable(pluginDirectoryField.getText());
+        String currentValue = normalizeNullable(pluginSourceList == null ? null : pluginSourceList.getSelectedValue());
         if (currentValue != null) {
             chooser.setCurrentDirectory(new File(currentValue));
+        } else {
+            String fallback = normalizeNullable(defaultDirectorySupplier.get());
+            if (fallback != null) {
+                chooser.setCurrentDirectory(new File(fallback));
+            }
         }
         if (chooser.showOpenDialog(pageComponent) == JFileChooser.APPROVE_OPTION) {
             addOrMoveSource(chooser.getSelectedFile().getAbsolutePath());
@@ -373,7 +333,6 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         }
         pluginSourceListModel.add(0, directory);
         pluginSourceList.setSelectedIndex(0);
-        setPluginDirectoryFieldText(directory);
         schedulePluginTableRefresh();
         syncSourceActionButtons();
     }
@@ -385,11 +344,10 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         }
         pluginSourceListModel.remove(selectedIndex);
         if (pluginSourceListModel.isEmpty()) {
-            setPluginDirectoryFieldText("");
+            pluginSourceList.clearSelection();
         } else {
             int nextIndex = Math.min(selectedIndex, pluginSourceListModel.size() - 1);
             pluginSourceList.setSelectedIndex(nextIndex);
-            setPluginDirectoryFieldText(pluginSourceListModel.get(nextIndex));
         }
         schedulePluginTableRefresh();
         syncSourceActionButtons();
@@ -405,18 +363,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
     }
 
     private void syncSourceActionButtons() {
-        if (pluginSourceList == null || pluginDirectoryField == null) {
-            return;
-        }
-        String currentDirectory = normalizeNullable(pluginDirectoryField.getText());
-        updateCurrentSourceLabel(currentDirectory);
-        if (currentDirectory == null) {
-            if (removeSourceButton != null) {
-                removeSourceButton.setEnabled(pluginSourceList.getSelectedIndex() >= 0);
-            }
-            if (projectDirectoryButton != null) {
-                projectDirectoryButton.setEnabled(normalizeNullable(defaultDirectorySupplier.get()) != null);
-            }
+        if (pluginSourceList == null) {
             return;
         }
         if (removeSourceButton != null) {
@@ -428,14 +375,13 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
     }
 
     private void refreshPluginTable() {
-        if (statusLabel == null || pluginTableModel == null || pluginDirectoryField == null) {
+        if (statusLabel == null || pluginTableModel == null) {
             return;
         }
         statusLabel.setText(" ");
         pluginTableModel.setRowCount(0);
 
         List<String> directories = getPrioritizedSourceDirectories();
-        updateCurrentSourceLabel(directories.isEmpty() ? null : directories.get(0));
         if (directories.isEmpty()) {
             rowErrorsByJar.clear();
             lastScannedSourcesKey = null;
@@ -471,7 +417,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             pluginTableModel.addRow(new Object[] {
                 file.isLoaded() && file.isCompatible(),
                 file.getFilename(),
-                file.getSourceDirectory() == null ? "-" : file.getSourceDirectory(),
+                file.getSourceDirectory(),
                 version,
                 rowDescription,
                 "View Details"
@@ -617,7 +563,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         pluginTableModel.setValueAt(jarFile.getSourceDirectory(), row, 2);
         pluginTableModel.setValueAt(version, row, 3);
         pluginTableModel.setValueAt(description, row, 4);
-        pluginTableModel.setValueAt("View Details", row, 5);
+        pluginTableModel.setValueAt("View", row, 5);
         suppressPluginTableEvents = false;
     }
 
@@ -636,7 +582,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
     }
 
     private void schedulePluginTableRefresh() {
-        if (pluginDirectoryField == null || pluginTableModel == null || statusLabel == null) {
+        if (pluginTableModel == null || statusLabel == null) {
             return;
         }
         if (pluginDirectoryRefreshTimer == null) {
@@ -648,10 +594,6 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
     private List<String> getPrioritizedSourceDirectories() {
         ArrayList<String> sources = new ArrayList<>();
-        String current = normalizeNullable(pluginDirectoryField == null ? null : pluginDirectoryField.getText());
-        if (current != null) {
-            sources.add(current);
-        }
         if (pluginSourceListModel != null) {
             for (int i = 0; i < pluginSourceListModel.size(); i++) {
                 String directory = normalizeNullable(pluginSourceListModel.get(i));
@@ -700,39 +642,6 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         String file = filename == null ? "" : filename.trim().toLowerCase();
         String source = sourceDirectory == null ? "" : sourceDirectory.trim().toLowerCase();
         return source + "|" + file;
-    }
-
-    private void onPluginDirectoryFieldChanged() {
-        if (suppressDirectoryFieldEvents) {
-            return;
-        }
-        updateCurrentSourceLabel(normalizeNullable(pluginDirectoryField == null ? null : pluginDirectoryField.getText()));
-        schedulePluginTableRefresh();
-        syncSourceActionButtons();
-    }
-
-    private void setPluginDirectoryFieldText(String value) {
-        if (pluginDirectoryField == null) {
-            return;
-        }
-        String nextValue = value == null ? "" : value;
-        if (nextValue.equals(pluginDirectoryField.getText())) {
-            return;
-        }
-        suppressDirectoryFieldEvents = true;
-        try {
-            pluginDirectoryField.setText(nextValue);
-        } finally {
-            suppressDirectoryFieldEvents = false;
-        }
-        updateCurrentSourceLabel(normalizeNullable(nextValue));
-    }
-
-    private void updateCurrentSourceLabel(String directory) {
-        if (currentSourceLabel == null) {
-            return;
-        }
-        currentSourceLabel.setText(directory == null ? "(none)" : directory);
     }
 
     private boolean isIncompatibleRow(int row) {
@@ -831,7 +740,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         public Component getTableCellRendererComponent(
                 JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             boolean incompatible = isIncompatibleRow(row);
-            setText("View Details");
+            setText("View");
             setEnabled(!incompatible);
             if (isSelected) {
                 setBackground(table.getSelectionBackground());
@@ -845,7 +754,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
     }
 
     private class DetailsButtonEditor extends AbstractCellEditor implements TableCellEditor {
-        private final JButton button = new JButton("View Details");
+        private final JButton button = new JButton("View");
         private int row = -1;
 
         DetailsButtonEditor() {
@@ -854,7 +763,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
         @Override
         public Object getCellEditorValue() {
-            return "View Details";
+            return "View";
         }
 
         @Override
