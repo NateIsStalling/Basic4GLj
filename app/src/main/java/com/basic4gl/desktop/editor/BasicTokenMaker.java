@@ -13,6 +13,7 @@ import org.fife.ui.rsyntaxtextarea.TokenMap;
  */
 public class BasicTokenMaker extends AbstractTokenMaker {
     private static final String INCLUDE = "include ";
+    private static final String PLUGIN = "#plugin ";
     private static final char CHAR_COMMENT = '\'';
     public static final List<String> reservedWords = new ArrayList<>();
     public static final List<String> functions = new ArrayList<>();
@@ -84,6 +85,14 @@ public class BasicTokenMaker extends AbstractTokenMaker {
                         .startsWith(INCLUDE)) {
             currentTokenType = Token.PREPROCESSOR;
         }
+        if (offset + PLUGIN.length() < end
+                && String.valueOf(array)
+                        .toLowerCase()
+                        .substring(offset, offset + PLUGIN.length())
+                        .startsWith(PLUGIN)) {
+            currentTokenType = Token.PREPROCESSOR;
+        }
+
         for (int i = offset; i < end; i++) {
 
             char c = array[i];

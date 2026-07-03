@@ -42,7 +42,7 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
 
     public Basic4GLEditorPluginAdapter(PluginContext context) {
         plugins = new PluginJARManager(false);
-        Preprocessor preprocessor = new Preprocessor(2, Arrays.stream(context.fileServices()).map(FileServiceAdapter::new).toArray(FileServiceAdapter[]::new));
+        Preprocessor preprocessor = new Preprocessor(plugins, 2, Arrays.stream(context.fileServices()).map(FileServiceAdapter::new).toArray(FileServiceAdapter[]::new));
         Debugger debugger = new Debugger(preprocessor.getLineNumberMap());
         vm = new TomVM(plugins, debugger);
         compiler = new TomBasicCompiler(vm, plugins);
@@ -285,7 +285,11 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
     }
 
     private String getDefaultPluginDirectory() {
-        return context == null ? "" : context.currentDirectory();
+        String fromContext = context == null ? null : normalizeNullable(context.currentDirectory());
+        if (fromContext != null) {
+            return fromContext;
+        }
+        return plugins == null ? "" : normalizeNullable(plugins.getCurrentDirectory());
     }
 
     private void applyPluginSettingsToManager() {
@@ -293,16 +297,67 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
             return;
         }
         String currentDirectory = normalizeNullable(getDefaultPluginDirectory());
+        if (currentDirectory == null) {
+            currentDirectory = normalizeNullable(plugins.getCurrentDirectory());
+        }
         plugins.setCurrentDirectory(currentDirectory);
-        List<String> prioritized = prioritizePluginDirectories(
-                currentDirectory,
-                appSettings.getPluginDirectories());
-        appSettings.setPluginDirectories(prioritized);
-        plugins.setDirectories(prioritized);
-        for (String directory : prioritized) {
+
+        List<String> sourceDirectories = buildSourceDirectories(currentDirectory);
+        appSettings.setPluginDirectories(sourceDirectories);
+        plugins.setDirectories(sourceDirectories);
+        for (String directory : sourceDirectories) {
             addRecentPluginDirectory(directory, false);
         }
         onPluginDirectoryHistoryChanged.run();
+    }
+
+    private List<String> buildSourceDirectories(String currentDirectory) {
+        ArrayList<String> sources = new ArrayList<>();
+
+        List<String> configuredDirectories = appSettings.getPluginDirectories();
+        if (configuredDirectories != null && !configuredDirectories.isEmpty()) {
+            for (String directory : configuredDirectories) {
+                addSourceIfMissing(sources, normalizeNullable(directory));
+            }
+        } else {
+            String configuredDirectory = normalizeNullable(appSettings.getPluginDirectory());
+            if (configuredDirectory != null) {
+                addSourceIfMissing(sources, configuredDirectory);
+            }
+        }
+
+        if (sources.isEmpty()) {
+            addSourceIfMissing(sources, normalizeNullable(currentDirectory));
+        }
+
+        for (String directory : recentPluginDirectories) {
+            addSourceIfMissing(sources, normalizeNullable(directory));
+        }
+
+        if (sources.isEmpty()) {
+            return sources;
+        }
+
+        ArrayList<String> prioritized = new ArrayList<>();
+        prioritized.add(sources.get(0));
+        if (sources.size() > 1) {
+            ArrayList<String> remaining = new ArrayList<>(sources.subList(1, sources.size()));
+            remaining.sort(String.CASE_INSENSITIVE_ORDER);
+            prioritized.addAll(remaining);
+        }
+        return prioritized;
+    }
+
+    private void addSourceIfMissing(List<String> sources, String directory) {
+        if (sources == null || directory == null) {
+            return;
+        }
+        for (String existing : sources) {
+            if (existing.equalsIgnoreCase(directory)) {
+                return;
+            }
+        }
+        sources.add(directory);
     }
 
     private void notifyPluginStateChanged() {
@@ -337,31 +392,6 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
         if (notify) {
             onPluginDirectoryHistoryChanged.run();
         }
-    }
-
-    private List<String> prioritizePluginDirectories(String currentDirectory, List<String> configuredDirectories) {
-        ArrayList<String> normalized = new ArrayList<>();
-        if (configuredDirectories != null) {
-            for (String configuredDirectory : configuredDirectories) {
-                String value = normalizeNullable(configuredDirectory);
-                if (value == null) {
-                    continue;
-                }
-                if (normalized.stream().noneMatch(existing -> existing.equalsIgnoreCase(value))) {
-                    normalized.add(value);
-                }
-            }
-        }
-
-        String current = normalizeNullable(currentDirectory);
-        ArrayList<String> prioritized = new ArrayList<>();
-        if (current != null) {
-            prioritized.add(current);
-            normalized.removeIf(existing -> existing.equalsIgnoreCase(current));
-        }
-        normalized.sort(String.CASE_INSENSITIVE_ORDER);
-        prioritized.addAll(normalized);
-        return prioritized;
     }
 
     private String normalizeNullable(String value) {
