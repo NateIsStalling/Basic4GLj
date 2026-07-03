@@ -121,20 +121,35 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         // File tab
         JPanel filePane = new JPanel();
         filePane.setLayout(new BoxLayout(filePane, BoxLayout.LINE_AXIS));
-        tabs.addTab("File", filePane);
 
         // Settings tab
         JPanel targetPane = new JPanel();
         targetPane.setLayout(new BorderLayout());
-        tabs.addTab("Settings", targetPane);
 
         // Assets tab
         JPanel assetsPane = new JPanel(new BorderLayout(0, 10));
         assetsPane.setBorder(new EmptyBorder(10, 10, 10, 10));
-        tabs.addTab("Assets", assetsPane);
+
+        tabs.addTab("File", createExportTab(
+                "File",
+                "Choose where to save the exported project.",
+                filePane));
+
+        tabs.addTab("Settings", createExportTab(
+                "Settings",
+                "Configure the selected export target.",
+                targetPane));
+
+        tabs.addTab("Assets", createExportTab(
+                "Assets",
+                "Include additional files in the exported package.",
+                assetsPane));
 
         for (ProjectExportPage page : this.contributedPages) {
-            tabs.addTab(page.getPageTitle(), createContributedExportTab(page));
+            tabs.addTab(page.getPageTitle(), createExportTab(
+                    page.getPageTitle(),
+                    page.getPageDescription(),
+                    page.createPageComponent()));
         }
 
         // Configure File tab
@@ -303,27 +318,30 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         });
         // JScrollPane scrollPane = new ScrollPane(textLicenses);
         dialog.pack();
-        dialog.setSize(new Dimension(464, 346));
+        dialog.setMinimumSize(new Dimension(620, 420));
+        dialog.setSize(new Dimension(700, 480));
         dialog.setLocationRelativeTo(parent);
     }
-
-    private JPanel createContributedExportTab(ProjectExportPage page) {
+    private JPanel createExportTab(String title, String description, JComponent content) {
         JPanel panel = new JPanel(new BorderLayout(0, 12));
         panel.setBorder(new EmptyBorder(12, 12, 12, 12));
 
         JPanel header = new JPanel();
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
-        JLabel titleLabel = new JLabel(page.getPageTitle());
+
+        JLabel titleLabel = new JLabel(title);
         Font baseFont = titleLabel.getFont();
         titleLabel.setFont(baseFont.deriveFont(Font.BOLD, baseFont.getSize() + 3f));
         titleLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
-        JLabel descriptionLabel = new JLabel(page.getPageDescription() == null ? "" : page.getPageDescription());
+
+        JLabel descriptionLabel = new JLabel(description == null ? "" : description);
         descriptionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+
         header.add(titleLabel);
         header.add(descriptionLabel);
 
         panel.add(header, BorderLayout.NORTH);
-        panel.add(page.createPageComponent(), BorderLayout.CENTER);
+        panel.add(content, BorderLayout.CENTER);
         return panel;
     }
 

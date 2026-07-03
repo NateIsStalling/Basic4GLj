@@ -19,6 +19,8 @@ import java.util.function.Supplier;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -27,6 +29,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class PluginExportProjectPage implements ProjectExportPage {
@@ -34,8 +37,9 @@ public class PluginExportProjectPage implements ProjectExportPage {
     private final Supplier<String> defaultDirectorySupplier;
 
     private JComponent pageComponent;
-    private javax.swing.DefaultListModel<String> pluginModel;
+    private DefaultListModel<String> pluginModel;
     private JList<String> pluginList;
+    private JLabel statusLabel;
 
     public PluginExportProjectPage(PluginJARManager pluginManager, Supplier<String> defaultDirectorySupplier) {
         this.pluginManager = pluginManager;
@@ -69,58 +73,73 @@ public class PluginExportProjectPage implements ProjectExportPage {
         }
 
         JPanel root = new JPanel(new BorderLayout(0, 10));
-        root.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0));
 
-        JLabel description = new JLabel("Plugin JARs included in export (copied to plugins/):");
+        JLabel description = new JLabel("Plugin libraries to include in the exported package:");
         root.add(description, BorderLayout.NORTH);
 
-        pluginModel = new javax.swing.DefaultListModel<>();
+        pluginModel = new DefaultListModel<>();
         pluginList = new JList<>(pluginModel);
         pluginList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        pluginList.setCellRenderer(new PluginPathRenderer());
+
         JScrollPane pluginScrollPane = new JScrollPane(pluginList);
         pluginScrollPane.getVerticalScrollBar().setUnitIncrement(16);
         root.add(pluginScrollPane, BorderLayout.CENTER);
 
-        JPanel buttonPane = new JPanel();
-        buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
-        JButton addButton = new JButton("Add...");
-        JButton removeButton = new JButton("Remove");
-        JButton clearButton = new JButton("Clear");
         JButton addLoadedButton = new JButton("Add Loaded");
+        addLoadedButton.addActionListener(e -> mergeLoadedPlugins());
 
+        JButton addButton = new JButton("Add...");
         addButton.addActionListener(e -> promptAndAddPlugins());
+
+        JButton removeButton = new JButton("Remove");
         removeButton.addActionListener(e -> {
             List<String> selected = pluginList.getSelectedValuesList();
             for (String value : selected) {
                 pluginModel.removeElement(value);
             }
+            updateStatusLabel();
         });
-        clearButton.addActionListener(e -> pluginModel.clear());
-        addLoadedButton.addActionListener(e -> mergeLoadedPlugins());
 
+        JButton clearButton = new JButton("Clear");
+        clearButton.addActionListener(e -> {
+            pluginModel.clear();
+            updateStatusLabel();
+        });
+
+        JPanel buttonPane = new JPanel();
+        buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
+        buttonPane.add(addLoadedButton);
+        buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
         buttonPane.add(addButton);
         buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
         buttonPane.add(removeButton);
         buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
         buttonPane.add(clearButton);
-        buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
-        buttonPane.add(addLoadedButton);
         buttonPane.add(Box.createHorizontalGlue());
-        root.add(buttonPane, BorderLayout.SOUTH);
+
+        statusLabel = new JLabel(" ");
+        statusLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+
+        JPanel footer = new JPanel(new BorderLayout(10, 0));
+        footer.add(buttonPane, BorderLayout.WEST);
+        footer.add(statusLabel, BorderLayout.EAST);
+
+        root.add(footer, BorderLayout.SOUTH);
 
         pageComponent = root;
+        updateStatusLabel();
         return pageComponent;
     }
 
     @Override
     public void onBuilderSelected(Builder builder) {
-        if (pluginModel == null) {
-            createPageComponent();
-        }
+        ensureUiCreated();
 
         boolean supported = builder instanceof IPluginExportBuilder;
         setEnabledRecursive(pageComponent, supported);
         if (!supported) {
+            statusLabel.setText("Plugin export is not supported by the selected target.");
             return;
         }
 
@@ -148,6 +167,12 @@ public class PluginExportProjectPage implements ProjectExportPage {
             selectedPlugins.add(pluginModel.get(i));
         }
         pluginBuilder.setExportPlugins(selectedPlugins);
+    }
+
+    private void ensureUiCreated() {
+        if (pluginModel == null || pluginList == null || statusLabel == null || pageComponent == null) {
+            createPageComponent();
+        }
     }
 
     private void promptAndAddPlugins() {
@@ -181,6 +206,7 @@ public class PluginExportProjectPage implements ProjectExportPage {
                 pluginModel.addElement(normalizedPath);
             }
         }
+        updateStatusLabel();
     }
 
     private void mergeLoadedPlugins() {
@@ -216,6 +242,7 @@ public class PluginExportProjectPage implements ProjectExportPage {
         for (String path : merged) {
             pluginModel.addElement(path);
         }
+        updateStatusLabel();
     }
 
     private String normalizePluginPath(String path) {
@@ -238,6 +265,67 @@ public class PluginExportProjectPage implements ProjectExportPage {
             for (Component child : container.getComponents()) {
                 setEnabledRecursive(child, enabled);
             }
+        }
+    }
+
+    private void normalizeButtonWidths(JButton... buttons) {
+        int maxWidth = 0;
+        int maxHeight = 0;
+        for (JButton button : buttons) {
+            if (button == null) {
+                continue;
+            }
+            Dimension preferred = button.getPreferredSize();
+            if (preferred == null) {
+                continue;
+            }
+            maxWidth = Math.max(maxWidth, preferred.width);
+            maxHeight = Math.max(maxHeight, preferred.height);
+        }
+        if (maxWidth <= 0 || maxHeight <= 0) {
+            return;
+        }
+        Dimension normalized = new Dimension(maxWidth, maxHeight);
+        for (JButton button : buttons) {
+            if (button == null) {
+                continue;
+            }
+            button.setPreferredSize(normalized);
+            button.setMinimumSize(normalized);
+            button.setMaximumSize(new Dimension(maxWidth, maxHeight));
+        }
+    }
+
+    private void updateStatusLabel() {
+        if (statusLabel == null || pluginModel == null) {
+            return;
+        }
+        int count = pluginModel.size();
+        statusLabel.setText(count == 1 ? "1 plugin selected for export." : count + " plugins selected for export.");
+    }
+
+    private static class PluginPathRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(
+                JList<?> list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            String path = value == null ? "" : value.toString();
+            String filename = path;
+            try {
+                Path p = Path.of(path);
+                Path fileName = p.getFileName();
+                if (fileName != null) {
+                    filename = fileName.toString();
+                }
+            } catch (Exception ignored) {
+            }
+            label.setText(filename);
+            label.setToolTipText(path);
+            return label;
         }
     }
 }
