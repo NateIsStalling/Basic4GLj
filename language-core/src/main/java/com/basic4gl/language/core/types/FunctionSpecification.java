@@ -105,13 +105,13 @@ public class FunctionSpecification {
         functionClass = spec.functionClass;
         isFunction = spec.isFunction;
         hasBrackets = spec.hasBrackets;
-        returnType = spec.returnType;
+        returnType = new ValType(spec.returnType);
         timeshare = spec.timeshare;
         conditionalTimeshare = spec.conditionalTimeshare;
         index = spec.index;
         freeTempData = spec.freeTempData;
         paramValidationCallback = spec.paramValidationCallback;
-        paramTypes = spec.paramTypes;
+        paramTypes = new ParamTypeList(spec.paramTypes);
     }
 
     /**

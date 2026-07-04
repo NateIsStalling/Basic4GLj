@@ -1039,7 +1039,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
         Image image = LoadImage.loadImage(filename);
         if (image != null) {
-            IntBuffer result = BufferUtils.createIntBuffer(0);
+            IntBuffer result = BufferUtils.createIntBuffer(1);
             OpenGLBasicLib.calculateImageStripFrames(image, frameWidth, frameHeight, result, null, null);
 
             return result.get(0);
@@ -1104,7 +1104,8 @@ public class OpenGLBasicLib implements FunctionLibrary {
                                 bytesPerPixel);
 
                         // Upload texture
-                        glBindTexture(GL_TEXTURE_2D, tex.get(frame));
+                        buffer.rewind();
+                        glBindTexture(GL_TEXTURE_2D, texIntBuffer.get(frame));
                         if (mipmap) {
                             // GLU deprecated
                             /*gluBuild2DMipmaps ( GL_TEXTURE_2D,

@@ -1,8 +1,7 @@
 package com.basic4gl.library.desktopgl.content;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.channels.FileChannel;
 import java.util.Objects;
 
 /**
@@ -60,5 +59,18 @@ public class FileStream {
                 e.printStackTrace();
             }
         }
+    }
+
+    public boolean isEof() throws IOException {
+        if (in == null) {
+            return true;
+        }
+
+        if (in instanceof FileInputStream file) {
+            FileChannel channel = file.getChannel();
+            return channel.position() >= channel.size();
+        }
+
+        return in.available() <= 0;
     }
 }

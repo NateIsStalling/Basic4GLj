@@ -476,6 +476,10 @@ public class PluginLibrary implements com.basic4gl.language.core.extensions.Basi
                     FunctionSpecification spec = vmFunctionSpecs.get(specIdx);
 
                     ExtendedFunctionSpecification ext = functions[count.get()];
+                    if (ext == null) {
+                        ext = new ExtendedFunctionSpecification();
+                        functions[count.get()] = ext;
+                    }
                     ext.setSpecification(spec);
                     ext.setBuiltin(false);
                     ext.setPluginIndex(pluginIndex);
