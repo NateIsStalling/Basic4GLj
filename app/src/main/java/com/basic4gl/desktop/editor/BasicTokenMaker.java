@@ -69,7 +69,7 @@ public class BasicTokenMaker extends AbstractTokenMaker {
         int offset = text.offset;
         int count = text.count;
         int end = offset + count;
-
+        String value = String.valueOf(array);
         // Token starting offsets are always of the form:
         // 'startOffset + (currentTokenStart-offset)', but since startOffset and
         // offset are constant, tokens' starting positions become:
@@ -79,15 +79,13 @@ public class BasicTokenMaker extends AbstractTokenMaker {
         int currentTokenStart = offset;
         int currentTokenType = startTokenType;
         if (offset + INCLUDE.length() < end
-                && String.valueOf(array)
-                        .toLowerCase()
+                && value.toLowerCase()
                         .substring(offset, offset + INCLUDE.length())
                         .startsWith(INCLUDE)) {
             currentTokenType = Token.PREPROCESSOR;
         }
         if (offset + PLUGIN.length() < end
-                && String.valueOf(array)
-                        .toLowerCase()
+                && value.toLowerCase()
                         .substring(offset, offset + PLUGIN.length())
                         .startsWith(PLUGIN)) {
             currentTokenType = Token.PREPROCESSOR;

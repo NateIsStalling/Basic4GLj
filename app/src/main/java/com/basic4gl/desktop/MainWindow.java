@@ -1137,6 +1137,10 @@ public class MainWindow
 
             @Override
             public void changedUpdate(DocumentEvent e) {
+                if (e.getLength() == 0) {
+                    // ignore empty changes - eg: syntax highlighting refreshed
+                    return;
+                }
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());

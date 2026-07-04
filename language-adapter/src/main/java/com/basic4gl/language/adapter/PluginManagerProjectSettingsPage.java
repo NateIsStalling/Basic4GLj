@@ -44,6 +44,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
     private JCheckBox showUnsupportedCheckbox;
     private JLabel statusLabel;
     private final Map<String, String> rowErrorsByJar = new HashMap<>();
+    private final Map<String, String> pluginDisplayNamesByRowKey = new HashMap<>();
     private final Set<String> incompatiblePluginRows = new HashSet<>();
     private boolean suppressPluginTableEvents = false;
     private Timer pluginDirectoryRefreshTimer;
@@ -397,6 +398,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         List<String> directories = getPrioritizedSourceDirectories();
         if (directories.isEmpty()) {
             rowErrorsByJar.clear();
+            pluginDisplayNamesByRowKey.clear();
             incompatiblePluginRows.clear();
             updateShowUnsupportedLabel(0);
             lastScannedSourcesKey = null;
@@ -414,6 +416,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         jarFiles.sort(Comparator
                 .comparing((PluginJARFile file) -> sourceSortIndex(file.getSourceDirectory(), directories))
                 .thenComparing(PluginJARFile::getFilename, String.CASE_INSENSITIVE_ORDER));
+        pluginDisplayNamesByRowKey.clear();
         incompatiblePluginRows.clear();
         boolean showUnsupported = showUnsupportedCheckbox == null || showUnsupportedCheckbox.isSelected();
 
@@ -425,6 +428,10 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
                 if (!showUnsupported) {
                     continue;
                 }
+            }
+            String displayName = resolvePluginDisplayName(file);
+            if (displayName != null) {
+                pluginDisplayNamesByRowKey.put(rowKey, displayName);
             }
             String version =
                     file.getVersion() == null ? "-" : file.getVersion().getMajorVersion() + "." + file.getVersion().getMinorVersion();
@@ -573,6 +580,12 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         } else {
             incompatiblePluginRows.remove(rowKey);
         }
+        String displayName = resolvePluginDisplayName(jarFile);
+        if (displayName == null) {
+            pluginDisplayNamesByRowKey.remove(rowKey);
+        } else {
+            pluginDisplayNamesByRowKey.put(rowKey, displayName);
+        }
 
         suppressPluginTableEvents = true;
         pluginTableModel.setValueAt(jarFile.isLoaded() && jarFile.isCompatible(), row, 0);
@@ -596,6 +609,14 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             return jarFile.getDescription();
         }
         return jarFile.getFilename() == null ? "" : jarFile.getFilename();
+    }
+
+    private String resolvePluginDisplayName(PluginJARFile jarFile) {
+        if (jarFile == null || !jarFile.isCompatible()) {
+            return null;
+        }
+        String pluginName = jarFile.getPluginName();
+        return pluginName == null || pluginName.isBlank() ? null : pluginName;
     }
 
     private void schedulePluginTableRefresh() {
@@ -831,31 +852,13 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             String filename = value == null ? "" : value.toString();
-            int modelRow = row;
-            try {
-                modelRow = table.convertRowIndexToModel(row);
-            } catch (Exception ignored) {
-            }
-            Object srcObj = null;
-            try {
-                srcObj = table.getModel().getValueAt(modelRow, 2);
-            } catch (Exception ignored) {
-            }
-            String source = srcObj == null ? null : srcObj.toString();
-
             String display = filename;
-            try {
-                for (PluginJARFile f : pluginManager.getJARFiles()) {
-                    String fSrc = f.getSourceDirectory();
-                    if (f.getFilename() != null && f.getFilename().equalsIgnoreCase(filename)
-                            && ((source == null && fSrc == null) || (source != null && fSrc != null && source.equalsIgnoreCase(fSrc)))) {
-                        if (f.isCompatible() && f.getPluginName() != null && !f.getPluginName().isBlank()) {
-                            display = f.getPluginName();
-                        }
-                        break;
-                    }
-                }
-            } catch (Exception ignored) {
+            int modelRow = table.convertRowIndexToModel(row);
+            Object srcObj = table.getModel().getValueAt(modelRow, 2);
+            String source = srcObj == null ? null : srcObj.toString();
+            String displayName = pluginDisplayNamesByRowKey.get(buildRowKey(filename, source));
+            if (displayName != null) {
+                display = displayName;
             }
 
             return super.getTableCellRendererComponent(table, display, isSelected, hasFocus, row, column);

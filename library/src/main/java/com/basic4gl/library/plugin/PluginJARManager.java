@@ -459,6 +459,13 @@ public class PluginJARManager extends PluginManager {
             return null;
         }
         String trimmed = directory.trim();
-        return trimmed.isEmpty() ? null : trimmed;
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        try {
+            return Path.of(trimmed).normalize().toString();
+        } catch (Exception ignored) {
+            return trimmed;
+        }
     }
 }
