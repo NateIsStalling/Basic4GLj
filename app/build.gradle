@@ -33,6 +33,7 @@ task pathingJar(type: Jar) {
 
     dependsOn (":debug-server:jar")
     dependsOn (":app-runtime:jar")
+    dependsOn(configurations.release)
     archiveAppendix = 'pathing'
     doFirst {
         manifest {
@@ -116,6 +117,7 @@ build.dependsOn spotlessApply
 
 jar {
     dependsOn(pathingJar)
+    dependsOn(configurations.release)
     from { ((Jar)pathingJar).outputs.files.collect { it.isDirectory() ? it : zipTree(it) }  }
     from { configurations.release.collect { it.isDirectory() ? it : zipTree(it) } }
     from sourceSets.test.output
