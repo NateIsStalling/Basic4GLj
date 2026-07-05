@@ -21,6 +21,7 @@ public class EditorAppSettings implements IConfigurableAppSettings {
     private boolean isJvmDebuggingEnabled = DEFAULT_JVM_DEBUG_ENABLED;
     private boolean isJvmDebugSuspendUntilAttach = DEFAULT_JVM_DEBUG_SUSPEND;
     private Integer jvmDebugPortOverride = null;
+    private List<String> pluginDirectories = new ArrayList<>();
 
     @Override
     public boolean isSandboxModeEnabled() {
@@ -58,6 +59,16 @@ public class EditorAppSettings implements IConfigurableAppSettings {
     }
 
     @Override
+    public String getPluginDirectory() {
+        return pluginDirectories.isEmpty() ? null : pluginDirectories.get(0);
+    }
+
+    @Override
+    public List<String> getPluginDirectories() {
+        return Collections.unmodifiableList(pluginDirectories);
+    }
+
+    @Override
     public void setSandboxModeEnabled(boolean enabled) {
         isSandboxModeEnabled = enabled;
     }
@@ -90,5 +101,41 @@ public class EditorAppSettings implements IConfigurableAppSettings {
     @Override
     public void setJvmDebugPortOverride(Integer port) {
         jvmDebugPortOverride = port;
+    }
+
+    @Override
+    public void setPluginDirectory(String directory) {
+        if (directory == null || directory.trim().isEmpty()) {
+            pluginDirectories = new ArrayList<>();
+            return;
+        }
+        setPluginDirectories(List.of(directory));
+    }
+
+    @Override
+    public void setPluginDirectories(List<String> directories) {
+        List<String> normalized = new ArrayList<>();
+        if (directories != null) {
+            for (String directory : directories) {
+                if (directory == null) {
+                    continue;
+                }
+                String trimmed = directory.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                boolean exists = false;
+                for (String existing : normalized) {
+                    if (existing.equalsIgnoreCase(trimmed)) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    normalized.add(trimmed);
+                }
+            }
+        }
+        pluginDirectories = normalized;
     }
 }

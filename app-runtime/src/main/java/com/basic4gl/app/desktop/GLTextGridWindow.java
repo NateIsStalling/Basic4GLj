@@ -31,6 +31,7 @@ import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -188,7 +189,22 @@ public class GLTextGridWindow extends HasErrorState
         instance.fileOpener.setParentDirectory(options.currentDirectory);
 
         instance.plugins = new PluginJARManager(isStandalone);
-        instance.plugins.setDirectory(options.currentDirectory);
+        LinkedHashSet<String> pluginDirectorySet = new LinkedHashSet<>();
+        for (String configuredDirectory : options.getPluginDirectories()) {
+            if (configuredDirectory != null && !configuredDirectory.isBlank()) {
+                pluginDirectorySet.add(configuredDirectory);
+            }
+        }
+        pluginDirectorySet.add(instance.fileOpener.getWorkingDirectory().getAbsolutePath());
+        pluginDirectorySet.add(Path.of(instance.fileOpener.getWorkingDirectory().getAbsolutePath(), "plugins")
+                .toString());
+        List<String> pluginDirectories = new ArrayList<>(pluginDirectorySet);
+        if (instance.appSettings instanceof IConfigurableAppSettings configurableAppSettings) {
+            configurableAppSettings.setPluginDirectories(pluginDirectories);
+        }
+        instance.plugins.setCurrentDirectory(
+                instance.fileOpener.getWorkingDirectory().getAbsolutePath());
+        instance.plugins.setDirectories(pluginDirectories);
 
         TomVM vm = new TomVM(instance.plugins, debugger);
         instance.compiler = new TomBasicCompiler(vm, instance.plugins);
@@ -923,5 +939,10 @@ public class GLTextGridWindow extends HasErrorState
     @Override
     public String getSandboxModeEnabledOption() {
         return cliParser.getSandboxModeEnabledOption();
+    }
+
+    @Override
+    public String getPluginDirectoryOption() {
+        return cliParser.getPluginDirectoryOption();
     }
 }

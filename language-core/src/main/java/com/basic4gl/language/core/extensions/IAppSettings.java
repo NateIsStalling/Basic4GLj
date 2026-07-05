@@ -45,4 +45,22 @@ public interface IAppSettings {
      * Returns an optional JDWP port override. Null means use an internal session-selected port.
      */
     Integer getJvmDebugPortOverride();
+
+    /**
+     * Returns an optional plugin directory used to discover/load plugin jars.
+     * Null/blank means use the active program parent directory.
+     */
+    String getPluginDirectory();
+
+    /**
+     * Returns configured plugin directories in priority order.
+     * Defaults to the single-value plugin directory API for backward compatibility.
+     */
+    default List<String> getPluginDirectories() {
+        String directory = getPluginDirectory();
+        if (directory == null || directory.isBlank()) {
+            return List.of();
+        }
+        return List.of(directory);
+    }
 }

@@ -14,6 +14,7 @@ public class ConfigurationMapper {
     private static final int APP_SETTING_JVM_DEBUG_ENABLED = 5;
     private static final int APP_SETTING_JVM_DEBUG_SUSPEND = 6;
     private static final int APP_SETTING_JVM_DEBUG_PORT = 7;
+    private static final int APP_SETTING_PLUGIN_DIRECTORY = 8;
 
     public static Configuration toEditorConfiguration(com.basic4gl.language.core.runtime.Configuration config) {
         if (config == null) {
@@ -47,6 +48,10 @@ public class ConfigurationMapper {
                 Boolean.toString(config.isJvmDebugSuspendUntilAttach()));
         Integer debugPort = config.getJvmDebugPortOverride();
         settings.addSetting(new String[] {"Debug Port Override"}, Configuration.PARAM_STRING, debugPort == null ? "" : debugPort.toString());
+        settings.addSetting(
+                new String[] {"Plugin Directories"},
+                Configuration.PARAM_STRING,
+                serializeArguments(config.getPluginDirectories()));
         return settings;
     }
 
@@ -88,6 +93,7 @@ public class ConfigurationMapper {
             settings.setJvmDebugPortOverride(null);
         }
 
+        settings.setPluginDirectories(parseArguments(getValueOrNull(config, APP_SETTING_PLUGIN_DIRECTORY)));
         return settings;
     }
 
@@ -121,4 +127,3 @@ public class ConfigurationMapper {
         return config.getValue(index);
     }
 }
-

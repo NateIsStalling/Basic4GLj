@@ -35,6 +35,7 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
 
     private final JTextField filePathTextField;
     private final String exportBaseDirectory;
+    private final java.util.List<ProjectExportPage> contributedPages;
 
     private final JTextPane infoTextPane;
     private final com.basic4gl.desktop.spi.ConfigurationFormPanel configPane;
@@ -51,13 +52,18 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
             CompilerService compiler,
             PreprocessorService preprocessor,
             Vector<FileEditor> editors,
-            String exportBaseDirectory) {
+            String exportBaseDirectory,
+            java.util.List<ProjectExportPage> contributedExportPages) {
 
         this.compiler = compiler;
         this.preprocessor = preprocessor;
 
         fileEditors = editors;
         this.exportBaseDirectory = com.basic4gl.language.adapter.FileUtil.separatorsToSystem(exportBaseDirectory);
+        this.contributedPages =
+                new ArrayList<>(contributedExportPages == null ? Collections.emptyList() : contributedExportPages);
+        this.contributedPages.sort(Comparator.comparingInt(ProjectExportPage::getSortOrder)
+                .thenComparing(ProjectExportPage::getPageTitle, String.CASE_INSENSITIVE_ORDER));
 
         dialog = new JDialog(parent);
 
@@ -115,17 +121,27 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         // File tab
         JPanel filePane = new JPanel();
         filePane.setLayout(new BoxLayout(filePane, BoxLayout.LINE_AXIS));
-        tabs.addTab("File", filePane);
 
         // Settings tab
         JPanel targetPane = new JPanel();
         targetPane.setLayout(new BorderLayout());
-        tabs.addTab("Settings", targetPane);
 
         // Assets tab
         JPanel assetsPane = new JPanel(new BorderLayout(0, 10));
         assetsPane.setBorder(new EmptyBorder(10, 10, 10, 10));
-        tabs.addTab("Assets", assetsPane);
+
+        tabs.addTab("File", createExportTab("File", "Choose where to save the exported project.", filePane));
+
+        tabs.addTab("Settings", createExportTab("Settings", "Configure the selected export target.", targetPane));
+
+        tabs.addTab(
+                "Assets", createExportTab("Assets", "Include additional files in the exported package.", assetsPane));
+
+        for (ProjectExportPage page : this.contributedPages) {
+            tabs.addTab(
+                    page.getPageTitle(),
+                    createExportTab(page.getPageTitle(), page.getPageDescription(), page.createPageComponent()));
+        }
 
         // Configure File tab
         filePane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -293,8 +309,32 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         });
         // JScrollPane scrollPane = new ScrollPane(textLicenses);
         dialog.pack();
-        dialog.setSize(new Dimension(464, 346));
+        dialog.setMinimumSize(new Dimension(620, 420));
+        dialog.setSize(new Dimension(700, 480));
         dialog.setLocationRelativeTo(parent);
+    }
+
+    private JPanel createExportTab(String title, String description, JComponent content) {
+        JPanel panel = new JPanel(new BorderLayout(0, 12));
+        panel.setBorder(new EmptyBorder(12, 12, 12, 12));
+
+        JPanel header = new JPanel();
+        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+
+        JLabel titleLabel = new JLabel(title);
+        Font baseFont = titleLabel.getFont();
+        titleLabel.setFont(baseFont.deriveFont(Font.BOLD, baseFont.getSize() + 3f));
+        titleLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
+
+        JLabel descriptionLabel = new JLabel(description == null ? "" : description);
+        descriptionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+
+        header.add(titleLabel);
+        header.add(descriptionLabel);
+
+        panel.add(header, BorderLayout.NORTH);
+        panel.add(content, BorderLayout.CENTER);
+        return panel;
     }
 
     private JPanel createLibraryInfoHeader(String description) {
@@ -340,6 +380,9 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         infoTextPane.setText(target.getDescription());
         infoTextPane.setCaretPosition(0);
         configPane.setConfiguration(new Configuration(target.getConfiguration()));
+        for (ProjectExportPage page : contributedPages) {
+            page.onBuilderSelected(target);
+        }
         setTargetSettingsEnabled(true);
         exportButton.setEnabled(true);
     }
@@ -582,6 +625,9 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
             configPane.applyConfig();
             mergeDetectedAssetsFromSource();
             applySelectedAssets(builder);
+            for (ProjectExportPage page : contributedPages) {
+                page.onExport(builder);
+            }
 
             if (!filePathTextField.getText().isEmpty()) {
                 dest = new File(filePathTextField.getText());

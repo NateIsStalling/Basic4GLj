@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import org.apache.commons.cli.*;
 
 public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOptions {
@@ -14,6 +17,7 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
     static final String LINE_MAPPING_FILE_PATH_OPTION = "m";
     static final String LOG_FILE_PATH_OPTION = "logfile";
     static final String PARENT_DIRECTORY_OPTION = "parent";
+    static final String PLUGIN_DIRECTORY_OPTION = "pluginsdir";
     static final String DEBUGGER_PORT_OPTION = "d";
     static final String SAFE_MODE_OPTION = "s";
 
@@ -26,6 +30,7 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
     private Option mappingFileOption;
     private Option stateFileOption;
     private Option parentPathOption;
+    private Option pluginDirectoryOption;
     private Option debugPortOption;
 
     public StandaloneCommandLineOptionsParser() {
@@ -75,6 +80,13 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
                 .desc("use given directory path for program parent directory")
                 .build();
 
+        pluginDirectoryOption = Option.builder(PLUGIN_DIRECTORY_OPTION)
+                .longOpt("plugins-dir")
+                .argName("directory")
+                .hasArg()
+                .desc("use given directory path for plugin jars (repeat for multiple directories)")
+                .build();
+
         debugPortOption = Option.builder(DEBUGGER_PORT_OPTION)
                 .longOpt("debugger-port")
                 .argName("port")
@@ -90,6 +102,7 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
         options.addOption(mappingFileOption);
         options.addOption(logFileOption);
         options.addOption(parentPathOption);
+        options.addOption(pluginDirectoryOption);
         options.addOption(debugPortOption);
     }
 
@@ -107,6 +120,9 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
             result.mappingFile = cmd.getOptionValue(mappingFileOption, null);
             result.logFilePath = cmd.getOptionValue(logFileOption, null);
             result.currentDirectory = cmd.getOptionValue(parentPathOption, null);
+            result.pluginDirectories =
+                    prioritizePluginDirectories(result.currentDirectory, cmd.getOptionValues(pluginDirectoryOption));
+            result.pluginDirectory = result.pluginDirectories.isEmpty() ? null : result.pluginDirectories.get(0);
             result.debugServerPort = cmd.getOptionValue(debugPortOption, null);
 
             result.isSafeModeEnabled = cmd.hasOption(safeModeOption);
@@ -145,6 +161,39 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
             }
         }
         return result;
+    }
+
+    private List<String> prioritizePluginDirectories(String currentDirectory, String[] configuredDirectories) {
+        String normalizedCurrent = normalizeDirectory(currentDirectory);
+        LinkedHashSet<String> deduped = new LinkedHashSet<>();
+
+        if (configuredDirectories != null) {
+            for (String directory : configuredDirectories) {
+                String normalized = normalizeDirectory(directory);
+                if (normalized != null) {
+                    deduped.add(normalized);
+                }
+            }
+        }
+
+        ArrayList<String> ordered = new ArrayList<>();
+        if (normalizedCurrent != null) {
+            ordered.add(normalizedCurrent);
+            deduped.removeIf(existing -> existing.equalsIgnoreCase(normalizedCurrent));
+        }
+
+        ArrayList<String> remaining = new ArrayList<>(deduped);
+        remaining.sort(String.CASE_INSENSITIVE_ORDER);
+        ordered.addAll(remaining);
+        return ordered;
+    }
+
+    private String normalizeDirectory(String directory) {
+        if (directory == null) {
+            return null;
+        }
+        String trimmed = directory.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     public Options getOptions() {
@@ -197,5 +246,10 @@ public class StandaloneCommandLineOptionsParser implements ITargetCommandLineOpt
     @Override
     public String getSandboxModeEnabledOption() {
         return SAFE_MODE_OPTION;
+    }
+
+    @Override
+    public String getPluginDirectoryOption() {
+        return PLUGIN_DIRECTORY_OPTION;
     }
 }

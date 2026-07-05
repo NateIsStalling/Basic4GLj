@@ -54,4 +54,11 @@ public interface ITargetCommandLineOptions {
      * @return Command line option; null if build target does not support this functionality
      */
     String getSandboxModeEnabledOption();
+
+    /**
+     * "Plugin directory path" command line option
+     * Value used to locate plugin JAR files for runtime plugin loading.
+     * @return Command line option; null if build target does not support this functionality
+     */
+    String getPluginDirectoryOption();
 }

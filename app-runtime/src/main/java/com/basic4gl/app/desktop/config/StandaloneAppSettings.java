@@ -45,4 +45,9 @@ public class StandaloneAppSettings implements IAppSettings {
     public Integer getJvmDebugPortOverride() {
         return null;
     }
+
+    @Override
+    public String getPluginDirectory() {
+        return null;
+    }
 }

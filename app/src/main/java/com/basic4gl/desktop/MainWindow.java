@@ -4,7 +4,6 @@ import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
 import static com.formdev.flatlaf.FlatClientProperties.*;
 
-import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
@@ -13,6 +12,8 @@ import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
 import com.basic4gl.desktop.spi.FileLineNumber;
 import com.basic4gl.desktop.spi.MenuService;
+import com.basic4gl.desktop.spi.ProjectExportPage;
+import com.basic4gl.desktop.spi.ProjectSettingsPage;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.language.core.internal.Mutable;
@@ -718,12 +719,15 @@ public class MainWindow
             compilerStatusLabel.setText(basicEditor.getPreprocessor().getError());
             return;
         }
+        List<ProjectExportPage> contributedExportPages =
+                Arrays.asList(basicEditor.getBasic4gl().getProjectExportPages());
         ExportDialog dialog = new ExportDialog(
                 frame,
                 basicEditor.getCompiler(),
                 basicEditor.getPreprocessor(),
                 fileManager.getFileEditors(),
-                fileManager.getCurrentDirectory());
+                fileManager.getCurrentDirectory(),
+                contributedExportPages);
         dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
@@ -745,16 +749,28 @@ public class MainWindow
         clearRecentMenuItem.setEnabled(!files.isEmpty());
     }
 
+    @Override
+    public void refreshSyntaxHighlighting() {
+        if (fileManager == null) {
+            return;
+        }
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            editor.refreshSyntaxHighlighting();
+        }
+    }
+
     private void showAboutDialog() {
         new AboutDialog(frame);
     }
 
     private void showSettings() {
-        // TODO 6/2026 temporary shim - ProjectSettingsDialog should be owned by the main app and pages managed by the
-        // adapter project.
-        IConfigurableAppSettings appSettings = basicEditor.getBasic4gl().getConfigurableAppSettings();
-        com.basic4gl.language.adapter.ProjectSettingsDialog dialog =
-                new com.basic4gl.language.adapter.ProjectSettingsDialog(frame, appSettings);
+        List<ProjectSettingsPage> contributedPages =
+                Arrays.asList(basicEditor.getBasic4gl().getProjectSettingsPages());
+        ProjectSettingsDialog dialog = new ProjectSettingsDialog(
+                frame,
+                basicEditor.getBasic4gl().getConfigurableAppSettings(),
+                contributedPages,
+                basicEditor::refreshSyntaxHighlighting);
         dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
@@ -980,6 +996,7 @@ public class MainWindow
         }
 
         int index = tabControl.getSelectedIndex();
+        basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
             // TODO Check if index of main file
@@ -1004,6 +1021,7 @@ public class MainWindow
             return false;
         }
 
+        basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
             // TODO Check if main file
@@ -1031,6 +1049,7 @@ public class MainWindow
 
         fileManager.setCurrentDirectory(fileManager.getFileDirectory());
 
+        basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         if (fileManager.getFileEditors().get(index).save(true, fileManager.getCurrentDirectory())) {
             // TODO get current main file
             int main = 0;
@@ -1097,6 +1116,7 @@ public class MainWindow
         File file = edit.getFile();
         if (file != null) {
             basicEditor.notifyFileOpened(file);
+            basicEditor.onFileOpened(edit);
         }
 
         edit.getEditorPane().getDocument().addDocumentListener(new DocumentListener() {
@@ -1117,6 +1137,10 @@ public class MainWindow
 
             @Override
             public void changedUpdate(DocumentEvent e) {
+                if (e.getLength() == 0) {
+                    // ignore empty changes - eg: syntax highlighting refreshed
+                    return;
+                }
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());

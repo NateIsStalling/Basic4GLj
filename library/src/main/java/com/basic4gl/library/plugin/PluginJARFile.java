@@ -9,14 +9,24 @@ public class PluginJARFile {
     private String filename;
     private String description;
     private boolean loaded;
+    private boolean compatible = true;
+    private String sourceDirectory;
     private PluginVersion version;
 
     public PluginJARFile() {}
 
-    public PluginJARFile(String filename, String description, boolean loaded, PluginVersion version) {
+    public PluginJARFile(
+            String filename,
+            String description,
+            boolean loaded,
+            boolean compatible,
+            String sourceDirectory,
+            PluginVersion version) {
         this.filename = filename;
         this.description = description;
         this.loaded = loaded;
+        this.compatible = compatible;
+        this.sourceDirectory = sourceDirectory;
         this.version = version;
     }
 
@@ -36,12 +46,39 @@ public class PluginJARFile {
         this.description = description;
     }
 
+    // Optional plugin display name extracted from metadata (may be null)
+    private String pluginName;
+
+    public String getPluginName() {
+        return pluginName;
+    }
+
+    public void setPluginName(String pluginName) {
+        this.pluginName = pluginName;
+    }
+
     public boolean isLoaded() {
         return loaded;
     }
 
     public void setLoaded(boolean loaded) {
         this.loaded = loaded;
+    }
+
+    public boolean isCompatible() {
+        return compatible;
+    }
+
+    public void setCompatible(boolean compatible) {
+        this.compatible = compatible;
+    }
+
+    public String getSourceDirectory() {
+        return sourceDirectory;
+    }
+
+    public void setSourceDirectory(String sourceDirectory) {
+        this.sourceDirectory = sourceDirectory;
     }
 
     public PluginVersion getVersion() {

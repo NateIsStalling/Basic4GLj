@@ -1060,10 +1060,8 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
                     // Call plugin function
                     int index = instruction.value.getIntVal();
 
-                    Basic4GLFunction function = this.plugins
-                            .getLoadedLibraries()
-                            .get(index >> 24)
-                            .getFunction(index & 0x00ffffff);
+                    Basic4GLFunction function =
+                            this.plugins.getLoadedLibraries().get(index >> 24).getFunction(index & 0x00ffffff);
                     function.run(this.pluginRuntime);
 
                     if (!hasError()) {

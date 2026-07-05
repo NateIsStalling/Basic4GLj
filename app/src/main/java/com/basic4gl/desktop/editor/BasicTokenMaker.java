@@ -13,11 +13,14 @@ import org.fife.ui.rsyntaxtextarea.TokenMap;
  */
 public class BasicTokenMaker extends AbstractTokenMaker {
     private static final String INCLUDE = "include ";
+    private static final String PLUGIN = "#plugin ";
     private static final char CHAR_COMMENT = '\'';
     public static final List<String> reservedWords = new ArrayList<>();
     public static final List<String> functions = new ArrayList<>();
     public static final List<String> constants = new ArrayList<>();
     public static final List<String> operators = new ArrayList<>();
+
+    private static TokenMap tokenMap = new TokenMap(true);
 
     @Override
     public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {
@@ -33,8 +36,14 @@ public class BasicTokenMaker extends AbstractTokenMaker {
 
     @Override
     public TokenMap getWordsToHighlight() {
-        TokenMap tokenMap = new TokenMap(true);
+        tokenMap = new TokenMap(true);
 
+        refreshTokenMap();
+
+        return tokenMap;
+    }
+
+    public static void refreshTokenMap() {
         for (String token : reservedWords) {
             tokenMap.put(token, Token.RESERVED_WORD);
         }
@@ -50,8 +59,6 @@ public class BasicTokenMaker extends AbstractTokenMaker {
         for (String token : operators) {
             tokenMap.put(token, Token.OPERATOR);
         }
-
-        return tokenMap;
     }
 
     @Override
@@ -62,7 +69,7 @@ public class BasicTokenMaker extends AbstractTokenMaker {
         int offset = text.offset;
         int count = text.count;
         int end = offset + count;
-
+        String value = String.valueOf(array);
         // Token starting offsets are always of the form:
         // 'startOffset + (currentTokenStart-offset)', but since startOffset and
         // offset are constant, tokens' starting positions become:
@@ -72,12 +79,18 @@ public class BasicTokenMaker extends AbstractTokenMaker {
         int currentTokenStart = offset;
         int currentTokenType = startTokenType;
         if (offset + INCLUDE.length() < end
-                && String.valueOf(array)
-                        .toLowerCase()
+                && value.toLowerCase()
                         .substring(offset, offset + INCLUDE.length())
                         .startsWith(INCLUDE)) {
             currentTokenType = Token.PREPROCESSOR;
         }
+        if (offset + PLUGIN.length() < end
+                && value.toLowerCase()
+                        .substring(offset, offset + PLUGIN.length())
+                        .startsWith(PLUGIN)) {
+            currentTokenType = Token.PREPROCESSOR;
+        }
+
         for (int i = offset; i < end; i++) {
 
             char c = array[i];

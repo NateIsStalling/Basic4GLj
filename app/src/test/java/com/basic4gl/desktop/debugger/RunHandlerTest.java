@@ -158,6 +158,11 @@ public class RunHandlerTest {
         public String getSandboxModeEnabledOption() {
             return "sandbox";
         }
+
+        @Override
+        public String getPluginDirectoryOption() {
+            return "plugins-dir";
+        }
     }
 
     private static class TestAppSettings implements IAppSettings {
@@ -213,6 +218,11 @@ public class RunHandlerTest {
         @Override
         public Integer getJvmDebugPortOverride() {
             return jvmDebugPortOverride;
+        }
+
+        @Override
+        public String getPluginDirectory() {
+            return null;
         }
     }
 }

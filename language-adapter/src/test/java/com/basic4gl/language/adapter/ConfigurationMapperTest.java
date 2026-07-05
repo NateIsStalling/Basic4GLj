@@ -56,6 +56,7 @@ class ConfigurationMapperTest {
         source.setJvmDebuggingEnabled(true);
         source.setJvmDebugSuspendUntilAttach(true);
         source.setJvmDebugPortOverride(5005);
+        source.setPluginDirectories(Arrays.asList("/tmp/plugins", "/opt/plugins"));
 
         Configuration configuration = ConfigurationMapper.toEditorConfiguration(source);
         IConfigurableAppSettings mapped = ConfigurationMapper.toAppSettings(configuration);
@@ -67,6 +68,8 @@ class ConfigurationMapperTest {
         assertTrue(mapped.isJvmDebuggingEnabled());
         assertTrue(mapped.isJvmDebugSuspendUntilAttach());
         assertEquals(5005, mapped.getJvmDebugPortOverride());
+        assertEquals("/tmp/plugins", mapped.getPluginDirectory());
+        assertEquals(Arrays.asList("/tmp/plugins", "/opt/plugins"), mapped.getPluginDirectories());
     }
 
     @Test
@@ -85,6 +88,6 @@ class ConfigurationMapperTest {
 
         assertTrue(mapped.isSandboxModeEnabled());
         assertNull(mapped.getJvmDebugPortOverride());
+        assertNull(mapped.getPluginDirectory());
     }
 }
-
