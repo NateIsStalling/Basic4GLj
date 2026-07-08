@@ -113,8 +113,9 @@ public class StandaloneSettings implements IStandaloneSettings {
         settings.addSetting(
                 new String[] {"AppData Directory"},
                 Configuration.PARAM_STRING,
-                "Basic4GL",
-                "Override the root AppData folder name used by OpenAppDataRead/OpenAppDataWrite in exported programs.");
+                "",
+                "Override the root AppData folder name used by OpenAppDataRead/OpenAppDataWrite in exported programs."
+                        + " Leave blank to use the app name as default (or 'Basic4GL' if app name is not set).");
         settings.addSetting(new String[] {}, Configuration.PARAM_DIVIDER, "");
         settings.addSetting(new String[] {"Platforms"}, Configuration.PARAM_HEADING, "");
         settings.addSetting(

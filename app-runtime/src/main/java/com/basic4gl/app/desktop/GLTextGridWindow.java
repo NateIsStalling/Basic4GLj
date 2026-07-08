@@ -189,7 +189,7 @@ public class GLTextGridWindow extends HasErrorState
         System.out.println("par: " + options.currentDirectory);
         instance.fileOpener = new FileOpener(""); // TODO load embedded files
         instance.fileOpener.setParentDirectory(options.currentDirectory);
-        instance.fileOpener.setAppDataFolderName(instance.getAppDataFolderNameOverride());
+        instance.fileOpener.setAppDataFolderName(instance.getAppDataFolderNameOverride(isStandalone));
 
         instance.plugins = new PluginJARManager(isStandalone);
         LinkedHashSet<String> pluginDirectorySet = new LinkedHashSet<>();
@@ -946,15 +946,24 @@ public class GLTextGridWindow extends HasErrorState
         return cliParser.getPluginDirectoryOption();
     }
 
-    private String getAppDataFolderNameOverride() {
-        if (configuration == null || SETTING_APP_DATA_DIRECTORY >= configuration.getSettingCount()) {
-            return "Basic4GL";
+    private String getAppDataFolderNameOverride(boolean isStandalone) {
+        String configured = null;
+        if (!isStandalone) {
+            return null;
         }
-        String configured = configuration.getValue(SETTING_APP_DATA_DIRECTORY);
-        if (configured == null || configured.isBlank()) {
-            return "Basic4GL";
+        if (configuration != null && SETTING_APP_DATA_DIRECTORY < configuration.getSettingCount()) {
+            configured = configuration.getValue(SETTING_APP_DATA_DIRECTORY);
         }
-        return configured.trim();
+        if (configured != null && !configured.isBlank()) {
+            return configured.trim();
+        }
+        if (configuration != null && SETTING_TITLE < configuration.getSettingCount()) {
+            String title = configuration.getValue(SETTING_TITLE);
+            if (title != null && !title.isBlank()) {
+                return title.trim();
+            }
+        }
+        return null;
     }
 
     private void handleProgramExit() {
