@@ -11,7 +11,7 @@ public interface Basic4GLInterfaceRegistry {
      * unloaded in the correct order.
      * <p>The library that constructed the object should destroy it in
      * Basic4GLPlugin.unload() and NOT before.
-     * <p>"name", "major" and "minor" are used to identify the object (major.minor
+     * <p>"serviceType", "major" and "minor" are used to identify the object (major.minor
      * is its version number), so that other libraries can request it.
      *
      * @param serviceType   used to identify the object
@@ -30,7 +30,7 @@ public interface Basic4GLInterfaceRegistry {
      * unloaded in the correct order.
      * <p>The library that constructed the object should destroy it in
      * Basic4GLPlugin.unload() and NOT before.
-     * <p>"name", "major" and "minor" are used to identify the object (major.minor
+     * <p>"serviceType", "major" and "minor" are used to identify the object (major.minor
      * is its version number), so that other libraries can request it.
      *
      * @param serviceType   used to identify the object

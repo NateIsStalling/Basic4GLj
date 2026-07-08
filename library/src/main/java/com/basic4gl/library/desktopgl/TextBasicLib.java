@@ -47,7 +47,6 @@ public class TextBasicLib implements FunctionLibrary {
     private static int spriteCount;
 
     private static final GLSpriteStore sprites = new GLSpriteStore();
-    ;
     private static int boundSprite;
 
     private OpenGLWindowManager windowManager;
@@ -101,7 +100,7 @@ public class TextBasicLib implements FunctionLibrary {
         // Register resources
         comp.getProgram().addResources(sprites);
 
-        if (contentManager != null) {
+        if (contentManager != null && appText != null) {
             // Register interfaces for plugins
             TextAdapter textAdapter = new TextAdapter(appText, contentManager);
             comp.getPlugins()

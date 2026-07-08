@@ -242,7 +242,7 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     public class CompilerPluginAdapter implements IB4GLCompiler {
 
         private int errorLine, errorCol;
-        private String errorText;
+        private String errorText = "";
 
         private void clearError() {
             errorText = "";
@@ -252,8 +252,8 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
         // IB4GLCompiler interface
         public int compile(String sourceText) {
-            assertTrue(comp != null);
-            assertTrue(vm != null);
+            assertTrue(comp != null, "Compiler not initialised");
+            assertTrue(vm != null, "VM not initialised.");
 
             // Load source text into compiler
             comp.getParser().getSourceCode().clear();
@@ -264,7 +264,6 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         }
 
         public String getErrorText() {
-
             return errorText;
         }
 

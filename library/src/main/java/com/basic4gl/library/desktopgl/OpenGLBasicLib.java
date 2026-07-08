@@ -1676,7 +1676,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
     // endregion
 
-    public final class Init implements Function {
+    public static final class Init implements Function {
 
         @Override
         public void run(VM vm) {
