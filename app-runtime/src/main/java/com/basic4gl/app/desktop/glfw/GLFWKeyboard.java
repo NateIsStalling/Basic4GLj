@@ -8,6 +8,7 @@ import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 
 public class GLFWKeyboard extends OpenGLKeyboard {
+    private boolean escapeKeyQuits = true;
 
     class KeyCallback extends GLFWKeyCallback {
         @Override
@@ -43,6 +44,10 @@ public class GLFWKeyboard extends OpenGLKeyboard {
                 charCallback.free();
             }
         });
+    }
+
+    public void setEscapeKeyQuits(boolean escapeKeyQuits) {
+        this.escapeKeyQuits = escapeKeyQuits;
     }
 
     int scanKeyFromGLFWKey(int key, boolean ignoreLeftRight) {
@@ -191,7 +196,7 @@ public class GLFWKeyboard extends OpenGLKeyboard {
 
     void handleKeypress(long window, int key, int scancode, int action, int mods) {
         // Special case: ESCAPE key closes window
-        if (key == GLFW_KEY_ESCAPE) {
+        if (key == GLFW_KEY_ESCAPE && escapeKeyQuits) {
             glfwSetWindowShouldClose(window, true);
         }
 

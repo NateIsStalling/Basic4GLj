@@ -17,9 +17,14 @@ public class StandaloneSettings implements IStandaloneSettings {
     public static final int SETTING_STENCIL = 10; // Index of stencil buffer setting in config
     public static final int SETTING_STARTUP_WINDOW_OPTION = 11; // Index of startup window creation mode
 
-    public static final int SETTING_SUPPORT_WINDOWS = 14; // Index of Windows support setting in config
-    public static final int SETTING_SUPPORT_MAC = 15; // Index of Mac support setting in config
-    public static final int SETTING_SUPPORT_LINUX = 16; // Index of Linux support setting in config
+    public static final int SETTING_PROGRAM_END_OPTION = 14; // Index of behavior when program finishes
+    public static final int SETTING_RUNTIME_ERROR_OPTION = 15; // Index of behavior when runtime errors occur
+    public static final int SETTING_ESC_KEY_QUITS = 16; // Index of esc-key quit toggle
+    public static final int SETTING_CLOSING_WINDOW_QUITS = 17; // Index of close-window quit toggle
+    public static final int SETTING_APP_DATA_DIRECTORY = 18; // Index of app data folder override setting
+    public static final int SETTING_SUPPORT_WINDOWS = 21; // Index of Windows support setting in config
+    public static final int SETTING_SUPPORT_MAC = 22; // Index of Mac support setting in config
+    public static final int SETTING_SUPPORT_LINUX = 23; // Index of Linux support setting in config
 
     public static final int SUPPORT_WINDOWS_32_64 = 0;
     public static final int SUPPORT_WINDOWS_32 = 1;
@@ -40,6 +45,14 @@ public class StandaloneSettings implements IStandaloneSettings {
 
     public static final int STARTUP_WINDOW_CREATE_IMMEDIATELY = 0;
     public static final int STARTUP_WINDOW_DEFERRED = 1;
+
+    public static final int PROGRAM_END_CLOSE_IMMEDIATELY = 0;
+    public static final int PROGRAM_END_WAIT_KEYPRESS = 1;
+    public static final int PROGRAM_END_WAIT_WINDOW_CLOSE = 2;
+
+    public static final int RUNTIME_ERROR_JUST_CLOSE = 0;
+    public static final int RUNTIME_ERROR_SHOW_GENERAL_MESSAGE = 1;
+    public static final int RUNTIME_ERROR_SHOW_DETAILED_MESSAGE = 2;
 
     @Override
     public Configuration getSettings() {
@@ -67,6 +80,41 @@ public class StandaloneSettings implements IStandaloneSettings {
                 Configuration.PARAM_CHOICE,
                 String.valueOf(STARTUP_WINDOW_CREATE_IMMEDIATELY));
 
+        settings.addSetting(new String[] {}, Configuration.PARAM_DIVIDER, "");
+        settings.addSetting(new String[] {"Standalone App Settings"}, Configuration.PARAM_HEADING, "");
+        settings.addSetting(
+                new String[] {
+                    "When program finishes",
+                    "Close immediately",
+                    "Wait for keypress then close",
+                    "Wait for window to be closed"
+                },
+                Configuration.PARAM_CHOICE,
+                String.valueOf(PROGRAM_END_WAIT_WINDOW_CLOSE));
+        settings.addSetting(
+                new String[] {
+                    "If a runtime error occurs",
+                    "Just close",
+                    "Show a general \"An error has occurred\" message",
+                    "Show error complete with line number"
+                },
+                Configuration.PARAM_CHOICE,
+                String.valueOf(RUNTIME_ERROR_SHOW_DETAILED_MESSAGE));
+        settings.addSetting(
+                new String[] {"\"Esc\" key quits"},
+                Configuration.PARAM_BOOL,
+                "true",
+                "If you disable this option, make sure you build a QUIT function into your program!");
+        settings.addSetting(
+                new String[] {"Closing Window quits"},
+                Configuration.PARAM_BOOL,
+                "true",
+                "If you disable this option, make sure you build a QUIT function into your program!");
+        settings.addSetting(
+                new String[] {"AppData Directory"},
+                Configuration.PARAM_STRING,
+                "Basic4GL",
+                "Override the root AppData folder name used by OpenAppDataRead/OpenAppDataWrite in exported programs.");
         settings.addSetting(new String[] {}, Configuration.PARAM_DIVIDER, "");
         settings.addSetting(new String[] {"Platforms"}, Configuration.PARAM_HEADING, "");
         settings.addSetting(

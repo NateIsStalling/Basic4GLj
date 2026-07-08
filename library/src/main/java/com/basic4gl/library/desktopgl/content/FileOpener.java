@@ -16,11 +16,13 @@ public class FileOpener extends HasErrorState {
     public static final String ERROR_DIRECTORY_ALREADY_EXISTS = "Directory already exists";
 
     private String parentDirectory;
+    private String appDataFolderName;
     private final EmbeddedFiles embeddedFiles;
 
     public FileOpener(String parent) {
         parent = FileUtil.separatorsToSystem(parent);
         parentDirectory = parent;
+        appDataFolderName = DEFAULT_APP_DATA_FOLDER_NAME;
         embeddedFiles = new EmbeddedFiles();
         embeddedFiles.setParentDirectory(parent);
     }
@@ -132,7 +134,8 @@ public class FileOpener extends HasErrorState {
             return true;
         }
 
-        setError("You can only open files in the current directory or below, or in the Basic4GL App Data folder.");
+        setError("You can only open files in the current directory or below, or in the " + getAppDataFolderName()
+                + " App Data folder.");
         return false;
     }
 
@@ -303,7 +306,15 @@ public class FileOpener extends HasErrorState {
     }
 
     public String getAppDataFolderName() {
-        return DEFAULT_APP_DATA_FOLDER_NAME;
+        return appDataFolderName;
+    }
+
+    public void setAppDataFolderName(String appDataFolderName) {
+        if (appDataFolderName == null || appDataFolderName.isBlank()) {
+            this.appDataFolderName = DEFAULT_APP_DATA_FOLDER_NAME;
+            return;
+        }
+        this.appDataFolderName = appDataFolderName.trim();
     }
 
     public boolean createDirectory(String pathname) {

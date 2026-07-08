@@ -34,6 +34,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import javax.swing.JOptionPane;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 public class GLTextGridWindow extends HasErrorState
@@ -73,6 +74,7 @@ public class GLTextGridWindow extends HasErrorState
     private final IStandaloneSettings settings =
             new StandaloneSettings(); // settings specific to standalone application
     private Configuration configuration; // runtime configuration for this library
+    private boolean closingWindowQuits = true;
     // Filename for stored VM state
 
     static final String DEFAULT_VERSION = "1.0"; // Default version name for compiled programs
@@ -187,6 +189,7 @@ public class GLTextGridWindow extends HasErrorState
         System.out.println("par: " + options.currentDirectory);
         instance.fileOpener = new FileOpener(""); // TODO load embedded files
         instance.fileOpener.setParentDirectory(options.currentDirectory);
+        instance.fileOpener.setAppDataFolderName(instance.getAppDataFolderNameOverride());
 
         instance.plugins = new PluginJARManager(isStandalone);
         LinkedHashSet<String> pluginDirectorySet = new LinkedHashSet<>();
@@ -440,20 +443,7 @@ public class GLTextGridWindow extends HasErrorState
                 debuggerCallbacks.message(message);
             }
 
-            // Keep window responsive until closed
-            while (!Thread.currentThread().isInterrupted() && windowManager.getGLFWWindow() != 0 && !isClosing()) {
-                // System.out.println("idle");
-                try {
-                    // Go easy on the processor
-                    Thread.sleep(10);
-
-                    // Poll for window events. The key callback above will only be
-                    // invoked during this call.
-                    handleEvents();
-                } catch (InterruptedException consumed) {
-                    break;
-                }
-            }
+            handleProgramExit();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -824,7 +814,13 @@ public class GLTextGridWindow extends HasErrorState
         try {
             synchronized (this) {
                 long window = windowManager.getGLFWWindow();
-                return isClosing || (window != 0 && glfwWindowShouldClose(window));
+                if (window != 0 && glfwWindowShouldClose(window)) {
+                    if (closingWindowQuits) {
+                        return true;
+                    }
+                    glfwSetWindowShouldClose(window, false);
+                }
+                return isClosing;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -860,6 +856,8 @@ public class GLTextGridWindow extends HasErrorState
             int startupWindowOption = configuration.getIntValueOrDefault(
                     SETTING_STARTUP_WINDOW_OPTION, STARTUP_WINDOW_CREATE_IMMEDIATELY);
             boolean createWindowOnStart = startupWindowOption == STARTUP_WINDOW_CREATE_IMMEDIATELY;
+            closingWindowQuits = configuration.getBooleanValueOrDefault(SETTING_CLOSING_WINDOW_QUITS, true);
+            keyboard.setEscapeKeyQuits(configuration.getBooleanValueOrDefault(SETTING_ESC_KEY_QUITS, true));
 
             // Setup an error callback. The default implementation
             // will print the error message in System.err.
@@ -946,5 +944,100 @@ public class GLTextGridWindow extends HasErrorState
     @Override
     public String getPluginDirectoryOption() {
         return cliParser.getPluginDirectoryOption();
+    }
+
+    private String getAppDataFolderNameOverride() {
+        if (configuration == null || SETTING_APP_DATA_DIRECTORY >= configuration.getSettingCount()) {
+            return "Basic4GL";
+        }
+        String configured = configuration.getValue(SETTING_APP_DATA_DIRECTORY);
+        if (configured == null || configured.isBlank()) {
+            return "Basic4GL";
+        }
+        return configured.trim();
+    }
+
+    private void handleProgramExit() {
+        if (vm.hasError()) {
+            showRuntimeErrorMessage();
+            hide();
+            return;
+        }
+        waitForProgramCompletionOption();
+    }
+
+    private void showRuntimeErrorMessage() {
+        int runtimeErrorOption =
+                configuration.getIntValueOrDefault(SETTING_RUNTIME_ERROR_OPTION, RUNTIME_ERROR_SHOW_DETAILED_MESSAGE);
+        if (runtimeErrorOption == RUNTIME_ERROR_JUST_CLOSE) {
+            return;
+        }
+
+        String message = "An error has occurred";
+        if (runtimeErrorOption == RUNTIME_ERROR_SHOW_DETAILED_MESSAGE) {
+            StringBuilder detailed = new StringBuilder();
+            detailed.append(vm.getError());
+            InstructionPosition instructionPosition = vm.getIPInSourceCode();
+            if (instructionPosition != null && instructionPosition.getSourceLine() > 0) {
+                detailed.append(System.lineSeparator());
+                detailed.append("Line: ").append(instructionPosition.getSourceLine());
+            }
+            message = detailed.toString();
+        }
+        JOptionPane.showMessageDialog(null, message, "Runtime Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void waitForProgramCompletionOption() {
+        int completionOption =
+                configuration.getIntValueOrDefault(SETTING_PROGRAM_END_OPTION, PROGRAM_END_WAIT_WINDOW_CLOSE);
+        switch (completionOption) {
+            case PROGRAM_END_CLOSE_IMMEDIATELY:
+                hide();
+                return;
+            case PROGRAM_END_WAIT_KEYPRESS:
+                waitForAnyKeyThenClose();
+                return;
+            case PROGRAM_END_WAIT_WINDOW_CLOSE:
+            default:
+                waitForWindowCloseThenExit();
+                return;
+        }
+    }
+
+    private void waitForAnyKeyThenClose() {
+        if (windowManager.getGLFWWindow() == 0) {
+            return;
+        }
+        keyboard.clearKeyBuffers();
+        while (!Thread.currentThread().isInterrupted() && !isClosing()) {
+            if (keyboard.getNextKey() != 0 || keyboard.getNextScanKey() != 0) {
+                break;
+            }
+            sleepAndPollEvents();
+        }
+        hide();
+    }
+
+    private void waitForWindowCloseThenExit() {
+        while (!Thread.currentThread().isInterrupted()
+                && windowManager.getGLFWWindow() != 0
+                && !isWindowCloseRequested()) {
+            sleepAndPollEvents();
+        }
+        hide();
+    }
+
+    private boolean isWindowCloseRequested() {
+        long window = windowManager.getGLFWWindow();
+        return window != 0 && glfwWindowShouldClose(window);
+    }
+
+    private void sleepAndPollEvents() {
+        try {
+            Thread.sleep(10);
+            handleEvents();
+        } catch (InterruptedException consumed) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

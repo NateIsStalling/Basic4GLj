@@ -23,7 +23,11 @@ public class ConfigurationMapper {
 
         Configuration mapped = new Configuration();
         for (int i = 0; i < config.getSettingCount(); i++) {
-            mapped.addSetting(config.getField(i).clone(), config.getParamType(i), config.getValue(i));
+            mapped.addSetting(
+                    config.getField(i).clone(),
+                    config.getParamType(i),
+                    config.getValue(i),
+                    config.getFieldInfoText(i));
         }
         return mapped;
     }
@@ -62,7 +66,11 @@ public class ConfigurationMapper {
 
         com.basic4gl.language.core.runtime.Configuration mapped = new com.basic4gl.language.core.runtime.Configuration();
         for (int i = 0; i < config.getSettingCount(); i++) {
-            mapped.addSetting(config.getField(i).clone(), config.getParamType(i), config.getValue(i));
+            mapped.addSetting(
+                    config.getField(i).clone(),
+                    config.getParamType(i),
+                    config.getValue(i),
+                    config.getFieldInfoText(i));
         }
         return mapped;
     }

@@ -26,7 +26,7 @@ public class ConfigurationFormPanel extends JPanel implements Scrollable {
         nextRow = 0;
     }
 
-    public void addConfigurationField(String[] field, int paramType, String value) {
+    public void addConfigurationField(String[] field, int paramType, String value, String infoText) {
         if (field.length > 1) {
             paramType = Configuration.PARAM_CHOICE;
         }
@@ -52,25 +52,29 @@ public class ConfigurationFormPanel extends JPanel implements Scrollable {
             case Configuration.PARAM_STRING:
                 JTextField textField = new JTextField(value);
                 textField.setMinimumSize(new Dimension(80, textField.getPreferredSize().height));
+                textField.setToolTipText(infoText);
                 settingComponents.add(textField);
-                addLabeledEditorRow(field[0], textField);
+                addLabeledEditorRow(field[0], textField, infoText);
                 break;
             case Configuration.PARAM_BOOL:
                 JCheckBox checkBox = new JCheckBox(field[0]);
                 checkBox.setSelected(Boolean.parseBoolean(value));
                 checkBox.setBorder(new EmptyBorder(4, 4, 4, 4));
+                checkBox.setToolTipText(infoText);
                 JPanel boolRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
                 boolRow.setBorder(new EmptyBorder(2, 4, 2, 4));
                 boolRow.add(checkBox);
                 settingComponents.add(checkBox);
                 addFullWidthRow(boolRow);
+                addInfoTextRow(infoText);
                 break;
             case Configuration.PARAM_INT:
                 JSpinner spinner = new JSpinner(new SpinnerNumberModel(Integer.parseInt(value), 0, Short.MAX_VALUE, 1));
                 spinner.setPreferredSize(new Dimension(110, spinner.getPreferredSize().height));
                 spinner.setMinimumSize(new Dimension(80, spinner.getPreferredSize().height));
+                spinner.setToolTipText(infoText);
                 settingComponents.add(spinner);
-                addLabeledEditorRow(field[0], spinner);
+                addLabeledEditorRow(field[0], spinner, infoText);
                 break;
             case Configuration.PARAM_CHOICE:
                 JComboBox<String> comboBox = new JComboBox<>();
@@ -79,13 +83,14 @@ public class ConfigurationFormPanel extends JPanel implements Scrollable {
                 }
                 comboBox.setSelectedIndex(Integer.parseInt(value));
                 comboBox.setMinimumSize(new Dimension(100, comboBox.getPreferredSize().height));
+                comboBox.setToolTipText(infoText);
                 settingComponents.add(comboBox);
-                addLabeledEditorRow(field[0], comboBox);
+                addLabeledEditorRow(field[0], comboBox, infoText);
                 break;
         }
     }
 
-    private void addLabeledEditorRow(String labelText, JComponent editor) {
+    private void addLabeledEditorRow(String labelText, JComponent editor, String infoText) {
         JPanel row = new JPanel(new GridBagLayout());
         row.setBorder(new EmptyBorder(3, 2, 3, 2));
 
@@ -100,7 +105,7 @@ public class ConfigurationFormPanel extends JPanel implements Scrollable {
         JLabel label = new JLabel(labelText);
         label.setHorizontalAlignment(SwingConstants.RIGHT);
         label.setPreferredSize(new Dimension(LABEL_COLUMN_WIDTH, label.getPreferredSize().height));
-        label.setToolTipText(labelText);
+        label.setToolTipText(infoText == null || infoText.isBlank() ? labelText : infoText);
         row.add(label, gbc);
 
         gbc.gridx = 1;
@@ -111,6 +116,20 @@ public class ConfigurationFormPanel extends JPanel implements Scrollable {
         row.add(editor, gbc);
 
         addFullWidthRow(row);
+        addInfoTextRow(infoText);
+    }
+
+    private void addInfoTextRow(String infoText) {
+        if (infoText == null || infoText.isBlank()) {
+            return;
+        }
+        JLabel info = new JLabel("<html><div style='text-align: left;'>" + infoText + "</div></html>");
+        info.setHorizontalAlignment(SwingConstants.LEFT);
+        info.setForeground(UIManager.getColor("Label.disabledForeground"));
+        JPanel infoRow = new JPanel(new BorderLayout());
+        infoRow.setBorder(new EmptyBorder(0, 24, 6, 6));
+        infoRow.add(info, BorderLayout.CENTER);
+        addFullWidthRow(infoRow);
     }
 
     private void addFullWidthRow(Component component) {
@@ -129,7 +148,11 @@ public class ConfigurationFormPanel extends JPanel implements Scrollable {
         removeAll();
 
         for (int i = 0; i < currentConfig.getSettingCount(); i++) {
-            addConfigurationField(currentConfig.getField(i), currentConfig.getParamType(i), currentConfig.getValue(i));
+            addConfigurationField(
+                    currentConfig.getField(i),
+                    currentConfig.getParamType(i),
+                    currentConfig.getValue(i),
+                    currentConfig.getFieldInfoText(i));
         }
 
         GridBagConstraints filler = new GridBagConstraints();
