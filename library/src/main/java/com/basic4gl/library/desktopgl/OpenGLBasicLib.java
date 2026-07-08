@@ -8,6 +8,8 @@ import static org.lwjgl.opengl.GL13.*;
 import com.basic4gl.language.core.extensions.Basic4GLCompiler;
 import com.basic4gl.language.core.extensions.FunctionLibrary;
 import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLWindow;
+import com.basic4gl.language.core.extensions.opengl.OpenGLExtensionVersions;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.IServiceCollection;
@@ -21,6 +23,7 @@ import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.library.desktopgl.content.Image;
 import com.basic4gl.library.desktopgl.content.LoadImage;
 import com.basic4gl.library.desktopgl.util.Routines;
+import com.basic4gl.library.desktopgl.util.WindowAdapter;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
 import java.nio.*;
 import java.util.*;
@@ -117,9 +120,21 @@ public class OpenGLBasicLib implements FunctionLibrary {
             });
             // Register interfaces
             // TODO need to add any missing registerInterface calls for other libraries
-            //            comp.getPlugins().registerInterface(new WindowAdapter(windowManager), "IB4GLOpenGLWindow", 1,
-            // 0, null);
+            comp.getPlugins()
+                    .registerInterfaceInternal(
+                            IB4GLOpenGLWindow.class,
+                            new WindowAdapter(windowManager),
+                            OpenGLExtensionVersions.B4GL_OPENGL_WINDOW_VERSION_MAJOR,
+                            OpenGLExtensionVersions.B4GL_OPENGL_WINDOW_VERSION_MINOR);
         }
+
+        // Register resources
+        comp.getProgram().addResources(textures);
+        comp.getProgram().addResources(images);
+        comp.getProgram().addResources(displayLists);
+
+        // Register initialisation func
+        comp.getProgram().addInitFunction(new Init());
     }
 
     @Override
@@ -1660,6 +1675,20 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     // endregion
+
+    public static final class Init implements Function {
+
+        @Override
+        public void run(VM vm) {
+            textures.clear();
+
+            // Set texture loading state behavior defaults
+            truncateBlankFrames = true;
+            usingTransparentCol = false;
+            doMipmap = true;
+            doLinearFilter = true;
+        }
+    }
 
     public static final class WrapLoadTex implements Function {
         public void run(VM vm) {

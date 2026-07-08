@@ -40,6 +40,8 @@ public interface ProgramStreamable extends Streamable {
 
     boolean isCodeBlockValid(int currentCodeBlockIndex);
 
+    int getCodeBlockOffset(int index);
+
     CodeBlock getCodeBlock(int currentCodeBlockIndex);
 
     RollbackPoint getRollbackPoint();

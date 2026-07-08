@@ -317,10 +317,10 @@ public class PluginJARManager extends PluginManager {
         }
 
         // Unregister all interfaces owned by this JAR
-        for (Iterator<Map.Entry<String, PluginSharedInterface>> it =
+        for (Iterator<Map.Entry<SharedInterfaceKey, PluginSharedInterface>> it =
                         sharedInterfaces.entrySet().iterator();
                 it.hasNext(); ) {
-            Map.Entry<String, PluginSharedInterface> entry = it.next();
+            Map.Entry<SharedInterfaceKey, PluginSharedInterface> entry = it.next();
             if (entry.getValue().getOwner() == jar) {
                 it.remove();
             }

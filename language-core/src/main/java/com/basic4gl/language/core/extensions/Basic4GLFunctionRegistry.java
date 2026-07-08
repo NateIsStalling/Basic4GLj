@@ -3,7 +3,7 @@ package com.basic4gl.language.core.extensions;
 /**
  * Used to register functions to Basic4GL.
  */
-public interface Basic4GLFunctionRegistry {
+public interface Basic4GLFunctionRegistry extends Basic4GLInterfaceRegistry {
 
     // region Constants
 
@@ -258,35 +258,6 @@ public interface Basic4GLFunctionRegistry {
      * @return Returns handle, or 0 if not registered.
      */
     int fetchStructure(String name, int versionMajor, int versionMinor);
-
-    /**
-     * Register a shared interface to Basic4GL, which can be fetched and used
-     * by other libraries.
-     * <p>Libraries can register objects to Basic4GL (by text ID), so that other libraries
-     * can fetch and use them. Basic4GL records that the library using the object
-     * is dependent on the library that constructed it, and ensures that libraries are
-     * unloaded in the correct order.
-     * <p>The library that constructed the object should destroy it in
-     * Basic4GLPlugin.unload() and NOT before.
-     * <p>"name", "major" and "minor" are used to identify the object (major.minor
-     * is its version number), so that other libraries can request it.
-     *
-     * @param object object to share
-     * @param name   used to identify the object
-     * @param major  used to identify the object
-     * @param minor  used to identify the object
-     */
-    void registerInterface(Object object, String name, int major, int minor);
-
-    /**
-     * Fetch an interface from another library.
-     *
-     * @param name
-     * @param major
-     * @param minor
-     * @return Returns the interface if a matching one is found. Returns null otherwise.
-     */
-    Object fetchInterface(String name, int major, int minor);
 
     /**
      * Create an object store.

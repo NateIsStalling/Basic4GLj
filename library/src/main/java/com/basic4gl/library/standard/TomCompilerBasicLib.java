@@ -10,8 +10,11 @@ import static com.basic4gl.language.core.types.OpCode.*;
 import com.basic4gl.language.core.extensions.Basic4GLCompiler;
 import com.basic4gl.language.core.extensions.FunctionLibrary;
 import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.language.core.extensions.standard.IB4GLCompiler;
+import com.basic4gl.language.core.extensions.standard.StandardExtensionVersions;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
+import com.basic4gl.language.core.streaming.ProgramStreamable;
 import com.basic4gl.language.core.types.*;
 import com.basic4gl.library.desktopgl.content.FileOpener;
 import com.basic4gl.library.desktopgl.content.FileUtil;
@@ -194,7 +197,9 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
     }
 
     @Override
-    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {}
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {
+        TomCompilerBasicLib.vm = vm;
+    }
 
     @Override
     public void init(Basic4GLCompiler comp, IServiceCollection services) {
@@ -204,7 +209,12 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
 
         // Hookup and register compiler plugin adapter
         // TODO sort out VM dependency
-        //        comp.getPlugins().registerInterface(new CompilerPluginAdapter(), "IB4GLCompiler", 1, 0, null);
+        comp.getPlugins()
+                .registerInterfaceInternal(
+                        IB4GLCompiler.class,
+                        new CompilerPluginAdapter(),
+                        StandardExtensionVersions.B4GL_COMPILER_VERSION_MAJOR,
+                        StandardExtensionVersions.B4GL_COMPILER_VERSION_MINOR);
 
         // Register initialisation function
         TomCompilerBasicLib.comp.getProgram().addInitFunction(new InitFunc());
@@ -223,87 +233,87 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
         return null;
     }
 
-    //    /**
-    //     * CompilerPluginAdapter
-    //     *
-    //     * Exposes the compiler and virtual machine to plugins via the IB4GLCompiler
-    //     * interface.
-    //     */
-    //    public class CompilerPluginAdapter implements IB4GLCompiler {
-    //
-    //        private int errorLine, errorCol;
-    //        private String errorText;
-    //
-    //        private void clearError() {
-    //            errorText = "";
-    //            errorLine = 0;
-    //            errorCol = 0;
-    //        }
-    //
-    //        // IB4GLCompiler interface
-    //        public int compile(String sourceText) {
-    //            assertTrue(comp != null);
-    //            TomVM vm = comp.getVM();
-    //
-    //            // Load source text into compiler
-    //            comp.getParser().getSourceCode().clear();
-    //            comp.getParser().getSourceCode().add(sourceText);
-    //
-    //            // Compile it
-    //            return doNewCompile(vm, COMPILE_FILENAME_DEFAULT);
-    //        }
-    //
-    //        public String getErrorText() {
-    //
-    //            return errorText;
-    //        }
-    //
-    //        public int getErrorLine() {
-    //            return errorLine;
-    //        }
-    //
-    //        public int getErrorColumn() {
-    //            return errorCol;
-    //        }
-    //
-    //        public boolean execute(int codeHandle) {
-    //            TomVM vm = comp.getVM();
-    //
-    //            // Check code handle is valid
-    //            if (codeHandle == 0 || !vm.isCodeBlockValid(codeHandle)) {
-    //                vm.functionError("Invalid code handle");
-    //                return false;
-    //            }
-    //
-    //            // Save stack as if a sub is being called.
-    //            // This is because we could be in a builtin/plugin function that is in the
-    //            // middle of an expression, where temp data is saved to the stack.
-    //            // Builtin/plugin functions don't normally protect the existing stack, so
-    //            // there may be unprotected temp data that the callback code could trample.
-    //            Mutable<Integer> stackTop = new Mutable<>(0), tempDataLock = new Mutable<>(0);
-    //            vm.getData().saveState(stackTop, tempDataLock);
-    //
-    //            // Find code to execute
-    //            // 2 op-codes earlier will be the callback hook.
-    //            int offset = vm.getCodeBlockOffset(codeHandle) - 2;
-    //
-    //            // Execute code
-    //            internalExecute(vm, offset, true);
-    //
-    //            // Check for error/end program
-    //            if (vm.hasError() || vm.isDone()) {
-    //                return false;
-    //            }
-    //
-    //            // Restore stack
-    //            vm.getData().restoreState(stackTop.get(), tempDataLock.get(), false);
-    //
-    //            return true;
-    //        }
-    //    }
+    /**
+     * CompilerPluginAdapter
+     *
+     * Exposes the compiler and virtual machine to plugins via the IB4GLCompiler
+     * interface.
+     */
+    public class CompilerPluginAdapter implements IB4GLCompiler {
+
+        private int errorLine, errorCol;
+        private String errorText = "";
+
+        private void clearError() {
+            errorText = "";
+            errorLine = 0;
+            errorCol = 0;
+        }
+
+        // IB4GLCompiler interface
+        public int compile(String sourceText) {
+            assertTrue(comp != null, "Compiler not initialised");
+            assertTrue(vm != null, "VM not initialised.");
+
+            // Load source text into compiler
+            comp.getParser().getSourceCode().clear();
+            comp.getParser().getSourceCode().add(sourceText);
+
+            // Compile it
+            return doNewCompile(vm, COMPILE_FILENAME_DEFAULT);
+        }
+
+        public String getErrorText() {
+            return errorText;
+        }
+
+        public int getErrorLine() {
+            return errorLine;
+        }
+
+        public int getErrorColumn() {
+            return errorCol;
+        }
+
+        public boolean execute(int codeHandle) {
+            ProgramStreamable program = comp.getProgram();
+
+            // Check code handle is valid
+            if (codeHandle == 0 || !program.isCodeBlockValid(codeHandle)) {
+                vm.functionError("Invalid code handle");
+                return false;
+            }
+
+            // Save stack as if a sub is being called.
+            // This is because we could be in a builtin/plugin function that is in the
+            // middle of an expression, where temp data is saved to the stack.
+            // Builtin/plugin functions don't normally protect the existing stack, so
+            // there may be unprotected temp data that the callback code could trample.
+            Mutable<Integer> stackTop = new Mutable<>(0), tempDataLock = new Mutable<>(0);
+            vm.getData().saveState(stackTop, tempDataLock);
+
+            // Find code to execute
+            // 2 op-codes earlier will be the callback hook.
+            int offset = program.getCodeBlockOffset(codeHandle) - 2;
+
+            // Execute code
+            internalExecute(vm, offset, true);
+
+            // Check for error/end program
+            if (vm.hasError() || vm.isDone()) {
+                return false;
+            }
+
+            // Restore stack
+            vm.getData().restoreState(stackTop.get(), tempDataLock.get(), false);
+
+            return true;
+        }
+    }
 
     // Globals
     private static Basic4GLCompiler comp = null;
+    private static VM vm = null;
     private static IVMDriver host = null;
     private static FileOpener files = null;
     //    private CompilerPluginAdapter compilerAdapter;
