@@ -7,10 +7,13 @@ import static com.basic4gl.library.desktopgl.content.FileOpener.ERROR_DIRECTORY_
 import com.basic4gl.language.core.extensions.Basic4GLCompiler;
 import com.basic4gl.language.core.extensions.FunctionLibrary;
 import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.language.core.extensions.standard.IB4GLFileAccessor;
+import com.basic4gl.language.core.extensions.standard.StandardExtensionVersions;
 import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.IServiceCollection;
 import com.basic4gl.language.core.runtime.VM;
 import com.basic4gl.language.core.types.*;
+import com.basic4gl.library.desktopgl.FileAccessorAdapter;
 import com.basic4gl.library.desktopgl.content.*;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -34,7 +37,6 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
     private static IAppSettings appSettings;
     private static FileOpener files;
 
-    // FileAccessorAdapter pluginAdapter;
     private FileStreamResourceStore fileStreams;
     private String lastError = "";
     private FileStream stream;
@@ -74,6 +76,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
             fileStreams = new FileStreamResourceStore();
             services.registerService(FileStreamResourceStore.class, fileStreams);
         }
+
+        // Wire up plugin adapter
+        comp.getPlugins().registerInterfaceInternal(
+                IB4GLFileAccessor.class,
+                new FileAccessorAdapter(files),
+                StandardExtensionVersions.B4GL_FILE_ACCESSOR_VERSION_MAJOR,
+                StandardExtensionVersions.B4GL_FILE_ACCESSOR_VERSION_MINOR);
 
         // Register resources
         comp.getProgram().addResources(fileStreams);

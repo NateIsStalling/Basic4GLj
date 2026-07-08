@@ -242,11 +242,13 @@ public class GLTextGridWindow extends HasErrorState
 
         // Register library functions
         for (Library lib : instance.libraries) {
-            lib.init(instance.compiler, instance.services); // Allow libraries to register function overloads
             if (lib instanceof IFileAccess) {
                 // Allows libraries to read from directories
                 ((IFileAccess) lib).init(instance.fileOpener);
             }
+
+            lib.init(instance.compiler, instance.services); // Allow libraries to register function overloads
+
             if (lib instanceof FunctionLibrary) {
                 instance.compiler.addConstants(((FunctionLibrary) lib).constants());
                 instance.compiler.addFunctions(lib, ((FunctionLibrary) lib).specs());

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public interface Basic4GLCompiler extends IFunctionIndex {
-    //    Basic4GLFunctionRegistry getPlugins();
+    Basic4GLInterfaceRegistry getPlugins();
 
     ProgramStreamable getProgram();
 

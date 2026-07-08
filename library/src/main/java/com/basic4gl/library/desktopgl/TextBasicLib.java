@@ -12,6 +12,9 @@ import com.basic4gl.language.core.extensions.Basic4GLLongRunningFunction;
 import com.basic4gl.language.core.extensions.FunctionLibrary;
 import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLText;
+import com.basic4gl.language.core.extensions.opengl.OpenGLExtensionVersions;
+import com.basic4gl.language.core.extensions.standard.IB4GLText;
+import com.basic4gl.language.core.extensions.standard.StandardExtensionVersions;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.IServiceCollection;
@@ -43,7 +46,7 @@ public class TextBasicLib implements FunctionLibrary {
 
     private static int spriteCount;
 
-    private static GLSpriteStore sprites;
+    private static final GLSpriteStore sprites = new GLSpriteStore();;
     private static int boundSprite;
 
     private OpenGLWindowManager windowManager;
@@ -77,7 +80,6 @@ public class TextBasicLib implements FunctionLibrary {
         //        appWindow.setDontPaint(false);
 
         // Sprite engine defaults
-        sprites = new GLSpriteStore();
         sprites.clear();
         spriteEngine.setDefaults();
         boundSprite = 0;
@@ -95,7 +97,14 @@ public class TextBasicLib implements FunctionLibrary {
         this.keyboard = services.getService(OpenGLKeyboard.class);
         this.mouse = services.getService(OpenGLMouse.class);
 
+        // Register resources
+        comp.getProgram().addResources(sprites);
+
         if (contentManager != null) {
+            // Register interfaces for plugins
+            TextAdapter textAdapter = new TextAdapter(appText, contentManager);
+            comp.getPlugins().registerInterfaceInternal(IB4GLText.class, textAdapter, StandardExtensionVersions.B4GL_TEXT_VERSION_MAJOR, StandardExtensionVersions.B4GL_TEXT_VERSION_MINOR);
+            comp.getPlugins().registerInterfaceInternal(IB4GLOpenGLText.class, textAdapter, OpenGLExtensionVersions.B4GL_OPENGL_TEXT_VERSION_MAJOR, OpenGLExtensionVersions.B4GL_OPENGL_TEXT_VERSION_MINOR);
 
             // Upload charset texture after window created
             contentManager.getWindowManager().subscribeWindowCreated(() -> {

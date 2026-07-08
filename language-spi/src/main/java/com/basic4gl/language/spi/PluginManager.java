@@ -1,5 +1,6 @@
 package com.basic4gl.language.spi;
 
+import com.basic4gl.language.core.extensions.Basic4GLInterfaceRegistry;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.types.Constant;
 import java.io.DataInputStream;
@@ -8,19 +9,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
 
-public abstract class PluginManager {
+public abstract class PluginManager implements Basic4GLInterfaceRegistry {
+
+    protected record SharedInterfaceKey(Class<?> serviceType, int majorVersion, int minorVersion) {}
 
     protected Vector<PluginLibrary> plugins = new Vector<>();
     protected String error;
-    protected HashMap<String, PluginSharedInterface> sharedInterfaces = new HashMap<>();
+    protected HashMap<SharedInterfaceKey, PluginSharedInterface> sharedInterfaces = new HashMap<>();
     protected boolean isStandaloneExe;
 
     // Data structures defined by plugins
     protected PluginStructureManager structureManager = new PluginStructureManager();
-
-    protected String getSharedInterfaceKey(String name, int major, int minor) {
-        return name + "_" + major + "_" + minor;
-    }
 
     public PluginManager(boolean isStandaloneExe) {
         this.isStandaloneExe = isStandaloneExe;
@@ -234,19 +233,25 @@ public abstract class PluginManager {
     }
 
     // region Interface sharing
-    public void registerInterface(Object intf, String name, int major, int minor, PluginLibrary owner) {
+    public <T> void registerInterface(Class<T> serviceType, T service, int major, int minor, PluginLibrary owner) {
+
+        if (!serviceType.isInstance(service)) {
+            throw new IllegalArgumentException(
+                    "Service object does not implement " + serviceType.getName()
+            );
+        }
 
         // Construct unique string key
-        String key = getSharedInterfaceKey(name, major, minor);
+        SharedInterfaceKey key = new SharedInterfaceKey(serviceType, major, minor);
 
         // Save interface to key
-        sharedInterfaces.put(key, new PluginSharedInterface(intf, owner));
+        sharedInterfaces.put(key, new PluginSharedInterface(service, owner));
     }
 
-    public Object fetchInterface(String name, int major, int minor, PluginLibrary requester) {
+    public <T> T fetchInterface(Class<T> serviceType, int major, int minor, PluginLibrary requester) {
 
         // Construct unique string key
-        String key = getSharedInterfaceKey(name, major, minor);
+        SharedInterfaceKey key = new SharedInterfaceKey(serviceType, major, minor);
 
         // Fetch object
         if (!sharedInterfaces.containsKey(key)) {
@@ -261,7 +266,22 @@ public abstract class PluginManager {
         }
 
         // Return the interface
-        return obj.getInterface();
+        return (T) obj.getInterface();
+    }
+
+    @Override
+    public <T> void registerInterface(Class<T> serviceType, T service, int major, int minor) {
+        registerInterface(serviceType, service, major, minor, null);
+    }
+
+    @Override
+    public <T> void registerInterfaceInternal(Class<T> serviceType, T service, int major, int minor) {
+        registerInterface(serviceType, service, major, minor, null);
+    }
+
+    @Override
+    public <T> T fetchInterface(Class<T> serviceType, int major, int minor) {
+        return fetchInterface(serviceType, major, minor, null);
     }
 
     public int fetchStructure(String name, int major, int minor, PluginLibrary requester) {

@@ -10,6 +10,8 @@ import com.basic4gl.compiler.types.OperType;
 import com.basic4gl.compiler.types.UserFunctionType;
 import com.basic4gl.compiler.util.*;
 import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.Basic4GLFunctionRegistry;
+import com.basic4gl.language.core.extensions.Basic4GLInterfaceRegistry;
 import com.basic4gl.language.core.extensions.Library;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
@@ -628,7 +630,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         return isCaseSensitive;
     }
 
-    public PluginManager getPlugins() {
+    public Basic4GLInterfaceRegistry getPlugins() {
         return this.plugins;
     }
 

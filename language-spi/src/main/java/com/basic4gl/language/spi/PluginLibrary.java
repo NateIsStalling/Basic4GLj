@@ -327,12 +327,16 @@ public class PluginLibrary implements com.basic4gl.language.core.extensions.Basi
         }
     }
 
-    public void registerInterface(Object object, String name, int major, int minor) {
-        manager.registerInterface(object, name, major, minor, this);
+    public <T> void registerInterface(Class<T> serviceType, T service, int major, int minor) {
+        manager.registerInterface(serviceType, service, major, minor, this);
     }
 
-    public Object fetchInterface(String name, int major, int minor) {
-        return manager.fetchInterface(name, major, minor, this);
+    public <T> void registerInterfaceInternal(Class<T> serviceType, T service, int major, int minor) {
+        manager.registerInterface(serviceType, service, major, minor, null);
+    }
+
+    public <T> T fetchInterface(Class<T> serviceType, int major, int minor) {
+        return manager.fetchInterface(serviceType, major, minor, this);
     }
 
     public Basic4GLObjectStore createObjectStore(Basic4GLObjectStoreListener listener) {
