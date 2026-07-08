@@ -3,7 +3,7 @@ package com.basic4gl.language.core.extensions;
 /**
  * Used to register functions to Basic4GL.
  */
-public interface Basic4GLFunctionRegistry extends Basic4GLInterfaceRegistry{
+public interface Basic4GLFunctionRegistry extends Basic4GLInterfaceRegistry {
 
     // region Constants
 

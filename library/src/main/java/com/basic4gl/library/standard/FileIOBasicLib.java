@@ -78,11 +78,12 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
         }
 
         // Wire up plugin adapter
-        comp.getPlugins().registerInterfaceInternal(
-                IB4GLFileAccessor.class,
-                new FileAccessorAdapter(files),
-                StandardExtensionVersions.B4GL_FILE_ACCESSOR_VERSION_MAJOR,
-                StandardExtensionVersions.B4GL_FILE_ACCESSOR_VERSION_MINOR);
+        comp.getPlugins()
+                .registerInterfaceInternal(
+                        IB4GLFileAccessor.class,
+                        new FileAccessorAdapter(files),
+                        StandardExtensionVersions.B4GL_FILE_ACCESSOR_VERSION_MAJOR,
+                        StandardExtensionVersions.B4GL_FILE_ACCESSOR_VERSION_MINOR);
 
         // Register resources
         comp.getProgram().addResources(fileStreams);

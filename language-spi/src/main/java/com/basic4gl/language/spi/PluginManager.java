@@ -236,9 +236,7 @@ public abstract class PluginManager implements Basic4GLInterfaceRegistry {
     public <T> void registerInterface(Class<T> serviceType, T service, int major, int minor, PluginLibrary owner) {
 
         if (!serviceType.isInstance(service)) {
-            throw new IllegalArgumentException(
-                    "Service object does not implement " + serviceType.getName()
-            );
+            throw new IllegalArgumentException("Service object does not implement " + serviceType.getName());
         }
 
         // Construct unique string key

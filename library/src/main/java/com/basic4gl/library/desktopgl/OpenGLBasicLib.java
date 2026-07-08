@@ -10,7 +10,6 @@ import com.basic4gl.language.core.extensions.FunctionLibrary;
 import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLWindow;
 import com.basic4gl.language.core.extensions.opengl.OpenGLExtensionVersions;
-import com.basic4gl.language.core.extensions.standard.StandardExtensionVersions;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.IServiceCollection;
@@ -121,11 +120,12 @@ public class OpenGLBasicLib implements FunctionLibrary {
             });
             // Register interfaces
             // TODO need to add any missing registerInterface calls for other libraries
-            comp.getPlugins().registerInterfaceInternal(
-                    IB4GLOpenGLWindow.class,
-                    new WindowAdapter(windowManager),
-                    OpenGLExtensionVersions.B4GL_OPENGL_WINDOW_VERSION_MAJOR,
-                    OpenGLExtensionVersions.B4GL_OPENGL_WINDOW_VERSION_MINOR);
+            comp.getPlugins()
+                    .registerInterfaceInternal(
+                            IB4GLOpenGLWindow.class,
+                            new WindowAdapter(windowManager),
+                            OpenGLExtensionVersions.B4GL_OPENGL_WINDOW_VERSION_MAJOR,
+                            OpenGLExtensionVersions.B4GL_OPENGL_WINDOW_VERSION_MINOR);
         }
 
         // Register resources
@@ -1675,7 +1675,6 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     // endregion
-
 
     public final class Init implements Function {
 

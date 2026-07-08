@@ -46,7 +46,8 @@ public class TextBasicLib implements FunctionLibrary {
 
     private static int spriteCount;
 
-    private static final GLSpriteStore sprites = new GLSpriteStore();;
+    private static final GLSpriteStore sprites = new GLSpriteStore();
+    ;
     private static int boundSprite;
 
     private OpenGLWindowManager windowManager;
@@ -103,8 +104,18 @@ public class TextBasicLib implements FunctionLibrary {
         if (contentManager != null) {
             // Register interfaces for plugins
             TextAdapter textAdapter = new TextAdapter(appText, contentManager);
-            comp.getPlugins().registerInterfaceInternal(IB4GLText.class, textAdapter, StandardExtensionVersions.B4GL_TEXT_VERSION_MAJOR, StandardExtensionVersions.B4GL_TEXT_VERSION_MINOR);
-            comp.getPlugins().registerInterfaceInternal(IB4GLOpenGLText.class, textAdapter, OpenGLExtensionVersions.B4GL_OPENGL_TEXT_VERSION_MAJOR, OpenGLExtensionVersions.B4GL_OPENGL_TEXT_VERSION_MINOR);
+            comp.getPlugins()
+                    .registerInterfaceInternal(
+                            IB4GLText.class,
+                            textAdapter,
+                            StandardExtensionVersions.B4GL_TEXT_VERSION_MAJOR,
+                            StandardExtensionVersions.B4GL_TEXT_VERSION_MINOR);
+            comp.getPlugins()
+                    .registerInterfaceInternal(
+                            IB4GLOpenGLText.class,
+                            textAdapter,
+                            OpenGLExtensionVersions.B4GL_OPENGL_TEXT_VERSION_MAJOR,
+                            OpenGLExtensionVersions.B4GL_OPENGL_TEXT_VERSION_MINOR);
 
             // Upload charset texture after window created
             contentManager.getWindowManager().subscribeWindowCreated(() -> {

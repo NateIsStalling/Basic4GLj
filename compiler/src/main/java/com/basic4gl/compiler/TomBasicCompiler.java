@@ -10,7 +10,6 @@ import com.basic4gl.compiler.types.OperType;
 import com.basic4gl.compiler.types.UserFunctionType;
 import com.basic4gl.compiler.util.*;
 import com.basic4gl.language.core.extensions.Basic4GLCompiler;
-import com.basic4gl.language.core.extensions.Basic4GLFunctionRegistry;
 import com.basic4gl.language.core.extensions.Basic4GLInterfaceRegistry;
 import com.basic4gl.language.core.extensions.Library;
 import com.basic4gl.language.core.internal.Mutable;
