@@ -71,6 +71,7 @@ public class GLTextGridWindow extends HasErrorState
     private GLTextGrid textGrid;
 
     private IAppSettings appSettings; // common settings for all libraries
+    private boolean standaloneMode = true;
     private final IStandaloneSettings settings =
             new StandaloneSettings(); // settings specific to standalone application
     private Configuration configuration; // runtime configuration for this library
@@ -164,6 +165,7 @@ public class GLTextGridWindow extends HasErrorState
 
         // provide program args for function libraries
         instance.programArgs = options.getProgramArgs();
+        instance.standaloneMode = isStandalone;
 
         instance.appSettings = isStandalone ? new StandaloneAppSettings() : new EditorAppSettings();
 
@@ -189,7 +191,7 @@ public class GLTextGridWindow extends HasErrorState
         System.out.println("par: " + options.currentDirectory);
         instance.fileOpener = new FileOpener(""); // TODO load embedded files
         instance.fileOpener.setParentDirectory(options.currentDirectory);
-        instance.fileOpener.setAppDataFolderName(instance.getAppDataFolderNameOverride(isStandalone));
+        instance.fileOpener.setAppDataFolderName(instance.getAppDataFolderNameOverride());
 
         instance.plugins = new PluginJARManager(isStandalone);
         LinkedHashSet<String> pluginDirectorySet = new LinkedHashSet<>();
@@ -856,8 +858,8 @@ public class GLTextGridWindow extends HasErrorState
             int startupWindowOption = configuration.getIntValueOrDefault(
                     SETTING_STARTUP_WINDOW_OPTION, STARTUP_WINDOW_CREATE_IMMEDIATELY);
             boolean createWindowOnStart = startupWindowOption == STARTUP_WINDOW_CREATE_IMMEDIATELY;
-            closingWindowQuits = configuration.getBooleanValueOrDefault(SETTING_CLOSING_WINDOW_QUITS, true);
-            keyboard.setEscapeKeyQuits(configuration.getBooleanValueOrDefault(SETTING_ESC_KEY_QUITS, true));
+            closingWindowQuits = getClosingWindowQuitsOption();
+            keyboard.setEscapeKeyQuits(getEscKeyQuitsOption());
 
             // Setup an error callback. The default implementation
             // will print the error message in System.err.
@@ -946,9 +948,9 @@ public class GLTextGridWindow extends HasErrorState
         return cliParser.getPluginDirectoryOption();
     }
 
-    private String getAppDataFolderNameOverride(boolean isStandalone) {
+    private String getAppDataFolderNameOverride() {
         String configured = null;
-        if (!isStandalone) {
+        if (!standaloneMode) {
             return null;
         }
         if (configuration != null && SETTING_APP_DATA_DIRECTORY < configuration.getSettingCount()) {
@@ -976,8 +978,7 @@ public class GLTextGridWindow extends HasErrorState
     }
 
     private void showRuntimeErrorMessage() {
-        int runtimeErrorOption =
-                configuration.getIntValueOrDefault(SETTING_RUNTIME_ERROR_OPTION, RUNTIME_ERROR_SHOW_DETAILED_MESSAGE);
+        int runtimeErrorOption = getRuntimeErrorOption();
         if (runtimeErrorOption == RUNTIME_ERROR_JUST_CLOSE) {
             return;
         }
@@ -997,8 +998,7 @@ public class GLTextGridWindow extends HasErrorState
     }
 
     private void waitForProgramCompletionOption() {
-        int completionOption =
-                configuration.getIntValueOrDefault(SETTING_PROGRAM_END_OPTION, PROGRAM_END_WAIT_WINDOW_CLOSE);
+        int completionOption = getProgramEndOption();
         switch (completionOption) {
             case PROGRAM_END_CLOSE_IMMEDIATELY:
                 hide();
@@ -1048,5 +1048,33 @@ public class GLTextGridWindow extends HasErrorState
         } catch (InterruptedException consumed) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    private int getProgramEndOption() {
+        if (!standaloneMode) {
+            return PROGRAM_END_WAIT_WINDOW_CLOSE;
+        }
+        return configuration.getIntValueOrDefault(SETTING_PROGRAM_END_OPTION, PROGRAM_END_WAIT_WINDOW_CLOSE);
+    }
+
+    private int getRuntimeErrorOption() {
+        if (!standaloneMode) {
+            return RUNTIME_ERROR_SHOW_DETAILED_MESSAGE;
+        }
+        return configuration.getIntValueOrDefault(SETTING_RUNTIME_ERROR_OPTION, RUNTIME_ERROR_SHOW_DETAILED_MESSAGE);
+    }
+
+    private boolean getEscKeyQuitsOption() {
+        if (!standaloneMode) {
+            return true;
+        }
+        return configuration.getBooleanValueOrDefault(SETTING_ESC_KEY_QUITS, true);
+    }
+
+    private boolean getClosingWindowQuitsOption() {
+        if (!standaloneMode) {
+            return true;
+        }
+        return configuration.getBooleanValueOrDefault(SETTING_CLOSING_WINDOW_QUITS, true);
     }
 }
