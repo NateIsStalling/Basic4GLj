@@ -3,6 +3,7 @@ package com.basic4gl.app.desktop;
 import static com.basic4gl.app.desktop.config.StandaloneSettings.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.util.tinyfd.TinyFileDialogs.tinyfd_messageBox;
 
 import com.basic4gl.app.desktop.config.*;
 import com.basic4gl.app.desktop.glfw.GLFWKeyboard;
@@ -34,7 +35,6 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-import javax.swing.JOptionPane;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 public class GLTextGridWindow extends HasErrorState
@@ -994,7 +994,11 @@ public class GLTextGridWindow extends HasErrorState
             }
             message = detailed.toString();
         }
-        JOptionPane.showMessageDialog(null, message, "Runtime Error", JOptionPane.ERROR_MESSAGE);
+        showRuntimeErrorDialog(message);
+    }
+
+    private void showRuntimeErrorDialog(String message) {
+        tinyfd_messageBox("Runtime Error", message, "ok", "error", true);
     }
 
     private void waitForProgramCompletionOption() {

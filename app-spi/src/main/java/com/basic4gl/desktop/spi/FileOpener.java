@@ -312,7 +312,7 @@ public class FileOpener extends HasErrorState {
         String sanitized = sanitizeAppDataFolderName(appDataFolderName.trim());
         this.appDataFolderName = sanitized == null ? DEFAULT_APP_DATA_FOLDER_NAME : sanitized;
     }
-    
+
     private static String sanitizeAppDataFolderName(String appDataFolderName) {
         if (appDataFolderName == null) {
             return null;
