@@ -127,7 +127,7 @@ public class ConfigurationFormPanel extends JPanel implements Scrollable {
         info.setHorizontalAlignment(SwingConstants.LEFT);
         info.setForeground(UIManager.getColor("Label.disabledForeground"));
         JPanel infoRow = new JPanel(new BorderLayout());
-        infoRow.setBorder(new EmptyBorder(0, 24, 6, 6));
+        infoRow.setBorder(new EmptyBorder(0, 6, 6, 6));
         infoRow.add(info, BorderLayout.CENTER);
         addFullWidthRow(infoRow);
     }
