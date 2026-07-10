@@ -314,7 +314,30 @@ public class FileOpener extends HasErrorState {
             this.appDataFolderName = DEFAULT_APP_DATA_FOLDER_NAME;
             return;
         }
-        this.appDataFolderName = appDataFolderName.trim();
+        String sanitized = sanitizeAppDataFolderName(appDataFolderName.trim());
+        this.appDataFolderName = sanitized == null ? DEFAULT_APP_DATA_FOLDER_NAME : sanitized;
+    }
+
+    private static String sanitizeAppDataFolderName(String appDataFolderName) {
+        if (appDataFolderName == null) {
+            return null;
+        }
+
+        String segment = appDataFolderName.trim();
+
+        if (segment.isEmpty()) {
+            return null;
+        }
+
+        if (segment.equals(".") || segment.equals("..")) {
+            return null;
+        }
+
+        if (segment.indexOf('/') >= 0 || segment.indexOf('\\') >= 0) {
+            return null;
+        }
+
+        return segment;
     }
 
     public boolean createDirectory(String pathname) {
