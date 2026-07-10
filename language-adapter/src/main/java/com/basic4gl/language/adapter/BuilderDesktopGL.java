@@ -212,6 +212,8 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder, IP
             files.add("org/lwjgl");
             // TODO this should only be added if target OS
             files.add("macos"); // lwjgl natives
+            files.add("windows"); // lwjgl natives
+            files.add("linux"); // lwjgl natives
 
             // exclude any html/javadoc to save on file size
             String excludeRegex = ".*html$";

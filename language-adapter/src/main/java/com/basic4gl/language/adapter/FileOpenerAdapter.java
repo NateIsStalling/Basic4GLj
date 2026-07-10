@@ -14,8 +14,6 @@ import java.nio.file.Paths;
  * Created by Nate on 11/1/2015.
  */
 public class FileOpenerAdapter extends HasErrorState implements IFileOpener {
-    private static final String DEFAULT_APP_DATA_FOLDER_NAME = "Basic4GL";
-
     public static final String ERROR_DIRECTORY_ALREADY_EXISTS = "Directory already exists";
 
     com.basic4gl.desktop.spi.FileOpener parent;
@@ -107,7 +105,7 @@ public class FileOpenerAdapter extends HasErrorState implements IFileOpener {
     }
 
     public String getAppDataFolderName() {
-        return DEFAULT_APP_DATA_FOLDER_NAME;
+        return parent.getAppDataFolderName();
     }
 
     public boolean createDirectory(String pathname) {

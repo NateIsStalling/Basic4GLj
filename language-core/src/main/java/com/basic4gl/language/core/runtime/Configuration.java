@@ -18,6 +18,7 @@ public class Configuration implements Serializable {
     private List<String[]> fieldNames = new ArrayList<>();
     private List<Integer> parameterTypes = new ArrayList<>();
     private List<String> values = new ArrayList<>();
+    private List<String> fieldInfoTexts = new ArrayList<>();
 
     public Configuration() {}
 
@@ -34,6 +35,17 @@ public class Configuration implements Serializable {
         for (String item : config.values) {
             values.add(item);
         }
+        if (config.fieldInfoTexts == null || config.fieldInfoTexts.isEmpty()) {
+            fieldInfoTexts = new ArrayList<>(config.fieldNames.size());
+            for (int i = 0; i < config.fieldNames.size(); i++) {
+                fieldInfoTexts.add(null);
+            }
+        } else {
+            fieldInfoTexts = new ArrayList<>(config.fieldInfoTexts.size());
+            for (String item : config.fieldInfoTexts) {
+                fieldInfoTexts.add(item);
+            }
+        }
     }
 
     public int getSettingCount() {
@@ -41,9 +53,17 @@ public class Configuration implements Serializable {
     }
 
     public void addSetting(String[] field, int param, String val) {
+        addSetting(field, param, val, null);
+    }
+
+    public void addSetting(String[] field, int param, String val, String infoText) {
+        if (fieldInfoTexts == null) {
+            fieldInfoTexts = new ArrayList<>();
+        }
         fieldNames.add(field);
         parameterTypes.add(param);
         values.add(val);
+        fieldInfoTexts.add(infoText);
     }
 
     public String[] getField(int index) {
@@ -56,6 +76,13 @@ public class Configuration implements Serializable {
 
     public String getValue(int index) {
         return values.get(index);
+    }
+
+    public String getFieldInfoText(int index) {
+        if (fieldInfoTexts == null || index < 0 || index >= fieldInfoTexts.size()) {
+            return null;
+        }
+        return fieldInfoTexts.get(index);
     }
 
     public void setValue(int index, String val) {

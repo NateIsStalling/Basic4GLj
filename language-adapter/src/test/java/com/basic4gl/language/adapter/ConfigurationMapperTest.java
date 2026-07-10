@@ -18,7 +18,11 @@ class ConfigurationMapperTest {
     void toEditorConfiguration_runtimeConfigCopiesAllSettings() {
         com.basic4gl.language.core.runtime.Configuration runtime = new com.basic4gl.language.core.runtime.Configuration();
         runtime.addSetting(new String[] {"Header"}, com.basic4gl.language.core.runtime.Configuration.PARAM_HEADING, "");
-        runtime.addSetting(new String[] {"Toggle"}, com.basic4gl.language.core.runtime.Configuration.PARAM_BOOL, "true");
+        runtime.addSetting(
+                new String[] {"Toggle"},
+                com.basic4gl.language.core.runtime.Configuration.PARAM_BOOL,
+                "true",
+                "Toggle info");
 
         Configuration mapped = ConfigurationMapper.toEditorConfiguration(runtime);
 
@@ -27,6 +31,7 @@ class ConfigurationMapperTest {
         assertEquals("Header", mapped.getField(0)[0]);
         assertEquals(Configuration.PARAM_BOOL, mapped.getParamType(1));
         assertEquals("true", mapped.getValue(1));
+        assertEquals("Toggle info", mapped.getFieldInfoText(1));
 
         runtime.getField(0)[0] = "Changed";
         assertEquals("Header", mapped.getField(0)[0]);
@@ -35,7 +40,7 @@ class ConfigurationMapperTest {
     @Test
     void toRuntimeConfiguration_editorConfigCopiesAllSettings() {
         Configuration editor = new Configuration();
-        editor.addSetting(new String[] {"Name"}, Configuration.PARAM_STRING, "value");
+        editor.addSetting(new String[] {"Name"}, Configuration.PARAM_STRING, "value", "Name info");
 
         com.basic4gl.language.core.runtime.Configuration mapped = ConfigurationMapper.toRuntimeConfiguration(editor);
 
@@ -44,6 +49,7 @@ class ConfigurationMapperTest {
         assertEquals("Name", mapped.getField(0)[0]);
         assertEquals(com.basic4gl.language.core.runtime.Configuration.PARAM_STRING, mapped.getParamType(0));
         assertEquals("value", mapped.getValue(0));
+        assertEquals("Name info", mapped.getFieldInfoText(0));
     }
 
     @Test

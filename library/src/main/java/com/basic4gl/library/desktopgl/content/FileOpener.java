@@ -6,21 +6,33 @@ import java.net.URL;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Created by Nate on 11/1/2015.
  */
 public class FileOpener extends HasErrorState {
     private static final String DEFAULT_APP_DATA_FOLDER_NAME = "Basic4GL";
+    private static final Pattern SAFE_APP_DATA_FOLDER_NAME =
+            Pattern.compile("[A-Za-z0-9 _.-]+");
 
+    private static final Set<String> WINDOWS_RESERVED_NAMES = Set.of(
+            "CON", "PRN", "AUX", "NUL",
+            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+    );
     public static final String ERROR_DIRECTORY_ALREADY_EXISTS = "Directory already exists";
 
     private String parentDirectory;
+    private String appDataFolderName;
     private final EmbeddedFiles embeddedFiles;
 
     public FileOpener(String parent) {
         parent = FileUtil.separatorsToSystem(parent);
         parentDirectory = parent;
+        appDataFolderName = DEFAULT_APP_DATA_FOLDER_NAME;
         embeddedFiles = new EmbeddedFiles();
         embeddedFiles.setParentDirectory(parent);
     }
@@ -132,7 +144,8 @@ public class FileOpener extends HasErrorState {
             return true;
         }
 
-        setError("You can only open files in the current directory or below, or in the Basic4GL App Data folder.");
+        setError("You can only open files in the current directory or below, or in the " + getAppDataFolderName()
+                + " App Data folder.");
         return false;
     }
 
@@ -303,9 +316,60 @@ public class FileOpener extends HasErrorState {
     }
 
     public String getAppDataFolderName() {
-        return DEFAULT_APP_DATA_FOLDER_NAME;
+        return appDataFolderName;
     }
 
+    public void setAppDataFolderName(String appDataFolderName) {
+        if (appDataFolderName == null || appDataFolderName.isBlank()) {
+            this.appDataFolderName = DEFAULT_APP_DATA_FOLDER_NAME;
+            return;
+        }
+        String sanitized = sanitizeAppDataFolderName(appDataFolderName.trim());
+        this.appDataFolderName = sanitized == null ? DEFAULT_APP_DATA_FOLDER_NAME : sanitized;
+    }
+
+    private static String sanitizeAppDataFolderName(String appDataFolderName) {
+        if (appDataFolderName == null) {
+            return null;
+        }
+
+        String segment = appDataFolderName.strip();
+
+        if (segment.isEmpty()) {
+            return null;
+        }
+
+        if (segment.indexOf('/') >= 0 || segment.indexOf('\\') >= 0) {
+            return null;
+        }
+
+        if (segment.equals(".") || segment.equals("..")) {
+            return null;
+        }
+
+        if (!SAFE_APP_DATA_FOLDER_NAME.matcher(segment).matches()) {
+            return null;
+        }
+
+        segment = segment.replaceAll("[ .]+$", "");
+
+        if (segment.isEmpty() || isWindowsReservedName(segment)) {
+            return null;
+        }
+
+        return segment;
+    }
+
+    private static boolean isWindowsReservedName(String name) {
+        String upper = name.toUpperCase(Locale.ROOT);
+
+        int dotIndex = upper.indexOf('.');
+        if (dotIndex >= 0) {
+            upper = upper.substring(0, dotIndex);
+        }
+
+        return WINDOWS_RESERVED_NAMES.contains(upper);
+    }
     public boolean createDirectory(String pathname) {
         pathname = FileUtil.separatorsToSystem(pathname);
 
