@@ -1018,7 +1018,12 @@ public class GLTextGridWindow extends HasErrorState
             return;
         }
         keyboard.clearKeyBuffers();
-        while (!Thread.currentThread().isInterrupted() && !isClosing()) {
+        while (!Thread.currentThread().isInterrupted()
+                && windowManager.getGLFWWindow() != 0
+                && !isWindowCloseRequested()) {
+            if (isClosing) {
+                break;
+            }
             if (keyboard.getNextKey() != 0 || keyboard.getNextScanKey() != 0) {
                 break;
             }
