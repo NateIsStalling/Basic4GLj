@@ -9,6 +9,8 @@ import java.util.List;
 interface IEditorPresenter {
     void onModeChanged(ApMode mode, String statusMsg);
 
+    void onCompileSucceeded();
+
     void refreshDebugDisplays(ApMode mode);
 
     void placeCursorAtProcessed(final int line, int col);

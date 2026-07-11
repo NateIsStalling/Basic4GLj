@@ -263,8 +263,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
 
     // Compilation and execution routines
     public boolean loadProgramIntoCompiler() {
-        // TODO Get editor assigned as main file
-        int mainFiledIndex = 0;
+        int mainFiledIndex = fileManager.getRunnableFileIndex();
+        if (mainFiledIndex < 0) {
+            return false;
+        }
 
         return basic4gl.getPreprocessor()
                 .preprocess(new EditorSourceFile(

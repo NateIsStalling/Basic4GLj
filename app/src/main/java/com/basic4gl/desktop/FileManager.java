@@ -10,6 +10,7 @@ import javax.swing.*;
 public class FileManager implements IFileManager {
 
     private final Vector<FileEditor> fileEditors = new Vector<>();
+    private String runnableFilePath;
 
     private String currentDirectory; // Current working directory
 
@@ -193,5 +194,36 @@ public class FileManager implements IFileManager {
 
     public Vector<FileEditor> getFileEditors() {
         return fileEditors;
+    }
+
+    public String getRunnableFilePath() {
+        ensureRunnableFileValid();
+        return runnableFilePath;
+    }
+
+    public void setRunnableFilePath(String runnableFilePath) {
+        this.runnableFilePath = runnableFilePath;
+        ensureRunnableFileValid();
+    }
+
+    public int getRunnableFileIndex() {
+        ensureRunnableFileValid();
+        if (runnableFilePath == null || runnableFilePath.isBlank()) {
+            return -1;
+        }
+        return getTabIndex(runnableFilePath);
+    }
+
+    public void ensureRunnableFileValid() {
+        if (fileEditors.isEmpty()) {
+            runnableFilePath = null;
+            return;
+        }
+
+        if (runnableFilePath != null && !runnableFilePath.isBlank() && getTabIndex(runnableFilePath) != -1) {
+            return;
+        }
+
+        runnableFilePath = fileEditors.get(0).getFilePath();
     }
 }

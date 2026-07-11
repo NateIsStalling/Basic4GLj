@@ -25,6 +25,8 @@ import com.formdev.flatlaf.util.SystemInfo;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -33,6 +35,9 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.SearchContext;
 
@@ -72,7 +77,75 @@ public class MainWindow
     private final JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
     private final JSplitPane debugPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     private final JTabbedPane tabControl = new JTabbedPane();
+    private final JTabbedPane splitTabControl = new JTabbedPane();
+    private final JSplitPane editorSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+    private final JPanel primaryTabHost = new JPanel(new BorderLayout());
+    private final JButton addTabDropdownButton = new JButton("+");
+    private final JSplitPane workspacePane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+    private final JSplitPane contentPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+    private final JPanel leftSidebarContainer = new JPanel(new BorderLayout());
+    private final JPanel leftSidebarContent = new JPanel(new CardLayout());
+    private final JToolBar leftSidebarRail = new JToolBar(SwingConstants.VERTICAL);
+    private final ButtonGroup leftSidebarGroup = new ButtonGroup();
+    private final Map<String, JToggleButton> leftSidebarButtons = new HashMap<>();
+    private final JTabbedPane docsTabs = new JTabbedPane();
+    private final JPanel rightDocsContainer = new JPanel(new BorderLayout());
+    private final JToolBar rightDocsRail = new JToolBar(SwingConstants.VERTICAL);
+    private final ButtonGroup rightDocsGroup = new ButtonGroup();
+    private final Map<String, JToggleButton> rightDocsButtons = new HashMap<>();
+    private final JTree fileBrowserTree = new JTree();
+    private final DefaultListModel<String> assetsListModel = new DefaultListModel<>();
+    private final JList<String> assetsList = new JList<>(assetsListModel);
+    private final JComboBox<String> runTargetCombo = new JComboBox<>();
+    private boolean updatingRunTargetCombo = false;
+    private final DefaultListModel<ReferenceItem> referenceListModel = new DefaultListModel<>();
+    private final JList<ReferenceItem> referenceList = new JList<>(referenceListModel);
+    private final JTextField referenceSearchField = new JTextField();
+    private final JComboBox<String> referenceKindFilter = new JComboBox<>(new String[] {"All", "Functions", "Constants", "Labels", "Variables"});
+    private final JComboBox<String> referenceSourceFilter =
+            new JComboBox<>(new String[] {"All sources", "Builtin", "Libraries", "Program"});
+    private final JComboBox<String> referenceLibraryFilter = new JComboBox<>(new String[] {"All libraries"});
+    private final JTextPane referenceDetailsPane = new JTextPane();
+    private final JButton referenceInsertButton = new JButton("Insert");
+    private final java.util.List<ReferenceItem> allReferenceItems = new ArrayList<>();
+    private final SymbolIndexer symbolIndexer = new SymbolIndexer(this::updateProgramSymbols);
+    private int expandedLeftSidebarWidth = 260;
+    private int expandedRightDocsWidth = 320;
+    private String activeLeftSidebarKey = "files";
+    private String activeRightDocsKey = "functions";
     private JPanel emptyTabPanel;
+
+    private static final class ReferenceItem {
+        final String kind;
+        final String name;
+        final String signature;
+        final String library;
+        final String details;
+        final String insertText;
+        final int caretOffset;
+
+        ReferenceItem(
+                String kind,
+                String name,
+                String signature,
+                String library,
+                String details,
+                String insertText,
+                int caretOffset) {
+            this.kind = kind;
+            this.name = name;
+            this.signature = signature;
+            this.library = library;
+            this.details = details;
+            this.insertText = insertText;
+            this.caretOffset = caretOffset;
+        }
+
+        @Override
+        public String toString() {
+            return signature;
+        }
+    }
 
     private final JMenu bookmarkSubMenu = new JMenu("Bookmarks");
     private final JMenu breakpointSubMenu = new JMenu("Breakpoints");
@@ -462,6 +535,11 @@ public class MainWindow
         settingsMenuItem.addActionListener(e -> {
             showSettings();
         });
+
+        functionListMenuItem.addActionListener(e -> {
+            selectRightDocsSection("functions");
+        });
+
         aboutMenuItem.addActionListener(e -> showAboutDialog());
 
         if (SystemInfo.isMacOS) {
@@ -538,6 +616,7 @@ public class MainWindow
         toolBar.add(debugButton);
         toolBar.addSeparator();
         toolBar.add(playButton);
+        toolBar.add(runTargetCombo);
         toolBar.add(stepOverButton);
         toolBar.add(stepInButton);
         toolBar.add(stepOutButton);
@@ -559,6 +638,9 @@ public class MainWindow
         exportButton.addActionListener(e -> actionExport());
         settingsButton.addActionListener(e -> showSettings());
         runButton.setToolTipText("Run the program!");
+        runTargetCombo.setToolTipText("Select the runnable source file");
+        runTargetCombo.setMaximumSize(new Dimension(260, 30));
+        runTargetCombo.addActionListener(e -> onRunTargetSelectionChanged());
 
         toolBar.setAlignmentY(1);
         toolBar.setFloatable(false);
@@ -622,6 +704,8 @@ public class MainWindow
                             // Remove tab
                             tabControl.remove(tabIndex);
                             fileManager.getFileEditors().remove(tabIndex.intValue());
+                            fileManager.ensureRunnableFileValid();
+                            refreshRunnableFileControls();
 
                             // Refresh controls if no files open
                             if (fileManager.editorCount() == 0) {
@@ -631,13 +715,34 @@ public class MainWindow
                     }
                 });
 
-        mainPane.setTopComponent(tabControl);
+        configurePrimaryTabHost();
+        configureSplitTabs();
+        configureTabContextMenu();
+        configureSidebar();
+        configureDocsPane();
+
+        editorSplitPane.setLeftComponent(primaryTabHost);
+        editorSplitPane.setRightComponent(splitTabControl);
+        editorSplitPane.setResizeWeight(0.7);
+
+        mainPane.setTopComponent(primaryTabHost);
+
         debugPane.setLeftComponent(watchListFrame);
         debugPane.setRightComponent(gosubFrame);
 
+        contentPane.setLeftComponent(mainPane);
+        contentPane.setRightComponent(rightDocsContainer);
+        contentPane.setResizeWeight(0.74);
+
+        workspacePane.setLeftComponent(leftSidebarContainer);
+        workspacePane.setRightComponent(contentPane);
+        workspacePane.setResizeWeight(0.18);
+        workspacePane.setDividerLocation(expandedLeftSidebarWidth);
+        contentPane.setDividerLocation(Math.max(200, frame.getPreferredSize().width - expandedRightDocsWidth));
+
         // Add controls to window
         frame.add(toolBar, BorderLayout.NORTH);
-        frame.add(mainPane, BorderLayout.CENTER);
+        frame.add(workspacePane, BorderLayout.CENTER);
         frame.add(statusPanel, BorderLayout.SOUTH);
         frame.setJMenuBar(menuBar);
 
@@ -695,6 +800,9 @@ public class MainWindow
         basicEditor.initLibraries();
         resetProject();
         basicEditor.loadSettings();
+        refreshRunnableFileControls();
+        populateDocsFromCompiler();
+        refreshSidebarContent();
 
         // Warm up the debug server
         DebugServerFactory.startDebugServer(debugServerBinPath, DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
@@ -799,6 +907,7 @@ public class MainWindow
         // ShutDownTomWindowsBasicLib();
 
         frame.dispose();
+        symbolIndexer.shutdown();
         System.exit(0);
     }
 
@@ -815,6 +924,9 @@ public class MainWindow
 
         // Display the editor
         tabControl.setSelectedIndex(0);
+        fileManager.ensureRunnableFileValid();
+        refreshRunnableFileControls();
+        refreshSidebarContent();
     }
 
     @Override
@@ -864,6 +976,7 @@ public class MainWindow
             fileManager.getFileEditors().clear();
 
             this.addTab();
+            refreshSidebarContent();
         }
     }
 
@@ -903,6 +1016,7 @@ public class MainWindow
 
             // Display file
             addTab(editor);
+            refreshSidebarContent();
         }
     }
 
@@ -999,8 +1113,7 @@ public class MainWindow
         basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
-            // TODO Check if index of main file
-            int main = 0;
+            int main = fileManager.getRunnableFileIndex();
             if (index == main) {
                 fileManager.setFileDirectory(
                         new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
@@ -1024,8 +1137,7 @@ public class MainWindow
         basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
-            // TODO Check if main file
-            int main = 0;
+            int main = fileManager.getRunnableFileIndex();
             if (index == main) {
                 fileManager.setFileDirectory(
                         new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
@@ -1051,8 +1163,7 @@ public class MainWindow
 
         basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         if (fileManager.getFileEditors().get(index).save(true, fileManager.getCurrentDirectory())) {
-            // TODO get current main file
-            int main = 0;
+            int main = fileManager.getRunnableFileIndex();
             if (index == main) {
                 fileManager.setFileDirectory(
                         new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
@@ -1090,11 +1201,16 @@ public class MainWindow
 
         // Refresh UI
         refreshActions(basicEditor.getMode());
+        refreshRunnableFileControls();
+        refreshSidebarContent();
     }
 
     public void closeTab(int index) {
         tabControl.remove(index);
         fileManager.getFileEditors().remove(index);
+        fileManager.ensureRunnableFileValid();
+        refreshRunnableFileControls();
+        refreshSidebarContent();
     }
 
     public void addTab() {
@@ -1108,7 +1224,7 @@ public class MainWindow
         fileManager.getFileEditors().add(editor);
 
         // replace emptyTabPanel if needed
-        mainPane.setTopComponent(tabControl);
+        mainPane.setTopComponent(getActiveEditorHost());
 
         tabControl.addTab(editor.getTitle(), editor.getContentPane());
 
@@ -1125,7 +1241,7 @@ public class MainWindow
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
-                //                mTabControl.getTabComponentAt(index).invalidate();
+                symbolIndexer.schedule(collectAllSourceText());
             }
 
             @Override
@@ -1133,6 +1249,7 @@ public class MainWindow
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
+                symbolIndexer.schedule(collectAllSourceText());
             }
 
             @Override
@@ -1161,6 +1278,10 @@ public class MainWindow
         if (count == 0) {
             basicEditor.setMode(ApMode.AP_STOPPED, null);
         }
+
+        fileManager.ensureRunnableFileValid();
+        refreshRunnableFileControls();
+        refreshSidebarContent();
     }
 
     @Override
@@ -1260,6 +1381,14 @@ public class MainWindow
     }
 
     @Override
+    public void onCompileSucceeded() {
+        populateDocsFromCompiler();
+        // Also sync the indexer immediately so the debounced background pass
+        // reflects the compiled state right away.
+        symbolIndexer.indexNow(collectAllSourceText());
+    }
+
+    @Override
     public void onModeChanged(ApMode mode, String statusMsg) {
         if (mode != ApMode.AP_CLOSED) {
             copyMenuItem.setEnabled(true);
@@ -1353,6 +1482,7 @@ public class MainWindow
                 mainPane.setTopComponent(emptyTabPanel);
                 break;
             case AP_STOPPED:
+                mainPane.setTopComponent(getActiveEditorHost());
                 setClosingTabsEnabled(true);
                 settingsMenuItem.setEnabled(true);
                 settingsButton.setEnabled(true);
@@ -1392,6 +1522,7 @@ public class MainWindow
 
             case AP_RUNNING:
             case AP_PAUSED:
+                mainPane.setTopComponent(getActiveEditorHost());
                 setClosingTabsEnabled(false);
 
                 settingsMenuItem.setEnabled(false);
@@ -1581,6 +1712,1054 @@ public class MainWindow
         basicEditor.toggleBreakpt(filePath, line);
     }
 
+    private Component getActiveEditorHost() {
+        return splitTabControl.getTabCount() == 0 ? primaryTabHost : editorSplitPane;
+    }
+
+    private void configurePrimaryTabHost() {
+        addTabDropdownButton.setFocusable(false);
+        addTabDropdownButton.setToolTipText("Create a new tab or open an asset");
+        addTabDropdownButton.setMargin(new Insets(2, 8, 2, 8));
+        addTabDropdownButton.addActionListener(e -> showCreateTabMenu(addTabDropdownButton));
+        tabControl.putClientProperty(TABBED_PANE_LEADING_COMPONENT, addTabDropdownButton);
+        primaryTabHost.add(tabControl, BorderLayout.CENTER);
+    }
+
+    private void configureSplitTabs() {
+        splitTabControl.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        splitTabControl.putClientProperty(TABBED_PANE_TAB_CLOSABLE, true);
+        splitTabControl.putClientProperty(
+                TABBED_PANE_TAB_CLOSE_CALLBACK,
+                (BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
+                    if (tabIndex >= 0) {
+                        splitTabControl.remove(tabIndex);
+                        if (splitTabControl.getTabCount() == 0 && basicEditor != null && basicEditor.getMode() != ApMode.AP_CLOSED) {
+                            mainPane.setTopComponent(primaryTabHost);
+                        }
+                    }
+                });
+    }
+
+    private void configureTabContextMenu() {
+        tabControl.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeShowTabPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeShowTabPopup(e);
+            }
+        });
+    }
+
+    private void maybeShowTabPopup(MouseEvent e) {
+        if (!e.isPopupTrigger()) {
+            return;
+        }
+        int tabIndex = tabControl.indexAtLocation(e.getX(), e.getY());
+        if (tabIndex < 0 || tabIndex >= fileManager.getFileEditors().size()) {
+            return;
+        }
+
+        JPopupMenu popup = new JPopupMenu();
+        JMenuItem setRunnable = new JMenuItem("Set as runnable file");
+        setRunnable.addActionListener(x -> {
+            fileManager.setRunnableFilePath(fileManager.getFileEditors().get(tabIndex).getFilePath());
+            refreshRunnableFileControls();
+        });
+        popup.add(setRunnable);
+
+        JMenuItem splitPreview = new JMenuItem("Split right");
+        splitPreview.addActionListener(x -> openSplitPreview(tabIndex));
+        popup.add(splitPreview);
+
+        JMenuItem popOut = new JMenuItem("Pop out tab");
+        popOut.addActionListener(x -> popOutTab(tabIndex));
+        popup.add(popOut);
+
+        popup.show(tabControl, e.getX(), e.getY());
+    }
+
+    private void openSplitPreview(int tabIndex) {
+        if (tabIndex < 0 || tabIndex >= fileManager.getFileEditors().size()) {
+            return;
+        }
+        File source = fileManager.getFileEditors().get(tabIndex).getFile();
+        if (source == null) {
+            return;
+        }
+
+        FileEditor preview = FileEditor.open(source, this, fileManager, this, linkGenerator, searchContext);
+        preview.getEditorPane().setEditable(false);
+        splitTabControl.addTab(preview.getTitle() + " (split)", preview.getContentPane());
+        splitTabControl.setSelectedIndex(splitTabControl.getTabCount() - 1);
+        mainPane.setTopComponent(getActiveEditorHost());
+        SwingUtilities.invokeLater(() -> editorSplitPane.setDividerLocation(0.68));
+    }
+
+    private void popOutTab(int tabIndex) {
+        if (tabIndex < 0 || tabIndex >= fileManager.getFileEditors().size()) {
+            return;
+        }
+        File source = fileManager.getFileEditors().get(tabIndex).getFile();
+        if (source == null) {
+            return;
+        }
+
+        FileEditor preview = FileEditor.open(source, this, fileManager, this, linkGenerator, searchContext);
+        preview.getEditorPane().setEditable(false);
+
+        JFrame popout = new JFrame("Pop out: " + preview.getShortFilename());
+        popout.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        popout.setLayout(new BorderLayout());
+        popout.add(preview.getContentPane(), BorderLayout.CENTER);
+        popout.setSize(new Dimension(720, 480));
+        popout.setLocationRelativeTo(frame);
+        popout.setVisible(true);
+    }
+
+    private void showCreateTabMenu(Component anchor) {
+        JPopupMenu popup = new JPopupMenu();
+
+        JMenuItem newTabItem = new JMenuItem("New Program Tab");
+        newTabItem.addActionListener(e -> addTab());
+        popup.add(newTabItem);
+
+        JMenuItem openAssetItem = new JMenuItem("Open Asset or Docs File...");
+        openAssetItem.addActionListener(e -> actionOpenAsset());
+        popup.add(openAssetItem);
+
+        JMenuItem openReadmeItem = new JMenuItem("Open README.md in docs");
+        openReadmeItem.addActionListener(e -> openMarkdownInDocsTab(new File("README.md")));
+        popup.add(openReadmeItem);
+
+        popup.show(anchor, 0, anchor.getHeight());
+    }
+
+    private void actionOpenAsset() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new File(fileManager.getCurrentDirectory()));
+        int result = chooser.showOpenDialog(frame);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File selected = chooser.getSelectedFile();
+        if (selected.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
+            openMarkdownInDocsTab(selected);
+        } else {
+            openTab(selected);
+        }
+    }
+
+    private void configureSidebar() {
+        leftSidebarRail.setFloatable(false);
+        leftSidebarRail.setRollover(true);
+
+        leftSidebarContent.add(buildFileBrowserPanel(), "files");
+        leftSidebarContent.add(buildAssetsPanel(), "assets");
+        leftSidebarContent.add(buildBookmarkActionsPanel(), "bookmarks");
+        leftSidebarContent.add(buildDebugActionsPanel(), "debug");
+
+        addLeftSidebarButton("files", createImageIcon(ICON_MENU_FOLDER), "Files");
+        addLeftSidebarButton("assets", createImageIcon(ICON_MENU_ASSETS), "Assets");
+        addLeftSidebarButton("bookmarks", createImageIcon(ICON_MENU_BOOKMARKS), "Bookmarks");
+        leftSidebarRail.add(Box.createVerticalGlue());
+        addLeftSidebarButton("debug", createImageIcon(ICON_MENU_DEBUG), "Debug");
+
+        leftSidebarContainer.add(leftSidebarRail, BorderLayout.WEST);
+        leftSidebarContainer.add(leftSidebarContent, BorderLayout.CENTER);
+        selectLeftSidebarSection("files", true);
+    }
+
+    private JPanel buildFileBrowserPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        fileBrowserTree.setRootVisible(true);
+        fileBrowserTree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() != 2) {
+                    return;
+                }
+                TreePath path = fileBrowserTree.getPathForLocation(e.getX(), e.getY());
+                if (path == null) {
+                    return;
+                }
+                Object userObject = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
+                if (!(userObject instanceof File file) || !file.isFile()) {
+                    return;
+                }
+                if (file.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
+                    openMarkdownInDocsTab(file);
+                } else {
+                    openTab(file);
+                }
+            }
+        });
+        panel.add(new JScrollPane(fileBrowserTree), BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel buildAssetsPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        assetsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        assetsList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() != 2) {
+                    return;
+                }
+                String selected = assetsList.getSelectedValue();
+                if (selected == null) {
+                    return;
+                }
+                File file = new File(selected);
+                if (!file.exists()) {
+                    return;
+                }
+                if (selected.toLowerCase(Locale.ROOT).endsWith(".md")) {
+                    openMarkdownInDocsTab(file);
+                } else {
+                    openTab(file);
+                }
+            }
+        });
+        panel.add(new JScrollPane(assetsList), BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel buildBookmarkActionsPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        JButton next = new JButton("Next bookmark");
+        next.addActionListener(e -> fileManager.selectNextBookmark(tabControl.getSelectedIndex()));
+        JButton previous = new JButton("Previous bookmark");
+        previous.addActionListener(e -> fileManager.selectPreviousBookmark(tabControl.getSelectedIndex()));
+        JButton toggle = new JButton("Toggle bookmark");
+        toggle.addActionListener(e -> fileManager.toggleBookmark(tabControl.getSelectedIndex()));
+
+        panel.add(next);
+        panel.add(previous);
+        panel.add(toggle);
+        return panel;
+    }
+
+    private JPanel buildDebugActionsPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        JButton toggleDebug = new JButton("Toggle debug mode");
+        toggleDebug.addActionListener(e -> actionDebugMode());
+        JButton playPause = new JButton("Play/Pause");
+        playPause.addActionListener(e -> basicEditor.actionPlayPause());
+        JButton stepOver = new JButton("Step over");
+        stepOver.addActionListener(e -> basicEditor.actionStep());
+        JButton stepInto = new JButton("Step into");
+        stepInto.addActionListener(e -> basicEditor.actionStepInto());
+        JButton stepOut = new JButton("Step out");
+        stepOut.addActionListener(e -> basicEditor.actionStepOutOf());
+
+        panel.add(toggleDebug);
+        panel.add(playPause);
+        panel.add(stepOver);
+        panel.add(stepInto);
+        panel.add(stepOut);
+        return panel;
+    }
+
+    private void configureDocsPane() {
+        JPanel lookupPanel = new JPanel(new BorderLayout(6, 6));
+        JPanel lookupHeader = new JPanel(new BorderLayout(6, 6));
+        JPanel lookupFilters = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        lookupFilters.add(new JLabel("Type"));
+        lookupFilters.add(referenceKindFilter);
+        lookupFilters.add(new JLabel("Source"));
+        lookupFilters.add(referenceSourceFilter);
+        lookupFilters.add(new JLabel("Library"));
+        lookupFilters.add(referenceLibraryFilter);
+        lookupHeader.add(lookupFilters, BorderLayout.WEST);
+        lookupHeader.add(referenceSearchField, BorderLayout.CENTER);
+        referenceInsertButton.setFocusable(false);
+        referenceInsertButton.setEnabled(false);
+        lookupHeader.add(referenceInsertButton, BorderLayout.EAST);
+
+        referenceSearchField.setToolTipText("Search by name, signature, or library");
+        referenceKindFilter.setToolTipText("Filter by functions or constants");
+        referenceSourceFilter.setToolTipText("Filter by builtin tokens or library-provided tokens");
+        referenceLibraryFilter.setToolTipText("Filter by library");
+
+        referenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        referenceList.setCellRenderer(new DefaultListCellRenderer() {
+            private final ImageIcon functionIcon = createImageIcon(ICON_FUNCTION);
+            private final ImageIcon variableIcon = createImageIcon(ICON_VARIABLE);
+            private final ImageIcon labelIcon = createImageIcon(ICON_LABEL);
+
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof ReferenceItem item) {
+                    label.setText(item.signature);
+                    if ("function".equals(item.kind) || "userfunc".equals(item.kind)) {
+                        label.setIcon(functionIcon);
+                    } else if ("label".equals(item.kind)) {
+                        label.setIcon(labelIcon);
+                    } else {
+                        label.setIcon(variableIcon);
+                    }
+                    label.setToolTipText(item.signature + "  [" + item.library + "]");
+                }
+                return label;
+            }
+        });
+
+        referenceDetailsPane.setEditable(false);
+        referenceDetailsPane.setContentType("text/html");
+
+        JSplitPane lookupSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        lookupSplit.setResizeWeight(0.65);
+        lookupSplit.setTopComponent(new JScrollPane(referenceList));
+        lookupSplit.setBottomComponent(new JScrollPane(referenceDetailsPane));
+
+        lookupPanel.add(lookupHeader, BorderLayout.NORTH);
+        lookupPanel.add(lookupSplit, BorderLayout.CENTER);
+        docsTabs.addTab("Reference", lookupPanel);
+
+        referenceSearchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filterReferenceItems();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filterReferenceItems();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filterReferenceItems();
+            }
+        });
+        referenceList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateReferenceSelectionDetails();
+            }
+        });
+        referenceKindFilter.addActionListener(e -> filterReferenceItems());
+        referenceSourceFilter.addActionListener(e -> filterReferenceItems());
+        referenceLibraryFilter.addActionListener(e -> filterReferenceItems());
+        referenceList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    insertSelectedReference();
+                }
+            }
+        });
+        referenceInsertButton.addActionListener(e -> insertSelectedReference());
+
+        rightDocsRail.setFloatable(false);
+        rightDocsRail.setRollover(true);
+
+        addRightDocsButton("functions", createImageIcon(ICON_MENU_FUNCTIONS), "Reference lookup");
+        addRightDocsButton("docs", createImageIcon(ICON_MENU_HELP), "Markdown docs");
+
+        rightDocsContainer.add(rightDocsRail, BorderLayout.EAST);
+        rightDocsContainer.add(docsTabs, BorderLayout.CENTER);
+        selectRightDocsSection("functions");
+    }
+
+    private void addLeftSidebarButton(String key, Icon icon, String tooltip) {
+        JToggleButton button = createRailButton(icon, tooltip);
+        button.addActionListener(e -> onLeftSidebarButtonPressed(key));
+        leftSidebarGroup.add(button);
+        leftSidebarButtons.put(key, button);
+        leftSidebarRail.add(button);
+    }
+
+    private void addRightDocsButton(String key, Icon icon, String tooltip) {
+        JToggleButton button = createRailButton(icon, tooltip);
+        button.addActionListener(e -> onRightDocsButtonPressed(key));
+        rightDocsGroup.add(button);
+        rightDocsButtons.put(key, button);
+        rightDocsRail.add(button);
+    }
+
+    private JToggleButton createRailButton(Icon icon, String tooltip) {
+        JToggleButton button = new JToggleButton(icon);
+        button.setToolTipText(tooltip);
+        button.setFocusable(false);
+        button.setMargin(new Insets(8, 8, 8, 8));
+        button.setMaximumSize(new Dimension(38, 38));
+        button.setPreferredSize(new Dimension(38, 38));
+        return button;
+    }
+
+    private void onLeftSidebarButtonPressed(String key) {
+        if (Objects.equals(activeLeftSidebarKey, key) && isLeftSidebarExpanded()) {
+            collapseLeftSidebar();
+            return;
+        }
+        selectLeftSidebarSection(key, true);
+    }
+
+    private void selectLeftSidebarSection(String key, boolean ensureExpanded) {
+        CardLayout layout = (CardLayout) leftSidebarContent.getLayout();
+        layout.show(leftSidebarContent, key);
+        activeLeftSidebarKey = key;
+
+        JToggleButton button = leftSidebarButtons.get(key);
+        if (button != null) {
+            button.setSelected(true);
+        }
+
+        if (ensureExpanded) {
+            expandLeftSidebar();
+        }
+    }
+
+    private boolean isLeftSidebarExpanded() {
+        return workspacePane.getDividerLocation() > leftSidebarRail.getPreferredSize().width + 24;
+    }
+
+    private void collapseLeftSidebar() {
+        if (workspacePane.getDividerLocation() > leftSidebarRail.getPreferredSize().width + 24) {
+            expandedLeftSidebarWidth = workspacePane.getDividerLocation();
+        }
+        workspacePane.setDividerLocation(leftSidebarRail.getPreferredSize().width + 6);
+    }
+
+    private void expandLeftSidebar() {
+        int target = Math.max(expandedLeftSidebarWidth, 180);
+        workspacePane.setDividerLocation(target);
+    }
+
+    private void onRightDocsButtonPressed(String key) {
+        if (Objects.equals(activeRightDocsKey, key) && isRightDocsExpanded()) {
+            collapseRightDocs();
+            return;
+        }
+        selectRightDocsSection(key);
+    }
+
+    private void selectRightDocsSection(String key) {
+        activeRightDocsKey = key;
+
+        JToggleButton button = rightDocsButtons.get(key);
+        if (button != null) {
+            button.setSelected(true);
+        }
+
+        if ("docs".equals(key) && docsTabs.getTabCount() > 1) {
+            docsTabs.setSelectedIndex(docsTabs.getTabCount() - 1);
+        } else if (docsTabs.getTabCount() > 0) {
+            docsTabs.setSelectedIndex(0);
+        }
+
+        expandRightDocs();
+        docsTabs.requestFocusInWindow();
+    }
+
+    private boolean isRightDocsExpanded() {
+        int docsWidth = contentPane.getWidth() - contentPane.getDividerLocation();
+        return docsWidth > rightDocsRail.getPreferredSize().width + 28;
+    }
+
+    private void collapseRightDocs() {
+        int docsWidth = contentPane.getWidth() - contentPane.getDividerLocation();
+        if (docsWidth > rightDocsRail.getPreferredSize().width + 28) {
+            expandedRightDocsWidth = docsWidth;
+        }
+        int collapsedWidth = rightDocsRail.getPreferredSize().width + 8;
+        contentPane.setDividerLocation(Math.max(120, contentPane.getWidth() - collapsedWidth));
+    }
+
+    private void expandRightDocs() {
+        int targetDocsWidth = Math.max(expandedRightDocsWidth, 220);
+        int newDivider = Math.max(120, contentPane.getWidth() - targetDocsWidth);
+        contentPane.setDividerLocation(newDivider);
+    }
+
+    private void refreshSidebarContent() {
+        refreshFileBrowserTree();
+        refreshAssetsLibrary();
+    }
+
+    private void refreshFileBrowserTree() {
+        File root = new File(fileManager.getCurrentDirectory());
+        DefaultMutableTreeNode rootNode = buildFileTreeNode(root, 0, 5);
+        fileBrowserTree.setModel(new DefaultTreeModel(rootNode));
+    }
+
+    private DefaultMutableTreeNode buildFileTreeNode(File file, int depth, int maxDepth) {
+        DefaultMutableTreeNode node = new DefaultMutableTreeNode(file);
+        if (!file.isDirectory() || depth >= maxDepth) {
+            return node;
+        }
+
+        File[] children = file.listFiles();
+        if (children == null) {
+            return node;
+        }
+        Arrays.sort(children, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
+        for (File child : children) {
+            if (child.getName().startsWith(".")) {
+                continue;
+            }
+            node.add(buildFileTreeNode(child, depth + 1, maxDepth));
+        }
+        return node;
+    }
+
+    private void refreshAssetsLibrary() {
+        assetsListModel.clear();
+        File root = new File(fileManager.getCurrentDirectory());
+        collectAssetFiles(root, 0, 4);
+    }
+
+    private void collectAssetFiles(File directory, int depth, int maxDepth) {
+        if (directory == null || !directory.isDirectory() || depth > maxDepth) {
+            return;
+        }
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return;
+        }
+        Arrays.sort(files, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
+        for (File file : files) {
+            if (file.isDirectory()) {
+                collectAssetFiles(file, depth + 1, maxDepth);
+                continue;
+            }
+            String name = file.getName().toLowerCase(Locale.ROOT);
+            if (name.endsWith(".png")
+                    || name.endsWith(".jpg")
+                    || name.endsWith(".jpeg")
+                    || name.endsWith(".gif")
+                    || name.endsWith(".wav")
+                    || name.endsWith(".ogg")
+                    || name.endsWith(".mp3")
+                    || name.endsWith(".txt")
+                    || name.endsWith(".md")) {
+                assetsListModel.addElement(file.getAbsolutePath());
+            }
+        }
+    }
+
+    private void refreshRunnableFileControls() {
+        if (fileManager == null) {
+            return;
+        }
+
+        updatingRunTargetCombo = true;
+        runTargetCombo.removeAllItems();
+
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            runTargetCombo.addItem(editor.getShortFilename());
+        }
+
+        int runnableIndex = fileManager.getRunnableFileIndex();
+        if (runnableIndex >= 0 && runnableIndex < runTargetCombo.getItemCount()) {
+            runTargetCombo.setSelectedIndex(runnableIndex);
+        }
+
+        runTargetCombo.setEnabled(runTargetCombo.getItemCount() > 0);
+        updatingRunTargetCombo = false;
+    }
+
+    private void onRunTargetSelectionChanged() {
+        if (updatingRunTargetCombo || fileManager == null) {
+            return;
+        }
+        int index = runTargetCombo.getSelectedIndex();
+        if (index >= 0 && index < fileManager.getFileEditors().size()) {
+            fileManager.setRunnableFilePath(fileManager.getFileEditors().get(index).getFilePath());
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Symbol indexer support
+    // -------------------------------------------------------------------------
+
+    /**
+     * Concatenates the text of every open editor tab into a single string, separated by newlines.
+     * This gives the {@link SymbolIndexer} full visibility of all open files for the debounced
+     * background scan.
+     */
+    private String collectAllSourceText() {
+        if (fileManager == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (com.basic4gl.desktop.editor.FileEditor fe : fileManager.getFileEditors()) {
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append(fe.getEditorPane().getText());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Called on the EDT by the {@link SymbolIndexer} callback after each debounce cycle.
+     * Replaces all "Program" (user-defined) reference items with the freshly scanned symbols and
+     * refreshes the reference panel.
+     */
+    private void updateProgramSymbols(List<SymbolIndexer.IndexedSymbol> symbols) {
+        // Remove all existing Program-sourced items
+        allReferenceItems.removeIf(item -> "Program".equals(item.library));
+
+        // Add newly scanned symbols
+        for (SymbolIndexer.IndexedSymbol sym : symbols) {
+            String details;
+            String insertText;
+            int caretOffset;
+            switch (sym.kind) {
+                case "userfunc" -> {
+                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name) + "</h3>"
+                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> User Function"
+                            + "<br/><b>Source:</b> Program</p>"
+                            + "<p style='margin:0;'>" + escapeHtml(sym.signature) + "</p>"
+                            + "</body></html>";
+                    insertText = sym.name + "()";
+                    caretOffset = sym.name.length() + 1;
+                }
+                case "label" -> {
+                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name) + "</h3>"
+                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> Label"
+                            + "<br/><b>Usage:</b> <code>gosub " + escapeHtml(sym.name) + "</code>"
+                            + " / <code>goto " + escapeHtml(sym.name) + "</code></p>"
+                            + "</body></html>";
+                    insertText = sym.name;
+                    caretOffset = sym.name.length();
+                }
+                default -> { // "variable"
+                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name) + "</h3>"
+                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> Variable"
+                            + "<br/><b>Source:</b> Program</p>"
+                            + "<p style='margin:0;'>" + escapeHtml(sym.signature) + "</p>"
+                            + "</body></html>";
+                    insertText = sym.name;
+                    caretOffset = sym.name.length();
+                }
+            }
+            allReferenceItems.add(new ReferenceItem(sym.kind, sym.name, sym.signature, "Program", details, insertText, caretOffset));
+        }
+
+        allReferenceItems.sort(
+                Comparator.comparing((ReferenceItem item) -> item.name, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(item -> item.kind));
+        rebuildLibraryFilterOptions();
+        filterReferenceItems();
+    }
+
+    private void populateDocsFromCompiler() {
+        if (basicEditor == null || basicEditor.compiler == null) {
+            return;
+        }
+        Map<Integer, String> functionLibraryBySpecIndex = buildFunctionLibraryBySpecIndex();
+        Map<String, String> constantLibraryByName = buildConstantLibraryByName();
+        allReferenceItems.clear();
+        allReferenceItems.addAll(buildFunctionReferenceItems(basicEditor.compiler, functionLibraryBySpecIndex));
+        allReferenceItems.addAll(buildConstantReferenceItems(basicEditor.compiler, constantLibraryByName));
+        allReferenceItems.addAll(buildUserFunctionReferenceItems(basicEditor.compiler));
+        allReferenceItems.addAll(buildLabelReferenceItems(basicEditor.compiler));
+        allReferenceItems.addAll(buildVariableReferenceItems(basicEditor.compiler));
+        allReferenceItems.sort(Comparator.comparing((ReferenceItem item) -> item.name, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(item -> item.kind));
+        rebuildLibraryFilterOptions();
+        filterReferenceItems();
+    }
+
+    private java.util.List<ReferenceItem> buildFunctionReferenceItems(
+            TomBasicCompiler comp, Map<Integer, String> functionLibraryBySpecIndex) {
+        java.util.List<ReferenceItem> items = new ArrayList<>();
+        for (String key : comp.getFunctionIndex().keySet()) {
+            for (Integer index : comp.getFunctionIndex().get(key)) {
+                String name = key;
+                FunctionSpecification spec = comp.getFunctions().get(index);
+                String libraryName = functionLibraryBySpecIndex.getOrDefault(index, "Builtin");
+                String library = libraryName != null ? libraryName : "Builtin";
+                StringBuilder signature = new StringBuilder();
+                if (spec.isFunction()) {
+                    signature.append(getTypeString(spec.getReturnType())).append(' ');
+                }
+                signature.append(name);
+                signature.append(spec.hasBrackets() ? "(" : " ");
+                boolean needComma = false;
+                Vector<ValType> params = spec.getParamTypes().getParams();
+                StringBuilder argsOnly = new StringBuilder();
+                if (params != null) {
+                    for (ValType type : params) {
+                        if (needComma) {
+                            signature.append(", ");
+                            argsOnly.append(", ");
+                        }
+                        String typeName = getTypeString(type);
+                        signature.append(typeName);
+                        argsOnly.append(typeName);
+                        needComma = true;
+                    }
+                }
+                if (spec.hasBrackets()) {
+                    signature.append(')');
+                }
+
+                String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                        + "<h3 style='margin:0 0 8px 0;'>"
+                        + escapeHtml(name)
+                        + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Function<br/><b>Library:</b> "
+                        + escapeHtml(library)
+                        + "</p><p style='margin:0;'>"
+                        + escapeHtml(signature.toString())
+                        + "</p></body></html>";
+                String insertText = spec.hasBrackets() ? name + "()" : name + " ";
+                int caretOffset = spec.hasBrackets() ? name.length() + 1 : insertText.length();
+                if (spec.hasBrackets() && argsOnly.length() > 0) {
+                    insertText = name + "(" + argsOnly + ")";
+                    caretOffset = name.length() + 1;
+                }
+                items.add(new ReferenceItem("function", name, signature.toString(), library, details, insertText, caretOffset));
+            }
+        }
+        return items;
+    }
+
+    private java.util.List<ReferenceItem> buildConstantReferenceItems(
+            TomBasicCompiler comp, Map<String, String> constantLibraryByName) {
+        java.util.List<ReferenceItem> items = new ArrayList<>();
+        for (String key : comp.getConstants().keySet()) {
+            String library = constantLibraryByName.getOrDefault(key.toLowerCase(Locale.ROOT), "Builtin");
+            if (library == null) {
+                library = "Builtin";
+            }
+            String signature = key + " = (" + getTypeString(comp.getConstants().get(key).getType()) + ") "
+                    + comp.getConstants().get(key);
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<h3 style='margin:0 0 8px 0;'>"
+                    + escapeHtml(key)
+                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Constant<br/><b>Library:</b> "
+                    + escapeHtml(library)
+                    + "</p><p style='margin:0;'>"
+                    + escapeHtml(signature)
+                    + "</p></body></html>";
+            items.add(new ReferenceItem("constant", key, signature, library, details, key, key.length()));
+        }
+        return items;
+    }
+
+    private java.util.List<ReferenceItem> buildUserFunctionReferenceItems(TomBasicCompiler comp) {
+        java.util.List<ReferenceItem> items = new ArrayList<>();
+        Map<String, Integer> funcIndex = comp.getGlobalUserFunctionIndex();
+        java.util.Vector<com.basic4gl.runtime.stackframe.UserFunc> functions = comp.getVM().getUserFunctions();
+        java.util.Vector<com.basic4gl.runtime.stackframe.UserFuncPrototype> prototypes = comp.getVM().getUserFunctionPrototypes();
+        for (Map.Entry<String, Integer> entry : funcIndex.entrySet()) {
+            String name = entry.getKey();
+            int funcIdx = entry.getValue();
+            com.basic4gl.runtime.stackframe.UserFuncPrototype prototype = null;
+            if (funcIdx >= 0 && funcIdx < functions.size()) {
+                int protoIdx = functions.get(funcIdx).prototypeIndex;
+                if (protoIdx >= 0 && protoIdx < prototypes.size()) {
+                    prototype = prototypes.get(protoIdx);
+                }
+            }
+            StringBuilder signature = new StringBuilder();
+            if (prototype != null && prototype.hasReturnVal) {
+                signature.append(getTypeString(prototype.returnValType)).append(' ');
+            }
+            signature.append(name).append('(');
+            if (prototype != null && prototype.paramCount > 0) {
+                String[] params = new String[prototype.paramCount];
+                for (Map.Entry<String, Integer> v : prototype.localVarIndex.entrySet()) {
+                    int idx = v.getValue();
+                    if (idx < prototype.paramCount && idx < prototype.localVarTypes.size()) {
+                        params[idx] = getTypeString(prototype.localVarTypes.get(idx)) + " " + v.getKey();
+                    }
+                }
+                boolean needComma = false;
+                for (String param : params) {
+                    if (needComma) signature.append(", ");
+                    signature.append(param != null ? param : "?");
+                    needComma = true;
+                }
+            }
+            signature.append(')');
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(name)
+                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> User Function<br/><b>Source:</b> Program</p>"
+                    + "<p style='margin:0;'>" + escapeHtml(signature.toString()) + "</p></body></html>";
+            items.add(new ReferenceItem("userfunc", name, signature.toString(), "Program", details, name + "()", name.length() + 1));
+        }
+        return items;
+    }
+
+    private java.util.List<ReferenceItem> buildLabelReferenceItems(TomBasicCompiler comp) {
+        java.util.List<ReferenceItem> items = new ArrayList<>();
+        for (String labelName : comp.getLabelNames()) {
+            String signature = labelName + ":";
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(labelName)
+                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Label<br/><b>Usage:</b> "
+                    + "<code>gosub " + escapeHtml(labelName) + "</code> / <code>goto " + escapeHtml(labelName) + "</code>"
+                    + "</p></body></html>";
+            items.add(new ReferenceItem("label", labelName, signature, "Program", details, labelName, labelName.length()));
+        }
+        return items;
+    }
+
+    private java.util.List<ReferenceItem> buildVariableReferenceItems(TomBasicCompiler comp) {
+        java.util.List<ReferenceItem> items = new ArrayList<>();
+        for (com.basic4gl.runtime.VariableCollection.Variable variable : comp.getVM().getVariables().getVariables()) {
+            if (variable.name == null || variable.name.isEmpty()) continue;
+            String typeStr = getTypeString(variable.type);
+            String signature = typeStr + " " + variable.name;
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(variable.name)
+                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Variable<br/><b>Data type:</b> "
+                    + escapeHtml(typeStr) + "<br/><b>Source:</b> Program</p></body></html>";
+            items.add(new ReferenceItem("variable", variable.name, signature, "Program", details, variable.name, variable.name.length()));
+        }
+        return items;
+    }
+
+    private Map<Integer, String> buildFunctionLibraryBySpecIndex() {
+        Map<Integer, String> functionLibraryBySpecIndex = new HashMap<>();
+        if (basicEditor == null || basicEditor.getLibraries() == null) {
+            return functionLibraryBySpecIndex;
+        }
+
+        int specCursor = 0;
+        for (Library library : basicEditor.getLibraries()) {
+            if (!(library instanceof FunctionLibrary functionLibrary)) {
+                continue;
+            }
+            Map<String, FunctionSpecification[]> specs = functionLibrary.specs();
+            if (specs == null) {
+                continue;
+            }
+            int count = 0;
+            for (FunctionSpecification[] overloads : specs.values()) {
+                if (overloads != null) {
+                    count += overloads.length;
+                }
+            }
+            for (int i = 0; i < count; i++) {
+                String libName = library.name();
+                if (libName != null) {
+                functionLibraryBySpecIndex.put(specCursor + i, library.name());
+                }
+            }
+            specCursor += count;
+        }
+        return functionLibraryBySpecIndex;
+    }
+
+    private Map<String, String> buildConstantLibraryByName() {
+        Map<String, String> constantLibraryByName = new HashMap<>();
+        if (basicEditor == null || basicEditor.getLibraries() == null) {
+            return constantLibraryByName;
+        }
+
+        for (Library library : basicEditor.getLibraries()) {
+            if (!(library instanceof FunctionLibrary functionLibrary)) {
+                continue;
+            }
+            Map<String, com.basic4gl.runtime.types.Constant> constants = functionLibrary.constants();
+            if (constants == null) {
+                continue;
+            }
+            for (String name : constants.keySet()) {
+                String libName = library.name();
+                if (libName != null) {
+                constantLibraryByName.put(name.toLowerCase(Locale.ROOT), library.name());
+                }
+            }
+        }
+        return constantLibraryByName;
+    }
+
+    private void rebuildLibraryFilterOptions() {
+        String selected = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All libraries");
+        Set<String> libraries = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (ReferenceItem item : allReferenceItems) {
+            if (item.library != null) {
+            libraries.add(item.library);
+            }
+        }
+
+        referenceLibraryFilter.removeAllItems();
+        referenceLibraryFilter.addItem("All libraries");
+        for (String library : libraries) {
+            referenceLibraryFilter.addItem(library);
+        }
+        referenceLibraryFilter.setSelectedItem(libraries.contains(selected) ? selected : "All libraries");
+    }
+
+    private void filterReferenceItems() {
+        String query = referenceSearchField.getText();
+        String needle = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+        String selectedKind = Objects.toString(referenceKindFilter.getSelectedItem(), "All");
+        String selectedSource = Objects.toString(referenceSourceFilter.getSelectedItem(), "All sources");
+        String selectedLibrary = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All libraries");
+
+        referenceListModel.clear();
+        for (ReferenceItem item : allReferenceItems) {
+            boolean kindMatches = "All".equals(selectedKind)
+                    || ("Functions".equals(selectedKind) && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
+                    || ("Constants".equals(selectedKind) && "constant".equals(item.kind))
+                    || ("Labels".equals(selectedKind) && "label".equals(item.kind))
+                    || ("Variables".equals(selectedKind) && "variable".equals(item.kind));
+            boolean sourceMatches = "All sources".equals(selectedSource)
+                    || ("Builtin".equals(selectedSource) && item.library != null && "Builtin".equalsIgnoreCase(item.library))
+                    || ("Libraries".equals(selectedSource) && item.library != null && !"Builtin".equalsIgnoreCase(item.library) && !"Program".equalsIgnoreCase(item.library))
+                    || ("Program".equals(selectedSource) && item.library != null && "Program".equalsIgnoreCase(item.library));
+            boolean libraryMatches = "All libraries".equals(selectedLibrary) || (item.library != null && selectedLibrary.equals(item.library));
+            if (needle.isEmpty()
+                    || item.name.toLowerCase(Locale.ROOT).contains(needle)
+                    || item.signature.toLowerCase(Locale.ROOT).contains(needle)
+                    || item.kind.toLowerCase(Locale.ROOT).contains(needle)
+                    || (item.library != null && item.library.toLowerCase(Locale.ROOT).contains(needle))) {
+                if (kindMatches && sourceMatches && libraryMatches) {
+                referenceListModel.addElement(item);
+                }
+            }
+        }
+
+        if (!referenceListModel.isEmpty()) {
+            referenceList.setSelectedIndex(0);
+        } else {
+            referenceDetailsPane.setText("<html><body style='font-family:sans-serif;padding:6px;'>No matches.</body></html>");
+            referenceInsertButton.setEnabled(false);
+        }
+    }
+
+    private void updateReferenceSelectionDetails() {
+        ReferenceItem item = referenceList.getSelectedValue();
+        if (item == null) {
+            referenceDetailsPane.setText("<html><body style='font-family:sans-serif;padding:6px;'>Select an entry.</body></html>");
+            referenceInsertButton.setEnabled(false);
+            return;
+        }
+        referenceDetailsPane.setText(item.details);
+        referenceDetailsPane.setCaretPosition(0);
+        referenceInsertButton.setEnabled(true);
+    }
+
+    private void insertSelectedReference() {
+        ReferenceItem item = referenceList.getSelectedValue();
+        if (item == null) {
+            return;
+        }
+        int selectedTab = tabControl.getSelectedIndex();
+        if (selectedTab < 0 || selectedTab >= fileManager.getFileEditors().size()) {
+            return;
+        }
+        JTextArea editorPane = fileManager.getFileEditors().get(selectedTab).getEditorPane();
+        int insertStart = editorPane.getSelectionStart();
+        editorPane.replaceSelection(item.insertText);
+        editorPane.setCaretPosition(Math.min(insertStart + item.caretOffset, editorPane.getDocument().getLength()));
+        editorPane.requestFocusInWindow();
+    }
+
+    private String getTypeString(ValType type) {
+        if (type == null) {
+            return "???";
+        }
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < type.getVirtualPointerLevel(); i++) {
+            result.append('&');
+        }
+        result.append(getTypeString(type.basicType));
+        for (int i = 0; i < type.arrayLevel; i++) {
+            result.append("()");
+        }
+        return result.toString();
+    }
+
+    private String getTypeString(int type) {
+        switch (type) {
+            case BasicValType.VTP_INT:
+                return "int";
+            case BasicValType.VTP_REAL:
+                return "real";
+            case BasicValType.VTP_STRING:
+                return "string";
+            default:
+                return "???";
+        }
+    }
+
+    private void openMarkdownInDocsTab(File file) {
+        File resolved = file.isAbsolute() ? file : new File(fileManager.getCurrentDirectory(), file.getPath());
+        if (!resolved.exists()) {
+            resolved = file;
+        }
+        if (!resolved.exists()) {
+            JOptionPane.showMessageDialog(frame, "Markdown file not found: " + file.getPath());
+            return;
+        }
+
+        String tabTitle = resolved.getName();
+        for (int i = 0; i < docsTabs.getTabCount(); i++) {
+            if (tabTitle.equals(docsTabs.getTitleAt(i))) {
+                docsTabs.setSelectedIndex(i);
+                selectRightDocsSection("docs");
+                return;
+            }
+        }
+
+        try {
+            String markdown = Files.readString(resolved.toPath(), StandardCharsets.UTF_8);
+            JEditorPane pane = new JEditorPane();
+            pane.setEditable(false);
+            pane.setContentType("text/html");
+            pane.setText(markdownToHtml(markdown));
+            pane.setCaretPosition(0);
+
+            docsTabs.addTab(tabTitle, new JScrollPane(pane));
+            docsTabs.setSelectedIndex(docsTabs.getTabCount() - 1);
+            selectRightDocsSection("docs");
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(frame, "Unable to open markdown file: " + ex.getMessage());
+        }
+    }
+
+    private String markdownToHtml(String markdown) {
+        StringBuilder html = new StringBuilder("<html><body style='font-family:sans-serif;'>");
+        for (String line : markdown.split("\\R", -1)) {
+            String escaped = escapeHtml(line);
+            if (escaped.startsWith("### ")) {
+                html.append("<h3>").append(escaped.substring(4)).append("</h3>");
+            } else if (escaped.startsWith("## ")) {
+                html.append("<h2>").append(escaped.substring(3)).append("</h2>");
+            } else if (escaped.startsWith("# ")) {
+                html.append("<h1>").append(escaped.substring(2)).append("</h1>");
+            } else if (escaped.startsWith("- ")) {
+                html.append("<p>&bull; ").append(escaped.substring(2)).append("</p>");
+            } else if (escaped.isBlank()) {
+                html.append("<br/>");
+            } else {
+                html.append("<p>").append(escaped).append("</p>");
+            }
+        }
+        html.append("</body></html>");
+        return html.toString();
+    }
+
+    private String escapeHtml(String input) {
+        if (input == null) {
+            return "";
+        }
+        return input.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
     private void setClosingTabsEnabled(boolean enabled) {
         tabControl.putClientProperty(TABBED_PANE_TAB_CLOSABLE, enabled);
         // TODO get main file index
@@ -1634,6 +2813,8 @@ public class MainWindow
     @Override
     public void onCurrentDirectoryChanged(String directory) {
         basicEditor.onCurrentDirectoryChanged(directory);
+        // TODO move into editor
+        refreshSidebarContent();
     }
 
     @Override

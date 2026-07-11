@@ -17,4 +17,14 @@ public class Theme {
     public static final String ICON_STEP_OUT = THEME_DIRECTORY + "icon_step_out.png";
     public static final String ICON_EXPORT = THEME_DIRECTORY + "icon_export.png";
     public static final String ICON_SETTINGS = THEME_DIRECTORY + "icon_settings.png";
+    public static final String ICON_MENU_FOLDER = THEME_DIRECTORY + "menu_folder.png";
+    public static final String ICON_MENU_ASSETS = THEME_DIRECTORY + "menu_assets.png";
+    public static final String ICON_MENU_BOOKMARKS = THEME_DIRECTORY + "menu_bookmarks.png";
+    public static final String ICON_MENU_BOOKMARKS_OUTLINE = THEME_DIRECTORY + "menu_bookmarks_outline.png";
+    public static final String ICON_MENU_FUNCTIONS = THEME_DIRECTORY + "menu_functions.png";
+    public static final String ICON_MENU_HELP = THEME_DIRECTORY + "menu_help.png";
+    public static final String ICON_MENU_DEBUG = THEME_DIRECTORY + "menu_debug.png";
+    public static final String ICON_FUNCTION = THEME_DIRECTORY + "icon_function.png";
+    public static final String ICON_VARIABLE = THEME_DIRECTORY + "icon_variable.png";
+    public static final String ICON_LABEL = THEME_DIRECTORY + "icon_label.png";
 }
