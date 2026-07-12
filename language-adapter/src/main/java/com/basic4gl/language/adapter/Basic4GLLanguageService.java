@@ -1,6 +1,5 @@
 package com.basic4gl.language.adapter;
 
-import com.basic4gl.app.desktop.GLTextGridWindow;
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
@@ -17,14 +16,11 @@ import com.basic4gl.language.adapter.util.NumberUtil;
 import com.basic4gl.language.core.extensions.FunctionLibrary;
 import com.basic4gl.language.core.extensions.Library;
 import com.basic4gl.language.core.internal.Mutable;
-import com.basic4gl.language.core.runtime.IServiceCollection;
-import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.Constant;
 import com.basic4gl.language.core.types.FunctionSpecification;
 import com.basic4gl.language.core.types.ValType;
-import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.language.spi.PluginLibrary;
-
+import com.basic4gl.language.spi.PluginManager;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -41,14 +37,10 @@ public class Basic4GLLanguageService implements LanguageService {
     }
 
     @Override
-    public void onLoad(PluginContext context) {
-
-    }
+    public void onLoad(PluginContext context) {}
 
     @Override
-    public void onUnload() {
-
-    }
+    public void onUnload() {}
 
     @Override
     public List<String> getReservedWords() {
@@ -62,7 +54,8 @@ public class Basic4GLLanguageService implements LanguageService {
 
     @Override
     public List<String> getFunctions() {
-        LinkedHashSet<String> functions = new LinkedHashSet<>(compiler.getFunctionIndex().keySet());
+        LinkedHashSet<String> functions =
+                new LinkedHashSet<>(compiler.getFunctionIndex().keySet());
         for (PluginLibrary library : pluginManager.getLoadedLibraries()) {
             for (int i = 0; i < library.count(); i++) {
                 String functionName = library.getFunctionName(i);
@@ -76,10 +69,8 @@ public class Basic4GLLanguageService implements LanguageService {
 
     @Override
     public List<String> getOperators() {
-        return Stream.concat(
-                compiler.getBinaryOperators().stream(),
-                compiler.getUnaryOperators().stream())
-            .toList();
+        return Stream.concat(compiler.getBinaryOperators().stream(), compiler.getUnaryOperators().stream())
+                .toList();
     }
 
     @Override
@@ -153,7 +144,7 @@ public class Basic4GLLanguageService implements LanguageService {
                 compiler.getProgram().getVariables().getVariables()) {
             if (variable.name == null || variable.name.isEmpty()) continue;
             String typeStr = LanguageUtil.getTypeString(variable.type);
-            String signature =  typeStr + " " + variable.name;
+            String signature = typeStr + " " + variable.name;
             TypeDefinition typeDefinition = LanguageUtil.toTypeDefinition(variable.type);
 
             VariableDefinition definition = null; // TODO new VariableDefinition(variable.name,)
@@ -166,7 +157,7 @@ public class Basic4GLLanguageService implements LanguageService {
         ArrayList<LabelDefinition> labelDefinitions = new ArrayList<>();
         return compiler.getLabelNames().stream()
                 .map(labelName -> {
-                    String usage = "gosub "+ labelName + ": goto" + labelName;
+                    String usage = "gosub " + labelName + ": goto" + labelName;
                     return new LabelDefinition(labelName, labelName + ":", usage);
                 })
                 .toList();
@@ -183,7 +174,9 @@ public class Basic4GLLanguageService implements LanguageService {
                 String library = libraryName != null ? libraryName : "Builtin";
                 StringBuilder signature = new StringBuilder();
                 if (spec.isFunction()) {
-                    signature.append(LanguageUtil.getTypeString(spec.getReturnType())).append(' ');
+                    signature
+                            .append(LanguageUtil.getTypeString(spec.getReturnType()))
+                            .append(' ');
                 }
                 signature.append(name);
                 signature.append(spec.hasBrackets() ? "(" : " ");
@@ -206,18 +199,19 @@ public class Basic4GLLanguageService implements LanguageService {
                     signature.append(')');
                 }
 
-//                TypeDefinition returnType = spec.isFunction() ? new TypeDefinition(LanguageUtil.getTypeString(spec.getReturnType())) : new TypeDefinition("void");
-//                FunctionDefinition definition = new FunctionDefinition(
-//                        name,
-//                        signature.toString(),
-//                        returnType,
-//                        params != null ? params.stream()
-//                                .map(this::getTypeString)
-//                                .map((typeName, i) -> new VariableDefinition(typeName))
-//                                .toArray(VariableDefinition[]::new) : new VariableDefinition[0],
-//                        spec.getDescription(),
-//                        library
-//                );
+                //                TypeDefinition returnType = spec.isFunction() ? new
+                // TypeDefinition(LanguageUtil.getTypeString(spec.getReturnType())) : new TypeDefinition("void");
+                //                FunctionDefinition definition = new FunctionDefinition(
+                //                        name,
+                //                        signature.toString(),
+                //                        returnType,
+                //                        params != null ? params.stream()
+                //                                .map(this::getTypeString)
+                //                                .map((typeName, i) -> new VariableDefinition(typeName))
+                //                                .toArray(VariableDefinition[]::new) : new VariableDefinition[0],
+                //                        spec.getDescription(),
+                //                        library
+                //                );
                 // TODO
                 FunctionDefinition definition = null;
                 items.add(definition);
@@ -248,7 +242,9 @@ public class Basic4GLLanguageService implements LanguageService {
             }
             StringBuilder signature = new StringBuilder();
             if (prototype != null && prototype.hasReturnVal) {
-                signature.append(LanguageUtil.getTypeString(prototype.returnValType)).append(' ');
+                signature
+                        .append(LanguageUtil.getTypeString(prototype.returnValType))
+                        .append(' ');
             }
             signature.append(name).append('(');
             if (prototype != null && prototype.paramCount > 0) {
@@ -268,7 +264,7 @@ public class Basic4GLLanguageService implements LanguageService {
             }
             signature.append(')');
 
-            FunctionDefinition definition = null; //TODO new FunctionDefinition(name, ...)
+            FunctionDefinition definition = null; // TODO new FunctionDefinition(name, ...)
             items.add(definition);
         }
 
@@ -314,10 +310,7 @@ public class Basic4GLLanguageService implements LanguageService {
                 library = "Builtin";
             }
             Constant constant = compiler.getConstants().get(key);
-            String signature =
-                    key + " = (" + LanguageUtil.getTypeString(constant.getType()) + ") "
-                            + constant;
-
+            String signature = key + " = (" + LanguageUtil.getTypeString(constant.getType()) + ") " + constant;
 
             items.add(new VariableDefinition(
                     key,
@@ -328,8 +321,7 @@ public class Basic4GLLanguageService implements LanguageService {
                     library,
                     true,
                     "",
-                    "Builtin"
-                    ));
+                    "Builtin"));
         }
         return items;
     }
@@ -353,5 +345,4 @@ public class Basic4GLLanguageService implements LanguageService {
         }
         return constantLibraryByName;
     }
-
 }

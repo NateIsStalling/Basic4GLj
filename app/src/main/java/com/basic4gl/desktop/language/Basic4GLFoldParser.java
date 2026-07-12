@@ -1,5 +1,6 @@
 package com.basic4gl.desktop.language;
 
+import com.basic4gl.language.adapter.antlr.Basic4GL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -30,7 +31,7 @@ import org.fife.ui.rsyntaxtextarea.folding.FoldParser;
  *   <li>{@code label: ... next label:} (labels as implicit scopes)</li>
  * </ul>
  *
- * <p>Uses the same ANTLR lexer as {@link Basic4GLLanguageSupport} to ensure consistent
+ * <p>Uses the same ANTLR lexer as {@link com.basic4gl.language.adapter.Basic4GLLanguageSupport} to ensure consistent
  * tokenization, correctly handling comments and strings.
  *
  */

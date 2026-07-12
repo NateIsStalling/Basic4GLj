@@ -1,6 +1,6 @@
 package com.basic4gl.desktop.editor;
 
-import com.basic4gl.desktop.language.Basic4GLLanguageSupport;
+import com.basic4gl.language.adapter.Basic4GLLanguageSupport;
 import java.util.ArrayList;
 import java.util.List;
 import org.fife.ui.rsyntaxtextarea.Token;

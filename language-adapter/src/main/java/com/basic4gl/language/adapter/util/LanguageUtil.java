@@ -1,28 +1,26 @@
 package com.basic4gl.language.adapter.util;
 
-import com.basic4gl.desktop.spi.LanguageService;
 import com.basic4gl.desktop.spi.language.TypeDefinition;
-import com.basic4gl.desktop.spi.language.VariableDefinition;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.ValType;
 
 public final class LanguageUtil {
-    private LanguageUtil() { }
+    private LanguageUtil() {}
 
-//    public static VariableDefinition toVariableDefinition() {
-//        return new VariableDefinition()
-//    }
-//
-//
-//    public static VariableDefinition buildVariableDefinition(String ) {
-//
-//    }
-
+    //    public static VariableDefinition toVariableDefinition() {
+    //        return new VariableDefinition()
+    //    }
+    //
+    //
+    //    public static VariableDefinition buildVariableDefinition(String ) {
+    //
+    //    }
 
     public static TypeDefinition toTypeDefinition(ValType type) {
         String name = getTypeString(type);
         return new TypeDefinition(name, "", "", "");
     }
+
     public static TypeDefinition toTypeDefinition(int type) {
         String name = getTypeString(type);
         return new TypeDefinition(name, "", "", "");

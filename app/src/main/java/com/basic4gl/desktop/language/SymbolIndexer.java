@@ -1,5 +1,6 @@
 package com.basic4gl.desktop.language;
 
+import com.basic4gl.desktop.spi.language.IndexedSymbol;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -13,7 +14,7 @@ import javax.swing.SwingUtilities;
  * Lightweight debounced symbol indexer.
  *
  * <p>Listens for source-text changes and, after a short debounce delay, delegates symbol
- * extraction to a {@link LanguageSupport} instance. Results are delivered via a {@link Callback}
+ * extraction to a {@link com.basic4gl.desktop.spi.language.LanguageSupport} instance. Results are delivered via a {@link Callback}
  * on the Swing EDT.
  *
  * <p>The indexer itself contains <strong>no language-specific logic</strong>; all parsing is
@@ -45,7 +46,7 @@ public class SymbolIndexer {
     /** Milliseconds to wait after the last change before running extraction. */
     private static final long DEBOUNCE_MILLIS = 400;
 
-    private final LanguageSupport languageSupport;
+    private final com.basic4gl.desktop.spi.language.LanguageSupport languageSupport;
     private final SourceProvider sourceProvider;
     private final Callback callback;
 
@@ -58,7 +59,10 @@ public class SymbolIndexer {
     private ScheduledFuture<?> pending;
     private long requestedRevision = 0;
 
-    public SymbolIndexer(LanguageSupport languageSupport, SourceProvider sourceProvider, Callback callback) {
+    public SymbolIndexer(
+            com.basic4gl.desktop.spi.language.LanguageSupport languageSupport,
+            SourceProvider sourceProvider,
+            Callback callback) {
         this.languageSupport = languageSupport;
         this.sourceProvider = sourceProvider;
         this.callback = callback;

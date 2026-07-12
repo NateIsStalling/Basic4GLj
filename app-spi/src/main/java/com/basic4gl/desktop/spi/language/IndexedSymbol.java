@@ -1,7 +1,7 @@
-package com.basic4gl.desktop.language;
+package com.basic4gl.desktop.spi.language;
 
 /**
- * A user-defined symbol discovered by {@link LanguageSupport#extractSymbols}.
+ * A user-defined symbol discovered by {@link com.basic4gl.desktop.spi.language.LanguageSupport#extractSymbols}.
  *
  * @param kind One of {@code "userfunc"}, {@code "label"}, or {@code "variable"}.
  * @param name The bare symbol name (no punctuation).

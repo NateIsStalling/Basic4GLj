@@ -1,8 +1,8 @@
 package com.basic4gl.desktop.editor;
 
-import com.basic4gl.desktop.language.HighlightKind;
-import com.basic4gl.desktop.language.LangToken;
-import com.basic4gl.desktop.language.LanguageSupport;
+import com.basic4gl.desktop.spi.language.HighlightKind;
+import com.basic4gl.desktop.spi.language.LangToken;
+import com.basic4gl.desktop.spi.language.LanguageSupport;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

@@ -1,6 +1,5 @@
 package com.basic4gl.desktop.spi.content;
 
-
 /**
  * Provider interface for creating FileViewer instances
  *
@@ -21,4 +20,3 @@ public interface FileViewerProvider {
      */
     com.basic4gl.desktop.spi.content.FileViewerMetadata getMetadata();
 }
-

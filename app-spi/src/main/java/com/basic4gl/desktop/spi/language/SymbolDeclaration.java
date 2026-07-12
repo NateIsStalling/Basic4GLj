@@ -1,4 +1,4 @@
-package com.basic4gl.desktop.language;
+package com.basic4gl.desktop.spi.language;
 
 /**
  * A concrete declaration site discovered by a language support implementation.

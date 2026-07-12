@@ -1,7 +1,6 @@
 package com.basic4gl.desktop.content;
 
 import com.basic4gl.desktop.spi.content.FileViewerException;
-
 import java.nio.file.Path;
 
 /**
@@ -113,4 +112,3 @@ public class FileViewerManager {
         return null;
     }
 }
-

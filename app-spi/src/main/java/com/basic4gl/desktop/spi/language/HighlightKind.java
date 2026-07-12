@@ -1,9 +1,9 @@
-package com.basic4gl.desktop.language;
+package com.basic4gl.desktop.spi.language;
 
 /**
  * Language-neutral semantic categories used to classify tokens for syntax highlighting.
  *
- * <p>A {@link LanguageSupport} implementation maps its internal token types to these categories.
+ * <p>A {@link com.basic4gl.desktop.spi.language.LanguageSupport} implementation maps its internal token types to these categories.
  * An IDE adapter (e.g. {@code LanguageSupportTokenMaker} for RSyntaxTextArea) then maps these
  * categories to the syntax-highlighting primitives of whichever UI toolkit it targets.
  *

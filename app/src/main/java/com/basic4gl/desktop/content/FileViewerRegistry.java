@@ -1,7 +1,6 @@
 package com.basic4gl.desktop.content;
 
 import com.basic4gl.desktop.spi.content.FileViewer;
-
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,7 +24,8 @@ public class FileViewerRegistry {
         lastError = "";
 
         try {
-            ServiceLoader<com.basic4gl.desktop.spi.content.FileViewerProvider> loader = ServiceLoader.load(com.basic4gl.desktop.spi.content.FileViewerProvider.class);
+            ServiceLoader<com.basic4gl.desktop.spi.content.FileViewerProvider> loader =
+                    ServiceLoader.load(com.basic4gl.desktop.spi.content.FileViewerProvider.class);
 
             for (com.basic4gl.desktop.spi.content.FileViewerProvider provider : loader) {
                 com.basic4gl.desktop.spi.content.FileViewerMetadata metadata = provider.getMetadata();
@@ -161,7 +161,8 @@ public class FileViewerRegistry {
             this(viewer, metadata, null);
         }
 
-        public FileViewerResult(FileViewer viewer, com.basic4gl.desktop.spi.content.FileViewerMetadata metadata, String error) {
+        public FileViewerResult(
+                FileViewer viewer, com.basic4gl.desktop.spi.content.FileViewerMetadata metadata, String error) {
             this.viewer = viewer;
             this.metadata = metadata;
             this.error = error;

@@ -15,6 +15,7 @@ import com.basic4gl.desktop.editor.*;
 import com.basic4gl.desktop.language.SymbolIndexer;
 import com.basic4gl.desktop.spi.*;
 import com.basic4gl.desktop.spi.language.FunctionDefinition;
+import com.basic4gl.desktop.spi.language.IndexedSymbol;
 import com.basic4gl.desktop.spi.language.LabelDefinition;
 import com.basic4gl.desktop.spi.language.VariableDefinition;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
@@ -55,7 +56,7 @@ public class MainWindow
                 ITabProvider,
                 IToggleBreakpointListener,
                 IFileEditorActionListener,
-        IFileManagerListener,
+                IFileManagerListener,
                 EmptyTabPanel.IEmptyTabPanelListener,
                 MenuService {
 
@@ -134,8 +135,8 @@ public class MainWindow
     private String referenceDetailsHtml = REFERENCE_SELECT_PROMPT_HTML;
     private final java.util.List<ReferenceItem> allReferenceItems = new ArrayList<>();
     // Language support is shared between the symbol indexer and (via BasicTokenMaker) the editor.
-    private final com.basic4gl.desktop.language.LanguageSupport languageSupport =
-            new com.basic4gl.desktop.language.Basic4GLLanguageSupport();
+    private final com.basic4gl.desktop.spi.language.LanguageSupport languageSupport =
+            new com.basic4gl.language.adapter.Basic4GLLanguageSupport();
     private final SymbolIndexer symbolIndexer =
             new SymbolIndexer(languageSupport, this::collectAllSourceText, this::updateProgramSymbols);
     private int lastProgramSymbolsFingerprint = Integer.MIN_VALUE;
@@ -952,9 +953,8 @@ public class MainWindow
             workspacesHeader.setEnabled(false);
             recentSubMenu.add(workspacesHeader);
             for (File workspace : recentWorkspaces) {
-                JMenuItem workspaceItem = new JMenuItem(workspace.getName().isBlank()
-                        ? workspace.getAbsolutePath()
-                        : workspace.getName());
+                JMenuItem workspaceItem = new JMenuItem(
+                        workspace.getName().isBlank() ? workspace.getAbsolutePath() : workspace.getName());
                 workspaceItem.setToolTipText(workspace.getAbsolutePath());
                 workspaceItem.addActionListener(e -> setWorkspaceDirectory(workspace));
                 recentSubMenu.add(workspaceItem);
@@ -1392,8 +1392,9 @@ public class MainWindow
         } catch (BadLocationException ignored) {
         }
 
-        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> declarations = collectOpenFileDeclarations();
-        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> matches = declarations.stream()
+        java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> declarations =
+                collectOpenFileDeclarations();
+        java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> matches = declarations.stream()
                 .filter(d -> ("label".equals(d.kind()) || "variable".equals(d.kind()))
                         && d.name().equalsIgnoreCase(symbol))
                 .toList();
@@ -1403,7 +1404,7 @@ public class MainWindow
             return;
         }
 
-        com.basic4gl.desktop.language.SymbolDeclaration selected =
+        com.basic4gl.desktop.spi.language.SymbolDeclaration selected =
                 chooseDeclarationForCaret(matches, activeFile, caretLine);
         if (selected == null) {
             return;
@@ -1420,8 +1421,8 @@ public class MainWindow
         setCompilerStatus("Declaration: " + selected.signature());
     }
 
-    private java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> collectOpenFileDeclarations() {
-        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> declarations = new ArrayList<>();
+    private java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> collectOpenFileDeclarations() {
+        java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> declarations = new ArrayList<>();
         for (FileEditor editor : fileManager.getFileEditors()) {
             String fileId = editor.getFilePath();
             if (fileId == null || fileId.isBlank()) {
@@ -1434,17 +1435,19 @@ public class MainWindow
         return declarations;
     }
 
-    private com.basic4gl.desktop.language.SymbolDeclaration chooseDeclarationForCaret(
-            java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> matches, String activeFile, int caretLine) {
-        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> sameFile = matches.stream()
+    private com.basic4gl.desktop.spi.language.SymbolDeclaration chooseDeclarationForCaret(
+            java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> matches,
+            String activeFile,
+            int caretLine) {
+        java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> sameFile = matches.stream()
                 .filter(d -> Objects.equals(d.fileId(), activeFile))
                 .toList();
-        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> candidates =
+        java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> candidates =
                 sameFile.isEmpty() ? matches : sameFile;
 
-        com.basic4gl.desktop.language.SymbolDeclaration best = null;
+        com.basic4gl.desktop.spi.language.SymbolDeclaration best = null;
         int bestScore = Integer.MAX_VALUE;
-        for (com.basic4gl.desktop.language.SymbolDeclaration candidate : candidates) {
+        for (com.basic4gl.desktop.spi.language.SymbolDeclaration candidate : candidates) {
             int score = declarationScore(candidate, activeFile, caretLine);
             if (score < bestScore) {
                 bestScore = score;
@@ -1455,7 +1458,7 @@ public class MainWindow
     }
 
     private int declarationScore(
-            com.basic4gl.desktop.language.SymbolDeclaration declaration, String activeFile, int caretLine) {
+            com.basic4gl.desktop.spi.language.SymbolDeclaration declaration, String activeFile, int caretLine) {
         int score = 0;
         if (!Objects.equals(declaration.fileId(), activeFile)) {
             score += 1_000_000;
@@ -1471,9 +1474,9 @@ public class MainWindow
         return score;
     }
 
-    private com.basic4gl.desktop.language.SymbolDeclaration promptUserForDeclaration(
-            java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> matches,
-            com.basic4gl.desktop.language.SymbolDeclaration preferred) {
+    private com.basic4gl.desktop.spi.language.SymbolDeclaration promptUserForDeclaration(
+            java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> matches,
+            com.basic4gl.desktop.spi.language.SymbolDeclaration preferred) {
         Object[] options = matches.stream().map(this::formatDeclarationChoice).toArray();
         Object initial =
                 preferred != null ? formatDeclarationChoice(preferred) : (options.length > 0 ? options[0] : null);
@@ -1489,7 +1492,7 @@ public class MainWindow
             return null;
         }
         String selectedText = selected.toString();
-        for (com.basic4gl.desktop.language.SymbolDeclaration declaration : matches) {
+        for (com.basic4gl.desktop.spi.language.SymbolDeclaration declaration : matches) {
             if (formatDeclarationChoice(declaration).equals(selectedText)) {
                 return declaration;
             }
@@ -1497,7 +1500,7 @@ public class MainWindow
         return preferred;
     }
 
-    private String formatDeclarationChoice(com.basic4gl.desktop.language.SymbolDeclaration declaration) {
+    private String formatDeclarationChoice(com.basic4gl.desktop.spi.language.SymbolDeclaration declaration) {
         String fileLabel = declaration.fileId();
         File f = fileLabel == null ? null : new File(fileLabel);
         if (f != null && f.getName() != null && !f.getName().isBlank()) {
@@ -1507,7 +1510,7 @@ public class MainWindow
                 + ")";
     }
 
-    private void goToDeclarationLocation(com.basic4gl.desktop.language.SymbolDeclaration declaration) {
+    private void goToDeclarationLocation(com.basic4gl.desktop.spi.language.SymbolDeclaration declaration) {
         String filePath = declaration.fileId();
         int index = getTabIndex(filePath);
         if (index == -1 && filePath != null && !filePath.startsWith("<unsaved:")) {
@@ -2237,8 +2240,7 @@ public class MainWindow
             if (contextEditor == null) {
                 return;
             }
-            fileManager.setRunnableFilePath(
-                    contextEditor.getFilePath());
+            fileManager.setRunnableFilePath(contextEditor.getFilePath());
             refreshRunnableFileControls();
         });
         setRunnable.setEnabled(contextEditor != null);
@@ -2619,7 +2621,8 @@ public class MainWindow
             @Override
             public Component getListCellRendererComponent(
                     JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                JLabel label =
+                        (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof AssetItem item) {
                     label.setText("<html><center>" + escapeHtml(item.title) + "</center></html>");
                     label.setIcon(getAssetGridIcon(item));
@@ -3494,9 +3497,9 @@ public class MainWindow
      * Replaces all "Program" (user-defined) reference items with the freshly scanned symbols and
      * refreshes the reference panel.
      */
-    private void updateProgramSymbols(List<com.basic4gl.desktop.language.IndexedSymbol> symbols) {
+    private void updateProgramSymbols(List<IndexedSymbol> symbols) {
         int fingerprint = 1;
-        for (com.basic4gl.desktop.language.IndexedSymbol symbol : symbols) {
+        for (IndexedSymbol symbol : symbols) {
             fingerprint = 31 * fingerprint + Objects.hash(symbol.kind(), symbol.name(), symbol.signature());
         }
         if (fingerprint == lastProgramSymbolsFingerprint) {
@@ -3508,7 +3511,7 @@ public class MainWindow
         allReferenceItems.removeIf(item -> "Program".equals(item.library));
 
         // Add newly scanned symbols
-        for (com.basic4gl.desktop.language.IndexedSymbol sym : symbols) {
+        for (IndexedSymbol sym : symbols) {
             String details;
             String insertText;
             int caretOffset;

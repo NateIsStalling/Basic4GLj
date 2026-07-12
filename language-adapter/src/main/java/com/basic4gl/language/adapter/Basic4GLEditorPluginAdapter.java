@@ -12,9 +12,8 @@ import com.basic4gl.library.plugin.PluginJARFile;
 import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
-
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -42,7 +41,12 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
 
     public Basic4GLEditorPluginAdapter(PluginContext context) {
         plugins = new PluginJARManager(false);
-        Preprocessor preprocessor = new Preprocessor(plugins, 2, Arrays.stream(context.fileServices()).map(FileServiceAdapter::new).toArray(FileServiceAdapter[]::new));
+        Preprocessor preprocessor = new Preprocessor(
+                plugins,
+                2,
+                Arrays.stream(context.fileServices())
+                        .map(FileServiceAdapter::new)
+                        .toArray(FileServiceAdapter[]::new));
         Debugger debugger = new Debugger(preprocessor.getLineNumberMap());
         vm = new TomVM(plugins, debugger);
         compiler = new TomBasicCompiler(vm, plugins);
@@ -51,7 +55,6 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
         debugService = new Basic4GLDebugService(compiler, preprocessor, appSettings, debugger);
         preprocessorService = new Basic4GLPreprocessorService(compiler, preprocessor);
     }
-
 
     @Override
     public String getName() {
@@ -107,9 +110,7 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
         Builder builder = BuilderDesktopGL.getInstance(new DesktopTarget(compiler));
         builder.init(context.files());
 
-        builders = new Builder[] {
-            builder
-        };
+        builders = new Builder[] {builder};
         return builders;
     }
 
@@ -145,7 +146,7 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
         this.context = context;
         this.builders = new Builder[0];
 
-        context.menus().addHelp("Function List",(parent, e) -> {
+        context.menus().addHelp("Function List", (parent, e) -> {
             ReferenceWindow window = new ReferenceWindow(parent);
             window.populate(compiler);
             window.setVisible(true);
@@ -175,12 +176,9 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
         };
     }
 
-
     @Override
     public ProjectExportPage[] getProjectExportPages() {
-        return new ProjectExportPage[] {
-            new PluginExportProjectPage(plugins, this::getDefaultPluginDirectory)
-        };
+        return new ProjectExportPage[] {new PluginExportProjectPage(plugins, this::getDefaultPluginDirectory)};
     }
 
     public IConfigurableAppSettings getConfigurableAppSettings() {
@@ -486,7 +484,8 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
             return -1;
         }
         String lowerFilename = filename.toLowerCase(Locale.ROOT);
-        if (lowerFilename.equals(normalizedDeclaration) || stripKnownExtension(lowerFilename).equals(normalizedDeclaration)) {
+        if (lowerFilename.equals(normalizedDeclaration)
+                || stripKnownExtension(lowerFilename).equals(normalizedDeclaration)) {
             return 3;
         }
         String normalizedFilename = normalizePluginToken(filename);

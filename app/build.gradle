@@ -3,20 +3,6 @@ plugins {
     id("com.diffplug.spotless") version "7.0.2"
 }
 apply plugin: "java"
-apply plugin: "antlr"
-
-// Generate ANTLR lexer sources into the correct package directory so that
-// IDEs resolve the generated class immediately after the first build.
-generateGrammarSource {
-    maxHeapSize = "64m"
-    arguments += ["-package", "com.basic4gl.desktop.language", "-long-messages"]
-    // Keep generated sources alongside other build outputs; Spotless ignores build/
-    outputDirectory =
-        file("${project.buildDir}/generated-src/antlr/main/com/basic4gl/desktop/language")
-}
-// Spotless must not try to format ANTLR-generated sources.
-// The spotless java {} block is configured later in the file; we override target here.
-
 configurations {
     release.extendsFrom configurations.default
 }
@@ -74,10 +60,6 @@ startScripts {
 }
 
 dependencies {
-    // ANTLR4: code generator (build-time only) + runtime JAR shipped with the app
-    antlr "org.antlr:antlr4:4.13.2"
-    implementation "org.antlr:antlr4-runtime:4.13.2"
-
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
     // TODO figure out a clean way to depend on the JAR output of these projects;

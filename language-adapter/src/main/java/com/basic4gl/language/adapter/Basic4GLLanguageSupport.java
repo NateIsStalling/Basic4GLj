@@ -1,5 +1,11 @@
-package com.basic4gl.desktop.language;
+package com.basic4gl.language.adapter;
 
+import com.basic4gl.desktop.spi.language.HighlightKind;
+import com.basic4gl.desktop.spi.language.IndexedSymbol;
+import com.basic4gl.desktop.spi.language.LangToken;
+import com.basic4gl.desktop.spi.language.LanguageSupport;
+import com.basic4gl.desktop.spi.language.SymbolDeclaration;
+import com.basic4gl.language.adapter.antlr.Basic4GL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
