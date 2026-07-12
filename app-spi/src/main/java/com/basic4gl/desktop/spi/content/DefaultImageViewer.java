@@ -1,7 +1,5 @@
-package com.basic4gl.language.adapter.content;
+package com.basic4gl.desktop.spi.content;
 
-import com.basic4gl.library.fileviewer.FileViewer;
-import com.basic4gl.library.fileviewer.FileViewerException;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;

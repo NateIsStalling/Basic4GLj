@@ -1,8 +1,4 @@
-package com.basic4gl.language.adapter.content;
-
-import com.basic4gl.library.fileviewer.FileViewer;
-import com.basic4gl.library.fileviewer.FileViewerMetadata;
-import com.basic4gl.library.fileviewer.FileViewerProvider;
+package com.basic4gl.desktop.spi.content;
 
 /**
  * Provider for DefaultImageViewer

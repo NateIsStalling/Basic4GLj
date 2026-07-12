@@ -1,6 +1,6 @@
 package com.basic4gl.desktop.editor;
 
-enum ApMode {
+public enum ApMode {
     AP_CLOSED,
     AP_STOPPED,
     AP_WAITING,

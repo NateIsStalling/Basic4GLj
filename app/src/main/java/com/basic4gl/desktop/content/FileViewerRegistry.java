@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  */
 public class FileViewerRegistry {
 
-    private final Map<String, FileViewerProvider> providers = new HashMap<>();
+    private final Map<String, com.basic4gl.desktop.spi.content.FileViewerProvider> providers = new HashMap<>();
     private String lastError = "";
 
     /**
@@ -25,9 +25,9 @@ public class FileViewerRegistry {
         lastError = "";
 
         try {
-            ServiceLoader<FileViewerProvider> loader = ServiceLoader.load(FileViewerProvider.class);
+            ServiceLoader<com.basic4gl.desktop.spi.content.FileViewerProvider> loader = ServiceLoader.load(com.basic4gl.desktop.spi.content.FileViewerProvider.class);
 
-            for (FileViewerProvider provider : loader) {
+            for (com.basic4gl.desktop.spi.content.FileViewerProvider provider : loader) {
                 com.basic4gl.desktop.spi.content.FileViewerMetadata metadata = provider.getMetadata();
                 if (metadata != null && metadata.getName() != null) {
                     providers.put(metadata.getName(), provider);
@@ -48,7 +48,7 @@ public class FileViewerRegistry {
         String extension = getFileExtension(filename);
         String mimeType = guessMimeType(filename);
 
-        for (FileViewerProvider provider : providers.values()) {
+        for (com.basic4gl.desktop.spi.content.FileViewerProvider provider : providers.values()) {
             com.basic4gl.desktop.spi.content.FileViewerMetadata metadata = provider.getMetadata();
             if (metadata != null) {
                 if ((extension != null && metadata.supportsExtension(extension))
@@ -73,7 +73,7 @@ public class FileViewerRegistry {
      */
     public List<com.basic4gl.desktop.spi.content.FileViewerMetadata> getAvailableViewers() {
         return providers.values().stream()
-                .map(FileViewerProvider::getMetadata)
+                .map(com.basic4gl.desktop.spi.content.FileViewerProvider::getMetadata)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }

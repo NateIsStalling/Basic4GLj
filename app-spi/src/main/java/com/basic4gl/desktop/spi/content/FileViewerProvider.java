@@ -1,6 +1,5 @@
-package com.basic4gl.desktop.content;
+package com.basic4gl.desktop.spi.content;
 
-import com.basic4gl.desktop.spi.content.FileViewer;
 
 /**
  * Provider interface for creating FileViewer instances
