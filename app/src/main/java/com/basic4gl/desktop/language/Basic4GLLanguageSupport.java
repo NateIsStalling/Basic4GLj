@@ -221,15 +221,9 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
             if (type == Token.EOF || type == Basic4GL.WS || type == Basic4GL.NEWLINE) {
                 // A newline resets after-dim state (one dim per line)
                 if (type == Basic4GL.NEWLINE && state == AFTER_DIM_NAME) {
-                    String effectiveRoutine = inStruc
-                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
-                            : currentRoutine;
-                    flushVariable(
-                            symbolsByKey,
-                            variableDeclCounts,
-                            pendingVarName,
-                            pendingVarType,
-                            effectiveRoutine);
+                    String effectiveRoutine =
+                            inStruc ? "struc:" + (currentStrucName != null ? currentStrucName : "") : currentRoutine;
+                    flushVariable(symbolsByKey, variableDeclCounts, pendingVarName, pendingVarType, effectiveRoutine);
                     state = NONE;
                     pendingVarName = null;
                     pendingVarType = null;
@@ -327,9 +321,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     }
                 }
                 case AFTER_DIM_NAME -> {
-                    String effectiveRoutine = inStruc
-                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
-                            : currentRoutine;
+                    String effectiveRoutine =
+                            inStruc ? "struc:" + (currentStrucName != null ? currentStrucName : "") : currentRoutine;
                     if (type == Basic4GL.AS_KW && dimArrayDepth == 0) {
                         dimArrayDepth = 0;
                         state = AFTER_AS_KW;
@@ -353,11 +346,7 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     } else if ((type == Basic4GL.COLON || type == Basic4GL.COMMA) && dimArrayDepth == 0) {
                         // 'dim x, y' or 'dim x :' – flush current, continue
                         flushVariable(
-                                symbolsByKey,
-                                variableDeclCounts,
-                                pendingVarName,
-                                pendingVarType,
-                                effectiveRoutine);
+                                symbolsByKey, variableDeclCounts, pendingVarName, pendingVarType, effectiveRoutine);
                         pendingVarName = null;
                         pendingVarType = null;
                         dimArrayDepth = 0;
@@ -366,9 +355,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     // else: other tokens (array size expression contents, &, etc.) – stay
                 }
                 case AFTER_AS_KW -> {
-                    String effectiveRoutine = inStruc
-                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
-                            : currentRoutine;
+                    String effectiveRoutine =
+                            inStruc ? "struc:" + (currentStrucName != null ? currentStrucName : "") : currentRoutine;
                     if (type == Basic4GL.IDENTIFIER
                             || type == Basic4GL.INTEGER_T
                             || type == Basic4GL.INT_T
@@ -377,19 +365,10 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                             || type == Basic4GL.STRING_T) {
                         pendingVarType = t.getText();
                         flushVariable(
-                                symbolsByKey,
-                                variableDeclCounts,
-                                pendingVarName,
-                                pendingVarType,
-                                effectiveRoutine);
+                                symbolsByKey, variableDeclCounts, pendingVarName, pendingVarType, effectiveRoutine);
                         state = NONE;
                     } else {
-                        flushVariable(
-                                symbolsByKey,
-                                variableDeclCounts,
-                                pendingVarName,
-                                null,
-                                effectiveRoutine);
+                        flushVariable(symbolsByKey, variableDeclCounts, pendingVarName, null, effectiveRoutine);
                         state = NONE;
                     }
                 }
@@ -398,15 +377,9 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
 
         // Flush any dangling state at EOF
         if (state == AFTER_DIM_NAME || state == AFTER_AS_KW) {
-            String effectiveRoutine = inStruc
-                    ? "struc:" + (currentStrucName != null ? currentStrucName : "")
-                    : currentRoutine;
-            flushVariable(
-                    symbolsByKey,
-                    variableDeclCounts,
-                    pendingVarName,
-                    pendingVarType,
-                    effectiveRoutine);
+            String effectiveRoutine =
+                    inStruc ? "struc:" + (currentStrucName != null ? currentStrucName : "") : currentRoutine;
+            flushVariable(symbolsByKey, variableDeclCounts, pendingVarName, pendingVarType, effectiveRoutine);
         }
 
         return new ArrayList<>(symbolsByKey.values());
@@ -454,9 +427,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
 
             if (type == Token.EOF || type == Basic4GL.WS || type == Basic4GL.NEWLINE) {
                 if (type == Basic4GL.NEWLINE && state == AFTER_DIM_NAME && pendingVarNameToken != null) {
-                    String effectiveRoutine = inStruc
-                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
-                            : currentRoutine;
+                    String effectiveRoutine =
+                            inStruc ? "struc:" + (currentStrucName != null ? currentStrucName : "") : currentRoutine;
                     emitVariableDeclaration(
                             declarations,
                             variableDeclCounts,
@@ -586,9 +558,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     }
                 }
                 case AFTER_DIM_NAME -> {
-                    String effectiveRoutine = inStruc
-                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
-                            : currentRoutine;
+                    String effectiveRoutine =
+                            inStruc ? "struc:" + (currentStrucName != null ? currentStrucName : "") : currentRoutine;
                     if (type == Basic4GL.AS_KW && dimArrayDepth == 0) {
                         dimArrayDepth = 0;
                         state = AFTER_AS_KW;
@@ -626,9 +597,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     // else: other tokens (array size expression, &, etc.) – stay in AFTER_DIM_NAME
                 }
                 case AFTER_AS_KW -> {
-                    String effectiveRoutine = inStruc
-                            ? "struc:" + (currentStrucName != null ? currentStrucName : "")
-                            : currentRoutine;
+                    String effectiveRoutine =
+                            inStruc ? "struc:" + (currentStrucName != null ? currentStrucName : "") : currentRoutine;
                     if (type == Basic4GL.IDENTIFIER
                             || type == Basic4GL.INTEGER_T
                             || type == Basic4GL.INT_T
@@ -654,16 +624,10 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         }
 
         if ((state == AFTER_DIM_NAME || state == AFTER_AS_KW) && pendingVarNameToken != null) {
-            String effectiveRoutine = inStruc
-                    ? "struc:" + (currentStrucName != null ? currentStrucName : "")
-                    : currentRoutine;
+            String effectiveRoutine =
+                    inStruc ? "struc:" + (currentStrucName != null ? currentStrucName : "") : currentRoutine;
             emitVariableDeclaration(
-                    declarations,
-                    variableDeclCounts,
-                    pendingVarNameToken,
-                    pendingVarType,
-                    effectiveRoutine,
-                    fileId);
+                    declarations, variableDeclCounts, pendingVarNameToken, pendingVarType, effectiveRoutine, fileId);
         }
 
         return declarations;

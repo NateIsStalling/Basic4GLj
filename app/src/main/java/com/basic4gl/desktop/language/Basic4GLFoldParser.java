@@ -1,12 +1,12 @@
 package com.basic4gl.desktop.language;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
-import java.util.ArrayDeque;
-import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
@@ -211,18 +211,3 @@ public class Basic4GLFoldParser implements FoldParser {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

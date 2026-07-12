@@ -2,6 +2,7 @@ package com.basic4gl.desktop;
 
 import com.basic4gl.desktop.language.IndexedSymbol;
 import com.basic4gl.desktop.language.LanguageSupport;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -9,7 +10,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Lightweight debounced symbol indexer.

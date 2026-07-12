@@ -9,5 +9,4 @@ public record VariableDefinition(
         String packageName,
         boolean readOnly,
         String scope,
-        String source) {
-}
+        String source) {}

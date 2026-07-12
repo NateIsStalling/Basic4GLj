@@ -5,7 +5,6 @@ import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.desktop.spi.language.FunctionDefinition;
 import com.basic4gl.desktop.spi.language.LabelDefinition;
 import com.basic4gl.desktop.spi.language.VariableDefinition;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +33,10 @@ public interface LanguageService {
     FileLineNumber getFileLineNumberFromMain(int sourceLine);
 
     Iterable<VariableDefinition> getVariableDefinitions();
+
     Iterable<VariableDefinition> getConstantDefinitions();
+
     Iterable<LabelDefinition> getLabelDefinitions();
+
     Iterable<FunctionDefinition> getFunctionDefinitions();
 }

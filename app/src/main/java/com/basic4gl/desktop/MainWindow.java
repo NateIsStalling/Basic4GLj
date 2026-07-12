@@ -4,7 +4,6 @@ import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
 import static com.formdev.flatlaf.FlatClientProperties.*;
 
-import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
@@ -17,12 +16,7 @@ import com.basic4gl.desktop.spi.language.LabelDefinition;
 import com.basic4gl.desktop.spi.language.VariableDefinition;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
-import com.basic4gl.language.core.extensions.FunctionLibrary;
-import com.basic4gl.language.core.extensions.Library;
 import com.basic4gl.language.core.internal.Mutable;
-import com.basic4gl.language.core.types.BasicValType;
-import com.basic4gl.language.core.types.FunctionSpecification;
-import com.basic4gl.language.core.types.ValType;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
@@ -40,8 +34,8 @@ import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
-import javax.swing.text.BadLocationException;
 import javax.swing.filechooser.FileSystemView;
+import javax.swing.text.BadLocationException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -1261,8 +1255,7 @@ public class MainWindow
         } catch (BadLocationException ignored) {
         }
 
-        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> declarations =
-                collectOpenFileDeclarations();
+        java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> declarations = collectOpenFileDeclarations();
         java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> matches = declarations.stream()
                 .filter(d -> ("label".equals(d.kind()) || "variable".equals(d.kind()))
                         && d.name().equalsIgnoreCase(symbol))
@@ -1298,7 +1291,8 @@ public class MainWindow
                 File file = editor.getFile();
                 fileId = file != null ? file.getAbsolutePath() : "<unsaved:" + editor.getTitle() + ">";
             }
-            declarations.addAll(languageSupport.extractDeclarations(editor.getEditorPane().getText(), fileId));
+            declarations.addAll(
+                    languageSupport.extractDeclarations(editor.getEditorPane().getText(), fileId));
         }
         return declarations;
     }
@@ -1344,7 +1338,8 @@ public class MainWindow
             java.util.List<com.basic4gl.desktop.language.SymbolDeclaration> matches,
             com.basic4gl.desktop.language.SymbolDeclaration preferred) {
         Object[] options = matches.stream().map(this::formatDeclarationChoice).toArray();
-        Object initial = preferred != null ? formatDeclarationChoice(preferred) : (options.length > 0 ? options[0] : null);
+        Object initial =
+                preferred != null ? formatDeclarationChoice(preferred) : (options.length > 0 ? options[0] : null);
         Object selected = JOptionPane.showInputDialog(
                 frame,
                 "Multiple declarations found. Choose destination:",
@@ -1371,8 +1366,8 @@ public class MainWindow
         if (f != null && f.getName() != null && !f.getName().isBlank()) {
             fileLabel = f.getName();
         }
-        return declaration.kind() + "  " + declaration.signature()
-                + "  (" + fileLabel + ":" + (declaration.line() + 1) + ")";
+        return declaration.kind() + "  " + declaration.signature() + "  (" + fileLabel + ":" + (declaration.line() + 1)
+                + ")";
     }
 
     private void goToDeclarationLocation(com.basic4gl.desktop.language.SymbolDeclaration declaration) {
@@ -1394,7 +1389,9 @@ public class MainWindow
         int targetOffset;
         try {
             int lineStart = pane.getLineStartOffset(Math.max(0, declaration.line()));
-            targetOffset = Math.min(lineStart + Math.max(0, declaration.column()), pane.getDocument().getLength());
+            targetOffset = Math.min(
+                    lineStart + Math.max(0, declaration.column()),
+                    pane.getDocument().getLength());
         } catch (BadLocationException e) {
             targetOffset = Math.min(pane.getDocument().getLength(), pane.getCaretPosition());
         }
@@ -2142,8 +2139,15 @@ public class MainWindow
         fileBrowserTree.setCellRenderer(new DefaultTreeCellRenderer() {
             @Override
             public Component getTreeCellRendererComponent(
-                    JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-                JLabel label = (JLabel) super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+                    JTree tree,
+                    Object value,
+                    boolean selected,
+                    boolean expanded,
+                    boolean leaf,
+                    int row,
+                    boolean hasFocus) {
+                JLabel label = (JLabel)
+                        super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
                 if (value instanceof DefaultMutableTreeNode node && node.getUserObject() instanceof File file) {
                     label.setText(file == null ? "" : fileSystemView.getSystemDisplayName(file));
                     if (label.getText() == null || label.getText().isBlank()) {
@@ -2200,13 +2204,21 @@ public class MainWindow
         assetsTree.setCellRenderer(new DefaultTreeCellRenderer() {
             @Override
             public Component getTreeCellRendererComponent(
-                    JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-                JLabel label = (JLabel) super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+                    JTree tree,
+                    Object value,
+                    boolean selected,
+                    boolean expanded,
+                    boolean leaf,
+                    int row,
+                    boolean hasFocus) {
+                JLabel label = (JLabel)
+                        super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
                 if (value instanceof DefaultMutableTreeNode node && node.getUserObject() instanceof AssetItem item) {
-                    label.setText(item.subtitle == null || item.subtitle.isBlank()
-                            ? item.title
-                            : "<html><b>" + escapeHtml(item.title) + "</b><br/><span style='color:gray;'>"
-                                    + escapeHtml(item.subtitle) + "</span></html>");
+                    label.setText(
+                            item.subtitle == null || item.subtitle.isBlank()
+                                    ? item.title
+                                    : "<html><b>" + escapeHtml(item.title) + "</b><br/><span style='color:gray;'>"
+                                            + escapeHtml(item.subtitle) + "</span></html>");
                     label.setIcon(item.icon);
                     label.setToolTipText(item.file != null ? item.file.getAbsolutePath() : item.subtitle);
                 }
@@ -2308,8 +2320,8 @@ public class MainWindow
 
         referenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         referenceList.setFixedCellHeight(20);
-        referenceList.setPrototypeCellValue(new ReferenceItem(
-                "function", "prototype", "prototype(symbol, arg)", "Builtin", "", "", 0));
+        referenceList.setPrototypeCellValue(
+                new ReferenceItem("function", "prototype", "prototype(symbol, arg)", "Builtin", "", "", 0));
         referenceList.setCellRenderer(new DefaultListCellRenderer() {
             private final ImageIcon functionIcon = createImageIcon(ICON_FUNCTION);
             private final ImageIcon variableIcon = createImageIcon(ICON_VARIABLE);
@@ -2569,12 +2581,11 @@ public class MainWindow
 
     private void refreshAssetsLibrary() {
         File rootDir = new File(fileManager.getCurrentDirectory());
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(
-                new AssetItem(
-                        "Assets",
-                        "Workspace resources, libraries, and embedded literals",
-                        null,
-                        createImageIcon(ICON_MENU_ASSETS)));
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new AssetItem(
+                "Assets",
+                "Workspace resources, libraries, and embedded literals",
+                null,
+                createImageIcon(ICON_MENU_ASSETS)));
 
         DefaultMutableTreeNode workspaceNode = buildMediaTypeSection(
                 "Workspace Resources",
@@ -2586,10 +2597,7 @@ public class MainWindow
         }
 
         DefaultMutableTreeNode literalNode = buildMediaTypeSection(
-                "Embedded Literals",
-                detectLiteralAssets(rootDir),
-                rootDir,
-                createImageIcon(ICON_MENU_ASSETS));
+                "Embedded Literals", detectLiteralAssets(rootDir), rootDir, createImageIcon(ICON_MENU_ASSETS));
         if (literalNode != null) {
             rootNode.add(literalNode);
         }
@@ -2600,7 +2608,8 @@ public class MainWindow
         }
     }
 
-    private DefaultMutableTreeNode buildMediaTypeSection(String title, java.util.List<File> files, File baseDir, Icon sectionIcon) {
+    private DefaultMutableTreeNode buildMediaTypeSection(
+            String title, java.util.List<File> files, File baseDir, Icon sectionIcon) {
         if (files == null || files.isEmpty()) {
             return null;
         }
@@ -2609,8 +2618,8 @@ public class MainWindow
             String mediaType = getMediaTypeLabel(file);
             byMediaType.computeIfAbsent(mediaType, k -> new ArrayList<>()).add(file);
         }
-        DefaultMutableTreeNode section = new DefaultMutableTreeNode(
-                new AssetItem(title, files.size() + " file(s)", null, sectionIcon));
+        DefaultMutableTreeNode section =
+                new DefaultMutableTreeNode(new AssetItem(title, files.size() + " file(s)", null, sectionIcon));
         for (String mediaType : List.of("Images", "Audio", "Video", "Text", "Documents", "Other")) {
             java.util.List<File> bucket = byMediaType.get(mediaType);
             if (bucket == null || bucket.isEmpty()) {
@@ -2626,7 +2635,6 @@ public class MainWindow
         }
         return section;
     }
-
 
     private void collectResolvedLibraryAssets(java.util.List<String> paths, File baseDir, java.util.List<File> out) {
         if (paths == null || paths.isEmpty()) {
@@ -2663,7 +2671,8 @@ public class MainWindow
                 continue;
             }
             File sourceFile = editor.getFile();
-            File sourceParent = sourceFile != null ? sourceFile.getAbsoluteFile().getParentFile() : null;
+            File sourceParent =
+                    sourceFile != null ? sourceFile.getAbsoluteFile().getParentFile() : null;
             for (String literal : ExportDialog.extractStringLiterals(text)) {
                 if (literal == null || literal.isBlank()) {
                     continue;
@@ -2728,7 +2737,11 @@ public class MainWindow
                 subtitle = subtitle == null || subtitle.isBlank() ? relative : subtitle + " • " + relative;
             }
         }
-        return new AssetItem(file != null ? file.getName() : "(unknown)", subtitle, file, file != null ? fileSystemView.getSystemIcon(file) : createImageIcon(ICON_MENU_FOLDER));
+        return new AssetItem(
+                file != null ? file.getName() : "(unknown)",
+                subtitle,
+                file,
+                file != null ? fileSystemView.getSystemIcon(file) : createImageIcon(ICON_MENU_FOLDER));
     }
 
     private File resolveAssetReference(String literal, File baseDir, File sourceParent) {
@@ -2780,8 +2793,14 @@ public class MainWindow
         if (name.endsWith(".mp4") || name.endsWith(".mov") || name.endsWith(".webm")) {
             return "Video";
         }
-        if (name.endsWith(".txt") || name.endsWith(".md") || name.endsWith(".json") || name.endsWith(".xml")
-                || name.endsWith(".csv") || name.endsWith(".ini") || name.endsWith(".cfg") || name.endsWith(".properties")) {
+        if (name.endsWith(".txt")
+                || name.endsWith(".md")
+                || name.endsWith(".json")
+                || name.endsWith(".xml")
+                || name.endsWith(".csv")
+                || name.endsWith(".ini")
+                || name.endsWith(".cfg")
+                || name.endsWith(".properties")) {
             return "Text";
         }
         if (name.endsWith(".pdf") || name.endsWith(".doc") || name.endsWith(".docx") || name.endsWith(".rtf")) {
@@ -2796,7 +2815,10 @@ public class MainWindow
         }
         if (baseDir != null) {
             try {
-                java.nio.file.Path relative = baseDir.getAbsoluteFile().toPath().normalize().relativize(file.getAbsoluteFile().toPath().normalize());
+                java.nio.file.Path relative = baseDir.getAbsoluteFile()
+                        .toPath()
+                        .normalize()
+                        .relativize(file.getAbsoluteFile().toPath().normalize());
                 String text = relative.toString().replace('\\', '/');
                 if (!text.startsWith("..")) {
                     return text;
@@ -2954,10 +2976,9 @@ public class MainWindow
         filterReferenceItems();
     }
 
-    private java.util.List<ReferenceItem> buildFunctionReferenceItems(
-            LanguageService comp) {
+    private java.util.List<ReferenceItem> buildFunctionReferenceItems(LanguageService comp) {
         java.util.List<ReferenceItem> items = new ArrayList<>();
-        for  (FunctionDefinition item : comp.getFunctionDefinitions()) {
+        for (FunctionDefinition item : comp.getFunctionDefinitions()) {
             if (item == null) {
                 continue;
             }
@@ -2992,7 +3013,7 @@ public class MainWindow
 
     private java.util.List<ReferenceItem> buildConstantReferenceItems(LanguageService comp) {
         java.util.List<ReferenceItem> items = new ArrayList<>();
-        for (VariableDefinition  item : comp.getConstantDefinitions()) {
+        for (VariableDefinition item : comp.getConstantDefinitions()) {
             if (item == null) {
                 continue;
             }
@@ -3004,7 +3025,14 @@ public class MainWindow
                     + "</p><p style='margin:0;'>"
                     + escapeHtml(item.signature())
                     + "</p></body></html>";
-            items.add(new ReferenceItem("constant", item.name(), item.signature(), item.packageName(), details, item.name(), item.name().length()));
+            items.add(new ReferenceItem(
+                    "constant",
+                    item.name(),
+                    item.signature(),
+                    item.packageName(),
+                    details,
+                    item.name(),
+                    item.name().length()));
         }
 
         return items;
@@ -3023,15 +3051,20 @@ public class MainWindow
                     + "<code>" + escapeHtml(label.usage()) + "</code>"
                     + "</p></body></html>";
             items.add(new ReferenceItem(
-                    "label", label.name(), signature, "Program", details, label.name(), label.name().length()));
+                    "label",
+                    label.name(),
+                    signature,
+                    "Program",
+                    details,
+                    label.name(),
+                    label.name().length()));
         }
         return items;
     }
 
     private java.util.List<ReferenceItem> buildVariableReferenceItems(LanguageService comp) {
         java.util.List<ReferenceItem> items = new ArrayList<>();
-        for (VariableDefinition variable :
-                comp.getVariableDefinitions()) {
+        for (VariableDefinition variable : comp.getVariableDefinitions()) {
             if (variable == null || variable.name() == null || variable.name().isEmpty()) {
                 continue;
             }
@@ -3042,7 +3075,13 @@ public class MainWindow
                     + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Variable<br/><b>Data type:</b> "
                     + escapeHtml(typeStr) + "<br/><b>Source:</b> Program</p></body></html>";
             items.add(new ReferenceItem(
-                    "variable", variable.name(), signature, "Program", details, variable.name(), variable.name().length()));
+                    "variable",
+                    variable.name(),
+                    signature,
+                    "Program",
+                    details,
+                    variable.name(),
+                    variable.name().length()));
         }
         return items;
     }
@@ -3221,7 +3260,6 @@ public class MainWindow
                 insertStart + item.caretOffset, editorPane.getDocument().getLength()));
         editorPane.requestFocusInWindow();
     }
-
 
     private void openMarkdownInDocsTab(File file) {
         File resolved = file.isAbsolute() ? file : new File(fileManager.getCurrentDirectory(), file.getPath());
