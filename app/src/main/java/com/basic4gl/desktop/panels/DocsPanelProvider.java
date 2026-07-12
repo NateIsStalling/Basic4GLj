@@ -25,7 +25,7 @@ public class DocsPanelProvider implements IEditorPanelProvider {
 
     @Override
     public EditorLayout getLayoutConstraints() {
-        return EditorLayout.WEST;
+        return EditorLayout.EAST;
     }
 
     @Override

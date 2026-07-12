@@ -8,4 +8,6 @@ public interface DialogService {
     //    Boolean getResult();
     //    default boolean validate() { return true; }
     public void showDialog(String message);
+
+    String showInputDialog(String message, String title, String initialValue);
 }

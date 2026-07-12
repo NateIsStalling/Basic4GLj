@@ -15,4 +15,10 @@ public class BasicDialogService implements DialogService {
     public void showDialog(String message) {
         JOptionPane.showMessageDialog(frame, message);
     }
+
+    @Override
+    public String showInputDialog(String message, String title, String initialValue) {
+        return (String) JOptionPane.showInputDialog(
+                frame, message, title, JOptionPane.PLAIN_MESSAGE, null, null, initialValue);
+    }
 }

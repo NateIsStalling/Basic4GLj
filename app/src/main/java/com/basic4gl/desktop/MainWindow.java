@@ -12,6 +12,7 @@ import com.basic4gl.desktop.content.FileManager;
 import com.basic4gl.desktop.content.IFileManagerListener;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
+import com.basic4gl.desktop.debugger.IDebugPresenter;
 import com.basic4gl.desktop.editor.*;
 import com.basic4gl.desktop.language.SymbolIndexer;
 import com.basic4gl.desktop.panels.*;
@@ -77,24 +78,31 @@ public class MainWindow
     // Window
     private final JFrame frame = new JFrame(BuildInfo.APPLICATION_NAME);
     private final JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-    private final JSplitPane debugPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     private final JTabbedPane tabControl = new JTabbedPane();
     private final JTabbedPane splitTabControl = new JTabbedPane();
     private final JSplitPane editorSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     private final JPanel primaryTabHost = new JPanel(new BorderLayout());
     private final JButton addTabDropdownButton = new JButton("+");
+    private final JPanel centerPaneHost = new JPanel(new BorderLayout());
+    private final JPanel topPaneHost = new JPanel(new BorderLayout());
+    private final JPanel leftRailsHost = new JPanel();
     private final JSplitPane workspacePane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     private final JSplitPane contentPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-    private final JPanel leftSidebarContainer = new JPanel(new BorderLayout());
+    private final JPanel bottomBarContainer = new JPanel(new BorderLayout());
     // File viewers: stores IFileViewer instances for each tab (parallel to tabControl)
     private final java.util.List<FileViewerWrapper> fileViewers = new java.util.ArrayList<>();
     private final JPanel leftSidebarContent = new JPanel(new CardLayout());
     private final JToolBar leftSidebarRail = new JToolBar(SwingConstants.VERTICAL);
     private final ButtonGroup leftSidebarGroup = new ButtonGroup();
     private final Map<String, JToggleButton> leftSidebarButtons = new HashMap<>();
+    private final JPanel bottomBarContent = new JPanel(new CardLayout());
+    private final JToolBar bottomBarRail = new JToolBar(SwingConstants.VERTICAL);
+    private final ButtonGroup bottomBarGroup = new ButtonGroup();
+    private final Map<String, JToggleButton> bottomBarButtons = new HashMap<>();
 
     private final JTabbedPane docsTabs = new JTabbedPane();
     private final JPanel rightDocsContainer = new JPanel(new BorderLayout());
+    private final JPanel rightDocsContent = new JPanel(new CardLayout());
     private final JToolBar rightDocsRail = new JToolBar(SwingConstants.VERTICAL);
     private final ButtonGroup rightDocsGroup = new ButtonGroup();
     private final Map<String, JToggleButton> rightDocsButtons = new HashMap<>();
@@ -104,8 +112,10 @@ public class MainWindow
 
     private int expandedLeftSidebarWidth = 260;
     private int expandedRightDocsWidth = 320;
+    private int expandedBottomBarHeight = 220;
     private String activeLeftSidebarKey = "files";
-    private String activeRightDocsKey = "functions";
+    private String activeRightDocsKey;
+    private String activeBottomBarKey;
     private JPanel emptyTabPanel;
     private final java.util.List<File> recentWorkspaces = new ArrayList<>();
     private static final String RECENT_WORKSPACES_FILE = "recent-workspaces.properties";
@@ -155,22 +165,12 @@ public class MainWindow
     private final JButton saveButton = new JButton(createImageIcon(ICON_SAVE));
     private final JButton runButton = new JButton(createImageIcon(ICON_RUN_APP));
 
-    private final JToggleButton debugButton = new JToggleButton(createImageIcon(ICON_DEBUG));
-    private final JButton playButton = new JButton(createImageIcon(ICON_PLAY));
-    private final JButton stepOverButton = new JButton(createImageIcon(ICON_STEP_OVER));
-    private final JButton stepInButton = new JButton(createImageIcon(ICON_STEP_IN));
-    private final JButton stepOutButton = new JButton(createImageIcon(ICON_STEP_OUT));
     private final JButton exportButton = new JButton(createImageIcon(ICON_EXPORT));
     private final JButton settingsButton = new JButton(createImageIcon(ICON_SETTINGS));
-    private final JSeparator debugSeparator = new JSeparator(JSeparator.VERTICAL);
     // Labels
     private final JLabel compilerStatusLabel = new JLabel(""); // Compiler/VM Status
     private final JLabel cursorPositionLabel = new JLabel("0:0"); // Cursor Position
 
-    // Debugging
-    private final DefaultListModel<String> watchListModel = new DefaultListModel<>();
-    private final JList<String> watchListBox = new JList<>(watchListModel);
-    private final DefaultListModel<String> gosubListModel = new DefaultListModel<>();
 
     // Editors
     private BasicEditor basicEditor;
@@ -183,8 +183,8 @@ public class MainWindow
     private SearchContext searchContext;
 
     // Debugging
-    private boolean isDebugMode = false;
     private VirtualMachineViewDialog virtualMachineViewDialog;
+    private IDebugPresenter  debugPresenter;
     private int lastSourceRow = -1;
     private int lastSourceColumn = -1;
 
@@ -517,7 +517,7 @@ public class MainWindow
         });
 
         functionListMenuItem.addActionListener(e -> {
-            selectRightDocsSection("functions");
+            selectRightDocsSection("symbols");
         });
 
         aboutMenuItem.addActionListener(e -> showAboutDialog());
@@ -529,61 +529,7 @@ public class MainWindow
             // TODO mExitMenuItem.setVisible(false);
         }
 
-        // Debugger
-        JPanel watchListFrame = new JPanel();
-        watchListFrame.setLayout(new BorderLayout());
-        JLabel watchlistLabel = new JLabel("Watchlist");
-        watchlistLabel.setBorder(new EmptyBorder(4, 8, 4, 8));
-        watchListFrame.add(watchlistLabel, BorderLayout.NORTH);
-        JScrollPane watchListScrollPane = new JScrollPane(watchListBox);
-        watchListFrame.add(watchListScrollPane, BorderLayout.CENTER);
 
-        watchListBox.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent evt) {
-                JList list = (JList) evt.getSource();
-                if (evt.getClickCount() == 2) {
-                    // Double-click detected
-                    int index = list.locationToIndex(evt.getPoint());
-                    editWatch();
-                }
-            }
-        });
-
-        watchListBox.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {}
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    editWatch();
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-                    deleteWatch();
-                } else if (e.getKeyCode() == KeyEvent.VK_INSERT) {
-                    watchListBox.setSelectedIndex(basicEditor.getWatchListSize());
-                    editWatch();
-                }
-            }
-        });
-
-        watchListBox.addListSelectionListener(e -> updateWatchHint());
-
-        JPanel gosubFrame = new JPanel();
-        gosubFrame.setLayout(new BorderLayout());
-        JLabel callstackLabel = new JLabel("Callstack");
-        callstackLabel.setBorder(new EmptyBorder(4, 8, 4, 8));
-        gosubFrame.add(callstackLabel, BorderLayout.NORTH);
-        JList<String> gosubListBox = new JList<>(gosubListModel);
-        JScrollPane gosubListScrollPane = new JScrollPane(gosubListBox);
-        gosubFrame.add(gosubListScrollPane, BorderLayout.CENTER);
-
-        debugPane.setLeftComponent(watchListFrame);
-        debugPane.setRightComponent(gosubFrame);
 
         // Toolbar
         JToolBar toolBar = new JToolBar();
@@ -593,14 +539,7 @@ public class MainWindow
         toolBar.addSeparator();
         toolBar.add(runButton);
         toolBar.addSeparator();
-        toolBar.add(debugButton);
-        toolBar.addSeparator();
-        toolBar.add(playButton);
         toolBar.add(runTargetCombo);
-        toolBar.add(stepOverButton);
-        toolBar.add(stepInButton);
-        toolBar.add(stepOutButton);
-        toolBar.add(debugSeparator);
         toolBar.add(Box.createHorizontalGlue());
         toolBar.add(exportButton);
         toolBar.add(settingsButton);
@@ -610,11 +549,6 @@ public class MainWindow
         saveButton.addActionListener(e -> actionSave());
         runButton.addActionListener(e -> basicEditor.actionRun());
 
-        debugButton.addActionListener(e -> actionDebugMode());
-        playButton.addActionListener(e -> basicEditor.actionPlayPause());
-        stepOverButton.addActionListener(e -> basicEditor.actionStep());
-        stepInButton.addActionListener(e -> basicEditor.actionStepInto());
-        stepOutButton.addActionListener(e -> basicEditor.actionStepOutOf());
         exportButton.addActionListener(e -> actionExport());
         settingsButton.addActionListener(e -> showSettings());
         runButton.setToolTipText("Run the program!");
@@ -708,24 +642,34 @@ public class MainWindow
         editorSplitPane.setRightComponent(splitTabControl);
         editorSplitPane.setResizeWeight(0.7);
 
-        mainPane.setTopComponent(primaryTabHost);
-
-        debugPane.setLeftComponent(watchListFrame);
-        debugPane.setRightComponent(gosubFrame);
-
-        contentPane.setLeftComponent(mainPane);
+        contentPane.setLeftComponent(primaryTabHost);
         contentPane.setRightComponent(rightDocsContainer);
         contentPane.setResizeWeight(0.74);
 
-        workspacePane.setLeftComponent(leftSidebarContainer);
+        workspacePane.setLeftComponent(leftSidebarContent);
         workspacePane.setRightComponent(contentPane);
         workspacePane.setResizeWeight(0.18);
         workspacePane.setDividerLocation(expandedLeftSidebarWidth);
         contentPane.setDividerLocation(Math.max(200, frame.getPreferredSize().width - expandedRightDocsWidth));
 
+        topPaneHost.add(workspacePane, BorderLayout.CENTER);
+
+        mainPane.setTopComponent(topPaneHost);
+        mainPane.setBottomComponent(bottomBarContainer);
+        mainPane.setResizeWeight(1.0);
+
+        leftRailsHost.setLayout(new BoxLayout(leftRailsHost, BoxLayout.Y_AXIS));
+        leftRailsHost.add(leftSidebarRail);
+        leftRailsHost.add(Box.createVerticalGlue());
+        leftRailsHost.add(bottomBarRail);
+
+        centerPaneHost.add(leftRailsHost, BorderLayout.WEST);
+        centerPaneHost.add(mainPane, BorderLayout.CENTER);
+        centerPaneHost.add(rightDocsRail, BorderLayout.EAST);
+
         // Add controls to window
         frame.add(toolBar, BorderLayout.NORTH);
-        frame.add(workspacePane, BorderLayout.CENTER);
+        frame.add(centerPaneHost, BorderLayout.CENTER);
         frame.add(statusPanel, BorderLayout.SOUTH);
         frame.setJMenuBar(menuBar);
 
@@ -759,17 +703,21 @@ public class MainWindow
         atmf.putMapping("text/basic4gl", "com.basic4gl.desktop.editor.BasicTokenMaker");
 
         fileManager = new FileManager(this);
-        panels = new IEditorPanelProvider[] {
-                new FileBrowserPanelProvider(),
-                new AssetsPanelProvider(fileManager),
-                new BookmarksPanelProvider(),
-                new DebugPanelProvider(),
-                new SymbolsPanelProvider(),
-        };
 
         basicEditor = new BasicEditor(outputBinPath, fileManager, this,
                 new BasicDialogService(this.frame),
                 this, this);
+
+        debugPresenter = new DebugPanelProvider(basicEditor);
+
+        panels = new IEditorPanelProvider[] {
+                new FileBrowserPanelProvider(),
+                new AssetsPanelProvider(fileManager),
+                new BookmarksPanelProvider(),
+                (IEditorPanelProvider) debugPresenter,
+                new SymbolsPanelProvider(),
+                new DocsPanelProvider(),
+        };
 
         configureLeftSidebar();
         configureRightSidebar();
@@ -807,6 +755,10 @@ public class MainWindow
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            collapseBottomBar();
+            collapseRightDocs();
+        });
     }
 
     private void actionExport() {
@@ -1288,12 +1240,11 @@ public class MainWindow
     }
 
     private void actionDebugMode() {
-        // Toggle debug mode
-        isDebugMode = !isDebugMode;
-        debugMenuItem.setSelected(isDebugMode);
-        debugButton.setSelected(isDebugMode);
-
-        refreshDebugDisplays(basicEditor.getMode());
+        if (Objects.equals(activeBottomBarKey, "debug") && isBottomBarExpanded()) {
+            collapseBottomBar();
+            return;
+        }
+        selectBottomBarSection("debug", true);
     }
 
     private void actionGoToDeclaration() {
@@ -1535,7 +1486,7 @@ public class MainWindow
         fileViewers.add(new FileViewerWrapper(editor));
 
         // replace emptyTabPanel if needed
-        mainPane.setTopComponent(getActiveEditorHost());
+        setEditorContent(getActiveEditorHost());
 
         tabControl.addTab(editor.getTitle(), editor.getContentPane());
 
@@ -1616,7 +1567,7 @@ public class MainWindow
         }
 
         // replace emptyTabPanel if needed
-        mainPane.setTopComponent(getActiveEditorHost());
+            setEditorContent(getActiveEditorHost());
 
         tabControl.addTab(viewer.getTitle(), viewer.getContentPane());
 
@@ -1748,10 +1699,8 @@ public class MainWindow
         basicEditor.setMode(ApMode.AP_PAUSED, null);
         refreshActions(basicEditor.getMode());
 
-        // Place editor into debug mode
-        isDebugMode = true;
-        debugMenuItem.setSelected(true);
-        debugButton.setSelected(true);
+        // Open debug panel when execution pauses.
+        selectBottomBarSection("debug", true);
         refreshDebugDisplays(basicEditor.getMode());
 
         // TODO Add VMViewer
@@ -1778,6 +1727,11 @@ public class MainWindow
     }
 
     @Override
+    public void updateCallStack(StackTraceCallback message) {
+        debugPresenter.updateCallStack(message);
+    }
+
+    @Override
     public void onCompileSucceeded() {
 
         for (IEditorPanelProvider panel : panels) {
@@ -1794,13 +1748,9 @@ public class MainWindow
             goToDeclarationMenuItem.setEnabled(true);
             selectAllMenuItem.setEnabled(true);
 
-            stepOverButton.setEnabled(true);
-            stepInButton.setEnabled(true);
-            stepOutButton.setEnabled(true);
             stepOverMenuItem.setEnabled(true);
             stepIntoMenuItem.setEnabled(true);
             stepOutOfMenuItem.setEnabled(true);
-            playButton.setEnabled(true);
             playPauseMenuItem.setEnabled(true);
             runMenuItem.setEnabled(true);
             runButton.setEnabled(true);
@@ -1853,13 +1803,9 @@ public class MainWindow
                 goToDeclarationMenuItem.setEnabled(false);
                 selectAllMenuItem.setEnabled(false);
 
-                stepOverButton.setEnabled(false);
-                stepInButton.setEnabled(false);
-                stepOutButton.setEnabled(false);
                 stepOverMenuItem.setEnabled(false);
                 stepIntoMenuItem.setEnabled(false);
                 stepOutOfMenuItem.setEnabled(false);
-                playButton.setEnabled(false);
                 playPauseMenuItem.setEnabled(false);
                 runMenuItem.setEnabled(false);
                 runButton.setEnabled(false);
@@ -1880,10 +1826,10 @@ public class MainWindow
                         openFolderMenuItem.getAccelerator(),
                         basicEditor.getRecentFiles(),
                         recentWorkspaces);
-                mainPane.setTopComponent(emptyTabPanel);
+                setEditorContent(emptyTabPanel);
                 break;
             case AP_STOPPED:
-                mainPane.setTopComponent(getActiveEditorHost());
+                setEditorContent(getActiveEditorHost());
                 setClosingTabsEnabled(true);
                 settingsMenuItem.setEnabled(true);
                 settingsButton.setEnabled(true);
@@ -1923,7 +1869,7 @@ public class MainWindow
 
             case AP_RUNNING:
             case AP_PAUSED:
-                mainPane.setTopComponent(getActiveEditorHost());
+                setEditorContent(getActiveEditorHost());
                 setClosingTabsEnabled(false);
 
                 settingsMenuItem.setEnabled(false);
@@ -1951,61 +1897,20 @@ public class MainWindow
 
     @Override
     public void refreshDebugDisplays(ApMode mode) {
+        debugPresenter.refreshDebugControls(mode);
+        playPauseMenuItem.setEnabled(mode != ApMode.AP_WAITING && mode != ApMode.AP_CLOSED);
 
-        // Show/hide debug controls
-        playButton.setVisible(isDebugMode);
-        stepOverButton.setVisible(isDebugMode);
-        stepInButton.setVisible(isDebugMode);
-        stepOutButton.setVisible(isDebugMode);
-        debugSeparator.setVisible(isDebugMode);
-
-        // TODO Show/hide debug pane
-        if (isDebugMode) {
-            mainPane.setResizeWeight(0.7);
-            // mDebugPane.setEnabled(true);
-            mainPane.setEnabled(true);
-            mainPane.setBottomComponent(debugPane);
-            SwingUtilities.invokeLater(() -> debugPane.setDividerLocation(0.7));
-        } else {
-            mainPane.remove(debugPane);
-            // mDebugPane.setEnabled(false);
-            mainPane.setEnabled(false);
-        }
-
-        if (mode != ApMode.AP_CLOSED) {
-            playButton.setIcon(mode == ApMode.AP_RUNNING ? createImageIcon(ICON_PAUSE) : createImageIcon(ICON_PLAY));
-            playButton.setEnabled(mode != ApMode.AP_WAITING);
-            playPauseMenuItem.setEnabled(mode != ApMode.AP_WAITING);
-            stepOverButton.setEnabled(mode != ApMode.AP_RUNNING && mode != ApMode.AP_WAITING);
-            stepInButton.setEnabled(mode != ApMode.AP_RUNNING && mode != ApMode.AP_WAITING);
-
-            // TODO 12/2022 determine appropriate state for mStepOutButton;
-            // does the editor even need to care about UserCallStack size with remote debugger protocol
-            // setup?
-            stepOutButton.setEnabled(mode == ApMode.AP_PAUSED);
-            // TODO old mStepOutButton.setEnabled(mode == ApMode.AP_PAUSED &&
-            // (mEditor.mVM.UserCallStack().size() > 0));
-        }
-        if (!isDebugMode) {
-            return;
+        if (mode == ApMode.AP_CLOSED && isBottomBarExpanded()) {
+            collapseBottomBar();
         }
 
         if (mode != ApMode.AP_PAUSED) {
-            // Clear debug controls
-            gosubListModel.clear();
+            debugPresenter.clearCallStack();
         }
+
+        syncDebugMenuSelection();
     }
 
-    @Override
-    public void updateCallStack(StackTraceCallback stackTraceCallback) {
-
-        // Clear debug controls
-        gosubListModel.clear();
-
-        for (String label : basicEditor.getLanguageService().buildFriendlyCallStackLabels(stackTraceCallback)) {
-            gosubListModel.addElement(label);
-        }
-    }
 
     @Override
     public void updateVmViewCallStack(StackTraceCallback stackTraceCallback) {
@@ -2031,14 +1936,9 @@ public class MainWindow
 
     @Override
     public void updateEvaluateWatch(String evaluatedWatch, String result) {
-        int index = 0;
-        for (String watch : basicEditor.getWatches()) {
-            if (Objects.equals(watch, evaluatedWatch)) {
-                watchListModel.setElementAt(watch + ": " + result, index);
-            }
-            index++;
-        }
+        debugPresenter.updateEvaluateWatch(evaluatedWatch, result);
     }
+
 
     @Override
     public void updateVmViewVariableValue(String expression, String result) {
@@ -2056,57 +1956,9 @@ public class MainWindow
 
     @Override
     public void refreshWatchList() {
-        // Clear debug controls
-        watchListModel.clear();
-
-        for (String watch : basicEditor.getWatches()) {
-
-            watchListModel.addElement(watch + ": " + "???");
-        }
-        watchListModel.addElement(" "); // Last line is blank, and can be clicked on to add new watch
+        debugPresenter.refreshWatchList();
     }
 
-    private void editWatch() {
-        String newWatch, oldWatch;
-
-        // Find watch
-        int index = watchListBox.getSelectedIndex();
-        int saveIndex = index;
-
-        // Extract watch text
-        oldWatch = basicEditor.getWatchOrDefault(index);
-
-        // Prompt for new text
-        newWatch = (String) JOptionPane.showInputDialog(
-                frame, "Enter variable/expression:", "Watch variable", JOptionPane.PLAIN_MESSAGE, null, null, oldWatch);
-
-        basicEditor.updateWatch(newWatch, index);
-
-        watchListBox.setSelectedIndex(saveIndex);
-        updateWatchHint();
-    }
-
-    void deleteWatch() {
-
-        // Find watch
-        int index = watchListBox.getSelectedIndex();
-        int saveIndex = index;
-
-        // Delete watch
-        basicEditor.removeWatchAt(index);
-
-        watchListBox.setSelectedIndex(saveIndex);
-        updateWatchHint();
-    }
-
-    private void updateWatchHint() {
-        int index = watchListBox.getSelectedIndex();
-        if (index > -1 && index < basicEditor.getWatchListSize()) {
-            watchListBox.setToolTipText((String) watchListModel.get(index));
-        } else {
-            watchListBox.setToolTipText("");
-        }
-    }
 
     @Override
     public void onToggleBreakpoint(String filePath, int line) {
@@ -2115,6 +1967,10 @@ public class MainWindow
 
     private Component getActiveEditorHost() {
         return splitTabControl.getTabCount() == 0 ? primaryTabHost : editorSplitPane;
+    }
+
+    private void setEditorContent(Component component) {
+        contentPane.setLeftComponent(component);
     }
 
     private void configurePrimaryTabHost() {
@@ -2136,7 +1992,7 @@ public class MainWindow
                         if (splitTabControl.getTabCount() == 0
                                 && basicEditor != null
                                 && basicEditor.getMode() != ApMode.AP_CLOSED) {
-                            mainPane.setTopComponent(primaryTabHost);
+                            setEditorContent(primaryTabHost);
                         }
                     }
                 });
@@ -2206,7 +2062,7 @@ public class MainWindow
         preview.getEditorPane().setEditable(false);
         splitTabControl.addTab(preview.getTitle() + " (split)", preview.getContentPane());
         splitTabControl.setSelectedIndex(splitTabControl.getTabCount() - 1);
-        mainPane.setTopComponent(getActiveEditorHost());
+        setEditorContent(getActiveEditorHost());
         SwingUtilities.invokeLater(() -> editorSplitPane.setDividerLocation(0.68));
     }
 
@@ -2272,7 +2128,8 @@ public class MainWindow
     private void configureLeftSidebar() {
         leftSidebarRail.setFloatable(false);
         leftSidebarRail.setRollover(true);
-
+        bottomBarRail.setFloatable(false);
+        bottomBarRail.setRollover(true);
 
         Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
                 .forEach(x -> {
@@ -2280,16 +2137,13 @@ public class MainWindow
                     addLeftSidebarButton(x.id(), createImageIcon(x.getIconPath()), x.getTitle());
                 });
 
-        leftSidebarRail.add(Box.createVerticalGlue());
-
         Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.SOUTH)
                 .forEach(x -> {
-                    leftSidebarContent.add(x.build(this.basicEditor), x.id());
-                    addLeftSidebarButton(x.id(), createImageIcon(x.getIconPath()), x.getTitle());
+                    bottomBarContent.add(x.build(this.basicEditor), x.id());
+                    addBottomBarButton(x.id(), createImageIcon(x.getIconPath()), x.getTitle());
                 });
 
-        leftSidebarContainer.add(leftSidebarRail, BorderLayout.WEST);
-        leftSidebarContainer.add(leftSidebarContent, BorderLayout.CENTER);
+        bottomBarContainer.add(bottomBarContent, BorderLayout.CENTER);
 
         // Select first panel if available
         Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
@@ -2301,6 +2155,18 @@ public class MainWindow
 
 
     private void configureRightSidebar() {
+        rightDocsRail.setFloatable(false);
+        rightDocsRail.setRollover(true);
+        rightDocsContainer.add(rightDocsContent, BorderLayout.CENTER);
+        Arrays.stream(panels)
+                .filter(x -> x.getLayoutConstraints() == EditorLayout.EAST)
+                .forEach(x -> {
+                    addRightDocsButton(x.id(), createImageIcon(x.getIconPath()), x.getTitle());
+                    JComponent content = "docs".equals(x.id()) ? docsTabs : x.build(this.basicEditor);
+                    if (content != null) {
+                        rightDocsContent.add(content, x.id());
+                    }
+                });
 
         docsTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         docsTabs.putClientProperty(TABBED_PANE_TAB_CLOSABLE, true);
@@ -2313,8 +2179,13 @@ public class MainWindow
                     if (docsTabs.getTabCount() > 0) {
                         docsTabs.setSelectedIndex(0);
                     }
-                    selectRightDocsSection("functions");
+                    selectRightDocsSection("symbols");
                 });
+
+        Arrays.stream(panels)
+                .filter(x -> x.getLayoutConstraints() == EditorLayout.EAST)
+                .findFirst()
+                .ifPresent(x -> selectRightDocsSection(x.id()));
     }
 
 
@@ -2332,6 +2203,14 @@ public class MainWindow
         rightDocsGroup.add(button);
         rightDocsButtons.put(key, button);
         rightDocsRail.add(button);
+    }
+
+    private void addBottomBarButton(String key, Icon icon, String tooltip) {
+        JToggleButton button = createRailButton(icon, tooltip);
+        button.addActionListener(e -> onBottomBarButtonPressed(key));
+        bottomBarGroup.add(button);
+        bottomBarButtons.put(key, button);
+        bottomBarRail.add(button);
     }
 
     private JToggleButton createRailButton(Icon icon, String tooltip) {
@@ -2353,6 +2232,14 @@ public class MainWindow
         selectLeftSidebarSection(key, true);
     }
 
+    private void onBottomBarButtonPressed(String key) {
+        if (Objects.equals(activeBottomBarKey, key) && isBottomBarExpanded()) {
+            collapseBottomBar();
+            return;
+        }
+        selectBottomBarSection(key, true);
+    }
+
     private void selectLeftSidebarSection(String key, boolean ensureExpanded) {
         CardLayout layout = (CardLayout) leftSidebarContent.getLayout();
         layout.show(leftSidebarContent, key);
@@ -2368,20 +2255,81 @@ public class MainWindow
         }
     }
 
+    private void selectBottomBarSection(String key, boolean ensureExpanded) {
+        if (!bottomBarButtons.containsKey(key)) {
+            return;
+        }
+        activeBottomBarKey = key;
+        CardLayout layout = (CardLayout) bottomBarContent.getLayout();
+        layout.show(bottomBarContent, key);
+        JToggleButton button = bottomBarButtons.get(key);
+        if (button != null) {
+            button.setSelected(true);
+        }
+
+        if (ensureExpanded) {
+            expandBottomBar();
+        }
+        syncDebugMenuSelection();
+    }
+
     private boolean isLeftSidebarExpanded() {
-        return workspacePane.getDividerLocation() > leftSidebarRail.getPreferredSize().width + 24;
+        return workspacePane.getDividerLocation() > 12;
     }
 
     private void collapseLeftSidebar() {
-        if (workspacePane.getDividerLocation() > leftSidebarRail.getPreferredSize().width + 24) {
+        if (isLeftSidebarExpanded()) {
             expandedLeftSidebarWidth = workspacePane.getDividerLocation();
         }
-        workspacePane.setDividerLocation(leftSidebarRail.getPreferredSize().width + 6);
+        activeLeftSidebarKey = null;
+        leftSidebarGroup.clearSelection();
+        workspacePane.setDividerLocation(0);
     }
 
     private void expandLeftSidebar() {
         int target = Math.max(expandedLeftSidebarWidth, 180);
         workspacePane.setDividerLocation(target);
+    }
+
+    private boolean isBottomBarExpanded() {
+        if (mainPane.getBottomComponent() != bottomBarContainer || mainPane.getHeight() <= 0) {
+            return false;
+        }
+        int bottomHeight = mainPane.getHeight() - mainPane.getDividerLocation();
+        return bottomHeight > 12;
+    }
+
+    private void collapseBottomBar() {
+        if (mainPane.getBottomComponent() != bottomBarContainer) {
+            mainPane.setBottomComponent(bottomBarContainer);
+        }
+        if (isBottomBarExpanded() && mainPane.getHeight() > 0) {
+            expandedBottomBarHeight = Math.max(120, mainPane.getHeight() - mainPane.getDividerLocation());
+        }
+        if (mainPane.getHeight() > 0) {
+            mainPane.setDividerLocation(mainPane.getHeight());
+        }
+        activeBottomBarKey = null;
+        bottomBarGroup.clearSelection();
+        syncDebugMenuSelection();
+    }
+
+    private void expandBottomBar() {
+        if (mainPane.getBottomComponent() != bottomBarContainer) {
+            mainPane.setBottomComponent(bottomBarContainer);
+        }
+        mainPane.setResizeWeight(1.0);
+
+        int targetBottomHeight = Math.max(expandedBottomBarHeight, 140);
+        if (mainPane.getHeight() > 0) {
+            int newDivider = Math.max(120, mainPane.getHeight() - targetBottomHeight);
+            mainPane.setDividerLocation(newDivider);
+        }
+        syncDebugMenuSelection();
+    }
+
+    private void syncDebugMenuSelection() {
+        debugMenuItem.setSelected(isBottomBarExpanded() && Objects.equals(activeBottomBarKey, "debug"));
     }
 
     private void onRightDocsButtonPressed(String key) {
@@ -2393,7 +2341,12 @@ public class MainWindow
     }
 
     private void selectRightDocsSection(String key) {
+        if (!rightDocsButtons.containsKey(key)) {
+            return;
+        }
         activeRightDocsKey = key;
+        CardLayout layout = (CardLayout) rightDocsContent.getLayout();
+        layout.show(rightDocsContent, key);
 
         JToggleButton button = rightDocsButtons.get(key);
         if (button != null) {
@@ -2407,21 +2360,24 @@ public class MainWindow
         }
 
         expandRightDocs();
-        docsTabs.requestFocusInWindow();
+        if ("docs".equals(key)) {
+            docsTabs.requestFocusInWindow();
+        }
     }
 
     private boolean isRightDocsExpanded() {
         int docsWidth = contentPane.getWidth() - contentPane.getDividerLocation();
-        return docsWidth > rightDocsRail.getPreferredSize().width + 28;
+        return docsWidth > 12;
     }
 
     private void collapseRightDocs() {
         int docsWidth = contentPane.getWidth() - contentPane.getDividerLocation();
-        if (docsWidth > rightDocsRail.getPreferredSize().width + 28) {
+        if (docsWidth > 12) {
             expandedRightDocsWidth = docsWidth;
         }
-        int collapsedWidth = rightDocsRail.getPreferredSize().width + 8;
-        contentPane.setDividerLocation(Math.max(120, contentPane.getWidth() - collapsedWidth));
+        activeRightDocsKey = null;
+        rightDocsGroup.clearSelection();
+        contentPane.setDividerLocation(contentPane.getWidth());
     }
 
     private void expandRightDocs() {
@@ -2697,7 +2653,7 @@ public class MainWindow
                 openFolderMenuItem.getAccelerator(),
                 basicEditor.getRecentFiles(),
                 recentWorkspaces);
-        mainPane.setTopComponent(emptyTabPanel);
+        setEditorContent(emptyTabPanel);
     }
 
     private void setClosingTabsEnabled(boolean enabled) {

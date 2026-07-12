@@ -109,7 +109,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
 
     @Override
     public EditorLayout getLayoutConstraints() {
-        return EditorLayout.WEST;
+        return EditorLayout.EAST;
     }
 
     public JPanel build(PluginContext context) {
