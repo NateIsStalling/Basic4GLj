@@ -703,8 +703,6 @@ public class MainWindow
         configurePrimaryTabHost();
         configureSplitTabs();
         configureTabContextMenu();
-        configureLeftSidebar();
-        configureRightSidebar();
 
         editorSplitPane.setLeftComponent(primaryTabHost);
         editorSplitPane.setRightComponent(splitTabControl);
@@ -762,8 +760,8 @@ public class MainWindow
 
         fileManager = new FileManager(this);
         panels = new IEditorPanelProvider[] {
-                new AssetsPanelProvider(fileManager),
                 new FileBrowserPanelProvider(),
+                new AssetsPanelProvider(fileManager),
                 new BookmarksPanelProvider(),
                 new DebugPanelProvider(),
                 new SymbolsPanelProvider(),
@@ -772,6 +770,9 @@ public class MainWindow
         basicEditor = new BasicEditor(outputBinPath, fileManager, this,
                 new BasicDialogService(this.frame),
                 this, this);
+
+        configureLeftSidebar();
+        configureRightSidebar();
 
         // TODO Confirm this doesn't break if app is ever signed
         // getParent
@@ -1353,7 +1354,7 @@ public class MainWindow
                 File file = editor.getFile();
                 fileId = file != null ? file.getAbsolutePath() : "<unsaved:" + editor.getTitle() + ">";
             }
-            declarations.addAll(basicEditor.getLanguageService().extractDeclarations(editor.getEditorPane().getText(), fileId));
+            declarations.addAll(basicEditor.getLanguageSupport().extractDeclarations(editor.getEditorPane().getText(), fileId));
         }
         return declarations;
     }

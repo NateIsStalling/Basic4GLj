@@ -2,6 +2,8 @@ package com.basic4gl.desktop.language;
 
 import com.basic4gl.desktop.spi.LanguageService;
 import com.basic4gl.desktop.spi.language.IndexedSymbol;
+import com.basic4gl.desktop.spi.language.LanguageSupport;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -47,7 +49,7 @@ public class SymbolIndexer {
     /** Milliseconds to wait after the last change before running extraction. */
     private static final long DEBOUNCE_MILLIS = 400;
 
-    private final LanguageService languageSupport;
+    private final LanguageSupport languageSupport;
     private final SourceProvider sourceProvider;
     private final Callback callback;
 
@@ -61,7 +63,7 @@ public class SymbolIndexer {
     private long requestedRevision = 0;
 
     public SymbolIndexer(
-            LanguageService languageSupport,
+            LanguageSupport languageSupport,
             SourceProvider sourceProvider,
             Callback callback) {
         this.languageSupport = languageSupport;

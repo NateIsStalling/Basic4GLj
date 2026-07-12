@@ -328,6 +328,9 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
 
     @Override
     public void refresh(EditorPlugin languageProvider) {
+        if (context == null) {
+            return;
+        }
         File rootDir = new File(context.currentDirectory());
         assetThumbnailCache.clear();
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new AssetItem(

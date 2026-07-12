@@ -15,6 +15,7 @@ import com.basic4gl.desktop.editor.BasicTokenMaker;
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.editor.IEditorPresenter;
 import com.basic4gl.desktop.spi.*;
+import com.basic4gl.desktop.spi.language.LanguageSupport;
 import com.basic4gl.desktop.util.*;
 import com.basic4gl.language.adapter.Basic4GLEditorPluginAdapter;
 import com.basic4gl.language.core.runtime.CallbackMessage;
@@ -1170,6 +1171,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         return basic4gl.getLanguage();
     }
 
+    public LanguageSupport getLanguageSupport() {
+        return basic4gl.getLanguageSupport();
+    }
+
     public List<Builder> getBuilders() {
         return builders;
     }
@@ -1178,6 +1183,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     public Basic4GLEditorPluginAdapter getBasic4gl() {
         return basic4gl;
     }
+
 
     // TODO Reimplement callbacks
     public class DebugCallback implements com.basic4gl.language.core.runtime.DebuggerTaskCallback {

@@ -5,6 +5,7 @@ import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.desktop.spi.*;
+import com.basic4gl.desktop.spi.language.LanguageSupport;
 import com.basic4gl.language.adapter.menu.ReferenceWindow;
 import com.basic4gl.library.plugin.PluginJAR;
 import com.basic4gl.library.plugin.PluginJARDetails;
@@ -27,6 +28,7 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
     private final TomVM vm;
     private final TomBasicCompiler compiler;
     private final LanguageService languageService;
+    private final LanguageSupport languageSupport = new Basic4GLLanguageSupport();
     private final CompilerService compilerService;
     private final DebugService debugService;
     private final PreprocessorService preprocessorService;
@@ -89,6 +91,10 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
     @Override
     public LanguageService getLanguage() {
         return languageService;
+    }
+    @Override
+    public LanguageSupport getLanguageSupport() {
+        return languageSupport;
     }
 
     @Override

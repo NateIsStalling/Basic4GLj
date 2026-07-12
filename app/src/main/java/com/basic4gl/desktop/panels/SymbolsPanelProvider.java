@@ -116,7 +116,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         this.context = context;
 
         symbolIndexer =
-                new SymbolIndexer(context.currentEditor().getLanguage(), context.commands()::collectAllSourceText, this::updateProgramSymbols);
+                new SymbolIndexer(context.currentEditor().getLanguageSupport(), context.commands()::collectAllSourceText, this::updateProgramSymbols);
         JPanel lookupPanel = new JPanel(new BorderLayout(6, 6));
         JPanel lookupHeader = new JPanel(new BorderLayout(6, 6));
 
@@ -243,6 +243,9 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
 
     @Override
     public void refresh(EditorPlugin languageProvider) {
+        if (context == null) {
+            return;
+        }
         populateDocsFromCompiler();
         symbolIndexer.schedule();
     }

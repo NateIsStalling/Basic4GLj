@@ -55,6 +55,7 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
 
     @Override
     public JPanel build(PluginContext context) {
+        this.context = context;
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         JPanel header = new JPanel(new BorderLayout());
         JPanel headerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
@@ -203,6 +204,9 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
 
     @Override
     public void refresh(EditorPlugin languageProvider) {
+        if (context == null) {
+            return;
+        }
         File root = new File(context.currentDirectory());
         DefaultMutableTreeNode rootNode = buildFileTreeNode(root, 0);
         fileBrowserTree.setModel(new DefaultTreeModel(rootNode));
