@@ -4,6 +4,11 @@ public interface PluginContext {
     //    CommandRegistry commands();
     //    MenuRegistry menus();
     //    ToolWindowRegistry toolWindows();
+
+    EditorCommandsService commands();
+    DebugController debugger();
+
+
     DialogService dialogs();
 
     MenuService menus();
@@ -14,6 +19,8 @@ public interface PluginContext {
     Builder currentBuilder();
 
     String currentDirectory();
+
+    EditorPlugin currentEditor();
 
     String getLibraryPath();
 

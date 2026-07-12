@@ -28,7 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import javax.swing.SwingUtilities;
 import org.apache.commons.lang3.SystemUtils;
 
-public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider, PluginContext {
+public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider, PluginContext, DebugController {
 
     private static final int GLOBAL_VARIABLES_PAGE_SIZE = 128;
     private static final int MEMORY_VARIABLES_PAGE_SIZE = 64;
@@ -80,13 +80,17 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     private String libraryPath;
 
     private final Basic4GLEditorPluginAdapter basic4gl;
+    private final DialogService dialogService;
+    private final EditorCommandsService commandsService;
 
     public BasicEditor(
-            String libraryPath, FileManager fileManager, IEditorPresenter presenter, MenuService menuService) {
+            String libraryPath, FileManager fileManager, IEditorPresenter presenter, DialogService dialogService, MenuService menuService, EditorCommandsService commandsService) {
         this.libraryPath = libraryPath;
         this.fileManager = fileManager;
         this.presenter = presenter;
+        this.dialogService = dialogService;
         this.menuService = menuService;
+        this.commandsService = commandsService;
         this.basic4gl = new Basic4GLEditorPluginAdapter(this);
         this.basic4gl.setOnPluginStateChanged(this::refreshSyntaxHighlighting);
         this.basic4gl.setOnPluginDirectoryHistoryChanged(this::syncPluginDirectorySettings);
@@ -110,21 +114,12 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         BasicTokenMaker.functions.clear();
         BasicTokenMaker.constants.clear();
         BasicTokenMaker.operators.clear();
-        for (String s : basic4gl.getLanguage().getReservedWords()) {
-            BasicTokenMaker.reservedWords.add(s);
-        }
 
-        for (String s : basic4gl.getLanguage().getConstants()) {
-            BasicTokenMaker.constants.add(s);
-        }
+        BasicTokenMaker.reservedWords.addAll(basic4gl.getLanguage().getReservedWords());
+        BasicTokenMaker.constants.addAll(basic4gl.getLanguage().getConstants());
+        BasicTokenMaker.functions.addAll(basic4gl.getLanguage().getFunctions());
+        BasicTokenMaker.operators.addAll(basic4gl.getLanguage().getOperators());
 
-        for (String s : basic4gl.getLanguage().getFunctions()) {
-            BasicTokenMaker.functions.add(s);
-        }
-
-        for (String s : basic4gl.getLanguage().getOperators()) {
-            BasicTokenMaker.operators.add(s);
-        }
         presenter.refreshSyntaxHighlighting();
     }
 
@@ -1088,10 +1083,18 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     }
 
     @Override
-    public DialogService dialogs() {
+    public EditorCommandsService commands() {
+        return commandsService;
+    }
 
-        // TODO implement dialogs for plugins
-        return null;
+    @Override
+    public DebugController debugger() {
+        return this;
+    }
+
+    @Override
+    public DialogService dialogs() {
+        return dialogService;
     }
 
     @Override
@@ -1120,6 +1123,11 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     @Override
     public String currentDirectory() {
         return fileManager.getCurrentDirectory();
+    }
+
+    @Override
+    public EditorPlugin currentEditor() {
+        return basic4gl;
     }
 
     @Override

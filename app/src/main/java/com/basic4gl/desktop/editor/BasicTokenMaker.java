@@ -1,15 +1,17 @@
 package com.basic4gl.desktop.editor;
 
-import com.basic4gl.language.adapter.Basic4GLLanguageSupport;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.basic4gl.desktop.spi.LanguageService;
+import com.basic4gl.language.adapter.Basic4GLLanguageService;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMap;
 
 /**
  * RSyntaxTextArea {@code TokenMaker} for the Basic4GL language.
  *
- * <p>All tokenisation logic now lives in {@link Basic4GLLanguageSupport} (backed by the
+ * <p>All tokenisation logic now lives in {@link com.basic4gl.language.adapter.Basic4GLLanguageService} (backed by the
  * ANTLR-generated {@code Basic4GL} lexer). This class is retained so that:
  *
  * <ul>
@@ -35,7 +37,8 @@ public class BasicTokenMaker extends LanguageSupportTokenMaker {
 
     /** No-arg constructor used by RSyntaxTextArea's {@code TokenMakerFactory} via reflection. */
     public BasicTokenMaker() {
-        super(new Basic4GLLanguageSupport());
+        // TODO... this won't work.
+        super(new Basic4GLLanguageService());
     }
 
     /**

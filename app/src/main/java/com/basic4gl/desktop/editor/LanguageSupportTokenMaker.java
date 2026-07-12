@@ -1,8 +1,8 @@
 package com.basic4gl.desktop.editor;
 
+import com.basic4gl.desktop.spi.LanguageService;
 import com.basic4gl.desktop.spi.language.HighlightKind;
 import com.basic4gl.desktop.spi.language.LangToken;
-import com.basic4gl.desktop.spi.language.LanguageSupport;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +13,7 @@ import org.fife.ui.rsyntaxtextarea.TokenMap;
 
 /**
  * Generic RSyntaxTextArea {@link AbstractTokenMaker} that delegates all lexical analysis to a
- * pluggable {@link LanguageSupport} instance.
+ * pluggable {@link LanguageService} instance.
  *
  * <p>This is the <strong>only</strong> class in the IDE that imports RSyntaxTextArea types and
  * bridges them to the language-neutral {@code language} package. Swapping the language is a
@@ -27,7 +27,7 @@ public class LanguageSupportTokenMaker extends AbstractTokenMaker {
 
     private static final int LINE_TOKEN_CACHE_SIZE = 512;
 
-    private final LanguageSupport languageSupport;
+    private final LanguageService languageSupport;
     private final Map<String, List<LangToken>> lineTokenCache = new LinkedHashMap<>(128, 0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, List<LangToken>> eldest) {
@@ -35,7 +35,7 @@ public class LanguageSupportTokenMaker extends AbstractTokenMaker {
         }
     };
 
-    public LanguageSupportTokenMaker(LanguageSupport languageSupport) {
+    public LanguageSupportTokenMaker(LanguageService languageSupport) {
         this.languageSupport = languageSupport;
     }
 

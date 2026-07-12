@@ -1,6 +1,7 @@
 package com.basic4gl.desktop;
 
 import static com.basic4gl.desktop.Theme.*;
+import static com.basic4gl.desktop.util.HtmlUtil.markdownToHtml;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
 import static com.formdev.flatlaf.FlatClientProperties.*;
 
@@ -13,11 +14,9 @@ import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
 import com.basic4gl.desktop.language.SymbolIndexer;
+import com.basic4gl.desktop.panels.*;
 import com.basic4gl.desktop.spi.*;
-import com.basic4gl.desktop.spi.language.FunctionDefinition;
-import com.basic4gl.desktop.spi.language.IndexedSymbol;
-import com.basic4gl.desktop.spi.language.LabelDefinition;
-import com.basic4gl.desktop.spi.language.VariableDefinition;
+import com.basic4gl.desktop.util.BasicDialogService;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.language.core.internal.Mutable;
@@ -27,7 +26,6 @@ import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import com.formdev.flatlaf.util.SystemInfo;
 import java.awt.*;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -39,12 +37,8 @@ import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.text.BadLocationException;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
+
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.SearchContext;
 
@@ -58,7 +52,8 @@ public class MainWindow
                 IFileEditorActionListener,
                 IFileManagerListener,
                 EmptyTabPanel.IEmptyTabPanelListener,
-                MenuService {
+                MenuService,
+        EditorCommandsService {
 
     private final CaretListener TrackCaretPosition = new CaretListener() {
         @Override
@@ -97,49 +92,16 @@ public class MainWindow
     private final JToolBar leftSidebarRail = new JToolBar(SwingConstants.VERTICAL);
     private final ButtonGroup leftSidebarGroup = new ButtonGroup();
     private final Map<String, JToggleButton> leftSidebarButtons = new HashMap<>();
+
     private final JTabbedPane docsTabs = new JTabbedPane();
     private final JPanel rightDocsContainer = new JPanel(new BorderLayout());
     private final JToolBar rightDocsRail = new JToolBar(SwingConstants.VERTICAL);
     private final ButtonGroup rightDocsGroup = new ButtonGroup();
     private final Map<String, JToggleButton> rightDocsButtons = new HashMap<>();
-    private final JTree fileBrowserTree = new JTree();
-    private final JTree assetsTree = new JTree();
-    private final FileSystemView fileSystemView = FileSystemView.getFileSystemView();
-    private boolean showHiddenFiles = false;
-    private final DefaultListModel<AssetItem> assetsListModel = new DefaultListModel<>();
-    private final JList<AssetItem> assetsGridList = new JList<>(assetsListModel);
-    private final JPanel assetsContentPanel = new JPanel(new CardLayout());
-    private final JComboBox<String> assetsLayoutCombo = new JComboBox<>(new String[] {"Tree", "Grid"});
-    private final Map<String, Icon> assetThumbnailCache = new HashMap<>();
+
     private final JComboBox<String> runTargetCombo = new JComboBox<>();
     private boolean updatingRunTargetCombo = false;
-    private final DefaultListModel<ReferenceItem> referenceListModel = new DefaultListModel<>();
-    private final JList<ReferenceItem> referenceList = new JList<>(referenceListModel);
-    private final JTextField referenceSearchField = new JTextField();
-    private final JComboBox<String> referenceKindFilter =
-            new JComboBox<>(new String[] {"All", "Functions", "Constants", "Labels", "Variables", "Structs"});
-    private final JComboBox<String> referenceSourceFilter =
-            new JComboBox<>(new String[] {"All sources", "Builtin", "Libraries", "Program"});
-    private final JComboBox<String> referenceLibraryFilter = new JComboBox<>(new String[] {"All libraries"});
-    private final JButton referenceFiltersButton = new JButton("Filters");
-    private final JPopupMenu referenceFiltersPopup = new JPopupMenu();
-    private final JTextPane referenceDetailsPane = new JTextPane();
-    private final JButton referenceInsertButton = new JButton("Insert");
-    private final javax.swing.Timer referenceFilterDebounceTimer =
-            new javax.swing.Timer(120, e -> filterReferenceItems());
-    private boolean updatingReferenceFilters = false;
-    private static final String REFERENCE_NO_MATCHES_HTML =
-            "<html><body style='font-family:sans-serif;padding:6px;'>No matches.</body></html>";
-    private static final String REFERENCE_SELECT_PROMPT_HTML =
-            "<html><body style='font-family:sans-serif;padding:6px;'>Select an entry.</body></html>";
-    private String referenceDetailsHtml = REFERENCE_SELECT_PROMPT_HTML;
-    private final java.util.List<ReferenceItem> allReferenceItems = new ArrayList<>();
-    // Language support is shared between the symbol indexer and (via BasicTokenMaker) the editor.
-    private final com.basic4gl.desktop.spi.language.LanguageSupport languageSupport =
-            new com.basic4gl.language.adapter.Basic4GLLanguageSupport();
-    private final SymbolIndexer symbolIndexer =
-            new SymbolIndexer(languageSupport, this::collectAllSourceText, this::updateProgramSymbols);
-    private int lastProgramSymbolsFingerprint = Integer.MIN_VALUE;
+
     private int expandedLeftSidebarWidth = 260;
     private int expandedRightDocsWidth = 320;
     private String activeLeftSidebarKey = "files";
@@ -150,60 +112,7 @@ public class MainWindow
     private static final String RECENT_WORKSPACES_KEY = "RECENT_WORKSPACES";
     private static final int MAX_RECENT_WORKSPACES = 10;
 
-    private static final class ReferenceItem {
-        final String kind;
-        final String name;
-        final String signature;
-        final String library;
-        final String details;
-        final String insertText;
-        final int caretOffset;
 
-        ReferenceItem(
-                String kind,
-                String name,
-                String signature,
-                String library,
-                String details,
-                String insertText,
-                int caretOffset) {
-            this.kind = kind;
-            this.name = name;
-            this.signature = signature;
-            this.library = library;
-            this.details = details;
-            this.insertText = insertText;
-            this.caretOffset = caretOffset;
-        }
-
-        @Override
-        public String toString() {
-            return signature;
-        }
-    }
-
-    private static final class AssetItem {
-        final String title;
-        final String subtitle;
-        final File file;
-        final Icon icon;
-
-        AssetItem(String title, String subtitle, File file, Icon icon) {
-            this.title = title;
-            this.subtitle = subtitle;
-            this.file = file;
-            this.icon = icon;
-        }
-
-        boolean isOpenable() {
-            return file != null && file.isFile();
-        }
-
-        @Override
-        public String toString() {
-            return title;
-        }
-    }
 
     private final JMenu bookmarkSubMenu = new JMenu("Bookmarks");
     private final JMenu breakpointSubMenu = new JMenu("Breakpoints");
@@ -267,6 +176,8 @@ public class MainWindow
     private BasicEditor basicEditor;
     private FileManager fileManager;
 
+    IEditorPanelProvider[] panels;
+
     private IncludeLinkGenerator linkGenerator = new IncludeLinkGenerator(this);
 
     private SearchContext searchContext;
@@ -310,7 +221,7 @@ public class MainWindow
             String appHome = System.getenv("APP_HOME"); // APP_HOME is defined in scripts distributed with build
             if (appHome != null && !appHome.trim().isEmpty()) {
                 File appDirectory = new File(appHome);
-                File outputBin = new File(appDirectory, "lib/library-1.0-SNAPSHOT.jar");
+                File outputBin = new File(appDirectory, "lib/app-runtime-1.0-SNAPSHOT.jar");
                 File debugServerBin = new File(appDirectory, "lib/debug-server-1.0-SNAPSHOT.jar");
 
                 if (outputBin.exists()) {
@@ -792,8 +703,8 @@ public class MainWindow
         configurePrimaryTabHost();
         configureSplitTabs();
         configureTabContextMenu();
-        configureSidebar();
-        configureDocsPane();
+        configureLeftSidebar();
+        configureRightSidebar();
 
         editorSplitPane.setLeftComponent(primaryTabHost);
         editorSplitPane.setRightComponent(splitTabControl);
@@ -850,8 +761,17 @@ public class MainWindow
         atmf.putMapping("text/basic4gl", "com.basic4gl.desktop.editor.BasicTokenMaker");
 
         fileManager = new FileManager(this);
+        panels = new IEditorPanelProvider[] {
+                new AssetsPanelProvider(fileManager),
+                new FileBrowserPanelProvider(),
+                new BookmarksPanelProvider(),
+                new DebugPanelProvider(),
+                new SymbolsPanelProvider(),
+        };
 
-        basicEditor = new BasicEditor(outputBinPath, fileManager, this, this);
+        basicEditor = new BasicEditor(outputBinPath, fileManager, this,
+                new BasicDialogService(this.frame),
+                this, this);
 
         // TODO Confirm this doesn't break if app is ever signed
         // getParent
@@ -877,7 +797,6 @@ public class MainWindow
         loadRecentWorkspaces();
         setRecentItems(basicEditor.getRecentFiles());
         refreshRunnableFileControls();
-        populateDocsFromCompiler();
         refreshSidebarContent();
 
         // Warm up the debug server
@@ -909,6 +828,7 @@ public class MainWindow
                 frame,
                 basicEditor.getCompiler(),
                 basicEditor.getPreprocessor(),
+                basicEditor.getLanguageService(),
                 fileManager.getFileEditors(),
                 fileManager.getCurrentDirectory(),
                 contributedExportPages);
@@ -1015,7 +935,9 @@ public class MainWindow
         // ShutDownTomWindowsBasicLib();
 
         frame.dispose();
-        symbolIndexer.shutdown();
+        for(IEditorPanelProvider panel: panels) {
+            panel.dispose();
+        }
         System.exit(0);
     }
 
@@ -1138,7 +1060,8 @@ public class MainWindow
         }
     }
 
-    private void actionOpenFolder() {
+    @Override
+    public void actionOpenFolder() {
         JFileChooser chooser = new JFileChooser(fileManager.getCurrentDirectory());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
@@ -1149,7 +1072,8 @@ public class MainWindow
         setWorkspaceDirectory(chooser.getSelectedFile());
     }
 
-    private void openFileWithPreferredViewer(File file) {
+    @Override
+    public void openFileWithPreferredViewer(File file) {
         if (file == null) {
             return;
         }
@@ -1429,8 +1353,7 @@ public class MainWindow
                 File file = editor.getFile();
                 fileId = file != null ? file.getAbsolutePath() : "<unsaved:" + editor.getTitle() + ">";
             }
-            declarations.addAll(
-                    languageSupport.extractDeclarations(editor.getEditorPane().getText(), fileId));
+            declarations.addAll(basicEditor.getLanguageService().extractDeclarations(editor.getEditorPane().getText(), fileId));
         }
         return declarations;
     }
@@ -1597,7 +1520,6 @@ public class MainWindow
         fileManager.ensureRunnableFileValid();
         refreshRunnableFileControls();
         refreshSidebarContent();
-        symbolIndexer.schedule();
     }
 
     public void addTab() {
@@ -1629,7 +1551,9 @@ public class MainWindow
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
-                symbolIndexer.schedule();
+                for (IEditorPanelProvider panel : panels) {
+                    panel.onFileModified(edit.getFilePath());
+                }
             }
 
             @Override
@@ -1637,7 +1561,9 @@ public class MainWindow
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
-                symbolIndexer.schedule();
+                for (IEditorPanelProvider panel : panels) {
+                    panel.onFileModified(edit.getFilePath());
+                }
             }
 
             @Override
@@ -1670,7 +1596,6 @@ public class MainWindow
         fileManager.ensureRunnableFileValid();
         refreshRunnableFileControls();
         refreshSidebarContent();
-        symbolIndexer.schedule();
     }
 
     /**
@@ -1710,7 +1635,10 @@ public class MainWindow
                     int index = getTabIndex(edit.getFilePath());
                     edit.setModified();
                     tabControl.setTitleAt(index, edit.getTitle());
-                    symbolIndexer.schedule();
+
+                    for (IEditorPanelProvider panel : panels) {
+                        panel.onFileModified(edit.getFilePath());
+                    }
                 }
 
                 @Override
@@ -1718,7 +1646,10 @@ public class MainWindow
                     int index = getTabIndex(edit.getFilePath());
                     edit.setModified();
                     tabControl.setTitleAt(index, edit.getTitle());
-                    symbolIndexer.schedule();
+
+                    for (IEditorPanelProvider panel : panels) {
+                        panel.onFileModified(edit.getFilePath());
+                    }
                 }
 
                 @Override
@@ -1746,7 +1677,7 @@ public class MainWindow
         fileManager.ensureRunnableFileValid();
         refreshRunnableFileControls();
         refreshSidebarContent();
-        symbolIndexer.schedule();
+
     }
 
     @Override
@@ -1847,10 +1778,10 @@ public class MainWindow
 
     @Override
     public void onCompileSucceeded() {
-        populateDocsFromCompiler();
-        // Also sync the indexer immediately so the debounced background pass
-        // reflects the compiled state right away.
-        symbolIndexer.indexNow();
+
+        for (IEditorPanelProvider panel : panels) {
+            panel.onCompileSucceeded();
+        }
     }
 
     @Override
@@ -2337,472 +2268,39 @@ public class MainWindow
         }
     }
 
-    private void configureSidebar() {
+    private void configureLeftSidebar() {
         leftSidebarRail.setFloatable(false);
         leftSidebarRail.setRollover(true);
 
-        leftSidebarContent.add(buildFileBrowserPanel(), "files");
-        leftSidebarContent.add(buildAssetsPanel(), "assets");
-        leftSidebarContent.add(buildBookmarkActionsPanel(), "bookmarks");
-        leftSidebarContent.add(buildDebugActionsPanel(), "debug");
 
-        addLeftSidebarButton("files", createImageIcon(ICON_MENU_FOLDER), "Files");
-        addLeftSidebarButton("assets", createImageIcon(ICON_MENU_ASSETS), "Assets");
-        addLeftSidebarButton("bookmarks", createImageIcon(ICON_MENU_BOOKMARKS), "Bookmarks");
+        Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
+                .forEach(x -> {
+                    leftSidebarContent.add(x.build(this.basicEditor), x.id());
+                    addLeftSidebarButton(x.id(), createImageIcon(x.getIconPath()), x.getTitle());
+                });
+
         leftSidebarRail.add(Box.createVerticalGlue());
-        addLeftSidebarButton("debug", createImageIcon(ICON_MENU_DEBUG), "Debug");
+
+        Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.SOUTH)
+                .forEach(x -> {
+                    leftSidebarContent.add(x.build(this.basicEditor), x.id());
+                    addLeftSidebarButton(x.id(), createImageIcon(x.getIconPath()), x.getTitle());
+                });
 
         leftSidebarContainer.add(leftSidebarRail, BorderLayout.WEST);
         leftSidebarContainer.add(leftSidebarContent, BorderLayout.CENTER);
-        selectLeftSidebarSection("files", true);
-    }
 
-    private JPanel buildFileBrowserPanel() {
-        JPanel panel = new JPanel(new BorderLayout(0, 6));
-        JPanel header = new JPanel(new BorderLayout());
-        JPanel headerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        JLabel title = new JLabel("Workspace Browser");
-        title.setBorder(new EmptyBorder(4, 8, 0, 8));
-        JButton openFolder = new JButton("Open Folder");
-        openFolder.setFocusable(false);
-        openFolder.addActionListener(e -> actionOpenFolder());
-        JButton refresh = new JButton("Refresh");
-        refresh.setFocusable(false);
-        refresh.addActionListener(e -> refreshFileBrowserTree());
-        JToggleButton showHiddenToggle = new JToggleButton("Show Hidden");
-        showHiddenToggle.setFocusable(false);
-        showHiddenToggle.setSelected(showHiddenFiles);
-        showHiddenToggle.addActionListener(e -> {
-            showHiddenFiles = showHiddenToggle.isSelected();
-            refreshFileBrowserTree();
+        // Select first panel if available
+        Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
+                .findFirst()
+                .ifPresent(x -> {
+            selectLeftSidebarSection(x.id(), true);
         });
-        headerButtons.add(showHiddenToggle);
-        headerButtons.add(openFolder);
-        headerButtons.add(refresh);
-        header.add(title, BorderLayout.WEST);
-        header.add(headerButtons, BorderLayout.EAST);
-        panel.add(header, BorderLayout.NORTH);
-
-        fileBrowserTree.setRootVisible(true);
-        fileBrowserTree.setShowsRootHandles(true);
-        fileBrowserTree.setRowHeight(22);
-        fileBrowserTree.setCellRenderer(new DefaultTreeCellRenderer() {
-            @Override
-            public Component getTreeCellRendererComponent(
-                    JTree tree,
-                    Object value,
-                    boolean selected,
-                    boolean expanded,
-                    boolean leaf,
-                    int row,
-                    boolean hasFocus) {
-                JLabel label = (JLabel)
-                        super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-                if (value instanceof DefaultMutableTreeNode node && node.getUserObject() instanceof File file) {
-                    label.setText(file == null ? "" : fileSystemView.getSystemDisplayName(file));
-                    if (label.getText() == null || label.getText().isBlank()) {
-                        label.setText(file.getName().isBlank() ? file.getPath() : file.getName());
-                    }
-                    label.setIcon(fileSystemView.getSystemIcon(file));
-                    label.setToolTipText(file.getAbsolutePath());
-                    boolean isHidden = file.getName().startsWith(".");
-                    if (isHidden && !selected) {
-                        label.setForeground(new Color(160, 160, 160));
-                    }
-                }
-                return label;
-            }
-        });
-        fileBrowserTree.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                maybeShowWorkspaceBrowserPopup(e);
-                if (e.getClickCount() != 2) {
-                    return;
-                }
-                TreePath path = fileBrowserTree.getPathForLocation(e.getX(), e.getY());
-                if (path == null) {
-                    return;
-                }
-                Object userObject = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
-                if (!(userObject instanceof File file) || !file.isFile()) {
-                    return;
-                }
-                if (file.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
-                    openMarkdownInDocsTab(file);
-                } else {
-                    openFileWithPreferredViewer(file);
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                maybeShowWorkspaceBrowserPopup(e);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                maybeShowWorkspaceBrowserPopup(e);
-            }
-        });
-        JScrollPane scrollPane = new JScrollPane(fileBrowserTree);
-        configureSmoothScrolling(scrollPane);
-        panel.add(scrollPane, BorderLayout.CENTER);
-        return panel;
     }
 
-    private void maybeShowWorkspaceBrowserPopup(MouseEvent e) {
-        if (!e.isPopupTrigger()) {
-            return;
-        }
 
-        TreePath path = fileBrowserTree.getPathForLocation(e.getX(), e.getY());
-        if (path == null) {
-            return;
-        }
-        fileBrowserTree.setSelectionPath(path);
+    private void configureRightSidebar() {
 
-        Object userObject = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
-        if (!(userObject instanceof File selectedFile)) {
-            return;
-        }
-
-        JPopupMenu popup = new JPopupMenu();
-
-        JMenuItem openItem = new JMenuItem(selectedFile.isDirectory() ? "Open Folder" : "Open");
-        openItem.addActionListener(evt -> {
-            if (selectedFile.isDirectory()) {
-                setWorkspaceDirectory(selectedFile);
-            } else if (selectedFile.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
-                openMarkdownInDocsTab(selectedFile);
-            } else {
-                openFileWithPreferredViewer(selectedFile);
-            }
-        });
-        popup.add(openItem);
-
-        JMenuItem revealItem = new JMenuItem("Reveal in Finder");
-        revealItem.addActionListener(evt -> revealInFinder(selectedFile));
-        popup.add(revealItem);
-
-        JMenuItem openSystemItem = new JMenuItem("Open with Default App");
-        openSystemItem.addActionListener(evt -> openWithSystemDefault(selectedFile));
-        popup.add(openSystemItem);
-
-        JMenuItem copyPathItem = new JMenuItem("Copy Path");
-        copyPathItem.addActionListener(evt -> {
-            StringSelection selection = new StringSelection(selectedFile.getAbsolutePath());
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
-        });
-        popup.add(copyPathItem);
-
-        popup.addSeparator();
-        JMenuItem refreshItem = new JMenuItem("Refresh");
-        refreshItem.addActionListener(evt -> refreshFileBrowserTree());
-        popup.add(refreshItem);
-
-        popup.show(fileBrowserTree, e.getX(), e.getY());
-    }
-
-    private void openWithSystemDefault(File file) {
-        if (file == null || !file.exists()) {
-            return;
-        }
-        try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(file);
-            }
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(frame, "Unable to open file: " + ex.getMessage());
-        }
-    }
-
-    private void revealInFinder(File file) {
-        if (file == null || !file.exists()) {
-            return;
-        }
-        try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().browseFileDirectory(file);
-            }
-        } catch (Exception ex) {
-            // Fallback when browseFileDirectory is unavailable.
-            openWithSystemDefault(file.getParentFile());
-        }
-    }
-
-    private JPanel buildAssetsPanel() {
-        JPanel panel = new JPanel(new BorderLayout(0, 6));
-        JPanel header = new JPanel(new BorderLayout());
-        JPanel headerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        JLabel title = new JLabel("Assets");
-        title.setBorder(new EmptyBorder(4, 8, 0, 8));
-        assetsLayoutCombo.setFocusable(false);
-        assetsLayoutCombo.addActionListener(e -> {
-            CardLayout layout = (CardLayout) assetsContentPanel.getLayout();
-            layout.show(assetsContentPanel, Objects.toString(assetsLayoutCombo.getSelectedItem(), "Tree"));
-        });
-        JButton refresh = new JButton("Refresh");
-        refresh.setFocusable(false);
-        refresh.addActionListener(e -> refreshAssetsLibrary());
-        headerButtons.add(assetsLayoutCombo);
-        headerButtons.add(refresh);
-        header.add(title, BorderLayout.WEST);
-        header.add(headerButtons, BorderLayout.EAST);
-        panel.add(header, BorderLayout.NORTH);
-
-        assetsTree.setRootVisible(false);
-        assetsTree.setShowsRootHandles(true);
-        // Let Swing compute preferred row height so custom/HTML labels do not clip.
-        assetsTree.setRowHeight(0);
-        assetsTree.setCellRenderer(new DefaultTreeCellRenderer() {
-            @Override
-            public Component getTreeCellRendererComponent(
-                    JTree tree,
-                    Object value,
-                    boolean selected,
-                    boolean expanded,
-                    boolean leaf,
-                    int row,
-                    boolean hasFocus) {
-                JLabel label = (JLabel)
-                        super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-                if (value instanceof DefaultMutableTreeNode node && node.getUserObject() instanceof AssetItem item) {
-                    boolean isSection = item.file == null;
-                    label.setIcon(item.icon);
-                    label.setIconTextGap(8);
-                    label.setBorder(new EmptyBorder(3, 0, 3, 0));
-                    label.setText(formatAssetTreeLabel(item, isSection));
-                    label.setIcon(item.icon);
-                    label.setToolTipText(item.file != null ? item.file.getAbsolutePath() : item.subtitle);
-                }
-                return label;
-            }
-        });
-
-        assetsTree.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                maybeShowAssetsTreePopup(e);
-                if (e.getClickCount() != 2) {
-                    return;
-                }
-                TreePath path = assetsTree.getPathForLocation(e.getX(), e.getY());
-                if (path == null) {
-                    return;
-                }
-                Object userObject = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
-                if (!(userObject instanceof AssetItem item) || !item.isOpenable()) {
-                    return;
-                }
-                openAssetItem(item);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                maybeShowAssetsTreePopup(e);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                maybeShowAssetsTreePopup(e);
-            }
-        });
-
-        JScrollPane scrollPane = new JScrollPane(assetsTree);
-        configureSmoothScrolling(scrollPane);
-
-        assetsGridList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        assetsGridList.setVisibleRowCount(-1);
-        assetsGridList.setFixedCellHeight(112);
-        assetsGridList.setFixedCellWidth(120);
-        assetsGridList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        assetsGridList.setCellRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(
-                    JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel label =
-                        (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof AssetItem item) {
-                    label.setText("<html><center>" + escapeHtml(item.title) + "</center></html>");
-                    label.setIcon(getAssetGridIcon(item));
-                    label.setHorizontalTextPosition(SwingConstants.CENTER);
-                    label.setVerticalTextPosition(SwingConstants.BOTTOM);
-                    label.setHorizontalAlignment(SwingConstants.CENTER);
-                    label.setToolTipText(item.file != null ? item.file.getAbsolutePath() : item.subtitle);
-                }
-                return label;
-            }
-        });
-        assetsGridList.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                maybeShowAssetsGridPopup(e);
-                if (e.getClickCount() != 2) {
-                    return;
-                }
-                AssetItem item = assetsGridList.getSelectedValue();
-                if (item == null || !item.isOpenable()) {
-                    return;
-                }
-                openAssetItem(item);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                maybeShowAssetsGridPopup(e);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                maybeShowAssetsGridPopup(e);
-            }
-        });
-
-        JScrollPane gridScrollPane = new JScrollPane(assetsGridList);
-        configureSmoothScrolling(gridScrollPane);
-
-        assetsContentPanel.add(scrollPane, "Tree");
-        assetsContentPanel.add(gridScrollPane, "Grid");
-        panel.add(assetsContentPanel, BorderLayout.CENTER);
-        return panel;
-    }
-
-    private String formatAssetTreeLabel(AssetItem item, boolean isSection) {
-        if (item == null) {
-            return "";
-        }
-        String title = escapeHtml(item.title == null ? "" : item.title);
-        String subtitle = item.subtitle == null ? "" : item.subtitle.trim();
-        if (subtitle.isBlank()) {
-            return isSection ? "<html><b>" + title + "</b></html>" : title;
-        }
-        String subtitleHtml = escapeHtml(subtitle);
-        if (isSection) {
-            return "<html><b>" + title + "</b> <span style='color:gray;'>" + subtitleHtml + "</span></html>";
-        }
-        return "<html>" + title + " <span style='color:gray;'>" + subtitleHtml + "</span></html>";
-    }
-
-    private void openAssetItem(AssetItem item) {
-        if (item == null || !item.isOpenable()) {
-            return;
-        }
-        if (item.file.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
-            openMarkdownInDocsTab(item.file);
-        } else {
-            openFileWithPreferredViewer(item.file);
-        }
-    }
-
-    private void maybeShowAssetsTreePopup(MouseEvent e) {
-        if (!e.isPopupTrigger()) {
-            return;
-        }
-        TreePath path = assetsTree.getPathForLocation(e.getX(), e.getY());
-        if (path == null) {
-            return;
-        }
-        assetsTree.setSelectionPath(path);
-        Object userObject = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
-        if (!(userObject instanceof AssetItem item)) {
-            return;
-        }
-        showAssetsPopup(item, assetsTree, e.getX(), e.getY());
-    }
-
-    private void maybeShowAssetsGridPopup(MouseEvent e) {
-        if (!e.isPopupTrigger()) {
-            return;
-        }
-        int index = assetsGridList.locationToIndex(e.getPoint());
-        if (index < 0) {
-            return;
-        }
-        assetsGridList.setSelectedIndex(index);
-        AssetItem item = assetsGridList.getModel().getElementAt(index);
-        showAssetsPopup(item, assetsGridList, e.getX(), e.getY());
-    }
-
-    private void showAssetsPopup(AssetItem item, Component invoker, int x, int y) {
-        if (item == null) {
-            return;
-        }
-
-        JPopupMenu popup = new JPopupMenu();
-
-        JMenuItem openItem = new JMenuItem("Open");
-        openItem.setEnabled(item.isOpenable());
-        openItem.addActionListener(evt -> openAssetItem(item));
-        popup.add(openItem);
-
-        JMenuItem revealItem = new JMenuItem("Reveal in Finder");
-        revealItem.setEnabled(item.file != null);
-        revealItem.addActionListener(evt -> revealInFinder(item.file));
-        popup.add(revealItem);
-
-        JMenuItem systemItem = new JMenuItem("Open with Default App");
-        systemItem.setEnabled(item.file != null);
-        systemItem.addActionListener(evt -> openWithSystemDefault(item.file));
-        popup.add(systemItem);
-
-        JMenuItem copyPathItem = new JMenuItem("Copy Path");
-        copyPathItem.setEnabled(item.file != null);
-        copyPathItem.addActionListener(evt -> {
-            StringSelection selection = new StringSelection(item.file.getAbsolutePath());
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
-        });
-        popup.add(copyPathItem);
-
-        popup.addSeparator();
-        JMenuItem refreshItem = new JMenuItem("Refresh Assets");
-        refreshItem.addActionListener(evt -> refreshAssetsLibrary());
-        popup.add(refreshItem);
-
-        popup.show(invoker, x, y);
-    }
-
-    private JPanel buildBookmarkActionsPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-        JButton next = new JButton("Next bookmark");
-        next.addActionListener(e -> fileManager.selectNextBookmark(tabControl.getSelectedIndex()));
-        JButton previous = new JButton("Previous bookmark");
-        previous.addActionListener(e -> fileManager.selectPreviousBookmark(tabControl.getSelectedIndex()));
-        JButton toggle = new JButton("Toggle bookmark");
-        toggle.addActionListener(e -> fileManager.toggleBookmark(tabControl.getSelectedIndex()));
-
-        panel.add(next);
-        panel.add(previous);
-        panel.add(toggle);
-        return panel;
-    }
-
-    private JPanel buildDebugActionsPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-        JButton toggleDebug = new JButton("Toggle debug mode");
-        toggleDebug.addActionListener(e -> actionDebugMode());
-        JButton playPause = new JButton("Play/Pause");
-        playPause.addActionListener(e -> basicEditor.actionPlayPause());
-        JButton stepOver = new JButton("Step over");
-        stepOver.addActionListener(e -> basicEditor.actionStep());
-        JButton stepInto = new JButton("Step into");
-        stepInto.addActionListener(e -> basicEditor.actionStepInto());
-        JButton stepOut = new JButton("Step out");
-        stepOut.addActionListener(e -> basicEditor.actionStepOutOf());
-
-        panel.add(toggleDebug);
-        panel.add(playPause);
-        panel.add(stepOver);
-        panel.add(stepInto);
-        panel.add(stepOut);
-        return panel;
-    }
-
-    private void configureDocsPane() {
         docsTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         docsTabs.putClientProperty(TABBED_PANE_TAB_CLOSABLE, true);
         docsTabs.putClientProperty(
@@ -2816,139 +2314,8 @@ public class MainWindow
                     }
                     selectRightDocsSection("functions");
                 });
-
-        JPanel lookupPanel = new JPanel(new BorderLayout(6, 6));
-        JPanel lookupHeader = new JPanel(new BorderLayout(6, 6));
-
-        JPanel leftHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-        referenceFiltersButton.setFocusable(false);
-        referenceFiltersButton.setToolTipText("Open reference filters");
-        leftHeader.add(referenceFiltersButton);
-        lookupHeader.add(leftHeader, BorderLayout.WEST);
-
-        lookupHeader.add(referenceSearchField, BorderLayout.CENTER);
-        referenceInsertButton.setFocusable(false);
-        referenceInsertButton.setEnabled(false);
-        lookupHeader.add(referenceInsertButton, BorderLayout.EAST);
-
-        referenceSearchField.setToolTipText("Search by name, signature, or library");
-        referenceKindFilter.setToolTipText("Filter by kind");
-        referenceSourceFilter.setToolTipText("Filter by builtin, libraries, or program symbols");
-        referenceLibraryFilter.setToolTipText("Filter by library name");
-        referenceKindFilter.setPrototypeDisplayValue("Functions");
-        rebuildReferenceFiltersPopup();
-
-        referenceFilterDebounceTimer.setRepeats(false);
-
-        referenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        referenceList.setFixedCellHeight(20);
-        referenceList.setPrototypeCellValue(
-                new ReferenceItem("function", "prototype", "prototype(symbol, arg)", "Builtin", "", "", 0));
-        referenceList.setCellRenderer(new DefaultListCellRenderer() {
-            private final ImageIcon functionIcon = createImageIcon(ICON_FUNCTION);
-            private final ImageIcon variableIcon = createImageIcon(ICON_VARIABLE);
-            private final ImageIcon labelIcon = createImageIcon(ICON_LABEL);
-            private final ImageIcon structIcon = createImageIcon(ICON_STRUCT);
-
-            @Override
-            public Component getListCellRendererComponent(
-                    JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel label =
-                        (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof ReferenceItem item) {
-                    label.setText(item.signature);
-                    if ("function".equals(item.kind) || "userfunc".equals(item.kind)) {
-                        label.setIcon(functionIcon);
-                    } else if ("label".equals(item.kind)) {
-                        label.setIcon(labelIcon);
-                    } else if ("struc".equals(item.kind)) {
-                        label.setIcon(structIcon);
-                    } else {
-                        label.setIcon(variableIcon);
-                    }
-                    label.setToolTipText(null);
-                }
-                return label;
-            }
-        });
-
-        referenceDetailsPane.setEditable(false);
-        referenceDetailsPane.setContentType("text/html");
-        setReferenceDetailsHtml(REFERENCE_SELECT_PROMPT_HTML);
-
-        JSplitPane lookupSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        lookupSplit.setResizeWeight(0.65);
-        lookupSplit.setTopComponent(new JScrollPane(referenceList));
-        lookupSplit.setBottomComponent(new JScrollPane(referenceDetailsPane));
-
-        lookupPanel.add(lookupHeader, BorderLayout.NORTH);
-        lookupPanel.add(lookupSplit, BorderLayout.CENTER);
-        docsTabs.addTab("Reference", lookupPanel);
-
-        referenceSearchField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                requestFilterReferenceItems();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                requestFilterReferenceItems();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                requestFilterReferenceItems();
-            }
-        });
-        referenceList.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                updateReferenceSelectionDetails();
-            }
-        });
-        referenceKindFilter.addActionListener(e -> {
-            if (!updatingReferenceFilters) {
-                updateReferenceFiltersButtonTooltip();
-                filterReferenceItems();
-            }
-        });
-        referenceSourceFilter.addActionListener(e -> {
-            if (!updatingReferenceFilters) {
-                updateReferenceFiltersButtonTooltip();
-                filterReferenceItems();
-            }
-        });
-        referenceLibraryFilter.addActionListener(e -> {
-            if (!updatingReferenceFilters) {
-                updateReferenceFiltersButtonTooltip();
-                filterReferenceItems();
-            }
-        });
-        referenceFiltersButton.addActionListener(e -> {
-            rebuildReferenceFiltersPopup();
-            referenceFiltersPopup.show(referenceFiltersButton, 0, referenceFiltersButton.getHeight());
-        });
-        referenceList.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    insertSelectedReference();
-                }
-            }
-        });
-        referenceInsertButton.addActionListener(e -> insertSelectedReference());
-        updateReferenceFiltersButtonTooltip();
-
-        rightDocsRail.setFloatable(false);
-        rightDocsRail.setRollover(true);
-
-        addRightDocsButton("functions", createImageIcon(ICON_MENU_FUNCTIONS), "Reference lookup");
-        addRightDocsButton("docs", createImageIcon(ICON_MENU_HELP), "Markdown docs");
-
-        rightDocsContainer.add(rightDocsRail, BorderLayout.EAST);
-        rightDocsContainer.add(docsTabs, BorderLayout.CENTER);
-        selectRightDocsSection("functions");
     }
+
 
     private void addLeftSidebarButton(String key, Icon icon, String tooltip) {
         JToggleButton button = createRailButton(icon, tooltip);
@@ -2976,12 +2343,6 @@ public class MainWindow
         return button;
     }
 
-    private void configureSmoothScrolling(JScrollPane scrollPane) {
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        scrollPane.getVerticalScrollBar().setBlockIncrement(64);
-        scrollPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
-        scrollPane.setWheelScrollingEnabled(true);
-    }
 
     private void onLeftSidebarButtonPressed(String key) {
         if (Objects.equals(activeLeftSidebarKey, key) && isLeftSidebarExpanded()) {
@@ -3069,352 +2430,14 @@ public class MainWindow
     }
 
     private void refreshSidebarContent() {
-        refreshFileBrowserTree();
-        refreshAssetsLibrary();
-    }
-
-    private void refreshFileBrowserTree() {
-        File root = new File(fileManager.getCurrentDirectory());
-        DefaultMutableTreeNode rootNode = buildFileTreeNode(root, 0);
-        fileBrowserTree.setModel(new DefaultTreeModel(rootNode));
-        if (fileBrowserTree.getRowCount() > 0) {
-            fileBrowserTree.expandRow(0);
+        for (IEditorPanelProvider panel : panels) {
+            panel.refresh(this.basicEditor.getBasic4gl());
         }
     }
 
-    private DefaultMutableTreeNode buildFileTreeNode(File file, int depth) {
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode(file);
-        if (!file.isDirectory()) {
-            return node;
-        }
 
-        File[] children = file.listFiles();
-        if (children == null) {
-            return node;
-        }
-        Arrays.sort(children, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
-        for (File child : children) {
-            if (!showHiddenFiles && child.getName().startsWith(".")) {
-                continue;
-            }
-            node.add(buildFileTreeNode(child, depth + 1));
-        }
-        return node;
-    }
 
-    private void refreshAssetsLibrary() {
-        File rootDir = new File(fileManager.getCurrentDirectory());
-        assetThumbnailCache.clear();
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new AssetItem(
-                "Assets",
-                "Workspace resources, libraries, and embedded literals",
-                null,
-                createImageIcon(ICON_MENU_ASSETS)));
 
-        DefaultMutableTreeNode workspaceNode = buildMediaTypeSection(
-                "Workspace Resources",
-                collectWorkspaceAssets(rootDir, 0, 4),
-                rootDir,
-                createImageIcon(ICON_MENU_FOLDER));
-        if (workspaceNode != null) {
-            rootNode.add(workspaceNode);
-        }
-
-        DefaultMutableTreeNode literalNode = buildMediaTypeSection(
-                "Embedded Literals", detectLiteralAssets(rootDir), rootDir, createImageIcon(ICON_MENU_ASSETS));
-        if (literalNode != null) {
-            rootNode.add(literalNode);
-        }
-
-        assetsTree.setModel(new DefaultTreeModel(rootNode));
-        for (int i = 0; i < Math.min(4, assetsTree.getRowCount()); i++) {
-            assetsTree.expandRow(i);
-        }
-
-        assetsListModel.clear();
-        for (AssetItem item : collectOpenableAssets(rootNode)) {
-            assetsListModel.addElement(item);
-        }
-    }
-
-    private java.util.List<AssetItem> collectOpenableAssets(DefaultMutableTreeNode rootNode) {
-        java.util.List<AssetItem> items = new ArrayList<>();
-        if (rootNode == null) {
-            return items;
-        }
-        java.util.Enumeration<?> enumeration = rootNode.depthFirstEnumeration();
-        while (enumeration.hasMoreElements()) {
-            Object next = enumeration.nextElement();
-            if (!(next instanceof DefaultMutableTreeNode node)) {
-                continue;
-            }
-            if (node.getUserObject() instanceof AssetItem item && item.isOpenable()) {
-                items.add(item);
-            }
-        }
-        return items;
-    }
-
-    private DefaultMutableTreeNode buildMediaTypeSection(
-            String title, java.util.List<File> files, File baseDir, Icon sectionIcon) {
-        if (files == null || files.isEmpty()) {
-            return null;
-        }
-        Map<String, java.util.List<File>> byMediaType = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        for (File file : files) {
-            String mediaType = getMediaTypeLabel(file);
-            byMediaType.computeIfAbsent(mediaType, k -> new ArrayList<>()).add(file);
-        }
-        DefaultMutableTreeNode section =
-                new DefaultMutableTreeNode(new AssetItem(title, files.size() + " file(s)", null, sectionIcon));
-        for (String mediaType : List.of("Images", "Audio", "Video", "Text", "Documents", "Other")) {
-            java.util.List<File> bucket = byMediaType.get(mediaType);
-            if (bucket == null || bucket.isEmpty()) {
-                continue;
-            }
-            DefaultMutableTreeNode typeNode = new DefaultMutableTreeNode(
-                    new AssetItem(mediaType, bucket.size() + " file(s)", null, createImageIcon(ICON_MENU_FOLDER)));
-            bucket.sort(Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
-            for (File file : bucket) {
-                typeNode.add(new DefaultMutableTreeNode(createAssetItem(file, baseDir, mediaType)));
-            }
-            section.add(typeNode);
-        }
-        return section;
-    }
-
-    private void collectResolvedLibraryAssets(java.util.List<String> paths, File baseDir, java.util.List<File> out) {
-        if (paths == null || paths.isEmpty()) {
-            return;
-        }
-        for (String path : paths) {
-            if (path == null || path.isBlank()) {
-                continue;
-            }
-            File resolved = resolveAssetReference(path, baseDir, null);
-            if (resolved == null || !resolved.exists()) {
-                continue;
-            }
-            if (resolved.isDirectory()) {
-                collectWorkspaceAssets(resolved, 0, 2, out);
-            } else {
-                out.add(resolved);
-            }
-        }
-    }
-
-    private java.util.List<File> detectLiteralAssets(File baseDir) {
-        java.util.LinkedHashSet<File> detected = new java.util.LinkedHashSet<>();
-        if (fileManager == null) {
-            return new ArrayList<>();
-        }
-
-        for (com.basic4gl.desktop.editor.FileEditor editor : fileManager.getFileEditors()) {
-            if (editor == null || editor.getEditorPane() == null) {
-                continue;
-            }
-            String text = editor.getEditorPane().getText();
-            if (text == null || text.isBlank()) {
-                continue;
-            }
-            File sourceFile = editor.getFile();
-            File sourceParent =
-                    sourceFile != null ? sourceFile.getAbsoluteFile().getParentFile() : null;
-            for (String literal : ExportDialog.extractStringLiterals(text)) {
-                if (literal == null || literal.isBlank()) {
-                    continue;
-                }
-                File resolved = resolveAssetReference(literal, baseDir, sourceParent);
-                if (resolved != null && resolved.exists() && resolved.isFile()) {
-                    detected.add(resolved);
-                }
-            }
-        }
-        return new ArrayList<>(detected);
-    }
-
-    private java.util.List<File> collectWorkspaceAssets(File directory, int depth, int maxDepth) {
-        java.util.List<File> assets = new ArrayList<>();
-        collectWorkspaceAssets(directory, depth, maxDepth, assets);
-        return assets;
-    }
-
-    private void collectWorkspaceAssets(File directory, int depth, int maxDepth, java.util.List<File> out) {
-        if (directory == null || !directory.isDirectory() || depth > maxDepth) {
-            return;
-        }
-        if (shouldSkipAssetDirectory(directory)) {
-            return;
-        }
-
-        File[] files = directory.listFiles();
-        if (files == null) {
-            return;
-        }
-        Arrays.sort(files, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
-        for (File file : files) {
-            if (file == null || file.getName().startsWith(".")) {
-                continue;
-            }
-            if (file.isDirectory()) {
-                collectWorkspaceAssets(file, depth + 1, maxDepth, out);
-            } else if (isKnownAssetFile(file)) {
-                out.add(file);
-            }
-        }
-    }
-
-    private boolean shouldSkipAssetDirectory(File directory) {
-        String name = directory.getName().toLowerCase(Locale.ROOT);
-        return name.equals("build")
-                || name.equals("out")
-                || name.equals("target")
-                || name.equals("bin")
-                || name.equals("dist")
-                || name.equals("node_modules")
-                || name.equals(".gradle")
-                || name.equals(".git");
-    }
-
-    private AssetItem createAssetItem(File file, File baseDir, String subtitlePrefix) {
-        String subtitle = subtitlePrefix;
-        if (file != null) {
-            String relative = formatRelativePath(file, baseDir);
-            if (relative != null && !relative.isBlank()) {
-                subtitle = subtitle == null || subtitle.isBlank() ? relative : subtitle + " • " + relative;
-            }
-        }
-        return new AssetItem(
-                file != null ? file.getName() : "(unknown)",
-                subtitle,
-                file,
-                file != null ? fileSystemView.getSystemIcon(file) : createImageIcon(ICON_MENU_FOLDER));
-    }
-
-    private Icon getAssetGridIcon(AssetItem item) {
-        if (item == null || item.file == null) {
-            return createImageIcon(ICON_MENU_ASSETS);
-        }
-        String cacheKey = item.file.getAbsolutePath();
-        Icon cached = assetThumbnailCache.get(cacheKey);
-        if (cached != null) {
-            return cached;
-        }
-
-        Icon icon = item.icon;
-        String lower = item.file.getName().toLowerCase(Locale.ROOT);
-        if (FileViewerFactory.isImageFile(lower)) {
-            icon = buildImageThumbnailIcon(item.file, 84, 64);
-        }
-        if (icon == null) {
-            icon = createImageIcon(ICON_MENU_ASSETS);
-        }
-        assetThumbnailCache.put(cacheKey, icon);
-        return icon;
-    }
-
-    private Icon buildImageThumbnailIcon(File file, int maxWidth, int maxHeight) {
-        try {
-            java.awt.image.BufferedImage image = javax.imageio.ImageIO.read(file);
-            if (image == null || image.getWidth() <= 0 || image.getHeight() <= 0) {
-                return null;
-            }
-            double scale = Math.min((double) maxWidth / image.getWidth(), (double) maxHeight / image.getHeight());
-            scale = Math.min(1.0d, scale);
-            int width = Math.max(1, (int) Math.round(image.getWidth() * scale));
-            int height = Math.max(1, (int) Math.round(image.getHeight() * scale));
-            Image scaled = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-            return new ImageIcon(scaled);
-        } catch (IOException ex) {
-            return null;
-        }
-    }
-
-    private File resolveAssetReference(String literal, File baseDir, File sourceParent) {
-        if (literal == null || literal.isBlank()) {
-            return null;
-        }
-        String normalized = FileUtil.separatorsToSystem(literal);
-        File candidate = new File(normalized);
-        if (candidate.isAbsolute()) {
-            return candidate;
-        }
-        if (baseDir != null) {
-            File workspace = new File(baseDir, normalized);
-            if (workspace.exists()) {
-                return workspace;
-            }
-        }
-        if (sourceParent != null) {
-            File sibling = new File(sourceParent, normalized);
-            if (sibling.exists()) {
-                return sibling;
-            }
-        }
-        return candidate;
-    }
-
-    private boolean isKnownAssetFile(File file) {
-        String name = file.getName().toLowerCase(Locale.ROOT);
-        return getMediaTypeLabel(file) != null && !"Other".equals(getMediaTypeLabel(file));
-    }
-
-    private String getMediaTypeLabel(File file) {
-        if (file == null) {
-            return "Other";
-        }
-        String name = file.getName().toLowerCase(Locale.ROOT);
-        if (name.endsWith(".png")
-                || name.endsWith(".jpg")
-                || name.endsWith(".jpeg")
-                || name.endsWith(".gif")
-                || name.endsWith(".bmp")
-                || name.endsWith(".webp")
-                || name.endsWith(".ico")) {
-            return "Images";
-        }
-        if (name.endsWith(".wav") || name.endsWith(".ogg") || name.endsWith(".mp3") || name.endsWith(".flac")) {
-            return "Audio";
-        }
-        if (name.endsWith(".mp4") || name.endsWith(".mov") || name.endsWith(".webm")) {
-            return "Video";
-        }
-        if (name.endsWith(".txt")
-                || name.endsWith(".md")
-                || name.endsWith(".json")
-                || name.endsWith(".xml")
-                || name.endsWith(".csv")
-                || name.endsWith(".ini")
-                || name.endsWith(".cfg")
-                || name.endsWith(".properties")) {
-            return "Text";
-        }
-        if (name.endsWith(".pdf") || name.endsWith(".doc") || name.endsWith(".docx") || name.endsWith(".rtf")) {
-            return "Documents";
-        }
-        return "Other";
-    }
-
-    private String formatRelativePath(File file, File baseDir) {
-        if (file == null) {
-            return "";
-        }
-        if (baseDir != null) {
-            try {
-                java.nio.file.Path relative = baseDir.getAbsoluteFile()
-                        .toPath()
-                        .normalize()
-                        .relativize(file.getAbsoluteFile().toPath().normalize());
-                String text = relative.toString().replace('\\', '/');
-                if (!text.startsWith("..")) {
-                    return text;
-                }
-            } catch (Exception ignored) {
-                // Fall back to file name below.
-            }
-        }
-        return file.getName();
-    }
 
     private void refreshRunnableFileControls() {
         if (fileManager == null) {
@@ -3478,7 +2501,7 @@ public class MainWindow
      * This gives the {@link SymbolIndexer} full visibility of all open files for the debounced
      * background scan.
      */
-    private String collectAllSourceText() {
+    public String collectAllSourceText() {
         if (fileManager == null) {
             return "";
         }
@@ -3492,392 +2515,23 @@ public class MainWindow
         return sb.toString();
     }
 
-    /**
-     * Called on the EDT by the {@link SymbolIndexer} callback after each debounce cycle.
-     * Replaces all "Program" (user-defined) reference items with the freshly scanned symbols and
-     * refreshes the reference panel.
-     */
-    private void updateProgramSymbols(List<IndexedSymbol> symbols) {
-        int fingerprint = 1;
-        for (IndexedSymbol symbol : symbols) {
-            fingerprint = 31 * fingerprint + Objects.hash(symbol.kind(), symbol.name(), symbol.signature());
-        }
-        if (fingerprint == lastProgramSymbolsFingerprint) {
-            return;
-        }
-        lastProgramSymbolsFingerprint = fingerprint;
-
-        // Remove all existing Program-sourced items
-        allReferenceItems.removeIf(item -> "Program".equals(item.library));
-
-        // Add newly scanned symbols
-        for (IndexedSymbol sym : symbols) {
-            String details;
-            String insertText;
-            int caretOffset;
-            switch (sym.kind()) {
-                case "userfunc" -> {
-                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
-                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> User Function"
-                            + "<br/><b>Source:</b> Program</p>"
-                            + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
-                            + "</body></html>";
-                    insertText = sym.name() + "()";
-                    caretOffset = sym.name().length() + 1;
-                }
-                case "label" -> {
-                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
-                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> Label"
-                            + "<br/><b>Usage:</b> <code>gosub " + escapeHtml(sym.name()) + "</code>"
-                            + " / <code>goto " + escapeHtml(sym.name()) + "</code></p>"
-                            + "</body></html>";
-                    insertText = sym.name();
-                    caretOffset = sym.name().length();
-                }
-                case "struc" -> {
-                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
-                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> Struct"
-                            + "<br/><b>Source:</b> Program</p>"
-                            + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
-                            + "</body></html>";
-                    insertText = sym.name();
-                    caretOffset = sym.name().length();
-                }
-                default -> { // "variable"
-                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
-                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> Variable"
-                            + "<br/><b>Source:</b> Program</p>"
-                            + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
-                            + "</body></html>";
-                    insertText = sym.name();
-                    caretOffset = sym.name().length();
-                }
-            }
-            allReferenceItems.add(new ReferenceItem(
-                    sym.kind(), sym.name(), sym.signature(), "Program", details, insertText, caretOffset));
-        }
-
-        allReferenceItems.sort(Comparator.comparing((ReferenceItem item) -> item.name, String.CASE_INSENSITIVE_ORDER)
-                .thenComparing(item -> item.kind));
-        rebuildLibraryFilterOptions();
-        filterReferenceItems();
-        refreshAssetsLibrary();
+    @Override
+    public void selectNextBookmark() {
+        fileManager.selectNextBookmark(tabControl.getSelectedIndex());
     }
 
-    private void populateDocsFromCompiler() {
-        if (basicEditor == null || basicEditor.getCompiler() == null) {
-            return;
-        }
-        allReferenceItems.clear();
-        allReferenceItems.addAll(buildFunctionReferenceItems(basicEditor.getLanguageService()));
-        allReferenceItems.addAll(buildConstantReferenceItems(basicEditor.getLanguageService()));
-        allReferenceItems.addAll(buildLabelReferenceItems(basicEditor.getLanguageService()));
-        allReferenceItems.addAll(buildVariableReferenceItems(basicEditor.getLanguageService()));
-        allReferenceItems.sort(Comparator.comparing((ReferenceItem item) -> item.name, String.CASE_INSENSITIVE_ORDER)
-                .thenComparing(item -> item.kind));
-        rebuildLibraryFilterOptions();
-        filterReferenceItems();
+    @Override
+    public void selectPreviousBookmark() {
+        fileManager.selectPreviousBookmark(tabControl.getSelectedIndex());
     }
 
-    private java.util.List<ReferenceItem> buildFunctionReferenceItems(LanguageService comp) {
-        java.util.List<ReferenceItem> items = new ArrayList<>();
-        for (FunctionDefinition item : comp.getFunctionDefinitions()) {
-            if (item == null) {
-                continue;
-            }
-            StringBuilder argsOnly = new StringBuilder();
-            if (item.parameters() != null) {
-                for (VariableDefinition arg : item.parameters()) {
-                    if (argsOnly.length() > 0) {
-                        argsOnly.append(", ");
-                    }
-                    argsOnly.append(arg.signature());
-                }
-            }
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                    + "<h3 style='margin:0 0 8px 0;'>"
-                    + escapeHtml(item.name())
-                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Function<br/><b>Library:</b> "
-                    + escapeHtml(item.packageName())
-                    + "</p><p style='margin:0;'>"
-                    + escapeHtml(item.signature())
-                    + "</p></body></html>";
-            String insertText = item.hasBrackets() ? item.name() + "()" : item.name() + " ";
-            int caretOffset = item.hasBrackets() ? item.name().length() + 1 : insertText.length();
-            if (item.hasBrackets() && argsOnly.length() > 0) {
-                insertText = item.name() + "(" + argsOnly + ")";
-                caretOffset = item.name().length() + 1;
-            }
-            items.add(new ReferenceItem(
-                    "function", item.name(), item.signature(), item.packageName(), details, insertText, caretOffset));
-        }
-        return items;
+    @Override
+    public void toggleBookmark() {
+        fileManager.toggleBookmark(tabControl.getSelectedIndex());
     }
 
-    private java.util.List<ReferenceItem> buildConstantReferenceItems(LanguageService comp) {
-        java.util.List<ReferenceItem> items = new ArrayList<>();
-        for (VariableDefinition item : comp.getConstantDefinitions()) {
-            if (item == null) {
-                continue;
-            }
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                    + "<h3 style='margin:0 0 8px 0;'>"
-                    + escapeHtml(item.name())
-                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Constant<br/><b>Library:</b> "
-                    + escapeHtml(item.packageName())
-                    + "</p><p style='margin:0;'>"
-                    + escapeHtml(item.signature())
-                    + "</p></body></html>";
-            items.add(new ReferenceItem(
-                    "constant",
-                    item.name(),
-                    item.signature(),
-                    item.packageName(),
-                    details,
-                    item.name(),
-                    item.name().length()));
-        }
 
-        return items;
-    }
-
-    private java.util.List<ReferenceItem> buildLabelReferenceItems(LanguageService comp) {
-        java.util.List<ReferenceItem> items = new ArrayList<>();
-        for (LabelDefinition label : comp.getLabelDefinitions()) {
-            if (label == null) {
-                continue;
-            }
-            String signature = label.signature();
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(label.name())
-                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Label<br/><b>Usage:</b> "
-                    + "<code>" + escapeHtml(label.usage()) + "</code>"
-                    + "</p></body></html>";
-            items.add(new ReferenceItem(
-                    "label",
-                    label.name(),
-                    signature,
-                    "Program",
-                    details,
-                    label.name(),
-                    label.name().length()));
-        }
-        return items;
-    }
-
-    private java.util.List<ReferenceItem> buildVariableReferenceItems(LanguageService comp) {
-        java.util.List<ReferenceItem> items = new ArrayList<>();
-        for (VariableDefinition variable : comp.getVariableDefinitions()) {
-            if (variable == null || variable.name() == null || variable.name().isEmpty()) {
-                continue;
-            }
-            String typeStr = variable.type().name();
-            String signature = variable.signature();
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(variable.name())
-                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Variable<br/><b>Data type:</b> "
-                    + escapeHtml(typeStr) + "<br/><b>Source:</b> Program</p></body></html>";
-            items.add(new ReferenceItem(
-                    "variable",
-                    variable.name(),
-                    signature,
-                    "Program",
-                    details,
-                    variable.name(),
-                    variable.name().length()));
-        }
-        return items;
-    }
-
-    private void rebuildLibraryFilterOptions() {
-        String selected = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All libraries");
-        Set<String> libraries = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-        for (ReferenceItem item : allReferenceItems) {
-            if (item.library != null) {
-                libraries.add(item.library);
-            }
-        }
-
-        updatingReferenceFilters = true;
-        try {
-            referenceLibraryFilter.removeAllItems();
-            referenceLibraryFilter.addItem("All libraries");
-            for (String library : libraries) {
-                referenceLibraryFilter.addItem(library);
-            }
-            referenceLibraryFilter.setSelectedItem(libraries.contains(selected) ? selected : "All libraries");
-        } finally {
-            updatingReferenceFilters = false;
-        }
-        rebuildReferenceFiltersPopup();
-        updateReferenceFiltersButtonTooltip();
-    }
-
-    private void rebuildReferenceFiltersPopup() {
-        referenceFiltersPopup.removeAll();
-
-        JMenu typeMenu = new JMenu("Type");
-        addReferenceRadioItems(typeMenu, referenceKindFilter, "All", "All");
-        addReferenceRadioItems(typeMenu, referenceKindFilter, "Functions", "Functions");
-        addReferenceRadioItems(typeMenu, referenceKindFilter, "Constants", "Constants");
-        addReferenceRadioItems(typeMenu, referenceKindFilter, "Labels", "Labels");
-        addReferenceRadioItems(typeMenu, referenceKindFilter, "Variables", "Variables");
-        addReferenceRadioItems(typeMenu, referenceKindFilter, "Structs", "Structs");
-
-        JMenu sourceMenu = new JMenu("Source");
-        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "All sources", "All sources");
-        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Builtin", "Builtin");
-        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Libraries", "Libraries");
-        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Program", "Program");
-
-        JMenu libraryMenu = new JMenu("Library");
-        for (int i = 0; i < referenceLibraryFilter.getItemCount(); i++) {
-            String item = referenceLibraryFilter.getItemAt(i);
-            if (item != null) {
-                addReferenceRadioItems(libraryMenu, referenceLibraryFilter, item, item);
-            }
-        }
-
-        JMenuItem resetItem = new JMenuItem("Reset filters");
-        resetItem.addActionListener(e -> {
-            updatingReferenceFilters = true;
-            try {
-                referenceKindFilter.setSelectedItem("All");
-                referenceSourceFilter.setSelectedItem("All sources");
-                referenceLibraryFilter.setSelectedItem("All libraries");
-            } finally {
-                updatingReferenceFilters = false;
-            }
-            updateReferenceFiltersButtonTooltip();
-            filterReferenceItems();
-        });
-
-        referenceFiltersPopup.add(typeMenu);
-        referenceFiltersPopup.add(sourceMenu);
-        referenceFiltersPopup.add(libraryMenu);
-        referenceFiltersPopup.addSeparator();
-        referenceFiltersPopup.add(resetItem);
-    }
-
-    private void addReferenceRadioItems(JMenu menu, JComboBox<String> combo, String label, String value) {
-        JRadioButtonMenuItem item = new JRadioButtonMenuItem(label, Objects.equals(combo.getSelectedItem(), value));
-        item.addActionListener(e -> combo.setSelectedItem(value));
-        menu.add(item);
-    }
-
-    private void updateReferenceFiltersButtonTooltip() {
-        String type = Objects.toString(referenceKindFilter.getSelectedItem(), "All");
-        String source = Objects.toString(referenceSourceFilter.getSelectedItem(), "All sources");
-        String library = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All libraries");
-        referenceFiltersButton.setToolTipText("Type: " + type + " | Source: " + source + " | Library: " + library);
-    }
-
-    private void requestFilterReferenceItems() {
-        referenceFilterDebounceTimer.restart();
-    }
-
-    private void filterReferenceItems() {
-        String query = referenceSearchField.getText();
-        String needle = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
-        String selectedKind = Objects.toString(referenceKindFilter.getSelectedItem(), "All");
-        String selectedSource = Objects.toString(referenceSourceFilter.getSelectedItem(), "All sources");
-        String selectedLibrary = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All libraries");
-
-        ReferenceItem previousSelection = referenceList.getSelectedValue();
-        java.util.List<ReferenceItem> matches = new ArrayList<>();
-        for (ReferenceItem item : allReferenceItems) {
-            boolean kindMatches = "All".equals(selectedKind)
-                    || ("Functions".equals(selectedKind)
-                            && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
-                    || ("Constants".equals(selectedKind) && "constant".equals(item.kind))
-                    || ("Labels".equals(selectedKind) && "label".equals(item.kind))
-                    || ("Variables".equals(selectedKind) && "variable".equals(item.kind))
-                    || ("Structs".equals(selectedKind) && "struc".equals(item.kind));
-            boolean sourceMatches = "All sources".equals(selectedSource)
-                    || ("Builtin".equals(selectedSource)
-                            && item.library != null
-                            && "Builtin".equalsIgnoreCase(item.library))
-                    || ("Libraries".equals(selectedSource)
-                            && item.library != null
-                            && !"Builtin".equalsIgnoreCase(item.library)
-                            && !"Program".equalsIgnoreCase(item.library))
-                    || ("Program".equals(selectedSource)
-                            && item.library != null
-                            && "Program".equalsIgnoreCase(item.library));
-            boolean libraryMatches = "All libraries".equals(selectedLibrary)
-                    || (item.library != null && selectedLibrary.equals(item.library));
-            if (needle.isEmpty()
-                    || item.name.toLowerCase(Locale.ROOT).contains(needle)
-                    || item.signature.toLowerCase(Locale.ROOT).contains(needle)
-                    || item.kind.toLowerCase(Locale.ROOT).contains(needle)
-                    || (item.library != null
-                            && item.library.toLowerCase(Locale.ROOT).contains(needle))) {
-                if (kindMatches && sourceMatches && libraryMatches) {
-                    matches.add(item);
-                }
-            }
-        }
-
-        referenceListModel.clear();
-        for (ReferenceItem match : matches) {
-            referenceListModel.addElement(match);
-        }
-
-        if (!referenceListModel.isEmpty()) {
-            if (previousSelection != null && matches.contains(previousSelection)) {
-                referenceList.setSelectedValue(previousSelection, true);
-            } else {
-                referenceList.setSelectedIndex(0);
-            }
-        } else {
-            setReferenceDetailsHtml(REFERENCE_NO_MATCHES_HTML);
-            referenceInsertButton.setEnabled(false);
-        }
-    }
-
-    private void updateReferenceSelectionDetails() {
-        ReferenceItem item = referenceList.getSelectedValue();
-        if (item == null) {
-            setReferenceDetailsHtml(REFERENCE_SELECT_PROMPT_HTML);
-            referenceInsertButton.setEnabled(false);
-            return;
-        }
-        setReferenceDetailsHtml(item.details);
-        referenceInsertButton.setEnabled(true);
-    }
-
-    private void setReferenceDetailsHtml(String html) {
-        String next = html == null ? REFERENCE_SELECT_PROMPT_HTML : html;
-        if (Objects.equals(referenceDetailsHtml, next)) {
-            return;
-        }
-        referenceDetailsHtml = next;
-        referenceDetailsPane.setText(next);
-        referenceDetailsPane.setCaretPosition(0);
-    }
-
-    private void insertSelectedReference() {
-        ReferenceItem item = referenceList.getSelectedValue();
-        if (item == null) {
-            return;
-        }
-        int selectedTab = tabControl.getSelectedIndex();
-        if (selectedTab < 0 || selectedTab >= fileManager.getFileEditors().size()) {
-            return;
-        }
-        JTextArea editorPane = fileManager.getFileEditors().get(selectedTab).getEditorPane();
-        int insertStart = editorPane.getSelectionStart();
-        editorPane.replaceSelection(item.insertText);
-        editorPane.setCaretPosition(Math.min(
-                insertStart + item.caretOffset, editorPane.getDocument().getLength()));
-        editorPane.requestFocusInWindow();
-    }
-
-    private void openMarkdownInDocsTab(File file) {
+    public void openMarkdownInDocsTab(File file) {
         File resolved = file.isAbsolute() ? file : new File(fileManager.getCurrentDirectory(), file.getPath());
         if (!resolved.exists()) {
             resolved = file;
@@ -3912,35 +2566,6 @@ public class MainWindow
         }
     }
 
-    private String markdownToHtml(String markdown) {
-        StringBuilder html = new StringBuilder("<html><body style='font-family:sans-serif;'>");
-        for (String line : markdown.split("\\R", -1)) {
-            String escaped = escapeHtml(line);
-            if (escaped.startsWith("### ")) {
-                html.append("<h3>").append(escaped.substring(4)).append("</h3>");
-            } else if (escaped.startsWith("## ")) {
-                html.append("<h2>").append(escaped.substring(3)).append("</h2>");
-            } else if (escaped.startsWith("# ")) {
-                html.append("<h1>").append(escaped.substring(2)).append("</h1>");
-            } else if (escaped.startsWith("- ")) {
-                html.append("<p>&bull; ").append(escaped.substring(2)).append("</p>");
-            } else if (escaped.isBlank()) {
-                html.append("<br/>");
-            } else {
-                html.append("<p>").append(escaped).append("</p>");
-            }
-        }
-        html.append("</body></html>");
-        return html.toString();
-    }
-
-    private String escapeHtml(String input) {
-        if (input == null) {
-            return "";
-        }
-        return input.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-    }
-
     private int findOpenTabIndexByPath(String absolutePath) {
         if (absolutePath == null || absolutePath.isBlank()) {
             return -1;
@@ -3957,7 +2582,7 @@ public class MainWindow
         return fileManager.getTabIndex(absolutePath);
     }
 
-    private void setWorkspaceDirectory(File folder) {
+    public void setWorkspaceDirectory(File folder) {
         if (folder == null) {
             return;
         }
@@ -3969,6 +2594,21 @@ public class MainWindow
         fileManager.setCurrentDirectory(absoluteFolder.getAbsolutePath());
         registerWorkspace(absoluteFolder);
         refreshSidebarContent();
+    }
+
+    @Override
+    public void insertText(String text, int caretOffset) {
+
+        int selectedTab = tabControl.getSelectedIndex();
+        if (selectedTab < 0 || selectedTab >= fileManager.getFileEditors().size()) {
+            return;
+        }
+        JTextArea editorPane = fileManager.getFileEditors().get(selectedTab).getEditorPane();
+        int insertStart = editorPane.getSelectionStart();
+        editorPane.replaceSelection(text);
+        editorPane.setCaretPosition(Math.min(
+                insertStart + caretOffset, editorPane.getDocument().getLength()));
+        editorPane.requestFocusInWindow();
     }
 
     private void registerWorkspace(File folder) {
