@@ -173,7 +173,7 @@ task debugAll {
         run {
             args rootProject.ext.get("libraryJarPath"),
                 rootProject.ext.get("debugServerJarPath")
-             debug = true
+//             debug = true
         }
     }
 }

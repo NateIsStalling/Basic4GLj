@@ -1,4 +1,4 @@
-package com.basic4gl.desktop;
+package com.basic4gl.desktop.content;
 
 import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.util.IFileManager;
@@ -38,6 +38,13 @@ public class FileManager implements IFileManager {
         return fileEditors.get(index).getFilePath();
     }
 
+    private FileEditor getEditorOrNull(int index) {
+        if (index < 0 || index >= fileEditors.size()) {
+            return null;
+        }
+        return fileEditors.get(index);
+    }
+
     public void setCurrentDirectory(String path) {
         currentDirectory = path;
         if (listener != null) {
@@ -63,7 +70,8 @@ public class FileManager implements IFileManager {
         int i = 0;
         boolean found = false;
         for (; i < fileEditors.size(); i++) {
-            if (fileEditors.get(i).getFilePath().equals(path)) {
+            FileEditor editor = fileEditors.get(i);
+            if (editor != null && editor.getFilePath().equals(path)) {
                 found = true;
                 break;
             }
@@ -72,84 +80,95 @@ public class FileManager implements IFileManager {
     }
 
     public void selectPreviousBreakpoint(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            fileEditors.get(i).gotoNextBreakpoint(false);
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null) {
+            editor.gotoNextBreakpoint(false);
         }
     }
 
     public void selectNextBreakpoint(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            fileEditors.get(i).gotoNextBreakpoint(true);
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null) {
+            editor.gotoNextBreakpoint(true);
         }
     }
 
     public void toggleBookmark(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            fileEditors.get(i).toggleBookmark();
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null) {
+            editor.toggleBookmark();
         }
     }
 
     public void selectPreviousBookmark(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            fileEditors.get(i).gotoNextBookmark(false);
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null) {
+            editor.gotoNextBookmark(false);
         }
     }
 
     public void selectNextBookmark(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            fileEditors.get(i).gotoNextBookmark(true);
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null) {
+            editor.gotoNextBookmark(true);
         }
     }
 
     public void selectAll(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            fileEditors.get(i).getEditorPane().selectAll();
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null) {
+            editor.getEditorPane().selectAll();
         }
     }
 
     public void paste(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            fileEditors.get(i).getEditorPane().paste();
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null) {
+            editor.getEditorPane().paste();
         }
     }
 
     public void copy(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            fileEditors.get(i).getEditorPane().copy();
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null) {
+            editor.getEditorPane().copy();
         }
     }
 
     public void cut(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            fileEditors.get(i).getEditorPane().cut();
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null) {
+            editor.getEditorPane().cut();
         }
     }
 
     public void redo(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            if (fileEditors.get(i).canRedo()) {
-                fileEditors.get(i).redoLastAction();
-            }
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null && editor.canRedo()) {
+            editor.redoLastAction();
         }
     }
 
     public void undo(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            if (fileEditors.get(i).canUndo()) {
-                fileEditors.get(i).undoLastAction();
-            }
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null && editor.canUndo()) {
+            editor.undoLastAction();
         }
     }
 
     public void toggleBreakpoint(int i) {
-        if (i > -1 && i < fileEditors.size()) {
-            fileEditors.get(i).toggleBreakpoint();
+        FileEditor editor = getEditorOrNull(i);
+        if (editor != null) {
+            editor.toggleBreakpoint();
         }
     }
 
     public void setReadOnly(boolean readOnly) {
         for (int i = 0; i < fileEditors.size(); i++) {
-            fileEditors.get(i).getEditorPane().setEditable(!readOnly);
+            FileEditor editor = fileEditors.get(i);
+            if (editor != null) {
+                editor.getEditorPane().setEditable(!readOnly);
+            }
         }
     }
 
@@ -158,12 +177,13 @@ public class FileManager implements IFileManager {
         String desc = "";
 
         for (int i = 0; i < fileEditors.size(); i++) {
-            if (fileEditors.get(i).isModified()) {
+            FileEditor editor = fileEditors.get(i);
+            if (editor != null && editor.isModified()) {
                 result = true;
                 if (!desc.isEmpty()) {
                     desc += ", ";
                 }
-                String filename = fileEditors.get(i).getShortFilename();
+                String filename = editor.getShortFilename();
 
                 desc += filename;
             }
@@ -224,6 +244,12 @@ public class FileManager implements IFileManager {
             return;
         }
 
-        runnableFilePath = fileEditors.get(0).getFilePath();
+        for (FileEditor editor : fileEditors) {
+            if (editor != null) {
+                runnableFilePath = editor.getFilePath();
+                return;
+            }
+        }
+        runnableFilePath = null;
     }
 }

@@ -1,7 +1,5 @@
-package com.basic4gl.desktop;
+package com.basic4gl.desktop.language;
 
-import com.basic4gl.desktop.language.IndexedSymbol;
-import com.basic4gl.desktop.language.LanguageSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.Executors;

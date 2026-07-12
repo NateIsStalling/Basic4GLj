@@ -7,9 +7,12 @@ import static com.formdev.flatlaf.FlatClientProperties.*;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
+import com.basic4gl.desktop.content.FileManager;
+import com.basic4gl.desktop.content.IFileManagerListener;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
+import com.basic4gl.desktop.language.SymbolIndexer;
 import com.basic4gl.desktop.spi.*;
 import com.basic4gl.desktop.spi.language.FunctionDefinition;
 import com.basic4gl.desktop.spi.language.LabelDefinition;
@@ -23,6 +26,7 @@ import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import com.formdev.flatlaf.util.SystemInfo;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -51,7 +55,7 @@ public class MainWindow
                 ITabProvider,
                 IToggleBreakpointListener,
                 IFileEditorActionListener,
-                IFileManagerListener,
+        IFileManagerListener,
                 EmptyTabPanel.IEmptyTabPanelListener,
                 MenuService {
 
@@ -86,6 +90,8 @@ public class MainWindow
     private final JSplitPane workspacePane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     private final JSplitPane contentPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     private final JPanel leftSidebarContainer = new JPanel(new BorderLayout());
+    // File viewers: stores IFileViewer instances for each tab (parallel to tabControl)
+    private final java.util.List<FileViewerWrapper> fileViewers = new java.util.ArrayList<>();
     private final JPanel leftSidebarContent = new JPanel(new CardLayout());
     private final JToolBar leftSidebarRail = new JToolBar(SwingConstants.VERTICAL);
     private final ButtonGroup leftSidebarGroup = new ButtonGroup();
@@ -98,8 +104,12 @@ public class MainWindow
     private final JTree fileBrowserTree = new JTree();
     private final JTree assetsTree = new JTree();
     private final FileSystemView fileSystemView = FileSystemView.getFileSystemView();
-    private final DefaultListModel<String> assetsListModel = new DefaultListModel<>();
-    private final JList<String> assetsList = new JList<>(assetsListModel);
+    private boolean showHiddenFiles = false;
+    private final DefaultListModel<AssetItem> assetsListModel = new DefaultListModel<>();
+    private final JList<AssetItem> assetsGridList = new JList<>(assetsListModel);
+    private final JPanel assetsContentPanel = new JPanel(new CardLayout());
+    private final JComboBox<String> assetsLayoutCombo = new JComboBox<>(new String[] {"Tree", "Grid"});
+    private final Map<String, Icon> assetThumbnailCache = new HashMap<>();
     private final JComboBox<String> runTargetCombo = new JComboBox<>();
     private boolean updatingRunTargetCombo = false;
     private final DefaultListModel<ReferenceItem> referenceListModel = new DefaultListModel<>();
@@ -121,6 +131,7 @@ public class MainWindow
             "<html><body style='font-family:sans-serif;padding:6px;'>No matches.</body></html>";
     private static final String REFERENCE_SELECT_PROMPT_HTML =
             "<html><body style='font-family:sans-serif;padding:6px;'>Select an entry.</body></html>";
+    private String referenceDetailsHtml = REFERENCE_SELECT_PROMPT_HTML;
     private final java.util.List<ReferenceItem> allReferenceItems = new ArrayList<>();
     // Language support is shared between the symbol indexer and (via BasicTokenMaker) the editor.
     private final com.basic4gl.desktop.language.LanguageSupport languageSupport =
@@ -133,6 +144,10 @@ public class MainWindow
     private String activeLeftSidebarKey = "files";
     private String activeRightDocsKey = "functions";
     private JPanel emptyTabPanel;
+    private final java.util.List<File> recentWorkspaces = new ArrayList<>();
+    private static final String RECENT_WORKSPACES_FILE = "recent-workspaces.properties";
+    private static final String RECENT_WORKSPACES_KEY = "RECENT_WORKSPACES";
+    private static final int MAX_RECENT_WORKSPACES = 10;
 
     private static final class ReferenceItem {
         final String kind;
@@ -196,8 +211,10 @@ public class MainWindow
     // Menu Items
     private final JMenuItem newMenuItem = new JMenuItem("New Program");
     private final JMenuItem openMenuItem = new JMenuItem("Open Program...");
+    private final JMenuItem openFolderMenuItem = new JMenuItem("Open Folder...");
     private final JMenuItem recentSubMenu = new JMenu("Open Recent");
     private final JMenuItem clearRecentMenuItem = new JMenuItem("Clear Recently Opened...");
+    private final JMenuItem clearRecentWorkspacesMenuItem = new JMenuItem("Clear Recent Workspaces...");
     private final JMenuItem saveMenuItem = new JMenuItem("Save");
     private final JMenuItem saveAsMenuItem = new JMenuItem("Save As...");
     private final JMenuItem exportMenuItem = new JMenuItem("Export...");
@@ -374,6 +391,7 @@ public class MainWindow
 
         fileMenu.add(newMenuItem);
         fileMenu.add(openMenuItem);
+        fileMenu.add(openFolderMenuItem);
         fileMenu.add(recentSubMenu);
         fileMenu.add(new JSeparator());
         fileMenu.add(saveMenuItem);
@@ -442,8 +460,12 @@ public class MainWindow
         newMenuItem.addActionListener(e -> actionNew());
         openMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, toolkit.getMenuShortcutKeyMask()));
         openMenuItem.addActionListener(e -> actionOpen());
+        openFolderMenuItem.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, toolkit.getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
+        openFolderMenuItem.addActionListener(e -> actionOpenFolder());
         saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMask()));
         clearRecentMenuItem.addActionListener(e -> actionClearRecent());
+        clearRecentWorkspacesMenuItem.addActionListener(e -> actionClearRecentWorkspaces());
         saveMenuItem.addActionListener(e -> actionSave());
         saveAsMenuItem.addActionListener(e -> actionSaveAs());
         exportMenuItem.addActionListener(e -> actionExport());
@@ -740,16 +762,21 @@ public class MainWindow
                         if (fileCheckSaveChanges(tabIndex)) {
                             // Clear file's breakpoints
                             FileEditor editor = fileManager.getFileEditors().get(tabIndex);
-                            List<Integer> breakpoints = editor.getBreakpoints();
-                            String file = editor.getFilePath();
+                            if (editor != null) {
+                                List<Integer> breakpoints = editor.getBreakpoints();
+                                String file = editor.getFilePath();
 
-                            for (Integer line : breakpoints) {
-                                basicEditor.toggleBreakpt(file, line);
+                                for (Integer line : breakpoints) {
+                                    basicEditor.toggleBreakpt(file, line);
+                                }
                             }
 
                             // Remove tab
                             tabControl.remove(tabIndex);
                             fileManager.getFileEditors().remove(tabIndex.intValue());
+                            if (tabIndex >= 0 && tabIndex < fileViewers.size()) {
+                                fileViewers.remove(tabIndex);
+                            }
                             fileManager.ensureRunnableFileValid();
                             refreshRunnableFileControls();
 
@@ -846,6 +873,8 @@ public class MainWindow
         basicEditor.initLibraries();
         resetProject();
         basicEditor.loadSettings();
+        loadRecentWorkspaces();
+        setRecentItems(basicEditor.getRecentFiles());
         refreshRunnableFileControls();
         populateDocsFromCompiler();
         refreshSidebarContent();
@@ -889,18 +918,51 @@ public class MainWindow
 
     @Override
     public void setRecentItems(List<File> files) {
+        List<File> recentFiles = files == null ? Collections.emptyList() : files;
         recentSubMenu.removeAll();
-        for (File file : files) {
+
+        boolean hasRecentFiles = !recentFiles.isEmpty();
+        boolean hasRecentWorkspaces = !recentWorkspaces.isEmpty();
+
+        if (hasRecentFiles) {
+            JMenuItem filesHeader = new JMenuItem("Recent Files");
+            filesHeader.setEnabled(false);
+            recentSubMenu.add(filesHeader);
+        }
+
+        for (File file : recentFiles) {
 
             JMenuItem fileMenuItem = new JMenuItem(file.getName());
             recentSubMenu.add(fileMenuItem);
             fileMenuItem.addActionListener(e -> {
-                actionOpen(file);
+                openFileWithPreferredViewer(file);
             });
         }
-        recentSubMenu.add(new JSeparator());
+
+        if (hasRecentFiles || hasRecentWorkspaces) {
+            recentSubMenu.add(new JSeparator());
+        }
+
+        clearRecentMenuItem.setEnabled(hasRecentFiles);
         recentSubMenu.add(clearRecentMenuItem);
-        clearRecentMenuItem.setEnabled(!files.isEmpty());
+
+        if (hasRecentWorkspaces) {
+            recentSubMenu.add(new JSeparator());
+            JMenuItem workspacesHeader = new JMenuItem("Recent Workspaces");
+            workspacesHeader.setEnabled(false);
+            recentSubMenu.add(workspacesHeader);
+            for (File workspace : recentWorkspaces) {
+                JMenuItem workspaceItem = new JMenuItem(workspace.getName().isBlank()
+                        ? workspace.getAbsolutePath()
+                        : workspace.getName());
+                workspaceItem.setToolTipText(workspace.getAbsolutePath());
+                workspaceItem.addActionListener(e -> setWorkspaceDirectory(workspace));
+                recentSubMenu.add(workspaceItem);
+            }
+            recentSubMenu.add(new JSeparator());
+            recentSubMenu.add(clearRecentWorkspacesMenuItem);
+        }
+        clearRecentWorkspacesMenuItem.setEnabled(hasRecentWorkspaces);
     }
 
     @Override
@@ -964,6 +1026,7 @@ public class MainWindow
         // Close existing editors
         tabControl.removeAll();
         fileManager.getFileEditors().clear();
+        fileViewers.clear();
 
         // Create a default tab
         addTab();
@@ -993,6 +1056,11 @@ public class MainWindow
     @Override
     public void openTab(String filename) {
         File file = new File(fileManager.getCurrentDirectory(), filename);
+        int existingIndex = findOpenTabIndexByPath(file.getAbsolutePath());
+        if (existingIndex >= 0) {
+            tabControl.setSelectedIndex(existingIndex);
+            return;
+        }
 
         System.out.println("Open tab: " + filename);
         System.out.println("Path: " + file.getAbsolutePath());
@@ -1003,12 +1071,33 @@ public class MainWindow
     }
 
     public void openTab(File file) {
+        if (file == null) {
+            return;
+        }
+        File absoluteFile = file.getAbsoluteFile();
+        int existingIndex = findOpenTabIndexByPath(absoluteFile.getAbsolutePath());
+        if (existingIndex >= 0) {
+            tabControl.setSelectedIndex(existingIndex);
+            return;
+        }
+
         System.out.println("Open tab: " + file.getName());
         System.out.println("Path: " + file.getAbsolutePath());
 
-        MainWindow.this.addTab(FileEditor.open(file, this, fileManager, this, linkGenerator, searchContext));
+        // Use the FileViewerFactory to determine the appropriate viewer
+        IFileViewer viewer = FileViewerFactory.createViewer(
+                absoluteFile,
+                null, // auto-detect viewer type
+                this,
+                fileManager,
+                this,
+                linkGenerator,
+                searchContext);
+
+        addTabWithViewer(viewer);
 
         tabControl.setSelectedIndex(tabControl.getTabCount() - 1);
+        registerWorkspace(file.getParentFile());
     }
 
     void actionNew() {
@@ -1020,6 +1109,7 @@ public class MainWindow
             // Clear file editors
             this.tabControl.removeAll();
             fileManager.getFileEditors().clear();
+            fileViewers.clear();
 
             this.addTab();
             refreshSidebarContent();
@@ -1032,17 +1122,44 @@ public class MainWindow
 
     void actionOpen(File file) {
         if (multifileCheckSaveChanges()) {
-            FileEditor editor = null;
             if (file != null) {
                 fileManager.setCurrentDirectory(fileManager.getFileDirectory());
-                editor = FileEditor.open(file, this, fileManager, this, linkGenerator, searchContext);
-            } else {
+                openFileWithPreferredViewer(file);
+                return;
+            }
+
+            FileEditor editor;
+            {
                 fileManager.setCurrentDirectory(fileManager.getFileDirectory());
                 editor = FileEditor.open(frame, this, fileManager, this, linkGenerator, searchContext);
             }
 
             openEditor(editor);
         }
+    }
+
+    private void actionOpenFolder() {
+        JFileChooser chooser = new JFileChooser(fileManager.getCurrentDirectory());
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+        int result = chooser.showOpenDialog(frame);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        setWorkspaceDirectory(chooser.getSelectedFile());
+    }
+
+    private void openFileWithPreferredViewer(File file) {
+        if (file == null) {
+            return;
+        }
+        File absoluteFile = file.getAbsoluteFile();
+        int existingIndex = findOpenTabIndexByPath(absoluteFile.getAbsolutePath());
+        if (existingIndex >= 0) {
+            tabControl.setSelectedIndex(existingIndex);
+            return;
+        }
+        openTab(absoluteFile);
     }
 
     void openEditor(FileEditor editor) {
@@ -1059,6 +1176,7 @@ public class MainWindow
             fileManager.setRunDirectory(fileManager.getFileDirectory());
 
             fileManager.setCurrentDirectory(fileManager.getRunDirectory());
+            registerWorkspace(new File(fileManager.getRunDirectory()));
 
             // Display file
             addTab(editor);
@@ -1079,10 +1197,29 @@ public class MainWindow
         }
     }
 
+    void actionClearRecentWorkspaces() {
+        int result = JOptionPane.showConfirmDialog(
+                frame,
+                "Clear recently opened workspaces?",
+                "Confirm",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (result == JOptionPane.YES_OPTION) {
+            recentWorkspaces.clear();
+            saveRecentWorkspaces();
+            setRecentItems(basicEditor.getRecentFiles());
+            refreshEmptyStateRecentItems();
+        }
+    }
+
     boolean fileCheckSaveChanges(int index) {
 
         // Is sub-file modified?
         FileEditor editor = fileManager.getFileEditors().get(index);
+        if (editor == null) {
+            return true;
+        }
         if (editor.isModified()) {
             int result = JOptionPane.showConfirmDialog(
                     frame,
@@ -1448,7 +1585,12 @@ public class MainWindow
 
     public void closeTab(int index) {
         tabControl.remove(index);
-        fileManager.getFileEditors().remove(index);
+        if (index >= 0 && index < fileManager.getFileEditors().size()) {
+            fileManager.getFileEditors().remove(index);
+        }
+        if (index >= 0 && index < fileViewers.size()) {
+            fileViewers.remove(index);
+        }
         fileManager.ensureRunnableFileValid();
         refreshRunnableFileControls();
         refreshSidebarContent();
@@ -1464,6 +1606,7 @@ public class MainWindow
 
         int count = fileManager.editorCount();
         fileManager.getFileEditors().add(editor);
+        fileViewers.add(new FileViewerWrapper(editor));
 
         // replace emptyTabPanel if needed
         mainPane.setTopComponent(getActiveEditorHost());
@@ -1517,6 +1660,82 @@ public class MainWindow
         // TODO set syntax highlight colors
 
         // Refresh interface if there was previously no tabs open
+        if (count == 0) {
+            basicEditor.setMode(ApMode.AP_STOPPED, null);
+        }
+
+        fileManager.ensureRunnableFileValid();
+        refreshRunnableFileControls();
+        refreshSidebarContent();
+        symbolIndexer.schedule();
+    }
+
+    /**
+     * Adds a file viewer tab (unified method for all viewer types including images and audio)
+     */
+    public void addTabWithViewer(IFileViewer viewer) {
+        int count = tabControl.getTabCount();
+        FileViewerWrapper wrapper = new FileViewerWrapper(viewer);
+        fileViewers.add(wrapper);
+
+        // For backward compatibility with FileEditor code, also add to fileManager if it's a text editor
+        if (wrapper.isTextEditor()) {
+            fileManager.getFileEditors().add(wrapper.getFileEditor());
+        } else {
+            // Add a placeholder to keep indices aligned
+            fileManager.getFileEditors().add(null);
+        }
+
+        // replace emptyTabPanel if needed
+        mainPane.setTopComponent(getActiveEditorHost());
+
+        tabControl.addTab(viewer.getTitle(), viewer.getContentPane());
+
+        final FileViewerWrapper wrappedViewer = wrapper;
+        File file = viewer.getFile();
+        if (file != null) {
+            basicEditor.notifyFileOpened(file);
+        }
+
+        // Add document listener only for text editors
+        if (wrapper.isTextEditor()) {
+            final FileEditor edit = wrapper.getFileEditor();
+            JTextArea editorPane = edit.getEditorPane();
+            editorPane.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    int index = getTabIndex(edit.getFilePath());
+                    edit.setModified();
+                    tabControl.setTitleAt(index, edit.getTitle());
+                    symbolIndexer.schedule();
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    int index = getTabIndex(edit.getFilePath());
+                    edit.setModified();
+                    tabControl.setTitleAt(index, edit.getTitle());
+                    symbolIndexer.schedule();
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    int index = getTabIndex(edit.getFilePath());
+                    edit.setModified();
+                    tabControl.setTitleAt(index, edit.getTitle());
+                }
+            });
+
+            // Allow user to see cursor position
+            editorPane.addCaretListener(TrackCaretPosition);
+            cursorPositionLabel.setText(0 + ":" + 0); // Reset label
+
+            // Set tab as read-only if App is running or paused
+            boolean readOnly = basicEditor.getMode() != ApMode.AP_STOPPED;
+            editorPane.setEditable(!readOnly);
+        }
+
+        // Refresh interface if there were previously no tabs open
         if (count == 0) {
             basicEditor.setMode(ApMode.AP_STOPPED, null);
         }
@@ -1723,7 +1942,9 @@ public class MainWindow
                         this,
                         newMenuItem.getAccelerator(),
                         openMenuItem.getAccelerator(),
-                        basicEditor.getRecentFiles());
+                        openFolderMenuItem.getAccelerator(),
+                        basicEditor.getRecentFiles(),
+                        recentWorkspaces);
                 mainPane.setTopComponent(emptyTabPanel);
                 break;
             case AP_STOPPED:
@@ -2010,12 +2231,17 @@ public class MainWindow
         }
 
         JPopupMenu popup = new JPopupMenu();
+        FileEditor contextEditor = fileManager.getFileEditors().get(tabIndex);
         JMenuItem setRunnable = new JMenuItem("Set as runnable file");
         setRunnable.addActionListener(x -> {
+            if (contextEditor == null) {
+                return;
+            }
             fileManager.setRunnableFilePath(
-                    fileManager.getFileEditors().get(tabIndex).getFilePath());
+                    contextEditor.getFilePath());
             refreshRunnableFileControls();
         });
+        setRunnable.setEnabled(contextEditor != null);
         popup.add(setRunnable);
 
         JMenuItem splitPreview = new JMenuItem("Split right");
@@ -2033,7 +2259,11 @@ public class MainWindow
         if (tabIndex < 0 || tabIndex >= fileManager.getFileEditors().size()) {
             return;
         }
-        File source = fileManager.getFileEditors().get(tabIndex).getFile();
+        FileEditor editor = fileManager.getFileEditors().get(tabIndex);
+        if (editor == null) {
+            return;
+        }
+        File source = editor.getFile();
         if (source == null) {
             return;
         }
@@ -2050,7 +2280,11 @@ public class MainWindow
         if (tabIndex < 0 || tabIndex >= fileManager.getFileEditors().size()) {
             return;
         }
-        File source = fileManager.getFileEditors().get(tabIndex).getFile();
+        FileEditor editor = fileManager.getFileEditors().get(tabIndex);
+        if (editor == null) {
+            return;
+        }
+        File source = editor.getFile();
         if (source == null) {
             return;
         }
@@ -2097,7 +2331,7 @@ public class MainWindow
         if (selected.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
             openMarkdownInDocsTab(selected);
         } else {
-            openTab(selected);
+            openFileWithPreferredViewer(selected);
         }
     }
 
@@ -2124,13 +2358,27 @@ public class MainWindow
     private JPanel buildFileBrowserPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         JPanel header = new JPanel(new BorderLayout());
+        JPanel headerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         JLabel title = new JLabel("Workspace Browser");
         title.setBorder(new EmptyBorder(4, 8, 0, 8));
+        JButton openFolder = new JButton("Open Folder");
+        openFolder.setFocusable(false);
+        openFolder.addActionListener(e -> actionOpenFolder());
         JButton refresh = new JButton("Refresh");
         refresh.setFocusable(false);
         refresh.addActionListener(e -> refreshFileBrowserTree());
+        JToggleButton showHiddenToggle = new JToggleButton("Show Hidden");
+        showHiddenToggle.setFocusable(false);
+        showHiddenToggle.setSelected(showHiddenFiles);
+        showHiddenToggle.addActionListener(e -> {
+            showHiddenFiles = showHiddenToggle.isSelected();
+            refreshFileBrowserTree();
+        });
+        headerButtons.add(showHiddenToggle);
+        headerButtons.add(openFolder);
+        headerButtons.add(refresh);
         header.add(title, BorderLayout.WEST);
-        header.add(refresh, BorderLayout.EAST);
+        header.add(headerButtons, BorderLayout.EAST);
         panel.add(header, BorderLayout.NORTH);
 
         fileBrowserTree.setRootVisible(true);
@@ -2155,6 +2403,10 @@ public class MainWindow
                     }
                     label.setIcon(fileSystemView.getSystemIcon(file));
                     label.setToolTipText(file.getAbsolutePath());
+                    boolean isHidden = file.getName().startsWith(".");
+                    if (isHidden && !selected) {
+                        label.setForeground(new Color(160, 160, 160));
+                    }
                 }
                 return label;
             }
@@ -2162,6 +2414,7 @@ public class MainWindow
         fileBrowserTree.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                maybeShowWorkspaceBrowserPopup(e);
                 if (e.getClickCount() != 2) {
                     return;
                 }
@@ -2176,8 +2429,18 @@ public class MainWindow
                 if (file.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
                     openMarkdownInDocsTab(file);
                 } else {
-                    openTab(file);
+                    openFileWithPreferredViewer(file);
                 }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeShowWorkspaceBrowserPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeShowWorkspaceBrowserPopup(e);
             }
         });
         JScrollPane scrollPane = new JScrollPane(fileBrowserTree);
@@ -2186,21 +2449,110 @@ public class MainWindow
         return panel;
     }
 
+    private void maybeShowWorkspaceBrowserPopup(MouseEvent e) {
+        if (!e.isPopupTrigger()) {
+            return;
+        }
+
+        TreePath path = fileBrowserTree.getPathForLocation(e.getX(), e.getY());
+        if (path == null) {
+            return;
+        }
+        fileBrowserTree.setSelectionPath(path);
+
+        Object userObject = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
+        if (!(userObject instanceof File selectedFile)) {
+            return;
+        }
+
+        JPopupMenu popup = new JPopupMenu();
+
+        JMenuItem openItem = new JMenuItem(selectedFile.isDirectory() ? "Open Folder" : "Open");
+        openItem.addActionListener(evt -> {
+            if (selectedFile.isDirectory()) {
+                setWorkspaceDirectory(selectedFile);
+            } else if (selectedFile.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
+                openMarkdownInDocsTab(selectedFile);
+            } else {
+                openFileWithPreferredViewer(selectedFile);
+            }
+        });
+        popup.add(openItem);
+
+        JMenuItem revealItem = new JMenuItem("Reveal in Finder");
+        revealItem.addActionListener(evt -> revealInFinder(selectedFile));
+        popup.add(revealItem);
+
+        JMenuItem openSystemItem = new JMenuItem("Open with Default App");
+        openSystemItem.addActionListener(evt -> openWithSystemDefault(selectedFile));
+        popup.add(openSystemItem);
+
+        JMenuItem copyPathItem = new JMenuItem("Copy Path");
+        copyPathItem.addActionListener(evt -> {
+            StringSelection selection = new StringSelection(selectedFile.getAbsolutePath());
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+        });
+        popup.add(copyPathItem);
+
+        popup.addSeparator();
+        JMenuItem refreshItem = new JMenuItem("Refresh");
+        refreshItem.addActionListener(evt -> refreshFileBrowserTree());
+        popup.add(refreshItem);
+
+        popup.show(fileBrowserTree, e.getX(), e.getY());
+    }
+
+    private void openWithSystemDefault(File file) {
+        if (file == null || !file.exists()) {
+            return;
+        }
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(file);
+            }
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(frame, "Unable to open file: " + ex.getMessage());
+        }
+    }
+
+    private void revealInFinder(File file) {
+        if (file == null || !file.exists()) {
+            return;
+        }
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browseFileDirectory(file);
+            }
+        } catch (Exception ex) {
+            // Fallback when browseFileDirectory is unavailable.
+            openWithSystemDefault(file.getParentFile());
+        }
+    }
+
     private JPanel buildAssetsPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         JPanel header = new JPanel(new BorderLayout());
+        JPanel headerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         JLabel title = new JLabel("Assets");
         title.setBorder(new EmptyBorder(4, 8, 0, 8));
+        assetsLayoutCombo.setFocusable(false);
+        assetsLayoutCombo.addActionListener(e -> {
+            CardLayout layout = (CardLayout) assetsContentPanel.getLayout();
+            layout.show(assetsContentPanel, Objects.toString(assetsLayoutCombo.getSelectedItem(), "Tree"));
+        });
         JButton refresh = new JButton("Refresh");
         refresh.setFocusable(false);
         refresh.addActionListener(e -> refreshAssetsLibrary());
+        headerButtons.add(assetsLayoutCombo);
+        headerButtons.add(refresh);
         header.add(title, BorderLayout.WEST);
-        header.add(refresh, BorderLayout.EAST);
+        header.add(headerButtons, BorderLayout.EAST);
         panel.add(header, BorderLayout.NORTH);
 
         assetsTree.setRootVisible(false);
         assetsTree.setShowsRootHandles(true);
-        assetsTree.setRowHeight(24);
+        // Let Swing compute preferred row height so custom/HTML labels do not clip.
+        assetsTree.setRowHeight(0);
         assetsTree.setCellRenderer(new DefaultTreeCellRenderer() {
             @Override
             public Component getTreeCellRendererComponent(
@@ -2214,11 +2566,11 @@ public class MainWindow
                 JLabel label = (JLabel)
                         super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
                 if (value instanceof DefaultMutableTreeNode node && node.getUserObject() instanceof AssetItem item) {
-                    label.setText(
-                            item.subtitle == null || item.subtitle.isBlank()
-                                    ? item.title
-                                    : "<html><b>" + escapeHtml(item.title) + "</b><br/><span style='color:gray;'>"
-                                            + escapeHtml(item.subtitle) + "</span></html>");
+                    boolean isSection = item.file == null;
+                    label.setIcon(item.icon);
+                    label.setIconTextGap(8);
+                    label.setBorder(new EmptyBorder(3, 0, 3, 0));
+                    label.setText(formatAssetTreeLabel(item, isSection));
                     label.setIcon(item.icon);
                     label.setToolTipText(item.file != null ? item.file.getAbsolutePath() : item.subtitle);
                 }
@@ -2229,6 +2581,7 @@ public class MainWindow
         assetsTree.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                maybeShowAssetsTreePopup(e);
                 if (e.getClickCount() != 2) {
                     return;
                 }
@@ -2240,18 +2593,170 @@ public class MainWindow
                 if (!(userObject instanceof AssetItem item) || !item.isOpenable()) {
                     return;
                 }
-                if (item.file.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
-                    openMarkdownInDocsTab(item.file);
-                } else {
-                    openTab(item.file);
-                }
+                openAssetItem(item);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeShowAssetsTreePopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeShowAssetsTreePopup(e);
             }
         });
 
         JScrollPane scrollPane = new JScrollPane(assetsTree);
         configureSmoothScrolling(scrollPane);
-        panel.add(scrollPane, BorderLayout.CENTER);
+
+        assetsGridList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        assetsGridList.setVisibleRowCount(-1);
+        assetsGridList.setFixedCellHeight(112);
+        assetsGridList.setFixedCellWidth(120);
+        assetsGridList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        assetsGridList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof AssetItem item) {
+                    label.setText("<html><center>" + escapeHtml(item.title) + "</center></html>");
+                    label.setIcon(getAssetGridIcon(item));
+                    label.setHorizontalTextPosition(SwingConstants.CENTER);
+                    label.setVerticalTextPosition(SwingConstants.BOTTOM);
+                    label.setHorizontalAlignment(SwingConstants.CENTER);
+                    label.setToolTipText(item.file != null ? item.file.getAbsolutePath() : item.subtitle);
+                }
+                return label;
+            }
+        });
+        assetsGridList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                maybeShowAssetsGridPopup(e);
+                if (e.getClickCount() != 2) {
+                    return;
+                }
+                AssetItem item = assetsGridList.getSelectedValue();
+                if (item == null || !item.isOpenable()) {
+                    return;
+                }
+                openAssetItem(item);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeShowAssetsGridPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeShowAssetsGridPopup(e);
+            }
+        });
+
+        JScrollPane gridScrollPane = new JScrollPane(assetsGridList);
+        configureSmoothScrolling(gridScrollPane);
+
+        assetsContentPanel.add(scrollPane, "Tree");
+        assetsContentPanel.add(gridScrollPane, "Grid");
+        panel.add(assetsContentPanel, BorderLayout.CENTER);
         return panel;
+    }
+
+    private String formatAssetTreeLabel(AssetItem item, boolean isSection) {
+        if (item == null) {
+            return "";
+        }
+        String title = escapeHtml(item.title == null ? "" : item.title);
+        String subtitle = item.subtitle == null ? "" : item.subtitle.trim();
+        if (subtitle.isBlank()) {
+            return isSection ? "<html><b>" + title + "</b></html>" : title;
+        }
+        String subtitleHtml = escapeHtml(subtitle);
+        if (isSection) {
+            return "<html><b>" + title + "</b> <span style='color:gray;'>" + subtitleHtml + "</span></html>";
+        }
+        return "<html>" + title + " <span style='color:gray;'>" + subtitleHtml + "</span></html>";
+    }
+
+    private void openAssetItem(AssetItem item) {
+        if (item == null || !item.isOpenable()) {
+            return;
+        }
+        if (item.file.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
+            openMarkdownInDocsTab(item.file);
+        } else {
+            openFileWithPreferredViewer(item.file);
+        }
+    }
+
+    private void maybeShowAssetsTreePopup(MouseEvent e) {
+        if (!e.isPopupTrigger()) {
+            return;
+        }
+        TreePath path = assetsTree.getPathForLocation(e.getX(), e.getY());
+        if (path == null) {
+            return;
+        }
+        assetsTree.setSelectionPath(path);
+        Object userObject = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
+        if (!(userObject instanceof AssetItem item)) {
+            return;
+        }
+        showAssetsPopup(item, assetsTree, e.getX(), e.getY());
+    }
+
+    private void maybeShowAssetsGridPopup(MouseEvent e) {
+        if (!e.isPopupTrigger()) {
+            return;
+        }
+        int index = assetsGridList.locationToIndex(e.getPoint());
+        if (index < 0) {
+            return;
+        }
+        assetsGridList.setSelectedIndex(index);
+        AssetItem item = assetsGridList.getModel().getElementAt(index);
+        showAssetsPopup(item, assetsGridList, e.getX(), e.getY());
+    }
+
+    private void showAssetsPopup(AssetItem item, Component invoker, int x, int y) {
+        if (item == null) {
+            return;
+        }
+
+        JPopupMenu popup = new JPopupMenu();
+
+        JMenuItem openItem = new JMenuItem("Open");
+        openItem.setEnabled(item.isOpenable());
+        openItem.addActionListener(evt -> openAssetItem(item));
+        popup.add(openItem);
+
+        JMenuItem revealItem = new JMenuItem("Reveal in Finder");
+        revealItem.setEnabled(item.file != null);
+        revealItem.addActionListener(evt -> revealInFinder(item.file));
+        popup.add(revealItem);
+
+        JMenuItem systemItem = new JMenuItem("Open with Default App");
+        systemItem.setEnabled(item.file != null);
+        systemItem.addActionListener(evt -> openWithSystemDefault(item.file));
+        popup.add(systemItem);
+
+        JMenuItem copyPathItem = new JMenuItem("Copy Path");
+        copyPathItem.setEnabled(item.file != null);
+        copyPathItem.addActionListener(evt -> {
+            StringSelection selection = new StringSelection(item.file.getAbsolutePath());
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+        });
+        popup.add(copyPathItem);
+
+        popup.addSeparator();
+        JMenuItem refreshItem = new JMenuItem("Refresh Assets");
+        refreshItem.addActionListener(evt -> refreshAssetsLibrary());
+        popup.add(refreshItem);
+
+        popup.show(invoker, x, y);
     }
 
     private JPanel buildBookmarkActionsPanel() {
@@ -2295,6 +2800,20 @@ public class MainWindow
     }
 
     private void configureDocsPane() {
+        docsTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        docsTabs.putClientProperty(TABBED_PANE_TAB_CLOSABLE, true);
+        docsTabs.putClientProperty(
+                TABBED_PANE_TAB_CLOSE_CALLBACK, (BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
+                    if (tabIndex <= 0 || tabIndex >= docsTabs.getTabCount()) {
+                        return;
+                    }
+                    docsTabs.remove(tabIndex.intValue());
+                    if (docsTabs.getTabCount() > 0) {
+                        docsTabs.setSelectedIndex(0);
+                    }
+                    selectRightDocsSection("functions");
+                });
+
         JPanel lookupPanel = new JPanel(new BorderLayout(6, 6));
         JPanel lookupHeader = new JPanel(new BorderLayout(6, 6));
 
@@ -2352,6 +2871,7 @@ public class MainWindow
 
         referenceDetailsPane.setEditable(false);
         referenceDetailsPane.setContentType("text/html");
+        setReferenceDetailsHtml(REFERENCE_SELECT_PROMPT_HTML);
 
         JSplitPane lookupSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         lookupSplit.setResizeWeight(0.65);
@@ -2552,16 +3072,16 @@ public class MainWindow
 
     private void refreshFileBrowserTree() {
         File root = new File(fileManager.getCurrentDirectory());
-        DefaultMutableTreeNode rootNode = buildFileTreeNode(root, 0, 5);
+        DefaultMutableTreeNode rootNode = buildFileTreeNode(root, 0);
         fileBrowserTree.setModel(new DefaultTreeModel(rootNode));
         if (fileBrowserTree.getRowCount() > 0) {
             fileBrowserTree.expandRow(0);
         }
     }
 
-    private DefaultMutableTreeNode buildFileTreeNode(File file, int depth, int maxDepth) {
+    private DefaultMutableTreeNode buildFileTreeNode(File file, int depth) {
         DefaultMutableTreeNode node = new DefaultMutableTreeNode(file);
-        if (!file.isDirectory() || depth >= maxDepth) {
+        if (!file.isDirectory()) {
             return node;
         }
 
@@ -2571,16 +3091,17 @@ public class MainWindow
         }
         Arrays.sort(children, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
         for (File child : children) {
-            if (child.getName().startsWith(".")) {
+            if (!showHiddenFiles && child.getName().startsWith(".")) {
                 continue;
             }
-            node.add(buildFileTreeNode(child, depth + 1, maxDepth));
+            node.add(buildFileTreeNode(child, depth + 1));
         }
         return node;
     }
 
     private void refreshAssetsLibrary() {
         File rootDir = new File(fileManager.getCurrentDirectory());
+        assetThumbnailCache.clear();
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new AssetItem(
                 "Assets",
                 "Workspace resources, libraries, and embedded literals",
@@ -2606,6 +3127,29 @@ public class MainWindow
         for (int i = 0; i < Math.min(4, assetsTree.getRowCount()); i++) {
             assetsTree.expandRow(i);
         }
+
+        assetsListModel.clear();
+        for (AssetItem item : collectOpenableAssets(rootNode)) {
+            assetsListModel.addElement(item);
+        }
+    }
+
+    private java.util.List<AssetItem> collectOpenableAssets(DefaultMutableTreeNode rootNode) {
+        java.util.List<AssetItem> items = new ArrayList<>();
+        if (rootNode == null) {
+            return items;
+        }
+        java.util.Enumeration<?> enumeration = rootNode.depthFirstEnumeration();
+        while (enumeration.hasMoreElements()) {
+            Object next = enumeration.nextElement();
+            if (!(next instanceof DefaultMutableTreeNode node)) {
+                continue;
+            }
+            if (node.getUserObject() instanceof AssetItem item && item.isOpenable()) {
+                items.add(item);
+            }
+        }
+        return items;
     }
 
     private DefaultMutableTreeNode buildMediaTypeSection(
@@ -2744,6 +3288,45 @@ public class MainWindow
                 file != null ? fileSystemView.getSystemIcon(file) : createImageIcon(ICON_MENU_FOLDER));
     }
 
+    private Icon getAssetGridIcon(AssetItem item) {
+        if (item == null || item.file == null) {
+            return createImageIcon(ICON_MENU_ASSETS);
+        }
+        String cacheKey = item.file.getAbsolutePath();
+        Icon cached = assetThumbnailCache.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+
+        Icon icon = item.icon;
+        String lower = item.file.getName().toLowerCase(Locale.ROOT);
+        if (FileViewerFactory.isImageFile(lower)) {
+            icon = buildImageThumbnailIcon(item.file, 84, 64);
+        }
+        if (icon == null) {
+            icon = createImageIcon(ICON_MENU_ASSETS);
+        }
+        assetThumbnailCache.put(cacheKey, icon);
+        return icon;
+    }
+
+    private Icon buildImageThumbnailIcon(File file, int maxWidth, int maxHeight) {
+        try {
+            java.awt.image.BufferedImage image = javax.imageio.ImageIO.read(file);
+            if (image == null || image.getWidth() <= 0 || image.getHeight() <= 0) {
+                return null;
+            }
+            double scale = Math.min((double) maxWidth / image.getWidth(), (double) maxHeight / image.getHeight());
+            scale = Math.min(1.0d, scale);
+            int width = Math.max(1, (int) Math.round(image.getWidth() * scale));
+            int height = Math.max(1, (int) Math.round(image.getHeight() * scale));
+            Image scaled = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            return new ImageIcon(scaled);
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+
     private File resolveAssetReference(String literal, File baseDir, File sourceParent) {
         if (literal == null || literal.isBlank()) {
             return null;
@@ -2838,13 +3421,23 @@ public class MainWindow
         updatingRunTargetCombo = true;
         runTargetCombo.removeAllItems();
 
-        for (FileEditor editor : fileManager.getFileEditors()) {
+        java.util.List<Integer> runnableTabIndices = new ArrayList<>();
+
+        for (int i = 0; i < fileManager.getFileEditors().size(); i++) {
+            FileEditor editor = fileManager.getFileEditors().get(i);
+            if (editor == null) {
+                continue;
+            }
             runTargetCombo.addItem(editor.getShortFilename());
+            runnableTabIndices.add(i);
         }
 
         int runnableIndex = fileManager.getRunnableFileIndex();
-        if (runnableIndex >= 0 && runnableIndex < runTargetCombo.getItemCount()) {
-            runTargetCombo.setSelectedIndex(runnableIndex);
+        if (runnableIndex >= 0) {
+            int comboIndex = runnableTabIndices.indexOf(runnableIndex);
+            if (comboIndex >= 0 && comboIndex < runTargetCombo.getItemCount()) {
+                runTargetCombo.setSelectedIndex(comboIndex);
+            }
         }
 
         runTargetCombo.setEnabled(runTargetCombo.getItemCount() > 0);
@@ -2855,10 +3448,21 @@ public class MainWindow
         if (updatingRunTargetCombo || fileManager == null) {
             return;
         }
-        int index = runTargetCombo.getSelectedIndex();
-        if (index >= 0 && index < fileManager.getFileEditors().size()) {
-            fileManager.setRunnableFilePath(
-                    fileManager.getFileEditors().get(index).getFilePath());
+        int comboIndex = runTargetCombo.getSelectedIndex();
+        if (comboIndex < 0) {
+            return;
+        }
+
+        int textEditorOffset = -1;
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            if (editor == null) {
+                continue;
+            }
+            textEditorOffset++;
+            if (textEditorOffset == comboIndex) {
+                fileManager.setRunnableFilePath(editor.getFilePath());
+                return;
+            }
         }
     }
 
@@ -3227,7 +3831,7 @@ public class MainWindow
                 referenceList.setSelectedIndex(0);
             }
         } else {
-            referenceDetailsPane.setText(REFERENCE_NO_MATCHES_HTML);
+            setReferenceDetailsHtml(REFERENCE_NO_MATCHES_HTML);
             referenceInsertButton.setEnabled(false);
         }
     }
@@ -3235,13 +3839,22 @@ public class MainWindow
     private void updateReferenceSelectionDetails() {
         ReferenceItem item = referenceList.getSelectedValue();
         if (item == null) {
-            referenceDetailsPane.setText(REFERENCE_SELECT_PROMPT_HTML);
+            setReferenceDetailsHtml(REFERENCE_SELECT_PROMPT_HTML);
             referenceInsertButton.setEnabled(false);
             return;
         }
-        referenceDetailsPane.setText(item.details);
-        referenceDetailsPane.setCaretPosition(0);
+        setReferenceDetailsHtml(item.details);
         referenceInsertButton.setEnabled(true);
+    }
+
+    private void setReferenceDetailsHtml(String html) {
+        String next = html == null ? REFERENCE_SELECT_PROMPT_HTML : html;
+        if (Objects.equals(referenceDetailsHtml, next)) {
+            return;
+        }
+        referenceDetailsHtml = next;
+        referenceDetailsPane.setText(next);
+        referenceDetailsPane.setCaretPosition(0);
     }
 
     private void insertSelectedReference() {
@@ -3325,6 +3938,124 @@ public class MainWindow
         return input.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
+    private int findOpenTabIndexByPath(String absolutePath) {
+        if (absolutePath == null || absolutePath.isBlank()) {
+            return -1;
+        }
+        for (int i = 0; i < fileViewers.size(); i++) {
+            FileViewerWrapper wrapper = fileViewers.get(i);
+            if (wrapper == null || wrapper.getFilePath() == null) {
+                continue;
+            }
+            if (absolutePath.equals(wrapper.getFilePath())) {
+                return i;
+            }
+        }
+        return fileManager.getTabIndex(absolutePath);
+    }
+
+    private void setWorkspaceDirectory(File folder) {
+        if (folder == null) {
+            return;
+        }
+        File absoluteFolder = folder.getAbsoluteFile();
+        if (!absoluteFolder.exists() || !absoluteFolder.isDirectory()) {
+            JOptionPane.showMessageDialog(frame, "Folder not found: " + absoluteFolder.getAbsolutePath());
+            return;
+        }
+        fileManager.setCurrentDirectory(absoluteFolder.getAbsolutePath());
+        registerWorkspace(absoluteFolder);
+        refreshSidebarContent();
+    }
+
+    private void registerWorkspace(File folder) {
+        if (folder == null) {
+            return;
+        }
+        File absolute = folder.getAbsoluteFile();
+        if (!absolute.exists() || !absolute.isDirectory()) {
+            return;
+        }
+        recentWorkspaces.removeIf(existing -> existing == null
+                || !existing.exists()
+                || existing.getAbsoluteFile().equals(absolute));
+        recentWorkspaces.add(0, absolute);
+        while (recentWorkspaces.size() > MAX_RECENT_WORKSPACES) {
+            recentWorkspaces.remove(recentWorkspaces.size() - 1);
+        }
+        saveRecentWorkspaces();
+        setRecentItems(basicEditor.getRecentFiles());
+        refreshEmptyStateRecentItems();
+    }
+
+    private void loadRecentWorkspaces() {
+        recentWorkspaces.clear();
+        File config = new File(applicationStoragePath, RECENT_WORKSPACES_FILE);
+        if (!config.exists()) {
+            return;
+        }
+        Properties properties = new Properties();
+        try (FileInputStream stream = new FileInputStream(config)) {
+            properties.load(stream);
+            String csv = properties.getProperty(RECENT_WORKSPACES_KEY, "");
+            for (String entry : csv.split(",")) {
+                if (entry == null || entry.isBlank()) {
+                    continue;
+                }
+                File folder = new File(entry.trim()).getAbsoluteFile();
+                if (folder.exists() && folder.isDirectory()) {
+                    recentWorkspaces.add(folder);
+                }
+                if (recentWorkspaces.size() >= MAX_RECENT_WORKSPACES) {
+                    break;
+                }
+            }
+        } catch (IOException ignored) {
+            // Ignore workspace history load errors to avoid interrupting startup.
+        }
+    }
+
+    private void saveRecentWorkspaces() {
+        File config = new File(applicationStoragePath, RECENT_WORKSPACES_FILE);
+        Properties properties = new Properties();
+        String csv = recentWorkspaces.stream()
+                .filter(Objects::nonNull)
+                .map(File::getAbsolutePath)
+                .distinct()
+                .limit(MAX_RECENT_WORKSPACES)
+                .reduce((a, b) -> a + "," + b)
+                .orElse("");
+        properties.setProperty(RECENT_WORKSPACES_KEY, csv);
+        try {
+            File parent = config.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+            try (FileOutputStream out = new FileOutputStream(config)) {
+                properties.store(out, "Recent workspaces");
+            }
+        } catch (IOException ignored) {
+            // Ignore workspace history save errors.
+        }
+    }
+
+    private void refreshEmptyStateRecentItems() {
+        if (!(emptyTabPanel instanceof EmptyTabPanel) || basicEditor == null) {
+            return;
+        }
+        if (basicEditor.getMode() != ApMode.AP_CLOSED) {
+            return;
+        }
+        emptyTabPanel = new EmptyTabPanel(
+                this,
+                newMenuItem.getAccelerator(),
+                openMenuItem.getAccelerator(),
+                openFolderMenuItem.getAccelerator(),
+                basicEditor.getRecentFiles(),
+                recentWorkspaces);
+        mainPane.setTopComponent(emptyTabPanel);
+    }
+
     private void setClosingTabsEnabled(boolean enabled) {
         tabControl.putClientProperty(TABBED_PANE_TAB_CLOSABLE, enabled);
         // TODO get main file index
@@ -3372,7 +4103,17 @@ public class MainWindow
 
     @Override
     public void onOpenClick(File file) {
-        actionOpen(file);
+        openFileWithPreferredViewer(file);
+    }
+
+    @Override
+    public void onOpenFolderClick() {
+        actionOpenFolder();
+    }
+
+    @Override
+    public void onOpenWorkspaceClick(File folder) {
+        setWorkspaceDirectory(folder);
     }
 
     @Override

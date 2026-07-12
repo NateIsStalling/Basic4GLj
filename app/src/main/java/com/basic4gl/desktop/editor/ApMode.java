@@ -1,4 +1,4 @@
-package com.basic4gl.desktop;
+package com.basic4gl.desktop.editor;
 
 enum ApMode {
     AP_CLOSED,

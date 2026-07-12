@@ -43,14 +43,15 @@ public class FileEditor implements SearchListener {
     private final ReplaceToolBar replaceToolBar;
     private final CollapsibleSectionPanel csp;
     private final RMultiHeaderScrollPane scrollPane;
-    private final RSyntaxTextArea editorPane;
 
     // private Map<Integer, Object> lineHighlights; //Highlight lines with breakpoints
 
-    private String fileName; // Filename without path
-    private String filePath; // Full path including name
-    private boolean isModified;
-    private boolean isSaved; // File exists on system
+    // Package-protected to allow TextFileViewer access
+    protected final RSyntaxTextArea editorPane;
+    protected String fileName; // Filename without path
+    protected String filePath; // Full path including name
+    protected boolean isModified;
+    protected boolean isSaved; // File exists on system
 
     public FileEditor(
             IFileEditorActionListener actionListener,

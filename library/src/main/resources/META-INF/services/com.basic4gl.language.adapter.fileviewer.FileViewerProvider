@@ -1,0 +1,4 @@
+com.basic4gl.language.adapter.content.DefaultImageViewerProvider
+com.basic4gl.language.adapter.content.DefaultAudioViewerProvider
+com.basic4gl.language.adapter.content.SimpleTextViewerProvider
+

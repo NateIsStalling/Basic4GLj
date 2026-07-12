@@ -1,8 +1,10 @@
-package com.basic4gl.desktop;
+package com.basic4gl.desktop.editor;
 
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
+import com.basic4gl.desktop.ApMode;
+
 import java.io.File;
 import java.util.List;
 
