@@ -2594,11 +2594,6 @@ public class MainWindow
             rootNode.add(literalNode);
         }
 
-        DefaultMutableTreeNode librariesNode = buildLibraryResourcesNode(rootDir);
-        if (librariesNode != null) {
-            rootNode.add(librariesNode);
-        }
-
         assetsTree.setModel(new DefaultTreeModel(rootNode));
         for (int i = 0; i < Math.min(4, assetsTree.getRowCount()); i++) {
             assetsTree.expandRow(i);
@@ -2632,40 +2627,6 @@ public class MainWindow
         return section;
     }
 
-    private DefaultMutableTreeNode buildLibraryResourcesNode(File baseDir) {
-        if (basicEditor == null || basicEditor.getLibraries() == null || basicEditor.getLibraries().isEmpty()) {
-            return null;
-        }
-
-        DefaultMutableTreeNode librariesNode = new DefaultMutableTreeNode(
-                new AssetItem("Libraries", "Bookmarked libraries and their resource files", null, createImageIcon(ICON_MENU_FUNCTIONS)));
-        for (Library library : basicEditor.getLibraries()) {
-            if (library == null) {
-                continue;
-            }
-            DefaultMutableTreeNode libNode = new DefaultMutableTreeNode(
-                    new AssetItem(
-                            library.name() == null || library.name().isBlank() ? "(unnamed library)" : library.name(),
-                            library.description(),
-                            null,
-                            createImageIcon(ICON_MENU_BOOKMARKS)));
-
-            java.util.List<File> libraryFiles = new ArrayList<>();
-            collectResolvedLibraryAssets(library.getDependencies(), baseDir, libraryFiles);
-            collectResolvedLibraryAssets(library.getClassPathObjects(), baseDir, libraryFiles);
-            libraryFiles.sort(Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
-            for (File file : libraryFiles) {
-                libNode.add(new DefaultMutableTreeNode(createAssetItem(file, baseDir, "Library resource")));
-            }
-
-            if (libNode.getChildCount() == 0) {
-                libNode.add(new DefaultMutableTreeNode(
-                        new AssetItem("No local resources", "Library has no resolvable resource files in the workspace", null, createImageIcon(ICON_MENU_HELP))));
-            }
-            librariesNode.add(libNode);
-        }
-        return librariesNode;
-    }
 
     private void collectResolvedLibraryAssets(java.util.List<String> paths, File baseDir, java.util.List<File> out) {
         if (paths == null || paths.isEmpty()) {
@@ -2774,7 +2735,7 @@ public class MainWindow
         if (literal == null || literal.isBlank()) {
             return null;
         }
-        String normalized = com.basic4gl.lib.util.FileUtil.separatorsToSystem(literal);
+        String normalized = FileUtil.separatorsToSystem(literal);
         File candidate = new File(normalized);
         if (candidate.isAbsolute()) {
             return candidate;
