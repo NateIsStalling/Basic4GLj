@@ -6,6 +6,8 @@ import com.basic4gl.desktop.debugger.IDebugPresenter;
 import com.basic4gl.desktop.editor.ApMode;
 import com.basic4gl.desktop.spi.EditorPlugin;
 import com.basic4gl.desktop.spi.PluginContext;
+import com.basic4gl.desktop.util.RoundedCardPanel;
+import com.basic4gl.desktop.util.SwingUtil;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -24,6 +26,7 @@ import static com.basic4gl.desktop.Theme.ICON_STEP_OUT;
 import static com.basic4gl.desktop.Theme.ICON_STEP_OVER;
 import static com.basic4gl.desktop.Theme.ICON_MENU_DEBUG;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
 
 public class DebugPanelProvider implements IEditorPanelProvider, IDebugPresenter {
 
@@ -70,10 +73,21 @@ public class DebugPanelProvider implements IEditorPanelProvider, IDebugPresenter
     public JPanel build(PluginContext context) {
         this.context = context;
 
+        JPanel panelCardHost = new JPanel(new CardLayout());
         JPanel panel = new JPanel(new BorderLayout());
+        Color panelBackground = createLighterPanelBackground();
+        panel.setBackground(panelBackground);
+
+        JLabel title = new JLabel("Debug");
+        Font baseFont = title.getFont();
+        title.setFont(new Font(baseFont.getName(), Font.BOLD, baseFont.getSize() + 2));
+        title.setForeground(new Color(0x424242));
+        title.setBorder(new EmptyBorder(0, 6, 0, 6));
 
         JToolBar debugToolBar = new JToolBar();
         debugToolBar.setFloatable(false);
+        debugToolBar.setOpaque(false);
+        debugToolBar.add(title);
         debugToolBar.add(playButton);
         debugToolBar.add(stepOverButton);
         debugToolBar.add(stepInButton);
@@ -90,15 +104,24 @@ public class DebugPanelProvider implements IEditorPanelProvider, IDebugPresenter
         stepOutButton.addActionListener(e -> context.debugger().actionStepOutOf());
 
         panel.add(debugToolBar, BorderLayout.NORTH);
-        panel.add(buildDebugPanel(), BorderLayout.CENTER);
-        return panel;
+        panel.add(buildDebugPanel(panelBackground), BorderLayout.CENTER);
+        panelCardHost.add(createRoundedCardHost(panel, panelBackground, "debug-main"), "main");
+        ((CardLayout) panelCardHost.getLayout()).show(panelCardHost, "main");
+        return panelCardHost;
     }
 
-    private JPanel buildDebugPanel() {
+    private JPanel buildDebugPanel(Color panelBackground) {
         // Debugger
         JPanel watchListFrame = new JPanel();
         watchListFrame.setLayout(new BorderLayout());
+        watchListFrame.setBackground(panelBackground);
         JLabel watchlistLabel = new JLabel("Watchlist");
+
+        Font font = watchlistLabel.getFont();
+        watchlistLabel.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
+        watchlistLabel.setForeground(new Color(0x000000));
+        watchlistLabel.setBorder(new EmptyBorder(0, 8, 0, 8));
+
         watchlistLabel.setBorder(new EmptyBorder(4, 8, 4, 8));
         watchListFrame.add(watchlistLabel, BorderLayout.NORTH);
         JScrollPane watchListScrollPane = new JScrollPane(watchListBox);
@@ -141,21 +164,59 @@ public class DebugPanelProvider implements IEditorPanelProvider, IDebugPresenter
 
         JPanel gosubFrame = new JPanel();
         gosubFrame.setLayout(new BorderLayout());
+        gosubFrame.setBackground(panelBackground);
         JLabel callstackLabel = new JLabel("Callstack");
+
+        font = callstackLabel.getFont();
+        callstackLabel.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
+        callstackLabel.setForeground(new Color(0x000000));
+        callstackLabel.setBorder(new EmptyBorder(0, 8, 0, 8));
+
         callstackLabel.setBorder(new EmptyBorder(4, 8, 4, 8));
+
         gosubFrame.add(callstackLabel, BorderLayout.NORTH);
         JList<String> gosubListBox = new JList<>(gosubListModel);
         JScrollPane gosubListScrollPane = new JScrollPane(gosubListBox);
         gosubFrame.add(gosubListScrollPane, BorderLayout.CENTER);
 
+        hideSplitPaneHandle(debugPane);
+
+        debugPane.setBackground(panelBackground);
         debugPane.setLeftComponent(watchListFrame);
         debugPane.setRightComponent(gosubFrame);
 
         JPanel debugPanel = new JPanel();
         debugPanel.setLayout(new BorderLayout());
+        debugPanel.setBackground(panelBackground);
         debugPanel.add(debugPane, BorderLayout.CENTER);
 
         return debugPanel;
+    }
+
+    private Color createLighterPanelBackground() {
+        Color base = UIManager.getColor("Panel.background");
+        if (base == null) {
+            base = new Color(238, 238, 238);
+        }
+        return new Color(
+                Math.min(255, base.getRed() + 8),
+                Math.min(255, base.getGreen() + 8),
+                Math.min(255, base.getBlue() + 8));
+    }
+
+    private JComponent createRoundedCardHost(JComponent content, Color panelBackground, String key) {
+        Color cardBackground = SwingUtil.createLighterPanelBackground();
+        JPanel card = new RoundedCardPanel();
+        card.setLayout(new BorderLayout());
+        card.setBackground(cardBackground);
+        card.setBorder(new EmptyBorder(4, 4, 4, 4));
+        card.add(content, BorderLayout.CENTER);
+
+        JPanel host = new JPanel(new CardLayout());
+        host.setOpaque(false);
+        host.add(card, key);
+        ((CardLayout) host.getLayout()).show(host, key);
+        return host;
     }
 
     @Override

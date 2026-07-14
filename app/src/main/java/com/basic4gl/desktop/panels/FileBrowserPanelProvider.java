@@ -3,9 +3,13 @@ package com.basic4gl.desktop.panels;
 import com.basic4gl.desktop.spi.EditorPlugin;
 import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.util.FileUtil;
+import com.basic4gl.desktop.util.RoundedCardPanel;
+import com.basic4gl.desktop.util.SwingUtil;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -20,18 +24,23 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
 
+import static com.basic4gl.desktop.Theme.ICON_DOTS_VERTICAL;
 import static com.basic4gl.desktop.Theme.ICON_MENU_FOLDER;
-import static com.basic4gl.desktop.Theme.ICON_MENU_HELP;
+import static com.basic4gl.desktop.Theme.ICON_REFRESH;
+import static com.basic4gl.desktop.Theme.ICON_SEARCH;
+import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
 import static com.basic4gl.desktop.util.SwingUtil.configureSmoothScrolling;
+import static com.basic4gl.desktop.util.SwingUtil.createLighterPanelBackground;
 
 public class FileBrowserPanelProvider implements IEditorPanelProvider {
 
     private PluginContext context;
 
     private final JTree fileBrowserTree = new JTree();
+    private final JTextField fileSearchField = new JTextField();
     private final FileSystemView fileSystemView = FileSystemView.getFileSystemView();
     private boolean showHiddenFiles = false;
-
+    private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
 
     @Override
     public String id() {
@@ -56,31 +65,82 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
     @Override
     public JPanel build(PluginContext context) {
         this.context = context;
+        JPanel panelCardHost = new JPanel(new CardLayout());
         JPanel panel = new JPanel(new BorderLayout(0, 6));
-        JPanel header = new JPanel(new BorderLayout());
-        JPanel headerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        JLabel title = new JLabel("Workspace Browser");
-        title.setBorder(new EmptyBorder(4, 8, 0, 8));
-        JButton openFolder = new JButton("Open Folder");
-        openFolder.setFocusable(false);
-        openFolder.addActionListener(e -> context.commands().actionOpenFolder());
-        JButton refresh = new JButton("Refresh");
-        refresh.setFocusable(false);
+        Color panelBackground = createLighterPanelBackground();
+        panel.setBackground(panelBackground);
+        panel.setOpaque(true);
+        JPanel header = new JPanel();
+        header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
+        header.setBackground(panelBackground);
+        header.setOpaque(true);
+        JLabel title = new JLabel("Workspace");
+        Font baseFont = title.getFont();
+        title.setFont(new Font(baseFont.getName(), Font.BOLD, baseFont.getSize() + 2));
+        title.setForeground(new Color(0x424242));
+        title.setBorder(new EmptyBorder(0, 8, 0, 8));
+        JButton refresh = createHeaderIconButton(ICON_REFRESH, "Refresh Workspace");
         refresh.addActionListener(e -> refresh(context.currentEditor()));
-        JToggleButton showHiddenToggle = new JToggleButton("Show Hidden");
-        showHiddenToggle.setFocusable(false);
-        showHiddenToggle.setSelected(showHiddenFiles);
-        showHiddenToggle.addActionListener(e -> {
-            showHiddenFiles = showHiddenToggle.isSelected();
+        JToggleButton searchToggle = createHeaderSearchToggleButton();
+
+        JPopupMenu overflowMenu = new JPopupMenu();
+        JMenuItem openFolderItem = new JMenuItem("Open Folder");
+        openFolderItem.addActionListener(e -> context.commands().actionOpenFolder());
+        overflowMenu.add(openFolderItem);
+
+        JCheckBoxMenuItem showHiddenItem = new JCheckBoxMenuItem("Show Hidden Files", showHiddenFiles);
+        showHiddenItem.addActionListener(e -> {
+            showHiddenFiles = showHiddenItem.isSelected();
             refresh(context.currentEditor());
         });
-        headerButtons.add(showHiddenToggle);
-        headerButtons.add(openFolder);
-        headerButtons.add(refresh);
-        header.add(title, BorderLayout.WEST);
-        header.add(headerButtons, BorderLayout.EAST);
+        overflowMenu.add(showHiddenItem);
+
+        JButton overflowButton = createHeaderIconButton(ICON_DOTS_VERTICAL, "More Actions");
+        overflowButton.addActionListener(e -> {
+            showHiddenItem.setSelected(showHiddenFiles);
+            overflowMenu.show(overflowButton, 0, overflowButton.getHeight());
+        });
+
+        header.add(title);
+        header.add(Box.createHorizontalGlue());
+        header.add(searchToggle);
+        header.add(refresh);
+        header.add(overflowButton);
         panel.add(header, BorderLayout.NORTH);
 
+        JPanel searchBar = new JPanel(new BorderLayout(6, 0));
+        searchBar.setBackground(panelBackground);
+        searchBar.setBorder(new EmptyBorder(0, 8, 0, 8));
+        fileSearchField.setToolTipText("Search workspace files");
+        searchBar.add(fileSearchField, BorderLayout.CENTER);
+        searchBar.setVisible(false);
+        fileSearchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                refresh(context.currentEditor());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                refresh(context.currentEditor());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                refresh(context.currentEditor());
+            }
+        });
+        searchToggle.addActionListener(e -> {
+            boolean visible = searchToggle.isSelected();
+            searchBar.setVisible(visible);
+            if (visible) {
+                fileSearchField.requestFocusInWindow();
+            }
+            panel.revalidate();
+            panel.repaint();
+        });
+
+        fileBrowserTree.setBackground(panelBackground);
         fileBrowserTree.setRootVisible(true);
         fileBrowserTree.setShowsRootHandles(true);
         fileBrowserTree.setRowHeight(22);
@@ -144,9 +204,62 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
             }
         });
         JScrollPane scrollPane = new JScrollPane(fileBrowserTree);
+        scrollPane.setBorder(null);
+        scrollPane.setBackground(panelBackground);
+
         configureSmoothScrolling(scrollPane);
-        panel.add(scrollPane, BorderLayout.CENTER);
-        return panel;
+        JPanel content = new JPanel(new BorderLayout(0, 6));
+        content.setBackground(panelBackground);
+        content.add(searchBar, BorderLayout.NORTH);
+        content.add(scrollPane, BorderLayout.CENTER);
+        panel.add(content, BorderLayout.CENTER);
+        panelCardHost.add(createRoundedCardHost(panel, panelBackground, "workspace-main"), "main");
+        ((CardLayout) panelCardHost.getLayout()).show(panelCardHost, "main");
+        return panelCardHost;
+    }
+
+    private JButton createHeaderIconButton(String iconPath, String tooltip) {
+        JButton button = new JButton(createScaledIcon(iconPath, 18));
+        button.setToolTipText(tooltip);
+        button.setFocusable(false);
+        button.putClientProperty("JButton.buttonType", "toolBarButton");
+        button.setOpaque(false);
+        button.setMargin(new Insets(6, 6, 6, 6));
+        button.setPreferredSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMinimumSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMaximumSize(HEADER_ICON_BUTTON_SIZE);
+        return button;
+    }
+
+    private JToggleButton createHeaderSearchToggleButton() {
+        JToggleButton button = new JToggleButton(createScaledIcon(ICON_SEARCH, 18));
+        button.setToolTipText("Show search");
+        button.setFocusable(false);
+        button.putClientProperty("JButton.buttonType", "toolBarButton");
+        button.setOpaque(false);
+        button.setMargin(new Insets(6, 6, 6, 6));
+        button.setPreferredSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMinimumSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMaximumSize(HEADER_ICON_BUTTON_SIZE);
+        return button;
+    }
+
+
+
+    private JComponent createRoundedCardHost(JComponent content, Color panelBackground, String key) {
+        Color cardBackground = createLighterPanelBackground();
+        JPanel card = new RoundedCardPanel();
+        card.setLayout(new BorderLayout());
+        card.setBackground(cardBackground);
+        card.setBorder(new EmptyBorder(4, 4, 4, 4));
+        card.add(content, BorderLayout.CENTER);
+
+        JPanel host = new JPanel(new CardLayout());
+        host.setBackground(panelBackground);
+        host.setOpaque(false);
+        host.add(card, key);
+        ((CardLayout) host.getLayout()).show(host, key);
+        return host;
     }
 
     private void maybeShowWorkspaceBrowserPopup(MouseEvent e) {
@@ -208,7 +321,13 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
             return;
         }
         File root = new File(context.currentDirectory());
-        DefaultMutableTreeNode rootNode = buildFileTreeNode(root, 0);
+        String searchNeedle = fileSearchField.getText() == null
+                ? ""
+                : fileSearchField.getText().trim().toLowerCase(Locale.ROOT);
+        DefaultMutableTreeNode rootNode = buildFileTreeNode(root, 0, searchNeedle);
+        if (rootNode == null) {
+            rootNode = new DefaultMutableTreeNode(root);
+        }
         fileBrowserTree.setModel(new DefaultTreeModel(rootNode));
         if (fileBrowserTree.getRowCount() > 0) {
             fileBrowserTree.expandRow(0);
@@ -230,23 +349,30 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
 
     }
 
-    private DefaultMutableTreeNode buildFileTreeNode(File file, int depth) {
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode(file);
+    private DefaultMutableTreeNode buildFileTreeNode(File file, int depth, String searchNeedle) {
+        boolean hasSearch = searchNeedle != null && !searchNeedle.isBlank();
+        boolean nameMatches = !hasSearch || file.getName().toLowerCase(Locale.ROOT).contains(searchNeedle);
+        boolean pathMatches = !hasSearch || file.getAbsolutePath().toLowerCase(Locale.ROOT).contains(searchNeedle);
+        boolean matches = nameMatches || pathMatches;
         if (!file.isDirectory()) {
-            return node;
+            return matches ? new DefaultMutableTreeNode(file) : null;
         }
 
+        DefaultMutableTreeNode node = new DefaultMutableTreeNode(file);
         File[] children = file.listFiles();
         if (children == null) {
-            return node;
+            return (depth == 0 || matches) ? node : null;
         }
         Arrays.sort(children, Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER));
         for (File child : children) {
             if (!showHiddenFiles && child.getName().startsWith(".")) {
                 continue;
             }
-            node.add(buildFileTreeNode(child, depth + 1));
+            DefaultMutableTreeNode childNode = buildFileTreeNode(child, depth + 1, searchNeedle);
+            if (childNode != null) {
+                node.add(childNode);
+            }
         }
-        return node;
+        return (depth == 0 || matches || node.getChildCount() > 0) ? node : null;
     }
 }

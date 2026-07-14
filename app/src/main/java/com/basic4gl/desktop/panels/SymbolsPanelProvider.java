@@ -8,11 +8,16 @@ import com.basic4gl.desktop.spi.language.FunctionDefinition;
 import com.basic4gl.desktop.spi.language.IndexedSymbol;
 import com.basic4gl.desktop.spi.language.LabelDefinition;
 import com.basic4gl.desktop.spi.language.VariableDefinition;
+import com.basic4gl.desktop.util.RoundedCardPanel;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
@@ -25,6 +30,9 @@ import static com.basic4gl.desktop.Theme.ICON_MENU_HELP;
 import static com.basic4gl.desktop.Theme.ICON_STRUCT;
 import static com.basic4gl.desktop.util.HtmlUtil.escapeHtml;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
+import static com.basic4gl.desktop.util.SwingUtil.createLighterPanelBackground;
+import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
 import static com.formdev.flatlaf.FlatClientProperties.TABBED_PANE_TAB_CLOSABLE;
 import static com.formdev.flatlaf.FlatClientProperties.TABBED_PANE_TAB_CLOSE_CALLBACK;
 
@@ -36,9 +44,12 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             "<html><body style='font-family:sans-serif;padding:6px;'>Select an entry.</body></html>";
     private String referenceDetailsHtml = REFERENCE_SELECT_PROMPT_HTML;
     private final JComboBox<String> referenceLibraryFilter = new JComboBox<>(new String[] {"All libraries"});
-    private final JButton referenceFiltersButton = new JButton("Filters");
+    private final JButton referenceFiltersButton = new JButton("All Symbols");
     private final JPopupMenu referenceFiltersPopup = new JPopupMenu();
+    private final JLabel referenceSelectionNameLabel = new JLabel("Select an entry.");
+    private String referenceSelectionName = "Select an entry.";
     private final JTextPane referenceDetailsPane = new JTextPane();
+    private final JButton referenceCopyButton = new JButton("Copy");
     private final JButton referenceInsertButton = new JButton("Insert");
     private final javax.swing.Timer referenceFilterDebounceTimer =
             new javax.swing.Timer(120, e -> filterReferenceItems());
@@ -49,9 +60,11 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
     private final JList<ReferenceItem> referenceList = new JList<>(referenceListModel);
     private final JTextField referenceSearchField = new JTextField();
     private final JComboBox<String> referenceKindFilter =
-            new JComboBox<>(new String[] {"All", "Functions", "Constants", "Labels", "Variables", "Structs"});
+            new JComboBox<>(new String[] {"All Symbols", "Functions", "Constants", "Labels", "Variables", "Structs"});
     private final JComboBox<String> referenceSourceFilter =
-            new JComboBox<>(new String[] {"All sources", "Builtin", "Libraries", "Program"});
+            new JComboBox<>(new String[] {"All Sources", "Builtin", "Libraries", "Program"});
+    private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
+    private static final int CARD_ARC = 14;
 
 
     private int lastProgramSymbolsFingerprint = Integer.MIN_VALUE;
@@ -117,19 +130,41 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
 
         symbolIndexer =
                 new SymbolIndexer(context.currentEditor().getLanguageSupport(), context.commands()::collectAllSourceText, this::updateProgramSymbols);
+        JPanel panelCardHost = new JPanel(new CardLayout());
         JPanel lookupPanel = new JPanel(new BorderLayout(6, 6));
-        JPanel lookupHeader = new JPanel(new BorderLayout(6, 6));
+        Color panelBackground = createLighterPanelBackground();
+        lookupPanel.setBackground(panelBackground);
+        JPanel lookupHeader = new JPanel();
+        lookupHeader.setBackground(panelBackground);
+        lookupHeader.setLayout(new BoxLayout(lookupHeader, BoxLayout.X_AXIS));
 
-        JPanel leftHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         referenceFiltersButton.setFocusable(false);
+        referenceFiltersButton.setIcon(createScaledIcon(ICON_CHEVRON_DOWN, 18));
+        referenceFiltersButton.setHorizontalTextPosition(SwingConstants.LEFT);
+        referenceFiltersButton.setIconTextGap(6);
+        referenceFiltersButton.putClientProperty("JButton.buttonType", "toolBarButton");
+        referenceFiltersButton.setOpaque(false);
+        referenceFiltersButton.setMargin(new Insets(5, 8, 5, 8));
+        Font baseFont = referenceFiltersButton.getFont();
+        referenceFiltersButton.setFont(new Font(baseFont.getName(), Font.BOLD, baseFont.getSize() + 2));
+        referenceFiltersButton.setForeground(new Color(0x5B717F));
         referenceFiltersButton.setToolTipText("Open reference filters");
-        leftHeader.add(referenceFiltersButton);
-        lookupHeader.add(leftHeader, BorderLayout.WEST);
+        lookupHeader.add(referenceFiltersButton);
+        lookupHeader.add(Box.createHorizontalGlue());
+        JToggleButton searchToggle = createHeaderSearchToggleButton();
+        lookupHeader.add(searchToggle);
 
-        lookupHeader.add(referenceSearchField, BorderLayout.CENTER);
+        referenceCopyButton.setFocusable(false);
+        referenceCopyButton.setMargin(new Insets(4, 4, 4, 4));
+        Font actionButtonFont = referenceCopyButton.getFont();
+        referenceCopyButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD, actionButtonFont.getSize()));
+        referenceCopyButton.setForeground(new Color(0x5B717F));
+        referenceCopyButton.setEnabled(false);
         referenceInsertButton.setFocusable(false);
+        referenceInsertButton.setMargin(new Insets(4, 4, 4, 4));
+        referenceInsertButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD, actionButtonFont.getSize()));
+        referenceInsertButton.setForeground(new Color(0x5B717F));
         referenceInsertButton.setEnabled(false);
-        lookupHeader.add(referenceInsertButton, BorderLayout.EAST);
 
         referenceSearchField.setToolTipText("Search by name, signature, or library");
         referenceKindFilter.setToolTipText("Filter by kind");
@@ -140,6 +175,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
 
         referenceFilterDebounceTimer.setRepeats(false);
 
+        referenceList.setBackground(panelBackground);
         referenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         referenceList.setFixedCellHeight(20);
         referenceList.setPrototypeCellValue(
@@ -174,14 +210,72 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
 
         referenceDetailsPane.setEditable(false);
         referenceDetailsPane.setContentType("text/html");
+        referenceDetailsPane.setBorder(null);
+        referenceDetailsPane.setBackground(panelBackground);
         setReferenceDetailsHtml(REFERENCE_SELECT_PROMPT_HTML);
+        Font nameFont = referenceSelectionNameLabel.getFont();
+        referenceSelectionNameLabel.setFont(new Font(nameFont.getName(), Font.BOLD, nameFont.getSize()));
+        referenceSelectionNameLabel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                updateReferenceSelectionNameLabel();
+            }
+        });
+        setReferenceSelectionName("Select an entry.");
 
         JSplitPane lookupSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         lookupSplit.setResizeWeight(0.65);
-        lookupSplit.setTopComponent(new JScrollPane(referenceList));
-        lookupSplit.setBottomComponent(new JScrollPane(referenceDetailsPane));
+        hideSplitPaneHandle(lookupSplit);
+        lookupSplit.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
+        lookupSplit.putClientProperty("JSplitPane.style", "plain");
+        JScrollPane listScrollPane = new JScrollPane(referenceList);
+        listScrollPane.setBorder(null);
+        JPanel detailsPanel = new JPanel(new BorderLayout(0, 0));
+        JToolBar detailsHeader = new JToolBar();
+        detailsHeader.setFloatable(false);
+        detailsHeader.setRollover(true);
+        detailsHeader.setBackground(panelBackground);
+        detailsHeader.setOpaque(true);
+        detailsHeader.setBorder(new EmptyBorder(6, 8, 4, 8));
+        JPanel detailsTitleHost = new JPanel(new BorderLayout());
+        detailsTitleHost.setOpaque(false);
+        detailsTitleHost.add(referenceSelectionNameLabel, BorderLayout.CENTER);
+        detailsTitleHost.setMaximumSize(new Dimension(Integer.MAX_VALUE, referenceSelectionNameLabel.getPreferredSize().height + 4));
+        detailsHeader.add(detailsTitleHost);
+        detailsHeader.add(Box.createHorizontalGlue());
+        detailsHeader.add(referenceCopyButton);
+        detailsHeader.add(referenceInsertButton);
+        detailsPanel.add(detailsHeader, BorderLayout.NORTH);
+        detailsPanel.add(referenceDetailsPane, BorderLayout.CENTER);
+        JScrollPane detailsScrollPane = new JScrollPane(detailsPanel);
+        detailsScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        detailsScrollPane.setBorder(null);
+        lookupSplit.setBottomComponent(createRoundedCardHost(detailsScrollPane, panelBackground, "symbols-details"));
 
-        lookupPanel.add(lookupHeader, BorderLayout.NORTH);
+        JPanel searchBar = new JPanel(new BorderLayout(6, 0));
+        searchBar.setBackground(panelBackground);
+        searchBar.setBorder(new EmptyBorder(0, 8, 0, 8));
+        searchBar.add(referenceSearchField, BorderLayout.CENTER);
+        searchBar.setVisible(false);
+        searchToggle.addActionListener(e -> {
+            boolean visible = searchToggle.isSelected();
+            searchBar.setVisible(visible);
+            if (visible) {
+                referenceSearchField.requestFocusInWindow();
+            }
+            lookupPanel.revalidate();
+            lookupPanel.repaint();
+        });
+        JPanel symbolsListPanel = new JPanel(new BorderLayout(0, 6));
+        symbolsListPanel.setBackground(panelBackground);
+        JPanel symbolsListHeader = new JPanel(new BorderLayout(0, 6));
+        symbolsListHeader.setOpaque(false);
+        symbolsListHeader.add(lookupHeader, BorderLayout.NORTH);
+        symbolsListHeader.add(searchBar, BorderLayout.SOUTH);
+        symbolsListPanel.add(symbolsListHeader, BorderLayout.NORTH);
+        symbolsListPanel.add(listScrollPane, BorderLayout.CENTER);
+        lookupSplit.setTopComponent(createRoundedCardHost(symbolsListPanel, panelBackground, "symbols-list"));
+
         lookupPanel.add(lookupSplit, BorderLayout.CENTER);
 
         referenceSearchField.getDocument().addDocumentListener(new DocumentListener() {
@@ -236,10 +330,49 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             }
         });
         referenceInsertButton.addActionListener(e -> insertSelectedReference());
+        referenceCopyButton.addActionListener(e -> copySelectedSymbolName());
         updateReferenceFiltersButtonTooltip();
 
-        return lookupPanel;
+        panelCardHost.add(lookupPanel, "main");
+        ((CardLayout) panelCardHost.getLayout()).show(panelCardHost, "main");
+        return panelCardHost;
     }
+
+    private JToggleButton createHeaderSearchToggleButton() {
+        JToggleButton button = new JToggleButton(createScaledIcon(ICON_SEARCH, 18));
+        button.setToolTipText("Show search");
+        button.setFocusable(false);
+        button.putClientProperty("JButton.buttonType", "toolBarButton");
+        button.setOpaque(false);
+        button.setMargin(new Insets(6, 6, 6, 6));
+        button.setPreferredSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMinimumSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMaximumSize(HEADER_ICON_BUTTON_SIZE);
+        return button;
+    }
+
+
+    private JComponent createRoundedCardHost(JComponent content, Color panelBackground, String key) {
+        Color cardBackground = createLighterPanelBackground();
+//                new Color(
+//                Math.min(255, panelBackground.getRed() + 10),
+//                Math.min(255, panelBackground.getGreen() + 10),
+//                Math.min(255, panelBackground.getBlue() + 10));
+        JPanel card = new RoundedCardPanel();
+        card.setLayout(new BorderLayout());
+        card.setBackground(cardBackground);
+        card.setBorder(new EmptyBorder(4, 4, 4, 4));
+        card.add(content, BorderLayout.CENTER);
+
+        JPanel host = new JPanel(new CardLayout());
+        host.setOpaque(false);
+        host.add(card, key);
+        ((CardLayout) host.getLayout()).show(host, key);
+        return host;
+    }
+
+
+
 
     @Override
     public void refresh(EditorPlugin languageProvider) {
@@ -295,7 +428,6 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             switch (sym.kind()) {
                 case "userfunc" -> {
                     details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
                             + "<p style='margin:0 0 4px 0;'><b>Type:</b> User Function"
                             + "<br/><b>Source:</b> Program</p>"
                             + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
@@ -305,7 +437,6 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
                 }
                 case "label" -> {
                     details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
                             + "<p style='margin:0 0 4px 0;'><b>Type:</b> Label"
                             + "<br/><b>Usage:</b> <code>gosub " + escapeHtml(sym.name()) + "</code>"
                             + " / <code>goto " + escapeHtml(sym.name()) + "</code></p>"
@@ -315,7 +446,6 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
                 }
                 case "struc" -> {
                     details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
                             + "<p style='margin:0 0 4px 0;'><b>Type:</b> Struct"
                             + "<br/><b>Source:</b> Program</p>"
                             + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
@@ -325,7 +455,6 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
                 }
                 default -> { // "variable"
                     details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                            + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(sym.name()) + "</h3>"
                             + "<p style='margin:0 0 4px 0;'><b>Type:</b> Variable"
                             + "<br/><b>Source:</b> Program</p>"
                             + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
@@ -377,10 +506,8 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
                     argsOnly.append(arg.signature());
                 }
             }
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                    + "<h3 style='margin:0 0 8px 0;'>"
-                    + escapeHtml(item.name())
-                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Function<br/><b>Library:</b> "
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>" +
+                    "<p style='margin:0 0 4px 0;'><b>Type:</b> Function<br/><b>Library:</b> "
                     + escapeHtml(item.packageName())
                     + "</p><p style='margin:0;'>"
                     + escapeHtml(item.signature())
@@ -403,10 +530,8 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             if (item == null) {
                 continue;
             }
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                    + "<h3 style='margin:0 0 8px 0;'>"
-                    + escapeHtml(item.name())
-                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Constant<br/><b>Library:</b> "
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>" +
+                    "<p style='margin:0 0 4px 0;'><b>Type:</b> Constant<br/><b>Library:</b> "
                     + escapeHtml(item.packageName())
                     + "</p><p style='margin:0;'>"
                     + escapeHtml(item.signature())
@@ -431,9 +556,8 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
                 continue;
             }
             String signature = label.signature();
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(label.name())
-                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Label<br/><b>Usage:</b> "
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>" +
+                    "<p style='margin:0 0 4px 0;'><b>Type:</b> Label<br/><b>Usage:</b> "
                     + "<code>" + escapeHtml(label.usage()) + "</code>"
                     + "</p></body></html>";
             items.add(new ReferenceItem(
@@ -456,9 +580,8 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             }
             String typeStr = variable.type().name();
             String signature = variable.signature();
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
-                    + "<h3 style='margin:0 0 8px 0;'>" + escapeHtml(variable.name())
-                    + "</h3><p style='margin:0 0 4px 0;'><b>Type:</b> Variable<br/><b>Data type:</b> "
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>" +
+                    "<p style='margin:0 0 4px 0;'><b>Type:</b> Variable<br/><b>Data type:</b> "
                     + escapeHtml(typeStr) + "<br/><b>Source:</b> Program</p></body></html>";
             items.add(new ReferenceItem(
                     "variable",
@@ -473,7 +596,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
     }
 
     private void rebuildLibraryFilterOptions() {
-        String selected = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All libraries");
+        String selected = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All Libraries");
         Set<String> libraries = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         for (ReferenceItem item : allReferenceItems) {
             if (item.library != null) {
@@ -484,11 +607,11 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         updatingReferenceFilters = true;
         try {
             referenceLibraryFilter.removeAllItems();
-            referenceLibraryFilter.addItem("All libraries");
+            referenceLibraryFilter.addItem("All Libraries");
             for (String library : libraries) {
                 referenceLibraryFilter.addItem(library);
             }
-            referenceLibraryFilter.setSelectedItem(libraries.contains(selected) ? selected : "All libraries");
+            referenceLibraryFilter.setSelectedItem(libraries.contains(selected) ? selected : "All Libraries");
         } finally {
             updatingReferenceFilters = false;
         }
@@ -500,7 +623,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         referenceFiltersPopup.removeAll();
 
         JMenu typeMenu = new JMenu("Type");
-        addReferenceRadioItems(typeMenu, referenceKindFilter, "All", "All");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "All Symbols", "All Symbols");
         addReferenceRadioItems(typeMenu, referenceKindFilter, "Functions", "Functions");
         addReferenceRadioItems(typeMenu, referenceKindFilter, "Constants", "Constants");
         addReferenceRadioItems(typeMenu, referenceKindFilter, "Labels", "Labels");
@@ -508,7 +631,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         addReferenceRadioItems(typeMenu, referenceKindFilter, "Structs", "Structs");
 
         JMenu sourceMenu = new JMenu("Source");
-        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "All sources", "All sources");
+        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "All Sources", "All Sources");
         addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Builtin", "Builtin");
         addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Libraries", "Libraries");
         addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Program", "Program");
@@ -525,9 +648,9 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         resetItem.addActionListener(e -> {
             updatingReferenceFilters = true;
             try {
-                referenceKindFilter.setSelectedItem("All");
-                referenceSourceFilter.setSelectedItem("All sources");
-                referenceLibraryFilter.setSelectedItem("All libraries");
+                referenceKindFilter.setSelectedItem("All Symbols");
+                referenceSourceFilter.setSelectedItem("All Sources");
+                referenceLibraryFilter.setSelectedItem("All Libraries");
             } finally {
                 updatingReferenceFilters = false;
             }
@@ -559,9 +682,10 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
     }
 
     private void updateReferenceFiltersButtonTooltip() {
-        String type = Objects.toString(referenceKindFilter.getSelectedItem(), "All");
-        String source = Objects.toString(referenceSourceFilter.getSelectedItem(), "All sources");
-        String library = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All libraries");
+        String type = Objects.toString(referenceKindFilter.getSelectedItem(), "All Symbols");
+        String source = Objects.toString(referenceSourceFilter.getSelectedItem(), "All Sources");
+        String library = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All Libraries");
+        referenceFiltersButton.setText(type);
         referenceFiltersButton.setToolTipText("Type: " + type + " | Source: " + source + " | Library: " + library);
     }
 
@@ -573,20 +697,20 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         String query = referenceSearchField.getText();
         String needle = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
         String selectedKind = Objects.toString(referenceKindFilter.getSelectedItem(), "All");
-        String selectedSource = Objects.toString(referenceSourceFilter.getSelectedItem(), "All sources");
+        String selectedSource = Objects.toString(referenceSourceFilter.getSelectedItem(), "All Sources");
         String selectedLibrary = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All libraries");
 
         ReferenceItem previousSelection = referenceList.getSelectedValue();
         java.util.List<ReferenceItem> matches = new ArrayList<>();
         for (ReferenceItem item : allReferenceItems) {
-            boolean kindMatches = "All".equals(selectedKind)
+            boolean kindMatches = "All Symbols".equals(selectedKind)
                     || ("Functions".equals(selectedKind)
                     && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
                     || ("Constants".equals(selectedKind) && "constant".equals(item.kind))
                     || ("Labels".equals(selectedKind) && "label".equals(item.kind))
                     || ("Variables".equals(selectedKind) && "variable".equals(item.kind))
                     || ("Structs".equals(selectedKind) && "struc".equals(item.kind));
-            boolean sourceMatches = "All sources".equals(selectedSource)
+            boolean sourceMatches = "All Sources".equals(selectedSource)
                     || ("Builtin".equals(selectedSource)
                     && item.library != null
                     && "Builtin".equalsIgnoreCase(item.library))
@@ -597,7 +721,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
                     || ("Program".equals(selectedSource)
                     && item.library != null
                     && "Program".equalsIgnoreCase(item.library));
-            boolean libraryMatches = "All libraries".equals(selectedLibrary)
+            boolean libraryMatches = "All Libraries".equals(selectedLibrary)
                     || (item.library != null && selectedLibrary.equals(item.library));
             if (needle.isEmpty()
                     || item.name.toLowerCase(Locale.ROOT).contains(needle)
@@ -623,7 +747,9 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
                 referenceList.setSelectedIndex(0);
             }
         } else {
+            setReferenceSelectionName("No selection");
             setReferenceDetailsHtml(REFERENCE_NO_MATCHES_HTML);
+            referenceCopyButton.setEnabled(false);
             referenceInsertButton.setEnabled(false);
         }
     }
@@ -631,11 +757,15 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
     private void updateReferenceSelectionDetails() {
         ReferenceItem item = referenceList.getSelectedValue();
         if (item == null) {
+            setReferenceSelectionName("Select an entry.");
             setReferenceDetailsHtml(REFERENCE_SELECT_PROMPT_HTML);
+            referenceCopyButton.setEnabled(false);
             referenceInsertButton.setEnabled(false);
             return;
         }
+        setReferenceSelectionName(item.name);
         setReferenceDetailsHtml(item.details);
+        referenceCopyButton.setEnabled(true);
         referenceInsertButton.setEnabled(true);
     }
 
@@ -645,6 +775,55 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             return;
         }
         context.commands().insertText(item.insertText, item.caretOffset);
+    }
+
+    private void copySelectedSymbolName() {
+        ReferenceItem item = referenceList.getSelectedValue();
+        if (item == null || item.name == null || item.name.isBlank()) {
+            return;
+        }
+        StringSelection selection = new StringSelection(item.name);
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+    }
+
+    private void setReferenceSelectionName(String name) {
+        referenceSelectionName = (name == null || name.isBlank()) ? "Select an entry." : name;
+        updateReferenceSelectionNameLabel();
+    }
+
+    private void updateReferenceSelectionNameLabel() {
+        String full = referenceSelectionName == null ? "" : referenceSelectionName;
+        referenceSelectionNameLabel.setToolTipText(full.isBlank() ? null : full);
+        int availableWidth = referenceSelectionNameLabel.getWidth();
+        if (availableWidth <= 0) {
+            referenceSelectionNameLabel.setText(full);
+            return;
+        }
+        FontMetrics metrics = referenceSelectionNameLabel.getFontMetrics(referenceSelectionNameLabel.getFont());
+        referenceSelectionNameLabel.setText(ellipsizeText(full, metrics, availableWidth));
+    }
+
+    private String ellipsizeText(String text, FontMetrics metrics, int maxWidth) {
+        if (text == null || text.isEmpty() || metrics.stringWidth(text) <= maxWidth) {
+            return text == null ? "" : text;
+        }
+        String ellipsis = "...";
+        int ellipsisWidth = metrics.stringWidth(ellipsis);
+        if (ellipsisWidth >= maxWidth) {
+            return ellipsis;
+        }
+        int low = 0;
+        int high = text.length();
+        while (low < high) {
+            int mid = (low + high + 1) / 2;
+            String candidate = text.substring(0, mid) + ellipsis;
+            if (metrics.stringWidth(candidate) <= maxWidth) {
+                low = mid;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return text.substring(0, Math.max(0, low)) + ellipsis;
     }
 
 

@@ -6,9 +6,12 @@ import com.basic4gl.desktop.spi.EditorPlugin;
 import com.basic4gl.desktop.spi.FileUtil;
 import com.basic4gl.desktop.spi.LanguageService;
 import com.basic4gl.desktop.spi.PluginContext;
+import com.basic4gl.desktop.util.RoundedCardPanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -22,13 +25,17 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 
+import static com.basic4gl.desktop.Theme.ICON_REFRESH;
+import static com.basic4gl.desktop.Theme.ICON_SEARCH;
+import static com.basic4gl.desktop.Theme.ICON_VIEW_GRID;
+import static com.basic4gl.desktop.Theme.ICON_VIEW_LIST;
 import static com.basic4gl.desktop.Theme.ICON_MENU_ASSETS;
 import static com.basic4gl.desktop.Theme.ICON_MENU_FOLDER;
 import static com.basic4gl.desktop.util.FileUtil.*;
 import static com.basic4gl.desktop.util.HtmlUtil.escapeHtml;
-import static com.basic4gl.desktop.util.SwingIconUtil.buildImageThumbnailIcon;
-import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.basic4gl.desktop.util.SwingIconUtil.*;
 import static com.basic4gl.desktop.util.SwingUtil.configureSmoothScrolling;
+import static com.basic4gl.desktop.util.SwingUtil.createLighterPanelBackground;
 
 public class AssetsPanelProvider implements IEditorPanelProvider {
 
@@ -36,9 +43,13 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
     private final JTree assetsTree = new JTree();
     private final DefaultListModel<AssetItem> assetsListModel = new DefaultListModel<>();
     private final JList<AssetItem> assetsGridList = new JList<>(assetsListModel);
+    private final JTextField assetsSearchField = new JTextField();
     private final JPanel assetsContentPanel = new JPanel(new CardLayout());
-    private final JComboBox<String> assetsLayoutCombo = new JComboBox<>(new String[] {"Tree", "Grid"});
     private final Map<String, Icon> assetThumbnailCache = new HashMap<>();
+    private static final String LAYOUT_TREE = "Tree";
+    private static final String LAYOUT_GRID = "Grid";
+    private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
+    private static final Dimension HEADER_LAYOUT_BUTTON_SIZE = new Dimension(34, 30);
 
     private FileManager fileManager;
 
@@ -95,25 +106,49 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
     public JPanel build(PluginContext context) {
         this.context = context;
 
+        JPanel panelCardHost = new JPanel(new CardLayout());
         JPanel panel = new JPanel(new BorderLayout(0, 6));
+        Color panelBackground = createLighterPanelBackground();
+        panel.setBackground(panelBackground);
         JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(panelBackground);
         JPanel headerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        headerButtons.setOpaque(false);
         JLabel title = new JLabel("Assets");
-        title.setBorder(new EmptyBorder(4, 8, 0, 8));
-        assetsLayoutCombo.setFocusable(false);
-        assetsLayoutCombo.addActionListener(e -> {
-            CardLayout layout = (CardLayout) assetsContentPanel.getLayout();
-            layout.show(assetsContentPanel, Objects.toString(assetsLayoutCombo.getSelectedItem(), "Tree"));
-        });
-        JButton refresh = new JButton("Refresh");
-        refresh.setFocusable(false);
+        Font baseFont = title.getFont();
+        title.setFont(new Font(baseFont.getName(), Font.BOLD, baseFont.getSize() + 2));
+        title.setForeground(new Color(0x424242));
+        title.setBorder(new EmptyBorder(0, 8, 0, 8));
+        JPanel layoutTabs = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        layoutTabs.setOpaque(false);
+        ButtonGroup layoutButtons = new ButtonGroup();
+        JToggleButton treeLayoutButton = createAssetsLayoutButton(
+                "List View",
+                ICON_VIEW_LIST,
+                LAYOUT_TREE,
+                "first");
+        JToggleButton gridLayoutButton = createAssetsLayoutButton(
+                "Grid View",
+                ICON_VIEW_GRID,
+                LAYOUT_GRID,
+                "last");
+        layoutButtons.add(treeLayoutButton);
+        layoutButtons.add(gridLayoutButton);
+        treeLayoutButton.setSelected(true);
+        layoutTabs.add(treeLayoutButton);
+        layoutTabs.add(gridLayoutButton);
+        JToggleButton searchToggle = createHeaderSearchToggleButton();
+        JButton refresh = createHeaderIconButton(ICON_REFRESH, "Refresh Assets");
         refresh.addActionListener(e -> refresh(context.currentEditor()));
-        headerButtons.add(assetsLayoutCombo);
+        headerButtons.add(layoutTabs);
+        headerButtons.add(searchToggle);
         headerButtons.add(refresh);
         header.add(title, BorderLayout.WEST);
         header.add(headerButtons, BorderLayout.EAST);
         panel.add(header, BorderLayout.NORTH);
 
+        assetsTree.setBackground(panelBackground);
+        assetsTree.setBorder(null);
         assetsTree.setRootVisible(false);
         assetsTree.setShowsRootHandles(true);
         // Let Swing compute preferred row height so custom/HTML labels do not clip.
@@ -173,8 +208,11 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
         });
 
         JScrollPane scrollPane = new JScrollPane(assetsTree);
+        scrollPane.setBorder(null);
         configureSmoothScrolling(scrollPane);
 
+        assetsGridList.setBorder(null);
+        assetsGridList.setBackground(panelBackground);
         assetsGridList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
         assetsGridList.setVisibleRowCount(-1);
         assetsGridList.setFixedCellHeight(112);
@@ -223,12 +261,113 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
         });
 
         JScrollPane gridScrollPane = new JScrollPane(assetsGridList);
+        gridScrollPane.setBorder(null);
         configureSmoothScrolling(gridScrollPane);
 
-        assetsContentPanel.add(scrollPane, "Tree");
-        assetsContentPanel.add(gridScrollPane, "Grid");
-        panel.add(assetsContentPanel, BorderLayout.CENTER);
-        return panel;
+        JPanel searchBar = new JPanel(new BorderLayout(6, 0));
+        searchBar.setBackground(panelBackground);
+        searchBar.setBorder(new EmptyBorder(0, 8, 0, 8));
+        assetsSearchField.setToolTipText("Search assets");
+        searchBar.add(assetsSearchField, BorderLayout.CENTER);
+        searchBar.setVisible(false);
+        assetsSearchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                refresh(context.currentEditor());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                refresh(context.currentEditor());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                refresh(context.currentEditor());
+            }
+        });
+        searchToggle.addActionListener(e -> {
+            boolean visible = searchToggle.isSelected();
+            searchBar.setVisible(visible);
+            if (visible) {
+                assetsSearchField.requestFocusInWindow();
+            }
+            panel.revalidate();
+            panel.repaint();
+        });
+
+        assetsContentPanel.add(scrollPane, LAYOUT_TREE);
+        assetsContentPanel.add(gridScrollPane, LAYOUT_GRID);
+        showAssetsLayout(LAYOUT_TREE);
+        JPanel content = new JPanel(new BorderLayout(0, 6));
+        content.setBackground(panelBackground);
+        content.add(searchBar, BorderLayout.NORTH);
+        content.add(assetsContentPanel, BorderLayout.CENTER);
+        panel.add(content, BorderLayout.CENTER);
+        panelCardHost.add(createRoundedCardHost(panel, panelBackground, "assets-main"), "main");
+        ((CardLayout) panelCardHost.getLayout()).show(panelCardHost, "main");
+        return panelCardHost;
+    }
+
+    private JToggleButton createAssetsLayoutButton(
+            String tooltip, String iconPath, String layoutKey, String segmentPosition) {
+        JToggleButton button = new JToggleButton(createScaledIcon(iconPath, 18));
+        button.setToolTipText(tooltip);
+        button.setFocusable(false);
+        button.putClientProperty("JButton.buttonType", "segmented");
+        button.putClientProperty("JButton.segmentPosition", segmentPosition);
+        button.setOpaque(false);
+        button.setMargin(new Insets(6, 8, 6, 8));
+        button.setPreferredSize(HEADER_LAYOUT_BUTTON_SIZE);
+        button.setMinimumSize(HEADER_LAYOUT_BUTTON_SIZE);
+        button.setMaximumSize(HEADER_LAYOUT_BUTTON_SIZE);
+        button.addActionListener(e -> showAssetsLayout(layoutKey));
+        return button;
+    }
+
+    private JButton createHeaderIconButton(String iconPath, String tooltip) {
+        JButton button = new JButton(createScaledIcon(iconPath, 18));
+        button.setToolTipText(tooltip);
+        button.setFocusable(false);
+        button.putClientProperty("JButton.buttonType", "toolBarButton");
+        button.setOpaque(false);
+        button.setMargin(new Insets(6, 6, 6, 6));
+        button.setPreferredSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMinimumSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMaximumSize(HEADER_ICON_BUTTON_SIZE);
+        return button;
+    }
+
+    private JToggleButton createHeaderSearchToggleButton() {
+        JToggleButton button = new JToggleButton(createScaledIcon(ICON_SEARCH, 18));
+        button.setToolTipText("Show search");
+        button.setFocusable(false);
+        button.putClientProperty("JButton.buttonType", "toolBarButton");
+        button.setOpaque(false);
+        button.setMargin(new Insets(6, 6, 6, 6));
+        button.setPreferredSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMinimumSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMaximumSize(HEADER_ICON_BUTTON_SIZE);
+        return button;
+    }
+    private JComponent createRoundedCardHost(JComponent content, Color panelBackground, String key) {
+        Color cardBackground = createLighterPanelBackground();
+        JPanel card = new RoundedCardPanel();
+        card.setLayout(new BorderLayout());
+        card.setBackground(cardBackground);
+        card.setBorder(new EmptyBorder(4, 4, 4, 4));
+        card.add(content, BorderLayout.CENTER);
+
+        JPanel host = new JPanel(new CardLayout());
+        host.setOpaque(false);
+        host.add(card, key);
+        ((CardLayout) host.getLayout()).show(host, key);
+        return host;
+    }
+
+    private void showAssetsLayout(String layoutKey) {
+        CardLayout layout = (CardLayout) assetsContentPanel.getLayout();
+        layout.show(assetsContentPanel, layoutKey);
     }
 
     private String formatAssetTreeLabel(AssetItem item, boolean isSection) {
@@ -332,6 +471,9 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
             return;
         }
         File rootDir = new File(context.currentDirectory());
+        String searchNeedle = assetsSearchField.getText() == null
+                ? ""
+                : assetsSearchField.getText().trim().toLowerCase(Locale.ROOT);
         assetThumbnailCache.clear();
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new AssetItem(
                 "Assets",
@@ -339,17 +481,21 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
                 null,
                 createImageIcon(ICON_MENU_ASSETS)));
 
+        java.util.List<File> workspaceAssets = collectWorkspaceAssets(rootDir, 0, 4);
+        workspaceAssets = filterAssetFiles(workspaceAssets, rootDir, searchNeedle);
         DefaultMutableTreeNode workspaceNode = buildMediaTypeSection(
                 "Workspace Resources",
-                collectWorkspaceAssets(rootDir, 0, 4),
+                workspaceAssets,
                 rootDir,
                 createImageIcon(ICON_MENU_FOLDER));
         if (workspaceNode != null) {
             rootNode.add(workspaceNode);
         }
 
+        java.util.List<File> literalAssets = detectLiteralAssets(rootDir, context.currentEditor().getLanguage());
+        literalAssets = filterAssetFiles(literalAssets, rootDir, searchNeedle);
         DefaultMutableTreeNode literalNode = buildMediaTypeSection(
-                "Embedded Literals", detectLiteralAssets(rootDir, context.currentEditor().getLanguage()), rootDir, createImageIcon(ICON_MENU_ASSETS));
+                "Embedded Literals", literalAssets, rootDir, createImageIcon(ICON_MENU_ASSETS));
         if (literalNode != null) {
             rootNode.add(literalNode);
         }
@@ -363,6 +509,29 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
         for (AssetItem item : collectOpenableAssets(rootNode)) {
             assetsListModel.addElement(item);
         }
+    }
+
+    private java.util.List<File> filterAssetFiles(java.util.List<File> files, File baseDir, String searchNeedle) {
+        if (files == null || files.isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (searchNeedle == null || searchNeedle.isBlank()) {
+            return files;
+        }
+        java.util.List<File> filtered = new ArrayList<>();
+        for (File file : files) {
+            if (file == null) {
+                continue;
+            }
+            String name = file.getName().toLowerCase(Locale.ROOT);
+            String absolute = file.getAbsolutePath().toLowerCase(Locale.ROOT);
+            String relative = formatRelativePath(file, baseDir);
+            String relativeLower = relative == null ? "" : relative.toLowerCase(Locale.ROOT);
+            if (name.contains(searchNeedle) || absolute.contains(searchNeedle) || relativeLower.contains(searchNeedle)) {
+                filtered.add(file);
+            }
+        }
+        return filtered;
     }
 
     @Override

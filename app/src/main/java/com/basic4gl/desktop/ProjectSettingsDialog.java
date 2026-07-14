@@ -13,6 +13,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 
+import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
+
 public class ProjectSettingsDialog
         implements com.basic4gl.desktop.spi.ConfigurationFormPanel.IOnConfigurationChangeListener {
 
@@ -112,6 +114,7 @@ public class ProjectSettingsDialog
         splitPane.setDividerLocation(160);
         splitPane.setResizeWeight(0);
         splitPane.setBorder(null);
+        hideSplitPaneHandle(splitPane);
         contentPane.add(splitPane, BorderLayout.CENTER);
 
         sectionsList.addListSelectionListener(e -> {

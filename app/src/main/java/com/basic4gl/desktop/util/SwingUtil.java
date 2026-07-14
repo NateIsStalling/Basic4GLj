@@ -1,6 +1,9 @@
 package com.basic4gl.desktop.util;
 
+import com.formdev.flatlaf.FlatClientProperties;
+
 import javax.swing.*;
+import java.awt.*;
 
 public class SwingUtil {
 
@@ -9,5 +12,28 @@ public class SwingUtil {
         scrollPane.getVerticalScrollBar().setBlockIncrement(64);
         scrollPane.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
         scrollPane.setWheelScrollingEnabled(true);
+    }
+
+    public static void hideSplitPaneHandle(JSplitPane splitPane) {
+        if (splitPane == null) {
+            return;
+        }
+
+        splitPane.putClientProperty(
+                FlatClientProperties.STYLE,
+                "style: plain");
+
+        splitPane.setOneTouchExpandable(false);
+    }
+
+    public static Color createLighterPanelBackground() {
+        Color base = UIManager.getColor("Panel.background");
+        if (base == null) {
+            base = new Color(238, 238, 238);
+        }
+        return new Color(
+                Math.min(255, base.getRed() + 8),
+                Math.min(255, base.getGreen() + 8),
+                Math.min(255, base.getBlue() + 8));
     }
 }

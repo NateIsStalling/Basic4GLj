@@ -3,6 +3,7 @@ package com.basic4gl.desktop;
 import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.HtmlUtil.markdownToHtml;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
 import static com.formdev.flatlaf.FlatClientProperties.*;
 
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
@@ -77,17 +78,17 @@ public class MainWindow
 
     // Window
     private final JFrame frame = new JFrame(BuildInfo.APPLICATION_NAME);
-    private final JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+    private final JSplitPane mainPane;
     private final JTabbedPane tabControl = new JTabbedPane();
     private final JTabbedPane splitTabControl = new JTabbedPane();
-    private final JSplitPane editorSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+    private final JSplitPane editorSplitPane;
     private final JPanel primaryTabHost = new JPanel(new BorderLayout());
     private final JButton addTabDropdownButton = new JButton("+");
     private final JPanel centerPaneHost = new JPanel(new BorderLayout());
     private final JPanel topPaneHost = new JPanel(new BorderLayout());
     private final JPanel leftRailsHost = new JPanel();
-    private final JSplitPane workspacePane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-    private final JSplitPane contentPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+    private final JSplitPane workspacePane;
+    private final JSplitPane contentPane;
     private final JPanel bottomBarContainer = new JPanel(new BorderLayout());
     // File viewers: stores IFileViewer instances for each tab (parallel to tabControl)
     private final java.util.List<FileViewerWrapper> fileViewers = new java.util.ArrayList<>();
@@ -286,6 +287,12 @@ public class MainWindow
         frame.setIconImage(createImageIcon(BuildInfo.ICON_LOGO_SMALL).getImage());
         frame.setPreferredSize(new Dimension(696, 480));
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+
+        mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        editorSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        workspacePane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        contentPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
@@ -588,6 +595,7 @@ public class MainWindow
         UIManager.put("TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon());
 
         UIManager.put("TabbedPane.selectedBackground", Color.white);
+        UIManager.put("SplitPaneDivider.gripColor", new Color(0, 0, 0, 0));
 
         SwingUtilities.updateComponentTreeUI(tabControl);
         tabControl.setUI(new FlatTabbedPaneUI() {
@@ -641,15 +649,28 @@ public class MainWindow
         editorSplitPane.setLeftComponent(primaryTabHost);
         editorSplitPane.setRightComponent(splitTabControl);
         editorSplitPane.setResizeWeight(0.7);
+        hideSplitPaneHandle(editorSplitPane);
+
+        editorSplitPane.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
+        editorSplitPane.putClientProperty("JSplitPane.style", "plain");
 
         contentPane.setLeftComponent(primaryTabHost);
         contentPane.setRightComponent(rightDocsContainer);
         contentPane.setResizeWeight(0.74);
+        hideSplitPaneHandle(contentPane);
+
+        contentPane.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
+        contentPane.putClientProperty("JSplitPane.style", "plain");
 
         workspacePane.setLeftComponent(leftSidebarContent);
         workspacePane.setRightComponent(contentPane);
         workspacePane.setResizeWeight(0.18);
         workspacePane.setDividerLocation(expandedLeftSidebarWidth);
+        hideSplitPaneHandle(workspacePane);
+
+        workspacePane.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
+        workspacePane.putClientProperty("JSplitPane.style", "plain");
+
         contentPane.setDividerLocation(Math.max(200, frame.getPreferredSize().width - expandedRightDocsWidth));
 
         topPaneHost.add(workspacePane, BorderLayout.CENTER);
@@ -657,6 +678,7 @@ public class MainWindow
         mainPane.setTopComponent(topPaneHost);
         mainPane.setBottomComponent(bottomBarContainer);
         mainPane.setResizeWeight(1.0);
+        hideSplitPaneHandle(mainPane);
 
         leftRailsHost.setLayout(new BoxLayout(leftRailsHost, BoxLayout.Y_AXIS));
         leftRailsHost.add(leftSidebarRail);
@@ -2302,6 +2324,7 @@ public class MainWindow
     private void collapseBottomBar() {
         if (mainPane.getBottomComponent() != bottomBarContainer) {
             mainPane.setBottomComponent(bottomBarContainer);
+            hideSplitPaneHandle(mainPane);
         }
         if (isBottomBarExpanded() && mainPane.getHeight() > 0) {
             expandedBottomBarHeight = Math.max(120, mainPane.getHeight() - mainPane.getDividerLocation());
@@ -2317,6 +2340,7 @@ public class MainWindow
     private void expandBottomBar() {
         if (mainPane.getBottomComponent() != bottomBarContainer) {
             mainPane.setBottomComponent(bottomBarContainer);
+            hideSplitPaneHandle(mainPane);
         }
         mainPane.setResizeWeight(1.0);
 

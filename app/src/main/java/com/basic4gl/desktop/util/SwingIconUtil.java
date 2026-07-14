@@ -35,4 +35,14 @@ public class SwingIconUtil {
             return null;
         }
     }
+
+
+    public static Icon createScaledIcon(String iconPath, int size) {
+        ImageIcon icon = createImageIcon(iconPath);
+        if (icon == null) {
+            return null;
+        }
+        Image scaled = icon.getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaled);
+    }
 }
