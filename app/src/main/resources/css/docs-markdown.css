@@ -1,0 +1,109 @@
+.markdown-body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #1f2933;
+    background-color: #ffffff;
+    margin: 10px 14px;
+}
+
+.markdown-body h1 {
+    font-size: 1.65em;
+    font-weight: 700;
+    margin: 0.75em 0 0.45em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #dde3ea;
+}
+
+.markdown-body h2 {
+    font-size: 1.35em;
+    font-weight: 700;
+    margin: 0.75em 0 0.45em;
+    padding-bottom: 0.25em;
+    border-bottom: 1px solid #e5eaf0;
+}
+
+.markdown-body h3 {
+    font-size: 1.15em;
+    font-weight: 700;
+    margin: 0.7em 0 0.35em;
+}
+
+.markdown-body p {
+    margin: 0.2em 0 0.75em;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+    margin: 0.2em 0 0.8em 1.5em;
+    padding: 0;
+}
+
+.markdown-body li {
+    margin: 0.2em 0;
+}
+
+.markdown-body a {
+    color: #0b66d0;
+    text-decoration: none;
+}
+
+.markdown-body a:hover {
+    text-decoration: underline;
+}
+
+.markdown-body code {
+    font-family: "JetBrains Mono", "Menlo", "Consolas", monospace;
+    font-size: 12px;
+    background-color: #f2f4f8;
+    border: 1px solid #e0e6ed;
+    border-radius: 3px;
+    padding: 0 3px;
+}
+
+.markdown-body pre {
+    font-family: "JetBrains Mono", "Menlo", "Consolas", monospace;
+    font-size: 12px;
+    line-height: 1.45;
+    background-color: #f6f8fa;
+    border: 1px solid #e0e6ed;
+    border-radius: 6px;
+    padding: 10px;
+    margin: 0.2em 0 0.9em;
+}
+
+.markdown-body blockquote {
+    color: #5b6876;
+    border-left: 4px solid #d0d8e2;
+    margin: 0.3em 0 0.8em;
+    padding: 0.2em 0 0.2em 0.8em;
+}
+
+html {
+    scrollbar-color: #c3c9d1 #f3f5f7;
+    scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f3f5f7;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c3c9d1;
+    border: 2px solid #f3f5f7;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #aeb6c1;
+}
+
+::-webkit-scrollbar-corner {
+    background: #f3f5f7;
+}

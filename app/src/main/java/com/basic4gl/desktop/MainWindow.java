@@ -27,6 +27,10 @@ import com.formdev.flatlaf.extras.FlatDesktop;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import com.formdev.flatlaf.util.SystemInfo;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.web.WebView;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -35,6 +39,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
@@ -177,6 +182,9 @@ public class MainWindow
     // Labels
     private final JLabel compilerStatusLabel = new JLabel(""); // Compiler/VM Status
     private final JLabel cursorPositionLabel = new JLabel("0:0"); // Cursor Position
+
+    private static final String DOCS_MARKDOWN_STYLESHEET_RESOURCE = "/css/docs-markdown.css";
+    private static final AtomicBoolean JAVAFX_INITIALIZED = new AtomicBoolean(false);
 
 
     // Editors
@@ -2664,17 +2672,74 @@ public class MainWindow
 
         try {
             String markdown = Files.readString(resolved.toPath(), StandardCharsets.UTF_8);
-            JEditorPane pane = new JEditorPane();
-            pane.setEditable(false);
-            pane.setContentType("text/html");
-            pane.setText(markdownToHtml(markdown));
-            pane.setCaretPosition(0);
+            JFXPanel panel = new JFXPanel();
+            String html = buildMarkdownDocumentHtml(markdownToHtml(markdown));
+            ensureJavaFxInitialized();
+            Platform.runLater(() -> {
+                try {
+                    WebView webView = new WebView();
+                    webView.getEngine().loadContent(html, "text/html");
+                    panel.setScene(new Scene(webView));
+                } catch (Throwable ex) {
+                    showDocsFallback(panel, html, ex);
+                }
+            });
 
-            docsTabs.addTab(tabTitle, new JScrollPane(pane));
+            docsTabs.addTab(tabTitle, panel);
             docsTabs.setSelectedIndex(docsTabs.getTabCount() - 1);
             selectRightDocsSection("docs");
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(frame, "Unable to open markdown file: " + ex.getMessage());
+        } catch (Throwable ex) {
+            JOptionPane.showMessageDialog(frame, "Unable to render markdown file: " + ex.getMessage());
+        }
+    }
+
+    private void ensureJavaFxInitialized() {
+        if (!JAVAFX_INITIALIZED.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            Platform.startup(() -> {});
+        } catch (IllegalStateException ignored) {
+            // Toolkit already initialized by JFXPanel startup.
+        }
+        Platform.setImplicitExit(false);
+    }
+
+    private void showDocsFallback(JFXPanel panel, String html, Throwable ex) {
+        System.err.println("Unable to initialize JavaFX WebView: " + ex.getMessage());
+        SwingUtilities.invokeLater(() -> {
+            JEditorPane fallbackPane = new JEditorPane();
+            fallbackPane.setEditable(false);
+            fallbackPane.setContentType("text/html");
+            fallbackPane.setText(html);
+            fallbackPane.setCaretPosition(0);
+            panel.setLayout(new BorderLayout());
+            panel.add(new JScrollPane(fallbackPane), BorderLayout.CENTER);
+            panel.revalidate();
+            panel.repaint();
+        });
+    }
+
+    private String buildMarkdownDocumentHtml(String bodyHtml) {
+        String stylesheetText = readTextResource(DOCS_MARKDOWN_STYLESHEET_RESOURCE);
+        return "<!doctype html><html><head><meta charset='UTF-8'><style>"
+                + stylesheetText
+                + "</style></head>"
+                + bodyHtml
+                + "</html>";
+    }
+
+    private String readTextResource(String resourcePath) {
+        try (InputStream input = MainWindow.class.getResourceAsStream(resourcePath)) {
+            if (input == null) {
+                return "";
+            }
+            return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException ex) {
+            System.err.println("Unable to load resource " + resourcePath + ": " + ex.getMessage());
+            return "";
         }
     }
 

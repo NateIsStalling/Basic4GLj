@@ -1,6 +1,13 @@
 package com.basic4gl.desktop.util;
 
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+
 public final class HtmlUtil {
+    private static final Parser MARKDOWN_PARSER = Parser.builder().build();
+    private static final HtmlRenderer MARKDOWN_RENDERER = HtmlRenderer.builder().build();
+
     private HtmlUtil() {
     }
 
@@ -13,25 +20,10 @@ public final class HtmlUtil {
 
 
     public static String markdownToHtml(String markdown) {
-        StringBuilder html = new StringBuilder("<html><body style='font-family:sans-serif;'>");
-        for (String line : markdown.split("\\R", -1)) {
-            String escaped = escapeHtml(line);
-            if (escaped.startsWith("### ")) {
-                html.append("<h3>").append(escaped.substring(4)).append("</h3>");
-            } else if (escaped.startsWith("## ")) {
-                html.append("<h2>").append(escaped.substring(3)).append("</h2>");
-            } else if (escaped.startsWith("# ")) {
-                html.append("<h1>").append(escaped.substring(2)).append("</h1>");
-            } else if (escaped.startsWith("- ")) {
-                html.append("<p>&bull; ").append(escaped.substring(2)).append("</p>");
-            } else if (escaped.isBlank()) {
-                html.append("<br/>");
-            } else {
-                html.append("<p>").append(escaped).append("</p>");
-            }
-        }
-        html.append("</body></html>");
-        return html.toString();
+        String input = markdown == null ? "" : markdown;
+        Node document = MARKDOWN_PARSER.parse(input);
+        String htmlBody = MARKDOWN_RENDERER.render(document);
+        return "<body class='markdown-body'>" + htmlBody + "</body>";
     }
 
 }
