@@ -2,6 +2,7 @@ package com.basic4gl.desktop.util;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -17,6 +18,14 @@ public class SwingIconUtil {
             System.err.println("Couldn't find resource file: " + path);
             return null;
         }
+    }
+
+    public static ImageIcon createImageIcon(String path, Color tint) {
+        ImageIcon baseIcon = createImageIcon(path);
+        if (baseIcon == null || tint == null) {
+            return baseIcon;
+        }
+        return new ImageIcon(tintImage(baseIcon.getImage(), tint));
     }
 
     public static Icon buildImageThumbnailIcon(File file, int maxWidth, int maxHeight) {
@@ -44,5 +53,28 @@ public class SwingIconUtil {
         }
         Image scaled = icon.getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH);
         return new ImageIcon(scaled);
+    }
+
+    private static BufferedImage tintImage(Image source, Color tint) {
+        int width = source.getWidth(null);
+        int height = source.getHeight(null);
+        BufferedImage sourceImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D sourceGraphics = sourceImage.createGraphics();
+        sourceGraphics.drawImage(source, 0, 0, null);
+        sourceGraphics.dispose();
+
+        BufferedImage tinted = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        int tintRgb = tint.getRGB() & 0x00FFFFFF;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int argb = sourceImage.getRGB(x, y);
+                int alpha = (argb >>> 24) & 0xFF;
+                if (alpha == 0) {
+                    continue;
+                }
+                tinted.setRGB(x, y, (alpha << 24) | tintRgb);
+            }
+        }
+        return tinted;
     }
 }

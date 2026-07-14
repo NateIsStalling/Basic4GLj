@@ -24,10 +24,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
 
-import static com.basic4gl.desktop.Theme.ICON_DOTS_VERTICAL;
-import static com.basic4gl.desktop.Theme.ICON_MENU_FOLDER;
-import static com.basic4gl.desktop.Theme.ICON_REFRESH;
-import static com.basic4gl.desktop.Theme.ICON_SEARCH;
+import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
 import static com.basic4gl.desktop.util.SwingUtil.configureSmoothScrolling;
 import static com.basic4gl.desktop.util.SwingUtil.createLighterPanelBackground;
@@ -53,8 +50,18 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
     }
 
     @Override
-    public String getIconPath() {
+    public String getActiveIconPath() {
+        return ICON_MENU_FOLDER_SOLID;
+    }
+
+    @Override
+    public String getInactiveIconPath() {
         return ICON_MENU_FOLDER;
+    }
+
+    @Override
+    public Color getActiveIconTint() {
+        return null;
     }
 
     @Override

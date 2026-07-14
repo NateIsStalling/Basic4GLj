@@ -93,8 +93,18 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
     }
 
     @Override
-    public String getIconPath() {
+    public String getActiveIconPath() {
         return ICON_MENU_ASSETS;
+    }
+
+    @Override
+    public String getInactiveIconPath() {
+        return ICON_MENU_ASSETS;
+    }
+
+    @Override
+    public Color getActiveIconTint() {
+        return null;
     }
 
     @Override

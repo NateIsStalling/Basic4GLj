@@ -19,12 +19,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
 
-import static com.basic4gl.desktop.Theme.ICON_PAUSE;
-import static com.basic4gl.desktop.Theme.ICON_PLAY;
-import static com.basic4gl.desktop.Theme.ICON_STEP_IN;
-import static com.basic4gl.desktop.Theme.ICON_STEP_OUT;
-import static com.basic4gl.desktop.Theme.ICON_STEP_OVER;
-import static com.basic4gl.desktop.Theme.ICON_MENU_DEBUG;
+import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
 import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
 
@@ -60,8 +55,18 @@ public class DebugPanelProvider implements IEditorPanelProvider, IDebugPresenter
     }
 
     @Override
-    public String getIconPath() {
+    public String getActiveIconPath() {
+        return ICON_DEBUG;
+    }
+
+    @Override
+    public String getInactiveIconPath() {
         return ICON_MENU_DEBUG;
+    }
+
+    @Override
+    public Color getActiveIconTint() {
+        return null;
     }
 
     @Override

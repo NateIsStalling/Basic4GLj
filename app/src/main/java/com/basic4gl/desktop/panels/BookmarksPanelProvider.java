@@ -39,8 +39,18 @@ public class BookmarksPanelProvider implements IEditorPanelProvider {
     }
 
     @Override
-    public String getIconPath() {
+    public String getActiveIconPath() {
         return ICON_MENU_BOOKMARKS;
+    }
+
+    @Override
+    public String getInactiveIconPath() {
+        return ICON_MENU_BOOKMARKS_OUTLINE;
+    }
+
+    @Override
+    public Color getActiveIconTint() {
+        return null;
     }
 
     @Override

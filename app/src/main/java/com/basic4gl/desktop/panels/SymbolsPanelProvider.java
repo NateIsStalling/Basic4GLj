@@ -114,8 +114,18 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
     }
 
     @Override
-    public String getIconPath() {
+    public String getActiveIconPath() {
         return ICON_MENU_FUNCTIONS;
+    }
+
+    @Override
+    public String getInactiveIconPath() {
+        return ICON_MENU_FUNCTIONS;
+    }
+
+    @Override
+    public Color getActiveIconTint() {
+        return null;
     }
 
     @Override

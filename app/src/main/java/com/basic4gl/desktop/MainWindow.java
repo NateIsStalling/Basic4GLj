@@ -2155,13 +2155,21 @@ public class MainWindow
         Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
                 .forEach(x -> {
                     leftSidebarContent.add(x.build(this.basicEditor), x.id());
-                    addLeftSidebarButton(x.id(), createImageIcon(x.getIconPath()), x.getTitle());
+                    addLeftSidebarButton(
+                            x.id(),
+                            createImageIcon(x.getActiveIconPath(), x.getActiveIconTint()),
+                            createImageIcon(x.getInactiveIconPath()),
+                            x.getTitle());
                 });
 
         Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.SOUTH)
                 .forEach(x -> {
                     bottomBarContent.add(x.build(this.basicEditor), x.id());
-                    addBottomBarButton(x.id(), createImageIcon(x.getIconPath()), x.getTitle());
+                    addBottomBarButton(
+                            x.id(),
+                            createImageIcon(x.getActiveIconPath(), x.getActiveIconTint()),
+                            createImageIcon(x.getInactiveIconPath()),
+                            x.getTitle());
                 });
 
         bottomBarContainer.add(bottomBarContent, BorderLayout.CENTER);
@@ -2182,7 +2190,11 @@ public class MainWindow
         Arrays.stream(panels)
                 .filter(x -> x.getLayoutConstraints() == EditorLayout.EAST)
                 .forEach(x -> {
-                    addRightDocsButton(x.id(), createImageIcon(x.getIconPath()), x.getTitle());
+                    addRightDocsButton(
+                            x.id(),
+                            createImageIcon(x.getActiveIconPath(), x.getActiveIconTint()),
+                            createImageIcon(x.getInactiveIconPath()),
+                            x.getTitle());
                     JComponent content = "docs".equals(x.id()) ? docsTabs : x.build(this.basicEditor);
                     if (content != null) {
                         rightDocsContent.add(content, x.id());
@@ -2210,32 +2222,33 @@ public class MainWindow
     }
 
 
-    private void addLeftSidebarButton(String key, Icon icon, String tooltip) {
-        JToggleButton button = createRailButton(icon, tooltip);
+    private void addLeftSidebarButton(String key, Icon selectedIcon, Icon icon, String tooltip) {
+        JToggleButton button = createRailButton(selectedIcon, icon, tooltip);
         button.addActionListener(e -> onLeftSidebarButtonPressed(key));
         leftSidebarGroup.add(button);
         leftSidebarButtons.put(key, button);
         leftSidebarRail.add(button);
     }
 
-    private void addRightDocsButton(String key, Icon icon, String tooltip) {
-        JToggleButton button = createRailButton(icon, tooltip);
+    private void addRightDocsButton(String key, Icon selectedIcon, Icon icon, String tooltip) {
+        JToggleButton button = createRailButton(selectedIcon, icon, tooltip);
         button.addActionListener(e -> onRightDocsButtonPressed(key));
         rightDocsGroup.add(button);
         rightDocsButtons.put(key, button);
         rightDocsRail.add(button);
     }
 
-    private void addBottomBarButton(String key, Icon icon, String tooltip) {
-        JToggleButton button = createRailButton(icon, tooltip);
+    private void addBottomBarButton(String key, Icon selectedIcon, Icon icon, String tooltip) {
+        JToggleButton button = createRailButton(selectedIcon, icon, tooltip);
         button.addActionListener(e -> onBottomBarButtonPressed(key));
         bottomBarGroup.add(button);
         bottomBarButtons.put(key, button);
         bottomBarRail.add(button);
     }
 
-    private JToggleButton createRailButton(Icon icon, String tooltip) {
+    private JToggleButton createRailButton(Icon selectedIcon, Icon icon, String tooltip) {
         JToggleButton button = new JToggleButton(icon);
+        button.setSelectedIcon(selectedIcon != null ? selectedIcon : icon);
         button.setToolTipText(tooltip);
         button.setFocusable(false);
         button.setMargin(new Insets(8, 8, 8, 8));

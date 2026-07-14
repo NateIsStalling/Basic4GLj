@@ -4,11 +4,14 @@ import com.basic4gl.desktop.spi.EditorPlugin;
 import com.basic4gl.desktop.spi.PluginContext;
 
 import javax.swing.*;
+import java.awt.*;
 
 public interface IEditorPanelProvider {
     String id();
     String getTitle();
-    String getIconPath();
+    String getActiveIconPath();
+    String getInactiveIconPath();
+    Color getActiveIconTint();
     EditorLayout getLayoutConstraints();
     JPanel build(PluginContext context);
 
