@@ -49,12 +49,12 @@ import org.fife.ui.rtextarea.SearchContext;
  */
 public class MainWindow
         implements IEditorPresenter,
-                ITabProvider,
-                IToggleBreakpointListener,
-                IFileEditorActionListener,
-                IFileManagerListener,
-                EmptyTabPanel.IEmptyTabPanelListener,
-                MenuService,
+        ITabProvider,
+        IToggleBreakpointListener,
+        IFileEditorActionListener,
+        IFileManagerListener,
+        EmptyTabPanel.IEmptyTabPanelListener,
+        MenuService,
         EditorCommandsService {
 
     private final CaretListener TrackCaretPosition = new CaretListener() {
@@ -114,6 +114,12 @@ public class MainWindow
     private int expandedLeftSidebarWidth = 260;
     private int expandedRightDocsWidth = 320;
     private int expandedBottomBarHeight = 220;
+    private int workspacePaneDividerSize;
+    private int contentPaneDividerSize;
+    private int mainPaneDividerSize;
+    private boolean leftSidebarCollapsed;
+    private boolean rightDocsCollapsed;
+    private boolean bottomBarCollapsed;
     private String activeLeftSidebarKey = "files";
     private String activeRightDocsKey;
     private String activeBottomBarKey;
@@ -247,6 +253,7 @@ public class MainWindow
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Basic4GLj");
 
         FlatLightLaf.setup();
+        UIManager.put("SplitPaneDivider.style", "plain");
 
         PrintStream out = null;
         try {
@@ -594,7 +601,6 @@ public class MainWindow
         UIManager.put("TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon());
 
         UIManager.put("TabbedPane.selectedBackground", Color.white);
-        UIManager.put("SplitPaneDivider.gripColor", new Color(0, 0, 0, 0));
 
         SwingUtilities.updateComponentTreeUI(tabControl);
         tabControl.setUI(new FlatTabbedPaneUI() {
@@ -632,7 +638,6 @@ public class MainWindow
                             }
                             fileManager.ensureRunnableFileValid();
                             refreshRunnableFileControls();
-                            refreshSidebarContent();
 
                             // Refresh controls if no files open
                             if (fileManager.editorCount() == 0) {
@@ -651,25 +656,18 @@ public class MainWindow
         editorSplitPane.setResizeWeight(0.7);
         hideSplitPaneHandle(editorSplitPane);
 
-        editorSplitPane.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
-        editorSplitPane.putClientProperty("JSplitPane.style", "plain");
-
         contentPane.setLeftComponent(primaryTabHost);
         contentPane.setRightComponent(rightDocsContainer);
         contentPane.setResizeWeight(0.74);
         hideSplitPaneHandle(contentPane);
-
-        contentPane.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
-        contentPane.putClientProperty("JSplitPane.style", "plain");
+        contentPaneDividerSize = contentPane.getDividerSize();
 
         workspacePane.setLeftComponent(leftSidebarContent);
         workspacePane.setRightComponent(contentPane);
         workspacePane.setResizeWeight(0.18);
         workspacePane.setDividerLocation(expandedLeftSidebarWidth);
         hideSplitPaneHandle(workspacePane);
-
-        workspacePane.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
-        workspacePane.putClientProperty("JSplitPane.style", "plain");
+        workspacePaneDividerSize = workspacePane.getDividerSize();
 
         contentPane.setDividerLocation(Math.max(200, frame.getPreferredSize().width - expandedRightDocsWidth));
 
@@ -679,6 +677,7 @@ public class MainWindow
         mainPane.setBottomComponent(bottomBarContainer);
         mainPane.setResizeWeight(1.0);
         hideSplitPaneHandle(mainPane);
+        mainPaneDividerSize = mainPane.getDividerSize();
 
         leftRailsHost.setLayout(new BoxLayout(leftRailsHost, BoxLayout.Y_AXIS));
         leftRailsHost.add(leftSidebarRail);
@@ -1589,7 +1588,7 @@ public class MainWindow
         }
 
         // replace emptyTabPanel if needed
-            setEditorContent(getActiveEditorHost());
+        setEditorContent(getActiveEditorHost());
 
         tabControl.addTab(viewer.getTitle(), viewer.getContentPane());
 
@@ -2171,8 +2170,8 @@ public class MainWindow
         Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
                 .findFirst()
                 .ifPresent(x -> {
-            selectLeftSidebarSection(x.id(), true);
-        });
+                    selectLeftSidebarSection(x.id(), true);
+                });
     }
 
 
@@ -2296,59 +2295,100 @@ public class MainWindow
     }
 
     private boolean isLeftSidebarExpanded() {
-        return workspacePane.getDividerLocation() > 12;
+        return !leftSidebarCollapsed
+                && workspacePane.getLeftComponent() == leftSidebarContent;
     }
 
     private void collapseLeftSidebar() {
-        if (isLeftSidebarExpanded()) {
-            expandedLeftSidebarWidth = workspacePane.getDividerLocation();
+        if (workspacePane.getLeftComponent() == leftSidebarContent) {
+            int currentWidth = leftSidebarContent.getWidth();
+            if (currentWidth <= 12) {
+                currentWidth = workspacePane.getDividerLocation();
+            }
+            if (currentWidth > 12) {
+                expandedLeftSidebarWidth = currentWidth;
+            }
         }
+
+        leftSidebarCollapsed = true;
         activeLeftSidebarKey = null;
         leftSidebarGroup.clearSelection();
-        workspacePane.setDividerLocation(0);
+
+        workspacePane.setResizeWeight(0.0);
+        workspacePane.setDividerSize(0);
+        workspacePane.setLeftComponent(null);
+        workspacePane.revalidate();
+        workspacePane.repaint();
     }
 
     private void expandLeftSidebar() {
+        leftSidebarCollapsed = false;
+        if (workspacePane.getLeftComponent() != leftSidebarContent) {
+            workspacePane.setLeftComponent(leftSidebarContent);
+        }
+        workspacePane.setDividerSize(workspacePaneDividerSize);
+        workspacePane.setResizeWeight(0.18);
+        workspacePane.revalidate();
+
         int target = Math.max(expandedLeftSidebarWidth, 180);
-        workspacePane.setDividerLocation(target);
+        SwingUtilities.invokeLater(() -> {
+            if (!leftSidebarCollapsed
+                    && workspacePane.getLeftComponent() == leftSidebarContent) {
+                setDividerLocationClamped(workspacePane, target);
+            }
+        });
     }
 
     private boolean isBottomBarExpanded() {
-        if (mainPane.getBottomComponent() != bottomBarContainer || mainPane.getHeight() <= 0) {
-            return false;
-        }
-        int bottomHeight = mainPane.getHeight() - mainPane.getDividerLocation();
-        return bottomHeight > 12;
+        return !bottomBarCollapsed
+                && mainPane.getBottomComponent() == bottomBarContainer;
     }
 
     private void collapseBottomBar() {
-        if (mainPane.getBottomComponent() != bottomBarContainer) {
-            mainPane.setBottomComponent(bottomBarContainer);
-            hideSplitPaneHandle(mainPane);
+        if (mainPane.getBottomComponent() == bottomBarContainer) {
+            int currentHeight = bottomBarContainer.getHeight();
+            if (currentHeight <= 12 && mainPane.getHeight() > 0) {
+                currentHeight = mainPane.getHeight()
+                        - mainPane.getDividerLocation()
+                        - mainPane.getDividerSize();
+            }
+            if (currentHeight > 12) {
+                expandedBottomBarHeight = Math.max(120, currentHeight);
+            }
         }
-        if (isBottomBarExpanded() && mainPane.getHeight() > 0) {
-            expandedBottomBarHeight = Math.max(120, mainPane.getHeight() - mainPane.getDividerLocation());
-        }
-        if (mainPane.getHeight() > 0) {
-            mainPane.setDividerLocation(mainPane.getHeight());
-        }
+
+        bottomBarCollapsed = true;
         activeBottomBarKey = null;
         bottomBarGroup.clearSelection();
+
+        mainPane.setResizeWeight(1.0);
+        mainPane.setDividerSize(0);
+        mainPane.setBottomComponent(null);
+        mainPane.revalidate();
+        mainPane.repaint();
         syncDebugMenuSelection();
     }
 
     private void expandBottomBar() {
+        bottomBarCollapsed = false;
         if (mainPane.getBottomComponent() != bottomBarContainer) {
             mainPane.setBottomComponent(bottomBarContainer);
-            hideSplitPaneHandle(mainPane);
         }
+        mainPane.setDividerSize(mainPaneDividerSize);
         mainPane.setResizeWeight(1.0);
+        mainPane.revalidate();
 
         int targetBottomHeight = Math.max(expandedBottomBarHeight, 140);
-        if (mainPane.getHeight() > 0) {
-            int newDivider = Math.max(120, mainPane.getHeight() - targetBottomHeight);
-            mainPane.setDividerLocation(newDivider);
-        }
+        SwingUtilities.invokeLater(() -> {
+            if (!bottomBarCollapsed
+                    && mainPane.getBottomComponent() == bottomBarContainer
+                    && mainPane.getHeight() > 0) {
+                int newDivider = mainPane.getHeight()
+                        - targetBottomHeight
+                        - mainPane.getDividerSize();
+                setDividerLocationClamped(mainPane, newDivider);
+            }
+        });
         syncDebugMenuSelection();
     }
 
@@ -2390,24 +2430,64 @@ public class MainWindow
     }
 
     private boolean isRightDocsExpanded() {
-        int docsWidth = contentPane.getWidth() - contentPane.getDividerLocation();
-        return docsWidth > 12;
+        return !rightDocsCollapsed
+                && contentPane.getRightComponent() == rightDocsContainer;
     }
 
     private void collapseRightDocs() {
-        int docsWidth = contentPane.getWidth() - contentPane.getDividerLocation();
-        if (docsWidth > 12) {
-            expandedRightDocsWidth = docsWidth;
+        if (contentPane.getRightComponent() == rightDocsContainer) {
+            int currentWidth = rightDocsContainer.getWidth();
+            if (currentWidth <= 12 && contentPane.getWidth() > 0) {
+                currentWidth = contentPane.getWidth()
+                        - contentPane.getDividerLocation()
+                        - contentPane.getDividerSize();
+            }
+            if (currentWidth > 12) {
+                expandedRightDocsWidth = currentWidth;
+            }
         }
+
+        rightDocsCollapsed = true;
         activeRightDocsKey = null;
         rightDocsGroup.clearSelection();
-        contentPane.setDividerLocation(contentPane.getWidth());
+
+        contentPane.setResizeWeight(1.0);
+        contentPane.setDividerSize(0);
+        contentPane.setRightComponent(null);
+        contentPane.revalidate();
+        contentPane.repaint();
     }
 
     private void expandRightDocs() {
+        rightDocsCollapsed = false;
+        if (contentPane.getRightComponent() != rightDocsContainer) {
+            contentPane.setRightComponent(rightDocsContainer);
+        }
+        contentPane.setDividerSize(contentPaneDividerSize);
+        contentPane.setResizeWeight(0.74);
+        contentPane.revalidate();
+
         int targetDocsWidth = Math.max(expandedRightDocsWidth, 220);
-        int newDivider = Math.max(120, contentPane.getWidth() - targetDocsWidth);
-        contentPane.setDividerLocation(newDivider);
+        SwingUtilities.invokeLater(() -> {
+            if (!rightDocsCollapsed
+                    && contentPane.getRightComponent() == rightDocsContainer
+                    && contentPane.getWidth() > 0) {
+                int newDivider = contentPane.getWidth()
+                        - targetDocsWidth
+                        - contentPane.getDividerSize();
+                setDividerLocationClamped(contentPane, newDivider);
+            }
+        });
+    }
+
+    private void setDividerLocationClamped(JSplitPane splitPane, int requestedLocation) {
+        int minimum = splitPane.getMinimumDividerLocation();
+        int maximum = splitPane.getMaximumDividerLocation();
+        if (maximum < minimum) {
+            splitPane.setDividerLocation(requestedLocation);
+            return;
+        }
+        splitPane.setDividerLocation(Math.max(minimum, Math.min(requestedLocation, maximum)));
     }
 
     private void refreshSidebarContent() {
