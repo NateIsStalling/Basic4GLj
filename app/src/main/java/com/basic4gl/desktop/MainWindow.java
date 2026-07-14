@@ -543,11 +543,10 @@ public class MainWindow
         toolBar.add(newButton);
         toolBar.add(openButton);
         toolBar.add(saveButton);
-        toolBar.addSeparator();
+        toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(runTargetCombo);
         toolBar.add(runButton);
         toolBar.addSeparator();
-        toolBar.add(runTargetCombo);
-        toolBar.add(Box.createHorizontalGlue());
         toolBar.add(exportButton);
         toolBar.add(settingsButton);
 

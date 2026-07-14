@@ -16,8 +16,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
@@ -157,12 +155,12 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         referenceCopyButton.setFocusable(false);
         referenceCopyButton.setMargin(new Insets(4, 4, 4, 4));
         Font actionButtonFont = referenceCopyButton.getFont();
-        referenceCopyButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD, actionButtonFont.getSize()));
+//        referenceCopyButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD, actionButtonFont.getSize()));
         referenceCopyButton.setForeground(new Color(0x5B717F));
         referenceCopyButton.setEnabled(false);
         referenceInsertButton.setFocusable(false);
         referenceInsertButton.setMargin(new Insets(4, 4, 4, 4));
-        referenceInsertButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD, actionButtonFont.getSize()));
+//        referenceInsertButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD, actionButtonFont.getSize()));
         referenceInsertButton.setForeground(new Color(0x5B717F));
         referenceInsertButton.setEnabled(false);
 
@@ -215,12 +213,9 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         setReferenceDetailsHtml(REFERENCE_SELECT_PROMPT_HTML);
         Font nameFont = referenceSelectionNameLabel.getFont();
         referenceSelectionNameLabel.setFont(new Font(nameFont.getName(), Font.BOLD, nameFont.getSize()));
-        referenceSelectionNameLabel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                updateReferenceSelectionNameLabel();
-            }
-        });
+        int titleHeight = referenceSelectionNameLabel.getPreferredSize().height;
+        referenceSelectionNameLabel.setMinimumSize(new Dimension(0, titleHeight));
+        referenceSelectionNameLabel.setPreferredSize(new Dimension(0, titleHeight));
         setReferenceSelectionName("Select an entry.");
 
         JSplitPane lookupSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -231,20 +226,16 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         JScrollPane listScrollPane = new JScrollPane(referenceList);
         listScrollPane.setBorder(null);
         JPanel detailsPanel = new JPanel(new BorderLayout(0, 0));
-        JToolBar detailsHeader = new JToolBar();
-        detailsHeader.setFloatable(false);
-        detailsHeader.setRollover(true);
+        JPanel detailsHeader = new JPanel(new BorderLayout(8, 0));
         detailsHeader.setBackground(panelBackground);
         detailsHeader.setOpaque(true);
         detailsHeader.setBorder(new EmptyBorder(6, 8, 4, 8));
-        JPanel detailsTitleHost = new JPanel(new BorderLayout());
-        detailsTitleHost.setOpaque(false);
-        detailsTitleHost.add(referenceSelectionNameLabel, BorderLayout.CENTER);
-        detailsTitleHost.setMaximumSize(new Dimension(Integer.MAX_VALUE, referenceSelectionNameLabel.getPreferredSize().height + 4));
-        detailsHeader.add(detailsTitleHost);
-        detailsHeader.add(Box.createHorizontalGlue());
-        detailsHeader.add(referenceCopyButton);
-        detailsHeader.add(referenceInsertButton);
+        detailsHeader.add(referenceSelectionNameLabel, BorderLayout.CENTER);
+        JPanel detailsActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        detailsActions.setOpaque(false);
+        detailsActions.add(referenceCopyButton);
+        detailsActions.add(referenceInsertButton);
+        detailsHeader.add(detailsActions, BorderLayout.EAST);
         detailsPanel.add(detailsHeader, BorderLayout.NORTH);
         detailsPanel.add(referenceDetailsPane, BorderLayout.CENTER);
         JScrollPane detailsScrollPane = new JScrollPane(detailsPanel);
@@ -788,43 +779,10 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
 
     private void setReferenceSelectionName(String name) {
         referenceSelectionName = (name == null || name.isBlank()) ? "Select an entry." : name;
-        updateReferenceSelectionNameLabel();
+        referenceSelectionNameLabel.setText(referenceSelectionName);
+        referenceSelectionNameLabel.setToolTipText(referenceSelectionName.isBlank() ? null : referenceSelectionName);
     }
 
-    private void updateReferenceSelectionNameLabel() {
-        String full = referenceSelectionName == null ? "" : referenceSelectionName;
-        referenceSelectionNameLabel.setToolTipText(full.isBlank() ? null : full);
-        int availableWidth = referenceSelectionNameLabel.getWidth();
-        if (availableWidth <= 0) {
-            referenceSelectionNameLabel.setText(full);
-            return;
-        }
-        FontMetrics metrics = referenceSelectionNameLabel.getFontMetrics(referenceSelectionNameLabel.getFont());
-        referenceSelectionNameLabel.setText(ellipsizeText(full, metrics, availableWidth));
-    }
-
-    private String ellipsizeText(String text, FontMetrics metrics, int maxWidth) {
-        if (text == null || text.isEmpty() || metrics.stringWidth(text) <= maxWidth) {
-            return text == null ? "" : text;
-        }
-        String ellipsis = "...";
-        int ellipsisWidth = metrics.stringWidth(ellipsis);
-        if (ellipsisWidth >= maxWidth) {
-            return ellipsis;
-        }
-        int low = 0;
-        int high = text.length();
-        while (low < high) {
-            int mid = (low + high + 1) / 2;
-            String candidate = text.substring(0, mid) + ellipsis;
-            if (metrics.stringWidth(candidate) <= maxWidth) {
-                low = mid;
-            } else {
-                high = mid - 1;
-            }
-        }
-        return text.substring(0, Math.max(0, low)) + ellipsis;
-    }
 
 
 }
