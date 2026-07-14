@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
@@ -53,6 +54,8 @@ public class FileEditor implements SearchListener {
     protected boolean isModified;
     protected boolean isSaved; // File exists on system
 
+    public record BookmarkLine(int lineNumber, String lineText) {}
+
     public FileEditor(
             IFileEditorActionListener actionListener,
             IFileManager fileManager,
@@ -93,7 +96,7 @@ public class FileEditor implements SearchListener {
                 RTextAreaEditorKit.rtaPrevBookmarkAction);
         inputMap.put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F2, toolkit.getMenuShortcutKeyMask()),
-                RTextAreaEditorKit.rtaToggleBookmarkAction);
+                "B4GL.ToggleBookmarkAction");
 
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "RTA.NextBreakpointAction");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK), "RTA.PrevBreakpointAction");
@@ -114,6 +117,14 @@ public class FileEditor implements SearchListener {
                 RTextAreaEditorKit.rtaToggleBookmarkAction,
                 new MultiHeaderBookmarkActions.MultiHeaderToggleBookmarkAction(
                         RTextAreaEditorKit.rtaToggleBookmarkAction, HEADER_BOOKMARK));
+        actionMap.put(
+                "B4GL.ToggleBookmarkAction",
+                new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        FileEditor.this.toggleBookmark();
+                    }
+                });
 
         actionMap.put(
                 "RTA.NextBreakpointAction",
@@ -146,6 +157,7 @@ public class FileEditor implements SearchListener {
                 if (gutter.getBookmarks(HEADER_BOOKMARK).length == 0) {
                     scrollPane.setIconRowHeaderEnabled(HEADER_BOOKMARK, false);
                 }
+                actionListener.onBookmarksChanged(getFilePath());
             }
 
             @Override
@@ -561,6 +573,54 @@ public class FileEditor implements SearchListener {
             line = -1;
             ex.printStackTrace();
             System.out.println(editorPane.getCaretPosition());
+        }
+        actionListener.onBookmarksChanged(getFilePath());
+    }
+
+    public List<BookmarkLine> getBookmarks() {
+        ArrayList<BookmarkLine> points = new ArrayList<>();
+        MultiHeaderGutter gutter = scrollPane.getGutter();
+        if (gutter == null) {
+            return points;
+        }
+        GutterIconInfo[] bookmarks = gutter.getBookmarks(HEADER_BOOKMARK);
+        for (GutterIconInfo info : bookmarks) {
+            try {
+                int line = editorPane.getLineOfOffset(info.getMarkedOffset());
+                String lineText = getLineText(line);
+                points.add(new BookmarkLine(line, lineText));
+            } catch (BadLocationException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return points;
+    }
+
+    public void goToLine(int lineNumber) {
+        int safeLine = Math.max(0, lineNumber);
+        try {
+            int maxLine = Math.max(0, editorPane.getLineCount() - 1);
+            safeLine = Math.min(safeLine, maxLine);
+            int offset = editorPane.getLineStartOffset(safeLine);
+            if (editorPane.isCodeFoldingEnabled()) {
+                editorPane.getFoldManager().ensureOffsetNotInClosedFold(offset);
+            }
+            editorPane.requestFocusInWindow();
+            editorPane.setCaretPosition(offset);
+        } catch (BadLocationException ble) {
+            UIManager.getLookAndFeel().provideErrorFeedback(editorPane);
+            ble.printStackTrace();
+        }
+    }
+
+    private String getLineText(int line) {
+        try {
+            int start = editorPane.getLineStartOffset(line);
+            int end = editorPane.getLineEndOffset(line);
+            String text = editorPane.getText(start, Math.max(0, end - start));
+            return text == null ? "" : text.strip();
+        } catch (BadLocationException ex) {
+            return "";
         }
     }
 

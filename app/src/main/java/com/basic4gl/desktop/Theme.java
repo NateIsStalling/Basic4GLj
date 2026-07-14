@@ -23,6 +23,9 @@ public class Theme {
     public static final String ICON_VIEW_LIST = THEME_DIRECTORY + "icon_view_list.png";
     public static final String ICON_CHEVRON_DOWN = THEME_DIRECTORY + "icon_chevron_down.png";
     public static final String ICON_SEARCH = THEME_DIRECTORY + "icon_search.png";
+    public static final String ICON_ARROW_DOWN = THEME_DIRECTORY + "icon_arrow_down.png";
+    public static final String ICON_ARROW_UP = THEME_DIRECTORY + "icon_arrow_up.png";
+    public static final String ICON_BOOKMARK_ADD = THEME_DIRECTORY + "icon_bookmark_add.png";
     public static final String ICON_MENU_FOLDER = THEME_DIRECTORY + "menu_folder.png";
     public static final String ICON_MENU_ASSETS = THEME_DIRECTORY + "menu_assets.png";
     public static final String ICON_MENU_BOOKMARKS = THEME_DIRECTORY + "menu_bookmarks.png";

@@ -632,6 +632,7 @@ public class MainWindow
                             }
                             fileManager.ensureRunnableFileValid();
                             refreshRunnableFileControls();
+                            refreshSidebarContent();
 
                             // Refresh controls if no files open
                             if (fileManager.editorCount() == 0) {
@@ -2510,6 +2511,44 @@ public class MainWindow
         fileManager.toggleBookmark(tabControl.getSelectedIndex());
     }
 
+    @Override
+    public List<BookmarkInfo> listBookmarks() {
+        List<BookmarkInfo> bookmarks = new ArrayList<>();
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            if (editor == null) {
+                continue;
+            }
+            String filePath = editor.getFilePath();
+            String fileName = editor.getShortFilename();
+            for (FileEditor.BookmarkLine bookmark : editor.getBookmarks()) {
+                bookmarks.add(new BookmarkInfo(filePath, fileName, bookmark.lineNumber(), bookmark.lineText()));
+            }
+        }
+        bookmarks.sort(Comparator.comparing(BookmarkInfo::fileName, String.CASE_INSENSITIVE_ORDER)
+                .thenComparingInt(BookmarkInfo::lineNumber));
+        return bookmarks;
+    }
+
+    @Override
+    public void goToBookmark(String filePath, int lineNumber) {
+        int index = getTabIndex(filePath);
+        if (index == -1 && filePath != null && !filePath.isBlank()) {
+            File file = new File(filePath);
+            if (file.exists()) {
+                addTab(FileEditor.open(file, this, fileManager, this, linkGenerator, searchContext));
+                index = getTabIndex(filePath);
+            }
+        }
+        if (index < 0 || index >= fileManager.getFileEditors().size()) {
+            return;
+        }
+        tabControl.setSelectedIndex(index);
+        FileEditor editor = fileManager.getFileEditors().get(index);
+        if (editor != null) {
+            editor.goToLine(lineNumber);
+        }
+    }
+
 
     public void openMarkdownInDocsTab(File file) {
         File resolved = file.isAbsolute() ? file : new File(fileManager.getCurrentDirectory(), file.getPath());
@@ -2712,6 +2751,13 @@ public class MainWindow
     @Override
     public void onSearchResult(String message) {
         setCompilerStatus(message);
+    }
+
+    @Override
+    public void onBookmarksChanged(String filePath) {
+        for (IEditorPanelProvider panel : panels) {
+            panel.onFileModified(filePath);
+        }
     }
 
     @Override
