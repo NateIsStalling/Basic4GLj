@@ -208,8 +208,16 @@ public class Basic4GLLanguageService implements LanguageService {
             String typeStr = LanguageUtil.getTypeString(variable.type);
             String signature = typeStr + " " + variable.name;
             TypeDefinition typeDefinition = LanguageUtil.toTypeDefinition(variable.type);
-
-            VariableDefinition definition = null; // TODO new VariableDefinition(variable.name,)
+            VariableDefinition definition = new VariableDefinition(
+                    variable.name,
+                    signature,
+                    typeDefinition,
+                    "",
+                    "",
+                    "Program",
+                    false,
+                    "global",
+                    "Program");
             variableDefinitions.add(definition);
         }
         return variableDefinitions;
@@ -261,21 +269,38 @@ public class Basic4GLLanguageService implements LanguageService {
                     signature.append(')');
                 }
 
-                //                TypeDefinition returnType = spec.isFunction() ? new
-                // TypeDefinition(LanguageUtil.getTypeString(spec.getReturnType())) : new TypeDefinition("void");
-                //                FunctionDefinition definition = new FunctionDefinition(
-                //                        name,
-                //                        signature.toString(),
-                //                        returnType,
-                //                        params != null ? params.stream()
-                //                                .map(this::getTypeString)
-                //                                .map((typeName, i) -> new VariableDefinition(typeName))
-                //                                .toArray(VariableDefinition[]::new) : new VariableDefinition[0],
-                //                        spec.getDescription(),
-                //                        library
-                //                );
-                // TODO
-                FunctionDefinition definition = null;
+                VariableDefinition returnValue = spec.isFunction()
+                        ? new VariableDefinition(
+                                "return",
+                                LanguageUtil.getTypeString(spec.getReturnType()),
+                                LanguageUtil.toTypeDefinition(spec.getReturnType()),
+                                "",
+                                "",
+                                library,
+                                true,
+                                "",
+                                "Builtin")
+                        : new VariableDefinition(
+                                "return",
+                                "void",
+                                new TypeDefinition("void", "", "", ""),
+                                "",
+                                "",
+                                library,
+                                true,
+                                "",
+                                "Builtin");
+                VariableDefinition[] parameters = params != null
+                        ? buildFunctionParameterDefinitions(params, library)
+                        : new VariableDefinition[0];
+                FunctionDefinition definition = new FunctionDefinition(
+                        name,
+                        signature.toString(),
+                        returnValue,
+                        parameters,
+                        "",
+                        library,
+                        spec.hasBrackets());
                 items.add(definition);
             }
         }
@@ -326,11 +351,78 @@ public class Basic4GLLanguageService implements LanguageService {
             }
             signature.append(')');
 
-            FunctionDefinition definition = null; // TODO new FunctionDefinition(name, ...)
+            VariableDefinition[] parameters = new VariableDefinition[prototype != null ? prototype.paramCount : 0];
+            if (prototype != null && prototype.paramCount > 0) {
+                for (int i = 0; i < prototype.paramCount; i++) {
+                    String paramName = prototype.getLocalVarName(i);
+                    String typeName = i < prototype.localVarTypes.size()
+                            ? LanguageUtil.getTypeString(prototype.localVarTypes.get(i))
+                            : "?";
+                    parameters[i] = new VariableDefinition(
+                            paramName,
+                            typeName + " " + paramName,
+                            i < prototype.localVarTypes.size()
+                                    ? LanguageUtil.toTypeDefinition(prototype.localVarTypes.get(i))
+                                    : new TypeDefinition("?", "", "", ""),
+                            "",
+                            "",
+                            "Program",
+                            false,
+                            name,
+                            "Program");
+                }
+            }
+            VariableDefinition returnValue = prototype != null && prototype.hasReturnVal
+                    ? new VariableDefinition(
+                            "return",
+                            LanguageUtil.getTypeString(prototype.returnValType),
+                            LanguageUtil.toTypeDefinition(prototype.returnValType),
+                            "",
+                            "",
+                            "Program",
+                            true,
+                            name,
+                            "Program")
+                    : new VariableDefinition(
+                            "return",
+                            "void",
+                            new TypeDefinition("void", "", "", ""),
+                            "",
+                            "",
+                            "Program",
+                            true,
+                            name,
+                            "Program");
+            FunctionDefinition definition = new FunctionDefinition(
+                    name,
+                    signature.toString(),
+                    returnValue,
+                    parameters,
+                    "",
+                    "Program",
+                    true);
             items.add(definition);
         }
 
         return items;
+    }
+
+    private VariableDefinition[] buildFunctionParameterDefinitions(Vector<ValType> params, String library) {
+        VariableDefinition[] definitions = new VariableDefinition[params.size()];
+        for (int i = 0; i < params.size(); i++) {
+            String typeName = LanguageUtil.getTypeString(params.get(i));
+            definitions[i] = new VariableDefinition(
+                    "arg" + (i + 1),
+                    typeName,
+                    LanguageUtil.toTypeDefinition(params.get(i)),
+                    "",
+                    "",
+                    library,
+                    true,
+                    "",
+                    "Builtin");
+        }
+        return definitions;
     }
 
     private Map<Integer, String> buildFunctionLibraryBySpecIndex() {
