@@ -32,6 +32,8 @@ public class Theme {
     public static final String ICON_MENU_BOOKMARKS = THEME_DIRECTORY + "menu_bookmarks.png";
     public static final String ICON_MENU_BOOKMARKS_OUTLINE = THEME_DIRECTORY + "menu_bookmarks_outline.png";
     public static final String ICON_MENU_FUNCTIONS = THEME_DIRECTORY + "menu_functions.png";
+    public static final String ICON_MENU_DOCS = THEME_DIRECTORY + "icon_book_outline.png";
+    public static final String ICON_MENU_DOCS_SOLID = THEME_DIRECTORY + "icon_book.png";
     public static final String ICON_MENU_HELP = THEME_DIRECTORY + "menu_help.png";
     public static final String ICON_MENU_HELP_SOLID = THEME_DIRECTORY + "menu_help_solid.png";
     public static final String ICON_MENU_DEBUG = THEME_DIRECTORY + "menu_debug.png";

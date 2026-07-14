@@ -6,8 +6,7 @@ import com.basic4gl.desktop.spi.PluginContext;
 import javax.swing.*;
 import java.awt.*;
 
-import static com.basic4gl.desktop.Theme.ICON_MENU_HELP;
-import static com.basic4gl.desktop.Theme.ICON_MENU_HELP_SOLID;
+import static com.basic4gl.desktop.Theme.*;
 
 public class DocsPanelProvider implements IEditorPanelProvider {
     @Override
@@ -22,12 +21,12 @@ public class DocsPanelProvider implements IEditorPanelProvider {
 
     @Override
     public String getActiveIconPath() {
-        return ICON_MENU_HELP_SOLID;
+        return ICON_MENU_DOCS_SOLID;
     }
 
     @Override
     public String getInactiveIconPath() {
-        return ICON_MENU_HELP;
+        return ICON_MENU_DOCS;
     }
 
     @Override
