@@ -134,10 +134,9 @@ public class MainWindow
     private static final Dimension TAB_VIEW_MODE_BUTTON_SIZE = new Dimension(34, 30);
     private static final String TAB_FILE_VIEWER_PROPERTY = "basic4gl.fileViewer";
     private static final Color SEGMENTED_BACKGROUND = new Color(0xE0E0E0);
-    private static final String SEGMENTED_BUTTON_STYLE =
-            "arc: 14; borderWidth: 0; focusWidth: 0; innerFocusWidth: 0;"
-                    + " margin: 6,8,6,8; background: #E0E0E0;"
-                    + " hoverBackground: #D6D6D6; selectedBackground: #FFFFFF";
+    private static final String SEGMENTED_BUTTON_STYLE = "arc: 14; borderWidth: 0; focusWidth: 0; innerFocusWidth: 0;"
+            + " margin: 6,8,6,8; background: #E0E0E0;"
+            + " hoverBackground: #D6D6D6; selectedBackground: #FFFFFF";
 
     private final JMenu bookmarkSubMenu = new JMenu("Bookmarks");
     private final JMenu breakpointSubMenu = new JMenu("Breakpoints");
@@ -737,7 +736,7 @@ public class MainWindow
             new BookmarksPanelProvider(),
             (IEditorPanelProvider) debugPresenter,
             new SymbolsPanelProvider(),
-            new DocsPanelProvider(fileManager),
+            new DocsPanelProvider(),
         };
 
         configureLeftSidebar();
@@ -1599,6 +1598,25 @@ public class MainWindow
         fileManager.ensureRunnableFileValid();
         refreshRunnableFileControls();
         refreshSidebarContent();
+    }
+
+    public void openDocumentationPreview(ContentDocumentViewer viewer) {
+        int existingPreviewIndex = findUnpinnedDocumentationPreviewTab();
+        if (existingPreviewIndex >= 0) {
+            closeTab(existingPreviewIndex);
+        }
+        addTab(viewer);
+        tabControl.setSelectedIndex(tabControl.getTabCount() - 1);
+    }
+
+    private int findUnpinnedDocumentationPreviewTab() {
+        for (int i = 0; i < tabControl.getTabCount(); i++) {
+            IFileViewer viewer = getFileViewerAt(i);
+            if (viewer instanceof ContentDocumentViewer documentViewer && !documentViewer.isPinned()) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override

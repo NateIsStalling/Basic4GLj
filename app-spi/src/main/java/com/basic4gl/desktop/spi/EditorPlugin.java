@@ -3,6 +3,17 @@ package com.basic4gl.desktop.spi;
 import com.basic4gl.desktop.spi.language.LanguageSupport;
 
 public abstract class EditorPlugin {
+    public String getId() {
+        String pluginName = getName();
+        String normalizedName = pluginName == null
+                ? ""
+                : pluginName.trim().replaceAll("\\s+", "-").toLowerCase();
+        if (normalizedName.isBlank()) {
+            return getClass().getName();
+        }
+        return getClass().getName() + ":" + normalizedName;
+    }
+
     public abstract String getName();
 
     public abstract String getDescription();

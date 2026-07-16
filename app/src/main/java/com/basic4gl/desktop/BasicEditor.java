@@ -8,13 +8,22 @@ import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.debug.protocol.types.DisassembledInstruction;
 import com.basic4gl.debug.protocol.types.Variable;
+import com.basic4gl.desktop.content.ContentDocumentViewer;
+import com.basic4gl.desktop.content.ContentMaterializer;
 import com.basic4gl.desktop.content.FileEditor;
 import com.basic4gl.desktop.content.FileManager;
+import com.basic4gl.desktop.content.TemplateInstantiator;
+import com.basic4gl.desktop.content.catalog.ContentCatalog;
+import com.basic4gl.desktop.content.catalog.DefaultContentService;
+import com.basic4gl.desktop.content.catalog.DocumentCatalogEntry;
+import com.basic4gl.desktop.content.catalog.TemplateCatalogEntry;
 import com.basic4gl.desktop.debugger.*;
 import com.basic4gl.desktop.editor.ApMode;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
 import com.basic4gl.desktop.editor.IEditorPresenter;
 import com.basic4gl.desktop.spi.*;
+import com.basic4gl.desktop.spi.content.ContentDocument;
+import com.basic4gl.desktop.spi.content.ContentService;
 import com.basic4gl.desktop.spi.language.LanguageSupport;
 import com.basic4gl.desktop.util.*;
 import com.basic4gl.language.adapter.Basic4GLEditorPluginAdapter;
@@ -24,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.SwingUtilities;
@@ -83,6 +93,11 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     private final Basic4GLEditorPluginAdapter basic4gl;
     private final DialogService dialogService;
     private final EditorCommandsService commandsService;
+    private final ContentCatalog contentCatalog = new ContentCatalog();
+    private final ContentService contentService;
+    private final ContentMaterializer contentMaterializer =
+            new ContentMaterializer(Path.of(System.getProperty("user.home"), ".basic4glj", "cache"));
+    private final TemplateInstantiator templateInstantiator = new TemplateInstantiator();
 
     public BasicEditor(
             String libraryPath,
@@ -98,6 +113,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         this.menuService = menuService;
         this.commandsService = commandsService;
         this.basic4gl = new Basic4GLEditorPluginAdapter(this);
+        this.contentService = new DefaultContentService(contentCatalog, basic4gl.getId(), basic4gl.getName());
         this.basic4gl.setOnPluginStateChanged(this::refreshSyntaxHighlighting);
         this.basic4gl.setOnPluginDirectoryHistoryChanged(this::syncPluginDirectorySettings);
     }
@@ -1112,6 +1128,40 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     }
 
     @Override
+    public ContentService content() {
+        return contentService;
+    }
+
+    public ContentCatalog contentCatalog() {
+        return contentCatalog;
+    }
+
+    public void openContentDocument(DocumentCatalogEntry entry) {
+        try {
+            ContentDocument document =
+                    entry.provider().openDocument(entry.descriptor().id());
+            Path materializedRoot = contentMaterializer.materialize(
+                    entry.globalId().pluginId(),
+                    entry.globalId().providerId(),
+                    entry.providerVersion(),
+                    document.source());
+            presenter.openDocumentationPreview(new ContentDocumentViewer(
+                    entry.globalId().value(), entry.descriptor().title(), document, materializedRoot));
+        } catch (IOException | RuntimeException ex) {
+            dialogService.showDialog("Unable to open documentation: " + ex.getMessage());
+        }
+    }
+
+    public void instantiateTemplate(TemplateCatalogEntry entry, Path destination, String projectName) {
+        try {
+            Optional<Path> entryPoint = templateInstantiator.instantiate(entry, destination, projectName, Map.of());
+            entryPoint.ifPresent(path -> commandsService.openFileWithPreferredViewer(path.toFile()));
+        } catch (IOException | RuntimeException ex) {
+            dialogService.showDialog("Unable to create sample: " + ex.getMessage());
+        }
+    }
+
+    @Override
     public FileOpener files() {
         return fileOpener;
     }
@@ -1160,6 +1210,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     }
 
     public void onCloseAll() {
+        contentCatalog.unregisterPlugin(basic4gl.getId());
         basic4gl.onCloseAll();
     }
 

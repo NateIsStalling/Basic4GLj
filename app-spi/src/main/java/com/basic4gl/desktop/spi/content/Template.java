@@ -1,5 +1,6 @@
 package com.basic4gl.desktop.spi.content;
 
+@Deprecated
 public class Template {
 
     private String name;

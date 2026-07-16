@@ -73,7 +73,8 @@ public interface IFileViewer {
         AUDIO_VIEWER("Audio Viewer"),
         HEX_VIEWER("Hex Editor"),
         MARKDOWN_VIEWER("Markdown Viewer"),
-        HTML_VIEWER("HTML Viewer");
+        HTML_VIEWER("HTML Viewer"),
+        DOCUMENTATION_VIEWER("Documentation");
 
         public final String display;
 

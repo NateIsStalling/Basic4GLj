@@ -1,5 +1,7 @@
 package com.basic4gl.desktop.spi;
 
+import com.basic4gl.desktop.spi.content.ContentService;
+
 public interface PluginContext {
     //    CommandRegistry commands();
     //    MenuRegistry menus();
@@ -12,6 +14,8 @@ public interface PluginContext {
     DialogService dialogs();
 
     MenuService menus();
+
+    ContentService content();
     //    ProjectService projects();
     //    EditorService editors();
     FileOpener files();

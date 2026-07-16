@@ -2,6 +2,7 @@ package com.basic4gl.desktop.spi.content;
 
 import java.io.File;
 
+@Deprecated
 public class Content {
     private String name;
     private ContentMetadata metadata;
