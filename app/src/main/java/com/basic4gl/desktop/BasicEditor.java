@@ -235,6 +235,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
 
     @Override
     public boolean toggleBreakpt(String filename, int line) {
+        if (vmWorker == null) {
+            return false;
+        }
         return vmWorker.toggleBreakpoint(filename, line);
     }
 

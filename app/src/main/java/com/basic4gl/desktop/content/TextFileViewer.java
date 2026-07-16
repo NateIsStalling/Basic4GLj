@@ -18,6 +18,10 @@ import org.fife.ui.rtextarea.SearchContext;
 public class TextFileViewer implements IFileViewer {
     private final FileEditor editor;
 
+    public TextFileViewer(FileEditor editor) {
+        this.editor = editor;
+    }
+
     /**
      * Creates a new text file viewer for an unsaved file.
      */

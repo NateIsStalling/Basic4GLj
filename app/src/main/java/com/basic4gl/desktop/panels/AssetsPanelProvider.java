@@ -50,6 +50,11 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
     private static final String LAYOUT_GRID = "Grid";
     private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
     private static final Dimension HEADER_LAYOUT_BUTTON_SIZE = new Dimension(34, 30);
+    private static final Color SEGMENTED_BACKGROUND = new Color(0xE0E0E0);
+    private static final String SEGMENTED_BUTTON_STYLE =
+            "arc: 14; borderWidth: 0; focusWidth: 0; innerFocusWidth: 0;"
+                    + " margin: 6,8,6,8; background: #E0E0E0;"
+                    + " hoverBackground: #D6D6D6; selectedBackground: #FFFFFF";
 
     private FileManager fileManager;
 
@@ -129,8 +134,7 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
         title.setFont(new Font(baseFont.getName(), Font.BOLD, baseFont.getSize() + 2));
         title.setForeground(new Color(0x424242));
         title.setBorder(new EmptyBorder(0, 8, 0, 8));
-        JPanel layoutTabs = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        layoutTabs.setOpaque(false);
+        JPanel layoutTabs = createSegmentedButtonStrip();
         ButtonGroup layoutButtons = new ButtonGroup();
         JToggleButton treeLayoutButton = createAssetsLayoutButton("List View", ICON_VIEW_LIST, LAYOUT_TREE, "first");
         JToggleButton gridLayoutButton = createAssetsLayoutButton("Grid View", ICON_VIEW_GRID, LAYOUT_GRID, "last");
@@ -318,6 +322,7 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
         button.setFocusable(false);
         button.putClientProperty("JButton.buttonType", "segmented");
         button.putClientProperty("JButton.segmentPosition", segmentPosition);
+        button.putClientProperty("FlatLaf.style", SEGMENTED_BUTTON_STYLE);
         button.setOpaque(false);
         button.setMargin(new Insets(6, 8, 6, 8));
         button.setPreferredSize(HEADER_LAYOUT_BUTTON_SIZE);
@@ -325,6 +330,14 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
         button.setMaximumSize(HEADER_LAYOUT_BUTTON_SIZE);
         button.addActionListener(e -> showAssetsLayout(layoutKey));
         return button;
+    }
+
+    private JPanel createSegmentedButtonStrip() {
+        JPanel panel = new RoundedCardPanel(RoundedCardPanel.DEFAULT_ARC);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+        panel.setBackground(SEGMENTED_BACKGROUND);
+        panel.setBorder(new EmptyBorder(1, 1, 1, 1));
+        return panel;
     }
 
     private JButton createHeaderIconButton(String iconPath, String tooltip) {

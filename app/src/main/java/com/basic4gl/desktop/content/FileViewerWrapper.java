@@ -14,65 +14,17 @@ public class FileViewerWrapper {
 
     public FileViewerWrapper(IFileViewer viewer) {
         this.viewer = viewer;
-        this.textEditor = (viewer instanceof TextFileViewer) ? ((TextFileViewer) viewer).getFileEditor() : null;
+        if (viewer instanceof TextFileViewer textFileViewer) {
+            this.textEditor = textFileViewer.getFileEditor();
+        } else if (viewer instanceof HtmlViewer htmlViewer) {
+            this.textEditor = htmlViewer.getFileEditor();
+        } else {
+            this.textEditor = null;
+        }
     }
 
     public FileViewerWrapper(FileEditor editor) {
-        this.viewer = new IFileViewer() {
-            @Override
-            public String getTitle() {
-                return editor.getTitle();
-            }
-
-            @Override
-            public String getFilePath() {
-                return editor.getFilePath();
-            }
-
-            @Override
-            public javax.swing.JComponent getContentPane() {
-                return editor.getContentPane();
-            }
-
-            @Override
-            public File getFile() {
-                return editor.getFile();
-            }
-
-            @Override
-            public String getShortFilename() {
-                return editor.getShortFilename();
-            }
-
-            @Override
-            public boolean isModified() {
-                return editor.isModified();
-            }
-
-            @Override
-            public void setModified() {
-                editor.setModified();
-            }
-
-            @Override
-            public ViewerType getViewerType() {
-                return ViewerType.TEXT_EDITOR;
-            }
-
-            @Override
-            public boolean hasPreview() {
-                return false;
-            }
-
-            @Override
-            public void setViewMode(ViewMode viewMode) {}
-
-            @Override
-            public ViewMode getViewMode() {
-                return ViewMode.DEFAULT;
-            }
-        };
-        this.textEditor = editor;
+        this(new TextFileViewer(editor));
     }
 
     /**

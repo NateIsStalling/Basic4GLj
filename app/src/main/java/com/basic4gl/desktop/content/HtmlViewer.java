@@ -1,7 +1,10 @@
 package com.basic4gl.desktop.content;
 
 import com.basic4gl.desktop.editor.IFileViewer;
+import com.basic4gl.desktop.editor.IFileEditorActionListener;
+import com.basic4gl.desktop.editor.IToggleBreakpointListener;
 import com.basic4gl.desktop.spi.PluginContext;
+import com.basic4gl.desktop.util.IFileManager;
 import com.basic4gl.desktop.spi.content.FileViewer;
 import com.basic4gl.desktop.spi.content.FileViewerException;
 import java.awt.*;
@@ -16,13 +19,20 @@ import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.web.WebView;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.fife.ui.rsyntaxtextarea.LinkGenerator;
+import org.fife.ui.rtextarea.SearchContext;
 
 public class HtmlViewer implements FileViewer, IFileViewer {
     private static final AtomicBoolean JAVAFX_INITIALIZED = new AtomicBoolean(false);
 
+    private final JPanel contentPane = new JPanel(new BorderLayout());
     private final JFXPanel panel;
 
     private WebView webView;
+
+    private TextFileViewer textViewer;
 
     protected File file;
 
@@ -33,6 +43,7 @@ public class HtmlViewer implements FileViewer, IFileViewer {
 
     public HtmlViewer() {
         panel = new JFXPanel();
+        showViewMode();
 
         ensureJavaFxInitialized();
         Platform.runLater(() -> {
@@ -54,6 +65,41 @@ public class HtmlViewer implements FileViewer, IFileViewer {
         }
     }
 
+    public HtmlViewer(
+            PluginContext pluginContext,
+            File file,
+            IFileEditorActionListener actionListener,
+            IFileManager fileManager,
+            IToggleBreakpointListener toggleBreakpointListener,
+            LinkGenerator linkGenerator,
+            SearchContext searchContext) {
+        this();
+        textViewer = new TextFileViewer(
+                file, actionListener, fileManager, toggleBreakpointListener, linkGenerator, searchContext);
+        textViewer.getFileEditor().getEditorPane().getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                onEditorDocumentChanged();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                onEditorDocumentChanged();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                onEditorDocumentChanged();
+            }
+        });
+        try {
+            loadFile(pluginContext, file.toPath());
+        } catch (FileViewerException ex) {
+            pluginContext.dialogs().showDialog("Unable to load HTML file: " + ex.getMessage());
+        }
+        showViewMode();
+    }
+
     @Override
     public void loadFile(PluginContext context, Path path) throws FileViewerException {
         file = path.toFile();
@@ -61,16 +107,21 @@ public class HtmlViewer implements FileViewer, IFileViewer {
         try {
 
             String html = Files.readString(path, StandardCharsets.UTF_8);
+            source = html;
 
             panel.putClientProperty("docs.path", path);
 
-            loadHtmlContent(html);
+            loadHtmlContent(renderPreviewHtml(html));
 
         } catch (IOException ex) {
             context.dialogs().showDialog("Unable to load file: " + ex.getMessage());
         } catch (Throwable ex) {
             context.dialogs().showDialog("Unable to render html file: " + ex.getMessage());
         }
+    }
+
+    protected String renderPreviewHtml(String source) {
+        return source == null ? "" : source;
     }
 
     protected void loadHtmlContent(String html) {
@@ -88,7 +139,7 @@ public class HtmlViewer implements FileViewer, IFileViewer {
 
     @Override
     public JComponent getComponent() {
-        return panel;
+        return contentPane;
     }
 
     @Override
@@ -154,7 +205,7 @@ public class HtmlViewer implements FileViewer, IFileViewer {
 
     @Override
     public JComponent getContentPane() {
-        return panel;
+        return contentPane;
     }
 
     @Override
@@ -169,13 +220,14 @@ public class HtmlViewer implements FileViewer, IFileViewer {
 
     @Override
     public boolean isModified() {
-        // TODO implement switching between preview and edit mode, wrapping TextFileViewer
-        return false;
+        return textViewer != null && textViewer.isModified();
     }
 
     @Override
     public void setModified() {
-        // TODO implement switching between preview and edit mode, wrapping TextFileViewer
+        if (textViewer != null) {
+            textViewer.setModified();
+        }
     }
 
     @Override
@@ -195,10 +247,55 @@ public class HtmlViewer implements FileViewer, IFileViewer {
         } else {
             this.viewMode = viewMode;
         }
+        showViewMode();
     }
 
     @Override
     public ViewMode getViewMode() {
         return viewMode;
+    }
+
+    public FileEditor getFileEditor() {
+        return textViewer != null ? textViewer.getFileEditor() : null;
+    }
+
+    private void onEditorDocumentChanged() {
+        source = textViewer.getFileEditor().getEditorPane().getText();
+        if (viewMode == ViewMode.PREVIEW || viewMode == ViewMode.EDITOR_AND_PREVIEW) {
+            loadHtmlContent(renderPreviewHtml(source));
+        }
+    }
+
+    private void showViewMode() {
+        contentPane.removeAll();
+        removeFromParent(panel);
+        JComponent editorContent = textViewer != null ? textViewer.getContentPane() : null;
+        if (editorContent != null) {
+            removeFromParent(editorContent);
+        }
+
+        if (viewMode == ViewMode.EDITOR && editorContent != null) {
+            contentPane.add(editorContent, BorderLayout.CENTER);
+        } else if (viewMode == ViewMode.EDITOR_AND_PREVIEW && editorContent != null) {
+            loadHtmlContent(renderPreviewHtml(textViewer.getFileEditor().getEditorPane().getText()));
+            JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, editorContent, panel);
+            splitPane.setResizeWeight(0.5);
+            contentPane.add(splitPane, BorderLayout.CENTER);
+        } else {
+            if (textViewer != null) {
+                loadHtmlContent(renderPreviewHtml(textViewer.getFileEditor().getEditorPane().getText()));
+            }
+            contentPane.add(panel, BorderLayout.CENTER);
+        }
+
+        contentPane.revalidate();
+        contentPane.repaint();
+    }
+
+    private void removeFromParent(Component component) {
+        Container parent = component.getParent();
+        if (parent != null) {
+            parent.remove(component);
+        }
     }
 }

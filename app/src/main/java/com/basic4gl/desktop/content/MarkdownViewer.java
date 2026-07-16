@@ -3,8 +3,11 @@ package com.basic4gl.desktop.content;
 import static com.basic4gl.desktop.util.HtmlUtil.markdownToHtml;
 
 import com.basic4gl.desktop.MainWindow;
+import com.basic4gl.desktop.editor.IFileEditorActionListener;
+import com.basic4gl.desktop.editor.IToggleBreakpointListener;
 import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.spi.content.FileViewerException;
+import com.basic4gl.desktop.util.IFileManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.swing.*;
+import org.fife.ui.rsyntaxtextarea.LinkGenerator;
+import org.fife.ui.rtextarea.SearchContext;
 
 public class MarkdownViewer extends HtmlViewer {
 
@@ -31,13 +36,25 @@ public class MarkdownViewer extends HtmlViewer {
         }
     }
 
+    public MarkdownViewer(
+            PluginContext pluginContext,
+            File file,
+            IFileEditorActionListener actionListener,
+            IFileManager fileManager,
+            IToggleBreakpointListener toggleBreakpointListener,
+            LinkGenerator linkGenerator,
+            SearchContext searchContext) {
+        super(pluginContext, file, actionListener, fileManager, toggleBreakpointListener, linkGenerator, searchContext);
+    }
+
     @Override
     public void loadFile(PluginContext context, Path path) throws FileViewerException {
         file = path.toFile();
 
         try {
             String markdown = Files.readString(path, StandardCharsets.UTF_8);
-            String html = buildMarkdownDocumentHtml(markdownToHtml(markdown));
+            source = markdown;
+            String html = renderPreviewHtml(markdown);
 
             loadHtmlContent(html);
 
@@ -61,6 +78,11 @@ public class MarkdownViewer extends HtmlViewer {
     @Override
     public ViewerType getViewerType() {
         return ViewerType.MARKDOWN_VIEWER;
+    }
+
+    @Override
+    protected String renderPreviewHtml(String source) {
+        return buildMarkdownDocumentHtml(markdownToHtml(source == null ? "" : source));
     }
 
     private String readTextResource(String resourcePath) {

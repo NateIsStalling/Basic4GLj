@@ -1,7 +1,5 @@
 package com.basic4gl.language.adapter;
 
-import static com.basic4gl.language.adapter.util.LanguageUtil.*;
-
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;

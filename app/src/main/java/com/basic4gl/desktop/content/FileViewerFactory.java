@@ -46,6 +46,11 @@ public class FileViewerFactory {
             return IFileViewer.ViewerType.MARKDOWN_VIEWER;
         }
 
+        // HTML files
+        if (name.endsWith(".html") || name.endsWith(".htm")) {
+            return IFileViewer.ViewerType.HTML_VIEWER;
+        }
+
         // Default to text editor
         return IFileViewer.ViewerType.TEXT_EDITOR;
     }
@@ -96,13 +101,27 @@ public class FileViewerFactory {
                 }
             case MARKDOWN_VIEWER:
                 if (file != null && file.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
-                    return new MarkdownViewer(pluginContext, file);
+                    return new MarkdownViewer(
+                            pluginContext,
+                            file,
+                            actionListener,
+                            fileManager,
+                            toggleBreakpointListener,
+                            linkGenerator,
+                            searchContext);
                 }
             case HTML_VIEWER:
                 if (file != null
                         && (file.getName().toLowerCase(Locale.ROOT).endsWith(".html")
                                 || file.getName().toLowerCase(Locale.ROOT).endsWith(".htm"))) {
-                    return new HtmlViewer(pluginContext, file);
+                    return new HtmlViewer(
+                            pluginContext,
+                            file,
+                            actionListener,
+                            fileManager,
+                            toggleBreakpointListener,
+                            linkGenerator,
+                            searchContext);
                 }
             case TEXT_EDITOR:
             default:

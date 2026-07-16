@@ -19,8 +19,12 @@ public class Theme {
     public static final String ICON_SETTINGS = THEME_DIRECTORY + "icon_settings_outline.png";
     public static final String ICON_REFRESH = THEME_DIRECTORY + "icon_refresh.png";
     public static final String ICON_DOTS_VERTICAL = THEME_DIRECTORY + "icon_dots_vertical.png";
+    public static final String ICON_ADD = THEME_DIRECTORY + "icon_add.png";
     public static final String ICON_VIEW_GRID = THEME_DIRECTORY + "icon_view_grid.png";
     public static final String ICON_VIEW_LIST = THEME_DIRECTORY + "icon_view_list.png";
+    public static final String ICON_EDIT = THEME_DIRECTORY + "icon_edit_outline.png";
+    public static final String ICON_EDIT_PREVIEW = THEME_DIRECTORY + "icon_edit_preview_outline.png";
+    public static final String ICON_PREVIEW = THEME_DIRECTORY + "icon_preview_outline.png";
     public static final String ICON_CHEVRON_DOWN = THEME_DIRECTORY + "icon_chevron_down.png";
     public static final String ICON_SEARCH = THEME_DIRECTORY + "icon_search.png";
     public static final String ICON_ARROW_DOWN = THEME_DIRECTORY + "icon_arrow_down.png";

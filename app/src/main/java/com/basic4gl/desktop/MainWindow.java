@@ -2,6 +2,7 @@ package com.basic4gl.desktop;
 
 import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
 import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
 import static com.formdev.flatlaf.FlatClientProperties.*;
 
@@ -17,6 +18,7 @@ import com.basic4gl.desktop.language.SymbolIndexer;
 import com.basic4gl.desktop.panels.*;
 import com.basic4gl.desktop.spi.*;
 import com.basic4gl.desktop.util.BasicDialogService;
+import com.basic4gl.desktop.util.RoundedCardPanel;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.language.core.internal.Mutable;
@@ -78,15 +80,21 @@ public class MainWindow
     private final JTabbedPane splitTabControl = new JTabbedPane();
     private final JSplitPane editorSplitPane;
     private final JPanel primaryTabHost = new JPanel(new BorderLayout());
-    private final JButton addTabDropdownButton = new JButton("+");
+    private final JButton addTabDropdownButton = new JButton(createScaledIcon(ICON_ADD, 18));
+    private final JPanel fileViewModeTabs = createSegmentedButtonStrip();
+    private final JToggleButton editViewButton =
+            createFileViewModeButton("Editor", ICON_EDIT, IFileViewer.ViewMode.EDITOR, "first");
+    private final JToggleButton editPreviewViewButton = createFileViewModeButton(
+            "Editor and Preview", ICON_EDIT_PREVIEW, IFileViewer.ViewMode.EDITOR_AND_PREVIEW, "middle");
+    private final JToggleButton previewViewButton =
+            createFileViewModeButton("Preview", ICON_PREVIEW, IFileViewer.ViewMode.PREVIEW, "last");
+    private final JPanel fileViewModeTabsHost = createSegmentedButtonStripHost(fileViewModeTabs);
     private final JPanel centerPaneHost = new JPanel(new BorderLayout());
     private final JPanel topPaneHost = new JPanel(new BorderLayout());
     private final JPanel leftRailsHost = new JPanel();
     private final JSplitPane workspacePane;
     private final JSplitPane contentPane;
     private final JPanel bottomBarContainer = new JPanel(new BorderLayout());
-    // File viewers: stores IFileViewer instances for each tab (parallel to tabControl)
-    private final java.util.List<FileViewerWrapper> fileViewers = new java.util.ArrayList<>();
     private final JPanel leftSidebarContent = new JPanel(new CardLayout());
     private final JToolBar leftSidebarRail = new JToolBar(SwingConstants.VERTICAL);
     private final ButtonGroup leftSidebarGroup = new ButtonGroup();
@@ -122,6 +130,14 @@ public class MainWindow
     private static final String RECENT_WORKSPACES_FILE = "recent-workspaces.properties";
     private static final String RECENT_WORKSPACES_KEY = "RECENT_WORKSPACES";
     private static final int MAX_RECENT_WORKSPACES = 10;
+    private static final Dimension TAB_HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
+    private static final Dimension TAB_VIEW_MODE_BUTTON_SIZE = new Dimension(34, 30);
+    private static final String TAB_FILE_VIEWER_PROPERTY = "basic4gl.fileViewer";
+    private static final Color SEGMENTED_BACKGROUND = new Color(0xE0E0E0);
+    private static final String SEGMENTED_BUTTON_STYLE =
+            "arc: 14; borderWidth: 0; focusWidth: 0; innerFocusWidth: 0;"
+                    + " margin: 6,8,6,8; background: #E0E0E0;"
+                    + " hoverBackground: #D6D6D6; selectedBackground: #FFFFFF";
 
     private final JMenu bookmarkSubMenu = new JMenu("Bookmarks");
     private final JMenu breakpointSubMenu = new JMenu("Breakpoints");
@@ -621,9 +637,7 @@ public class MainWindow
                             // Remove tab
                             tabControl.remove(tabIndex);
                             fileManager.getFileEditors().remove(tabIndex.intValue());
-                            if (tabIndex >= 0 && tabIndex < fileViewers.size()) {
-                                fileViewers.remove(tabIndex);
-                            }
+                            refreshFileViewModeButtons();
                             fileManager.ensureRunnableFileValid();
                             refreshRunnableFileControls();
 
@@ -908,7 +922,7 @@ public class MainWindow
         // Close existing editors
         tabControl.removeAll();
         fileManager.getFileEditors().clear();
-        fileViewers.clear();
+        refreshFileViewModeButtons();
 
         // Create a default tab
         addTab();
@@ -977,7 +991,7 @@ public class MainWindow
                 searchContext,
                 basicEditor);
 
-        addTabWithViewer(viewer);
+        addTab(viewer);
 
         tabControl.setSelectedIndex(tabControl.getTabCount() - 1);
         registerWorkspace(file.getParentFile());
@@ -992,7 +1006,7 @@ public class MainWindow
             // Clear file editors
             this.tabControl.removeAll();
             fileManager.getFileEditors().clear();
-            fileViewers.clear();
+            refreshFileViewModeButtons();
 
             this.addTab();
             refreshSidebarContent();
@@ -1476,9 +1490,7 @@ public class MainWindow
         if (index >= 0 && index < fileManager.getFileEditors().size()) {
             fileManager.getFileEditors().remove(index);
         }
-        if (index >= 0 && index < fileViewers.size()) {
-            fileViewers.remove(index);
-        }
+        refreshFileViewModeButtons();
         fileManager.ensureRunnableFileValid();
         refreshRunnableFileControls();
         refreshSidebarContent();
@@ -1490,83 +1502,15 @@ public class MainWindow
     }
 
     public void addTab(FileEditor editor) {
-
-        int count = fileManager.editorCount();
-        fileManager.getFileEditors().add(editor);
-        fileViewers.add(new FileViewerWrapper(editor));
-
-        // replace emptyTabPanel if needed
-        setEditorContent(getActiveEditorHost());
-
-        tabControl.addTab(editor.getTitle(), editor.getContentPane());
-
-        final FileEditor edit = editor;
-        File file = edit.getFile();
-        if (file != null) {
-            basicEditor.notifyFileOpened(file);
-            basicEditor.onFileOpened(edit);
-        }
-
-        edit.getEditorPane().getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                int index = getTabIndex(edit.getFilePath());
-                edit.setModified();
-                tabControl.setTitleAt(index, edit.getTitle());
-                for (IEditorPanelProvider panel : panels) {
-                    panel.onFileModified(edit.getFilePath());
-                }
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                int index = getTabIndex(edit.getFilePath());
-                edit.setModified();
-                tabControl.setTitleAt(index, edit.getTitle());
-                for (IEditorPanelProvider panel : panels) {
-                    panel.onFileModified(edit.getFilePath());
-                }
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                if (e.getLength() == 0) {
-                    // ignore empty changes - eg: syntax highlighting refreshed
-                    return;
-                }
-                int index = getTabIndex(edit.getFilePath());
-                edit.setModified();
-                tabControl.setTitleAt(index, edit.getTitle());
-            }
-        });
-
-        // Allow user to see cursor position
-        editor.getEditorPane().addCaretListener(TrackCaretPosition);
-        cursorPositionLabel.setText(0 + ":" + 0); // Reset label
-
-        // Set tab as read-only if App is running or paused
-        boolean readOnly = basicEditor.getMode() != ApMode.AP_STOPPED;
-        editor.getEditorPane().setEditable(!readOnly);
-
-        // TODO set syntax highlight colors
-
-        // Refresh interface if there was previously no tabs open
-        if (count == 0) {
-            basicEditor.setMode(ApMode.AP_STOPPED, null);
-        }
-
-        fileManager.ensureRunnableFileValid();
-        refreshRunnableFileControls();
-        refreshSidebarContent();
+        addTab(new TextFileViewer(editor));
     }
 
     /**
-     * Adds a file viewer tab (unified method for all viewer types including images and audio)
+     * Adds a file viewer tab for all viewer types, including text editors, images, audio, and docs.
      */
-    public void addTabWithViewer(IFileViewer viewer) {
+    public void addTab(IFileViewer viewer) {
         int count = tabControl.getTabCount();
         FileViewerWrapper wrapper = new FileViewerWrapper(viewer);
-        fileViewers.add(wrapper);
 
         // For backward compatibility with FileEditor code, also add to fileManager if it's a text editor
         if (wrapper.isTextEditor()) {
@@ -1579,12 +1523,16 @@ public class MainWindow
         // replace emptyTabPanel if needed
         setEditorContent(getActiveEditorHost());
 
-        tabControl.addTab(viewer.getTitle(), viewer.getContentPane());
+        JComponent contentPane = viewer.getContentPane();
+        contentPane.putClientProperty(TAB_FILE_VIEWER_PROPERTY, viewer);
+        tabControl.addTab(viewer.getTitle(), contentPane);
 
-        final FileViewerWrapper wrappedViewer = wrapper;
         File file = viewer.getFile();
         if (file != null) {
             basicEditor.notifyFileOpened(file);
+            if (wrapper.isTextEditor()) {
+                basicEditor.onFileOpened(wrapper.getFileEditor());
+            }
         }
 
         // Add document listener only for text editors
@@ -1616,6 +1564,10 @@ public class MainWindow
 
                 @Override
                 public void changedUpdate(DocumentEvent e) {
+                    if (e.getLength() == 0) {
+                        // ignore empty changes - eg: syntax highlighting refreshed
+                        return;
+                    }
                     int index = getTabIndex(edit.getFilePath());
                     edit.setModified();
                     tabControl.setTitleAt(index, edit.getTitle());
@@ -1982,10 +1934,103 @@ public class MainWindow
     private void configurePrimaryTabHost() {
         addTabDropdownButton.setFocusable(false);
         addTabDropdownButton.setToolTipText("Create a new tab or open an asset");
-        addTabDropdownButton.setMargin(new Insets(2, 8, 2, 8));
+        addTabDropdownButton.putClientProperty("JButton.buttonType", "toolBarButton");
+        addTabDropdownButton.putClientProperty(
+                "FlatLaf.style", "arc: 14; focusWidth: 0; innerFocusWidth: 0; margin: 6,6,6,6");
+        addTabDropdownButton.setOpaque(false);
+        addTabDropdownButton.setMargin(new Insets(6, 6, 6, 6));
+        addTabDropdownButton.setPreferredSize(TAB_HEADER_ICON_BUTTON_SIZE);
+        addTabDropdownButton.setMinimumSize(TAB_HEADER_ICON_BUTTON_SIZE);
+        addTabDropdownButton.setMaximumSize(TAB_HEADER_ICON_BUTTON_SIZE);
         addTabDropdownButton.addActionListener(e -> showCreateTabMenu(addTabDropdownButton));
         tabControl.putClientProperty(TABBED_PANE_LEADING_COMPONENT, addTabDropdownButton);
+        ButtonGroup viewModeButtons = new ButtonGroup();
+        viewModeButtons.add(editViewButton);
+        viewModeButtons.add(editPreviewViewButton);
+        viewModeButtons.add(previewViewButton);
+        fileViewModeTabs.add(editViewButton);
+        fileViewModeTabs.add(editPreviewViewButton);
+        fileViewModeTabs.add(previewViewButton);
+        fileViewModeTabsHost.setVisible(false);
+        tabControl.putClientProperty(TABBED_PANE_TRAILING_COMPONENT, fileViewModeTabsHost);
+        tabControl.addChangeListener(e -> refreshFileViewModeButtons());
         primaryTabHost.add(tabControl, BorderLayout.CENTER);
+    }
+
+    private JToggleButton createFileViewModeButton(
+            String tooltip, String iconPath, IFileViewer.ViewMode viewMode, String segmentPosition) {
+        JToggleButton button = new JToggleButton(createScaledIcon(iconPath, 18));
+        button.setToolTipText(tooltip);
+        button.setFocusable(false);
+        button.putClientProperty("JButton.buttonType", "segmented");
+        button.putClientProperty("JButton.segmentPosition", segmentPosition);
+        button.putClientProperty("FlatLaf.style", SEGMENTED_BUTTON_STYLE);
+        button.setOpaque(false);
+        button.setMargin(new Insets(6, 8, 6, 8));
+        button.setPreferredSize(TAB_VIEW_MODE_BUTTON_SIZE);
+        button.setMinimumSize(TAB_VIEW_MODE_BUTTON_SIZE);
+        button.setMaximumSize(TAB_VIEW_MODE_BUTTON_SIZE);
+        button.addActionListener(e -> setSelectedFileViewMode(viewMode));
+        return button;
+    }
+
+    private JPanel createSegmentedButtonStrip() {
+        JPanel panel = new RoundedCardPanel(RoundedCardPanel.DEFAULT_ARC);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+        panel.setBackground(SEGMENTED_BACKGROUND);
+        panel.setBorder(new EmptyBorder(1, 1, 1, 1));
+        return panel;
+    }
+
+    private JPanel createSegmentedButtonStripHost(JPanel strip) {
+        JPanel host = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        host.setOpaque(false);
+        host.setBorder(new EmptyBorder(2, 4, 2, 0));
+        host.add(strip);
+        return host;
+    }
+
+    private void setSelectedFileViewMode(IFileViewer.ViewMode viewMode) {
+        IFileViewer viewer = getSelectedFileViewer();
+        if (viewer == null || !viewer.hasPreview()) {
+            refreshFileViewModeButtons();
+            return;
+        }
+        viewer.setViewMode(viewMode);
+        viewer.getContentPane().revalidate();
+        viewer.getContentPane().repaint();
+        refreshFileViewModeButtons();
+    }
+
+    private void refreshFileViewModeButtons() {
+        IFileViewer viewer = getSelectedFileViewer();
+        boolean hasPreview = viewer != null && viewer.hasPreview();
+        fileViewModeTabsHost.setVisible(hasPreview);
+        if (!hasPreview) {
+            return;
+        }
+
+        IFileViewer.ViewMode viewMode = viewer.getViewMode();
+        editViewButton.setSelected(viewMode == IFileViewer.ViewMode.EDITOR);
+        editPreviewViewButton.setSelected(viewMode == IFileViewer.ViewMode.EDITOR_AND_PREVIEW);
+        previewViewButton.setSelected(
+                viewMode == IFileViewer.ViewMode.PREVIEW || viewMode == IFileViewer.ViewMode.DEFAULT);
+    }
+
+    private IFileViewer getSelectedFileViewer() {
+        return getFileViewerAt(tabControl.getSelectedIndex());
+    }
+
+    private IFileViewer getFileViewerAt(int index) {
+        if (index < 0 || index >= tabControl.getTabCount()) {
+            return null;
+        }
+        Component component = tabControl.getComponentAt(index);
+        if (component instanceof JComponent tabContent
+                && tabContent.getClientProperty(TAB_FILE_VIEWER_PROPERTY) instanceof IFileViewer viewer) {
+            return viewer;
+        }
+        return null;
     }
 
     private void configureSplitTabs() {
@@ -2585,12 +2630,12 @@ public class MainWindow
         if (absolutePath == null || absolutePath.isBlank()) {
             return -1;
         }
-        for (int i = 0; i < fileViewers.size(); i++) {
-            FileViewerWrapper wrapper = fileViewers.get(i);
-            if (wrapper == null || wrapper.getFilePath() == null) {
+        for (int i = 0; i < tabControl.getTabCount(); i++) {
+            IFileViewer viewer = getFileViewerAt(i);
+            if (viewer == null || viewer.getFilePath() == null) {
                 continue;
             }
-            if (absolutePath.equals(wrapper.getFilePath())) {
+            if (absolutePath.equals(viewer.getFilePath())) {
                 return i;
             }
         }
