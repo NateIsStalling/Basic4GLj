@@ -5,7 +5,6 @@ import com.basic4gl.desktop.editor.ApMode;
 
 public interface IDebugPresenter {
 
-
     void updateCallStack(StackTraceCallback message);
 
     void refreshWatchList();

@@ -8,8 +8,7 @@ public final class HtmlUtil {
     private static final Parser MARKDOWN_PARSER = Parser.builder().build();
     private static final HtmlRenderer MARKDOWN_RENDERER = HtmlRenderer.builder().build();
 
-    private HtmlUtil() {
-    }
+    private HtmlUtil() {}
 
     public static String escapeHtml(String input) {
         if (input == null) {
@@ -18,12 +17,10 @@ public final class HtmlUtil {
         return input.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
-
     public static String markdownToHtml(String markdown) {
         String input = markdown == null ? "" : markdown;
         Node document = MARKDOWN_PARSER.parse(input);
         String htmlBody = MARKDOWN_RENDERER.render(document);
         return "<body class='markdown-body'>" + htmlBody + "</body>";
     }
-
 }

@@ -1,5 +1,14 @@
 package com.basic4gl.desktop.panels;
 
+import static com.basic4gl.desktop.Theme.*;
+import static com.basic4gl.desktop.Theme.ICON_MENU_FUNCTIONS;
+import static com.basic4gl.desktop.Theme.ICON_STRUCT;
+import static com.basic4gl.desktop.util.HtmlUtil.escapeHtml;
+import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
+import static com.basic4gl.desktop.util.SwingUtil.createLighterPanelBackground;
+import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
+
 import com.basic4gl.desktop.language.SymbolIndexer;
 import com.basic4gl.desktop.spi.EditorPlugin;
 import com.basic4gl.desktop.spi.LanguageService;
@@ -9,30 +18,16 @@ import com.basic4gl.desktop.spi.language.IndexedSymbol;
 import com.basic4gl.desktop.spi.language.LabelDefinition;
 import com.basic4gl.desktop.spi.language.VariableDefinition;
 import com.basic4gl.desktop.util.RoundedCardPanel;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
-import java.util.function.BiConsumer;
-
-import static com.basic4gl.desktop.Theme.*;
-import static com.basic4gl.desktop.Theme.ICON_MENU_FUNCTIONS;
-import static com.basic4gl.desktop.Theme.ICON_MENU_HELP;
-import static com.basic4gl.desktop.Theme.ICON_STRUCT;
-import static com.basic4gl.desktop.util.HtmlUtil.escapeHtml;
-import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
-import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
-import static com.basic4gl.desktop.util.SwingUtil.createLighterPanelBackground;
-import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
-import static com.formdev.flatlaf.FlatClientProperties.TABBED_PANE_TAB_CLOSABLE;
-import static com.formdev.flatlaf.FlatClientProperties.TABBED_PANE_TAB_CLOSE_CALLBACK;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class SymbolsPanelProvider implements IEditorPanelProvider {
 
@@ -63,7 +58,6 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             new JComboBox<>(new String[] {"All Sources", "Builtin", "Libraries", "Program"});
     private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
     private static final int CARD_ARC = 14;
-
 
     private int lastProgramSymbolsFingerprint = Integer.MIN_VALUE;
     private boolean updatingReferenceFilters = false;
@@ -102,7 +96,6 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         }
     }
 
-
     @Override
     public String id() {
         return "symbols";
@@ -136,8 +129,10 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
     public JPanel build(PluginContext context) {
         this.context = context;
 
-        symbolIndexer =
-                new SymbolIndexer(context.currentEditor().getLanguageSupport(), context.commands()::collectAllSourceText, this::updateProgramSymbols);
+        symbolIndexer = new SymbolIndexer(
+                context.currentEditor().getLanguageSupport(),
+                context.commands()::collectAllSourceText,
+                this::updateProgramSymbols);
         JPanel panelCardHost = new JPanel(new CardLayout());
         JPanel lookupPanel = new JPanel(new BorderLayout(6, 6));
         Color panelBackground = createLighterPanelBackground();
@@ -165,12 +160,14 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         referenceCopyButton.setFocusable(false);
         referenceCopyButton.setMargin(new Insets(4, 4, 4, 4));
         Font actionButtonFont = referenceCopyButton.getFont();
-//        referenceCopyButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD, actionButtonFont.getSize()));
+        //        referenceCopyButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD,
+        // actionButtonFont.getSize()));
         referenceCopyButton.setForeground(new Color(0x5B717F));
         referenceCopyButton.setEnabled(false);
         referenceInsertButton.setFocusable(false);
         referenceInsertButton.setMargin(new Insets(4, 4, 4, 4));
-//        referenceInsertButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD, actionButtonFont.getSize()));
+        //        referenceInsertButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD,
+        // actionButtonFont.getSize()));
         referenceInsertButton.setForeground(new Color(0x5B717F));
         referenceInsertButton.setEnabled(false);
 
@@ -186,8 +183,8 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         referenceList.setBackground(panelBackground);
         referenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         referenceList.setFixedCellHeight(20);
-        referenceList.setPrototypeCellValue(
-                new SymbolsPanelProvider.ReferenceItem("function", "prototype", "prototype(symbol, arg)", "Builtin", "", "", 0));
+        referenceList.setPrototypeCellValue(new SymbolsPanelProvider.ReferenceItem(
+                "function", "prototype", "prototype(symbol, arg)", "Builtin", "", "", 0));
         referenceList.setCellRenderer(new DefaultListCellRenderer() {
             private final ImageIcon functionIcon = createImageIcon(ICON_FUNCTION);
             private final ImageIcon variableIcon = createImageIcon(ICON_VARIABLE);
@@ -352,13 +349,12 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         return button;
     }
 
-
     private JComponent createRoundedCardHost(JComponent content, Color panelBackground, String key) {
         Color cardBackground = createLighterPanelBackground();
-//                new Color(
-//                Math.min(255, panelBackground.getRed() + 10),
-//                Math.min(255, panelBackground.getGreen() + 10),
-//                Math.min(255, panelBackground.getBlue() + 10));
+        //                new Color(
+        //                Math.min(255, panelBackground.getRed() + 10),
+        //                Math.min(255, panelBackground.getGreen() + 10),
+        //                Math.min(255, panelBackground.getBlue() + 10));
         JPanel card = new RoundedCardPanel();
         card.setLayout(new BorderLayout());
         card.setBackground(cardBackground);
@@ -371,9 +367,6 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         ((CardLayout) host.getLayout()).show(host, key);
         return host;
     }
-
-
-
 
     @Override
     public void refresh(EditorPlugin languageProvider) {
@@ -473,7 +466,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         rebuildLibraryFilterOptions();
         filterReferenceItems();
 
-        //TODO handle this or not: refreshAssetsLibrary();
+        // TODO handle this or not: refreshAssetsLibrary();
     }
 
     private void populateDocsFromCompiler() {
@@ -482,10 +475,14 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             return;
         }
         allReferenceItems.clear();
-        allReferenceItems.addAll(buildFunctionReferenceItems(context.currentEditor().getLanguage()));
-        allReferenceItems.addAll(buildConstantReferenceItems(context.currentEditor().getLanguage()));
-        allReferenceItems.addAll(buildLabelReferenceItems(context.currentEditor().getLanguage()));
-        allReferenceItems.addAll(buildVariableReferenceItems(context.currentEditor().getLanguage()));
+        allReferenceItems.addAll(
+                buildFunctionReferenceItems(context.currentEditor().getLanguage()));
+        allReferenceItems.addAll(
+                buildConstantReferenceItems(context.currentEditor().getLanguage()));
+        allReferenceItems.addAll(
+                buildLabelReferenceItems(context.currentEditor().getLanguage()));
+        allReferenceItems.addAll(
+                buildVariableReferenceItems(context.currentEditor().getLanguage()));
         allReferenceItems.sort(Comparator.comparing((ReferenceItem item) -> item.name, String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(item -> item.kind));
         rebuildLibraryFilterOptions();
@@ -507,8 +504,8 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
                     argsOnly.append(arg.signature());
                 }
             }
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>" +
-                    "<p style='margin:0 0 4px 0;'><b>Type:</b> Function<br/><b>Library:</b> "
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<p style='margin:0 0 4px 0;'><b>Type:</b> Function<br/><b>Library:</b> "
                     + escapeHtml(item.packageName())
                     + "</p><p style='margin:0;'>"
                     + escapeHtml(item.signature())
@@ -531,8 +528,8 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             if (item == null) {
                 continue;
             }
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>" +
-                    "<p style='margin:0 0 4px 0;'><b>Type:</b> Constant<br/><b>Library:</b> "
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<p style='margin:0 0 4px 0;'><b>Type:</b> Constant<br/><b>Library:</b> "
                     + escapeHtml(item.packageName())
                     + "</p><p style='margin:0;'>"
                     + escapeHtml(item.signature())
@@ -557,8 +554,8 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
                 continue;
             }
             String signature = label.signature();
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>" +
-                    "<p style='margin:0 0 4px 0;'><b>Type:</b> Label<br/><b>Usage:</b> "
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<p style='margin:0 0 4px 0;'><b>Type:</b> Label<br/><b>Usage:</b> "
                     + "<code>" + escapeHtml(label.usage()) + "</code>"
                     + "</p></body></html>";
             items.add(new ReferenceItem(
@@ -581,8 +578,8 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             }
             String typeStr = variable.type().name();
             String signature = variable.signature();
-            String details = "<html><body style='font-family:sans-serif;padding:6px;'>" +
-                    "<p style='margin:0 0 4px 0;'><b>Type:</b> Variable<br/><b>Data type:</b> "
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<p style='margin:0 0 4px 0;'><b>Type:</b> Variable<br/><b>Data type:</b> "
                     + escapeHtml(typeStr) + "<br/><b>Source:</b> Program</p></body></html>";
             items.add(new ReferenceItem(
                     "variable",
@@ -706,22 +703,22 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         for (ReferenceItem item : allReferenceItems) {
             boolean kindMatches = "All Symbols".equals(selectedKind)
                     || ("Functions".equals(selectedKind)
-                    && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
+                            && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
                     || ("Constants".equals(selectedKind) && "constant".equals(item.kind))
                     || ("Labels".equals(selectedKind) && "label".equals(item.kind))
                     || ("Variables".equals(selectedKind) && "variable".equals(item.kind))
                     || ("Structs".equals(selectedKind) && "struc".equals(item.kind));
             boolean sourceMatches = "All Sources".equals(selectedSource)
                     || ("Builtin".equals(selectedSource)
-                    && item.library != null
-                    && "Builtin".equalsIgnoreCase(item.library))
+                            && item.library != null
+                            && "Builtin".equalsIgnoreCase(item.library))
                     || ("Libraries".equals(selectedSource)
-                    && item.library != null
-                    && !"Builtin".equalsIgnoreCase(item.library)
-                    && !"Program".equalsIgnoreCase(item.library))
+                            && item.library != null
+                            && !"Builtin".equalsIgnoreCase(item.library)
+                            && !"Program".equalsIgnoreCase(item.library))
                     || ("Program".equals(selectedSource)
-                    && item.library != null
-                    && "Program".equalsIgnoreCase(item.library));
+                            && item.library != null
+                            && "Program".equalsIgnoreCase(item.library));
             boolean libraryMatches = "All Libraries".equals(selectedLibrary)
                     || (item.library != null && selectedLibrary.equals(item.library));
             if (needle.isEmpty()
@@ -729,7 +726,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
                     || item.signature.toLowerCase(Locale.ROOT).contains(needle)
                     || item.kind.toLowerCase(Locale.ROOT).contains(needle)
                     || (item.library != null
-                    && item.library.toLowerCase(Locale.ROOT).contains(needle))) {
+                            && item.library.toLowerCase(Locale.ROOT).contains(needle))) {
                 if (kindMatches && sourceMatches && libraryMatches) {
                     matches.add(item);
                 }
@@ -792,7 +789,4 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         referenceSelectionNameLabel.setText(referenceSelectionName);
         referenceSelectionNameLabel.setToolTipText(referenceSelectionName.isBlank() ? null : referenceSelectionName);
     }
-
-
-
 }

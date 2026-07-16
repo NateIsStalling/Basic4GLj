@@ -1,11 +1,22 @@
 package com.basic4gl.desktop.panels;
 
+import static com.basic4gl.desktop.Theme.*;
+import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
+import static com.basic4gl.desktop.util.SwingUtil.configureSmoothScrolling;
+import static com.basic4gl.desktop.util.SwingUtil.createLighterPanelBackground;
+
 import com.basic4gl.desktop.spi.EditorPlugin;
 import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.util.FileUtil;
 import com.basic4gl.desktop.util.RoundedCardPanel;
-import com.basic4gl.desktop.util.SwingUtil;
-
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Locale;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
@@ -15,19 +26,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Locale;
-
-import static com.basic4gl.desktop.Theme.*;
-import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
-import static com.basic4gl.desktop.util.SwingUtil.configureSmoothScrolling;
-import static com.basic4gl.desktop.util.SwingUtil.createLighterPanelBackground;
 
 public class FileBrowserPanelProvider implements IEditorPanelProvider {
 
@@ -193,11 +191,8 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
                 if (!(userObject instanceof File file) || !file.isFile()) {
                     return;
                 }
-                if (file.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
-                    context.commands().openMarkdownInDocsTab(file);
-                } else {
-                    context.commands().openFileWithPreferredViewer(file);
-                }
+
+                context.commands().openFileWithPreferredViewer(file);
             }
 
             @Override
@@ -251,8 +246,6 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
         return button;
     }
 
-
-
     private JComponent createRoundedCardHost(JComponent content, Color panelBackground, String key) {
         Color cardBackground = createLighterPanelBackground();
         JPanel card = new RoundedCardPanel();
@@ -291,8 +284,6 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
         openItem.addActionListener(evt -> {
             if (selectedFile.isDirectory()) {
                 context.commands().setWorkspaceDirectory(selectedFile);
-            } else if (selectedFile.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
-                context.commands().openMarkdownInDocsTab(selectedFile);
             } else {
                 context.commands().openFileWithPreferredViewer(selectedFile);
             }
@@ -342,24 +333,20 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
     }
 
     @Override
-    public void onFileModified(String filePath) {
-
-    }
+    public void onFileModified(String filePath) {}
 
     @Override
-    public void dispose() {
-
-    }
+    public void dispose() {}
 
     @Override
-    public void onCompileSucceeded() {
-
-    }
+    public void onCompileSucceeded() {}
 
     private DefaultMutableTreeNode buildFileTreeNode(File file, int depth, String searchNeedle) {
         boolean hasSearch = searchNeedle != null && !searchNeedle.isBlank();
-        boolean nameMatches = !hasSearch || file.getName().toLowerCase(Locale.ROOT).contains(searchNeedle);
-        boolean pathMatches = !hasSearch || file.getAbsolutePath().toLowerCase(Locale.ROOT).contains(searchNeedle);
+        boolean nameMatches =
+                !hasSearch || file.getName().toLowerCase(Locale.ROOT).contains(searchNeedle);
+        boolean pathMatches =
+                !hasSearch || file.getAbsolutePath().toLowerCase(Locale.ROOT).contains(searchNeedle);
         boolean matches = nameMatches || pathMatches;
         if (!file.isDirectory()) {
             return matches ? new DefaultMutableTreeNode(file) : null;

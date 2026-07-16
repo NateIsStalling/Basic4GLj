@@ -92,6 +92,7 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
     public LanguageService getLanguage() {
         return languageService;
     }
+
     @Override
     public LanguageSupport getLanguageSupport() {
         return languageSupport;

@@ -6,8 +6,8 @@ public interface PluginContext {
     //    ToolWindowRegistry toolWindows();
 
     EditorCommandsService commands();
-    DebugController debugger();
 
+    DebugController debugger();
 
     DialogService dialogs();
 

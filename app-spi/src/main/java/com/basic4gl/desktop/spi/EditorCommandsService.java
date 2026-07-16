@@ -5,14 +5,19 @@ import java.util.List;
 
 public interface EditorCommandsService {
     void openFileWithPreferredViewer(File file);
-    // TODO this should be cleaned up before 1.0; refactoring
-    void openMarkdownInDocsTab(File file);
+
     public String collectAllSourceText();
+
     void actionOpenFolder();
+
     void selectNextBookmark();
+
     void selectPreviousBookmark();
+
     void toggleBookmark();
+
     List<BookmarkInfo> listBookmarks();
+
     void goToBookmark(String filePath, int lineNumber);
 
     void setWorkspaceDirectory(File selectedFile);

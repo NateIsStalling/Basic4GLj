@@ -1,5 +1,6 @@
-package com.basic4gl.desktop.editor;
+package com.basic4gl.desktop.content;
 
+import com.basic4gl.desktop.editor.IFileViewer;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -100,5 +101,18 @@ public class ImageFileViewer implements IFileViewer {
     @Override
     public ViewerType getViewerType() {
         return ViewerType.IMAGE_VIEWER;
+    }
+
+    @Override
+    public boolean hasPreview() {
+        return false;
+    }
+
+    @Override
+    public void setViewMode(ViewMode viewMode) {}
+
+    @Override
+    public ViewMode getViewMode() {
+        return ViewMode.DEFAULT;
     }
 }

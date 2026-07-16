@@ -1,5 +1,8 @@
-package com.basic4gl.desktop.spi.content;
+package com.basic4gl.desktop.content;
 
+import com.basic4gl.desktop.spi.PluginContext;
+import com.basic4gl.desktop.spi.content.FileViewer;
+import com.basic4gl.desktop.spi.content.FileViewerException;
 import java.awt.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,7 +37,7 @@ public class SimpleTextViewer implements FileViewer {
     }
 
     @Override
-    public void loadFile(Path path) throws FileViewerException {
+    public void loadFile(PluginContext context, Path path) throws FileViewerException {
         try {
             if (!Files.exists(path)) {
                 throw new FileViewerException("File not found: " + path);

@@ -1,5 +1,6 @@
 package com.basic4gl.desktop.content;
 
+import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.spi.content.FileViewerException;
 import java.nio.file.Path;
 
@@ -52,7 +53,7 @@ public class FileViewerManager {
      * @param filepath Path to file to view
      * @return FileViewerResult containing viewer or error details
      */
-    public static FileViewerRegistry.FileViewerResult loadFile(Path filepath) {
+    public static FileViewerRegistry.FileViewerResult loadFile(PluginContext context, Path filepath) {
         if (!initialized) {
             initialize();
         }
@@ -60,7 +61,7 @@ public class FileViewerManager {
         FileViewerRegistry.FileViewerResult result = registry.findViewer(filepath);
         if (result.isSuccess()) {
             try {
-                result.getViewer().loadFile(filepath);
+                result.getViewer().loadFile(context, filepath);
             } catch (FileViewerException e) {
                 return new FileViewerRegistry.FileViewerResult(null, null, e.getMessage());
             }

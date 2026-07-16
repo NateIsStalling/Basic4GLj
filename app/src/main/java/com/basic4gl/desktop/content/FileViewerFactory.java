@@ -1,8 +1,11 @@
-package com.basic4gl.desktop.editor;
+package com.basic4gl.desktop.content;
 
+import com.basic4gl.desktop.editor.IFileEditorActionListener;
+import com.basic4gl.desktop.editor.IFileViewer;
+import com.basic4gl.desktop.editor.IToggleBreakpointListener;
+import com.basic4gl.desktop.spi.PluginContext;
 import java.io.File;
 import java.util.Locale;
-import javax.swing.*;
 import org.fife.ui.rsyntaxtextarea.LinkGenerator;
 import org.fife.ui.rtextarea.SearchContext;
 
@@ -59,6 +62,7 @@ public class FileViewerFactory {
      * @param toggleBreakpointListener listener for breakpoint toggles
      * @param linkGenerator link generator for hyperlinks
      * @param searchContext search context for find/replace
+     * @param pluginContext plugin context for accessing IDE services
      * @return a new IFileViewer instance
      */
     public static IFileViewer createViewer(
@@ -68,7 +72,8 @@ public class FileViewerFactory {
             com.basic4gl.desktop.util.IFileManager fileManager,
             IToggleBreakpointListener toggleBreakpointListener,
             LinkGenerator linkGenerator,
-            SearchContext searchContext) {
+            SearchContext searchContext,
+            PluginContext pluginContext) {
 
         IFileViewer.ViewerType viewerType = preferredViewerType;
 
@@ -83,18 +88,22 @@ public class FileViewerFactory {
                 if (file != null && isImageFile(file.getName().toLowerCase(Locale.ROOT))) {
                     return new ImageFileViewer(file);
                 }
-                // Fall through to hex viewer if not an image
             case HEX_VIEWER:
                 return new HexFileViewer(file);
             case AUDIO_VIEWER:
                 if (file != null && isAudioFile(file.getName().toLowerCase(Locale.ROOT))) {
                     return new AudioFileViewer(file);
                 }
-                // Fall through to text editor if not audio
             case MARKDOWN_VIEWER:
-                // Markdown is handled specially (usually in docs tabs), but provide fallback
-                return new TextFileViewer(
-                        file, actionListener, fileManager, toggleBreakpointListener, linkGenerator, searchContext);
+                if (file != null && file.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
+                    return new MarkdownViewer(pluginContext, file);
+                }
+            case HTML_VIEWER:
+                if (file != null
+                        && (file.getName().toLowerCase(Locale.ROOT).endsWith(".html")
+                                || file.getName().toLowerCase(Locale.ROOT).endsWith(".htm"))) {
+                    return new HtmlViewer(pluginContext, file);
+                }
             case TEXT_EDITOR:
             default:
                 return new TextFileViewer(

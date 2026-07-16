@@ -1,5 +1,7 @@
 package com.basic4gl.language.adapter;
 
+import static com.basic4gl.language.adapter.util.LanguageUtil.*;
+
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
@@ -8,7 +10,6 @@ import com.basic4gl.desktop.spi.FileLineNumber;
 import com.basic4gl.desktop.spi.LanguageService;
 import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.spi.language.*;
-import com.basic4gl.language.adapter.antlr.Basic4GL;
 import com.basic4gl.language.adapter.util.LanguageUtil;
 import com.basic4gl.language.adapter.util.NumberUtil;
 import com.basic4gl.language.core.extensions.FunctionLibrary;
@@ -19,14 +20,8 @@ import com.basic4gl.language.core.types.FunctionSpecification;
 import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.language.spi.PluginLibrary;
 import com.basic4gl.language.spi.PluginManager;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Token;
-
 import java.util.*;
 import java.util.stream.Stream;
-
-import static com.basic4gl.language.adapter.util.LanguageUtil.*;
 
 public class Basic4GLLanguageService implements LanguageService {
 
@@ -209,15 +204,7 @@ public class Basic4GLLanguageService implements LanguageService {
             String signature = typeStr + " " + variable.name;
             TypeDefinition typeDefinition = LanguageUtil.toTypeDefinition(variable.type);
             VariableDefinition definition = new VariableDefinition(
-                    variable.name,
-                    signature,
-                    typeDefinition,
-                    "",
-                    "",
-                    "Program",
-                    false,
-                    "global",
-                    "Program");
+                    variable.name, signature, typeDefinition, "", "", "Program", false, "global", "Program");
             variableDefinitions.add(definition);
         }
         return variableDefinitions;
@@ -290,17 +277,10 @@ public class Basic4GLLanguageService implements LanguageService {
                                 true,
                                 "",
                                 "Builtin");
-                VariableDefinition[] parameters = params != null
-                        ? buildFunctionParameterDefinitions(params, library)
-                        : new VariableDefinition[0];
+                VariableDefinition[] parameters =
+                        params != null ? buildFunctionParameterDefinitions(params, library) : new VariableDefinition[0];
                 FunctionDefinition definition = new FunctionDefinition(
-                        name,
-                        signature.toString(),
-                        returnValue,
-                        parameters,
-                        "",
-                        library,
-                        spec.hasBrackets());
+                        name, signature.toString(), returnValue, parameters, "", library, spec.hasBrackets());
                 items.add(definition);
             }
         }
@@ -393,14 +373,8 @@ public class Basic4GLLanguageService implements LanguageService {
                             true,
                             name,
                             "Program");
-            FunctionDefinition definition = new FunctionDefinition(
-                    name,
-                    signature.toString(),
-                    returnValue,
-                    parameters,
-                    "",
-                    "Program",
-                    true);
+            FunctionDefinition definition =
+                    new FunctionDefinition(name, signature.toString(), returnValue, parameters, "", "Program", true);
             items.add(definition);
         }
 

@@ -15,6 +15,7 @@ public interface LanguageService {
     public void onUnload();
 
     public List<String> extractStringLiterals(String text);
+
     public List<String> getReservedWords();
 
     public List<String> getConstants();

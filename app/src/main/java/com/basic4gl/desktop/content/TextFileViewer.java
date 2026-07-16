@@ -1,5 +1,8 @@
-package com.basic4gl.desktop.editor;
+package com.basic4gl.desktop.content;
 
+import com.basic4gl.desktop.editor.IFileEditorActionListener;
+import com.basic4gl.desktop.editor.IFileViewer;
+import com.basic4gl.desktop.editor.IToggleBreakpointListener;
 import com.basic4gl.desktop.util.IFileManager;
 import java.io.File;
 import java.io.FileReader;
@@ -107,5 +110,18 @@ public class TextFileViewer implements IFileViewer {
     @Override
     public ViewerType getViewerType() {
         return ViewerType.TEXT_EDITOR;
+    }
+
+    @Override
+    public boolean hasPreview() {
+        return false;
+    }
+
+    @Override
+    public void setViewMode(ViewMode viewMode) {}
+
+    @Override
+    public ViewMode getViewMode() {
+        return ViewMode.DEFAULT;
     }
 }

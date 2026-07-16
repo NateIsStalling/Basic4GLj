@@ -1,5 +1,7 @@
 package com.basic4gl.language.adapter;
 
+import static com.basic4gl.language.adapter.util.LanguageUtil.*;
+
 import com.basic4gl.desktop.spi.language.HighlightKind;
 import com.basic4gl.desktop.spi.language.IndexedSymbol;
 import com.basic4gl.desktop.spi.language.LangToken;
@@ -9,13 +11,9 @@ import com.basic4gl.language.adapter.antlr.Basic4GL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
-
-import static com.basic4gl.language.adapter.util.LanguageUtil.*;
 
 /**
  * {@link LanguageSupport} implementation for the Basic4GL language.
@@ -72,98 +70,98 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
     @Override
     public HighlightKind classify(LangToken token) {
         return switch (token.type()) {
-            // Preprocessor
+                // Preprocessor
             case Basic4GL.INCLUDE_DIR -> HighlightKind.PREPROCESSOR;
 
-            // Comments
+                // Comments
             case Basic4GL.COMMENT, Basic4GL.REM_COMMENT -> HighlightKind.COMMENT;
 
-            // Primary keywords
+                // Primary keywords
             case Basic4GL.FUNCTION_KW,
-                 Basic4GL.SUB_KW,
-                 Basic4GL.DIM_KW,
-                 Basic4GL.AS_KW,
-                 Basic4GL.GOTO_KW,
-                 Basic4GL.GOSUB_KW,
-                 Basic4GL.IF_KW,
-                 Basic4GL.THEN_KW,
-                 Basic4GL.ELSE_KW,
-                 Basic4GL.ELSEIF_KW,
-                 Basic4GL.ENDIF_KW,
-                 Basic4GL.END_KW,
-                 Basic4GL.RETURN_KW,
-                 Basic4GL.FOR_KW,
-                 Basic4GL.TO_KW,
-                 Basic4GL.STEP_KW,
-                 Basic4GL.NEXT_KW,
-                 Basic4GL.WHILE_KW,
-                 Basic4GL.WEND_KW,
-                 Basic4GL.RUN_KW,
-                 Basic4GL.STRUC_KW,
-                 Basic4GL.ENDSTRUC_KW,
-                 Basic4GL.CONST_KW,
-                 Basic4GL.ALLOC_KW,
-                 Basic4GL.NULL_KW,
-                 Basic4GL.DATA_KW,
-                 Basic4GL.READ_KW,
-                 Basic4GL.RESET_KW,
-                 Basic4GL.TYPE_KW,
-                 Basic4GL.AND_KW,
-                 Basic4GL.OR_KW,
-                 Basic4GL.NOT_KW,
-                 Basic4GL.XOR_KW,
-                 Basic4GL.MOD_KW -> HighlightKind.KEYWORD;
+                    Basic4GL.SUB_KW,
+                    Basic4GL.DIM_KW,
+                    Basic4GL.AS_KW,
+                    Basic4GL.GOTO_KW,
+                    Basic4GL.GOSUB_KW,
+                    Basic4GL.IF_KW,
+                    Basic4GL.THEN_KW,
+                    Basic4GL.ELSE_KW,
+                    Basic4GL.ELSEIF_KW,
+                    Basic4GL.ENDIF_KW,
+                    Basic4GL.END_KW,
+                    Basic4GL.RETURN_KW,
+                    Basic4GL.FOR_KW,
+                    Basic4GL.TO_KW,
+                    Basic4GL.STEP_KW,
+                    Basic4GL.NEXT_KW,
+                    Basic4GL.WHILE_KW,
+                    Basic4GL.WEND_KW,
+                    Basic4GL.RUN_KW,
+                    Basic4GL.STRUC_KW,
+                    Basic4GL.ENDSTRUC_KW,
+                    Basic4GL.CONST_KW,
+                    Basic4GL.ALLOC_KW,
+                    Basic4GL.NULL_KW,
+                    Basic4GL.DATA_KW,
+                    Basic4GL.READ_KW,
+                    Basic4GL.RESET_KW,
+                    Basic4GL.TYPE_KW,
+                    Basic4GL.AND_KW,
+                    Basic4GL.OR_KW,
+                    Basic4GL.NOT_KW,
+                    Basic4GL.XOR_KW,
+                    Basic4GL.MOD_KW -> HighlightKind.KEYWORD;
 
-            // Secondary keywords – type names and boolean literals
+                // Secondary keywords – type names and boolean literals
             case Basic4GL.INTEGER_T,
-                 Basic4GL.INT_T,
-                 Basic4GL.SINGLE_T,
-                 Basic4GL.DOUBLE_T,
-                 Basic4GL.STRING_T,
-                 Basic4GL.TRUE_KW,
-                 Basic4GL.FALSE_KW -> HighlightKind.KEYWORD_2;
+                    Basic4GL.INT_T,
+                    Basic4GL.SINGLE_T,
+                    Basic4GL.DOUBLE_T,
+                    Basic4GL.STRING_T,
+                    Basic4GL.TRUE_KW,
+                    Basic4GL.FALSE_KW -> HighlightKind.KEYWORD_2;
 
-            // Literals
+                // Literals
             case Basic4GL.STRING_LIT -> HighlightKind.STRING;
             case Basic4GL.INT_LIT, Basic4GL.FLOAT_LIT, Basic4GL.HEX_LIT -> HighlightKind.NUMBER;
 
-            // Identifiers – the IDE adapter re-classifies these via wordsToHighlight
+                // Identifiers – the IDE adapter re-classifies these via wordsToHighlight
             case Basic4GL.IDENTIFIER -> HighlightKind.IDENTIFIER;
 
-            // Whitespace
+                // Whitespace
             case Basic4GL.WS -> HighlightKind.WHITESPACE;
             case Basic4GL.NEWLINE -> HighlightKind.NEWLINE;
 
-            // Operators and punctuation
+                // Operators and punctuation
             case Basic4GL.COLON,
-                 Basic4GL.LPAREN,
-                 Basic4GL.RPAREN,
-                 Basic4GL.LBRACKET,
-                 Basic4GL.RBRACKET,
-                 Basic4GL.COMMA,
-                 Basic4GL.DOT,
-                 Basic4GL.SEMICOLON,
-                 Basic4GL.EQ,
-                 Basic4GL.NEQ,
-                 Basic4GL.LT,
-                 Basic4GL.GT,
-                 Basic4GL.LTE,
-                 Basic4GL.GTE,
-                 Basic4GL.PLUS,
-                 Basic4GL.MINUS,
-                 Basic4GL.STAR,
-                 Basic4GL.SLASH,
-                 Basic4GL.BACKSLASH,
-                 Basic4GL.CARET,
-                 Basic4GL.AT,
-                 Basic4GL.BANG,
-                 Basic4GL.TILDE,
-                 Basic4GL.PERCENT,
-                 Basic4GL.PIPE,
-                 Basic4GL.HASH,
-                 Basic4GL.AMPERSAND -> HighlightKind.OPERATOR;
+                    Basic4GL.LPAREN,
+                    Basic4GL.RPAREN,
+                    Basic4GL.LBRACKET,
+                    Basic4GL.RBRACKET,
+                    Basic4GL.COMMA,
+                    Basic4GL.DOT,
+                    Basic4GL.SEMICOLON,
+                    Basic4GL.EQ,
+                    Basic4GL.NEQ,
+                    Basic4GL.LT,
+                    Basic4GL.GT,
+                    Basic4GL.LTE,
+                    Basic4GL.GTE,
+                    Basic4GL.PLUS,
+                    Basic4GL.MINUS,
+                    Basic4GL.STAR,
+                    Basic4GL.SLASH,
+                    Basic4GL.BACKSLASH,
+                    Basic4GL.CARET,
+                    Basic4GL.AT,
+                    Basic4GL.BANG,
+                    Basic4GL.TILDE,
+                    Basic4GL.PERCENT,
+                    Basic4GL.PIPE,
+                    Basic4GL.HASH,
+                    Basic4GL.AMPERSAND -> HighlightKind.OPERATOR;
 
-            // Unknown / unrecognised
+                // Unknown / unrecognised
             default -> HighlightKind.OTHER;
         };
     }

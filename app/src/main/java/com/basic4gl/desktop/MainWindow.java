@@ -1,7 +1,6 @@
 package com.basic4gl.desktop;
 
 import static com.basic4gl.desktop.Theme.*;
-import static com.basic4gl.desktop.util.HtmlUtil.markdownToHtml;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
 import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
 import static com.formdev.flatlaf.FlatClientProperties.*;
@@ -9,8 +8,7 @@ import static com.formdev.flatlaf.FlatClientProperties.*;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
-import com.basic4gl.desktop.content.FileManager;
-import com.basic4gl.desktop.content.IFileManagerListener;
+import com.basic4gl.desktop.content.*;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.debugger.IDebugPresenter;
@@ -27,25 +25,17 @@ import com.formdev.flatlaf.extras.FlatDesktop;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import com.formdev.flatlaf.util.SystemInfo;
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Scene;
-import javafx.scene.web.WebView;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
-
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.SearchContext;
 
@@ -54,13 +44,13 @@ import org.fife.ui.rtextarea.SearchContext;
  */
 public class MainWindow
         implements IEditorPresenter,
-        ITabProvider,
-        IToggleBreakpointListener,
-        IFileEditorActionListener,
-        IFileManagerListener,
-        EmptyTabPanel.IEmptyTabPanelListener,
-        MenuService,
-        EditorCommandsService {
+                ITabProvider,
+                IToggleBreakpointListener,
+                IFileEditorActionListener,
+                IFileManagerListener,
+                EmptyTabPanel.IEmptyTabPanelListener,
+                MenuService,
+                EditorCommandsService {
 
     private final CaretListener TrackCaretPosition = new CaretListener() {
         @Override
@@ -106,7 +96,6 @@ public class MainWindow
     private final ButtonGroup bottomBarGroup = new ButtonGroup();
     private final Map<String, JToggleButton> bottomBarButtons = new HashMap<>();
 
-    private final JTabbedPane docsTabs = new JTabbedPane();
     private final JPanel rightDocsContainer = new JPanel(new BorderLayout());
     private final JPanel rightDocsContent = new JPanel(new CardLayout());
     private final JToolBar rightDocsRail = new JToolBar(SwingConstants.VERTICAL);
@@ -133,8 +122,6 @@ public class MainWindow
     private static final String RECENT_WORKSPACES_FILE = "recent-workspaces.properties";
     private static final String RECENT_WORKSPACES_KEY = "RECENT_WORKSPACES";
     private static final int MAX_RECENT_WORKSPACES = 10;
-
-
 
     private final JMenu bookmarkSubMenu = new JMenu("Bookmarks");
     private final JMenu breakpointSubMenu = new JMenu("Breakpoints");
@@ -183,10 +170,6 @@ public class MainWindow
     private final JLabel compilerStatusLabel = new JLabel(""); // Compiler/VM Status
     private final JLabel cursorPositionLabel = new JLabel("0:0"); // Cursor Position
 
-    private static final String DOCS_MARKDOWN_STYLESHEET_RESOURCE = "/css/docs-markdown.css";
-    private static final AtomicBoolean JAVAFX_INITIALIZED = new AtomicBoolean(false);
-
-
     // Editors
     private BasicEditor basicEditor;
     private FileManager fileManager;
@@ -199,7 +182,7 @@ public class MainWindow
 
     // Debugging
     private VirtualMachineViewDialog virtualMachineViewDialog;
-    private IDebugPresenter  debugPresenter;
+    private IDebugPresenter debugPresenter;
     private int lastSourceRow = -1;
     private int lastSourceColumn = -1;
 
@@ -302,7 +285,6 @@ public class MainWindow
         frame.setIconImage(createImageIcon(BuildInfo.ICON_LOGO_SMALL).getImage());
         frame.setPreferredSize(new Dimension(696, 480));
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
 
         mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         editorSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -551,8 +533,6 @@ public class MainWindow
             // TODO mExitMenuItem.setVisible(false);
         }
 
-
-
         // Toolbar
         JToolBar toolBar = new JToolBar();
         toolBar.add(newButton);
@@ -733,19 +713,17 @@ public class MainWindow
 
         fileManager = new FileManager(this);
 
-        basicEditor = new BasicEditor(outputBinPath, fileManager, this,
-                new BasicDialogService(this.frame),
-                this, this);
+        basicEditor = new BasicEditor(outputBinPath, fileManager, this, new BasicDialogService(this.frame), this, this);
 
         debugPresenter = new DebugPanelProvider(basicEditor);
 
         panels = new IEditorPanelProvider[] {
-                new FileBrowserPanelProvider(),
-                new AssetsPanelProvider(fileManager),
-                new BookmarksPanelProvider(),
-                (IEditorPanelProvider) debugPresenter,
-                new SymbolsPanelProvider(),
-                new DocsPanelProvider(),
+            new FileBrowserPanelProvider(),
+            new AssetsPanelProvider(fileManager),
+            new BookmarksPanelProvider(),
+            (IEditorPanelProvider) debugPresenter,
+            new SymbolsPanelProvider(),
+            new DocsPanelProvider(fileManager),
         };
 
         configureLeftSidebar();
@@ -917,7 +895,7 @@ public class MainWindow
         // ShutDownTomWindowsBasicLib();
 
         frame.dispose();
-        for(IEditorPanelProvider panel: panels) {
+        for (IEditorPanelProvider panel : panels) {
             panel.dispose();
         }
         System.exit(0);
@@ -996,7 +974,8 @@ public class MainWindow
                 fileManager,
                 this,
                 linkGenerator,
-                searchContext);
+                searchContext,
+                basicEditor);
 
         addTabWithViewer(viewer);
 
@@ -1334,7 +1313,9 @@ public class MainWindow
                 File file = editor.getFile();
                 fileId = file != null ? file.getAbsolutePath() : "<unsaved:" + editor.getTitle() + ">";
             }
-            declarations.addAll(basicEditor.getLanguageSupport().extractDeclarations(editor.getEditorPane().getText(), fileId));
+            declarations.addAll(basicEditor
+                    .getLanguageSupport()
+                    .extractDeclarations(editor.getEditorPane().getText(), fileId));
         }
         return declarations;
     }
@@ -1658,7 +1639,6 @@ public class MainWindow
         fileManager.ensureRunnableFileValid();
         refreshRunnableFileControls();
         refreshSidebarContent();
-
     }
 
     @Override
@@ -1940,7 +1920,6 @@ public class MainWindow
         syncDebugMenuSelection();
     }
 
-
     @Override
     public void updateVmViewCallStack(StackTraceCallback stackTraceCallback) {
         if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
@@ -1968,7 +1947,6 @@ public class MainWindow
         debugPresenter.updateEvaluateWatch(evaluatedWatch, result);
     }
 
-
     @Override
     public void updateVmViewVariableValue(String expression, String result) {
         if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
@@ -1987,7 +1965,6 @@ public class MainWindow
     public void refreshWatchList() {
         debugPresenter.refreshWatchList();
     }
-
 
     @Override
     public void onToggleBreakpoint(String filePath, int line) {
@@ -2131,10 +2108,6 @@ public class MainWindow
         openAssetItem.addActionListener(e -> actionOpenAsset());
         popup.add(openAssetItem);
 
-        JMenuItem openReadmeItem = new JMenuItem("Open README.md in docs");
-        openReadmeItem.addActionListener(e -> openMarkdownInDocsTab(new File("README.md")));
-        popup.add(openReadmeItem);
-
         popup.show(anchor, 0, anchor.getHeight());
     }
 
@@ -2147,11 +2120,8 @@ public class MainWindow
         }
 
         File selected = chooser.getSelectedFile();
-        if (selected.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
-            openMarkdownInDocsTab(selected);
-        } else {
-            openFileWithPreferredViewer(selected);
-        }
+
+        openFileWithPreferredViewer(selected);
     }
 
     private void configureLeftSidebar() {
@@ -2160,7 +2130,8 @@ public class MainWindow
         bottomBarRail.setFloatable(false);
         bottomBarRail.setRollover(true);
 
-        Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
+        Arrays.stream(panels)
+                .filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
                 .forEach(x -> {
                     leftSidebarContent.add(x.build(this.basicEditor), x.id());
                     addLeftSidebarButton(
@@ -2170,7 +2141,8 @@ public class MainWindow
                             x.getTitle());
                 });
 
-        Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.SOUTH)
+        Arrays.stream(panels)
+                .filter(x -> x.getLayoutConstraints() == EditorLayout.SOUTH)
                 .forEach(x -> {
                     bottomBarContent.add(x.build(this.basicEditor), x.id());
                     addBottomBarButton(
@@ -2183,13 +2155,13 @@ public class MainWindow
         bottomBarContainer.add(bottomBarContent, BorderLayout.CENTER);
 
         // Select first panel if available
-        Arrays.stream(panels).filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
+        Arrays.stream(panels)
+                .filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
                 .findFirst()
                 .ifPresent(x -> {
                     selectLeftSidebarSection(x.id(), true);
                 });
     }
-
 
     private void configureRightSidebar() {
         rightDocsRail.setFloatable(false);
@@ -2203,24 +2175,10 @@ public class MainWindow
                             createImageIcon(x.getActiveIconPath(), x.getActiveIconTint()),
                             createImageIcon(x.getInactiveIconPath()),
                             x.getTitle());
-                    JComponent content = "docs".equals(x.id()) ? docsTabs : x.build(this.basicEditor);
+                    JComponent content = x.build(this.basicEditor);
                     if (content != null) {
                         rightDocsContent.add(content, x.id());
                     }
-                });
-
-        docsTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-        docsTabs.putClientProperty(TABBED_PANE_TAB_CLOSABLE, true);
-        docsTabs.putClientProperty(
-                TABBED_PANE_TAB_CLOSE_CALLBACK, (BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
-                    if (tabIndex <= 0 || tabIndex >= docsTabs.getTabCount()) {
-                        return;
-                    }
-                    docsTabs.remove(tabIndex.intValue());
-                    if (docsTabs.getTabCount() > 0) {
-                        docsTabs.setSelectedIndex(0);
-                    }
-                    selectRightDocsSection("symbols");
                 });
 
         Arrays.stream(panels)
@@ -2228,7 +2186,6 @@ public class MainWindow
                 .findFirst()
                 .ifPresent(x -> selectRightDocsSection(x.id()));
     }
-
 
     private void addLeftSidebarButton(String key, Icon selectedIcon, Icon icon, String tooltip) {
         JToggleButton button = createRailButton(selectedIcon, icon, tooltip);
@@ -2264,7 +2221,6 @@ public class MainWindow
         button.setPreferredSize(new Dimension(38, 38));
         return button;
     }
-
 
     private void onLeftSidebarButtonPressed(String key) {
         if (Objects.equals(activeLeftSidebarKey, key) && isLeftSidebarExpanded()) {
@@ -2316,8 +2272,7 @@ public class MainWindow
     }
 
     private boolean isLeftSidebarExpanded() {
-        return !leftSidebarCollapsed
-                && workspacePane.getLeftComponent() == leftSidebarContent;
+        return !leftSidebarCollapsed && workspacePane.getLeftComponent() == leftSidebarContent;
     }
 
     private void collapseLeftSidebar() {
@@ -2353,25 +2308,21 @@ public class MainWindow
 
         int target = Math.max(expandedLeftSidebarWidth, 180);
         SwingUtilities.invokeLater(() -> {
-            if (!leftSidebarCollapsed
-                    && workspacePane.getLeftComponent() == leftSidebarContent) {
+            if (!leftSidebarCollapsed && workspacePane.getLeftComponent() == leftSidebarContent) {
                 setDividerLocationClamped(workspacePane, target);
             }
         });
     }
 
     private boolean isBottomBarExpanded() {
-        return !bottomBarCollapsed
-                && mainPane.getBottomComponent() == bottomBarContainer;
+        return !bottomBarCollapsed && mainPane.getBottomComponent() == bottomBarContainer;
     }
 
     private void collapseBottomBar() {
         if (mainPane.getBottomComponent() == bottomBarContainer) {
             int currentHeight = bottomBarContainer.getHeight();
             if (currentHeight <= 12 && mainPane.getHeight() > 0) {
-                currentHeight = mainPane.getHeight()
-                        - mainPane.getDividerLocation()
-                        - mainPane.getDividerSize();
+                currentHeight = mainPane.getHeight() - mainPane.getDividerLocation() - mainPane.getDividerSize();
             }
             if (currentHeight > 12) {
                 expandedBottomBarHeight = Math.max(120, currentHeight);
@@ -2404,9 +2355,7 @@ public class MainWindow
             if (!bottomBarCollapsed
                     && mainPane.getBottomComponent() == bottomBarContainer
                     && mainPane.getHeight() > 0) {
-                int newDivider = mainPane.getHeight()
-                        - targetBottomHeight
-                        - mainPane.getDividerSize();
+                int newDivider = mainPane.getHeight() - targetBottomHeight - mainPane.getDividerSize();
                 setDividerLocationClamped(mainPane, newDivider);
             }
         });
@@ -2438,30 +2387,18 @@ public class MainWindow
             button.setSelected(true);
         }
 
-        if ("docs".equals(key) && docsTabs.getTabCount() > 1) {
-            docsTabs.setSelectedIndex(docsTabs.getTabCount() - 1);
-        } else if (docsTabs.getTabCount() > 0) {
-            docsTabs.setSelectedIndex(0);
-        }
-
         expandRightDocs();
-        if ("docs".equals(key)) {
-            docsTabs.requestFocusInWindow();
-        }
     }
 
     private boolean isRightDocsExpanded() {
-        return !rightDocsCollapsed
-                && contentPane.getRightComponent() == rightDocsContainer;
+        return !rightDocsCollapsed && contentPane.getRightComponent() == rightDocsContainer;
     }
 
     private void collapseRightDocs() {
         if (contentPane.getRightComponent() == rightDocsContainer) {
             int currentWidth = rightDocsContainer.getWidth();
             if (currentWidth <= 12 && contentPane.getWidth() > 0) {
-                currentWidth = contentPane.getWidth()
-                        - contentPane.getDividerLocation()
-                        - contentPane.getDividerSize();
+                currentWidth = contentPane.getWidth() - contentPane.getDividerLocation() - contentPane.getDividerSize();
             }
             if (currentWidth > 12) {
                 expandedRightDocsWidth = currentWidth;
@@ -2493,9 +2430,7 @@ public class MainWindow
             if (!rightDocsCollapsed
                     && contentPane.getRightComponent() == rightDocsContainer
                     && contentPane.getWidth() > 0) {
-                int newDivider = contentPane.getWidth()
-                        - targetDocsWidth
-                        - contentPane.getDividerSize();
+                int newDivider = contentPane.getWidth() - targetDocsWidth - contentPane.getDividerSize();
                 setDividerLocationClamped(contentPane, newDivider);
             }
         });
@@ -2516,10 +2451,6 @@ public class MainWindow
             panel.refresh(this.basicEditor.getBasic4gl());
         }
     }
-
-
-
-
 
     private void refreshRunnableFileControls() {
         if (fileManager == null) {
@@ -2588,7 +2519,7 @@ public class MainWindow
             return "";
         }
         StringBuilder sb = new StringBuilder();
-        for (com.basic4gl.desktop.editor.FileEditor fe : fileManager.getFileEditors()) {
+        for (FileEditor fe : fileManager.getFileEditors()) {
             if (sb.length() > 0) {
                 sb.append('\n');
             }
@@ -2650,99 +2581,6 @@ public class MainWindow
         }
     }
 
-
-    public void openMarkdownInDocsTab(File file) {
-        File resolved = file.isAbsolute() ? file : new File(fileManager.getCurrentDirectory(), file.getPath());
-        if (!resolved.exists()) {
-            resolved = file;
-        }
-        if (!resolved.exists()) {
-            JOptionPane.showMessageDialog(frame, "Markdown file not found: " + file.getPath());
-            return;
-        }
-
-        String tabTitle = resolved.getName();
-        for (int i = 0; i < docsTabs.getTabCount(); i++) {
-            if (tabTitle.equals(docsTabs.getTitleAt(i))) {
-                docsTabs.setSelectedIndex(i);
-                selectRightDocsSection("docs");
-                return;
-            }
-        }
-
-        try {
-            String markdown = Files.readString(resolved.toPath(), StandardCharsets.UTF_8);
-            JFXPanel panel = new JFXPanel();
-            String html = buildMarkdownDocumentHtml(markdownToHtml(markdown));
-            ensureJavaFxInitialized();
-            Platform.runLater(() -> {
-                try {
-                    WebView webView = new WebView();
-                    webView.getEngine().loadContent(html, "text/html");
-                    panel.setScene(new Scene(webView));
-                } catch (Throwable ex) {
-                    showDocsFallback(panel, html, ex);
-                }
-            });
-
-            docsTabs.addTab(tabTitle, panel);
-            docsTabs.setSelectedIndex(docsTabs.getTabCount() - 1);
-            selectRightDocsSection("docs");
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(frame, "Unable to open markdown file: " + ex.getMessage());
-        } catch (Throwable ex) {
-            JOptionPane.showMessageDialog(frame, "Unable to render markdown file: " + ex.getMessage());
-        }
-    }
-
-    private void ensureJavaFxInitialized() {
-        if (!JAVAFX_INITIALIZED.compareAndSet(false, true)) {
-            return;
-        }
-        try {
-            Platform.startup(() -> {});
-        } catch (IllegalStateException ignored) {
-            // Toolkit already initialized by JFXPanel startup.
-        }
-        Platform.setImplicitExit(false);
-    }
-
-    private void showDocsFallback(JFXPanel panel, String html, Throwable ex) {
-        System.err.println("Unable to initialize JavaFX WebView: " + ex.getMessage());
-        SwingUtilities.invokeLater(() -> {
-            JEditorPane fallbackPane = new JEditorPane();
-            fallbackPane.setEditable(false);
-            fallbackPane.setContentType("text/html");
-            fallbackPane.setText(html);
-            fallbackPane.setCaretPosition(0);
-            panel.setLayout(new BorderLayout());
-            panel.add(new JScrollPane(fallbackPane), BorderLayout.CENTER);
-            panel.revalidate();
-            panel.repaint();
-        });
-    }
-
-    private String buildMarkdownDocumentHtml(String bodyHtml) {
-        String stylesheetText = readTextResource(DOCS_MARKDOWN_STYLESHEET_RESOURCE);
-        return "<!doctype html><html><head><meta charset='UTF-8'><style>"
-                + stylesheetText
-                + "</style></head>"
-                + bodyHtml
-                + "</html>";
-    }
-
-    private String readTextResource(String resourcePath) {
-        try (InputStream input = MainWindow.class.getResourceAsStream(resourcePath)) {
-            if (input == null) {
-                return "";
-            }
-            return new String(input.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException ex) {
-            System.err.println("Unable to load resource " + resourcePath + ": " + ex.getMessage());
-            return "";
-        }
-    }
-
     private int findOpenTabIndexByPath(String absolutePath) {
         if (absolutePath == null || absolutePath.isBlank()) {
             return -1;
@@ -2783,8 +2621,8 @@ public class MainWindow
         JTextArea editorPane = fileManager.getFileEditors().get(selectedTab).getEditorPane();
         int insertStart = editorPane.getSelectionStart();
         editorPane.replaceSelection(text);
-        editorPane.setCaretPosition(Math.min(
-                insertStart + caretOffset, editorPane.getDocument().getLength()));
+        editorPane.setCaretPosition(
+                Math.min(insertStart + caretOffset, editorPane.getDocument().getLength()));
         editorPane.requestFocusInWindow();
     }
 

@@ -109,7 +109,7 @@ dependencies {
     implementation ('javax.websocket:javax.websocket-api:1.0')
     implementation ('org.eclipse.jetty.websocket:javax-websocket-client-impl:9.4.49.v20220914')
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.1'
 }
 
 spotless {

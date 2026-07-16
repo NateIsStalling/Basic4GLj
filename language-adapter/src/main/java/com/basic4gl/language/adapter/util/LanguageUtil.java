@@ -7,12 +7,11 @@ import com.basic4gl.desktop.spi.language.TypeDefinition;
 import com.basic4gl.language.adapter.antlr.Basic4GL;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.ValType;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.Token;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.Token;
 
 public final class LanguageUtil {
     private LanguageUtil() {}
@@ -63,7 +62,6 @@ public final class LanguageUtil {
                 return "???";
         }
     }
-
 
     public static Basic4GL createLexer(String input) {
         Basic4GL lexer = new Basic4GL(CharStreams.fromString(input));

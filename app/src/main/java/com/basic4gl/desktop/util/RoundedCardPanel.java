@@ -1,7 +1,7 @@
 package com.basic4gl.desktop.util;
 
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 public class RoundedCardPanel extends JPanel {
     public static final int DEFAULT_ARC = 14;

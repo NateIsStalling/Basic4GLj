@@ -8,11 +8,11 @@ import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.debug.protocol.types.DisassembledInstruction;
 import com.basic4gl.debug.protocol.types.Variable;
+import com.basic4gl.desktop.content.FileEditor;
 import com.basic4gl.desktop.content.FileManager;
 import com.basic4gl.desktop.debugger.*;
 import com.basic4gl.desktop.editor.ApMode;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
-import com.basic4gl.desktop.editor.FileEditor;
 import com.basic4gl.desktop.editor.IEditorPresenter;
 import com.basic4gl.desktop.spi.*;
 import com.basic4gl.desktop.spi.language.LanguageSupport;
@@ -85,7 +85,12 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     private final EditorCommandsService commandsService;
 
     public BasicEditor(
-            String libraryPath, FileManager fileManager, IEditorPresenter presenter, DialogService dialogService, MenuService menuService, EditorCommandsService commandsService) {
+            String libraryPath,
+            FileManager fileManager,
+            IEditorPresenter presenter,
+            DialogService dialogService,
+            MenuService menuService,
+            EditorCommandsService commandsService) {
         this.libraryPath = libraryPath;
         this.fileManager = fileManager;
         this.presenter = presenter;
@@ -1184,7 +1189,6 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         return basic4gl;
     }
 
-
     // TODO Reimplement callbacks
     public class DebugCallback implements com.basic4gl.language.core.runtime.DebuggerTaskCallback {
 
@@ -1455,7 +1459,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         syncPluginDirectorySettings();
     }
 
-    public void onFileOpened(com.basic4gl.desktop.editor.FileEditor editor) {
+    public void onFileOpened(FileEditor editor) {
         if (editor == null || editor.getEditorPane() == null) {
             return;
         }
@@ -1463,7 +1467,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         refreshSyntaxHighlighting();
     }
 
-    public void onFileSaving(com.basic4gl.desktop.editor.FileEditor editor) {
+    public void onFileSaving(FileEditor editor) {
         if (editor == null || editor.getEditorPane() == null) {
             return;
         }

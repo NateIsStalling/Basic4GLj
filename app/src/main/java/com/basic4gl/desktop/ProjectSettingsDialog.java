@@ -1,5 +1,7 @@
 package com.basic4gl.desktop;
 
+import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
+
 import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
 import com.basic4gl.desktop.spi.Builder;
 import com.basic4gl.desktop.spi.Configuration;
@@ -12,8 +14,6 @@ import java.util.Objects;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
-
-import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
 
 public class ProjectSettingsDialog
         implements com.basic4gl.desktop.spi.ConfigurationFormPanel.IOnConfigurationChangeListener {

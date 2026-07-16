@@ -1,9 +1,7 @@
 package com.basic4gl.desktop.language;
 
-import com.basic4gl.desktop.spi.LanguageService;
 import com.basic4gl.desktop.spi.language.IndexedSymbol;
 import com.basic4gl.desktop.spi.language.LanguageSupport;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -62,10 +60,7 @@ public class SymbolIndexer {
     private ScheduledFuture<?> pending;
     private long requestedRevision = 0;
 
-    public SymbolIndexer(
-            LanguageSupport languageSupport,
-            SourceProvider sourceProvider,
-            Callback callback) {
+    public SymbolIndexer(LanguageSupport languageSupport, SourceProvider sourceProvider, Callback callback) {
         this.languageSupport = languageSupport;
         this.sourceProvider = sourceProvider;
         this.callback = callback;

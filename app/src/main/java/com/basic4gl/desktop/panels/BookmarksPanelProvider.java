@@ -1,10 +1,12 @@
 package com.basic4gl.desktop.panels;
 
+import static com.basic4gl.desktop.Theme.*;
+import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
+
 import com.basic4gl.desktop.spi.BookmarkInfo;
 import com.basic4gl.desktop.spi.EditorPlugin;
 import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.util.RoundedCardPanel;
-
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,9 +17,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-import static com.basic4gl.desktop.Theme.*;
-import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
 
 public class BookmarksPanelProvider implements IEditorPanelProvider {
     private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);

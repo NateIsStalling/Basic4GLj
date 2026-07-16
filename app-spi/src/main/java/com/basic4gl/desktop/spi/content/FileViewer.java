@@ -1,5 +1,6 @@
 package com.basic4gl.desktop.spi.content;
 
+import com.basic4gl.desktop.spi.PluginContext;
 import java.nio.file.Path;
 import javax.swing.JComponent;
 
@@ -16,7 +17,7 @@ public interface FileViewer {
      * @param path Path to the file to view
      * @throws FileViewerException if file cannot be loaded or displayed
      */
-    void loadFile(Path path) throws FileViewerException;
+    void loadFile(PluginContext context, Path path) throws FileViewerException;
 
     /**
      * Get the Swing component that displays the file

@@ -1,5 +1,6 @@
-package com.basic4gl.desktop.editor;
+package com.basic4gl.desktop.content;
 
+import com.basic4gl.desktop.editor.IFileViewer;
 import java.awt.*;
 import java.io.File;
 import javax.swing.*;
@@ -161,5 +162,18 @@ public class AudioFileViewer implements IFileViewer {
     @Override
     public ViewerType getViewerType() {
         return ViewerType.AUDIO_VIEWER;
+    }
+
+    @Override
+    public boolean hasPreview() {
+        return false;
+    }
+
+    @Override
+    public void setViewMode(ViewMode viewMode) {}
+
+    @Override
+    public ViewMode getViewMode() {
+        return ViewMode.DEFAULT;
     }
 }

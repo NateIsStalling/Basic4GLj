@@ -1,12 +1,11 @@
 package com.basic4gl.desktop.util;
 
 import com.basic4gl.desktop.spi.DialogService;
-
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
+import javax.swing.*;
 
 public class FileUtil {
     public static String fromUserHome(String absolutePath) {

@@ -1,13 +1,32 @@
 package com.basic4gl.desktop.panels;
 
+import static com.basic4gl.desktop.Theme.ICON_MENU_ASSETS;
+import static com.basic4gl.desktop.Theme.ICON_MENU_FOLDER;
+import static com.basic4gl.desktop.Theme.ICON_REFRESH;
+import static com.basic4gl.desktop.Theme.ICON_SEARCH;
+import static com.basic4gl.desktop.Theme.ICON_VIEW_GRID;
+import static com.basic4gl.desktop.Theme.ICON_VIEW_LIST;
+import static com.basic4gl.desktop.util.FileUtil.*;
+import static com.basic4gl.desktop.util.HtmlUtil.escapeHtml;
+import static com.basic4gl.desktop.util.SwingIconUtil.*;
+import static com.basic4gl.desktop.util.SwingUtil.configureSmoothScrolling;
+import static com.basic4gl.desktop.util.SwingUtil.createLighterPanelBackground;
+
+import com.basic4gl.desktop.content.FileEditor;
 import com.basic4gl.desktop.content.FileManager;
-import com.basic4gl.desktop.editor.FileViewerFactory;
+import com.basic4gl.desktop.content.FileViewerFactory;
 import com.basic4gl.desktop.spi.EditorPlugin;
 import com.basic4gl.desktop.spi.FileUtil;
 import com.basic4gl.desktop.spi.LanguageService;
 import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.util.RoundedCardPanel;
-
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.util.*;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
@@ -17,25 +36,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.util.*;
-import java.util.List;
-
-import static com.basic4gl.desktop.Theme.ICON_REFRESH;
-import static com.basic4gl.desktop.Theme.ICON_SEARCH;
-import static com.basic4gl.desktop.Theme.ICON_VIEW_GRID;
-import static com.basic4gl.desktop.Theme.ICON_VIEW_LIST;
-import static com.basic4gl.desktop.Theme.ICON_MENU_ASSETS;
-import static com.basic4gl.desktop.Theme.ICON_MENU_FOLDER;
-import static com.basic4gl.desktop.util.FileUtil.*;
-import static com.basic4gl.desktop.util.HtmlUtil.escapeHtml;
-import static com.basic4gl.desktop.util.SwingIconUtil.*;
-import static com.basic4gl.desktop.util.SwingUtil.configureSmoothScrolling;
-import static com.basic4gl.desktop.util.SwingUtil.createLighterPanelBackground;
 
 public class AssetsPanelProvider implements IEditorPanelProvider {
 
@@ -79,7 +79,7 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
     }
 
     public AssetsPanelProvider(FileManager fileManager) {
-        this.fileManager =  fileManager;
+        this.fileManager = fileManager;
     }
 
     @Override
@@ -132,16 +132,8 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
         JPanel layoutTabs = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         layoutTabs.setOpaque(false);
         ButtonGroup layoutButtons = new ButtonGroup();
-        JToggleButton treeLayoutButton = createAssetsLayoutButton(
-                "List View",
-                ICON_VIEW_LIST,
-                LAYOUT_TREE,
-                "first");
-        JToggleButton gridLayoutButton = createAssetsLayoutButton(
-                "Grid View",
-                ICON_VIEW_GRID,
-                LAYOUT_GRID,
-                "last");
+        JToggleButton treeLayoutButton = createAssetsLayoutButton("List View", ICON_VIEW_LIST, LAYOUT_TREE, "first");
+        JToggleButton gridLayoutButton = createAssetsLayoutButton("Grid View", ICON_VIEW_GRID, LAYOUT_GRID, "last");
         layoutButtons.add(treeLayoutButton);
         layoutButtons.add(gridLayoutButton);
         treeLayoutButton.setSelected(true);
@@ -360,6 +352,7 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
         button.setMaximumSize(HEADER_ICON_BUTTON_SIZE);
         return button;
     }
+
     private JComponent createRoundedCardHost(JComponent content, Color panelBackground, String key) {
         Color cardBackground = createLighterPanelBackground();
         JPanel card = new RoundedCardPanel();
@@ -400,12 +393,8 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
         if (item == null || !item.isOpenable()) {
             return;
         }
-        if (item.file.getName().toLowerCase(Locale.ROOT).endsWith(".md")) {
-            // TODO add markdown viewer instead of openMarkdownInDocsTab; md, docs, and assets/browser should be separate concerns
-            context.commands().openMarkdownInDocsTab(item.file);
-        } else {
-            context.commands().openFileWithPreferredViewer(item.file);
-        }
+
+        context.commands().openFileWithPreferredViewer(item.file);
     }
 
     private void maybeShowAssetsTreePopup(MouseEvent e) {
@@ -494,18 +483,16 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
         java.util.List<File> workspaceAssets = collectWorkspaceAssets(rootDir, 0, 4);
         workspaceAssets = filterAssetFiles(workspaceAssets, rootDir, searchNeedle);
         DefaultMutableTreeNode workspaceNode = buildMediaTypeSection(
-                "Workspace Resources",
-                workspaceAssets,
-                rootDir,
-                createImageIcon(ICON_MENU_FOLDER));
+                "Workspace Resources", workspaceAssets, rootDir, createImageIcon(ICON_MENU_FOLDER));
         if (workspaceNode != null) {
             rootNode.add(workspaceNode);
         }
 
-        java.util.List<File> literalAssets = detectLiteralAssets(rootDir, context.currentEditor().getLanguage());
+        java.util.List<File> literalAssets =
+                detectLiteralAssets(rootDir, context.currentEditor().getLanguage());
         literalAssets = filterAssetFiles(literalAssets, rootDir, searchNeedle);
-        DefaultMutableTreeNode literalNode = buildMediaTypeSection(
-                "Embedded Literals", literalAssets, rootDir, createImageIcon(ICON_MENU_ASSETS));
+        DefaultMutableTreeNode literalNode =
+                buildMediaTypeSection("Embedded Literals", literalAssets, rootDir, createImageIcon(ICON_MENU_ASSETS));
         if (literalNode != null) {
             rootNode.add(literalNode);
         }
@@ -537,7 +524,9 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
             String absolute = file.getAbsolutePath().toLowerCase(Locale.ROOT);
             String relative = formatRelativePath(file, baseDir);
             String relativeLower = relative == null ? "" : relative.toLowerCase(Locale.ROOT);
-            if (name.contains(searchNeedle) || absolute.contains(searchNeedle) || relativeLower.contains(searchNeedle)) {
+            if (name.contains(searchNeedle)
+                    || absolute.contains(searchNeedle)
+                    || relativeLower.contains(searchNeedle)) {
                 filtered.add(file);
             }
         }
@@ -545,19 +534,13 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
     }
 
     @Override
-    public void onFileModified(String filePath) {
-
-    }
+    public void onFileModified(String filePath) {}
 
     @Override
-    public void dispose() {
-
-    }
+    public void dispose() {}
 
     @Override
-    public void onCompileSucceeded() {
-
-    }
+    public void onCompileSucceeded() {}
 
     private java.util.List<AssetItem> collectOpenableAssets(DefaultMutableTreeNode rootNode) {
         java.util.List<AssetItem> items = new ArrayList<>();
@@ -624,8 +607,6 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
             }
         }
     }
-
-
 
     private java.util.List<File> collectWorkspaceAssets(File directory, int depth, int maxDepth) {
         java.util.List<File> assets = new ArrayList<>();
@@ -706,13 +687,14 @@ public class AssetsPanelProvider implements IEditorPanelProvider {
         assetThumbnailCache.put(cacheKey, icon);
         return icon;
     }
+
     private java.util.List<File> detectLiteralAssets(File baseDir, LanguageService languageService) {
         java.util.LinkedHashSet<File> detected = new java.util.LinkedHashSet<>();
         if (fileManager == null) {
             return new ArrayList<>();
         }
 
-        for (com.basic4gl.desktop.editor.FileEditor editor : fileManager.getFileEditors()) {
+        for (FileEditor editor : fileManager.getFileEditors()) {
             if (editor == null || editor.getEditorPane() == null) {
                 continue;
             }

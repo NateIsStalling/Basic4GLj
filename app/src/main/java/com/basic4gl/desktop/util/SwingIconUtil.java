@@ -1,10 +1,10 @@
 package com.basic4gl.desktop.util;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.*;
 
 public class SwingIconUtil {
     /**
@@ -44,7 +44,6 @@ public class SwingIconUtil {
             return null;
         }
     }
-
 
     public static Icon createScaledIcon(String iconPath, int size) {
         ImageIcon icon = createImageIcon(iconPath);

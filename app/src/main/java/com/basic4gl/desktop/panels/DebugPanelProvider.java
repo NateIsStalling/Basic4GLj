@@ -1,5 +1,9 @@
 package com.basic4gl.desktop.panels;
 
+import static com.basic4gl.desktop.Theme.*;
+import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
+
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.desktop.BasicEditor;
 import com.basic4gl.desktop.debugger.IDebugPresenter;
@@ -8,20 +12,14 @@ import com.basic4gl.desktop.spi.EditorPlugin;
 import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.util.RoundedCardPanel;
 import com.basic4gl.desktop.util.SwingUtil;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
-
-import static com.basic4gl.desktop.Theme.*;
-import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
-import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 public class DebugPanelProvider implements IEditorPanelProvider, IDebugPresenter {
 
@@ -38,9 +36,8 @@ public class DebugPanelProvider implements IEditorPanelProvider, IDebugPresenter
     private final BasicEditor basicEditor;
     private PluginContext context;
 
-
     public DebugPanelProvider(BasicEditor basicEditor) {
-        //TODO this is working up to a circular dependency.. can't init BasicEditor with this as IDebugPresenter
+        // TODO this is working up to a circular dependency.. can't init BasicEditor with this as IDebugPresenter
         this.basicEditor = basicEditor;
     }
 
@@ -170,7 +167,7 @@ public class DebugPanelProvider implements IEditorPanelProvider, IDebugPresenter
         JPanel gosubFrame = new JPanel();
         gosubFrame.setLayout(new BorderLayout());
         gosubFrame.setBackground(panelBackground);
-        JLabel callstackLabel = new JLabel("Callstack");
+        JLabel callstackLabel = new JLabel("Call Stack");
 
         font = callstackLabel.getFont();
         callstackLabel.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
@@ -326,22 +323,14 @@ public class DebugPanelProvider implements IEditorPanelProvider, IDebugPresenter
     }
 
     @Override
-    public void refresh(EditorPlugin languageProvider) {
-
-    }
+    public void refresh(EditorPlugin languageProvider) {}
 
     @Override
-    public void onFileModified(String filePath) {
-
-    }
+    public void onFileModified(String filePath) {}
 
     @Override
-    public void dispose() {
-
-    }
+    public void dispose() {}
 
     @Override
-    public void onCompileSucceeded() {
-
-    }
+    public void onCompileSucceeded() {}
 }

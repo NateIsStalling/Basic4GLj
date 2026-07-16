@@ -1,4 +1,8 @@
-package com.basic4gl.desktop.spi.content;
+package com.basic4gl.desktop.content;
+
+import com.basic4gl.desktop.spi.content.FileViewer;
+import com.basic4gl.desktop.spi.content.FileViewerMetadata;
+import com.basic4gl.desktop.spi.content.FileViewerProvider;
 
 /**
  * Provider for DefaultAudioViewer

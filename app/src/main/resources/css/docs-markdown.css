@@ -1,14 +1,14 @@
 .markdown-body {
-    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-    font-size: 13px;
-    line-height: 1.55;
+    font-family: sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
     color: #1f2933;
     background-color: #ffffff;
     margin: 10px 14px;
 }
 
 .markdown-body h1 {
-    font-size: 1.65em;
+    font-size: 1.45em;
     font-weight: 700;
     margin: 0.75em 0 0.45em;
     padding-bottom: 0.3em;
@@ -16,7 +16,7 @@
 }
 
 .markdown-body h2 {
-    font-size: 1.35em;
+    font-size: 1.25em;
     font-weight: 700;
     margin: 0.75em 0 0.45em;
     padding-bottom: 0.25em;
@@ -24,7 +24,7 @@
 }
 
 .markdown-body h3 {
-    font-size: 1.15em;
+    font-size: 1.1em;
     font-weight: 700;
     margin: 0.7em 0 0.35em;
 }
@@ -53,7 +53,7 @@
 }
 
 .markdown-body code {
-    font-family: "JetBrains Mono", "Menlo", "Consolas", monospace;
+    font-family: monospace;
     font-size: 12px;
     background-color: #f2f4f8;
     border: 1px solid #e0e6ed;
@@ -62,7 +62,7 @@
 }
 
 .markdown-body pre {
-    font-family: "JetBrains Mono", "Menlo", "Consolas", monospace;
+    font-family: monospace;
     font-size: 12px;
     line-height: 1.45;
     background-color: #f6f8fa;

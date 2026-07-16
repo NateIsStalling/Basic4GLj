@@ -1,5 +1,7 @@
-package com.basic4gl.desktop.editor;
+package com.basic4gl.desktop.content;
 
+import com.basic4gl.desktop.editor.IFileEditorActionListener;
+import com.basic4gl.desktop.editor.IToggleBreakpointListener;
 import com.basic4gl.desktop.language.Basic4GLFoldParser;
 import com.basic4gl.desktop.util.EditorUtil;
 import com.basic4gl.desktop.util.IFileManager;
@@ -95,8 +97,7 @@ public class FileEditor implements SearchListener {
                 KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.SHIFT_MASK),
                 RTextAreaEditorKit.rtaPrevBookmarkAction);
         inputMap.put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_F2, toolkit.getMenuShortcutKeyMask()),
-                "B4GL.ToggleBookmarkAction");
+                KeyStroke.getKeyStroke(KeyEvent.VK_F2, toolkit.getMenuShortcutKeyMask()), "B4GL.ToggleBookmarkAction");
 
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "RTA.NextBreakpointAction");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK), "RTA.PrevBreakpointAction");
@@ -117,14 +118,12 @@ public class FileEditor implements SearchListener {
                 RTextAreaEditorKit.rtaToggleBookmarkAction,
                 new MultiHeaderBookmarkActions.MultiHeaderToggleBookmarkAction(
                         RTextAreaEditorKit.rtaToggleBookmarkAction, HEADER_BOOKMARK));
-        actionMap.put(
-                "B4GL.ToggleBookmarkAction",
-                new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        FileEditor.this.toggleBookmark();
-                    }
-                });
+        actionMap.put("B4GL.ToggleBookmarkAction", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FileEditor.this.toggleBookmark();
+            }
+        });
 
         actionMap.put(
                 "RTA.NextBreakpointAction",

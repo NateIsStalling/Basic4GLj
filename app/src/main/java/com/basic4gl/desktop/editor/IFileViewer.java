@@ -51,6 +51,19 @@ public interface IFileViewer {
      */
     ViewerType getViewerType();
 
+    boolean hasPreview();
+
+    void setViewMode(ViewMode viewMode);
+
+    ViewMode getViewMode();
+
+    enum ViewMode {
+        DEFAULT,
+        EDITOR,
+        EDITOR_AND_PREVIEW,
+        PREVIEW,
+    }
+
     /**
      * Enumeration of supported viewer types
      */
@@ -59,7 +72,8 @@ public interface IFileViewer {
         IMAGE_VIEWER("Image Viewer"),
         AUDIO_VIEWER("Audio Viewer"),
         HEX_VIEWER("Hex Editor"),
-        MARKDOWN_VIEWER("Markdown Viewer");
+        MARKDOWN_VIEWER("Markdown Viewer"),
+        HTML_VIEWER("HTML Viewer");
 
         public final String display;
 

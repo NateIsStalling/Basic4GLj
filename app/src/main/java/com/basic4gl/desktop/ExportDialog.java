@@ -1,7 +1,7 @@
 package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.util.IAssetExportBuilder;
-import com.basic4gl.desktop.editor.FileEditor;
+import com.basic4gl.desktop.content.FileEditor;
 import com.basic4gl.desktop.spi.*;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;

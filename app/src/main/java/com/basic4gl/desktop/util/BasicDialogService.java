@@ -1,7 +1,6 @@
 package com.basic4gl.desktop.util;
 
 import com.basic4gl.desktop.spi.DialogService;
-
 import javax.swing.*;
 
 public class BasicDialogService implements DialogService {
@@ -18,7 +17,7 @@ public class BasicDialogService implements DialogService {
 
     @Override
     public String showInputDialog(String message, String title, String initialValue) {
-        return (String) JOptionPane.showInputDialog(
-                frame, message, title, JOptionPane.PLAIN_MESSAGE, null, null, initialValue);
+        return (String)
+                JOptionPane.showInputDialog(frame, message, title, JOptionPane.PLAIN_MESSAGE, null, null, initialValue);
     }
 }

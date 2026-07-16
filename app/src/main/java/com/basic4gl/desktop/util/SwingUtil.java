@@ -1,9 +1,8 @@
 package com.basic4gl.desktop.util;
 
 import com.formdev.flatlaf.FlatClientProperties;
-
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 public class SwingUtil {
 
@@ -19,9 +18,7 @@ public class SwingUtil {
             return;
         }
 
-        splitPane.putClientProperty(
-                FlatClientProperties.STYLE,
-                "style: plain");
+        splitPane.putClientProperty(FlatClientProperties.STYLE, "style: plain");
 
         splitPane.setOneTouchExpandable(false);
     }
