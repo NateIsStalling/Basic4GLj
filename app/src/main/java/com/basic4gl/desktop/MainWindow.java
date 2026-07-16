@@ -1202,8 +1202,7 @@ public class MainWindow
                 fileManager.setRunDirectory(fileManager.getFileDirectory());
                 fileManager.setCurrentDirectory(fileManager.getRunDirectory());
             }
-            tabControl.setTitleAt(index, fileManager.getFileEditors().get(index).getTitle());
-            tabControl.getTabComponentAt(index).invalidate();
+            refreshTabTitle(index);
         }
         return saved;
     }
@@ -1226,8 +1225,7 @@ public class MainWindow
                 fileManager.setRunDirectory(fileManager.getFileDirectory());
                 fileManager.setCurrentDirectory(fileManager.getRunDirectory());
             }
-            tabControl.setTitleAt(index, fileManager.getFileEditors().get(index).getTitle());
-            tabControl.getTabComponentAt(index).invalidate();
+            refreshTabTitle(index);
         }
         return saved;
     }
@@ -1257,8 +1255,18 @@ public class MainWindow
             // Restore Current directory
             fileManager.setCurrentDirectory(fileManager.getRunDirectory());
         }
+        refreshTabTitle(index);
+    }
+
+    private void refreshTabTitle(int index) {
         tabControl.setTitleAt(index, fileManager.getFileEditors().get(index).getTitle());
-        tabControl.getTabComponentAt(index).invalidate();
+
+        Component tabComponent = tabControl.getTabComponentAt(index);
+        if (tabComponent != null) {
+            tabComponent.invalidate();
+        }
+        tabControl.revalidate();
+        tabControl.repaint();
     }
 
     private void actionDebugMode() {
