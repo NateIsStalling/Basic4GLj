@@ -1,9 +1,11 @@
 package com.basic4gl.desktop.panels;
 
 import static com.basic4gl.desktop.Theme.ICON_CHEVRON_DOWN;
+import static com.basic4gl.desktop.Theme.ICON_DOCUMENT;
 import static com.basic4gl.desktop.Theme.ICON_MENU_DOCS;
 import static com.basic4gl.desktop.Theme.ICON_MENU_DOCS_SOLID;
 import static com.basic4gl.desktop.Theme.ICON_SEARCH;
+import static com.basic4gl.desktop.Theme.ICON_TEMPLATE;
 import static com.basic4gl.desktop.util.HtmlUtil.escapeHtml;
 import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
 import static com.basic4gl.desktop.util.SwingUtil.configureSmoothScrolling;
@@ -33,10 +35,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -61,6 +65,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 public class DocsPanelProvider implements IEditorPanelProvider {
 
@@ -76,6 +81,8 @@ public class DocsPanelProvider implements IEditorPanelProvider {
     private final JTextPane summaryPane = new JTextPane();
     private final JLabel selectionNameLabel = new JLabel("Select an item.");
     private final JButton primaryAction = new JButton("Open");
+    private final Icon documentRowIcon = createScaledIcon(ICON_DOCUMENT, 18);
+    private final Icon templateRowIcon = createScaledIcon(ICON_TEMPLATE, 18);
     private final ContentCatalogListener catalogListener = this::refreshContent;
 
     private BasicEditor editor;
@@ -122,8 +129,8 @@ public class DocsPanelProvider implements IEditorPanelProvider {
         JPanel panelCardHost = new JPanel(new CardLayout());
         JPanel lookupPanel = new JPanel(new BorderLayout(6, 6));
         Color panelBackground = createLighterPanelBackground();
+        panelCardHost.setBackground(panelBackground);
         lookupPanel.setBackground(panelBackground);
-        lookupPanel.setBorder(new EmptyBorder(0, 6, 6, 6));
 
         configureScopeButton();
         JToggleButton searchToggle = createHeaderSearchToggleButton();
@@ -245,9 +252,9 @@ public class DocsPanelProvider implements IEditorPanelProvider {
 
     private JPopupMenu createScopePopup() {
         JPopupMenu popup = new JPopupMenu();
-        for (ContentScope scope : ContentScope.values()) {
-            JMenuItem item = new JMenuItem(scopeLabel(scope));
-            item.setEnabled(scope != currentScope);
+        for (ContentScope scope : availableScopes()) {
+            JMenuItem item = new JMenuItem(scope.displayName());
+            item.setEnabled(!scope.equals(currentScope));
             item.addActionListener(e -> {
                 currentScope = scope;
                 updateScopeButtonText();
@@ -259,16 +266,14 @@ public class DocsPanelProvider implements IEditorPanelProvider {
     }
 
     private void updateScopeButtonText() {
-        scopeButton.setText(scopeLabel(currentScope));
+        scopeButton.setText(currentScope.displayName());
     }
 
-    private String scopeLabel(ContentScope scope) {
-        return switch (scope) {
-            case ALL -> "All";
-            case LEARN -> "Learn";
-            case REFERENCE -> "Reference";
-            case SAMPLES -> "Samples";
-        };
+    private List<ContentScope> availableScopes() {
+        if (editor == null) {
+            return List.of(ContentScope.ALL);
+        }
+        return contentModel.scopes(editor.contentCatalog());
     }
 
     private JToggleButton createHeaderSearchToggleButton() {
@@ -301,8 +306,9 @@ public class DocsPanelProvider implements IEditorPanelProvider {
 
     private void configureBrowseTree(Color panelBackground) {
         browseTree.setBackground(panelBackground);
-        browseTree.setRootVisible(true);
+        browseTree.setRootVisible(false);
         browseTree.setShowsRootHandles(true);
+        browseTree.setRowHeight(20);
         browseTree.setCellRenderer(new DefaultTreeCellRenderer() {
             @Override
             public Component getTreeCellRendererComponent(
@@ -313,14 +319,15 @@ public class DocsPanelProvider implements IEditorPanelProvider {
                     boolean leaf,
                     int row,
                     boolean hasFocus) {
-                JLabel label = (JLabel) super.getTreeCellRendererComponent(
-                        tree, value, selected, expanded, leaf, row, hasFocus);
+                JLabel label = (JLabel)
+                        super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
                 Object userObject = value instanceof DefaultMutableTreeNode treeNode ? treeNode.getUserObject() : value;
                 if (userObject instanceof ContentPanelItem item) {
-                    label.setText(formatItemLabel(item));
-                    label.setToolTipText(item.displayName());
+                    label.setText(item.displayName());
+                    label.setIcon(rowIcon(item));
+                    label.setToolTipText(itemTooltip(item));
                 } else {
-                    label.setText(escapeHtml(String.valueOf(userObject)));
+                    label.setText(String.valueOf(userObject));
                     label.setToolTipText(null);
                 }
                 return label;
@@ -349,6 +356,7 @@ public class DocsPanelProvider implements IEditorPanelProvider {
     private void configureSearchList(Color panelBackground) {
         searchList.setBackground(panelBackground);
         searchList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        searchList.setFixedCellHeight(20);
         searchList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(
@@ -356,8 +364,9 @@ public class DocsPanelProvider implements IEditorPanelProvider {
                 JLabel label =
                         (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof ContentPanelItem item) {
-                    label.setText(formatItemLabel(item));
-                    label.setToolTipText(item.displayName());
+                    label.setText(item.displayName());
+                    label.setIcon(rowIcon(item));
+                    label.setToolTipText(itemTooltip(item));
                 }
                 return label;
             }
@@ -377,13 +386,15 @@ public class DocsPanelProvider implements IEditorPanelProvider {
         });
     }
 
-    private String formatItemLabel(ContentPanelItem item) {
+    private Icon rowIcon(ContentPanelItem item) {
+        return item.template() ? templateRowIcon : documentRowIcon;
+    }
+
+    private String itemTooltip(ContentPanelItem item) {
         String subtitle = item.displaySubtitle();
-        if (subtitle.isBlank()) {
-            return "<html><b>" + escapeHtml(item.displayName()) + "</b></html>";
-        }
-        return "<html><b>" + escapeHtml(item.displayName()) + "</b><br><span style='color:gray;'>"
-                + escapeHtml(subtitle) + "</span></html>";
+        return subtitle.isBlank()
+                ? item.displayName()
+                : "<html><b>" + escapeHtml(item.displayName()) + "</b><br>" + escapeHtml(subtitle) + "</html>";
     }
 
     private void configureSummary(Color panelBackground) {
@@ -426,11 +437,14 @@ public class DocsPanelProvider implements IEditorPanelProvider {
             setSummary(null);
             return;
         }
+        ensureCurrentScopeAvailable();
         String query =
                 searchField.getText() == null ? "" : searchField.getText().trim();
         if (query.isBlank()) {
-            ContentBrowseNode root = contentModel.browse(editor.contentCatalog(), currentScope);
-            browseTree.setModel(new DefaultTreeModel(toTreeNode(root)));
+            ContentBrowseNode root = browseForCurrentScope();
+            DefaultMutableTreeNode rootNode = toTreeNode(root);
+            browseTree.setModel(new DefaultTreeModel(rootNode));
+            browseTree.expandPath(new TreePath(rootNode.getPath()));
             browseTree.expandRow(0);
             ((CardLayout) resultsCards.getLayout()).show(resultsCards, "browse");
         } else {
@@ -441,6 +455,47 @@ public class DocsPanelProvider implements IEditorPanelProvider {
             ((CardLayout) resultsCards.getLayout()).show(resultsCards, "search");
         }
         setSummary(selectedItem);
+    }
+
+    private ContentBrowseNode browseForCurrentScope() {
+        return contentModel.browse(editor.contentCatalog(), currentScope, this::categoryPathForCurrentScope);
+    }
+
+    private List<String> categoryPathForCurrentScope(ContentPanelItem item) {
+        List<String> categoryPath = item.categoryPath();
+        if (currentScope.all() || categoryPath.isEmpty()) {
+            return categoryPath;
+        }
+        return categoryPath.stream()
+                .filter(segment -> !isRedundantScopeSegment(segment))
+                .toList();
+    }
+
+    private boolean isRedundantScopeSegment(String segment) {
+        String normalizedSegment = normalizeScopeText(segment);
+        String normalizedTag = currentScope.tag();
+        return normalizedTag != null
+                && (normalizedSegment.equals(normalizedTag)
+                        || normalizedSegment.equals(normalizedTag + "s")
+                        || normalizedSegment.equals(normalizeScopeText(currentScope.displayName())));
+    }
+
+    private String normalizeScopeText(String text) {
+        return text == null
+                ? ""
+                : text.trim()
+                        .toLowerCase(Locale.ROOT)
+                        .replace('_', '-')
+                        .replace(' ', '-');
+    }
+
+    private void ensureCurrentScopeAvailable() {
+        if (currentScope.all() || availableScopes().contains(currentScope)) {
+            updateScopeButtonText();
+            return;
+        }
+        currentScope = ContentScope.ALL;
+        updateScopeButtonText();
     }
 
     private DefaultMutableTreeNode toTreeNode(ContentBrowseNode node) {

@@ -37,7 +37,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             "<html><body style='font-family:sans-serif;padding:6px;'>Select an entry.</body></html>";
     private String referenceDetailsHtml = REFERENCE_SELECT_PROMPT_HTML;
     private final JComboBox<String> referenceLibraryFilter = new JComboBox<>(new String[] {"All libraries"});
-    private final JButton referenceFiltersButton = new JButton("All Symbols");
+    private final JButton referenceFiltersButton = new JButton("All");
     private final JPopupMenu referenceFiltersPopup = new JPopupMenu();
     private final JLabel referenceSelectionNameLabel = new JLabel("Select an entry.");
     private String referenceSelectionName = "Select an entry.";
@@ -53,7 +53,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
     private final JList<ReferenceItem> referenceList = new JList<>(referenceListModel);
     private final JTextField referenceSearchField = new JTextField();
     private final JComboBox<String> referenceKindFilter =
-            new JComboBox<>(new String[] {"All Symbols", "Functions", "Constants", "Labels", "Variables", "Structs"});
+            new JComboBox<>(new String[] {"All", "Functions", "Constants", "Labels", "Variables", "Structs"});
     private final JComboBox<String> referenceSourceFilter =
             new JComboBox<>(new String[] {"All Sources", "Builtin", "Libraries", "Program"});
     private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
@@ -103,7 +103,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
 
     @Override
     public String getTitle() {
-        return "View Symbols";
+        return "Code Reference";
     }
 
     @Override
@@ -621,7 +621,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         referenceFiltersPopup.removeAll();
 
         JMenu typeMenu = new JMenu("Type");
-        addReferenceRadioItems(typeMenu, referenceKindFilter, "All Symbols", "All Symbols");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "All", "All");
         addReferenceRadioItems(typeMenu, referenceKindFilter, "Functions", "Functions");
         addReferenceRadioItems(typeMenu, referenceKindFilter, "Constants", "Constants");
         addReferenceRadioItems(typeMenu, referenceKindFilter, "Labels", "Labels");
@@ -646,7 +646,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         resetItem.addActionListener(e -> {
             updatingReferenceFilters = true;
             try {
-                referenceKindFilter.setSelectedItem("All Symbols");
+                referenceKindFilter.setSelectedItem("All");
                 referenceSourceFilter.setSelectedItem("All Sources");
                 referenceLibraryFilter.setSelectedItem("All Libraries");
             } finally {
@@ -680,10 +680,10 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
     }
 
     private void updateReferenceFiltersButtonTooltip() {
-        String type = Objects.toString(referenceKindFilter.getSelectedItem(), "All Symbols");
+        String type = Objects.toString(referenceKindFilter.getSelectedItem(), "All");
         String source = Objects.toString(referenceSourceFilter.getSelectedItem(), "All Sources");
         String library = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All Libraries");
-        referenceFiltersButton.setText(type);
+        referenceFiltersButton.setText("All".equals(type) ? "Code Reference" : type);
         referenceFiltersButton.setToolTipText("Type: " + type + " | Source: " + source + " | Library: " + library);
     }
 
@@ -701,7 +701,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         ReferenceItem previousSelection = referenceList.getSelectedValue();
         java.util.List<ReferenceItem> matches = new ArrayList<>();
         for (ReferenceItem item : allReferenceItems) {
-            boolean kindMatches = "All Symbols".equals(selectedKind)
+            boolean kindMatches = "All".equals(selectedKind)
                     || ("Functions".equals(selectedKind)
                             && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
                     || ("Constants".equals(selectedKind) && "constant".equals(item.kind))

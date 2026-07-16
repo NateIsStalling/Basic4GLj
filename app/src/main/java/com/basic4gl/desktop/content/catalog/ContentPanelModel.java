@@ -4,13 +4,40 @@ import com.basic4gl.desktop.spi.content.DocumentDescriptor;
 import com.basic4gl.desktop.spi.content.IndexedContent;
 import com.basic4gl.desktop.spi.content.TemplateDescriptor;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.Function;
 
 public final class ContentPanelModel {
 
     private final ContentSearchIndex searchIndex = new ContentSearchIndex();
+
+    public List<ContentScope> scopes(ContentCatalog catalog) {
+        Set<String> tags = new LinkedHashSet<>();
+        catalog.documents().stream()
+                .flatMap(entry -> entry.descriptor().tags().stream())
+                .map(String::trim)
+                .filter(tag -> !tag.isBlank())
+                .map(tag -> tag.toLowerCase(Locale.ROOT))
+                .forEach(tags::add);
+        catalog.templates().stream()
+                .flatMap(entry -> entry.descriptor().tags().stream())
+                .map(String::trim)
+                .filter(tag -> !tag.isBlank())
+                .map(tag -> tag.toLowerCase(Locale.ROOT))
+                .forEach(tags::add);
+
+        List<ContentScope> scopes = new ArrayList<>();
+        scopes.add(ContentScope.ALL);
+        tags.stream()
+                .map(ContentScope::forTag)
+                .sorted(Comparator.comparing(ContentScope::displayName, String.CASE_INSENSITIVE_ORDER))
+                .forEach(scopes::add);
+        return List.copyOf(scopes);
+    }
 
     public List<ContentPanelItem> items(ContentCatalog catalog, ContentScope scope, String query) {
         List<DocumentCatalogEntry> documents = filteredDocuments(catalog.documents(), scope);
@@ -36,9 +63,14 @@ public final class ContentPanelModel {
     }
 
     public ContentBrowseNode browse(ContentCatalog catalog, ContentScope scope) {
-        ContentBrowseNode root = new ContentBrowseNode(scopeLabel(scope));
+        return browse(catalog, scope, ContentPanelItem::categoryPath);
+    }
+
+    public ContentBrowseNode browse(
+            ContentCatalog catalog, ContentScope scope, Function<ContentPanelItem, List<String>> categoryPathProvider) {
+        ContentBrowseNode root = new ContentBrowseNode(scope.displayName());
         for (ContentPanelItem item : items(catalog, scope, "")) {
-            root.add(item.categoryPath(), item);
+            root.add(categoryPathProvider.apply(item), item);
         }
         return root;
     }
@@ -47,7 +79,7 @@ public final class ContentPanelModel {
         IndexedContent content = item.content();
         String category = String.join(" / ", content.categoryPath());
         if (content instanceof DocumentDescriptor descriptor) {
-            String kind = documentKindLabel(descriptor.tags());
+            String kind = tagLabels(descriptor.tags(), "Document");
             return new ContentSelectionSummary(
                     descriptor.title(),
                     kind,
@@ -57,8 +89,8 @@ public final class ContentPanelModel {
                     "Open");
         }
         if (content instanceof TemplateDescriptor descriptor) {
-            String kind = templateKindLabel(descriptor.tags());
-            String action = hasTag(descriptor.tags(), "sample") ? "Open Sample" : "Create Program";
+            String kind = tagLabels(descriptor.tags(), "Template");
+            String action = descriptor.tags().isEmpty() ? "Create Program" : "Open " + kind;
             return new ContentSelectionSummary(
                     descriptor.title(),
                     kind,
@@ -72,24 +104,11 @@ public final class ContentPanelModel {
     }
 
     private List<DocumentCatalogEntry> filteredDocuments(List<DocumentCatalogEntry> documents, ContentScope scope) {
-        return documents.stream()
-                .filter(entry -> switch (scope) {
-                    case ALL -> true;
-                    case LEARN -> isLearning(entry.descriptor().tags());
-                    case REFERENCE -> isReference(entry.descriptor().tags());
-                    case SAMPLES -> false;
-                })
-                .toList();
+        return documents.stream().filter(entry -> scope.matches(entry.descriptor())).toList();
     }
 
     private List<TemplateCatalogEntry> filteredTemplates(List<TemplateCatalogEntry> templates, ContentScope scope) {
-        return templates.stream()
-                .filter(entry -> switch (scope) {
-                    case ALL -> true;
-                    case LEARN, SAMPLES -> hasTag(entry.descriptor().tags(), "sample");
-                    case REFERENCE -> false;
-                })
-                .toList();
+        return templates.stream().filter(entry -> scope.matches(entry.descriptor())).toList();
     }
 
     private ContentPanelItem toItem(ContentSearchResult result) {
@@ -132,60 +151,19 @@ public final class ContentPanelModel {
     }
 
     private String subtitle(IndexedContent content, boolean template) {
-        String kind = template ? templateKindLabel(content.tags()) : documentKindLabel(content.tags());
+        String kind = tagLabels(content.tags(), template ? "Template" : "Document");
         String category = String.join(" / ", content.categoryPath());
         return category.isBlank() ? kind : kind + " · " + category;
     }
 
-    private String documentKindLabel(Set<String> tags) {
-        if (hasTag(tags, "tutorial")) {
-            return "Tutorial";
+    private String tagLabels(Set<String> tags, String fallback) {
+        if (tags.isEmpty()) {
+            return fallback;
         }
-        if (hasTag(tags, "guide")) {
-            return "Guide";
-        }
-        if (hasTag(tags, "reference")) {
-            return "Reference";
-        }
-        return "Document";
-    }
-
-    private String templateKindLabel(Set<String> tags) {
-        if (hasTag(tags, "sample")) {
-            return "Sample";
-        }
-        if (hasTag(tags, "starter")) {
-            return "Starter";
-        }
-        if (hasTag(tags, "project-template")) {
-            return "Project Template";
-        }
-        return "Template";
-    }
-
-    private boolean isLearning(Set<String> tags) {
-        return hasAnyTag(tags, Set.of("learn", "tutorial", "getting-started"));
-    }
-
-    private boolean isReference(Set<String> tags) {
-        return hasAnyTag(tags, Set.of("reference", "guide"));
-    }
-
-    private boolean hasAnyTag(Set<String> tags, Set<String> needles) {
-        return needles.stream().anyMatch(needle -> hasTag(tags, needle));
-    }
-
-    private boolean hasTag(Set<String> tags, String needle) {
-        String normalizedNeedle = needle.toLowerCase(Locale.ROOT);
-        return tags.stream().map(tag -> tag.toLowerCase(Locale.ROOT)).anyMatch(normalizedNeedle::equals);
-    }
-
-    private String scopeLabel(ContentScope scope) {
-        return switch (scope) {
-            case ALL -> "All";
-            case LEARN -> "Learn";
-            case REFERENCE -> "Reference";
-            case SAMPLES -> "Samples";
-        };
+        return tags.stream()
+                .map(ContentScope::labelForTag)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .reduce((left, right) -> left + ", " + right)
+                .orElse(fallback);
     }
 }

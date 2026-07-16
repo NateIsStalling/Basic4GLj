@@ -16,13 +16,22 @@ import org.junit.Test;
 public class ContentPanelModelTest {
 
     @Test
-    public void scopesUseTagsInsteadOfKindEnums() {
+    public void scopesAreDerivedFromAvailableTags() {
         ContentCatalog catalog = catalog();
         ContentPanelModel model = new ContentPanelModel();
 
-        assertEquals(List.of("Drawing Sprites", "Sprite Demo"), titles(model.items(catalog, ContentScope.LEARN, "")));
-        assertEquals(List.of("Library Reference"), titles(model.items(catalog, ContentScope.REFERENCE, "")));
-        assertEquals(List.of("Sprite Demo"), titles(model.items(catalog, ContentScope.SAMPLES, "")));
+        assertEquals(
+                List.of(
+                        "All Documentation",
+                        "Learn",
+                        "Reference",
+                        "Sample",
+                        "Starter",
+                        "Tutorial"),
+                model.scopes(catalog).stream().map(ContentScope::displayName).toList());
+        assertEquals(List.of("Drawing Sprites"), titles(model.items(catalog, ContentScope.forTag("learn"), "")));
+        assertEquals(List.of("Library Reference"), titles(model.items(catalog, ContentScope.forTag("reference"), "")));
+        assertEquals(List.of("Sprite Demo"), titles(model.items(catalog, ContentScope.forTag("sample"), "")));
         assertEquals(
                 List.of("Blank Program", "Drawing Sprites", "Library Reference", "Sprite Demo"),
                 titles(model.items(catalog, ContentScope.ALL, "")));
@@ -30,13 +39,13 @@ public class ContentPanelModelTest {
 
     @Test
     public void browseBuildsCategoryHierarchy() {
-        ContentBrowseNode root = new ContentPanelModel().browse(catalog(), ContentScope.LEARN);
+        ContentBrowseNode root = new ContentPanelModel().browse(catalog(), ContentScope.forTag("tutorial"));
 
-        assertEquals("Learn", root.name());
+        assertEquals("Tutorial", root.name());
         assertEquals(1, root.children().size());
         ContentBrowseNode graphics = root.children().get(0);
         assertEquals("Graphics", graphics.name());
-        assertEquals(List.of("Drawing Sprites", "Sprite Demo"), titles(graphics.items()));
+        assertEquals(List.of("Drawing Sprites"), titles(graphics.items()));
     }
 
     @Test
@@ -50,7 +59,7 @@ public class ContentPanelModelTest {
     public void summaryUsesTagDrivenLabelsAndActions() {
         ContentPanelModel model = new ContentPanelModel();
         ContentPanelItem sample =
-                model.items(catalog(), ContentScope.SAMPLES, "").get(0);
+                model.items(catalog(), ContentScope.forTag("sample"), "").get(0);
 
         ContentSelectionSummary summary = model.summary(sample);
 

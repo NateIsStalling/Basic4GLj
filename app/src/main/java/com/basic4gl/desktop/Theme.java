@@ -29,6 +29,9 @@ public class Theme {
     public static final String ICON_SEARCH = THEME_DIRECTORY + "icon_search.png";
     public static final String ICON_ARROW_DOWN = THEME_DIRECTORY + "icon_arrow_down.png";
     public static final String ICON_ARROW_UP = THEME_DIRECTORY + "icon_arrow_up.png";
+    public static final String ICON_ARROW_LEFT = THEME_DIRECTORY + "icon_arrow_left.png";
+    public static final String ICON_ARROW_RIGHT = THEME_DIRECTORY + "icon_arrow_right.png";
+    public static final String ICON_HOME = THEME_DIRECTORY + "icon_home.png";
     public static final String ICON_BOOKMARK_ADD = THEME_DIRECTORY + "icon_bookmark_add.png";
     public static final String ICON_MENU_FOLDER = THEME_DIRECTORY + "menu_folder.png";
     public static final String ICON_MENU_FOLDER_SOLID = THEME_DIRECTORY + "menu_folder_solid.png";
@@ -38,6 +41,8 @@ public class Theme {
     public static final String ICON_MENU_FUNCTIONS = THEME_DIRECTORY + "menu_functions.png";
     public static final String ICON_MENU_DOCS = THEME_DIRECTORY + "icon_book_outline.png";
     public static final String ICON_MENU_DOCS_SOLID = THEME_DIRECTORY + "icon_book.png";
+    public static final String ICON_TEMPLATE = THEME_DIRECTORY + "icon_template.png";
+    public static final String ICON_DOCUMENT = THEME_DIRECTORY + "icon_document.png";
     public static final String ICON_MENU_HELP = THEME_DIRECTORY + "menu_help.png";
     public static final String ICON_MENU_HELP_SOLID = THEME_DIRECTORY + "menu_help_solid.png";
     public static final String ICON_MENU_DEBUG = THEME_DIRECTORY + "menu_debug.png";
