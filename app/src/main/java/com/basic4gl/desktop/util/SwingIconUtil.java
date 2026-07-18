@@ -54,6 +54,15 @@ public class SwingIconUtil {
         return new ImageIcon(scaled);
     }
 
+    public static Icon createScaledIcon(String iconPath, int size, Color tint) {
+        ImageIcon icon = createImageIcon(iconPath, tint);
+        if (icon == null) {
+            return null;
+        }
+        Image scaled = icon.getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaled);
+    }
+
     private static BufferedImage tintImage(Image source, Color tint) {
         int width = source.getWidth(null);
         int height = source.getHeight(null);

@@ -110,8 +110,9 @@ public class MainWindow
     private final ButtonGroup rightDocsGroup = new ButtonGroup();
     private final Map<String, JToggleButton> rightDocsButtons = new HashMap<>();
 
-    private final JComboBox<String> runTargetCombo = new JComboBox<>();
-    private boolean updatingRunTargetCombo = false;
+    private final JButton runTargetButton = new JButton();
+    private final JPopupMenu runTargetPopup = new JPopupMenu();
+    private boolean runTargetFollowsCurrentTab = true;
 
     private int expandedLeftSidebarWidth = 260;
     private int expandedRightDocsWidth = 320;
@@ -554,7 +555,7 @@ public class MainWindow
         toolBar.add(openButton);
         toolBar.add(saveButton);
         toolBar.add(Box.createHorizontalGlue());
-        toolBar.add(runTargetCombo);
+        toolBar.add(runTargetButton);
         toolBar.add(runButton);
         toolBar.addSeparator();
         toolBar.add(exportButton);
@@ -568,9 +569,19 @@ public class MainWindow
         exportButton.addActionListener(e -> actionExport());
         settingsButton.addActionListener(e -> showSettings());
         runButton.setToolTipText("Run the program!");
-        runTargetCombo.setToolTipText("Select the runnable source file");
-        runTargetCombo.setMaximumSize(new Dimension(260, 30));
-        runTargetCombo.addActionListener(e -> onRunTargetSelectionChanged());
+        runTargetButton.setToolTipText("Select the runnable source file");
+        runTargetButton.setMaximumSize(new Dimension(260, 30));
+        runTargetButton.setFocusable(false);
+        runTargetButton.setIcon(createScaledIcon(ICON_CHEVRON_DOWN, 18));
+        runTargetButton.setHorizontalTextPosition(SwingConstants.LEFT);
+        runTargetButton.setIconTextGap(6);
+        runTargetButton.putClientProperty("JButton.buttonType", "toolBarButton");
+        runTargetButton.setOpaque(false);
+        runTargetButton.setMargin(new Insets(5, 8, 5, 8));
+        Font runTargetFont = runTargetButton.getFont();
+        runTargetButton.setFont(new Font(runTargetFont.getName(), Font.BOLD, runTargetFont.getSize()));
+        runTargetButton.setForeground(new Color(0x424242));
+        runTargetButton.addActionListener(e -> showRunTargetPopup());
 
         toolBar.setAlignmentY(1);
         toolBar.setFloatable(false);
@@ -1202,6 +1213,7 @@ public class MainWindow
                 fileManager.setCurrentDirectory(fileManager.getRunDirectory());
             }
             refreshTabTitle(index);
+            refreshRunnableFileControls();
         }
         return saved;
     }
@@ -1225,6 +1237,7 @@ public class MainWindow
                 fileManager.setCurrentDirectory(fileManager.getRunDirectory());
             }
             refreshTabTitle(index);
+            refreshRunnableFileControls();
         }
         return saved;
     }
@@ -1255,6 +1268,7 @@ public class MainWindow
             fileManager.setCurrentDirectory(fileManager.getRunDirectory());
         }
         refreshTabTitle(index);
+        refreshRunnableFileControls();
     }
 
     private void refreshTabTitle(int index) {
@@ -1979,7 +1993,7 @@ public class MainWindow
         fileViewModeTabs.add(previewViewButton);
         fileViewModeTabsHost.setVisible(false);
         tabControl.putClientProperty(TABBED_PANE_TRAILING_COMPONENT, fileViewModeTabsHost);
-        tabControl.addChangeListener(e -> refreshFileViewModeButtons());
+        tabControl.addChangeListener(e -> onSelectedTabChanged());
         primaryTabHost.add(tabControl, BorderLayout.CENTER);
     }
 
@@ -2105,7 +2119,8 @@ public class MainWindow
             if (contextEditor == null) {
                 return;
             }
-            fileManager.setRunnableFilePath(contextEditor.getFilePath());
+            runTargetFollowsCurrentTab = false;
+            fileManager.setRunnableFileEditor(contextEditor);
             refreshRunnableFileControls();
         });
         setRunnable.setEnabled(contextEditor != null);
@@ -2528,51 +2543,113 @@ public class MainWindow
             return;
         }
 
-        updatingRunTargetCombo = true;
-        runTargetCombo.removeAllItems();
+        FileEditor currentEditor = getCurrentTextEditor();
+        if (runTargetFollowsCurrentTab && currentEditor != null) {
+            updateRunnableFileToCurrentTab(currentEditor);
+        }
 
-        java.util.List<Integer> runnableTabIndices = new ArrayList<>();
+        runTargetButton.setText(getRunTargetButtonLabel(currentEditor));
+        runTargetButton.setEnabled(currentEditor != null || hasTextEditors());
+        rebuildRunTargetPopup(currentEditor);
+    }
 
+    private boolean hasTextEditors() {
+        for (int i = 0; i < fileManager.getFileEditors().size(); i++) {
+            if (fileManager.getFileEditors().get(i) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getRunTargetButtonLabel(FileEditor currentEditor) {
+        if (runTargetFollowsCurrentTab) {
+            return currentRunTargetLabel(currentEditor);
+        }
+
+        FileEditor runnableEditor = getTextEditorAt(fileManager.getRunnableFileIndex());
+        if (runnableEditor != null) {
+            return runnableEditor.getShortFilename();
+        }
+
+        return currentRunTargetLabel(currentEditor);
+    }
+
+    private String currentRunTargetLabel(FileEditor currentEditor) {
+        if (currentEditor == null) {
+            return "";
+        }
+        String name = currentEditor.getShortFilename();
+        return "Current Program [" + name + "]";
+    }
+
+    private void showRunTargetPopup() {
+        refreshRunnableFileControls();
+        runTargetPopup.show(runTargetButton, 0, runTargetButton.getHeight());
+    }
+
+    private void rebuildRunTargetPopup(FileEditor currentEditor) {
+        runTargetPopup.removeAll();
+        ButtonGroup runTargetGroup = new ButtonGroup();
+
+        JRadioButtonMenuItem currentItem = new JRadioButtonMenuItem(currentRunTargetLabel(currentEditor));
+        currentItem.setSelected(runTargetFollowsCurrentTab);
+        currentItem.addActionListener(e -> {
+            runTargetFollowsCurrentTab = true;
+            updateRunnableFileToCurrentTab(getCurrentTextEditor());
+            refreshRunnableFileControls();
+        });
+        runTargetGroup.add(currentItem);
+        runTargetPopup.add(currentItem);
+
+        if (hasTextEditors()) {
+            runTargetPopup.addSeparator();
+        }
+
+        FileEditor runnableEditor = getTextEditorAt(fileManager.getRunnableFileIndex());
         for (int i = 0; i < fileManager.getFileEditors().size(); i++) {
             FileEditor editor = fileManager.getFileEditors().get(i);
             if (editor == null) {
                 continue;
             }
-            runTargetCombo.addItem(editor.getShortFilename());
-            runnableTabIndices.add(i);
-        }
 
-        int runnableIndex = fileManager.getRunnableFileIndex();
-        if (runnableIndex >= 0) {
-            int comboIndex = runnableTabIndices.indexOf(runnableIndex);
-            if (comboIndex >= 0 && comboIndex < runTargetCombo.getItemCount()) {
-                runTargetCombo.setSelectedIndex(comboIndex);
-            }
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(editor.getShortFilename());
+            item.setSelected(!runTargetFollowsCurrentTab && editor == runnableEditor);
+            item.addActionListener(e -> {
+                runTargetFollowsCurrentTab = false;
+                fileManager.setRunnableFileEditor(editor);
+                refreshRunnableFileControls();
+            });
+            runTargetGroup.add(item);
+            runTargetPopup.add(item);
         }
-
-        runTargetCombo.setEnabled(runTargetCombo.getItemCount() > 0);
-        updatingRunTargetCombo = false;
     }
 
-    private void onRunTargetSelectionChanged() {
-        if (updatingRunTargetCombo || fileManager == null) {
-            return;
+    private void onSelectedTabChanged() {
+        refreshFileViewModeButtons();
+        if (runTargetFollowsCurrentTab) {
+            refreshRunnableFileControls();
+        } else {
+            rebuildRunTargetPopup(getCurrentTextEditor());
         }
-        int comboIndex = runTargetCombo.getSelectedIndex();
-        if (comboIndex < 0) {
-            return;
-        }
+    }
 
-        int textEditorOffset = -1;
-        for (FileEditor editor : fileManager.getFileEditors()) {
-            if (editor == null) {
-                continue;
-            }
-            textEditorOffset++;
-            if (textEditorOffset == comboIndex) {
-                fileManager.setRunnableFilePath(editor.getFilePath());
-                return;
-            }
+    private FileEditor getCurrentTextEditor() {
+        return getTextEditorAt(tabControl.getSelectedIndex());
+    }
+
+    private FileEditor getTextEditorAt(int index) {
+        if (fileManager == null || index < 0 || index >= fileManager.getFileEditors().size()) {
+            return null;
+        }
+        return fileManager.getFileEditors().get(index);
+    }
+
+    private void updateRunnableFileToCurrentTab(FileEditor currentEditor) {
+        if (currentEditor != null) {
+            fileManager.setRunnableFileEditor(currentEditor);
+        } else {
+            fileManager.ensureRunnableFileValid();
         }
     }
 

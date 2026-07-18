@@ -10,6 +10,7 @@ public class FileManager implements IFileManager {
 
     private final Vector<FileEditor> fileEditors = new Vector<>();
     private String runnableFilePath;
+    private FileEditor runnableFileEditor;
 
     private String currentDirectory; // Current working directory
 
@@ -217,16 +218,29 @@ public class FileManager implements IFileManager {
 
     public String getRunnableFilePath() {
         ensureRunnableFileValid();
+        if (runnableFileEditor != null) {
+            return runnableFileEditor.getFilePath();
+        }
         return runnableFilePath;
     }
 
     public void setRunnableFilePath(String runnableFilePath) {
         this.runnableFilePath = runnableFilePath;
+        this.runnableFileEditor = null;
+        ensureRunnableFileValid();
+    }
+
+    public void setRunnableFileEditor(FileEditor runnableFileEditor) {
+        this.runnableFileEditor = runnableFileEditor;
+        this.runnableFilePath = runnableFileEditor != null ? runnableFileEditor.getFilePath() : null;
         ensureRunnableFileValid();
     }
 
     public int getRunnableFileIndex() {
         ensureRunnableFileValid();
+        if (runnableFileEditor != null) {
+            return fileEditors.indexOf(runnableFileEditor);
+        }
         if (runnableFilePath == null || runnableFilePath.isBlank()) {
             return -1;
         }
@@ -236,8 +250,15 @@ public class FileManager implements IFileManager {
     public void ensureRunnableFileValid() {
         if (fileEditors.isEmpty()) {
             runnableFilePath = null;
+            runnableFileEditor = null;
             return;
         }
+
+        if (runnableFileEditor != null && fileEditors.contains(runnableFileEditor)) {
+            runnableFilePath = runnableFileEditor.getFilePath();
+            return;
+        }
+        runnableFileEditor = null;
 
         if (runnableFilePath != null && !runnableFilePath.isBlank() && getTabIndex(runnableFilePath) != -1) {
             return;
@@ -246,9 +267,11 @@ public class FileManager implements IFileManager {
         for (FileEditor editor : fileEditors) {
             if (editor != null) {
                 runnableFilePath = editor.getFilePath();
+                runnableFileEditor = editor;
                 return;
             }
         }
         runnableFilePath = null;
+        runnableFileEditor = null;
     }
 }

@@ -13,7 +13,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
@@ -24,7 +27,7 @@ import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 import org.fife.ui.rtextarea.*;
 
 public class FileEditor implements SearchListener {
-    public static final String DEFAULT_NAME = "[Unnamed]";
+    public static final String DEFAULT_NAME = "Untitled";
 
     private static final int HEADER_BOOKMARK = 0;
     private static final int HEADER_BREAK_PT = 1;
@@ -71,7 +74,7 @@ public class FileEditor implements SearchListener {
         this.fileManager = fileManager;
         this.toggleBreakpointListener = toggleBreakpointListener;
 
-        fileName = "";
+        fileName = getNextDefaultName(fileManager);
         filePath = "";
         isModified = false;
         isSaved = false;
@@ -333,7 +336,10 @@ public class FileEditor implements SearchListener {
 
     public String getTitle() {
         String result;
-        result = (fileName.isEmpty() ? DEFAULT_NAME : fileName).toLowerCase();
+        result = fileName.isEmpty() ? DEFAULT_NAME : fileName;
+        if (!isDefaultName(result)) {
+            result = result.toLowerCase();
+        }
 
         // Append asterisk if modified
         if (isModified) {
@@ -360,7 +366,73 @@ public class FileEditor implements SearchListener {
     }
 
     public String getShortFilename() {
-        return !fileName.isEmpty() ? new File(fileName).getName() : DEFAULT_NAME.toLowerCase();
+        return !fileName.isEmpty() ? new File(fileName).getName() : DEFAULT_NAME;
+    }
+
+    private static String getNextDefaultName(IFileManager fileManager) {
+        if (fileManager instanceof FileManager manager) {
+            List<String> existingNames = new ArrayList<>();
+            for (FileEditor editor : manager.getFileEditors()) {
+                if (editor != null) {
+                    existingNames.add(editor.fileName);
+                }
+            }
+            return getNextDefaultName(existingNames);
+        }
+
+        return DEFAULT_NAME;
+    }
+
+    static String getNextDefaultName(Collection<String> existingNames) {
+        Set<Integer> usedIndexes = new HashSet<>();
+        for (String existingName : existingNames) {
+            int index = getDefaultNameIndex(existingName);
+            if (index > 0) {
+                usedIndexes.add(index);
+            }
+        }
+
+        int index = 1;
+        while (usedIndexes.contains(index)) {
+            index++;
+        }
+
+        return formatDefaultName(index);
+    }
+
+    private static boolean isDefaultName(String name) {
+        return getDefaultNameIndex(name) > 0;
+    }
+
+    private static int getDefaultNameIndex(String name) {
+        if (name == null) {
+            return -1;
+        }
+
+        if (DEFAULT_NAME.equalsIgnoreCase(name)) {
+            return 1;
+        }
+
+        String prefix = DEFAULT_NAME + " ";
+        if (!name.regionMatches(true, 0, prefix, 0, prefix.length())) {
+            return -1;
+        }
+
+        String suffix = name.substring(prefix.length());
+        try {
+            int index = Integer.parseInt(suffix);
+            if (index >= 2 && Integer.toString(index).equals(suffix)) {
+                return index;
+            }
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
+
+        return -1;
+    }
+
+    private static String formatDefaultName(int index) {
+        return index == 1 ? DEFAULT_NAME : DEFAULT_NAME + " " + index;
     }
 
     public boolean isModified() {
