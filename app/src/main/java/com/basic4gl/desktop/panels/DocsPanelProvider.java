@@ -30,6 +30,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -59,6 +60,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -78,6 +80,7 @@ public class DocsPanelProvider implements IEditorPanelProvider {
     private final DefaultListModel<ContentPanelItem> searchListModel = new DefaultListModel<>();
     private final JList<ContentPanelItem> searchList = new JList<>(searchListModel);
     private final JPanel resultsCards = new JPanel(new CardLayout());
+    private final JPanel searchResultsCards = new JPanel(new CardLayout());
     private final JTextPane summaryPane = new JTextPane();
     private final JLabel selectionNameLabel = new JLabel("Select an item.");
     private final JButton primaryAction = new JButton("Open");
@@ -165,8 +168,11 @@ public class DocsPanelProvider implements IEditorPanelProvider {
         searchScrollPane.setBorder(null);
         configureSmoothScrolling(browseScrollPane);
         configureSmoothScrolling(searchScrollPane);
+        searchResultsCards.setOpaque(false);
+        searchResultsCards.add(searchScrollPane, "list");
+        searchResultsCards.add(createSearchEmptyState(panelBackground), "empty");
         resultsCards.add(browseScrollPane, "browse");
-        resultsCards.add(searchScrollPane, "search");
+        resultsCards.add(searchResultsCards, "search");
 
         JPanel resultsPanel = new JPanel(new BorderLayout(0, 6));
         resultsPanel.setBackground(panelBackground);
@@ -432,6 +438,49 @@ public class DocsPanelProvider implements IEditorPanelProvider {
         return detailsPanel;
     }
 
+    private JPanel createSearchEmptyState(Color panelBackground) {
+        JPanel noResultsPanel = new JPanel(new GridBagLayout());
+        noResultsPanel.setBackground(panelBackground);
+        JPanel noResultsContent = new JPanel();
+        noResultsContent.setOpaque(false);
+        noResultsContent.setLayout(new BoxLayout(noResultsContent, BoxLayout.Y_AXIS));
+
+        Color disabledIconColor = UIManager.getColor("Label.disabledForeground");
+        if (disabledIconColor == null) {
+            disabledIconColor = new Color(0x9E9E9E);
+        }
+        JLabel noResultsIcon = new JLabel(createScaledIcon(ICON_SEARCH, 40, disabledIconColor));
+        noResultsIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel noResultsLabel = new JLabel("No Results");
+        Font noResultsFont = noResultsLabel.getFont();
+        noResultsLabel.setFont(new Font(noResultsFont.getName(), Font.BOLD, noResultsFont.getSize() + 2));
+        noResultsLabel.setForeground(new Color(0x5B717F));
+        noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton resetFiltersButton = new JButton("Reset Filters");
+        resetFiltersButton.setFocusable(false);
+        resetFiltersButton.setMargin(new Insets(4, 4, 4, 4));
+        resetFiltersButton.setForeground(new Color(0x5B717F));
+        resetFiltersButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        resetFiltersButton.addActionListener(e -> resetSearchFilters());
+
+        noResultsContent.add(noResultsIcon);
+        noResultsContent.add(Box.createVerticalStrut(8));
+        noResultsContent.add(noResultsLabel);
+        noResultsContent.add(Box.createVerticalStrut(8));
+        noResultsContent.add(resetFiltersButton);
+        noResultsPanel.add(noResultsContent);
+        return noResultsPanel;
+    }
+
+    private void resetSearchFilters() {
+        currentScope = ContentScope.ALL;
+        updateScopeButtonText();
+        searchField.setText("");
+        refreshContent();
+    }
+
     private void refreshContent() {
         if (editor == null) {
             setSummary(null);
@@ -451,6 +500,13 @@ public class DocsPanelProvider implements IEditorPanelProvider {
             searchListModel.clear();
             for (ContentPanelItem item : contentModel.items(editor.contentCatalog(), currentScope, query)) {
                 searchListModel.addElement(item);
+            }
+            ((CardLayout) searchResultsCards.getLayout())
+                    .show(searchResultsCards, searchListModel.isEmpty() ? "empty" : "list");
+            if (searchListModel.isEmpty()) {
+                selectItem(null);
+            } else {
+                searchList.setSelectedIndex(0);
             }
             ((CardLayout) resultsCards.getLayout()).show(resultsCards, "search");
         }

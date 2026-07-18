@@ -46,6 +46,9 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
     private final JButton referenceInsertButton = new JButton("Insert");
     private final javax.swing.Timer referenceFilterDebounceTimer =
             new javax.swing.Timer(120, e -> filterReferenceItems());
+    private final JPanel referenceResultsHost = new JPanel(new CardLayout());
+    private static final String REFERENCE_RESULTS_LIST_CARD = "list";
+    private static final String REFERENCE_RESULTS_EMPTY_CARD = "empty";
 
     private SymbolIndexer symbolIndexer;
     private final java.util.List<ReferenceItem> allReferenceItems = new ArrayList<>();
@@ -232,6 +235,37 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         lookupSplit.putClientProperty("JSplitPane.style", "plain");
         JScrollPane listScrollPane = new JScrollPane(referenceList);
         listScrollPane.setBorder(null);
+        JPanel noResultsPanel = new JPanel(new GridBagLayout());
+        noResultsPanel.setBackground(panelBackground);
+        JPanel noResultsContent = new JPanel();
+        noResultsContent.setOpaque(false);
+        noResultsContent.setLayout(new BoxLayout(noResultsContent, BoxLayout.Y_AXIS));
+        Color disabledIconColor = UIManager.getColor("Label.disabledForeground");
+        if (disabledIconColor == null) {
+            disabledIconColor = new Color(0xC8C8C8);
+        }
+        JLabel noResultsIcon = new JLabel(createScaledIcon(ICON_SEARCH, 40, disabledIconColor));
+        noResultsIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel noResultsLabel = new JLabel("No Results");
+        Font noResultsFont = noResultsLabel.getFont();
+        noResultsLabel.setFont(new Font(noResultsFont.getName(), Font.BOLD, noResultsFont.getSize() + 2));
+        noResultsLabel.setForeground(new Color(0x5B717F));
+        noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JButton resetFiltersButton = new JButton("Reset Filters");
+        resetFiltersButton.setFocusable(false);
+        resetFiltersButton.setMargin(new Insets(4, 4, 4, 4));
+        resetFiltersButton.setForeground(new Color(0x5B717F));
+        resetFiltersButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        resetFiltersButton.addActionListener(e -> resetReferenceFiltersAndSearch());
+        noResultsContent.add(noResultsIcon);
+        noResultsContent.add(Box.createVerticalStrut(8));
+        noResultsContent.add(noResultsLabel);
+        noResultsContent.add(Box.createVerticalStrut(8));
+        noResultsContent.add(resetFiltersButton);
+        noResultsPanel.add(noResultsContent);
+        referenceResultsHost.setOpaque(false);
+        referenceResultsHost.add(listScrollPane, REFERENCE_RESULTS_LIST_CARD);
+        referenceResultsHost.add(noResultsPanel, REFERENCE_RESULTS_EMPTY_CARD);
         JPanel detailsPanel = new JPanel(new BorderLayout(0, 0));
         JPanel detailsHeader = new JPanel(new BorderLayout(8, 0));
         detailsHeader.setBackground(panelBackground);
@@ -271,7 +305,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         symbolsListHeader.add(lookupHeader, BorderLayout.NORTH);
         symbolsListHeader.add(searchBar, BorderLayout.SOUTH);
         symbolsListPanel.add(symbolsListHeader, BorderLayout.NORTH);
-        symbolsListPanel.add(listScrollPane, BorderLayout.CENTER);
+        symbolsListPanel.add(referenceResultsHost, BorderLayout.CENTER);
         lookupSplit.setTopComponent(createRoundedCardHost(symbolsListPanel, panelBackground, "symbols-list"));
 
         lookupPanel.add(lookupSplit, BorderLayout.CENTER);
@@ -643,18 +677,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         }
 
         JMenuItem resetItem = new JMenuItem("Reset filters");
-        resetItem.addActionListener(e -> {
-            updatingReferenceFilters = true;
-            try {
-                referenceKindFilter.setSelectedItem("All");
-                referenceSourceFilter.setSelectedItem("All Sources");
-                referenceLibraryFilter.setSelectedItem("All Libraries");
-            } finally {
-                updatingReferenceFilters = false;
-            }
-            updateReferenceFiltersButtonTooltip();
-            filterReferenceItems();
-        });
+        resetItem.addActionListener(e -> resetReferenceFiltersAndSearch());
 
         referenceFiltersPopup.add(typeMenu);
         referenceFiltersPopup.add(sourceMenu);
@@ -689,6 +712,20 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
 
     private void requestFilterReferenceItems() {
         referenceFilterDebounceTimer.restart();
+    }
+
+    private void resetReferenceFiltersAndSearch() {
+        updatingReferenceFilters = true;
+        try {
+            referenceSearchField.setText("");
+            referenceKindFilter.setSelectedItem("All");
+            referenceSourceFilter.setSelectedItem("All Sources");
+            referenceLibraryFilter.setSelectedItem("All Libraries");
+        } finally {
+            updatingReferenceFilters = false;
+        }
+        updateReferenceFiltersButtonTooltip();
+        filterReferenceItems();
     }
 
     private void filterReferenceItems() {
@@ -739,17 +776,24 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         }
 
         if (!referenceListModel.isEmpty()) {
+            showReferenceResultsList(true);
             if (previousSelection != null && matches.contains(previousSelection)) {
                 referenceList.setSelectedValue(previousSelection, true);
             } else {
                 referenceList.setSelectedIndex(0);
             }
         } else {
+            showReferenceResultsList(false);
             setReferenceSelectionName("No selection");
             setReferenceDetailsHtml(REFERENCE_NO_MATCHES_HTML);
             referenceCopyButton.setEnabled(false);
             referenceInsertButton.setEnabled(false);
         }
+    }
+
+    private void showReferenceResultsList(boolean hasResults) {
+        CardLayout layout = (CardLayout) referenceResultsHost.getLayout();
+        layout.show(referenceResultsHost, hasResults ? REFERENCE_RESULTS_LIST_CARD : REFERENCE_RESULTS_EMPTY_CARD);
     }
 
     private void updateReferenceSelectionDetails() {

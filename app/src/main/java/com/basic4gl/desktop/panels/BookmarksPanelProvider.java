@@ -20,11 +20,15 @@ import javax.swing.event.DocumentListener;
 
 public class BookmarksPanelProvider implements IEditorPanelProvider {
     private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
+    private static final String BOOKMARKS_LIST_CARD = "list";
+    private static final String BOOKMARKS_EMPTY_CARD = "empty";
 
     private final List<BookmarkInfo> allBookmarks = new ArrayList<>();
     private final DefaultListModel<BookmarkInfo> bookmarkListModel = new DefaultListModel<>();
     private final JList<BookmarkInfo> bookmarkList = new JList<>(bookmarkListModel);
     private final JTextField bookmarkSearchField = new JTextField();
+    private final JPanel bookmarkResultsHost = new JPanel(new CardLayout());
+    private final JLabel emptyStateLabel = new JLabel("No Bookmarks");
     private PluginContext context;
 
     @Override
@@ -79,12 +83,7 @@ public class BookmarksPanelProvider implements IEditorPanelProvider {
         title.setBorder(new EmptyBorder(0, 8, 0, 8));
 
         JButton toggleBookmarkButton = createHeaderIconButton(ICON_BOOKMARK_ADD, "Toggle bookmark");
-        toggleBookmarkButton.addActionListener(e -> {
-            if (this.context != null && this.context.commands() != null) {
-                this.context.commands().toggleBookmark();
-                reloadBookmarks();
-            }
-        });
+        toggleBookmarkButton.addActionListener(e -> toggleBookmarkAndReload());
 
         JButton nextBookmarkButton = createHeaderIconButton(ICON_ARROW_DOWN, "Next bookmark");
         nextBookmarkButton.addActionListener(e -> {
@@ -191,7 +190,38 @@ public class BookmarksPanelProvider implements IEditorPanelProvider {
         scrollPane.setBackground(panelBackground);
         scrollPane.setBorder(null);
 
-        content.add(scrollPane, BorderLayout.CENTER);
+        JPanel emptyStatePanel = new JPanel(new GridBagLayout());
+        emptyStatePanel.setBackground(panelBackground);
+        JPanel emptyStateContent = new JPanel();
+        emptyStateContent.setOpaque(false);
+        emptyStateContent.setLayout(new BoxLayout(emptyStateContent, BoxLayout.Y_AXIS));
+        Color disabledIconColor = UIManager.getColor("Label.disabledForeground");
+        if (disabledIconColor == null) {
+            disabledIconColor = new Color(0xC8C8C8);
+        }
+        JLabel emptyIconLabel = new JLabel(createScaledIcon(ICON_BOOKMARK_ADD, 40, disabledIconColor));
+        emptyIconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        emptyStateLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        Font emptyStateFont = emptyStateLabel.getFont();
+        emptyStateLabel.setFont(new Font(emptyStateFont.getName(), Font.BOLD, emptyStateFont.getSize() + 2));
+        emptyStateLabel.setForeground(new Color(0x5B717F));
+        JButton addBookmarkButton = new JButton("Add Bookmark");
+        addBookmarkButton.setFocusable(false);
+        addBookmarkButton.setMargin(new Insets(4, 4, 4, 4));
+        addBookmarkButton.setForeground(new Color(0x5B717F));
+        addBookmarkButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        addBookmarkButton.addActionListener(e -> toggleBookmarkAndReload());
+        emptyStateContent.add(emptyIconLabel);
+        emptyStateContent.add(Box.createVerticalStrut(8));
+        emptyStateContent.add(emptyStateLabel);
+        emptyStateContent.add(Box.createVerticalStrut(8));
+        emptyStateContent.add(addBookmarkButton);
+        emptyStatePanel.add(emptyStateContent);
+
+        bookmarkResultsHost.setOpaque(false);
+        bookmarkResultsHost.add(scrollPane, BOOKMARKS_LIST_CARD);
+        bookmarkResultsHost.add(emptyStatePanel, BOOKMARKS_EMPTY_CARD);
+        content.add(bookmarkResultsHost, BorderLayout.CENTER);
 
         panel.add(content, BorderLayout.CENTER);
         panelCardHost.add(createRoundedCardHost(panel, panelBackground, "bookmarks-main"), "main");
@@ -240,12 +270,25 @@ public class BookmarksPanelProvider implements IEditorPanelProvider {
         }
 
         if (!bookmarkListModel.isEmpty()) {
+            showBookmarkResults(true, needle);
             if (previousSelection != null) {
                 bookmarkList.setSelectedValue(previousSelection, true);
             } else {
                 bookmarkList.setSelectedIndex(0);
             }
+        } else {
+            showBookmarkResults(false, needle);
         }
+    }
+
+    private void showBookmarkResults(boolean hasResults, String needle) {
+        if (hasResults) {
+            ((CardLayout) bookmarkResultsHost.getLayout()).show(bookmarkResultsHost, BOOKMARKS_LIST_CARD);
+            return;
+        }
+
+        emptyStateLabel.setText(needle == null || needle.isBlank() ? "No Bookmarks" : "No Results");
+        ((CardLayout) bookmarkResultsHost.getLayout()).show(bookmarkResultsHost, BOOKMARKS_EMPTY_CARD);
     }
 
     private void goToSelectedBookmark() {
@@ -270,6 +313,13 @@ public class BookmarksPanelProvider implements IEditorPanelProvider {
         button.setMinimumSize(HEADER_ICON_BUTTON_SIZE);
         button.setMaximumSize(HEADER_ICON_BUTTON_SIZE);
         return button;
+    }
+
+    private void toggleBookmarkAndReload() {
+        if (this.context != null && this.context.commands() != null) {
+            this.context.commands().toggleBookmark();
+            reloadBookmarks();
+        }
     }
 
     private JToggleButton createHeaderSearchToggleButton() {

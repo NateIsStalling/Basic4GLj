@@ -34,6 +34,7 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
     private final JTree fileBrowserTree = new JTree();
     private final JTextField fileSearchField = new JTextField();
     private final FileSystemView fileSystemView = FileSystemView.getFileSystemView();
+    private final JPanel searchResultsCards = new JPanel(new CardLayout());
     private boolean showHiddenFiles = false;
     private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
 
@@ -210,14 +211,56 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
         scrollPane.setBackground(panelBackground);
 
         configureSmoothScrolling(scrollPane);
+        searchResultsCards.setOpaque(false);
+        searchResultsCards.add(scrollPane, "tree");
+        searchResultsCards.add(createSearchEmptyState(panelBackground), "empty");
         JPanel content = new JPanel(new BorderLayout(0, 6));
         content.setBackground(panelBackground);
         content.add(searchBar, BorderLayout.NORTH);
-        content.add(scrollPane, BorderLayout.CENTER);
+        content.add(searchResultsCards, BorderLayout.CENTER);
         panel.add(content, BorderLayout.CENTER);
         panelCardHost.add(createRoundedCardHost(panel, panelBackground, "workspace-main"), "main");
         ((CardLayout) panelCardHost.getLayout()).show(panelCardHost, "main");
         return panelCardHost;
+    }
+
+    private JPanel createSearchEmptyState(Color panelBackground) {
+        JPanel noResultsPanel = new JPanel(new GridBagLayout());
+        noResultsPanel.setBackground(panelBackground);
+        JPanel noResultsContent = new JPanel();
+        noResultsContent.setOpaque(false);
+        noResultsContent.setLayout(new BoxLayout(noResultsContent, BoxLayout.Y_AXIS));
+
+        Color disabledIconColor = UIManager.getColor("Label.disabledForeground");
+        if (disabledIconColor == null) {
+            disabledIconColor = new Color(0x9E9E9E);
+        }
+        JLabel noResultsIcon = new JLabel(createScaledIcon(ICON_SEARCH, 40, disabledIconColor));
+        noResultsIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel noResultsLabel = new JLabel("No Results");
+        Font noResultsFont = noResultsLabel.getFont();
+        noResultsLabel.setFont(new Font(noResultsFont.getName(), Font.BOLD, noResultsFont.getSize() + 2));
+        noResultsLabel.setForeground(new Color(0x5B717F));
+        noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton resetFiltersButton = new JButton("Reset Filters");
+        resetFiltersButton.setFocusable(false);
+        resetFiltersButton.setMargin(new Insets(4, 4, 4, 4));
+        resetFiltersButton.setForeground(new Color(0x5B717F));
+        resetFiltersButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        resetFiltersButton.addActionListener(e -> {
+            fileSearchField.setText("");
+            refresh(context.currentEditor());
+        });
+
+        noResultsContent.add(noResultsIcon);
+        noResultsContent.add(Box.createVerticalStrut(8));
+        noResultsContent.add(noResultsLabel);
+        noResultsContent.add(Box.createVerticalStrut(8));
+        noResultsContent.add(resetFiltersButton);
+        noResultsPanel.add(noResultsContent);
+        return noResultsPanel;
     }
 
     private JButton createHeaderIconButton(String iconPath, String tooltip) {
@@ -327,6 +370,9 @@ public class FileBrowserPanelProvider implements IEditorPanelProvider {
             rootNode = new DefaultMutableTreeNode(root);
         }
         fileBrowserTree.setModel(new DefaultTreeModel(rootNode));
+        boolean hasSearch = searchNeedle != null && !searchNeedle.isBlank();
+        ((CardLayout) searchResultsCards.getLayout())
+                .show(searchResultsCards, hasSearch && rootNode.getChildCount() == 0 ? "empty" : "tree");
         if (fileBrowserTree.getRowCount() > 0) {
             fileBrowserTree.expandRow(0);
         }
