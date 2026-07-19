@@ -61,9 +61,16 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             new JComboBox<>(new String[] {"All Sources", "Builtin", "Libraries", "Program"});
     private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
     private static final int CARD_ARC = 14;
+    private static final double RESULTS_SPLIT_WEIGHT = 0.65;
+    private static final double DETAILS_HEIGHT_RATIO = 0.35;
 
     private int lastProgramSymbolsFingerprint = Integer.MIN_VALUE;
     private boolean updatingReferenceFilters = false;
+    private JSplitPane referenceSplitPane;
+    private JComponent referenceDetailsComponent;
+    private int referenceDetailsDividerSize;
+    private boolean referenceDetailsCollapsed;
+    private boolean rebuildingReferenceList;
 
     private PluginContext context;
 
@@ -228,11 +235,11 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         referenceSelectionNameLabel.setPreferredSize(new Dimension(0, titleHeight));
         setReferenceSelectionName("Select an entry.");
 
-        JSplitPane lookupSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        lookupSplit.setResizeWeight(0.65);
-        hideSplitPaneHandle(lookupSplit);
-        lookupSplit.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
-        lookupSplit.putClientProperty("JSplitPane.style", "plain");
+        referenceSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        referenceSplitPane.setResizeWeight(RESULTS_SPLIT_WEIGHT);
+        hideSplitPaneHandle(referenceSplitPane);
+        referenceSplitPane.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
+        referenceSplitPane.putClientProperty("JSplitPane.style", "plain");
         JScrollPane listScrollPane = new JScrollPane(referenceList);
         listScrollPane.setBorder(null);
         JPanel noResultsPanel = new JPanel(new GridBagLayout());
@@ -282,7 +289,8 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         JScrollPane detailsScrollPane = new JScrollPane(detailsPanel);
         detailsScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         detailsScrollPane.setBorder(null);
-        lookupSplit.setBottomComponent(createRoundedCardHost(detailsScrollPane, panelBackground, "symbols-details"));
+        referenceDetailsComponent = createRoundedCardHost(detailsScrollPane, panelBackground, "symbols-details");
+        referenceSplitPane.setBottomComponent(referenceDetailsComponent);
 
         JPanel searchBar = new JPanel(new BorderLayout(6, 0));
         searchBar.setBackground(panelBackground);
@@ -306,9 +314,10 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         symbolsListHeader.add(searchBar, BorderLayout.SOUTH);
         symbolsListPanel.add(symbolsListHeader, BorderLayout.NORTH);
         symbolsListPanel.add(referenceResultsHost, BorderLayout.CENTER);
-        lookupSplit.setTopComponent(createRoundedCardHost(symbolsListPanel, panelBackground, "symbols-list"));
+        referenceSplitPane.setTopComponent(createRoundedCardHost(symbolsListPanel, panelBackground, "symbols-list"));
+        referenceDetailsDividerSize = referenceSplitPane.getDividerSize();
 
-        lookupPanel.add(lookupSplit, BorderLayout.CENTER);
+        lookupPanel.add(referenceSplitPane, BorderLayout.CENTER);
 
         referenceSearchField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -327,7 +336,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
             }
         });
         referenceList.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
+            if (!e.getValueIsAdjusting() && !rebuildingReferenceList) {
                 updateReferenceSelectionDetails();
             }
         });
@@ -364,6 +373,7 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         referenceInsertButton.addActionListener(e -> insertSelectedReference());
         referenceCopyButton.addActionListener(e -> copySelectedSymbolName());
         updateReferenceFiltersButtonTooltip();
+        setReferenceDetailsVisible(false);
 
         panelCardHost.add(lookupPanel, "main");
         ((CardLayout) panelCardHost.getLayout()).show(panelCardHost, "main");
@@ -740,22 +750,22 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
         for (ReferenceItem item : allReferenceItems) {
             boolean kindMatches = "All".equals(selectedKind)
                     || ("Functions".equals(selectedKind)
-                            && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
+                    && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
                     || ("Constants".equals(selectedKind) && "constant".equals(item.kind))
                     || ("Labels".equals(selectedKind) && "label".equals(item.kind))
                     || ("Variables".equals(selectedKind) && "variable".equals(item.kind))
                     || ("Structs".equals(selectedKind) && "struc".equals(item.kind));
             boolean sourceMatches = "All Sources".equals(selectedSource)
                     || ("Builtin".equals(selectedSource)
-                            && item.library != null
-                            && "Builtin".equalsIgnoreCase(item.library))
+                    && item.library != null
+                    && "Builtin".equalsIgnoreCase(item.library))
                     || ("Libraries".equals(selectedSource)
-                            && item.library != null
-                            && !"Builtin".equalsIgnoreCase(item.library)
-                            && !"Program".equalsIgnoreCase(item.library))
+                    && item.library != null
+                    && !"Builtin".equalsIgnoreCase(item.library)
+                    && !"Program".equalsIgnoreCase(item.library))
                     || ("Program".equals(selectedSource)
-                            && item.library != null
-                            && "Program".equalsIgnoreCase(item.library));
+                    && item.library != null
+                    && "Program".equalsIgnoreCase(item.library));
             boolean libraryMatches = "All Libraries".equals(selectedLibrary)
                     || (item.library != null && selectedLibrary.equals(item.library));
             if (needle.isEmpty()
@@ -763,27 +773,37 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
                     || item.signature.toLowerCase(Locale.ROOT).contains(needle)
                     || item.kind.toLowerCase(Locale.ROOT).contains(needle)
                     || (item.library != null
-                            && item.library.toLowerCase(Locale.ROOT).contains(needle))) {
+                    && item.library.toLowerCase(Locale.ROOT).contains(needle))) {
                 if (kindMatches && sourceMatches && libraryMatches) {
                     matches.add(item);
                 }
             }
         }
 
-        referenceListModel.clear();
-        for (ReferenceItem match : matches) {
-            referenceListModel.addElement(match);
+        rebuildingReferenceList = true;
+        try {
+            referenceListModel.clear();
+            for (ReferenceItem match : matches) {
+                referenceListModel.addElement(match);
+            }
+
+            if (!referenceListModel.isEmpty()) {
+                if (previousSelection != null && matches.contains(previousSelection)) {
+                    referenceList.setSelectedValue(previousSelection, true);
+                } else {
+                    referenceList.setSelectedIndex(0);
+                }
+            }
+        } finally {
+            rebuildingReferenceList = false;
         }
 
         if (!referenceListModel.isEmpty()) {
             showReferenceResultsList(true);
-            if (previousSelection != null && matches.contains(previousSelection)) {
-                referenceList.setSelectedValue(previousSelection, true);
-            } else {
-                referenceList.setSelectedIndex(0);
-            }
+            updateReferenceSelectionDetails();
         } else {
             showReferenceResultsList(false);
+            setReferenceDetailsVisible(false);
             setReferenceSelectionName("No selection");
             setReferenceDetailsHtml(REFERENCE_NO_MATCHES_HTML);
             referenceCopyButton.setEnabled(false);
@@ -799,16 +819,74 @@ public class SymbolsPanelProvider implements IEditorPanelProvider {
     private void updateReferenceSelectionDetails() {
         ReferenceItem item = referenceList.getSelectedValue();
         if (item == null) {
+            setReferenceDetailsVisible(false);
             setReferenceSelectionName("Select an entry.");
             setReferenceDetailsHtml(REFERENCE_SELECT_PROMPT_HTML);
             referenceCopyButton.setEnabled(false);
             referenceInsertButton.setEnabled(false);
             return;
         }
+        setReferenceDetailsVisible(true);
         setReferenceSelectionName(item.name);
         setReferenceDetailsHtml(item.details);
         referenceCopyButton.setEnabled(true);
         referenceInsertButton.setEnabled(true);
+    }
+
+    private void setReferenceDetailsVisible(boolean visible) {
+        if (referenceSplitPane == null || referenceDetailsComponent == null) {
+            return;
+        }
+
+        if (visible) {
+            if (referenceDetailsCollapsed
+                    || referenceSplitPane.getBottomComponent() != referenceDetailsComponent) {
+                expandReferenceDetailsPane();
+            }
+        } else if (!referenceDetailsCollapsed
+                || referenceSplitPane.getBottomComponent() == referenceDetailsComponent) {
+            collapseReferenceDetailsPane();
+        }
+    }
+
+    private void collapseReferenceDetailsPane() {
+        referenceDetailsCollapsed = true;
+        referenceSplitPane.setResizeWeight(1.0);
+        referenceSplitPane.setDividerSize(0);
+        referenceSplitPane.setBottomComponent(null);
+        referenceSplitPane.revalidate();
+        referenceSplitPane.repaint();
+    }
+
+    private void expandReferenceDetailsPane() {
+        referenceDetailsCollapsed = false;
+        if (referenceSplitPane.getBottomComponent() != referenceDetailsComponent) {
+            referenceSplitPane.setBottomComponent(referenceDetailsComponent);
+        }
+        referenceSplitPane.setDividerSize(referenceDetailsDividerSize);
+        referenceSplitPane.setResizeWeight(RESULTS_SPLIT_WEIGHT);
+        referenceSplitPane.revalidate();
+
+        SwingUtilities.invokeLater(() -> {
+            if (referenceDetailsCollapsed
+                    || referenceSplitPane.getBottomComponent() != referenceDetailsComponent) {
+                return;
+            }
+
+            int splitPaneHeight = referenceSplitPane.getHeight();
+            if (splitPaneHeight <= 0) {
+                return;
+            }
+
+            int availableHeight = Math.max(0, splitPaneHeight - referenceSplitPane.getDividerSize());
+            int minimumTopHeight = Math.min(80, availableHeight);
+            int maximumDetailsHeight = Math.max(0, availableHeight - minimumTopHeight);
+            int targetDetailsHeight = Math.max(140,
+                    (int) Math.round(availableHeight * DETAILS_HEIGHT_RATIO));
+            targetDetailsHeight = Math.min(targetDetailsHeight, maximumDetailsHeight);
+
+            referenceSplitPane.setDividerLocation(availableHeight - targetDetailsHeight);
+        });
     }
 
     private void insertSelectedReference() {

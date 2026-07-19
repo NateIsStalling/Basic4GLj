@@ -72,6 +72,8 @@ import javax.swing.tree.TreePath;
 public class DocsPanelProvider implements IEditorPanelProvider {
 
     private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
+    private static final double RESULTS_SPLIT_WEIGHT = 0.65;
+    private static final double DETAILS_HEIGHT_RATIO = 0.35;
 
     private final ContentPanelModel contentModel = new ContentPanelModel();
     private final JButton scopeButton = new JButton();
@@ -91,6 +93,11 @@ public class DocsPanelProvider implements IEditorPanelProvider {
     private BasicEditor editor;
     private ContentPanelItem selectedItem;
     private ContentScope currentScope = ContentScope.ALL;
+    private JSplitPane contentSplitPane;
+    private JComponent detailsComponent;
+    private int detailsDividerSize;
+    private boolean detailsCollapsed;
+    private boolean rebuildingSearchList;
 
     @Override
     public String id() {
@@ -189,15 +196,17 @@ public class DocsPanelProvider implements IEditorPanelProvider {
         detailsScrollPane.setBorder(null);
         configureSmoothScrolling(detailsScrollPane);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setResizeWeight(0.66);
-        splitPane.setBorder(null);
-        hideSplitPaneHandle(splitPane);
-        splitPane.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
-        splitPane.putClientProperty("JSplitPane.style", "plain");
-        splitPane.setTopComponent(createRoundedCardHost(resultsPanel, panelBackground, "docs-results"));
-        splitPane.setBottomComponent(createRoundedCardHost(detailsScrollPane, panelBackground, "docs-details"));
-        lookupPanel.add(splitPane, BorderLayout.CENTER);
+        contentSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        contentSplitPane.setResizeWeight(RESULTS_SPLIT_WEIGHT);
+        contentSplitPane.setBorder(null);
+        hideSplitPaneHandle(contentSplitPane);
+        contentSplitPane.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
+        contentSplitPane.putClientProperty("JSplitPane.style", "plain");
+        contentSplitPane.setTopComponent(createRoundedCardHost(resultsPanel, panelBackground, "docs-results"));
+        detailsComponent = createRoundedCardHost(detailsScrollPane, panelBackground, "docs-details");
+        contentSplitPane.setBottomComponent(detailsComponent);
+        detailsDividerSize = contentSplitPane.getDividerSize();
+        lookupPanel.add(contentSplitPane, BorderLayout.CENTER);
 
         searchField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -378,7 +387,7 @@ public class DocsPanelProvider implements IEditorPanelProvider {
             }
         });
         searchList.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
+            if (!e.getValueIsAdjusting() && !rebuildingSearchList) {
                 selectItem(searchList.getSelectedValue());
             }
         });
@@ -497,17 +506,22 @@ public class DocsPanelProvider implements IEditorPanelProvider {
             browseTree.expandRow(0);
             ((CardLayout) resultsCards.getLayout()).show(resultsCards, "browse");
         } else {
-            searchListModel.clear();
-            for (ContentPanelItem item : contentModel.items(editor.contentCatalog(), currentScope, query)) {
-                searchListModel.addElement(item);
+            rebuildingSearchList = true;
+            try {
+                searchListModel.clear();
+                for (ContentPanelItem item : contentModel.items(editor.contentCatalog(), currentScope, query)) {
+                    searchListModel.addElement(item);
+                }
+                if (!searchListModel.isEmpty()) {
+                    searchList.setSelectedIndex(0);
+                }
+            } finally {
+                rebuildingSearchList = false;
             }
+
             ((CardLayout) searchResultsCards.getLayout())
                     .show(searchResultsCards, searchListModel.isEmpty() ? "empty" : "list");
-            if (searchListModel.isEmpty()) {
-                selectItem(null);
-            } else {
-                searchList.setSelectedIndex(0);
-            }
+            selectItem(searchList.getSelectedValue());
             ((CardLayout) resultsCards.getLayout()).show(resultsCards, "search");
         }
         setSummary(selectedItem);
@@ -532,17 +546,17 @@ public class DocsPanelProvider implements IEditorPanelProvider {
         String normalizedTag = currentScope.tag();
         return normalizedTag != null
                 && (normalizedSegment.equals(normalizedTag)
-                        || normalizedSegment.equals(normalizedTag + "s")
-                        || normalizedSegment.equals(normalizeScopeText(currentScope.displayName())));
+                || normalizedSegment.equals(normalizedTag + "s")
+                || normalizedSegment.equals(normalizeScopeText(currentScope.displayName())));
     }
 
     private String normalizeScopeText(String text) {
         return text == null
                 ? ""
                 : text.trim()
-                        .toLowerCase(Locale.ROOT)
-                        .replace('_', '-')
-                        .replace(' ', '-');
+                .toLowerCase(Locale.ROOT)
+                .replace('_', '-')
+                .replace(' ', '-');
     }
 
     private void ensureCurrentScopeAvailable() {
@@ -572,12 +586,14 @@ public class DocsPanelProvider implements IEditorPanelProvider {
 
     private void setSummary(ContentPanelItem item) {
         if (item == null) {
+            setDetailsVisible(false);
             setSelectionName("Select an item.");
             summaryPane.setText("<html><body style='font-family:sans-serif;'>Select an item.</body></html>");
             primaryAction.setText("Open");
             primaryAction.setEnabled(false);
             return;
         }
+        setDetailsVisible(true);
         ContentSelectionSummary summary = contentModel.summary(item);
         setSelectionName(summary.title());
         summaryPane.setText("<html><body style='font-family:sans-serif;'>"
@@ -589,6 +605,59 @@ public class DocsPanelProvider implements IEditorPanelProvider {
         summaryPane.setCaretPosition(0);
         primaryAction.setText(summary.primaryAction());
         primaryAction.setEnabled(true);
+    }
+
+    private void setDetailsVisible(boolean visible) {
+        if (contentSplitPane == null || detailsComponent == null) {
+            return;
+        }
+
+        if (visible) {
+            if (detailsCollapsed || contentSplitPane.getBottomComponent() != detailsComponent) {
+                expandDetailsPane();
+            }
+        } else if (!detailsCollapsed || contentSplitPane.getBottomComponent() == detailsComponent) {
+            collapseDetailsPane();
+        }
+    }
+
+    private void collapseDetailsPane() {
+        detailsCollapsed = true;
+        contentSplitPane.setResizeWeight(1.0);
+        contentSplitPane.setDividerSize(0);
+        contentSplitPane.setBottomComponent(null);
+        contentSplitPane.revalidate();
+        contentSplitPane.repaint();
+    }
+
+    private void expandDetailsPane() {
+        detailsCollapsed = false;
+        if (contentSplitPane.getBottomComponent() != detailsComponent) {
+            contentSplitPane.setBottomComponent(detailsComponent);
+        }
+        contentSplitPane.setDividerSize(detailsDividerSize);
+        contentSplitPane.setResizeWeight(RESULTS_SPLIT_WEIGHT);
+        contentSplitPane.revalidate();
+
+        SwingUtilities.invokeLater(() -> {
+            if (detailsCollapsed || contentSplitPane.getBottomComponent() != detailsComponent) {
+                return;
+            }
+
+            int splitPaneHeight = contentSplitPane.getHeight();
+            if (splitPaneHeight <= 0) {
+                return;
+            }
+
+            int availableHeight = Math.max(0, splitPaneHeight - contentSplitPane.getDividerSize());
+            int minimumTopHeight = Math.min(80, availableHeight);
+            int maximumDetailsHeight = Math.max(0, availableHeight - minimumTopHeight);
+            int targetDetailsHeight = Math.max(140,
+                    (int) Math.round(availableHeight * DETAILS_HEIGHT_RATIO));
+            targetDetailsHeight = Math.min(targetDetailsHeight, maximumDetailsHeight);
+
+            contentSplitPane.setDividerLocation(availableHeight - targetDetailsHeight);
+        });
     }
 
     private void setSelectionName(String name) {
