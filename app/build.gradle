@@ -49,6 +49,14 @@ distributions {
             from(pathingJar) {
                 into "lib"
             }
+            from("${rootProject.projectDir}/docs/basic4gl") {
+                into "docs/basic4gl"
+                exclude "**/.DS_Store", "**/.*"
+            }
+            from("${rootProject.projectDir}/samples") {
+                into "samples"
+                exclude "**/.DS_Store", "**/.*"
+            }
         }
     }
 }

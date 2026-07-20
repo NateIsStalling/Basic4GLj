@@ -31,3 +31,53 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+processResources {
+    from("${rootProject.projectDir}/docs/basic4gl") {
+        into "basic4gl-content/docs/basic4gl"
+        exclude "**/.DS_Store", "**/.*"
+    }
+    from("${rootProject.projectDir}/samples") {
+        into "basic4gl-content/samples"
+        exclude "**/.DS_Store", "**/.*"
+    }
+    doLast {
+        writeResourceIndex(
+                file("${rootProject.projectDir}/docs/basic4gl"),
+                file("${destinationDir}/basic4gl-content/docs/basic4gl.index"))
+        writeResourceIndex(
+                file("${rootProject.projectDir}/samples/Programs"),
+                file("${destinationDir}/basic4gl-content/samples/Programs.index"))
+    }
+}
+
+def writeResourceIndex(File sourceDir, File indexFile) {
+    indexFile.parentFile.mkdirs()
+    def basePath = sourceDir.toPath()
+    def entries = fileTree(sourceDir)
+            .matching { exclude "**/.DS_Store", "**/.*" }
+            .files
+            .findAll { it.isFile() }
+            .collect { basePath.relativize(it.toPath()).toString().replace(File.separatorChar, '/' as char) }
+            .sort { a, b -> a.compareToIgnoreCase(b) }
+    indexFile.text = entries.join(System.lineSeparator()) + System.lineSeparator()
+}
+
+spotless {
+    java {
+        // Use the default importOrder configuration
+        importOrder()
+
+        removeUnusedImports()
+        palantirJavaFormat('2.50.0').formatJavadoc(false)
+
+        formatAnnotations()
+        trimTrailingWhitespace()
+        endWithNewline()
+
+        // Exclude ANTLR-generated sources from formatting checks.
+        targetExclude fileTree("${project.buildDir}/generated-src")
+    }
+}
+
+build.dependsOn spotlessApply
