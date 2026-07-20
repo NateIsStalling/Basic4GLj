@@ -20,13 +20,13 @@ Check out the [Releases Page](https://github.com/NateIsStalling/Basic4GLj/releas
 
 ### Documentation
 
-Check out the [wiki](https://github.com/NateIsStalling/Basic4GLj/wiki) of this repo for the Basic4GL language guide, sprite library guide for 2D game programming, and additional tutorials.
+Check out the [docs](./docs) or [wiki](https://github.com/NateIsStalling/Basic4GLj/wiki) of this repo for the Basic4GL language guide, sprite library guide for 2D game programming, and additional tutorials.
 
-- [Language Syntax Guide](https://github.com/NateIsStalling/Basic4GLj/wiki/Language-Syntax-Guide)
-- [Text Output Guide](https://github.com/NateIsStalling/Basic4GLj/wiki/Text-Output-Guide)
-- [Sprite Library Guide](https://github.com/NateIsStalling/Basic4GLj/wiki/Sprite-Library-Guide)
-- [OpenGL Guide](https://github.com/NateIsStalling/Basic4GLj/wiki/OpenGL-Guide)
-- [Sound Guide](https://github.com/NateIsStalling/Basic4GLj/wiki/Sound-Guide) 
+- [Language Syntax Guide](./docs/basic4gl/language-syntax-guide.md)
+- [Text Output Guide](./docs/basic4gl/text-output-guide.md)
+- [Sprite Library Guide](./docs/basic4gl/sprite-library-guide.md)
+- [OpenGL Guide](./docs/basic4gl/opengl-guide.md)
+- [Sound Guide](./docs/basic4gl/sound-guide.md) 
 
 (more documentation coming soon!)
 
@@ -55,7 +55,7 @@ _The application depends on the JAR output of its "app-runtime" and "debug-serve
 
 ## Sound System
 
-[Sound Guide](https://github.com/NateIsStalling/Basic4GLj/wiki/Sound-Guide) tutorial is available on the project's wiki.
+[Sound Guide](./docs/basic4gl/sound-guide.md) tutorial is available in the project's docs and wiki.
 
 ### Playing Sound Effects
 
