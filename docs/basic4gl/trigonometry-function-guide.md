@@ -3,7 +3,7 @@
 > [!TIP]
 >
 > For additional math routines like `cos`, `sin`, `tan` and `log`, see the [Standard Function Guide
-](https://github.com/NateIsStalling/Basic4GLj/wiki/Standard-Function-Guide)
+](./standard-function-guide.md)
 
 ## Vector and Matrix routines
 Basic4GL contains built in support for matrix and vector arithmetic, through a library of trigonometry functions, and also through extensions to standard mathematical operators (+, -, * e.t.c) to work with vector and matrix types.
