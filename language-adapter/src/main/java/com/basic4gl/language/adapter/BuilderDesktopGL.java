@@ -1,19 +1,10 @@
 package com.basic4gl.language.adapter;
 
-import com.basic4gl.app.desktop.GLTextGridWindow;
 import com.basic4gl.app.desktop.config.StandaloneCommandLineOptions;
-import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.Exporter;
 import com.basic4gl.compiler.util.IAssetExportBuilder;
 import com.basic4gl.compiler.util.IPluginExportBuilder;
 import com.basic4gl.desktop.spi.*;
-import com.basic4gl.language.core.extensions.Basic4GLCompiler;
-import com.basic4gl.language.core.extensions.IAppSettings;
-import com.basic4gl.language.core.extensions.Library;
-import com.basic4gl.language.core.runtime.IServiceCollection;
-import com.basic4gl.language.core.runtime.VM;
-import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -397,7 +388,6 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder, IP
         return configuredFile;
     }
 
-
     @Override
     public void setExportAssets(List<String> assets) {
         exportAssets.clear();
@@ -415,7 +405,6 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder, IP
     public List<String> getExportAssets() {
         return new ArrayList<>(exportAssets);
     }
-
 
     @Override
     public void setExportPlugins(List<String> pluginPaths) {
@@ -435,10 +424,10 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder, IP
         return target;
     }
 
-//    @Override
-//    public IVMDriver getVMDriver() {
-//        return target;
-//    }
+    //    @Override
+    //    public IVMDriver getVMDriver() {
+    //        return target;
+    //    }
 
     @Override
     public String getName() {
@@ -480,49 +469,49 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder, IP
         this.files = files;
         target.init(new FileOpenerAdapter(files));
     }
-//
-//    @Override
-//    public List<String> getDependencies() {
-//        return null;
-//    }
-//
-//    @Override
-//    public List<String> getClassPathObjects() {
-//        return null;
-//    }
-//
-//    @Override
-//    public String getConfigFilePathCommandLineOption() {
-//        return target.getConfigFilePathCommandLineOption();
-//    }
-//
-//    @Override
-//    public String getLineMappingFilePathCommandLineOption() {
-//        return target.getLineMappingFilePathCommandLineOption();
-//    }
-//
-//    @Override
-//    public String getLogFilePathCommandLineOption() {
-//        return target.getLogFilePathCommandLineOption();
-//    }
-//
-//    @Override
-//    public String getParentDirectoryCommandLineOption() {
-//        return target.getParentDirectoryCommandLineOption();
-//    }
-//
-//    @Override
-//    public String getProgramFilePathCommandLineOption() {
-//        return target.getProgramFilePathCommandLineOption();
-//    }
-//
-//    @Override
-//    public String getDebuggerPortCommandLineOption() {
-//        return target.getDebuggerPortCommandLineOption();
-//    }
-//
-//    @Override
-//    public String getSandboxModeEnabledOption() {
-//        return target.getSandboxModeEnabledOption();
-//    }
+    //
+    //    @Override
+    //    public List<String> getDependencies() {
+    //        return null;
+    //    }
+    //
+    //    @Override
+    //    public List<String> getClassPathObjects() {
+    //        return null;
+    //    }
+    //
+    //    @Override
+    //    public String getConfigFilePathCommandLineOption() {
+    //        return target.getConfigFilePathCommandLineOption();
+    //    }
+    //
+    //    @Override
+    //    public String getLineMappingFilePathCommandLineOption() {
+    //        return target.getLineMappingFilePathCommandLineOption();
+    //    }
+    //
+    //    @Override
+    //    public String getLogFilePathCommandLineOption() {
+    //        return target.getLogFilePathCommandLineOption();
+    //    }
+    //
+    //    @Override
+    //    public String getParentDirectoryCommandLineOption() {
+    //        return target.getParentDirectoryCommandLineOption();
+    //    }
+    //
+    //    @Override
+    //    public String getProgramFilePathCommandLineOption() {
+    //        return target.getProgramFilePathCommandLineOption();
+    //    }
+    //
+    //    @Override
+    //    public String getDebuggerPortCommandLineOption() {
+    //        return target.getDebuggerPortCommandLineOption();
+    //    }
+    //
+    //    @Override
+    //    public String getSandboxModeEnabledOption() {
+    //        return target.getSandboxModeEnabledOption();
+    //    }
 }

@@ -1,5 +1,7 @@
 package com.basic4gl.desktop;
 
+import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
+
 import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
 import com.basic4gl.desktop.spi.Builder;
 import com.basic4gl.desktop.spi.Configuration;
@@ -112,6 +114,7 @@ public class ProjectSettingsDialog
         splitPane.setDividerLocation(160);
         splitPane.setResizeWeight(0);
         splitPane.setBorder(null);
+        hideSplitPaneHandle(splitPane);
         contentPane.add(splitPane, BorderLayout.CENTER);
 
         sectionsList.addListSelectionListener(e -> {

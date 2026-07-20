@@ -2,18 +2,23 @@ package com.basic4gl.desktop;
 
 import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
+import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
 import static com.formdev.flatlaf.FlatClientProperties.*;
 
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
+import com.basic4gl.desktop.content.*;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
+import com.basic4gl.desktop.debugger.IDebugPresenter;
 import com.basic4gl.desktop.editor.*;
-import com.basic4gl.desktop.spi.FileLineNumber;
-import com.basic4gl.desktop.spi.MenuService;
-import com.basic4gl.desktop.spi.ProjectExportPage;
-import com.basic4gl.desktop.spi.ProjectSettingsPage;
+import com.basic4gl.desktop.language.SymbolIndexer;
+import com.basic4gl.desktop.panels.*;
+import com.basic4gl.desktop.spi.*;
+import com.basic4gl.desktop.util.BasicDialogService;
+import com.basic4gl.desktop.util.RoundedCardPanel;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.language.core.internal.Mutable;
@@ -46,7 +51,8 @@ public class MainWindow
                 IFileEditorActionListener,
                 IFileManagerListener,
                 EmptyTabPanel.IEmptyTabPanelListener,
-                MenuService {
+                MenuService,
+                EditorCommandsService {
 
     private final CaretListener TrackCaretPosition = new CaretListener() {
         @Override
@@ -69,10 +75,69 @@ public class MainWindow
 
     // Window
     private final JFrame frame = new JFrame(BuildInfo.APPLICATION_NAME);
-    private final JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-    private final JSplitPane debugPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+    private final JSplitPane mainPane;
     private final JTabbedPane tabControl = new JTabbedPane();
+    private final JTabbedPane splitTabControl = new JTabbedPane();
+    private final JSplitPane editorSplitPane;
+    private final JPanel primaryTabHost = new JPanel(new BorderLayout());
+    private final JButton addTabDropdownButton = new JButton(createScaledIcon(ICON_ADD, 18));
+    private final JPanel fileViewModeTabs = createSegmentedButtonStrip();
+    private final JToggleButton editViewButton =
+            createFileViewModeButton("Editor", ICON_EDIT, IFileViewer.ViewMode.EDITOR, "first");
+    private final JToggleButton editPreviewViewButton = createFileViewModeButton(
+            "Editor and Preview", ICON_EDIT_PREVIEW, IFileViewer.ViewMode.EDITOR_AND_PREVIEW, "middle");
+    private final JToggleButton previewViewButton =
+            createFileViewModeButton("Preview", ICON_PREVIEW, IFileViewer.ViewMode.PREVIEW, "last");
+    private final JPanel fileViewModeTabsHost = createSegmentedButtonStripHost(fileViewModeTabs);
+    private final JPanel centerPaneHost = new JPanel(new BorderLayout());
+    private final JPanel topPaneHost = new JPanel(new BorderLayout());
+    private final JPanel leftRailsHost = new JPanel();
+    private final JSplitPane workspacePane;
+    private final JSplitPane contentPane;
+    private final JPanel bottomBarContainer = new JPanel(new BorderLayout());
+    private final JPanel leftSidebarContent = new JPanel(new CardLayout());
+    private final JToolBar leftSidebarRail = new JToolBar(SwingConstants.VERTICAL);
+    private final ButtonGroup leftSidebarGroup = new ButtonGroup();
+    private final Map<String, JToggleButton> leftSidebarButtons = new HashMap<>();
+    private final JPanel bottomBarContent = new JPanel(new CardLayout());
+    private final JToolBar bottomBarRail = new JToolBar(SwingConstants.VERTICAL);
+    private final ButtonGroup bottomBarGroup = new ButtonGroup();
+    private final Map<String, JToggleButton> bottomBarButtons = new HashMap<>();
+
+    private final JPanel rightDocsContainer = new JPanel(new BorderLayout());
+    private final JPanel rightDocsContent = new JPanel(new CardLayout());
+    private final JToolBar rightDocsRail = new JToolBar(SwingConstants.VERTICAL);
+    private final ButtonGroup rightDocsGroup = new ButtonGroup();
+    private final Map<String, JToggleButton> rightDocsButtons = new HashMap<>();
+
+    private final JButton runTargetButton = new JButton();
+    private final JPopupMenu runTargetPopup = new JPopupMenu();
+    private boolean runTargetFollowsCurrentTab = true;
+
+    private int expandedLeftSidebarWidth = 260;
+    private int expandedRightDocsWidth = 320;
+    private int expandedBottomBarHeight = 220;
+    private int workspacePaneDividerSize;
+    private int contentPaneDividerSize;
+    private int mainPaneDividerSize;
+    private boolean leftSidebarCollapsed;
+    private boolean rightDocsCollapsed;
+    private boolean bottomBarCollapsed;
+    private String activeLeftSidebarKey = "files";
+    private String activeRightDocsKey;
+    private String activeBottomBarKey;
     private JPanel emptyTabPanel;
+    private final java.util.List<File> recentWorkspaces = new ArrayList<>();
+    private static final String RECENT_WORKSPACES_FILE = "recent-workspaces.properties";
+    private static final String RECENT_WORKSPACES_KEY = "RECENT_WORKSPACES";
+    private static final int MAX_RECENT_WORKSPACES = 10;
+    private static final Dimension TAB_HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
+    private static final Dimension TAB_VIEW_MODE_BUTTON_SIZE = new Dimension(34, 30);
+    private static final String TAB_FILE_VIEWER_PROPERTY = "basic4gl.fileViewer";
+    private static final Color SEGMENTED_BACKGROUND = new Color(0xE0E0E0);
+    private static final String SEGMENTED_BUTTON_STYLE = "arc: 14; borderWidth: 0; focusWidth: 0; innerFocusWidth: 0;"
+            + " margin: 6,8,6,8; background: #E0E0E0;"
+            + " hoverBackground: #D6D6D6; selectedBackground: #FFFFFF";
 
     private final JMenu bookmarkSubMenu = new JMenu("Bookmarks");
     private final JMenu breakpointSubMenu = new JMenu("Breakpoints");
@@ -81,8 +146,10 @@ public class MainWindow
     // Menu Items
     private final JMenuItem newMenuItem = new JMenuItem("New Program");
     private final JMenuItem openMenuItem = new JMenuItem("Open Program...");
+    private final JMenuItem openFolderMenuItem = new JMenuItem("Open Folder...");
     private final JMenuItem recentSubMenu = new JMenu("Open Recent");
     private final JMenuItem clearRecentMenuItem = new JMenuItem("Clear Recently Opened...");
+    private final JMenuItem clearRecentWorkspacesMenuItem = new JMenuItem("Clear Recent Workspaces...");
     private final JMenuItem saveMenuItem = new JMenuItem("Save");
     private final JMenuItem saveAsMenuItem = new JMenuItem("Save As...");
     private final JMenuItem exportMenuItem = new JMenuItem("Export...");
@@ -96,6 +163,7 @@ public class MainWindow
 
     private final JMenuItem findMenuItem = new JMenuItem("Find");
     private final JMenuItem replaceMenuItem = new JMenuItem("Replace");
+    private final JMenuItem goToDeclarationMenuItem = new JMenuItem("Go to Declaration");
     private final JCheckBoxMenuItem debugMenuItem = new JCheckBoxMenuItem("Debug Mode");
 
     private final JMenuItem settingsMenuItem = new JMenuItem("Project Settings");
@@ -112,34 +180,25 @@ public class MainWindow
     private final JButton saveButton = new JButton(createImageIcon(ICON_SAVE));
     private final JButton runButton = new JButton(createImageIcon(ICON_RUN_APP));
 
-    private final JToggleButton debugButton = new JToggleButton(createImageIcon(ICON_DEBUG));
-    private final JButton playButton = new JButton(createImageIcon(ICON_PLAY));
-    private final JButton stepOverButton = new JButton(createImageIcon(ICON_STEP_OVER));
-    private final JButton stepInButton = new JButton(createImageIcon(ICON_STEP_IN));
-    private final JButton stepOutButton = new JButton(createImageIcon(ICON_STEP_OUT));
     private final JButton exportButton = new JButton(createImageIcon(ICON_EXPORT));
     private final JButton settingsButton = new JButton(createImageIcon(ICON_SETTINGS));
-    private final JSeparator debugSeparator = new JSeparator(JSeparator.VERTICAL);
     // Labels
     private final JLabel compilerStatusLabel = new JLabel(""); // Compiler/VM Status
     private final JLabel cursorPositionLabel = new JLabel("0:0"); // Cursor Position
 
-    // Debugging
-    private final DefaultListModel<String> watchListModel = new DefaultListModel<>();
-    private final JList<String> watchListBox = new JList<>(watchListModel);
-    private final DefaultListModel<String> gosubListModel = new DefaultListModel<>();
-
     // Editors
     private BasicEditor basicEditor;
     private FileManager fileManager;
+
+    IEditorPanelProvider[] panels;
 
     private IncludeLinkGenerator linkGenerator = new IncludeLinkGenerator(this);
 
     private SearchContext searchContext;
 
     // Debugging
-    private boolean isDebugMode = false;
     private VirtualMachineViewDialog virtualMachineViewDialog;
+    private IDebugPresenter debugPresenter;
     private int lastSourceRow = -1;
     private int lastSourceColumn = -1;
 
@@ -176,7 +235,7 @@ public class MainWindow
             String appHome = System.getenv("APP_HOME"); // APP_HOME is defined in scripts distributed with build
             if (appHome != null && !appHome.trim().isEmpty()) {
                 File appDirectory = new File(appHome);
-                File outputBin = new File(appDirectory, "lib/library-1.0-SNAPSHOT.jar");
+                File outputBin = new File(appDirectory, "lib/app-runtime-1.0-SNAPSHOT.jar");
                 File debugServerBin = new File(appDirectory, "lib/debug-server-1.0-SNAPSHOT.jar");
 
                 if (outputBin.exists()) {
@@ -201,6 +260,7 @@ public class MainWindow
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Basic4GLj");
 
         FlatLightLaf.setup();
+        UIManager.put("SplitPaneDivider.style", "plain");
 
         PrintStream out = null;
         try {
@@ -242,6 +302,11 @@ public class MainWindow
         frame.setPreferredSize(new Dimension(696, 480));
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
+        mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        editorSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        workspacePane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        contentPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
         menuBar.add(fileMenu);
@@ -258,6 +323,7 @@ public class MainWindow
 
         fileMenu.add(newMenuItem);
         fileMenu.add(openMenuItem);
+        fileMenu.add(openFolderMenuItem);
         fileMenu.add(recentSubMenu);
         fileMenu.add(new JSeparator());
         fileMenu.add(saveMenuItem);
@@ -274,6 +340,7 @@ public class MainWindow
         editMenu.add(new JSeparator());
         editMenu.add(findMenuItem);
         editMenu.add(replaceMenuItem);
+        editMenu.add(goToDeclarationMenuItem);
         editMenu.add(new JSeparator());
         editMenu.add(selectAllMenuItem);
 
@@ -325,8 +392,12 @@ public class MainWindow
         newMenuItem.addActionListener(e -> actionNew());
         openMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, toolkit.getMenuShortcutKeyMask()));
         openMenuItem.addActionListener(e -> actionOpen());
+        openFolderMenuItem.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_O, toolkit.getMenuShortcutKeyMask() | InputEvent.SHIFT_MASK));
+        openFolderMenuItem.addActionListener(e -> actionOpenFolder());
         saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, toolkit.getMenuShortcutKeyMask()));
         clearRecentMenuItem.addActionListener(e -> actionClearRecent());
+        clearRecentWorkspacesMenuItem.addActionListener(e -> actionClearRecentWorkspaces());
         saveMenuItem.addActionListener(e -> actionSave());
         saveAsMenuItem.addActionListener(e -> actionSaveAs());
         exportMenuItem.addActionListener(e -> actionExport());
@@ -364,6 +435,8 @@ public class MainWindow
         replaceMenuItem.addActionListener(e -> {
             showFindReplaceMenu(true);
         });
+        goToDeclarationMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, toolkit.getMenuShortcutKeyMask()));
+        goToDeclarationMenuItem.addActionListener(e -> actionGoToDeclaration());
         selectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, toolkit.getMenuShortcutKeyMask()));
         selectAllMenuItem.addActionListener(e -> {
             int i = tabControl.getSelectedIndex();
@@ -462,6 +535,11 @@ public class MainWindow
         settingsMenuItem.addActionListener(e -> {
             showSettings();
         });
+
+        functionListMenuItem.addActionListener(e -> {
+            selectRightDocsSection("symbols");
+        });
+
         aboutMenuItem.addActionListener(e -> showAboutDialog());
 
         if (SystemInfo.isMacOS) {
@@ -471,78 +549,15 @@ public class MainWindow
             // TODO mExitMenuItem.setVisible(false);
         }
 
-        // Debugger
-        JPanel watchListFrame = new JPanel();
-        watchListFrame.setLayout(new BorderLayout());
-        JLabel watchlistLabel = new JLabel("Watchlist");
-        watchlistLabel.setBorder(new EmptyBorder(4, 8, 4, 8));
-        watchListFrame.add(watchlistLabel, BorderLayout.NORTH);
-        JScrollPane watchListScrollPane = new JScrollPane(watchListBox);
-        watchListFrame.add(watchListScrollPane, BorderLayout.CENTER);
-
-        watchListBox.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent evt) {
-                JList list = (JList) evt.getSource();
-                if (evt.getClickCount() == 2) {
-                    // Double-click detected
-                    int index = list.locationToIndex(evt.getPoint());
-                    editWatch();
-                }
-            }
-        });
-
-        watchListBox.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {}
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    editWatch();
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-                    deleteWatch();
-                } else if (e.getKeyCode() == KeyEvent.VK_INSERT) {
-                    watchListBox.setSelectedIndex(basicEditor.getWatchListSize());
-                    editWatch();
-                }
-            }
-        });
-
-        watchListBox.addListSelectionListener(e -> updateWatchHint());
-
-        JPanel gosubFrame = new JPanel();
-        gosubFrame.setLayout(new BorderLayout());
-        JLabel callstackLabel = new JLabel("Callstack");
-        callstackLabel.setBorder(new EmptyBorder(4, 8, 4, 8));
-        gosubFrame.add(callstackLabel, BorderLayout.NORTH);
-        JList<String> gosubListBox = new JList<>(gosubListModel);
-        JScrollPane gosubListScrollPane = new JScrollPane(gosubListBox);
-        gosubFrame.add(gosubListScrollPane, BorderLayout.CENTER);
-
-        debugPane.setLeftComponent(watchListFrame);
-        debugPane.setRightComponent(gosubFrame);
-
         // Toolbar
         JToolBar toolBar = new JToolBar();
         toolBar.add(newButton);
         toolBar.add(openButton);
         toolBar.add(saveButton);
-        toolBar.addSeparator();
+        toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(runTargetButton);
         toolBar.add(runButton);
         toolBar.addSeparator();
-        toolBar.add(debugButton);
-        toolBar.addSeparator();
-        toolBar.add(playButton);
-        toolBar.add(stepOverButton);
-        toolBar.add(stepInButton);
-        toolBar.add(stepOutButton);
-        toolBar.add(debugSeparator);
-        toolBar.add(Box.createHorizontalGlue());
         toolBar.add(exportButton);
         toolBar.add(settingsButton);
 
@@ -551,14 +566,22 @@ public class MainWindow
         saveButton.addActionListener(e -> actionSave());
         runButton.addActionListener(e -> basicEditor.actionRun());
 
-        debugButton.addActionListener(e -> actionDebugMode());
-        playButton.addActionListener(e -> basicEditor.actionPlayPause());
-        stepOverButton.addActionListener(e -> basicEditor.actionStep());
-        stepInButton.addActionListener(e -> basicEditor.actionStepInto());
-        stepOutButton.addActionListener(e -> basicEditor.actionStepOutOf());
         exportButton.addActionListener(e -> actionExport());
         settingsButton.addActionListener(e -> showSettings());
         runButton.setToolTipText("Run the program!");
+        runTargetButton.setToolTipText("Select the runnable source file");
+        runTargetButton.setMaximumSize(new Dimension(260, 30));
+        runTargetButton.setFocusable(false);
+        runTargetButton.setIcon(createScaledIcon(ICON_CHEVRON_DOWN, 18));
+        runTargetButton.setHorizontalTextPosition(SwingConstants.LEFT);
+        runTargetButton.setIconTextGap(6);
+        runTargetButton.putClientProperty("JButton.buttonType", "toolBarButton");
+        runTargetButton.setOpaque(false);
+        runTargetButton.setMargin(new Insets(5, 8, 5, 8));
+        Font runTargetFont = runTargetButton.getFont();
+        runTargetButton.setFont(new Font(runTargetFont.getName(), Font.BOLD, runTargetFont.getSize()));
+        runTargetButton.setForeground(new Color(0x424242));
+        runTargetButton.addActionListener(e -> showRunTargetPopup());
 
         toolBar.setAlignmentY(1);
         toolBar.setFloatable(false);
@@ -612,16 +635,21 @@ public class MainWindow
                         if (fileCheckSaveChanges(tabIndex)) {
                             // Clear file's breakpoints
                             FileEditor editor = fileManager.getFileEditors().get(tabIndex);
-                            List<Integer> breakpoints = editor.getBreakpoints();
-                            String file = editor.getFilePath();
+                            if (editor != null) {
+                                List<Integer> breakpoints = editor.getBreakpoints();
+                                String file = editor.getFilePath();
 
-                            for (Integer line : breakpoints) {
-                                basicEditor.toggleBreakpt(file, line);
+                                for (Integer line : breakpoints) {
+                                    basicEditor.toggleBreakpt(file, line);
+                                }
                             }
 
                             // Remove tab
                             tabControl.remove(tabIndex);
                             fileManager.getFileEditors().remove(tabIndex.intValue());
+                            refreshFileViewModeButtons();
+                            fileManager.ensureRunnableFileValid();
+                            refreshRunnableFileControls();
 
                             // Refresh controls if no files open
                             if (fileManager.editorCount() == 0) {
@@ -631,13 +659,50 @@ public class MainWindow
                     }
                 });
 
-        mainPane.setTopComponent(tabControl);
-        debugPane.setLeftComponent(watchListFrame);
-        debugPane.setRightComponent(gosubFrame);
+        configurePrimaryTabHost();
+        configureSplitTabs();
+        configureTabContextMenu();
+
+        editorSplitPane.setLeftComponent(primaryTabHost);
+        editorSplitPane.setRightComponent(splitTabControl);
+        editorSplitPane.setResizeWeight(0.7);
+        hideSplitPaneHandle(editorSplitPane);
+
+        contentPane.setLeftComponent(primaryTabHost);
+        contentPane.setRightComponent(rightDocsContainer);
+        contentPane.setResizeWeight(0.74);
+        hideSplitPaneHandle(contentPane);
+        contentPaneDividerSize = contentPane.getDividerSize();
+
+        workspacePane.setLeftComponent(leftSidebarContent);
+        workspacePane.setRightComponent(contentPane);
+        workspacePane.setResizeWeight(0.18);
+        workspacePane.setDividerLocation(expandedLeftSidebarWidth);
+        hideSplitPaneHandle(workspacePane);
+        workspacePaneDividerSize = workspacePane.getDividerSize();
+
+        contentPane.setDividerLocation(Math.max(200, frame.getPreferredSize().width - expandedRightDocsWidth));
+
+        topPaneHost.add(workspacePane, BorderLayout.CENTER);
+
+        mainPane.setTopComponent(topPaneHost);
+        mainPane.setBottomComponent(bottomBarContainer);
+        mainPane.setResizeWeight(1.0);
+        hideSplitPaneHandle(mainPane);
+        mainPaneDividerSize = mainPane.getDividerSize();
+
+        leftRailsHost.setLayout(new BoxLayout(leftRailsHost, BoxLayout.Y_AXIS));
+        leftRailsHost.add(leftSidebarRail);
+        leftRailsHost.add(Box.createVerticalGlue());
+        leftRailsHost.add(bottomBarRail);
+
+        centerPaneHost.add(leftRailsHost, BorderLayout.WEST);
+        centerPaneHost.add(mainPane, BorderLayout.CENTER);
+        centerPaneHost.add(rightDocsRail, BorderLayout.EAST);
 
         // Add controls to window
         frame.add(toolBar, BorderLayout.NORTH);
-        frame.add(mainPane, BorderLayout.CENTER);
+        frame.add(centerPaneHost, BorderLayout.CENTER);
         frame.add(statusPanel, BorderLayout.SOUTH);
         frame.setJMenuBar(menuBar);
 
@@ -672,7 +737,21 @@ public class MainWindow
 
         fileManager = new FileManager(this);
 
-        basicEditor = new BasicEditor(outputBinPath, fileManager, this, this);
+        basicEditor = new BasicEditor(outputBinPath, fileManager, this, new BasicDialogService(this.frame), this, this);
+
+        debugPresenter = new DebugPanelProvider(basicEditor);
+
+        panels = new IEditorPanelProvider[] {
+            new FileBrowserPanelProvider(),
+            new AssetsPanelProvider(fileManager),
+            new BookmarksPanelProvider(),
+            (IEditorPanelProvider) debugPresenter,
+            new SymbolsPanelProvider(),
+            new DocsPanelProvider(),
+        };
+
+        configureLeftSidebar();
+        configureRightSidebar();
 
         // TODO Confirm this doesn't break if app is ever signed
         // getParent
@@ -695,6 +774,10 @@ public class MainWindow
         basicEditor.initLibraries();
         resetProject();
         basicEditor.loadSettings();
+        loadRecentWorkspaces();
+        setRecentItems(basicEditor.getRecentFiles());
+        refreshRunnableFileControls();
+        refreshSidebarContent();
 
         // Warm up the debug server
         DebugServerFactory.startDebugServer(debugServerBinPath, DebugServerConstants.DEFAULT_DEBUG_SERVER_PORT);
@@ -703,6 +786,10 @@ public class MainWindow
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            collapseBottomBar();
+            collapseRightDocs();
+        });
     }
 
     private void actionExport() {
@@ -725,6 +812,7 @@ public class MainWindow
                 frame,
                 basicEditor.getCompiler(),
                 basicEditor.getPreprocessor(),
+                basicEditor.getLanguageService(),
                 fileManager.getFileEditors(),
                 fileManager.getCurrentDirectory(),
                 contributedExportPages);
@@ -735,18 +823,50 @@ public class MainWindow
 
     @Override
     public void setRecentItems(List<File> files) {
+        List<File> recentFiles = files == null ? Collections.emptyList() : files;
         recentSubMenu.removeAll();
-        for (File file : files) {
+
+        boolean hasRecentFiles = !recentFiles.isEmpty();
+        boolean hasRecentWorkspaces = !recentWorkspaces.isEmpty();
+
+        if (hasRecentFiles) {
+            JMenuItem filesHeader = new JMenuItem("Recent Files");
+            filesHeader.setEnabled(false);
+            recentSubMenu.add(filesHeader);
+        }
+
+        for (File file : recentFiles) {
 
             JMenuItem fileMenuItem = new JMenuItem(file.getName());
             recentSubMenu.add(fileMenuItem);
             fileMenuItem.addActionListener(e -> {
-                actionOpen(file);
+                openFileWithPreferredViewer(file);
             });
         }
-        recentSubMenu.add(new JSeparator());
+
+        if (hasRecentFiles || hasRecentWorkspaces) {
+            recentSubMenu.add(new JSeparator());
+        }
+
+        clearRecentMenuItem.setEnabled(hasRecentFiles);
         recentSubMenu.add(clearRecentMenuItem);
-        clearRecentMenuItem.setEnabled(!files.isEmpty());
+
+        if (hasRecentWorkspaces) {
+            recentSubMenu.add(new JSeparator());
+            JMenuItem workspacesHeader = new JMenuItem("Recent Workspaces");
+            workspacesHeader.setEnabled(false);
+            recentSubMenu.add(workspacesHeader);
+            for (File workspace : recentWorkspaces) {
+                JMenuItem workspaceItem = new JMenuItem(
+                        workspace.getName().isBlank() ? workspace.getAbsolutePath() : workspace.getName());
+                workspaceItem.setToolTipText(workspace.getAbsolutePath());
+                workspaceItem.addActionListener(e -> setWorkspaceDirectory(workspace));
+                recentSubMenu.add(workspaceItem);
+            }
+            recentSubMenu.add(new JSeparator());
+            recentSubMenu.add(clearRecentWorkspacesMenuItem);
+        }
+        clearRecentWorkspacesMenuItem.setEnabled(hasRecentWorkspaces);
     }
 
     @Override
@@ -799,6 +919,9 @@ public class MainWindow
         // ShutDownTomWindowsBasicLib();
 
         frame.dispose();
+        for (IEditorPanelProvider panel : panels) {
+            panel.dispose();
+        }
         System.exit(0);
     }
 
@@ -809,12 +932,16 @@ public class MainWindow
         // Close existing editors
         tabControl.removeAll();
         fileManager.getFileEditors().clear();
+        refreshFileViewModeButtons();
 
         // Create a default tab
         addTab();
 
         // Display the editor
         tabControl.setSelectedIndex(0);
+        fileManager.ensureRunnableFileValid();
+        refreshRunnableFileControls();
+        refreshSidebarContent();
     }
 
     @Override
@@ -835,6 +962,11 @@ public class MainWindow
     @Override
     public void openTab(String filename) {
         File file = new File(fileManager.getCurrentDirectory(), filename);
+        int existingIndex = findOpenTabIndexByPath(file.getAbsolutePath());
+        if (existingIndex >= 0) {
+            tabControl.setSelectedIndex(existingIndex);
+            return;
+        }
 
         System.out.println("Open tab: " + filename);
         System.out.println("Path: " + file.getAbsolutePath());
@@ -845,12 +977,34 @@ public class MainWindow
     }
 
     public void openTab(File file) {
+        if (file == null) {
+            return;
+        }
+        File absoluteFile = file.getAbsoluteFile();
+        int existingIndex = findOpenTabIndexByPath(absoluteFile.getAbsolutePath());
+        if (existingIndex >= 0) {
+            tabControl.setSelectedIndex(existingIndex);
+            return;
+        }
+
         System.out.println("Open tab: " + file.getName());
         System.out.println("Path: " + file.getAbsolutePath());
 
-        MainWindow.this.addTab(FileEditor.open(file, this, fileManager, this, linkGenerator, searchContext));
+        // Use the FileViewerFactory to determine the appropriate viewer
+        IFileViewer viewer = FileViewerFactory.createViewer(
+                absoluteFile,
+                null, // auto-detect viewer type
+                this,
+                fileManager,
+                this,
+                linkGenerator,
+                searchContext,
+                basicEditor);
+
+        addTab(viewer);
 
         tabControl.setSelectedIndex(tabControl.getTabCount() - 1);
+        registerWorkspace(file.getParentFile());
     }
 
     void actionNew() {
@@ -862,8 +1016,10 @@ public class MainWindow
             // Clear file editors
             this.tabControl.removeAll();
             fileManager.getFileEditors().clear();
+            refreshFileViewModeButtons();
 
             this.addTab();
+            refreshSidebarContent();
         }
     }
 
@@ -873,17 +1029,46 @@ public class MainWindow
 
     void actionOpen(File file) {
         if (multifileCheckSaveChanges()) {
-            FileEditor editor = null;
             if (file != null) {
                 fileManager.setCurrentDirectory(fileManager.getFileDirectory());
-                editor = FileEditor.open(file, this, fileManager, this, linkGenerator, searchContext);
-            } else {
+                openFileWithPreferredViewer(file);
+                return;
+            }
+
+            FileEditor editor;
+            {
                 fileManager.setCurrentDirectory(fileManager.getFileDirectory());
                 editor = FileEditor.open(frame, this, fileManager, this, linkGenerator, searchContext);
             }
 
             openEditor(editor);
         }
+    }
+
+    @Override
+    public void actionOpenFolder() {
+        JFileChooser chooser = new JFileChooser(fileManager.getCurrentDirectory());
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+        int result = chooser.showOpenDialog(frame);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        setWorkspaceDirectory(chooser.getSelectedFile());
+    }
+
+    @Override
+    public void openFileWithPreferredViewer(File file) {
+        if (file == null) {
+            return;
+        }
+        File absoluteFile = file.getAbsoluteFile();
+        int existingIndex = findOpenTabIndexByPath(absoluteFile.getAbsolutePath());
+        if (existingIndex >= 0) {
+            tabControl.setSelectedIndex(existingIndex);
+            return;
+        }
+        openTab(absoluteFile);
     }
 
     void openEditor(FileEditor editor) {
@@ -900,9 +1085,11 @@ public class MainWindow
             fileManager.setRunDirectory(fileManager.getFileDirectory());
 
             fileManager.setCurrentDirectory(fileManager.getRunDirectory());
+            registerWorkspace(new File(fileManager.getRunDirectory()));
 
             // Display file
             addTab(editor);
+            refreshSidebarContent();
         }
     }
 
@@ -919,10 +1106,29 @@ public class MainWindow
         }
     }
 
+    void actionClearRecentWorkspaces() {
+        int result = JOptionPane.showConfirmDialog(
+                frame,
+                "Clear recently opened workspaces?",
+                "Confirm",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (result == JOptionPane.YES_OPTION) {
+            recentWorkspaces.clear();
+            saveRecentWorkspaces();
+            setRecentItems(basicEditor.getRecentFiles());
+            refreshEmptyStateRecentItems();
+        }
+    }
+
     boolean fileCheckSaveChanges(int index) {
 
         // Is sub-file modified?
         FileEditor editor = fileManager.getFileEditors().get(index);
+        if (editor == null) {
+            return true;
+        }
         if (editor.isModified()) {
             int result = JOptionPane.showConfirmDialog(
                     frame,
@@ -999,16 +1205,15 @@ public class MainWindow
         basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
-            // TODO Check if index of main file
-            int main = 0;
+            int main = fileManager.getRunnableFileIndex();
             if (index == main) {
                 fileManager.setFileDirectory(
                         new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
                 fileManager.setRunDirectory(fileManager.getFileDirectory());
                 fileManager.setCurrentDirectory(fileManager.getRunDirectory());
             }
-            tabControl.setTitleAt(index, fileManager.getFileEditors().get(index).getTitle());
-            tabControl.getTabComponentAt(index).invalidate();
+            refreshTabTitle(index);
+            refreshRunnableFileControls();
         }
         return saved;
     }
@@ -1024,16 +1229,15 @@ public class MainWindow
         basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
-            // TODO Check if main file
-            int main = 0;
+            int main = fileManager.getRunnableFileIndex();
             if (index == main) {
                 fileManager.setFileDirectory(
                         new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
                 fileManager.setRunDirectory(fileManager.getFileDirectory());
                 fileManager.setCurrentDirectory(fileManager.getRunDirectory());
             }
-            tabControl.setTitleAt(index, fileManager.getFileEditors().get(index).getTitle());
-            tabControl.getTabComponentAt(index).invalidate();
+            refreshTabTitle(index);
+            refreshRunnableFileControls();
         }
         return saved;
     }
@@ -1051,8 +1255,7 @@ public class MainWindow
 
         basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         if (fileManager.getFileEditors().get(index).save(true, fileManager.getCurrentDirectory())) {
-            // TODO get current main file
-            int main = 0;
+            int main = fileManager.getRunnableFileIndex();
             if (index == main) {
                 fileManager.setFileDirectory(
                         new File(fileManager.getFileEditors().get(index).getFilePath()).getParent());
@@ -1064,17 +1267,226 @@ public class MainWindow
             // Restore Current directory
             fileManager.setCurrentDirectory(fileManager.getRunDirectory());
         }
+        refreshTabTitle(index);
+        refreshRunnableFileControls();
+    }
+
+    private void refreshTabTitle(int index) {
         tabControl.setTitleAt(index, fileManager.getFileEditors().get(index).getTitle());
-        tabControl.getTabComponentAt(index).invalidate();
+
+        Component tabComponent = tabControl.getTabComponentAt(index);
+        if (tabComponent != null) {
+            tabComponent.invalidate();
+        }
+        tabControl.revalidate();
+        tabControl.repaint();
     }
 
     private void actionDebugMode() {
-        // Toggle debug mode
-        isDebugMode = !isDebugMode;
-        debugMenuItem.setSelected(isDebugMode);
-        debugButton.setSelected(isDebugMode);
+        if (Objects.equals(activeBottomBarKey, "debug") && isBottomBarExpanded()) {
+            collapseBottomBar();
+            return;
+        }
+        selectBottomBarSection("debug", true);
+    }
 
-        refreshDebugDisplays(basicEditor.getMode());
+    private void actionGoToDeclaration() {
+        int selectedTab = tabControl.getSelectedIndex();
+        if (selectedTab < 0 || selectedTab >= fileManager.getFileEditors().size()) {
+            return;
+        }
+
+        FileEditor activeEditor = fileManager.getFileEditors().get(selectedTab);
+        JTextArea editorPane = activeEditor.getEditorPane();
+        String symbol = getIdentifierAtCaret(editorPane);
+        if (symbol == null || symbol.isBlank()) {
+            setCompilerStatus("No identifier at caret");
+            return;
+        }
+
+        String activeFile = activeEditor.getFilePath();
+        int caretLine = 0;
+        try {
+            caretLine = editorPane.getLineOfOffset(editorPane.getCaretPosition());
+        } catch (BadLocationException ignored) {
+        }
+
+        java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> declarations =
+                collectOpenFileDeclarations();
+        java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> matches = declarations.stream()
+                .filter(d -> ("label".equals(d.kind()) || "variable".equals(d.kind()))
+                        && d.name().equalsIgnoreCase(symbol))
+                .toList();
+
+        if (matches.isEmpty()) {
+            setCompilerStatus("Declaration not found for: " + symbol);
+            return;
+        }
+
+        com.basic4gl.desktop.spi.language.SymbolDeclaration selected =
+                chooseDeclarationForCaret(matches, activeFile, caretLine);
+        if (selected == null) {
+            return;
+        }
+
+        if (matches.size() > 1) {
+            selected = promptUserForDeclaration(matches, selected);
+            if (selected == null) {
+                return;
+            }
+        }
+
+        goToDeclarationLocation(selected);
+        setCompilerStatus("Declaration: " + selected.signature());
+    }
+
+    private java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> collectOpenFileDeclarations() {
+        java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> declarations = new ArrayList<>();
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            String fileId = editor.getFilePath();
+            if (fileId == null || fileId.isBlank()) {
+                File file = editor.getFile();
+                fileId = file != null ? file.getAbsolutePath() : "<unsaved:" + editor.getTitle() + ">";
+            }
+            declarations.addAll(basicEditor
+                    .getLanguageSupport()
+                    .extractDeclarations(editor.getEditorPane().getText(), fileId));
+        }
+        return declarations;
+    }
+
+    private com.basic4gl.desktop.spi.language.SymbolDeclaration chooseDeclarationForCaret(
+            java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> matches,
+            String activeFile,
+            int caretLine) {
+        java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> sameFile = matches.stream()
+                .filter(d -> Objects.equals(d.fileId(), activeFile))
+                .toList();
+        java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> candidates =
+                sameFile.isEmpty() ? matches : sameFile;
+
+        com.basic4gl.desktop.spi.language.SymbolDeclaration best = null;
+        int bestScore = Integer.MAX_VALUE;
+        for (com.basic4gl.desktop.spi.language.SymbolDeclaration candidate : candidates) {
+            int score = declarationScore(candidate, activeFile, caretLine);
+            if (score < bestScore) {
+                bestScore = score;
+                best = candidate;
+            }
+        }
+        return best;
+    }
+
+    private int declarationScore(
+            com.basic4gl.desktop.spi.language.SymbolDeclaration declaration, String activeFile, int caretLine) {
+        int score = 0;
+        if (!Objects.equals(declaration.fileId(), activeFile)) {
+            score += 1_000_000;
+        }
+        int lineDistance = Math.abs(caretLine - declaration.line());
+        score += lineDistance;
+        if (declaration.line() > caretLine) {
+            // Prefer declarations above the current caret location.
+            score += 5_000;
+        }
+        // Prefer first declaration over later re-dims when ambiguous.
+        score += Math.max(0, declaration.declarationIndex() - 1) * 50;
+        return score;
+    }
+
+    private com.basic4gl.desktop.spi.language.SymbolDeclaration promptUserForDeclaration(
+            java.util.List<com.basic4gl.desktop.spi.language.SymbolDeclaration> matches,
+            com.basic4gl.desktop.spi.language.SymbolDeclaration preferred) {
+        Object[] options = matches.stream().map(this::formatDeclarationChoice).toArray();
+        Object initial =
+                preferred != null ? formatDeclarationChoice(preferred) : (options.length > 0 ? options[0] : null);
+        Object selected = JOptionPane.showInputDialog(
+                frame,
+                "Multiple declarations found. Choose destination:",
+                "Go to Declaration",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                initial);
+        if (selected == null) {
+            return null;
+        }
+        String selectedText = selected.toString();
+        for (com.basic4gl.desktop.spi.language.SymbolDeclaration declaration : matches) {
+            if (formatDeclarationChoice(declaration).equals(selectedText)) {
+                return declaration;
+            }
+        }
+        return preferred;
+    }
+
+    private String formatDeclarationChoice(com.basic4gl.desktop.spi.language.SymbolDeclaration declaration) {
+        String fileLabel = declaration.fileId();
+        File f = fileLabel == null ? null : new File(fileLabel);
+        if (f != null && f.getName() != null && !f.getName().isBlank()) {
+            fileLabel = f.getName();
+        }
+        return declaration.kind() + "  " + declaration.signature() + "  (" + fileLabel + ":" + (declaration.line() + 1)
+                + ")";
+    }
+
+    private void goToDeclarationLocation(com.basic4gl.desktop.spi.language.SymbolDeclaration declaration) {
+        String filePath = declaration.fileId();
+        int index = getTabIndex(filePath);
+        if (index == -1 && filePath != null && !filePath.startsWith("<unsaved:")) {
+            File file = new File(filePath);
+            if (file.exists()) {
+                addTab(FileEditor.open(file, this, fileManager, this, linkGenerator, searchContext));
+                index = getTabIndex(filePath);
+            }
+        }
+        if (index < 0 || index >= fileManager.getFileEditors().size()) {
+            return;
+        }
+
+        tabControl.setSelectedIndex(index);
+        JTextArea pane = fileManager.getFileEditors().get(index).getEditorPane();
+        int targetOffset;
+        try {
+            int lineStart = pane.getLineStartOffset(Math.max(0, declaration.line()));
+            targetOffset = Math.min(
+                    lineStart + Math.max(0, declaration.column()),
+                    pane.getDocument().getLength());
+        } catch (BadLocationException e) {
+            targetOffset = Math.min(pane.getDocument().getLength(), pane.getCaretPosition());
+        }
+        pane.requestFocusInWindow();
+        pane.setCaretPosition(targetOffset);
+    }
+
+    private String getIdentifierAtCaret(JTextArea editorPane) {
+        String text = editorPane.getText();
+        if (text == null || text.isEmpty()) {
+            return null;
+        }
+        int caret = editorPane.getCaretPosition();
+        caret = Math.max(0, Math.min(caret, text.length()));
+
+        if (caret > 0 && (caret == text.length() || !isIdentifierChar(text.charAt(caret)))) {
+            caret--;
+        }
+        if (caret < 0 || caret >= text.length() || !isIdentifierChar(text.charAt(caret))) {
+            return null;
+        }
+
+        int start = caret;
+        while (start > 0 && isIdentifierChar(text.charAt(start - 1))) {
+            start--;
+        }
+        int end = caret + 1;
+        while (end < text.length() && isIdentifierChar(text.charAt(end))) {
+            end++;
+        }
+        return text.substring(start, end);
+    }
+
+    private boolean isIdentifierChar(char c) {
+        return Character.isLetterOrDigit(c) || c == '_';
     }
 
     public void closeAll() {
@@ -1090,11 +1502,19 @@ public class MainWindow
 
         // Refresh UI
         refreshActions(basicEditor.getMode());
+        refreshRunnableFileControls();
+        refreshSidebarContent();
     }
 
     public void closeTab(int index) {
         tabControl.remove(index);
-        fileManager.getFileEditors().remove(index);
+        if (index >= 0 && index < fileManager.getFileEditors().size()) {
+            fileManager.getFileEditors().remove(index);
+        }
+        refreshFileViewModeButtons();
+        fileManager.ensureRunnableFileValid();
+        refreshRunnableFileControls();
+        refreshSidebarContent();
     }
 
     public void addTab() {
@@ -1103,64 +1523,114 @@ public class MainWindow
     }
 
     public void addTab(FileEditor editor) {
+        addTab(new TextFileViewer(editor));
+    }
 
-        int count = fileManager.editorCount();
-        fileManager.getFileEditors().add(editor);
+    /**
+     * Adds a file viewer tab for all viewer types, including text editors, images, audio, and docs.
+     */
+    public void addTab(IFileViewer viewer) {
+        int count = tabControl.getTabCount();
+        FileViewerWrapper wrapper = new FileViewerWrapper(viewer);
 
-        // replace emptyTabPanel if needed
-        mainPane.setTopComponent(tabControl);
-
-        tabControl.addTab(editor.getTitle(), editor.getContentPane());
-
-        final FileEditor edit = editor;
-        File file = edit.getFile();
-        if (file != null) {
-            basicEditor.notifyFileOpened(file);
-            basicEditor.onFileOpened(edit);
+        // For backward compatibility with FileEditor code, also add to fileManager if it's a text editor
+        if (wrapper.isTextEditor()) {
+            fileManager.getFileEditors().add(wrapper.getFileEditor());
+        } else {
+            // Add a placeholder to keep indices aligned
+            fileManager.getFileEditors().add(null);
         }
 
-        edit.getEditorPane().getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                int index = getTabIndex(edit.getFilePath());
-                edit.setModified();
-                tabControl.setTitleAt(index, edit.getTitle());
-                //                mTabControl.getTabComponentAt(index).invalidate();
-            }
+        // replace emptyTabPanel if needed
+        setEditorContent(getActiveEditorHost());
 
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                int index = getTabIndex(edit.getFilePath());
-                edit.setModified();
-                tabControl.setTitleAt(index, edit.getTitle());
-            }
+        JComponent contentPane = viewer.getContentPane();
+        contentPane.putClientProperty(TAB_FILE_VIEWER_PROPERTY, viewer);
+        tabControl.addTab(viewer.getTitle(), contentPane);
 
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                if (e.getLength() == 0) {
-                    // ignore empty changes - eg: syntax highlighting refreshed
-                    return;
+        File file = viewer.getFile();
+        if (file != null) {
+            basicEditor.notifyFileOpened(file);
+            if (wrapper.isTextEditor()) {
+                basicEditor.onFileOpened(wrapper.getFileEditor());
+            }
+        }
+
+        // Add document listener only for text editors
+        if (wrapper.isTextEditor()) {
+            final FileEditor edit = wrapper.getFileEditor();
+            JTextArea editorPane = edit.getEditorPane();
+            editorPane.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    int index = getTabIndex(edit.getFilePath());
+                    edit.setModified();
+                    tabControl.setTitleAt(index, edit.getTitle());
+
+                    for (IEditorPanelProvider panel : panels) {
+                        panel.onFileModified(edit.getFilePath());
+                    }
                 }
-                int index = getTabIndex(edit.getFilePath());
-                edit.setModified();
-                tabControl.setTitleAt(index, edit.getTitle());
-            }
-        });
 
-        // Allow user to see cursor position
-        editor.getEditorPane().addCaretListener(TrackCaretPosition);
-        cursorPositionLabel.setText(0 + ":" + 0); // Reset label
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    int index = getTabIndex(edit.getFilePath());
+                    edit.setModified();
+                    tabControl.setTitleAt(index, edit.getTitle());
 
-        // Set tab as read-only if App is running or paused
-        boolean readOnly = basicEditor.getMode() != ApMode.AP_STOPPED;
-        editor.getEditorPane().setEditable(!readOnly);
+                    for (IEditorPanelProvider panel : panels) {
+                        panel.onFileModified(edit.getFilePath());
+                    }
+                }
 
-        // TODO set syntax highlight colors
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    if (e.getLength() == 0) {
+                        // ignore empty changes - eg: syntax highlighting refreshed
+                        return;
+                    }
+                    int index = getTabIndex(edit.getFilePath());
+                    edit.setModified();
+                    tabControl.setTitleAt(index, edit.getTitle());
+                }
+            });
 
-        // Refresh interface if there was previously no tabs open
+            // Allow user to see cursor position
+            editorPane.addCaretListener(TrackCaretPosition);
+            cursorPositionLabel.setText(0 + ":" + 0); // Reset label
+
+            // Set tab as read-only if App is running or paused
+            boolean readOnly = basicEditor.getMode() != ApMode.AP_STOPPED;
+            editorPane.setEditable(!readOnly);
+        }
+
+        // Refresh interface if there were previously no tabs open
         if (count == 0) {
             basicEditor.setMode(ApMode.AP_STOPPED, null);
         }
+
+        fileManager.ensureRunnableFileValid();
+        refreshRunnableFileControls();
+        refreshSidebarContent();
+    }
+
+    public void openDocumentationPreview(ContentDocumentViewer viewer) {
+        int existingPreviewIndex = findUnpinnedDocumentationPreviewTab();
+        if (existingPreviewIndex >= 0) {
+            closeTab(existingPreviewIndex);
+        }
+        addTab(viewer);
+        tabControl.setSelectedIndex(tabControl.getTabCount() - 1);
+    }
+
+    private int findUnpinnedDocumentationPreviewTab() {
+        for (int i = 0; i < tabControl.getTabCount(); i++) {
+            IFileViewer viewer = getFileViewerAt(i);
+            if (viewer instanceof ContentDocumentViewer documentViewer && !documentViewer.isPinned()) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -1230,10 +1700,8 @@ public class MainWindow
         basicEditor.setMode(ApMode.AP_PAUSED, null);
         refreshActions(basicEditor.getMode());
 
-        // Place editor into debug mode
-        isDebugMode = true;
-        debugMenuItem.setSelected(true);
-        debugButton.setSelected(true);
+        // Open debug panel when execution pauses.
+        selectBottomBarSection("debug", true);
         refreshDebugDisplays(basicEditor.getMode());
 
         // TODO Add VMViewer
@@ -1260,20 +1728,30 @@ public class MainWindow
     }
 
     @Override
+    public void updateCallStack(StackTraceCallback message) {
+        debugPresenter.updateCallStack(message);
+    }
+
+    @Override
+    public void onCompileSucceeded() {
+
+        for (IEditorPanelProvider panel : panels) {
+            panel.onCompileSucceeded();
+        }
+    }
+
+    @Override
     public void onModeChanged(ApMode mode, String statusMsg) {
         if (mode != ApMode.AP_CLOSED) {
             copyMenuItem.setEnabled(true);
             findMenuItem.setEnabled(true);
             replaceMenuItem.setEnabled(true);
+            goToDeclarationMenuItem.setEnabled(true);
             selectAllMenuItem.setEnabled(true);
 
-            stepOverButton.setEnabled(true);
-            stepInButton.setEnabled(true);
-            stepOutButton.setEnabled(true);
             stepOverMenuItem.setEnabled(true);
             stepIntoMenuItem.setEnabled(true);
             stepOutOfMenuItem.setEnabled(true);
-            playButton.setEnabled(true);
             playPauseMenuItem.setEnabled(true);
             runMenuItem.setEnabled(true);
             runButton.setEnabled(true);
@@ -1323,15 +1801,12 @@ public class MainWindow
                 copyMenuItem.setEnabled(false);
                 findMenuItem.setEnabled(false);
                 replaceMenuItem.setEnabled(false);
+                goToDeclarationMenuItem.setEnabled(false);
                 selectAllMenuItem.setEnabled(false);
 
-                stepOverButton.setEnabled(false);
-                stepInButton.setEnabled(false);
-                stepOutButton.setEnabled(false);
                 stepOverMenuItem.setEnabled(false);
                 stepIntoMenuItem.setEnabled(false);
                 stepOutOfMenuItem.setEnabled(false);
-                playButton.setEnabled(false);
                 playPauseMenuItem.setEnabled(false);
                 runMenuItem.setEnabled(false);
                 runButton.setEnabled(false);
@@ -1349,10 +1824,13 @@ public class MainWindow
                         this,
                         newMenuItem.getAccelerator(),
                         openMenuItem.getAccelerator(),
-                        basicEditor.getRecentFiles());
-                mainPane.setTopComponent(emptyTabPanel);
+                        openFolderMenuItem.getAccelerator(),
+                        basicEditor.getRecentFiles(),
+                        recentWorkspaces);
+                setEditorContent(emptyTabPanel);
                 break;
             case AP_STOPPED:
+                setEditorContent(getActiveEditorHost());
                 setClosingTabsEnabled(true);
                 settingsMenuItem.setEnabled(true);
                 settingsButton.setEnabled(true);
@@ -1392,6 +1870,7 @@ public class MainWindow
 
             case AP_RUNNING:
             case AP_PAUSED:
+                setEditorContent(getActiveEditorHost());
                 setClosingTabsEnabled(false);
 
                 settingsMenuItem.setEnabled(false);
@@ -1419,60 +1898,18 @@ public class MainWindow
 
     @Override
     public void refreshDebugDisplays(ApMode mode) {
+        debugPresenter.refreshDebugControls(mode);
+        playPauseMenuItem.setEnabled(mode != ApMode.AP_WAITING && mode != ApMode.AP_CLOSED);
 
-        // Show/hide debug controls
-        playButton.setVisible(isDebugMode);
-        stepOverButton.setVisible(isDebugMode);
-        stepInButton.setVisible(isDebugMode);
-        stepOutButton.setVisible(isDebugMode);
-        debugSeparator.setVisible(isDebugMode);
-
-        // TODO Show/hide debug pane
-        if (isDebugMode) {
-            mainPane.setResizeWeight(0.7);
-            // mDebugPane.setEnabled(true);
-            mainPane.setEnabled(true);
-            mainPane.setBottomComponent(debugPane);
-            SwingUtilities.invokeLater(() -> debugPane.setDividerLocation(0.7));
-        } else {
-            mainPane.remove(debugPane);
-            // mDebugPane.setEnabled(false);
-            mainPane.setEnabled(false);
-        }
-
-        if (mode != ApMode.AP_CLOSED) {
-            playButton.setIcon(mode == ApMode.AP_RUNNING ? createImageIcon(ICON_PAUSE) : createImageIcon(ICON_PLAY));
-            playButton.setEnabled(mode != ApMode.AP_WAITING);
-            playPauseMenuItem.setEnabled(mode != ApMode.AP_WAITING);
-            stepOverButton.setEnabled(mode != ApMode.AP_RUNNING && mode != ApMode.AP_WAITING);
-            stepInButton.setEnabled(mode != ApMode.AP_RUNNING && mode != ApMode.AP_WAITING);
-
-            // TODO 12/2022 determine appropriate state for mStepOutButton;
-            // does the editor even need to care about UserCallStack size with remote debugger protocol
-            // setup?
-            stepOutButton.setEnabled(mode == ApMode.AP_PAUSED);
-            // TODO old mStepOutButton.setEnabled(mode == ApMode.AP_PAUSED &&
-            // (mEditor.mVM.UserCallStack().size() > 0));
-        }
-        if (!isDebugMode) {
-            return;
+        if (mode == ApMode.AP_CLOSED && isBottomBarExpanded()) {
+            collapseBottomBar();
         }
 
         if (mode != ApMode.AP_PAUSED) {
-            // Clear debug controls
-            gosubListModel.clear();
+            debugPresenter.clearCallStack();
         }
-    }
 
-    @Override
-    public void updateCallStack(StackTraceCallback stackTraceCallback) {
-
-        // Clear debug controls
-        gosubListModel.clear();
-
-        for (String label : basicEditor.getLanguageService().buildFriendlyCallStackLabels(stackTraceCallback)) {
-            gosubListModel.addElement(label);
-        }
+        syncDebugMenuSelection();
     }
 
     @Override
@@ -1499,13 +1936,7 @@ public class MainWindow
 
     @Override
     public void updateEvaluateWatch(String evaluatedWatch, String result) {
-        int index = 0;
-        for (String watch : basicEditor.getWatches()) {
-            if (Objects.equals(watch, evaluatedWatch)) {
-                watchListModel.setElementAt(watch + ": " + result, index);
-            }
-            index++;
-        }
+        debugPresenter.updateEvaluateWatch(evaluatedWatch, result);
     }
 
     @Override
@@ -1524,61 +1955,911 @@ public class MainWindow
 
     @Override
     public void refreshWatchList() {
-        // Clear debug controls
-        watchListModel.clear();
-
-        for (String watch : basicEditor.getWatches()) {
-
-            watchListModel.addElement(watch + ": " + "???");
-        }
-        watchListModel.addElement(" "); // Last line is blank, and can be clicked on to add new watch
-    }
-
-    private void editWatch() {
-        String newWatch, oldWatch;
-
-        // Find watch
-        int index = watchListBox.getSelectedIndex();
-        int saveIndex = index;
-
-        // Extract watch text
-        oldWatch = basicEditor.getWatchOrDefault(index);
-
-        // Prompt for new text
-        newWatch = (String) JOptionPane.showInputDialog(
-                frame, "Enter variable/expression:", "Watch variable", JOptionPane.PLAIN_MESSAGE, null, null, oldWatch);
-
-        basicEditor.updateWatch(newWatch, index);
-
-        watchListBox.setSelectedIndex(saveIndex);
-        updateWatchHint();
-    }
-
-    void deleteWatch() {
-
-        // Find watch
-        int index = watchListBox.getSelectedIndex();
-        int saveIndex = index;
-
-        // Delete watch
-        basicEditor.removeWatchAt(index);
-
-        watchListBox.setSelectedIndex(saveIndex);
-        updateWatchHint();
-    }
-
-    private void updateWatchHint() {
-        int index = watchListBox.getSelectedIndex();
-        if (index > -1 && index < basicEditor.getWatchListSize()) {
-            watchListBox.setToolTipText((String) watchListModel.get(index));
-        } else {
-            watchListBox.setToolTipText("");
-        }
+        debugPresenter.refreshWatchList();
     }
 
     @Override
     public void onToggleBreakpoint(String filePath, int line) {
         basicEditor.toggleBreakpt(filePath, line);
+    }
+
+    private Component getActiveEditorHost() {
+        return splitTabControl.getTabCount() == 0 ? primaryTabHost : editorSplitPane;
+    }
+
+    private void setEditorContent(Component component) {
+        contentPane.setLeftComponent(component);
+    }
+
+    private void configurePrimaryTabHost() {
+        addTabDropdownButton.setFocusable(false);
+        addTabDropdownButton.setToolTipText("Create a new tab or open an asset");
+        addTabDropdownButton.putClientProperty("JButton.buttonType", "toolBarButton");
+        addTabDropdownButton.putClientProperty(
+                "FlatLaf.style", "arc: 14; focusWidth: 0; innerFocusWidth: 0; margin: 6,6,6,6");
+        addTabDropdownButton.setOpaque(false);
+        addTabDropdownButton.setMargin(new Insets(6, 6, 6, 6));
+        addTabDropdownButton.setPreferredSize(TAB_HEADER_ICON_BUTTON_SIZE);
+        addTabDropdownButton.setMinimumSize(TAB_HEADER_ICON_BUTTON_SIZE);
+        addTabDropdownButton.setMaximumSize(TAB_HEADER_ICON_BUTTON_SIZE);
+        addTabDropdownButton.addActionListener(e -> showCreateTabMenu(addTabDropdownButton));
+        tabControl.putClientProperty(TABBED_PANE_LEADING_COMPONENT, addTabDropdownButton);
+        ButtonGroup viewModeButtons = new ButtonGroup();
+        viewModeButtons.add(editViewButton);
+        viewModeButtons.add(editPreviewViewButton);
+        viewModeButtons.add(previewViewButton);
+        fileViewModeTabs.add(editViewButton);
+        fileViewModeTabs.add(editPreviewViewButton);
+        fileViewModeTabs.add(previewViewButton);
+        fileViewModeTabsHost.setVisible(false);
+        tabControl.putClientProperty(TABBED_PANE_TRAILING_COMPONENT, fileViewModeTabsHost);
+        tabControl.addChangeListener(e -> onSelectedTabChanged());
+        primaryTabHost.add(tabControl, BorderLayout.CENTER);
+    }
+
+    private JToggleButton createFileViewModeButton(
+            String tooltip, String iconPath, IFileViewer.ViewMode viewMode, String segmentPosition) {
+        JToggleButton button = new JToggleButton(createScaledIcon(iconPath, 18));
+        button.setToolTipText(tooltip);
+        button.setFocusable(false);
+        button.putClientProperty("JButton.buttonType", "segmented");
+        button.putClientProperty("JButton.segmentPosition", segmentPosition);
+        button.putClientProperty("FlatLaf.style", SEGMENTED_BUTTON_STYLE);
+        button.setOpaque(false);
+        button.setMargin(new Insets(6, 8, 6, 8));
+        button.setPreferredSize(TAB_VIEW_MODE_BUTTON_SIZE);
+        button.setMinimumSize(TAB_VIEW_MODE_BUTTON_SIZE);
+        button.setMaximumSize(TAB_VIEW_MODE_BUTTON_SIZE);
+        button.addActionListener(e -> setSelectedFileViewMode(viewMode));
+        return button;
+    }
+
+    private JPanel createSegmentedButtonStrip() {
+        JPanel panel = new RoundedCardPanel(RoundedCardPanel.DEFAULT_ARC);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+        panel.setBackground(SEGMENTED_BACKGROUND);
+        panel.setBorder(new EmptyBorder(1, 1, 1, 1));
+        return panel;
+    }
+
+    private JPanel createSegmentedButtonStripHost(JPanel strip) {
+        JPanel host = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        host.setOpaque(false);
+        host.setBorder(new EmptyBorder(2, 4, 2, 0));
+        host.add(strip);
+        return host;
+    }
+
+    private void setSelectedFileViewMode(IFileViewer.ViewMode viewMode) {
+        IFileViewer viewer = getSelectedFileViewer();
+        if (viewer == null || !viewer.hasPreview()) {
+            refreshFileViewModeButtons();
+            return;
+        }
+        viewer.setViewMode(viewMode);
+        viewer.getContentPane().revalidate();
+        viewer.getContentPane().repaint();
+        refreshFileViewModeButtons();
+    }
+
+    private void refreshFileViewModeButtons() {
+        IFileViewer viewer = getSelectedFileViewer();
+        boolean hasPreview = viewer != null && viewer.hasPreview();
+        fileViewModeTabsHost.setVisible(hasPreview);
+        if (!hasPreview) {
+            return;
+        }
+
+        IFileViewer.ViewMode viewMode = viewer.getViewMode();
+        editViewButton.setSelected(viewMode == IFileViewer.ViewMode.EDITOR);
+        editPreviewViewButton.setSelected(viewMode == IFileViewer.ViewMode.EDITOR_AND_PREVIEW);
+        previewViewButton.setSelected(
+                viewMode == IFileViewer.ViewMode.PREVIEW || viewMode == IFileViewer.ViewMode.DEFAULT);
+    }
+
+    private IFileViewer getSelectedFileViewer() {
+        return getFileViewerAt(tabControl.getSelectedIndex());
+    }
+
+    private IFileViewer getFileViewerAt(int index) {
+        if (index < 0 || index >= tabControl.getTabCount()) {
+            return null;
+        }
+        Component component = tabControl.getComponentAt(index);
+        if (component instanceof JComponent tabContent
+                && tabContent.getClientProperty(TAB_FILE_VIEWER_PROPERTY) instanceof IFileViewer viewer) {
+            return viewer;
+        }
+        return null;
+    }
+
+    private void configureSplitTabs() {
+        splitTabControl.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        splitTabControl.putClientProperty(TABBED_PANE_TAB_CLOSABLE, true);
+        splitTabControl.putClientProperty(
+                TABBED_PANE_TAB_CLOSE_CALLBACK, (BiConsumer<JTabbedPane, Integer>) (tabPane, tabIndex) -> {
+                    if (tabIndex >= 0) {
+                        splitTabControl.remove(tabIndex);
+                        if (splitTabControl.getTabCount() == 0
+                                && basicEditor != null
+                                && basicEditor.getMode() != ApMode.AP_CLOSED) {
+                            setEditorContent(primaryTabHost);
+                        }
+                    }
+                });
+    }
+
+    private void configureTabContextMenu() {
+        tabControl.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeShowTabPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeShowTabPopup(e);
+            }
+        });
+    }
+
+    private void maybeShowTabPopup(MouseEvent e) {
+        if (!e.isPopupTrigger()) {
+            return;
+        }
+        int tabIndex = tabControl.indexAtLocation(e.getX(), e.getY());
+        if (tabIndex < 0 || tabIndex >= fileManager.getFileEditors().size()) {
+            return;
+        }
+
+        JPopupMenu popup = new JPopupMenu();
+        FileEditor contextEditor = fileManager.getFileEditors().get(tabIndex);
+        JMenuItem setRunnable = new JMenuItem("Set as runnable file");
+        setRunnable.addActionListener(x -> {
+            if (contextEditor == null) {
+                return;
+            }
+            runTargetFollowsCurrentTab = false;
+            fileManager.setRunnableFileEditor(contextEditor);
+            refreshRunnableFileControls();
+        });
+        setRunnable.setEnabled(contextEditor != null);
+        popup.add(setRunnable);
+
+        JMenuItem splitPreview = new JMenuItem("Split right");
+        splitPreview.addActionListener(x -> openSplitPreview(tabIndex));
+        popup.add(splitPreview);
+
+        JMenuItem popOut = new JMenuItem("Pop out tab");
+        popOut.addActionListener(x -> popOutTab(tabIndex));
+        popup.add(popOut);
+
+        popup.show(tabControl, e.getX(), e.getY());
+    }
+
+    private void openSplitPreview(int tabIndex) {
+        if (tabIndex < 0 || tabIndex >= fileManager.getFileEditors().size()) {
+            return;
+        }
+        FileEditor editor = fileManager.getFileEditors().get(tabIndex);
+        if (editor == null) {
+            return;
+        }
+        File source = editor.getFile();
+        if (source == null) {
+            return;
+        }
+
+        FileEditor preview = FileEditor.open(source, this, fileManager, this, linkGenerator, searchContext);
+        preview.getEditorPane().setEditable(false);
+        splitTabControl.addTab(preview.getTitle() + " (split)", preview.getContentPane());
+        splitTabControl.setSelectedIndex(splitTabControl.getTabCount() - 1);
+        setEditorContent(getActiveEditorHost());
+        SwingUtilities.invokeLater(() -> editorSplitPane.setDividerLocation(0.68));
+    }
+
+    private void popOutTab(int tabIndex) {
+        if (tabIndex < 0 || tabIndex >= fileManager.getFileEditors().size()) {
+            return;
+        }
+        FileEditor editor = fileManager.getFileEditors().get(tabIndex);
+        if (editor == null) {
+            return;
+        }
+        File source = editor.getFile();
+        if (source == null) {
+            return;
+        }
+
+        FileEditor preview = FileEditor.open(source, this, fileManager, this, linkGenerator, searchContext);
+        preview.getEditorPane().setEditable(false);
+
+        JFrame popout = new JFrame("Pop out: " + preview.getShortFilename());
+        popout.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        popout.setLayout(new BorderLayout());
+        popout.add(preview.getContentPane(), BorderLayout.CENTER);
+        popout.setSize(new Dimension(720, 480));
+        popout.setLocationRelativeTo(frame);
+        popout.setVisible(true);
+    }
+
+    private void showCreateTabMenu(Component anchor) {
+        JPopupMenu popup = new JPopupMenu();
+
+        JMenuItem newTabItem = new JMenuItem("New Program Tab");
+        newTabItem.addActionListener(e -> addTab());
+        popup.add(newTabItem);
+
+        JMenuItem openAssetItem = new JMenuItem("Open Asset or Docs File...");
+        openAssetItem.addActionListener(e -> actionOpenAsset());
+        popup.add(openAssetItem);
+
+        popup.show(anchor, 0, anchor.getHeight());
+    }
+
+    private void actionOpenAsset() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new File(fileManager.getCurrentDirectory()));
+        int result = chooser.showOpenDialog(frame);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File selected = chooser.getSelectedFile();
+
+        openFileWithPreferredViewer(selected);
+    }
+
+    private void configureLeftSidebar() {
+        leftSidebarRail.setFloatable(false);
+        leftSidebarRail.setRollover(true);
+        bottomBarRail.setFloatable(false);
+        bottomBarRail.setRollover(true);
+
+        Arrays.stream(panels)
+                .filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
+                .forEach(x -> {
+                    leftSidebarContent.add(x.build(this.basicEditor), x.id());
+                    addLeftSidebarButton(
+                            x.id(),
+                            createImageIcon(x.getActiveIconPath(), x.getActiveIconTint()),
+                            createImageIcon(x.getInactiveIconPath()),
+                            x.getTitle());
+                });
+
+        Arrays.stream(panels)
+                .filter(x -> x.getLayoutConstraints() == EditorLayout.SOUTH)
+                .forEach(x -> {
+                    bottomBarContent.add(x.build(this.basicEditor), x.id());
+                    addBottomBarButton(
+                            x.id(),
+                            createImageIcon(x.getActiveIconPath(), x.getActiveIconTint()),
+                            createImageIcon(x.getInactiveIconPath()),
+                            x.getTitle());
+                });
+
+        bottomBarContainer.add(bottomBarContent, BorderLayout.CENTER);
+
+        // Select first panel if available
+        Arrays.stream(panels)
+                .filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
+                .findFirst()
+                .ifPresent(x -> {
+                    selectLeftSidebarSection(x.id(), true);
+                });
+    }
+
+    private void configureRightSidebar() {
+        rightDocsRail.setFloatable(false);
+        rightDocsRail.setRollover(true);
+        rightDocsContainer.add(rightDocsContent, BorderLayout.CENTER);
+        Arrays.stream(panels)
+                .filter(x -> x.getLayoutConstraints() == EditorLayout.EAST)
+                .forEach(x -> {
+                    addRightDocsButton(
+                            x.id(),
+                            createImageIcon(x.getActiveIconPath(), x.getActiveIconTint()),
+                            createImageIcon(x.getInactiveIconPath()),
+                            x.getTitle());
+                    JComponent content = x.build(this.basicEditor);
+                    if (content != null) {
+                        rightDocsContent.add(content, x.id());
+                    }
+                });
+
+        Arrays.stream(panels)
+                .filter(x -> x.getLayoutConstraints() == EditorLayout.EAST)
+                .findFirst()
+                .ifPresent(x -> selectRightDocsSection(x.id()));
+    }
+
+    private void addLeftSidebarButton(String key, Icon selectedIcon, Icon icon, String tooltip) {
+        JToggleButton button = createRailButton(selectedIcon, icon, tooltip);
+        button.addActionListener(e -> onLeftSidebarButtonPressed(key));
+        leftSidebarGroup.add(button);
+        leftSidebarButtons.put(key, button);
+        leftSidebarRail.add(button);
+    }
+
+    private void addRightDocsButton(String key, Icon selectedIcon, Icon icon, String tooltip) {
+        JToggleButton button = createRailButton(selectedIcon, icon, tooltip);
+        button.addActionListener(e -> onRightDocsButtonPressed(key));
+        rightDocsGroup.add(button);
+        rightDocsButtons.put(key, button);
+        rightDocsRail.add(button);
+    }
+
+    private void addBottomBarButton(String key, Icon selectedIcon, Icon icon, String tooltip) {
+        JToggleButton button = createRailButton(selectedIcon, icon, tooltip);
+        button.addActionListener(e -> onBottomBarButtonPressed(key));
+        bottomBarGroup.add(button);
+        bottomBarButtons.put(key, button);
+        bottomBarRail.add(button);
+    }
+
+    private JToggleButton createRailButton(Icon selectedIcon, Icon icon, String tooltip) {
+        JToggleButton button = new JToggleButton(icon);
+        button.setSelectedIcon(selectedIcon != null ? selectedIcon : icon);
+        button.setToolTipText(tooltip);
+        button.setFocusable(false);
+        button.setMargin(new Insets(8, 8, 8, 8));
+        button.setMaximumSize(new Dimension(38, 38));
+        button.setPreferredSize(new Dimension(38, 38));
+        return button;
+    }
+
+    private void onLeftSidebarButtonPressed(String key) {
+        if (Objects.equals(activeLeftSidebarKey, key) && isLeftSidebarExpanded()) {
+            collapseLeftSidebar();
+            return;
+        }
+        selectLeftSidebarSection(key, true);
+    }
+
+    private void onBottomBarButtonPressed(String key) {
+        if (Objects.equals(activeBottomBarKey, key) && isBottomBarExpanded()) {
+            collapseBottomBar();
+            return;
+        }
+        selectBottomBarSection(key, true);
+    }
+
+    private void selectLeftSidebarSection(String key, boolean ensureExpanded) {
+        CardLayout layout = (CardLayout) leftSidebarContent.getLayout();
+        layout.show(leftSidebarContent, key);
+        activeLeftSidebarKey = key;
+
+        JToggleButton button = leftSidebarButtons.get(key);
+        if (button != null) {
+            button.setSelected(true);
+        }
+
+        if (ensureExpanded) {
+            expandLeftSidebar();
+        }
+    }
+
+    private void selectBottomBarSection(String key, boolean ensureExpanded) {
+        if (!bottomBarButtons.containsKey(key)) {
+            return;
+        }
+        activeBottomBarKey = key;
+        CardLayout layout = (CardLayout) bottomBarContent.getLayout();
+        layout.show(bottomBarContent, key);
+        JToggleButton button = bottomBarButtons.get(key);
+        if (button != null) {
+            button.setSelected(true);
+        }
+
+        if (ensureExpanded) {
+            expandBottomBar();
+        }
+        syncDebugMenuSelection();
+    }
+
+    private boolean isLeftSidebarExpanded() {
+        return !leftSidebarCollapsed && workspacePane.getLeftComponent() == leftSidebarContent;
+    }
+
+    private void collapseLeftSidebar() {
+        if (workspacePane.getLeftComponent() == leftSidebarContent) {
+            int currentWidth = leftSidebarContent.getWidth();
+            if (currentWidth <= 12) {
+                currentWidth = workspacePane.getDividerLocation();
+            }
+            if (currentWidth > 12) {
+                expandedLeftSidebarWidth = currentWidth;
+            }
+        }
+
+        leftSidebarCollapsed = true;
+        activeLeftSidebarKey = null;
+        leftSidebarGroup.clearSelection();
+
+        workspacePane.setResizeWeight(0.0);
+        workspacePane.setDividerSize(0);
+        workspacePane.setLeftComponent(null);
+        workspacePane.revalidate();
+        workspacePane.repaint();
+    }
+
+    private void expandLeftSidebar() {
+        leftSidebarCollapsed = false;
+        if (workspacePane.getLeftComponent() != leftSidebarContent) {
+            workspacePane.setLeftComponent(leftSidebarContent);
+        }
+        workspacePane.setDividerSize(workspacePaneDividerSize);
+        workspacePane.setResizeWeight(0.18);
+        workspacePane.revalidate();
+
+        int target = Math.max(expandedLeftSidebarWidth, 180);
+        SwingUtilities.invokeLater(() -> {
+            if (!leftSidebarCollapsed && workspacePane.getLeftComponent() == leftSidebarContent) {
+                setDividerLocationClamped(workspacePane, target);
+            }
+        });
+    }
+
+    private boolean isBottomBarExpanded() {
+        return !bottomBarCollapsed && mainPane.getBottomComponent() == bottomBarContainer;
+    }
+
+    private void collapseBottomBar() {
+        if (mainPane.getBottomComponent() == bottomBarContainer) {
+            int currentHeight = bottomBarContainer.getHeight();
+            if (currentHeight <= 12 && mainPane.getHeight() > 0) {
+                currentHeight = mainPane.getHeight() - mainPane.getDividerLocation() - mainPane.getDividerSize();
+            }
+            if (currentHeight > 12) {
+                expandedBottomBarHeight = Math.max(120, currentHeight);
+            }
+        }
+
+        bottomBarCollapsed = true;
+        activeBottomBarKey = null;
+        bottomBarGroup.clearSelection();
+
+        mainPane.setResizeWeight(1.0);
+        mainPane.setDividerSize(0);
+        mainPane.setBottomComponent(null);
+        mainPane.revalidate();
+        mainPane.repaint();
+        syncDebugMenuSelection();
+    }
+
+    private void expandBottomBar() {
+        bottomBarCollapsed = false;
+        if (mainPane.getBottomComponent() != bottomBarContainer) {
+            mainPane.setBottomComponent(bottomBarContainer);
+        }
+        mainPane.setDividerSize(mainPaneDividerSize);
+        mainPane.setResizeWeight(1.0);
+        mainPane.revalidate();
+
+        int targetBottomHeight = Math.max(expandedBottomBarHeight, 140);
+        SwingUtilities.invokeLater(() -> {
+            if (!bottomBarCollapsed
+                    && mainPane.getBottomComponent() == bottomBarContainer
+                    && mainPane.getHeight() > 0) {
+                int newDivider = mainPane.getHeight() - targetBottomHeight - mainPane.getDividerSize();
+                setDividerLocationClamped(mainPane, newDivider);
+            }
+        });
+        syncDebugMenuSelection();
+    }
+
+    private void syncDebugMenuSelection() {
+        debugMenuItem.setSelected(isBottomBarExpanded() && Objects.equals(activeBottomBarKey, "debug"));
+    }
+
+    private void onRightDocsButtonPressed(String key) {
+        if (Objects.equals(activeRightDocsKey, key) && isRightDocsExpanded()) {
+            collapseRightDocs();
+            return;
+        }
+        selectRightDocsSection(key);
+    }
+
+    private void selectRightDocsSection(String key) {
+        if (!rightDocsButtons.containsKey(key)) {
+            return;
+        }
+        activeRightDocsKey = key;
+        CardLayout layout = (CardLayout) rightDocsContent.getLayout();
+        layout.show(rightDocsContent, key);
+
+        JToggleButton button = rightDocsButtons.get(key);
+        if (button != null) {
+            button.setSelected(true);
+        }
+
+        expandRightDocs();
+    }
+
+    private boolean isRightDocsExpanded() {
+        return !rightDocsCollapsed && contentPane.getRightComponent() == rightDocsContainer;
+    }
+
+    private void collapseRightDocs() {
+        if (contentPane.getRightComponent() == rightDocsContainer) {
+            int currentWidth = rightDocsContainer.getWidth();
+            if (currentWidth <= 12 && contentPane.getWidth() > 0) {
+                currentWidth = contentPane.getWidth() - contentPane.getDividerLocation() - contentPane.getDividerSize();
+            }
+            if (currentWidth > 12) {
+                expandedRightDocsWidth = currentWidth;
+            }
+        }
+
+        rightDocsCollapsed = true;
+        activeRightDocsKey = null;
+        rightDocsGroup.clearSelection();
+
+        contentPane.setResizeWeight(1.0);
+        contentPane.setDividerSize(0);
+        contentPane.setRightComponent(null);
+        contentPane.revalidate();
+        contentPane.repaint();
+    }
+
+    private void expandRightDocs() {
+        rightDocsCollapsed = false;
+        if (contentPane.getRightComponent() != rightDocsContainer) {
+            contentPane.setRightComponent(rightDocsContainer);
+        }
+        contentPane.setDividerSize(contentPaneDividerSize);
+        contentPane.setResizeWeight(0.74);
+        contentPane.revalidate();
+
+        int targetDocsWidth = Math.max(expandedRightDocsWidth, 220);
+        SwingUtilities.invokeLater(() -> {
+            if (!rightDocsCollapsed
+                    && contentPane.getRightComponent() == rightDocsContainer
+                    && contentPane.getWidth() > 0) {
+                int newDivider = contentPane.getWidth() - targetDocsWidth - contentPane.getDividerSize();
+                setDividerLocationClamped(contentPane, newDivider);
+            }
+        });
+    }
+
+    private void setDividerLocationClamped(JSplitPane splitPane, int requestedLocation) {
+        int minimum = splitPane.getMinimumDividerLocation();
+        int maximum = splitPane.getMaximumDividerLocation();
+        if (maximum < minimum) {
+            splitPane.setDividerLocation(requestedLocation);
+            return;
+        }
+        splitPane.setDividerLocation(Math.max(minimum, Math.min(requestedLocation, maximum)));
+    }
+
+    private void refreshSidebarContent() {
+        for (IEditorPanelProvider panel : panels) {
+            panel.refresh(this.basicEditor.getBasic4gl());
+        }
+    }
+
+    private void refreshRunnableFileControls() {
+        if (fileManager == null) {
+            return;
+        }
+
+        FileEditor currentEditor = getCurrentTextEditor();
+        if (runTargetFollowsCurrentTab && currentEditor != null) {
+            updateRunnableFileToCurrentTab(currentEditor);
+        }
+
+        runTargetButton.setText(getRunTargetButtonLabel(currentEditor));
+        runTargetButton.setEnabled(currentEditor != null || hasTextEditors());
+        rebuildRunTargetPopup(currentEditor);
+    }
+
+    private boolean hasTextEditors() {
+        for (int i = 0; i < fileManager.getFileEditors().size(); i++) {
+            if (fileManager.getFileEditors().get(i) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getRunTargetButtonLabel(FileEditor currentEditor) {
+        if (runTargetFollowsCurrentTab) {
+            return currentRunTargetLabel(currentEditor);
+        }
+
+        FileEditor runnableEditor = getTextEditorAt(fileManager.getRunnableFileIndex());
+        if (runnableEditor != null) {
+            return runnableEditor.getShortFilename();
+        }
+
+        return currentRunTargetLabel(currentEditor);
+    }
+
+    private String currentRunTargetLabel(FileEditor currentEditor) {
+        if (currentEditor == null) {
+            return "";
+        }
+        String name = currentEditor.getShortFilename();
+        return "Current Program [" + name + "]";
+    }
+
+    private void showRunTargetPopup() {
+        refreshRunnableFileControls();
+        runTargetPopup.show(runTargetButton, 0, runTargetButton.getHeight());
+    }
+
+    private void rebuildRunTargetPopup(FileEditor currentEditor) {
+        runTargetPopup.removeAll();
+        ButtonGroup runTargetGroup = new ButtonGroup();
+
+        JRadioButtonMenuItem currentItem = new JRadioButtonMenuItem(currentRunTargetLabel(currentEditor));
+        currentItem.setSelected(runTargetFollowsCurrentTab);
+        currentItem.addActionListener(e -> {
+            runTargetFollowsCurrentTab = true;
+            updateRunnableFileToCurrentTab(getCurrentTextEditor());
+            refreshRunnableFileControls();
+        });
+        runTargetGroup.add(currentItem);
+        runTargetPopup.add(currentItem);
+
+        if (hasTextEditors()) {
+            runTargetPopup.addSeparator();
+        }
+
+        FileEditor runnableEditor = getTextEditorAt(fileManager.getRunnableFileIndex());
+        for (int i = 0; i < fileManager.getFileEditors().size(); i++) {
+            FileEditor editor = fileManager.getFileEditors().get(i);
+            if (editor == null) {
+                continue;
+            }
+
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(editor.getShortFilename());
+            item.setSelected(!runTargetFollowsCurrentTab && editor == runnableEditor);
+            item.addActionListener(e -> {
+                runTargetFollowsCurrentTab = false;
+                fileManager.setRunnableFileEditor(editor);
+                refreshRunnableFileControls();
+            });
+            runTargetGroup.add(item);
+            runTargetPopup.add(item);
+        }
+    }
+
+    private void onSelectedTabChanged() {
+        refreshFileViewModeButtons();
+        if (runTargetFollowsCurrentTab) {
+            refreshRunnableFileControls();
+        } else {
+            rebuildRunTargetPopup(getCurrentTextEditor());
+        }
+    }
+
+    private FileEditor getCurrentTextEditor() {
+        return getTextEditorAt(tabControl.getSelectedIndex());
+    }
+
+    private FileEditor getTextEditorAt(int index) {
+        if (fileManager == null || index < 0 || index >= fileManager.getFileEditors().size()) {
+            return null;
+        }
+        return fileManager.getFileEditors().get(index);
+    }
+
+    private void updateRunnableFileToCurrentTab(FileEditor currentEditor) {
+        if (currentEditor != null) {
+            fileManager.setRunnableFileEditor(currentEditor);
+        } else {
+            fileManager.ensureRunnableFileValid();
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Symbol indexer support
+    // -------------------------------------------------------------------------
+
+    /**
+     * Concatenates the text of every open editor tab into a single string, separated by newlines.
+     * This gives the {@link SymbolIndexer} full visibility of all open files for the debounced
+     * background scan.
+     */
+    public String collectAllSourceText() {
+        if (fileManager == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (FileEditor fe : fileManager.getFileEditors()) {
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append(fe.getEditorPane().getText());
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public void selectNextBookmark() {
+        fileManager.selectNextBookmark(tabControl.getSelectedIndex());
+    }
+
+    @Override
+    public void selectPreviousBookmark() {
+        fileManager.selectPreviousBookmark(tabControl.getSelectedIndex());
+    }
+
+    @Override
+    public void toggleBookmark() {
+        fileManager.toggleBookmark(tabControl.getSelectedIndex());
+    }
+
+    @Override
+    public List<BookmarkInfo> listBookmarks() {
+        List<BookmarkInfo> bookmarks = new ArrayList<>();
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            if (editor == null) {
+                continue;
+            }
+            String filePath = editor.getFilePath();
+            String fileName = editor.getShortFilename();
+            for (FileEditor.BookmarkLine bookmark : editor.getBookmarks()) {
+                bookmarks.add(new BookmarkInfo(filePath, fileName, bookmark.lineNumber(), bookmark.lineText()));
+            }
+        }
+        bookmarks.sort(Comparator.comparing(BookmarkInfo::fileName, String.CASE_INSENSITIVE_ORDER)
+                .thenComparingInt(BookmarkInfo::lineNumber));
+        return bookmarks;
+    }
+
+    @Override
+    public void goToBookmark(String filePath, int lineNumber) {
+        int index = getTabIndex(filePath);
+        if (index == -1 && filePath != null && !filePath.isBlank()) {
+            File file = new File(filePath);
+            if (file.exists()) {
+                addTab(FileEditor.open(file, this, fileManager, this, linkGenerator, searchContext));
+                index = getTabIndex(filePath);
+            }
+        }
+        if (index < 0 || index >= fileManager.getFileEditors().size()) {
+            return;
+        }
+        tabControl.setSelectedIndex(index);
+        FileEditor editor = fileManager.getFileEditors().get(index);
+        if (editor != null) {
+            editor.goToLine(lineNumber);
+        }
+    }
+
+    private int findOpenTabIndexByPath(String absolutePath) {
+        if (absolutePath == null || absolutePath.isBlank()) {
+            return -1;
+        }
+        for (int i = 0; i < tabControl.getTabCount(); i++) {
+            IFileViewer viewer = getFileViewerAt(i);
+            if (viewer == null || viewer.getFilePath() == null) {
+                continue;
+            }
+            if (absolutePath.equals(viewer.getFilePath())) {
+                return i;
+            }
+        }
+        return fileManager.getTabIndex(absolutePath);
+    }
+
+    public void setWorkspaceDirectory(File folder) {
+        if (folder == null) {
+            return;
+        }
+        File absoluteFolder = folder.getAbsoluteFile();
+        if (!absoluteFolder.exists() || !absoluteFolder.isDirectory()) {
+            JOptionPane.showMessageDialog(frame, "Folder not found: " + absoluteFolder.getAbsolutePath());
+            return;
+        }
+        fileManager.setCurrentDirectory(absoluteFolder.getAbsolutePath());
+        registerWorkspace(absoluteFolder);
+        refreshSidebarContent();
+    }
+
+    @Override
+    public void insertText(String text, int caretOffset) {
+
+        int selectedTab = tabControl.getSelectedIndex();
+        if (selectedTab < 0 || selectedTab >= fileManager.getFileEditors().size()) {
+            return;
+        }
+        JTextArea editorPane = fileManager.getFileEditors().get(selectedTab).getEditorPane();
+        int insertStart = editorPane.getSelectionStart();
+        editorPane.replaceSelection(text);
+        editorPane.setCaretPosition(
+                Math.min(insertStart + caretOffset, editorPane.getDocument().getLength()));
+        editorPane.requestFocusInWindow();
+    }
+
+    private void registerWorkspace(File folder) {
+        if (folder == null) {
+            return;
+        }
+        File absolute = folder.getAbsoluteFile();
+        if (!absolute.exists() || !absolute.isDirectory()) {
+            return;
+        }
+        recentWorkspaces.removeIf(existing -> existing == null
+                || !existing.exists()
+                || existing.getAbsoluteFile().equals(absolute));
+        recentWorkspaces.add(0, absolute);
+        while (recentWorkspaces.size() > MAX_RECENT_WORKSPACES) {
+            recentWorkspaces.remove(recentWorkspaces.size() - 1);
+        }
+        saveRecentWorkspaces();
+        setRecentItems(basicEditor.getRecentFiles());
+        refreshEmptyStateRecentItems();
+    }
+
+    private void loadRecentWorkspaces() {
+        recentWorkspaces.clear();
+        File config = new File(applicationStoragePath, RECENT_WORKSPACES_FILE);
+        if (!config.exists()) {
+            return;
+        }
+        Properties properties = new Properties();
+        try (FileInputStream stream = new FileInputStream(config)) {
+            properties.load(stream);
+            String csv = properties.getProperty(RECENT_WORKSPACES_KEY, "");
+            for (String entry : csv.split(",")) {
+                if (entry == null || entry.isBlank()) {
+                    continue;
+                }
+                File folder = new File(entry.trim()).getAbsoluteFile();
+                if (folder.exists() && folder.isDirectory()) {
+                    recentWorkspaces.add(folder);
+                }
+                if (recentWorkspaces.size() >= MAX_RECENT_WORKSPACES) {
+                    break;
+                }
+            }
+        } catch (IOException ignored) {
+            // Ignore workspace history load errors to avoid interrupting startup.
+        }
+    }
+
+    private void saveRecentWorkspaces() {
+        File config = new File(applicationStoragePath, RECENT_WORKSPACES_FILE);
+        Properties properties = new Properties();
+        String csv = recentWorkspaces.stream()
+                .filter(Objects::nonNull)
+                .map(File::getAbsolutePath)
+                .distinct()
+                .limit(MAX_RECENT_WORKSPACES)
+                .reduce((a, b) -> a + "," + b)
+                .orElse("");
+        properties.setProperty(RECENT_WORKSPACES_KEY, csv);
+        try {
+            File parent = config.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+            try (FileOutputStream out = new FileOutputStream(config)) {
+                properties.store(out, "Recent workspaces");
+            }
+        } catch (IOException ignored) {
+            // Ignore workspace history save errors.
+        }
+    }
+
+    private void refreshEmptyStateRecentItems() {
+        if (!(emptyTabPanel instanceof EmptyTabPanel) || basicEditor == null) {
+            return;
+        }
+        if (basicEditor.getMode() != ApMode.AP_CLOSED) {
+            return;
+        }
+        emptyTabPanel = new EmptyTabPanel(
+                this,
+                newMenuItem.getAccelerator(),
+                openMenuItem.getAccelerator(),
+                openFolderMenuItem.getAccelerator(),
+                basicEditor.getRecentFiles(),
+                recentWorkspaces);
+        setEditorContent(emptyTabPanel);
     }
 
     private void setClosingTabsEnabled(boolean enabled) {
@@ -1617,6 +2898,13 @@ public class MainWindow
     }
 
     @Override
+    public void onBookmarksChanged(String filePath) {
+        for (IEditorPanelProvider panel : panels) {
+            panel.onFileModified(filePath);
+        }
+    }
+
+    @Override
     public void onNewClick() {
         actionNew();
     }
@@ -1628,12 +2916,24 @@ public class MainWindow
 
     @Override
     public void onOpenClick(File file) {
-        actionOpen(file);
+        openFileWithPreferredViewer(file);
+    }
+
+    @Override
+    public void onOpenFolderClick() {
+        actionOpenFolder();
+    }
+
+    @Override
+    public void onOpenWorkspaceClick(File folder) {
+        setWorkspaceDirectory(folder);
     }
 
     @Override
     public void onCurrentDirectoryChanged(String directory) {
         basicEditor.onCurrentDirectoryChanged(directory);
+        // TODO move into editor
+        refreshSidebarContent();
     }
 
     @Override

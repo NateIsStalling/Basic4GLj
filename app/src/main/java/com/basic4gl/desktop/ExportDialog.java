@@ -1,7 +1,7 @@
 package com.basic4gl.desktop;
 
 import com.basic4gl.compiler.util.IAssetExportBuilder;
-import com.basic4gl.desktop.editor.FileEditor;
+import com.basic4gl.desktop.content.FileEditor;
 import com.basic4gl.desktop.spi.*;
 import com.basic4gl.desktop.util.EditorSourceFile;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
@@ -21,8 +21,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * Created by Nate on 2/5/2015.
  */
 public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormPanel.IOnConfigurationChangeListener {
+
     private final CompilerService compiler;
     private final PreprocessorService preprocessor;
+    private final LanguageService languageService;
+
     private final Vector<FileEditor> fileEditors;
 
     private final JDialog dialog;
@@ -51,12 +54,14 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
             Frame parent,
             CompilerService compiler,
             PreprocessorService preprocessor,
+            LanguageService languageService,
             Vector<FileEditor> editors,
             String exportBaseDirectory,
             java.util.List<ProjectExportPage> contributedExportPages) {
 
         this.compiler = compiler;
         this.preprocessor = preprocessor;
+        this.languageService = languageService;
 
         fileEditors = editors;
         this.exportBaseDirectory = com.basic4gl.language.adapter.FileUtil.separatorsToSystem(exportBaseDirectory);
@@ -530,7 +535,7 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
                 continue;
             }
 
-            for (String literal : extractStringLiterals(text)) {
+            for (String literal : languageService.extractStringLiterals(text)) {
                 if (literal == null || literal.isBlank()) {
                     continue;
                 }
@@ -553,61 +558,6 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
         }
 
         return new ArrayList<>(detected);
-    }
-
-    static java.util.List<String> extractStringLiterals(String text) {
-        java.util.List<String> literals = new ArrayList<>();
-        if (text == null || text.isEmpty()) {
-            return literals;
-        }
-
-        int length = text.length();
-        int index = 0;
-        while (index < length) {
-            char ch = text.charAt(index);
-            if (ch != '"') {
-                index++;
-                continue;
-            }
-
-            StringBuilder literal = new StringBuilder();
-            index++;
-            boolean escaped = false;
-            boolean terminated = false;
-            while (index < length) {
-                char current = text.charAt(index++);
-                if (escaped) {
-                    if (current == '"' || current == '\\') {
-                        literal.append(current);
-                    } else {
-                        // Preserve non-quote escape sequences exactly as typed.
-                        literal.append('\\').append(current);
-                    }
-                    escaped = false;
-                    continue;
-                }
-
-                if (current == '\\') {
-                    escaped = true;
-                    continue;
-                }
-
-                if (current == '"') {
-                    literals.add(literal.toString());
-                    terminated = true;
-                    break;
-                }
-
-                literal.append(current);
-            }
-
-            // Unterminated string literal: discard and continue scanning.
-            if (!terminated) {
-                continue;
-            }
-        }
-
-        return literals;
     }
 
     private void export() {

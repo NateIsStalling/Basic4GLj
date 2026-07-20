@@ -1,0 +1,48 @@
+package com.basic4gl.desktop.editor;
+
+import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
+import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
+import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
+import com.basic4gl.desktop.content.ContentDocumentViewer;
+import java.io.File;
+import java.util.List;
+
+public interface IEditorPresenter {
+    void onModeChanged(ApMode mode, String statusMsg);
+
+    void onCompileSucceeded();
+
+    void refreshDebugDisplays(ApMode mode);
+
+    void placeCursorAtProcessed(final int line, int col);
+
+    void refreshActions(ApMode mode);
+
+    void onPause();
+
+    void onApplicationClosing();
+
+    void setCompilerStatus(String error);
+
+    void updateCallStack(StackTraceCallback message);
+
+    void updateVmViewCallStack(StackTraceCallback message);
+
+    void updateVmViewDisassembly(DisassembleCallback message);
+
+    void updateVmViewVariables(VariablesCallback message);
+
+    void updateEvaluateWatch(String evaluatedWatch, String result);
+
+    void updateVmViewVariableValue(String expression, String result);
+
+    void updateVmViewError(String scope, String message);
+
+    void refreshWatchList();
+
+    void setRecentItems(List<File> files);
+
+    void refreshSyntaxHighlighting();
+
+    void openDocumentationPreview(ContentDocumentViewer viewer);
+}

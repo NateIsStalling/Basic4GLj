@@ -3,7 +3,6 @@ plugins {
     id("com.diffplug.spotless") version "7.0.2"
 }
 apply plugin: "java"
-
 configurations {
     release.extendsFrom configurations.default
 }
@@ -96,6 +95,20 @@ dependencies {
     // for FlatDesktop Java 8 backports
     implementation 'com.formdev:flatlaf-extras:3.5.4'
 
+    implementation 'org.commonmark:commonmark:0.29.0'
+
+    def osName = System.getProperty("os.name").toLowerCase()
+    def osArch = System.getProperty("os.arch").toLowerCase()
+    def javafxPlatform = osName.contains("mac")
+            ? (osArch.contains("aarch64") || osArch.contains("arm64") ? "mac-aarch64" : "mac")
+            : (osName.contains("win") ? "win" : "linux")
+    implementation "org.openjfx:javafx-base:21.0.4:${javafxPlatform}"
+    implementation "org.openjfx:javafx-graphics:21.0.4:${javafxPlatform}"
+    implementation "org.openjfx:javafx-controls:21.0.4:${javafxPlatform}"
+    implementation "org.openjfx:javafx-media:21.0.4:${javafxPlatform}"
+    implementation "org.openjfx:javafx-swing:21.0.4:${javafxPlatform}"
+    implementation "org.openjfx:javafx-web:21.0.4:${javafxPlatform}"
+
     // for IS_OS_MAC flag for OS specific behavior
     implementation("org.apache.commons:commons-lang3:3.14.0")
 
@@ -104,7 +117,7 @@ dependencies {
     implementation ('javax.websocket:javax.websocket-api:1.0')
     implementation ('org.eclipse.jetty.websocket:javax-websocket-client-impl:9.4.49.v20220914')
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.1'
 }
 
 spotless {
@@ -118,6 +131,9 @@ spotless {
         formatAnnotations()
         trimTrailingWhitespace()
         endWithNewline()
+
+        // Exclude ANTLR-generated sources from formatting checks.
+        targetExclude fileTree("${project.buildDir}/generated-src")
     }
 }
 
@@ -161,7 +177,7 @@ task debugAll {
         run {
             args rootProject.ext.get("libraryJarPath"),
                 rootProject.ext.get("debugServerJarPath")
-             debug = true
+//             debug = true
         }
     }
 }

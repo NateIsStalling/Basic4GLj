@@ -19,8 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -132,20 +132,22 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
         directoryPanel.add(sourceBodyPanel, BorderLayout.CENTER);
 
-        pluginTableModel = new DefaultTableModel(new Object[] {"Enabled", "Name", "Source", "Version", "Description", "Details"}, 0) {
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 0) {
-                    return Boolean.class;
-                }
-                return String.class;
-            }
+        pluginTableModel =
+                new DefaultTableModel(
+                        new Object[] {"Enabled", "Name", "Source", "Version", "Description", "Details"}, 0) {
+                    @Override
+                    public Class<?> getColumnClass(int columnIndex) {
+                        if (columnIndex == 0) {
+                            return Boolean.class;
+                        }
+                        return String.class;
+                    }
 
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return (column == 0 || column == 5) && !isIncompatibleRow(row);
-            }
-        };
+                    @Override
+                    public boolean isCellEditable(int row, int column) {
+                        return (column == 0 || column == 5) && !isIncompatibleRow(row);
+                    }
+                };
         pluginTable = new JTable(pluginTableModel) {
             @Override
             public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
@@ -154,14 +156,12 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
                 if (isCellSelected(row, column)) {
                     component.setBackground(getSelectionBackground());
-                    component.setForeground(incompatible
-                            ? UIManager.getColor("Label.disabledForeground")
-                            : getSelectionForeground());
+                    component.setForeground(
+                            incompatible ? UIManager.getColor("Label.disabledForeground") : getSelectionForeground());
                 } else {
                     component.setBackground(getBackground());
-                    component.setForeground(incompatible
-                            ? UIManager.getColor("Label.disabledForeground")
-                            : getForeground());
+                    component.setForeground(
+                            incompatible ? UIManager.getColor("Label.disabledForeground") : getForeground());
                 }
                 component.setEnabled(true);
                 return component;
@@ -313,7 +313,8 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
                 pluginSourceListModel.addElement(initialDirectory);
             }
         }
-        List<String> recentDirectories = recentDirectoriesSupplier == null ? List.of() : recentDirectoriesSupplier.get();
+        List<String> recentDirectories =
+                recentDirectoriesSupplier == null ? List.of() : recentDirectoriesSupplier.get();
         if (recentDirectories != null) {
             for (String directory : recentDirectories) {
                 addSourceIfMissing(normalizeNullable(directory));
@@ -413,9 +414,9 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
         pluginManager.setDirectories(directories);
         List<PluginJARFile> jarFiles = new ArrayList<>(pluginManager.getJARFiles());
-        jarFiles.sort(Comparator
-                .comparing((PluginJARFile file) -> sourceSortIndex(file.getSourceDirectory(), directories))
-                .thenComparing(PluginJARFile::getFilename, String.CASE_INSENSITIVE_ORDER));
+        jarFiles.sort(
+                Comparator.comparing((PluginJARFile file) -> sourceSortIndex(file.getSourceDirectory(), directories))
+                        .thenComparing(PluginJARFile::getFilename, String.CASE_INSENSITIVE_ORDER));
         pluginDisplayNamesByRowKey.clear();
         incompatiblePluginRows.clear();
         boolean showUnsupported = showUnsupportedCheckbox == null || showUnsupportedCheckbox.isSelected();
@@ -433,8 +434,10 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             if (displayName != null) {
                 pluginDisplayNamesByRowKey.put(rowKey, displayName);
             }
-            String version =
-                    file.getVersion() == null ? "-" : file.getVersion().getMajorVersion() + "." + file.getVersion().getMinorVersion();
+            String version = file.getVersion() == null
+                    ? "-"
+                    : file.getVersion().getMajorVersion() + "."
+                            + file.getVersion().getMinorVersion();
             String rowDescription = resolveDescription(file);
             pluginTableModel.addRow(new Object[] {
                 file.isLoaded() && file.isCompatible(),
@@ -471,8 +474,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             String sourceDirectory = (String) pluginTableModel.getValueAt(i, 2);
             if (filename != null && !filename.isBlank()) {
                 desiredLoadStates.put(
-                        buildRowKey(filename, sourceDirectory),
-                        Boolean.TRUE.equals(pluginTableModel.getValueAt(i, 0)));
+                        buildRowKey(filename, sourceDirectory), Boolean.TRUE.equals(pluginTableModel.getValueAt(i, 0)));
             }
         }
         return desiredLoadStates;
@@ -492,9 +494,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             Boolean desired = desiredLoadStates.get(buildRowKey(filename, sourceDirectory));
             if (desired != null) {
                 pluginTableModel.setValueAt(
-                        desired && !isIncompatibleRowKey(buildRowKey(filename, sourceDirectory)),
-                        i,
-                        0);
+                        desired && !isIncompatibleRowKey(buildRowKey(filename, sourceDirectory)), i, 0);
             }
         }
         suppressPluginTableEvents = false;
@@ -571,8 +571,10 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
             return;
         }
 
-        String version =
-                jarFile.getVersion() == null ? "-" : jarFile.getVersion().getMajorVersion() + "." + jarFile.getVersion().getMinorVersion();
+        String version = jarFile.getVersion() == null
+                ? "-"
+                : jarFile.getVersion().getMajorVersion() + "."
+                        + jarFile.getVersion().getMinorVersion();
         String description = resolveDescription(jarFile);
         String rowKey = buildRowKey(filename, sourceDirectory);
         if (!jarFile.isCompatible()) {
@@ -761,7 +763,8 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
         metadataPanel.add(new JLabel("Summary:"), gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        String summaryText = details.getMetadataSummary() == null || details.getMetadataSummary().isBlank()
+        String summaryText = details.getMetadataSummary() == null
+                        || details.getMetadataSummary().isBlank()
                 ? "-"
                 : details.getMetadataSummary();
         JLabel summaryLabel = new JLabel(summaryText);
@@ -788,7 +791,8 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        String metadataDetailsText = details.getMetadataDetails() == null || details.getMetadataDetails().isBlank()
+        String metadataDetailsText = details.getMetadataDetails() == null
+                        || details.getMetadataDetails().isBlank()
                 ? "-"
                 : details.getMetadataDetails();
         JLabel metadataDetailsLabel = new JLabel(formatMetadataDetailsHtml(metadataDetailsText));
@@ -821,10 +825,7 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
     }
 
     private String escapeHtml(String value) {
-        return value
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;");
+        return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     private JScrollPane createListPane(List<String> entries) {
@@ -850,7 +851,8 @@ public class PluginManagerProjectSettingsPage implements ProjectSettingsPage {
 
     private class PluginNameRenderer extends DefaultTableCellRenderer {
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             String filename = value == null ? "" : value.toString();
             String display = filename;
             int modelRow = table.convertRowIndexToModel(row);

@@ -8,10 +8,23 @@ import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.debug.protocol.types.DisassembledInstruction;
 import com.basic4gl.debug.protocol.types.Variable;
+import com.basic4gl.desktop.content.ContentDocumentViewer;
+import com.basic4gl.desktop.content.ContentMaterializer;
+import com.basic4gl.desktop.content.FileEditor;
+import com.basic4gl.desktop.content.FileManager;
+import com.basic4gl.desktop.content.TemplateInstantiator;
+import com.basic4gl.desktop.content.catalog.ContentCatalog;
+import com.basic4gl.desktop.content.catalog.DefaultContentService;
+import com.basic4gl.desktop.content.catalog.DocumentCatalogEntry;
+import com.basic4gl.desktop.content.catalog.TemplateCatalogEntry;
 import com.basic4gl.desktop.debugger.*;
+import com.basic4gl.desktop.editor.ApMode;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
-import com.basic4gl.desktop.editor.FileEditor;
+import com.basic4gl.desktop.editor.IEditorPresenter;
 import com.basic4gl.desktop.spi.*;
+import com.basic4gl.desktop.spi.content.ContentDocument;
+import com.basic4gl.desktop.spi.content.ContentService;
+import com.basic4gl.desktop.spi.language.LanguageSupport;
 import com.basic4gl.desktop.util.*;
 import com.basic4gl.language.adapter.Basic4GLEditorPluginAdapter;
 import com.basic4gl.language.core.runtime.CallbackMessage;
@@ -20,12 +33,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import javax.swing.SwingUtilities;
 import org.apache.commons.lang3.SystemUtils;
 
-public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider, PluginContext {
+public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider, PluginContext, DebugController {
 
     private static final int GLOBAL_VARIABLES_PAGE_SIZE = 128;
     private static final int MEMORY_VARIABLES_PAGE_SIZE = 64;
@@ -77,14 +91,29 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     private String libraryPath;
 
     private final Basic4GLEditorPluginAdapter basic4gl;
+    private final DialogService dialogService;
+    private final EditorCommandsService commandsService;
+    private final ContentCatalog contentCatalog = new ContentCatalog();
+    private final ContentService contentService;
+    private final ContentMaterializer contentMaterializer =
+            new ContentMaterializer(Path.of(System.getProperty("user.home"), ".basic4glj", "cache"));
+    private final TemplateInstantiator templateInstantiator = new TemplateInstantiator();
 
     public BasicEditor(
-            String libraryPath, FileManager fileManager, IEditorPresenter presenter, MenuService menuService) {
+            String libraryPath,
+            FileManager fileManager,
+            IEditorPresenter presenter,
+            DialogService dialogService,
+            MenuService menuService,
+            EditorCommandsService commandsService) {
         this.libraryPath = libraryPath;
         this.fileManager = fileManager;
         this.presenter = presenter;
+        this.dialogService = dialogService;
         this.menuService = menuService;
+        this.commandsService = commandsService;
         this.basic4gl = new Basic4GLEditorPluginAdapter(this);
+        this.contentService = new DefaultContentService(contentCatalog, basic4gl.getId(), basic4gl.getName());
         this.basic4gl.setOnPluginStateChanged(this::refreshSyntaxHighlighting);
         this.basic4gl.setOnPluginDirectoryHistoryChanged(this::syncPluginDirectorySettings);
     }
@@ -107,21 +136,12 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         BasicTokenMaker.functions.clear();
         BasicTokenMaker.constants.clear();
         BasicTokenMaker.operators.clear();
-        for (String s : basic4gl.getLanguage().getReservedWords()) {
-            BasicTokenMaker.reservedWords.add(s);
-        }
 
-        for (String s : basic4gl.getLanguage().getConstants()) {
-            BasicTokenMaker.constants.add(s);
-        }
+        BasicTokenMaker.reservedWords.addAll(basic4gl.getLanguage().getReservedWords());
+        BasicTokenMaker.constants.addAll(basic4gl.getLanguage().getConstants());
+        BasicTokenMaker.functions.addAll(basic4gl.getLanguage().getFunctions());
+        BasicTokenMaker.operators.addAll(basic4gl.getLanguage().getOperators());
 
-        for (String s : basic4gl.getLanguage().getFunctions()) {
-            BasicTokenMaker.functions.add(s);
-        }
-
-        for (String s : basic4gl.getLanguage().getOperators()) {
-            BasicTokenMaker.operators.add(s);
-        }
         presenter.refreshSyntaxHighlighting();
     }
 
@@ -231,6 +251,9 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
 
     @Override
     public boolean toggleBreakpt(String filename, int line) {
+        if (vmWorker == null) {
+            return false;
+        }
         return vmWorker.toggleBreakpoint(filename, line);
     }
 
@@ -263,8 +286,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
 
     // Compilation and execution routines
     public boolean loadProgramIntoCompiler() {
-        // TODO Get editor assigned as main file
-        int mainFiledIndex = 0;
+        int mainFiledIndex = fileManager.getRunnableFileIndex();
+        if (mainFiledIndex < 0) {
+            return false;
+        }
 
         return basic4gl.getPreprocessor()
                 .preprocess(new EditorSourceFile(
@@ -318,6 +343,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         // TODO Reset file directory
         // SetCurrentDir(mRunDirectory);
 
+        presenter.onCompileSucceeded();
         return true;
     }
 
@@ -1082,15 +1108,57 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     }
 
     @Override
-    public DialogService dialogs() {
+    public EditorCommandsService commands() {
+        return commandsService;
+    }
 
-        // TODO implement dialogs for plugins
-        return null;
+    @Override
+    public DebugController debugger() {
+        return this;
+    }
+
+    @Override
+    public DialogService dialogs() {
+        return dialogService;
     }
 
     @Override
     public MenuService menus() {
         return menuService;
+    }
+
+    @Override
+    public ContentService content() {
+        return contentService;
+    }
+
+    public ContentCatalog contentCatalog() {
+        return contentCatalog;
+    }
+
+    public void openContentDocument(DocumentCatalogEntry entry) {
+        try {
+            ContentDocument document =
+                    entry.provider().openDocument(entry.descriptor().id());
+            Path materializedRoot = contentMaterializer.materialize(
+                    entry.globalId().pluginId(),
+                    entry.globalId().providerId(),
+                    entry.providerVersion(),
+                    document.source());
+            presenter.openDocumentationPreview(new ContentDocumentViewer(
+                    entry.globalId().value(), entry.descriptor().title(), document, materializedRoot));
+        } catch (IOException | RuntimeException ex) {
+            dialogService.showDialog("Unable to open documentation: " + ex.getMessage());
+        }
+    }
+
+    public void instantiateTemplate(TemplateCatalogEntry entry, Path destination, String projectName) {
+        try {
+            Optional<Path> entryPoint = templateInstantiator.instantiate(entry, destination, projectName, Map.of());
+            entryPoint.ifPresent(path -> commandsService.openFileWithPreferredViewer(path.toFile()));
+        } catch (IOException | RuntimeException ex) {
+            dialogService.showDialog("Unable to create sample: " + ex.getMessage());
+        }
     }
 
     @Override
@@ -1117,6 +1185,11 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     }
 
     @Override
+    public EditorPlugin currentEditor() {
+        return basic4gl;
+    }
+
+    @Override
     public String getLibraryPath() {
         return libraryPath;
     }
@@ -1137,6 +1210,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
     }
 
     public void onCloseAll() {
+        contentCatalog.unregisterPlugin(basic4gl.getId());
         basic4gl.onCloseAll();
     }
 
@@ -1154,6 +1228,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
 
     public LanguageService getLanguageService() {
         return basic4gl.getLanguage();
+    }
+
+    public LanguageSupport getLanguageSupport() {
+        return basic4gl.getLanguageSupport();
     }
 
     public List<Builder> getBuilders() {
@@ -1435,7 +1513,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         syncPluginDirectorySettings();
     }
 
-    public void onFileOpened(com.basic4gl.desktop.editor.FileEditor editor) {
+    public void onFileOpened(FileEditor editor) {
         if (editor == null || editor.getEditorPane() == null) {
             return;
         }
@@ -1443,7 +1521,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         refreshSyntaxHighlighting();
     }
 
-    public void onFileSaving(com.basic4gl.desktop.editor.FileEditor editor) {
+    public void onFileSaving(FileEditor editor) {
         if (editor == null || editor.getEditorPane() == null) {
             return;
         }
