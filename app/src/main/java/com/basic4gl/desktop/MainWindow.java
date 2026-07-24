@@ -1137,12 +1137,9 @@ public class MainWindow
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                if (e.getLength() == 0) {
-                    // ignore empty changes - eg: syntax highlighting refreshed
-                    return;
-                }
+                // RSyntaxDocument fires a 0..length CHANGE when the token maker is swapped.
+                // Plain-text model: no characters moved. Ignore changes for modification flag.
                 int index = getTabIndex(edit.getFilePath());
-                edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
             }
         });
