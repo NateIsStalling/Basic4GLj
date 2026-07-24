@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app-spi/Basic4GL.app-spi.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app-spi/Basic4GL.app-spi.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/debugProtocol/Basic4GL.debugProtocol.main.iml" filepath="$PROJECT_DIR$/.idea/modules/debugProtocol/Basic4GL.debugProtocol.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/language-adapter/Basic4GL.language-adapter.main.iml" filepath="$PROJECT_DIR$/.idea/modules/language-adapter/Basic4GL.language-adapter.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/language-adapter/Basic4GL.language-adapter.test.iml" filepath="$PROJECT_DIR$/.idea/modules/language-adapter/Basic4GL.language-adapter.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/debugProtocol.iml" filepath="$PROJECT_DIR$/.idea/modules/debugProtocol.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/debugServer.iml" filepath="$PROJECT_DIR$/.idea/modules/debugServer.iml" />
     </modules>

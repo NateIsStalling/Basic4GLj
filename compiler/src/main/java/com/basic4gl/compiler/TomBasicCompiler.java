@@ -742,6 +742,13 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
     public boolean isOperator(String text) {
         return isBinaryOperator(text) || isUnaryOperator(text);
     }
+    /**
+     * Returns an unmodifiable view of the label names defined in the compiled program.
+     * Labels are GoSub/Goto targets (e.g. "myLabel:").
+     */
+    public Set<String> getLabelNames() {
+        return Collections.unmodifiableSet(labels.keySet());
+    }
 
     public long getTokenLine() {
         return token.getLine();

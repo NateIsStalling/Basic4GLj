@@ -1,6 +1,19 @@
 package com.basic4gl.desktop.spi;
 
+import com.basic4gl.desktop.spi.language.LanguageSupport;
+
 public abstract class EditorPlugin {
+    public String getId() {
+        String pluginName = getName();
+        String normalizedName = pluginName == null
+                ? ""
+                : pluginName.trim().replaceAll("\\s+", "-").toLowerCase();
+        if (normalizedName.isBlank()) {
+            return getClass().getName();
+        }
+        return getClass().getName() + ":" + normalizedName;
+    }
+
     public abstract String getName();
 
     public abstract String getDescription();
@@ -37,8 +50,10 @@ public abstract class EditorPlugin {
     public abstract CompilerService getCompiler();
 
     public abstract PreprocessorService getPreprocessor();
-
+    // TODO this should be renamed
     public abstract LanguageService getLanguage();
+    // TODO this should be renamed
+    public abstract LanguageSupport getLanguageSupport();
 
     public abstract DebugService getDebug();
 
