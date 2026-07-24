@@ -3,6 +3,8 @@ plugins {
     id("com.diffplug.spotless") version "7.0.2"
 }
 
+apply plugin: "antlr"
+
 group = 'com.basic4gl'
 version = '1.0-SNAPSHOT'
 
@@ -10,7 +12,21 @@ repositories {
     mavenCentral()
 }
 
+// Generate ANTLR lexer sources into the correct package directory so that
+// IDEs resolve the generated class immediately after the first build.
+generateGrammarSource {
+    maxHeapSize = "64m"
+    arguments += ["-package", "com.basic4gl.language.adapter.antlr", "-long-messages"]
+    // Keep generated sources alongside other build outputs; Spotless ignores build/
+    outputDirectory =
+            file("${project.buildDir}/generated-src/antlr/main/com/basic4gl/language/adapter/antlr")
+}
+
 dependencies {
+    // ANTLR4: code generator (build-time only) + runtime JAR shipped with the app
+    antlr "org.antlr:antlr4:4.13.2"
+    implementation "org.antlr:antlr4-runtime:4.13.2"
+
     implementation project(":app-runtime")
     implementation project(":app-spi")
     implementation project(":language-core")
@@ -24,7 +40,10 @@ dependencies {
     implementation 'com.formdev:flatlaf-extras:3.5.4'
 
     testImplementation platform('org.junit:junit-bom:6.0.0')
+
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.6.0'
+
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

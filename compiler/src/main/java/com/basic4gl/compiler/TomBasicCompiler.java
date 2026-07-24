@@ -742,6 +742,13 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
     public boolean isOperator(String text) {
         return isBinaryOperator(text) || isUnaryOperator(text);
     }
+    /**
+     * Returns an unmodifiable view of the label names defined in the compiled program.
+     * Labels are GoSub/Goto targets (e.g. "myLabel:").
+     */
+    public Set<String> getLabelNames() {
+        return Collections.unmodifiableSet(labels.keySet());
+    }
 
     public long getTokenLine() {
         return token.getLine();
@@ -895,8 +902,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         // Remove global function name->index records
         // (Can detect them as any global function with an invalid function index)
         for (Iterator<Map.Entry<String, Integer>> it =
-                        globalUserFunctionIndex.entrySet().iterator();
-                it.hasNext(); ) {
+             globalUserFunctionIndex.entrySet().iterator();
+             it.hasNext(); ) {
             Map.Entry<String, Integer> entry = it.next();
             if (entry.getValue() >= rollbackPoint.getVmRollback().functionCount) {
                 it.remove();
@@ -905,8 +912,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
 
         // Remove function index->name records (used for debugging)
         for (Iterator<Map.Entry<Integer, String>> it =
-                        userFunctionReverseIndex.entrySet().iterator();
-                it.hasNext(); ) {
+             userFunctionReverseIndex.entrySet().iterator();
+             it.hasNext(); ) {
             Map.Entry<Integer, String> entry = it.next();
             if (entry.getKey() >= rollbackPoint.getVmRollback().functionCount) {
                 it.remove();
@@ -917,8 +924,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         runtimeFunctions.setSize(rollbackPoint.getRuntimeFunctionCount());
 
         for (Iterator<Map.Entry<String, Integer>> it =
-                        runtimeFunctionIndex.entrySet().iterator();
-                it.hasNext(); ) {
+             runtimeFunctionIndex.entrySet().iterator();
+             it.hasNext(); ) {
             Map.Entry<String, Integer> entry = it.next();
             if (entry.getValue() >= rollbackPoint.getRuntimeFunctionCount()) {
                 it.remove();
@@ -2194,7 +2201,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
                 // data (not pointer to
                 // pointer e.t.c)
                 && (regType.arrayLevel > 0 // Array
-                        || regType.basicType >= 0)) { // or structure
+                || regType.basicType >= 0)) { // or structure
             regType.isByRef = true;
             return true;
         }
@@ -2861,9 +2868,9 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         // (and emitting the appropriate runtime check if necessary)
         if (basictype == BasicValType.VTP_FUNC_PTR
                 && (regType.getPhysicalPointerLevel() == 0 && regType.basicType == BasicValType.VTP_FUNC_PTR
-                        || regType.getPhysicalPointerLevel() == 0
-                                && regType.basicType == BasicValType.VTP_UNTYPED_FUNC_PTR
-                        || regType.getPhysicalPointerLevel() == 1 && regType.isNull())) {
+                || regType.getPhysicalPointerLevel() == 0
+                && regType.basicType == BasicValType.VTP_UNTYPED_FUNC_PTR
+                || regType.getPhysicalPointerLevel() == 1 && regType.isNull())) {
             return true;
         }
 
@@ -3552,8 +3559,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
                 + loopVarUnprefixed
                 + " + "
                 + (stepType == BasicValType.VTP_INT
-                        ? String.valueOf(stepValue.getIntVal())
-                        : String.valueOf(stepValue.getRealVal()));
+                ? String.valueOf(stepValue.getIntVal())
+                : String.valueOf(stepValue.getRealVal()));
 
         // Create flow control structure
         flowControls.add(new FlowControl(
@@ -4018,7 +4025,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
             // Traditional syntax: Don't require brackets for subs or no-param functions
             if ((syntax == LS_TRADITIONAL || syntax == LS_TRADITIONAL_SUFFIX)
                     && (!fn.getSpecification().isFunction()
-                            || fn.getSpecification().getParamTypes().getParams().isEmpty())) {
+                    || fn.getSpecification().getParamTypes().getParams().isEmpty())) {
                 return false;
             }
             return true;
@@ -4052,22 +4059,22 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
 
         while (functionCount > 0
                 && ((type == FunctionType.FT_NORMAL
-                                && !token.getText().equals(")")
-                                && !atSeparatorOrSpecial()
-                                && !isNoParamFunction) // Exit criteria for normal functions
-                        || (type == FunctionType.FT_OPERATOR_UNARY && count < 1) // Exit criteria for unary functions
-                        || (type == FunctionType.FT_OPERATOR_BINARY
-                                && count < 2))) { // Exit criteria for binary functions
+                && !token.getText().equals(")")
+                && !atSeparatorOrSpecial()
+                && !isNoParamFunction) // Exit criteria for normal functions
+                || (type == FunctionType.FT_OPERATOR_UNARY && count < 1) // Exit criteria for unary functions
+                || (type == FunctionType.FT_OPERATOR_BINARY
+                && count < 2))) { // Exit criteria for binary functions
 
             // Trim functions with less parameters than we have found
             int src, dst;
             dst = 0;
             for (src = 0; src < functionCount; src++) {
                 if (functions[src]
-                                .getSpecification()
-                                .getParamTypes()
-                                .getParams()
-                                .size()
+                        .getSpecification()
+                        .getParamTypes()
+                        .getParams()
+                        .size()
                         > count) {
                     functions[dst++] = functions[src];
                 }
@@ -5003,9 +5010,9 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
                     extFunctions[i].getSpecification().getParamTypes().getParams();
             if ((params.isEmpty() && !hasParam)
                     || (params.size() == 1
-                            && hasParam
-                            && (paramBasicValType == BasicValType.VTP_UNDEFINED
-                                    || params.get(0).basicType == paramBasicValType))) {
+                    && hasParam
+                    && (paramBasicValType == BasicValType.VTP_UNDEFINED
+                    || params.get(0).basicType == paramBasicValType))) {
                 return extFunctions[i];
             }
         }
@@ -5022,9 +5029,9 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
                 Vector<ValType> params = spec.getParamTypes().getParams();
                 if ((params.isEmpty() && !hasParam)
                         || (params.size() == 1
-                                && hasParam
-                                && (paramBasicValType == BasicValType.VTP_UNDEFINED
-                                        || params.get(0).basicType == paramBasicValType))) {
+                        && hasParam
+                        && (paramBasicValType == BasicValType.VTP_UNDEFINED
+                        || params.get(0).basicType == paramBasicValType))) {
                     result.setSpecification(spec);
                     return result;
                 }
@@ -5100,7 +5107,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         // Find print/printr function
         boolean newLine = forceNewLine
                 || ((syntax == LS_TRADITIONAL || syntax == LS_TRADITIONAL_PRINT || syntax == LS_TRADITIONAL_SUFFIX)
-                        && !foundSemiColon);
+                && !foundSemiColon);
 
         if (!newLine && operandCount == 0) // Nothing to print?
         {

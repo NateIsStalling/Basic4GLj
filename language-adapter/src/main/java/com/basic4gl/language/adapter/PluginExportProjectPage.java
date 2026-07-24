@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Supplier;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
@@ -181,7 +180,8 @@ public class PluginExportProjectPage implements ProjectExportPage {
         chooser.setMultiSelectionEnabled(true);
         chooser.setFileFilter(new FileNameExtensionFilter("Plugin JAR Files", "jar"));
 
-        String initialDirectory = defaultDirectorySupplier == null ? null : normalizePluginPath(defaultDirectorySupplier.get());
+        String initialDirectory =
+                defaultDirectorySupplier == null ? null : normalizePluginPath(defaultDirectorySupplier.get());
         if (initialDirectory != null) {
             File initialDirFile = new File(initialDirectory);
             File directory = initialDirFile.isDirectory() ? initialDirFile : initialDirFile.getParentFile();
@@ -232,7 +232,8 @@ public class PluginExportProjectPage implements ProjectExportPage {
             if (sourceDirectory == null || sourceDirectory.isBlank() || filename == null || filename.isBlank()) {
                 continue;
             }
-            String normalizedPath = normalizePluginPath(Path.of(sourceDirectory, filename).toString());
+            String normalizedPath =
+                    normalizePluginPath(Path.of(sourceDirectory, filename).toString());
             if (normalizedPath != null) {
                 merged.add(normalizedPath);
             }
@@ -307,11 +308,7 @@ public class PluginExportProjectPage implements ProjectExportPage {
     private static class PluginPathRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(
-                JList<?> list,
-                Object value,
-                int index,
-                boolean isSelected,
-                boolean cellHasFocus) {
+                JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             String path = value == null ? "" : value.toString();
             String filename = path;

@@ -1,5 +1,7 @@
 package com.basic4gl.language.adapter;
 
+import static com.basic4gl.app.desktop.config.StandaloneSettings.*;
+
 import com.basic4gl.app.desktop.GLTextGridWindow;
 import com.basic4gl.app.desktop.config.IStandaloneSettings;
 import com.basic4gl.app.desktop.config.StandaloneCommandLineOptionsParser;
@@ -8,22 +10,20 @@ import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.desktop.spi.Configuration;
 import com.basic4gl.desktop.spi.Target;
 import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
-
 import java.io.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.basic4gl.app.desktop.config.StandaloneSettings.*;
-
 public class DesktopTarget implements Target, ITargetCommandLineOptions {
     private final StandaloneCommandLineOptionsParser cliParser = new StandaloneCommandLineOptionsParser();
     private TomBasicCompiler compiler;
 
     public DesktopTarget(TomBasicCompiler compiler) {
-        this.compiler =  compiler;
+        this.compiler = compiler;
     }
+
     private final IStandaloneSettings settings =
             new StandaloneSettings(); // settings specific to standalone application
     private com.basic4gl.language.core.runtime.Configuration configuration; // runtime configuration for this library
@@ -86,20 +86,18 @@ public class DesktopTarget implements Target, ITargetCommandLineOptions {
     }
 
     @Override
-    public void cleanup() {
-
-    }
+    public void cleanup() {}
 
     public Type getMainClass() {
         return GLTextGridWindow.class;
     }
 
-
     @Override
     public List<String> getDependencies() {
 
         // Get settings
-        com.basic4gl.language.core.runtime.Configuration config = ConfigurationMapper.toRuntimeConfiguration(getConfiguration());
+        com.basic4gl.language.core.runtime.Configuration config =
+                ConfigurationMapper.toRuntimeConfiguration(getConfiguration());
 
         List<String> list = new ArrayList<>();
 
@@ -236,12 +234,9 @@ public class DesktopTarget implements Target, ITargetCommandLineOptions {
                 "paulscode-soundsystem-lwjgl3.jar");
     }
 
-    public void reset() {
+    public void reset() {}
 
-    }
-
-    public void init(FileOpenerAdapter fileOpenerAdapter) {
-    }
+    public void init(FileOpenerAdapter fileOpenerAdapter) {}
 
     @Override
     public String getConfigFilePathCommandLineOption() {

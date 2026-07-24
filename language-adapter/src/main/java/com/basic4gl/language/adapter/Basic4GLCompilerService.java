@@ -1,6 +1,5 @@
 package com.basic4gl.language.adapter;
 
-import com.basic4gl.app.desktop.GLTextGridWindow;
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.types.LanguageSyntax;
@@ -13,7 +12,6 @@ import com.basic4gl.language.core.extensions.Library;
 import com.basic4gl.language.core.runtime.IServiceCollection;
 import com.basic4gl.library.desktopgl.content.FileOpener;
 import com.basic4gl.library.desktopgl.content.IFileAccess;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,8 +64,8 @@ public class Basic4GLCompilerService implements CompilerService {
         libraries.add(new com.basic4gl.library.desktopgl.SoundBasicLib());
         libraries.add(new com.basic4gl.library.standard.TomCompilerBasicLib());
 
-//        targets.add(GLTextGridWindow.getInstance(compiler));
-//        builders.add(BuilderDesktopGL.getInstance(compiler));
+        //        targets.add(GLTextGridWindow.getInstance(compiler));
+        //        builders.add(BuilderDesktopGL.getInstance(compiler));
 
         FileOpener fileOpener = new FileOpener(context.files().getParentDirectory());
         // TODO Add more libraries
@@ -87,9 +85,7 @@ public class Basic4GLCompilerService implements CompilerService {
     }
 
     @Override
-    public void onUnload() {
-
-    }
+    public void onUnload() {}
 
     @Override
     public void compile() {
