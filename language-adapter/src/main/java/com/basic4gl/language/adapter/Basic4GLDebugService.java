@@ -2,14 +2,12 @@ package com.basic4gl.language.adapter;
 
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.desktop.spi.IProcessExitListener;
-import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.spi.Builder;
+import com.basic4gl.desktop.spi.PluginContext;
 import com.basic4gl.desktop.spi.Target;
 import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.library.desktopgl.util.ITargetCommandLineOptions;
 import com.basic4gl.runtime.Debugger;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.nio.file.Path;
@@ -38,7 +36,8 @@ public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugServi
     private IAppSettings appSettings;
     public Debugger debugger;
 
-    Basic4GLDebugService(TomBasicCompiler compiler, Preprocessor preprocessor, IAppSettings appSettings, Debugger debugger) {
+    Basic4GLDebugService(
+            TomBasicCompiler compiler, Preprocessor preprocessor, IAppSettings appSettings, Debugger debugger) {
         this.compiler = compiler;
         this.preprocessor = preprocessor;
         this.appSettings = appSettings;
@@ -58,113 +57,113 @@ public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugServi
     @Override
     public com.basic4gl.desktop.spi.DebugLaunchInfo start(Object sender) {
         try {
-        Path tempFolder =
-                Paths.get(System.getProperty("java.io.tmpdir")); // Files.createDirectories(Paths.get("temp"));
-        File vm = File.createTempFile("basicvm-", "", tempFolder.toFile());
-        File config = File.createTempFile("basicconfig-", "", tempFolder.toFile());
-        File lineMapping = File.createTempFile("basiclinemapping-", "", tempFolder.toFile());
+            Path tempFolder =
+                    Paths.get(System.getProperty("java.io.tmpdir")); // Files.createDirectories(Paths.get("temp"));
+            File vm = File.createTempFile("basicvm-", "", tempFolder.toFile());
+            File config = File.createTempFile("basicconfig-", "", tempFolder.toFile());
+            File lineMapping = File.createTempFile("basiclinemapping-", "", tempFolder.toFile());
 
-        String currentDirectory = context.currentDirectory();
-        Builder builder = context.currentBuilder();
-        String libraryBinPath = context.getLibraryPath();
-        boolean isMacOS = context.isMacOS();
-        String defaultDebugPort = context.getDefaultDebuggerPort();
+            String currentDirectory = context.currentDirectory();
+            Builder builder = context.currentBuilder();
+            String libraryBinPath = context.getLibraryPath();
+            boolean isMacOS = context.isMacOS();
+            String defaultDebugPort = context.getDefaultDebuggerPort();
 
-        try (DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(vm))) {
-            compiler.streamOut(outputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (OutputStream outputStream = new FileOutputStream(config)) {
-            (context.currentBuilder()).getTarget().saveConfiguration(outputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (FileOutputStream outputStream = new FileOutputStream(lineMapping);
-             ObjectOutputStream oos = new ObjectOutputStream(outputStream)) {
-            oos.writeObject(preprocessor.getLineNumberMap());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        String[] commandArgs = buildCommandArgs(
-                builder.getTarget(),
-                appSettings,
-                currentDirectory,
-                libraryBinPath,
-                vm.getAbsolutePath(),
-                config.getAbsolutePath(),
-                lineMapping.getAbsolutePath(),
-                defaultDebugPort,
-                isMacOS);
-        String jvmDebugArgs = findJvmDebugArgs(commandArgs);
-        clearCapturedStderr();
-
-        // Start output window
-        final Process process = new ProcessBuilder(commandArgs).start();
-        synchronized (launchedProcessLock) {
-            launchedProcess = process;
-        }
-
-        process.onExit().thenAccept(exitedProcess -> {
-            com.basic4gl.desktop.spi.IProcessExitListener listener = this.processExitListener;
-            if (listener != null) {
-                listener.onProcessExited(sender, exitedProcess.exitValue(), getCapturedStderr());
+            try (DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(vm))) {
+                compiler.streamOut(outputStream);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
 
-        // Automatically close GL window when editor closes
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("Shutdown Hook");
-                process.destroy();
+            try (OutputStream outputStream = new FileOutputStream(config)) {
+                (context.currentBuilder()).getTarget().saveConfiguration(outputStream);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }));
 
-        // Handle output from GL window
-        final BufferedReader errinput = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-        final BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String err;
-                    while ((err = errinput.readLine()) != null) {
-                        captureStderrLine(err);
-                        System.err.println(err);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+            try (FileOutputStream outputStream = new FileOutputStream(lineMapping);
+                    ObjectOutputStream oos = new ObjectOutputStream(outputStream)) {
+                oos.writeObject(preprocessor.getLineNumberMap());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            String[] commandArgs = buildCommandArgs(
+                    builder.getTarget(),
+                    appSettings,
+                    currentDirectory,
+                    libraryBinPath,
+                    vm.getAbsolutePath(),
+                    config.getAbsolutePath(),
+                    lineMapping.getAbsolutePath(),
+                    defaultDebugPort,
+                    isMacOS);
+            String jvmDebugArgs = findJvmDebugArgs(commandArgs);
+            clearCapturedStderr();
+
+            // Start output window
+            final Process process = new ProcessBuilder(commandArgs).start();
+            synchronized (launchedProcessLock) {
+                launchedProcess = process;
+            }
+
+            process.onExit().thenAccept(exitedProcess -> {
+                com.basic4gl.desktop.spi.IProcessExitListener listener = this.processExitListener;
+                if (listener != null) {
+                    listener.onProcessExited(sender, exitedProcess.exitValue(), getCapturedStderr());
                 }
-            }
-        });
-        thread.start();
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String err;
-                    while ((err = input.readLine()) != null) {
-                        System.out.println(err);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread.start();
+            });
 
-        return new com.basic4gl.desktop.spi.DebugLaunchInfo(extractJvmDebugPort(jvmDebugArgs), isJvmDebugSuspendEnabled(jvmDebugArgs));
+            // Automatically close GL window when editor closes
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("Shutdown Hook");
+                    process.destroy();
+                }
+            }));
+
+            // Handle output from GL window
+            final BufferedReader errinput = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            final BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String err;
+                        while ((err = errinput.readLine()) != null) {
+                            captureStderrLine(err);
+                            System.err.println(err);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            thread.start();
+            thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String err;
+                        while ((err = input.readLine()) != null) {
+                            System.out.println(err);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            thread.start();
+
+            return new com.basic4gl.desktop.spi.DebugLaunchInfo(
+                    extractJvmDebugPort(jvmDebugArgs), isJvmDebugSuspendEnabled(jvmDebugArgs));
 
         } catch (IOException e) {
             e.printStackTrace();
             return new com.basic4gl.desktop.spi.DebugLaunchInfo(null, false);
         }
     }
-
 
     public void terminateLaunchedProcess() {
         Process processToTerminate;
@@ -266,10 +265,7 @@ public class Basic4GLDebugService implements com.basic4gl.desktop.spi.DebugServi
             addTargetOption(runnerArgs, target.getLineMappingFilePathCommandLineOption(), lineMappingPath);
             addTargetOption(runnerArgs, target.getLogFilePathCommandLineOption(), logFilePath);
             addTargetOption(runnerArgs, target.getParentDirectoryCommandLineOption(), currentDirectory);
-            addTargetOption(
-                    runnerArgs,
-                    target.getDebuggerPortCommandLineOption(),
-                    defaultDebugServerPort);
+            addTargetOption(runnerArgs, target.getDebuggerPortCommandLineOption(), defaultDebugServerPort);
 
             List<String> pluginDirectories = appSettings.getPluginDirectories();
             if (pluginDirectories != null && !pluginDirectories.isEmpty()) {
