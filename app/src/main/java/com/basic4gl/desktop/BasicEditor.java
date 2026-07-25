@@ -87,6 +87,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         this.basic4gl = new Basic4GLEditorPluginAdapter(this);
         this.basic4gl.setOnPluginStateChanged(this::refreshSyntaxHighlighting);
         this.basic4gl.setOnPluginDirectoryHistoryChanged(this::syncPluginDirectorySettings);
+        this.vmWorker = new VmWorker(this);
     }
 
     public void initLibraries() {
@@ -138,7 +139,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
                     handler.launchRemote(); // 12/2020 testing new continue()
             activeRunHandler = basic4gl.getDebug().hasLaunchedProcess() ? handler : null;
             if (activeRunHandler == null && vmWorker != null) {
-                vmWorker.cancel(true);
+                vmWorker.cancelWorker(true);
             }
             updateWaitingForDebuggerStatus(launchInfo);
 
@@ -169,7 +170,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
                         handler.launchRemote(); // 12/2020 testing new continue()
                 activeRunHandler = basic4gl.getDebug().hasLaunchedProcess() ? handler : null;
                 if (activeRunHandler == null && vmWorker != null) {
-                    vmWorker.cancel(true);
+                    vmWorker.cancelWorker(true);
                 }
                 updateWaitingForDebuggerStatus(launchInfo);
 
@@ -401,7 +402,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            vmWorker.cancel(true);
+            vmWorker.cancelWorker(true);
             // TODO confirm there is no overlap with this thread stopping and starting a new one to avoid
             // GL errors
             try {
@@ -412,9 +413,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         }
 
         vmWorker = new VmWorker(this);
-
-        vmWorker.setCompletionLatch(new CountDownLatch(1));
-
+        
         callbackMessage.setMessage(new CallbackMessage(), null);
         pendingDisassemblyRequests.clear();
         disassemblyPages.clear();
@@ -1027,7 +1026,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         }
 
         if (vmWorker != null) {
-            vmWorker.cancel(true);
+            vmWorker.cancelWorker(true);
         }
 
         clearAttachWaitFailureWatch();
@@ -1072,7 +1071,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
                 activeRunHandler = null;
             }
             if (vmWorker != null) {
-                vmWorker.cancel(true);
+                vmWorker.cancelWorker(true);
             }
         }
 
