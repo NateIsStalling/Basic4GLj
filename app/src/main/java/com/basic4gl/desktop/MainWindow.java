@@ -10,12 +10,15 @@ import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
+import com.basic4gl.desktop.language.SymbolCompletionProvider;
+import com.basic4gl.desktop.language.SymbolIndexer;
 import com.basic4gl.desktop.spi.FileLineNumber;
 import com.basic4gl.desktop.spi.MenuService;
 import com.basic4gl.desktop.spi.ProjectExportPage;
 import com.basic4gl.desktop.spi.ProjectSettingsPage;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
+import com.basic4gl.language.adapter.Basic4GLLanguageSupport;
 import com.basic4gl.language.core.internal.Mutable;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
@@ -33,6 +36,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
+import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.SearchContext;
 
@@ -136,6 +140,11 @@ public class MainWindow
     private IncludeLinkGenerator linkGenerator = new IncludeLinkGenerator(this);
 
     private SearchContext searchContext;
+
+    // Code completion: a shared provider kept in sync with the SymbolIndexer output.
+    private final SymbolCompletionProvider completionProvider = new SymbolCompletionProvider();
+    private final SymbolIndexer symbolIndexer = new SymbolIndexer(
+            new Basic4GLLanguageSupport(), this::getIndexerSourceSnapshot, completionProvider::setSymbols);
 
     // Debugging
     private boolean isDebugMode = false;
@@ -799,6 +808,7 @@ public class MainWindow
         // ShutDownTomWindowsBasicLib();
 
         frame.dispose();
+        symbolIndexer.shutdown();
         System.exit(0);
     }
 
@@ -1095,6 +1105,8 @@ public class MainWindow
     public void closeTab(int index) {
         tabControl.remove(index);
         fileManager.getFileEditors().remove(index);
+        // Re-index so completions drop symbols that only existed in the closed file.
+        symbolIndexer.indexNow();
     }
 
     public void addTab() {
@@ -1126,6 +1138,7 @@ public class MainWindow
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
                 //                mTabControl.getTabComponentAt(index).invalidate();
+                symbolIndexer.schedule();
             }
 
             @Override
@@ -1133,6 +1146,7 @@ public class MainWindow
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
+                symbolIndexer.schedule();
             }
 
             @Override
@@ -1143,6 +1157,17 @@ public class MainWindow
                 tabControl.setTitleAt(index, edit.getTitle());
             }
         });
+
+        // Install code completion driven by the shared symbol-backed provider. Ctrl+Space (or the
+        // platform equivalent) triggers the popup; the provider content is refreshed by the
+        // SymbolIndexer callback as the user types.
+        AutoCompletion autoCompletion = new AutoCompletion(completionProvider);
+        autoCompletion.setAutoCompleteEnabled(true);
+        autoCompletion.setAutoActivationEnabled(true);
+        autoCompletion.setAutoActivationDelay(500);
+        autoCompletion.setParameterAssistanceEnabled(true);
+        autoCompletion.setShowDescWindow(true);
+        autoCompletion.install(editor.getEditorPane());
 
         // Allow user to see cursor position
         editor.getEditorPane().addCaretListener(TrackCaretPosition);
@@ -1158,6 +1183,27 @@ public class MainWindow
         if (count == 0) {
             basicEditor.setMode(ApMode.AP_STOPPED, null);
         }
+
+        // Populate completions for the newly opened source without waiting for the first edit.
+        symbolIndexer.indexNow();
+    }
+
+    /**
+     * Concatenates the text of every open editor into a single source snapshot for the
+     * {@link SymbolIndexer}. Concatenation lets symbol extraction (and therefore code completion)
+     * span all open files. Invoked on the EDT by the indexer.
+     */
+    private String getIndexerSourceSnapshot() {
+        if (fileManager == null) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            if (editor.getEditorPane() != null) {
+                builder.append(editor.getEditorPane().getText()).append('\n');
+            }
+        }
+        return builder.toString();
     }
 
     @Override
