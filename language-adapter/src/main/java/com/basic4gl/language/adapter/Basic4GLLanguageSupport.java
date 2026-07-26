@@ -380,6 +380,10 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         String pendingFuncName = null;
         StringBuilder paramBuf = null;
         int parenDepth = 0;
+        // Whether the signature's own opening paren has been consumed; only parens seen after it
+        // count towards parenDepth (otherwise the signature's opening paren is mistaken for a
+        // nested one and its matching close is never recognized as the end of the parameter list).
+        boolean sigParenSeen = false;
         String pendingVarName = null;
         String pendingVarType = null;
         // Depth of ( or [ seen while in AFTER_DIM_NAME – used to suppress the
@@ -415,14 +419,19 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     if (type == Basic4GL.FUNCTION_KW || type == Basic4GL.SUB_KW) {
                         state = AFTER_FUNC_KW;
                     } else if (type == Basic4GL.END_KW) {
-                        Token next = peekNonWs(tokens, i + 1);
+                        int nextIdx = indexOfNextNonWs(tokens, i + 1);
+                        Token next = nextIdx < 0 ? null : tokens.get(nextIdx);
                         if (next != null
                                 && (next.getType() == Basic4GL.FUNCTION_KW || next.getType() == Basic4GL.SUB_KW)) {
                             currentRoutine = null;
+                            // Consume the closing function/sub keyword so it isn't reprocessed as
+                            // the start of a new declaration on the loop's next iteration.
+                            i = nextIdx;
                         } else if (next != null && next.getType() == Basic4GL.TYPE_KW) {
                             // "end type" – same as endstruc
                             inStruc = false;
                             currentStrucName = null;
+                            i = nextIdx; // consume the closing "type" keyword
                         }
                     } else if (type == Basic4GL.STRUC_KW || type == Basic4GL.TYPE_KW) {
                         // Entering a struc/type block – capture the struct name from the next identifier
@@ -453,6 +462,7 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                         pendingFuncName = t.getText();
                         paramBuf = new StringBuilder(t.getText()).append('(');
                         parenDepth = 0;
+                        sigParenSeen = false;
                         state = COLLECT_PARAMS;
                     } else {
                         state = NONE; // unexpected token – reset
@@ -460,8 +470,13 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                 }
                 case COLLECT_PARAMS -> {
                     if (type == Basic4GL.LPAREN) {
-                        parenDepth++;
-                        // don't append – we already opened the sig paren
+                        if (sigParenSeen) {
+                            parenDepth++;
+                            paramBuf.append(t.getText());
+                        } else {
+                            // The signature's own opening paren; already reflected in paramBuf.
+                            sigParenSeen = true;
+                        }
                     } else if (type == Basic4GL.RPAREN) {
                         if (parenDepth == 0) {
                             // Closing paren of the function signature
@@ -587,6 +602,10 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         Token pendingFuncNameToken = null;
         StringBuilder paramBuf = null;
         int parenDepth = 0;
+        // Whether the signature's own opening paren has been consumed; only parens seen after it
+        // count towards parenDepth (otherwise the signature's opening paren is mistaken for a
+        // nested one and its matching close is never recognized as the end of the parameter list).
+        boolean sigParenSeen = false;
         Token pendingVarNameToken = null;
         String pendingVarType = null;
         // Depth of ( or [ seen while in AFTER_DIM_NAME – used to suppress the
@@ -626,14 +645,19 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     if (type == Basic4GL.FUNCTION_KW || type == Basic4GL.SUB_KW) {
                         state = AFTER_FUNC_KW;
                     } else if (type == Basic4GL.END_KW) {
-                        Token next = peekNonWs(tokens, i + 1);
+                        int nextIdx = indexOfNextNonWs(tokens, i + 1);
+                        Token next = nextIdx < 0 ? null : tokens.get(nextIdx);
                         if (next != null
                                 && (next.getType() == Basic4GL.FUNCTION_KW || next.getType() == Basic4GL.SUB_KW)) {
                             currentRoutine = null;
+                            // Consume the closing function/sub keyword so it isn't reprocessed as
+                            // the start of a new declaration on the loop's next iteration.
+                            i = nextIdx;
                         } else if (next != null && next.getType() == Basic4GL.TYPE_KW) {
                             // "end type" – same as endstruc
                             inStruc = false;
                             currentStrucName = null;
+                            i = nextIdx; // consume the closing "type" keyword
                         }
                     } else if (type == Basic4GL.STRUC_KW || type == Basic4GL.TYPE_KW) {
                         // Entering a struc/type block – capture the struct name from the next identifier
@@ -679,6 +703,7 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                         pendingFuncNameToken = t;
                         paramBuf = new StringBuilder(t.getText()).append('(');
                         parenDepth = 0;
+                        sigParenSeen = false;
                         state = COLLECT_PARAMS;
                     } else {
                         state = NONE;
@@ -686,7 +711,15 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                 }
                 case COLLECT_PARAMS -> {
                     if (type == Basic4GL.LPAREN) {
-                        parenDepth++;
+                        if (sigParenSeen) {
+                            parenDepth++;
+                            if (paramBuf != null) {
+                                paramBuf.append(t.getText());
+                            }
+                        } else {
+                            // The signature's own opening paren; already reflected in paramBuf.
+                            sigParenSeen = true;
+                        }
                     } else if (type == Basic4GL.RPAREN) {
                         if (parenDepth == 0 && pendingFuncNameToken != null) {
                             String sig = paramBuf.toString().trim();

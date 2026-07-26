@@ -17,6 +17,8 @@ import com.basic4gl.desktop.spi.FileLineNumber;
 import com.basic4gl.desktop.spi.MenuService;
 import com.basic4gl.desktop.spi.ProjectExportPage;
 import com.basic4gl.desktop.spi.ProjectSettingsPage;
+import com.basic4gl.desktop.spi.language.CompletionProposal;
+import com.basic4gl.desktop.spi.language.FunctionDefinition;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
 import com.basic4gl.language.adapter.Basic4GLLanguageSupport;
@@ -782,6 +784,32 @@ public class MainWindow
         for (FileEditor editor : fileManager.getFileEditors()) {
             editor.refreshSyntaxHighlighting();
         }
+        refreshBaseCompletions();
+    }
+
+    /**
+     * Rebuilds the completion popup's base (non-symbol) completions: the language's static
+     * keywords/types, plus every function the currently loaded libraries/plugins register with the
+     * compiler (e.g. {@code print}, {@code gl_...}). This runs whenever {@link
+     * #refreshSyntaxHighlighting()} does (initial library load, and again whenever the user's
+     * loaded plugins change), since that's this codebase's existing signal for "the set of available
+     * functions may have changed."
+     *
+     * <p>User-defined ("Program"-scoped) functions are deliberately excluded here: those are already
+     * kept live by {@link SymbolIndexer}/{@link #symbolIndexer} from the raw source text as the user
+     * types, without needing a successful compile first.
+     */
+    private void refreshBaseCompletions() {
+        if (basicEditor == null) {
+            return;
+        }
+        List<CompletionProposal> proposals = new ArrayList<>(languageSupport.keywordCompletions());
+        for (FunctionDefinition function : basicEditor.getLanguageService().getFunctionDefinitions()) {
+            if (!"Program".equals(function.packageName())) {
+                proposals.add(new CompletionProposal("userfunc", function.name(), function.signature()));
+            }
+        }
+        completionProvider.setBaseCompletions(proposals);
     }
 
     private void showAboutDialog() {
