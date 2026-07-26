@@ -93,4 +93,24 @@ public interface LanguageSupport {
     default List<SymbolDeclaration> extractDeclarations(String source, String fileId) {
         return List.of();
     }
+
+    // -------------------------------------------------------------------------
+    // Static completions
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns the language's fixed completion proposals — keywords, reserved words, built-in type
+     * names, and any other suggestions that do not depend on the current source text.
+     *
+     * <p>These are combined with the dynamic, source-derived symbol completions (functions,
+     * variables, labels, etc.) by the IDE so code-completion works even in an empty program.
+     *
+     * <p>Default implementation returns an empty list so existing language plugins remain binary
+     * compatible until they opt into keyword completion.
+     *
+     * @return keyword/built-in completion proposals; never {@code null}
+     */
+    default List<CompletionProposal> keywordCompletions() {
+        return List.of();
+    }
 }

@@ -2,6 +2,7 @@ package com.basic4gl.language.adapter;
 
 import static com.basic4gl.language.adapter.util.LanguageUtil.*;
 
+import com.basic4gl.desktop.spi.language.CompletionProposal;
 import com.basic4gl.desktop.spi.language.HighlightKind;
 import com.basic4gl.desktop.spi.language.IndexedSymbol;
 import com.basic4gl.desktop.spi.language.LangToken;
@@ -35,6 +36,67 @@ import org.antlr.v4.runtime.Token;
 public class Basic4GLLanguageSupport implements LanguageSupport {
 
     private static final String SYNTAX_STYLE = "text/basic4gl";
+
+    // Reserved words and word operators, mirroring the KEYWORD group in classify(). Kept lowercase
+    // to match the conventional Basic4GL source style seen throughout the samples.
+    private static final List<String> KEYWORDS = List.of(
+            "dim",
+            "goto",
+            "if",
+            "then",
+            "elseif",
+            "else",
+            "endif",
+            "end",
+            "gosub",
+            "return",
+            "for",
+            "to",
+            "step",
+            "next",
+            "while",
+            "wend",
+            "run",
+            "struc",
+            "endstruc",
+            "const",
+            "alloc",
+            "null",
+            "data",
+            "read",
+            "reset",
+            "type",
+            "as",
+            "language",
+            "traditional",
+            "basic4gl",
+            "traditional_print",
+            "traditional_suffix",
+            "input",
+            "do",
+            "loop",
+            "until",
+            "function",
+            "sub",
+            "endfunction",
+            "endsub",
+            "declare",
+            "runtime",
+            "bindcode",
+            "exec",
+            "include",
+            "arraymax",
+            "begincodeblock",
+            "endcodeblock",
+            "print",
+            "printr",
+            "and",
+            "or",
+            "not",
+            "xor");
+
+    // Built-in type names, mirroring the KEYWORD_2 group in classify().
+    private static final List<String> TYPE_NAMES = List.of("integer", "single", "double", "string");
 
     // -------------------------------------------------------------------------
     // LanguageSupport – identity
@@ -195,6 +257,28 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
 
             default -> HighlightKind.OTHER;
         };
+    }
+
+    // -------------------------------------------------------------------------
+    // LanguageSupport – static completions
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns completion proposals for every reserved word, word operator and built-in type name.
+     *
+     * <p>These are source-independent, so the IDE offers them even in an empty program and merges
+     * them with the dynamic symbol completions produced by {@link #extractSymbols}.
+     */
+    @Override
+    public List<CompletionProposal> keywordCompletions() {
+        List<CompletionProposal> proposals = new ArrayList<>(KEYWORDS.size() + TYPE_NAMES.size());
+        for (String keyword : KEYWORDS) {
+            proposals.add(new CompletionProposal("keyword", keyword, "keyword " + keyword));
+        }
+        for (String type : TYPE_NAMES) {
+            proposals.add(new CompletionProposal("type", type, "type " + type));
+        }
+        return proposals;
     }
 
     // -------------------------------------------------------------------------

@@ -142,9 +142,10 @@ public class MainWindow
     private SearchContext searchContext;
 
     // Code completion: a shared provider kept in sync with the SymbolIndexer output.
+    private final Basic4GLLanguageSupport languageSupport = new Basic4GLLanguageSupport();
     private final SymbolCompletionProvider completionProvider = new SymbolCompletionProvider();
-    private final SymbolIndexer symbolIndexer = new SymbolIndexer(
-            new Basic4GLLanguageSupport(), this::getIndexerSourceSnapshot, completionProvider::setSymbols);
+    private final SymbolIndexer symbolIndexer =
+            new SymbolIndexer(languageSupport, this::getIndexerSourceSnapshot, completionProvider::setSymbols);
 
     // Debugging
     private boolean isDebugMode = false;
@@ -245,6 +246,11 @@ public class MainWindow
         //        replaceDialog.setSearchContext(context);
 
         searchContext = new SearchContext();
+
+        // Seed code-completion with the language's keywords/built-ins so suggestions appear even
+        // before any user symbols are declared. Symbol completions are layered on top as the user
+        // types (see SymbolIndexer wiring in addTab).
+        completionProvider.setBaseCompletions(languageSupport.keywordCompletions());
 
         // Create and set up the window.
         frame.setIconImage(createImageIcon(BuildInfo.ICON_LOGO_SMALL).getImage());
