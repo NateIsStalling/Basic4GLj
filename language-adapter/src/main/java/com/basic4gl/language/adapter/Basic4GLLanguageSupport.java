@@ -2,6 +2,7 @@ package com.basic4gl.language.adapter;
 
 import static com.basic4gl.language.adapter.util.LanguageUtil.*;
 
+import com.basic4gl.desktop.spi.language.CompletionContext;
 import com.basic4gl.desktop.spi.language.CompletionProposal;
 import com.basic4gl.desktop.spi.language.HighlightKind;
 import com.basic4gl.desktop.spi.language.IndexedSymbol;
@@ -279,6 +280,62 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
             proposals.add(new CompletionProposal("type", type, "type " + type));
         }
         return proposals;
+    }
+
+    /**
+     * Restricts completions based on the statement keyword governing the caret position.
+     *
+     * <p>Basic4GL statements are line-oriented, so only the current logical line is examined:
+     *
+     * <ul>
+     *   <li>after {@code goto} / {@code gosub} → only labels
+     *   <li>after {@code as} (a {@code dim ... as} type clause) → only built-in types and structs
+     * </ul>
+     *
+     * Any other position is unrestricted.
+     */
+    @Override
+    public CompletionContext completionContext(String textBeforeCaret) {
+        if (textBeforeCaret == null || textBeforeCaret.isEmpty()) {
+            return CompletionContext.ANY;
+        }
+
+        // Line-oriented language: only the text on the current line controls context.
+        int lineStart = Math.max(textBeforeCaret.lastIndexOf('\n'), textBeforeCaret.lastIndexOf('\r')) + 1;
+        String line = textBeforeCaret.substring(lineStart);
+        if (line.isBlank()) {
+            return CompletionContext.ANY;
+        }
+
+        Basic4GL lexer = createLexer(line);
+        CommonTokenStream stream = new CommonTokenStream(lexer);
+        stream.fill();
+        List<Token> tokens = new ArrayList<>();
+        for (Token token : stream.getTokens()) {
+            int type = token.getType();
+            if (type != Token.EOF && type != Basic4GL.WS && type != Basic4GL.NEWLINE) {
+                tokens.add(token);
+            }
+        }
+        if (tokens.isEmpty()) {
+            return CompletionContext.ANY;
+        }
+
+        // If the caret sits immediately after a word (no trailing separator), the final token is the
+        // partial word being typed; the token that governs context is the one before it.
+        boolean typingWord = !Character.isWhitespace(line.charAt(line.length() - 1));
+        Token last = tokens.get(tokens.size() - 1);
+        boolean lastIsWord = last.getType() == Basic4GL.IDENTIFIER;
+        int controllingIndex = (typingWord && lastIsWord) ? tokens.size() - 2 : tokens.size() - 1;
+        if (controllingIndex < 0) {
+            return CompletionContext.ANY;
+        }
+
+        return switch (tokens.get(controllingIndex).getType()) {
+            case Basic4GL.GOTO_KW, Basic4GL.GOSUB_KW -> CompletionContext.of("label");
+            case Basic4GL.AS_KW -> CompletionContext.of("type", "struc");
+            default -> CompletionContext.ANY;
+        };
     }
 
     // -------------------------------------------------------------------------

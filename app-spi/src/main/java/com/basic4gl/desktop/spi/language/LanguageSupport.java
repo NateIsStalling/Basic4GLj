@@ -113,4 +113,22 @@ public interface LanguageSupport {
     default List<CompletionProposal> keywordCompletions() {
         return List.of();
     }
+
+    /**
+     * Determines which kinds of completion are relevant given the source text preceding the caret.
+     *
+     * <p>Lets the IDE narrow the offered completions in context — for example returning
+     * {@link CompletionContext#of(String...) of("label")} right after a {@code gosub}/{@code goto}
+     * so only labels are suggested.
+     *
+     * <p>Default implementation returns {@link CompletionContext#ANY} so existing language plugins
+     * remain binary compatible and unfiltered until they opt into context-aware completion.
+     *
+     * @param textBeforeCaret all source text from the start of the document up to (but excluding)
+     *     the caret position
+     * @return the applicable completion context; never {@code null}
+     */
+    default CompletionContext completionContext(String textBeforeCaret) {
+        return CompletionContext.ANY;
+    }
 }

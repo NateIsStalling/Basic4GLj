@@ -1,9 +1,16 @@
 package com.basic4gl.desktop.language;
 
+import com.basic4gl.desktop.spi.language.CompletionContext;
 import com.basic4gl.desktop.spi.language.CompletionProposal;
 import com.basic4gl.desktop.spi.language.IndexedSymbol;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
@@ -27,6 +34,11 @@ import org.fife.ui.autocomplete.VariableCompletion;
  * <p>Because rebuilding clears every completion, the base set is retained and re-added on each
  * refresh so keyword completions survive re-indexing.
  *
+ * <p>An optional {@linkplain #setContextResolver(Function) context resolver} lets the language
+ * restrict which completion kinds are offered at the caret (e.g. only labels after
+ * {@code gosub}/{@code goto}). The resolver is consulted on each completion request and its verdict
+ * filters the merged set by kind.
+ *
  * <p>The provider contains no language-specific parsing logic. It merely translates the portable
  * {@link IndexedSymbol} and {@link CompletionProposal} records produced by a {@code LanguageSupport}
  * into autocomplete {@link Completion} instances, so swapping languages requires no changes here.
@@ -35,6 +47,13 @@ public class SymbolCompletionProvider extends DefaultCompletionProvider {
 
     private List<CompletionProposal> baseProposals = List.of();
     private List<IndexedSymbol> symbols = List.of();
+
+    // Kind ("keyword", "label", "variable", …) of each live completion, used for context filtering.
+    // Accessed only on the EDT (rebuild and completion requests both run there).
+    private final Map<Completion, String> kindByCompletion = new IdentityHashMap<>();
+
+    // Maps the source text before the caret to the kinds allowed there; defaults to unrestricted.
+    private Function<String, CompletionContext> contextResolver = text -> CompletionContext.ANY;
 
     public SymbolCompletionProvider() {
         // Auto-activation is gated by the provider: without this the popup never appears while
@@ -75,6 +94,17 @@ public class SymbolCompletionProvider extends DefaultCompletionProvider {
         });
     }
 
+    /**
+     * Installs a resolver that maps the source text preceding the caret to the set of completion
+     * kinds permitted there (typically {@code LanguageSupport::completionContext}). When set, the
+     * offered completions are filtered by kind on every request.
+     *
+     * @param resolver context resolver; {@code null} disables contextual filtering
+     */
+    public void setContextResolver(Function<String, CompletionContext> resolver) {
+        this.contextResolver = resolver == null ? text -> CompletionContext.ANY : resolver;
+    }
+
     private void runOnEdt(Runnable action) {
         if (SwingUtilities.isEventDispatchThread()) {
             action.run();
@@ -85,17 +115,55 @@ public class SymbolCompletionProvider extends DefaultCompletionProvider {
 
     private void rebuild() {
         clear();
+        kindByCompletion.clear();
         for (CompletionProposal proposal : baseProposals) {
             Completion completion = toCompletion(proposal);
             if (completion != null) {
                 addCompletion(completion);
+                kindByCompletion.put(completion, normalizeKind(proposal.kind()));
             }
         }
         for (IndexedSymbol symbol : symbols) {
             Completion completion = toCompletion(symbol);
             if (completion != null) {
                 addCompletion(completion);
+                kindByCompletion.put(completion, normalizeKind(symbol.kind()));
             }
+        }
+    }
+
+    private static String normalizeKind(String kind) {
+        return kind == null ? "" : kind;
+    }
+
+    /**
+     * Filters the framework's prefix-matched completions by the current caret context so, for
+     * example, only labels survive after {@code gosub}/{@code goto}.
+     */
+    @Override
+    protected List<Completion> getCompletionsImpl(JTextComponent comp) {
+        List<Completion> matches = super.getCompletionsImpl(comp);
+        CompletionContext context = resolveContext(comp);
+        if (context == null || context.allowsAll() || matches.isEmpty()) {
+            return matches;
+        }
+        List<Completion> filtered = new ArrayList<>(matches.size());
+        for (Completion completion : matches) {
+            String kind = kindByCompletion.get(completion);
+            if (kind != null && context.allows(kind)) {
+                filtered.add(completion);
+            }
+        }
+        return filtered;
+    }
+
+    private CompletionContext resolveContext(JTextComponent comp) {
+        try {
+            int caret = comp.getCaretPosition();
+            String textBeforeCaret = comp.getDocument().getText(0, caret);
+            return contextResolver.apply(textBeforeCaret);
+        } catch (BadLocationException e) {
+            return CompletionContext.ANY;
         }
     }
 

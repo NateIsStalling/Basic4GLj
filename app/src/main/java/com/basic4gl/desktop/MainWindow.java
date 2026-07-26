@@ -251,6 +251,8 @@ public class MainWindow
         // before any user symbols are declared. Symbol completions are layered on top as the user
         // types (see SymbolIndexer wiring in addTab).
         completionProvider.setBaseCompletions(languageSupport.keywordCompletions());
+        // Let the language restrict completions by caret context (e.g. labels after gosub/goto).
+        completionProvider.setContextResolver(languageSupport::completionContext);
 
         // Create and set up the window.
         frame.setIconImage(createImageIcon(BuildInfo.ICON_LOGO_SMALL).getImage());
