@@ -1,6 +1,7 @@
 package com.basic4gl.desktop.editor;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -24,6 +25,7 @@ public class DualGutterScrollPane extends RTextScrollPane {
     private final HoverIconRowHeader bookmarkHeader;
     private final HoverIconRowHeader breakpointHeader;
     private final JPanel iconColumns;
+    private final JPanel rowHeader;
 
     public DualGutterScrollPane(RSyntaxTextArea textArea) {
         super(textArea);
@@ -40,10 +42,36 @@ public class DualGutterScrollPane extends RTextScrollPane {
         iconColumns.add(bookmarkHeader);
         iconColumns.add(breakpointHeader);
 
-        JPanel rowHeader = new JPanel(new BorderLayout());
+        rowHeader = new JPanel(new BorderLayout());
         rowHeader.add(iconColumns, BorderLayout.LINE_START);
         rowHeader.add(getGutter(), BorderLayout.CENTER);
         setRowHeaderView(rowHeader);
+
+        matchGutterAreaBackground();
+    }
+
+    /**
+     * Makes the whole gutter area (both icon columns) share the text area's
+     * background so it doesn't stand out with the default panel color.
+     *
+     * <p>The standard gutter keeps its own background in sync with the text
+     * area, so that color is used as the source. If the gutter has no
+     * background of its own, the text area's background is used and applied to
+     * the parent panels instead.</p>
+     */
+    public void matchGutterAreaBackground() {
+        Color gutterBg = getGutter().getBackground();
+        if (gutterBg != null) {
+            bookmarkHeader.setBackground(gutterBg);
+            breakpointHeader.setBackground(gutterBg);
+        } else if (getTextArea() != null) {
+            // Gutter has no background of its own; style the parent panels.
+            Color bg = getTextArea().getBackground();
+            iconColumns.setBackground(bg);
+            rowHeader.setBackground(bg);
+        }
+        rowHeader.revalidate();
+        rowHeader.repaint();
     }
 
     /**

@@ -229,6 +229,9 @@ public class FileEditor implements SearchListener {
         scheme.setStyle(TokenTypes.LITERAL_STRING_DOUBLE_QUOTE, new Style(new Color(0, 128, 0))); // String
         scheme.setStyle(TokenTypes.FUNCTION, new Style(new Color(255, 0, 0))); // Function
         scheme.setStyle(TokenTypes.OPERATOR, new Style(new Color(128, 0, 128))); // Operator
+
+        // Ensure the gutter columns match the (possibly updated) editor background.
+        scrollPane.matchGutterAreaBackground();
     }
 
     public JPanel getContentPane() {
