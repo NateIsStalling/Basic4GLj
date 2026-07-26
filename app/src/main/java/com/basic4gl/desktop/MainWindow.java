@@ -10,6 +10,7 @@ import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
+import com.basic4gl.desktop.language.SymbolCompletionCellRenderer;
 import com.basic4gl.desktop.language.SymbolCompletionProvider;
 import com.basic4gl.desktop.language.SymbolIndexer;
 import com.basic4gl.desktop.spi.FileLineNumber;
@@ -253,6 +254,13 @@ public class MainWindow
         completionProvider.setBaseCompletions(languageSupport.keywordCompletions());
         // Let the language restrict completions by caret context (e.g. labels after gosub/goto).
         completionProvider.setContextResolver(languageSupport::completionContext);
+        // Give each completion kind a distinct icon in the popup list (rendered by
+        // SymbolCompletionCellRenderer, which also folds the description window's content inline).
+        completionProvider.setKindIcons(Map.of(
+                "userfunc", createImageIcon(ICON_FUNCTION),
+                "variable", createImageIcon(ICON_VARIABLE),
+                "label", createImageIcon(ICON_LABEL),
+                "struc", createImageIcon(ICON_STRUCT)));
 
         // Create and set up the window.
         frame.setIconImage(createImageIcon(BuildInfo.ICON_LOGO_SMALL).getImage());
@@ -1174,7 +1182,14 @@ public class MainWindow
         autoCompletion.setAutoActivationEnabled(true);
         autoCompletion.setAutoActivationDelay(500);
         autoCompletion.setParameterAssistanceEnabled(true);
-        autoCompletion.setShowDescWindow(true);
+        // Contextual filtering (e.g. gosub/goto -> labels) often narrows the popup down to a single
+        // candidate; without this, that candidate would be inserted silently with no visible hint.
+        autoCompletion.setAutoCompleteSingleChoices(false);
+        // Render signature/description inline in the popup list (see SymbolCompletionCellRenderer)
+        // instead of a separate description window, so the whole popup stays one FlatLaf-styled
+        // component rather than pairing it with the library's non-themable description window.
+        autoCompletion.setListCellRenderer(new SymbolCompletionCellRenderer());
+        autoCompletion.setShowDescWindow(false);
         autoCompletion.install(editor.getEditorPane());
 
         // Allow user to see cursor position

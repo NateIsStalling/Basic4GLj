@@ -8,6 +8,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -39,6 +40,10 @@ import org.fife.ui.autocomplete.VariableCompletion;
  * {@code gosub}/{@code goto}). The resolver is consulted on each completion request and its verdict
  * filters the merged set by kind.
  *
+ * <p>An optional {@linkplain #setKindIcons(Map) kind-to-icon map} is applied to each completion as
+ * it's built, so the popup list can show a distinct icon per kind (e.g. function vs. variable vs.
+ * label) via {@link SymbolCompletionCellRenderer}.
+ *
  * <p>The provider contains no language-specific parsing logic. It merely translates the portable
  * {@link IndexedSymbol} and {@link CompletionProposal} records produced by a {@code LanguageSupport}
  * into autocomplete {@link Completion} instances, so swapping languages requires no changes here.
@@ -47,6 +52,7 @@ public class SymbolCompletionProvider extends DefaultCompletionProvider {
 
     private List<CompletionProposal> baseProposals = List.of();
     private List<IndexedSymbol> symbols = List.of();
+    private Map<String, Icon> kindIcons = Map.of();
 
     // Kind ("keyword", "label", "variable", …) of each live completion, used for context filtering.
     // Accessed only on the EDT (rebuild and completion requests both run there).
@@ -103,6 +109,23 @@ public class SymbolCompletionProvider extends DefaultCompletionProvider {
      */
     public void setContextResolver(Function<String, CompletionContext> resolver) {
         this.contextResolver = resolver == null ? text -> CompletionContext.ANY : resolver;
+    }
+
+    /**
+     * Installs the icon to show for each completion kind (e.g. {@code "variable"}, {@code
+     * "userfunc"}). Applied when completions are (re)built; kinds absent from the map render with
+     * no icon.
+     *
+     * <p>Safe to call from any thread.
+     *
+     * @param icons icon per kind; {@code null} is treated as an empty map
+     */
+    public void setKindIcons(Map<String, Icon> icons) {
+        Map<String, Icon> copy = icons == null ? Map.of() : Map.copyOf(icons);
+        runOnEdt(() -> {
+            this.kindIcons = copy;
+            rebuild();
+        });
     }
 
     private void runOnEdt(Runnable action) {
@@ -176,7 +199,9 @@ public class SymbolCompletionProvider extends DefaultCompletionProvider {
             return null;
         }
         String summary = proposal.summary() == null || proposal.summary().isEmpty() ? text : proposal.summary();
-        return new BasicCompletion(this, text, summary);
+        BasicCompletion completion = new BasicCompletion(this, text, summary);
+        completion.setIcon(kindIcons.get(normalizeKind(proposal.kind())));
+        return completion;
     }
 
     private Completion toCompletion(IndexedSymbol symbol) {
@@ -187,26 +212,31 @@ public class SymbolCompletionProvider extends DefaultCompletionProvider {
         if (name == null || name.isEmpty()) {
             return null;
         }
-        String kind = symbol.kind() == null ? "" : symbol.kind();
+        String kind = normalizeKind(symbol.kind());
         String signature = symbol.signature() == null || symbol.signature().isEmpty() ? name : symbol.signature();
+        Icon icon = kindIcons.get(kind);
 
         switch (kind) {
             case "userfunc" -> {
                 FunctionCompletion completion = new FunctionCompletion(this, name, "");
                 completion.setShortDescription(signature);
                 completion.setSummary(signature);
+                completion.setIcon(icon);
                 return completion;
             }
             case "variable" -> {
                 VariableCompletion completion = new VariableCompletion(this, name, "");
                 completion.setShortDescription(signature);
                 completion.setSummary(signature);
+                completion.setIcon(icon);
                 return completion;
             }
             default -> {
                 // struc, label, and any future kinds insert the bare name and surface the
                 // signature as the description.
-                return new BasicCompletion(this, name, signature);
+                BasicCompletion completion = new BasicCompletion(this, name, signature);
+                completion.setIcon(icon);
+                return completion;
             }
         }
     }

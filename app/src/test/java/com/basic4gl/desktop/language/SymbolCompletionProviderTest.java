@@ -7,7 +7,11 @@ import static org.junit.Assert.assertTrue;
 import com.basic4gl.desktop.spi.language.CompletionContext;
 import com.basic4gl.desktop.spi.language.CompletionProposal;
 import com.basic4gl.desktop.spi.language.IndexedSymbol;
+import java.awt.Component;
+import java.awt.Graphics;
 import java.util.List;
+import java.util.Map;
+import javax.swing.Icon;
 import javax.swing.JTextArea;
 import javax.swing.text.JTextComponent;
 import org.fife.ui.autocomplete.Completion;
@@ -60,6 +64,49 @@ public class SymbolCompletionProviderTest {
 
         assertFalse(completions.stream().anyMatch(c -> "gosub".equals(c.getInputText())));
         assertFalse(completions.stream().anyMatch(c -> "Bar".equals(c.getInputText())));
+    }
+
+    @Test
+    public void kindIcons_areAppliedToMatchingCompletions() {
+        Icon labelIcon = noopIcon();
+        Icon variableIcon = noopIcon();
+
+        SymbolCompletionProvider provider = new SymbolCompletionProvider();
+        provider.setKindIcons(Map.of("label", labelIcon, "variable", variableIcon));
+        provider.setSymbols(List.of(
+                new IndexedSymbol("label", "Foo", "Foo:"),
+                new IndexedSymbol("variable", "Bar", "Bar as integer"),
+                new IndexedSymbol("struc", "Baz", "struc Baz")));
+
+        List<Completion> completions = provider.getCompletions(textAreaWithCaretAtEnd(""));
+
+        assertEquals(labelIcon, completionNamed(completions, "Foo").getIcon());
+        assertEquals(variableIcon, completionNamed(completions, "Bar").getIcon());
+        assertEquals(null, completionNamed(completions, "Baz").getIcon());
+    }
+
+    private static Completion completionNamed(List<Completion> completions, String inputText) {
+        return completions.stream()
+                .filter(c -> inputText.equals(c.getInputText()))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private static Icon noopIcon() {
+        return new Icon() {
+            @Override
+            public void paintIcon(Component c, Graphics g, int x, int y) {}
+
+            @Override
+            public int getIconWidth() {
+                return 16;
+            }
+
+            @Override
+            public int getIconHeight() {
+                return 16;
+            }
+        };
     }
 
     private static JTextComponent textAreaWithCaretAtEnd(String text) {
