@@ -38,8 +38,9 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
 
     private static final String SYNTAX_STYLE = "text/basic4gl";
 
-    // Reserved words and word operators, mirroring the KEYWORD group in classify(). Kept lowercase
-    // to match the conventional Basic4GL source style seen throughout the samples.
+    // Reserved words and word operators, mirroring the KEYWORD group in classify() (print, printr,
+    // and arraymax are deliberately excluded - see the FUNCTION case there). Kept lowercase to
+    // match the conventional Basic4GL source style seen throughout the samples.
     private static final List<String> KEYWORDS = List.of(
             "dim",
             "goto",
@@ -86,11 +87,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
             "bindcode",
             "exec",
             "include",
-            "arraymax",
             "begincodeblock",
             "endcodeblock",
-            "print",
-            "printr",
             "and",
             "or",
             "not",
@@ -192,14 +190,8 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     Basic4GL.BINDCODE_KW,
                     Basic4GL.EXEC_KW,
                     Basic4GL.INCLUDE_KW,
-                    Basic4GL.ARRAYMAX_KW,
                     Basic4GL.BEGINCODEBLOCK_KW,
                     Basic4GL.ENDCODEBLOCK_KW,
-
-                    // Statement-position built-ins. Not reserved words - they resolve
-                    // to library functions - but they read as statements.
-                    Basic4GL.PRINT_KW,
-                    Basic4GL.PRINTR_KW,
 
                     // Word operators. Styled as keywords to match the usual BASIC
                     // convention and the previous behaviour of this adapter; move
@@ -210,6 +202,12 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     Basic4GL.XOR_OP,
                     Basic4GL.LOR_OP,
                     Basic4GL.LAND_OP -> HighlightKind.KEYWORD;
+
+                // Special reserved function names. These are lexer keywords (not IDENTIFIER
+                // tokens), so they never go through the wordsToHighlight re-classification that
+                // ordinary library function calls use - they need their own explicit mapping to
+                // read as functions rather than keywords.
+            case Basic4GL.PRINT_KW, Basic4GL.PRINTR_KW, Basic4GL.ARRAYMAX_KW -> HighlightKind.FUNCTION;
 
                 // Type names. The complete set - there is no 'int'.
                 // 'true' and 'false' are library constants, not tokens; the IDE
