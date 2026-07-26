@@ -23,8 +23,9 @@ import org.fife.ui.rtextarea.*;
 public class FileEditor implements SearchListener {
     public static final String DEFAULT_NAME = "[Unnamed]";
 
-    private static final int HEADER_BOOKMARK = 0;
-    private static final int HEADER_BREAK_PT = 1;
+    private static final String ACTION_NEXT_BREAKPOINT = "RTA.NextBreakpointAction";
+    private static final String ACTION_PREV_BREAKPOINT = "RTA.PrevBreakpointAction";
+    private static final String ACTION_TOGGLE_BREAKPOINT = "RTA.ToggleBreakpointAction";
 
     private static final String IMAGE_DIRECTORY = "images/";
     private static final String THEME_DIRECTORY = IMAGE_DIRECTORY + "material/";
@@ -42,7 +43,7 @@ public class FileEditor implements SearchListener {
     private final FindToolBar findToolBar;
     private final ReplaceToolBar replaceToolBar;
     private final CollapsibleSectionPanel csp;
-    private final RMultiHeaderScrollPane scrollPane;
+    private final DualGutterScrollPane scrollPane;
     private final RSyntaxTextArea editorPane;
 
     // private Map<Integer, Object> lineHighlights; //Highlight lines with breakpoints
@@ -80,9 +81,9 @@ public class FileEditor implements SearchListener {
             editorPane.setLinkGenerator(linkGenerator);
         }
 
-        scrollPane = new RMultiHeaderScrollPane(editorPane);
+        scrollPane = new DualGutterScrollPane(editorPane);
 
-        // Add shortcut keys for breakpoints
+        // Add shortcut keys for bookmarks and breakpoints
 
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         InputMap inputMap = editorPane.getInputMap();
@@ -94,111 +95,45 @@ public class FileEditor implements SearchListener {
                 KeyStroke.getKeyStroke(KeyEvent.VK_F2, toolkit.getMenuShortcutKeyMask()),
                 RTextAreaEditorKit.rtaToggleBookmarkAction);
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "RTA.NextBreakpointAction");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK), "RTA.PrevBreakpointAction");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), ACTION_NEXT_BREAKPOINT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_MASK), ACTION_PREV_BREAKPOINT);
         inputMap.put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_F3, toolkit.getMenuShortcutKeyMask()), "RTA.ToggleBreakpointAction");
+                KeyStroke.getKeyStroke(KeyEvent.VK_F3, toolkit.getMenuShortcutKeyMask()), ACTION_TOGGLE_BREAKPOINT);
 
-        // Update action map for use with the multi-header scroll pane
+        // Bookmarks use the standard RTextArea bookmark actions. Breakpoints
+        // have no built-in equivalent, so wire up custom actions that delegate
+        // to this editor's breakpoint handling.
         ActionMap actionMap = editorPane.getActionMap();
-        actionMap.put(
-                RTextAreaEditorKit.rtaNextBookmarkAction,
-                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction(
-                        RTextAreaEditorKit.rtaNextBookmarkAction, true, HEADER_BOOKMARK));
-        actionMap.put(
-                RTextAreaEditorKit.rtaPrevBookmarkAction,
-                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction(
-                        RTextAreaEditorKit.rtaPrevBookmarkAction, false, HEADER_BOOKMARK));
-        actionMap.put(
-                RTextAreaEditorKit.rtaToggleBookmarkAction,
-                new MultiHeaderBookmarkActions.MultiHeaderToggleBookmarkAction(
-                        RTextAreaEditorKit.rtaToggleBookmarkAction, HEADER_BOOKMARK));
+        actionMap.put(ACTION_NEXT_BREAKPOINT, new NextBreakpointAction(ACTION_NEXT_BREAKPOINT, this, true));
+        actionMap.put(ACTION_PREV_BREAKPOINT, new NextBreakpointAction(ACTION_PREV_BREAKPOINT, this, false));
+        actionMap.put(ACTION_TOGGLE_BREAKPOINT, new ToggleBreakpointAction(ACTION_TOGGLE_BREAKPOINT, this));
 
-        actionMap.put(
-                "RTA.NextBreakpointAction",
-                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction(
-                        "RTA.NextBreakpointAction", true, HEADER_BREAK_PT));
-        actionMap.put(
-                "RTA.PrevBreakpointAction",
-                new MultiHeaderBookmarkActions.MultiHeaderNextBookmarkAction(
-                        "RTA.PrevBreakpointAction", false, HEADER_BREAK_PT));
-        actionMap.put(
-                "RTA.ToggleBreakpointAction",
-                new MultiHeaderToggleBreakPointAction("RTA.ToggleBreakpointAction", this));
+        // Bookmark column: the standard gutter's icon row header.
+        final Gutter gutter = scrollPane.getGutter();
+        gutter.setBookmarkIcon(SwingIconUtil.createImageIcon(ICON_BOOKMARK));
+        gutter.setBookmarkingEnabled(true);
+        gutter.setIconRowHeaderEnabled(true);
 
-        // Enable bookmarks
-        final MultiHeaderGutter gutter = scrollPane.getGutter();
-        gutter.addIconRowHeader();
-        gutter.addIconRowHeader();
-
-        gutter.setAutohideIconRowHeader(HEADER_BOOKMARK, true);
-
-        gutter.getIconRowHeader(HEADER_BOOKMARK).addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {}
-
-            @Override
-            public void mousePressed(MouseEvent e) {}
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (gutter.getBookmarks(HEADER_BOOKMARK).length == 0) {
-                    scrollPane.setIconRowHeaderEnabled(HEADER_BOOKMARK, false);
-                }
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {}
-
-            @Override
-            public void mouseExited(MouseEvent e) {}
-        });
-
-        gutter.getIconRowHeader(HEADER_BREAK_PT).addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {}
-
+        // Breakpoint column: the dedicated icon row header. Enabling bookmarking
+        // lets a click toggle the breakpoint icon; the mouse listener notifies
+        // the debugger of the change.
+        final IconRowHeader breakpointHeader = scrollPane.getBreakpointHeader();
+        breakpointHeader.setBookmarkIcon(SwingIconUtil.createImageIcon(ICON_BREAK_PT));
+        breakpointHeader.setBookmarkingEnabled(true);
+        breakpointHeader.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-
                 try {
-                    // boolean highlight = false;
                     int offs = editorPane.viewToModel(e.getPoint());
-                    int ble = offs > -1 ? editorPane.getLineOfOffset(offs) : -1;
-                    if (ble > -1) {
-                        FileEditor.this.toggleBreakpointListener.onToggleBreakpoint(getFilePath(), ble);
-                        // highlight = mMainEditor.toggleBreakpt(getFilename(), ble);
+                    int line = offs > -1 ? editorPane.getLineOfOffset(offs) : -1;
+                    if (line > -1) {
+                        FileEditor.this.toggleBreakpointListener.onToggleBreakpoint(getFilePath(), line);
                     }
-                    // TODO toggle highlighting breakpoints
-                    /*
-                    if (highlight)
-                    	lineHighlights.put(offs, editorPane.addLineHighlight(ble, new Color(255,0,0,128)));
-                    else
-                    	editorPane.removeLineHighlight(lineHighlights.get(ble));
-                    */
-                } catch (BadLocationException var3) {
-                    var3.printStackTrace();
+                } catch (BadLocationException ex) {
+                    ex.printStackTrace();
                 }
             }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {}
-
-            @Override
-            public void mouseEntered(MouseEvent e) {}
-
-            @Override
-            public void mouseExited(MouseEvent e) {}
         });
-
-        gutter.setBookmarkIcon(HEADER_BOOKMARK, SwingIconUtil.createImageIcon(ICON_BOOKMARK));
-        gutter.setBookmarkIcon(HEADER_BREAK_PT, SwingIconUtil.createImageIcon(ICON_BREAK_PT));
-
-        gutter.setBookmarkingEnabled(HEADER_BOOKMARK, true);
-        gutter.setBookmarkingEnabled(HEADER_BREAK_PT, true);
-
-        scrollPane.setIconRowHeaderEnabled(HEADER_BOOKMARK, false);
-        scrollPane.setIconRowHeaderEnabled(HEADER_BREAK_PT, true);
 
         // Enable code folding for Basic4GL syntax
         gutter.setFoldIndicatorEnabled(true);
@@ -206,7 +141,6 @@ public class FileEditor implements SearchListener {
         // Modern fold visuals: show collapsed markers on hover and subtle armed highlight.
         gutter.setFoldIndicatorStyle(FoldIndicatorStyle.MODERN);
         gutter.setExpandedFoldRenderStrategy(ExpandedFoldRenderStrategy.ON_HOVER);
-        gutter.setShowArmedFoldRange(true);
         gutter.setShowCollapsedRegionToolTips(true);
         gutter.setSpacingBetweenLineNumbersAndFoldIndicator(4);
         gutter.setArmedFoldBackground(new Color(232, 244, 255));
@@ -476,12 +410,12 @@ public class FileEditor implements SearchListener {
 
     public void gotoNextBookmark(boolean forward) {
         // Copied from org.fife.ui.rtextarea.RTextAreaEditorKit.NextBookmarkAction
-        MultiHeaderGutter gutter = scrollPane.getGutter();
+        Gutter gutter = scrollPane.getGutter();
         if (gutter != null) {
 
             try {
 
-                GutterIconInfo[] bookmarks = gutter.getBookmarks(HEADER_BOOKMARK);
+                GutterIconInfo[] bookmarks = gutter.getBookmarks();
                 if (bookmarks.length == 0) {
                     UIManager.getLookAndFeel().provideErrorFeedback(editorPane);
                     return;
@@ -554,7 +488,7 @@ public class FileEditor implements SearchListener {
         int line;
         try {
             line = editorPane.getLineOfOffset(editorPane.getCaretPosition());
-            scrollPane.getGutter().toggleBookmark(HEADER_BOOKMARK, line);
+            scrollPane.getGutter().toggleBookmark(line);
 
         } catch (BadLocationException ex) {
             line = -1;
@@ -565,12 +499,12 @@ public class FileEditor implements SearchListener {
 
     public void gotoNextBreakpoint(boolean forward) {
         // Copied from org.fife.ui.rtextarea.RTextAreaEditorKit.NextBookmarkAction
-        MultiHeaderGutter gutter = scrollPane.getGutter();
+        IconRowHeader gutter = scrollPane.getBreakpointHeader();
         if (gutter != null) {
 
             try {
 
-                GutterIconInfo[] bookmarks = gutter.getBookmarks(HEADER_BREAK_PT);
+                GutterIconInfo[] bookmarks = gutter.getBookmarks();
                 if (bookmarks.length == 0) {
                     UIManager.getLookAndFeel().provideErrorFeedback(editorPane);
                     return;
@@ -632,7 +566,7 @@ public class FileEditor implements SearchListener {
         try {
             line = editorPane.getLineOfOffset(editorPane.getCaretPosition());
 
-            scrollPane.getGutter().toggleBookmark(HEADER_BREAK_PT, line);
+            scrollPane.getBreakpointHeader().toggleBookmark(line);
 
             // TODO toggle highlighting row of breakpoint
             /*
@@ -657,9 +591,9 @@ public class FileEditor implements SearchListener {
     public ArrayList<Integer> getBreakpoints() {
         ArrayList<Integer> points = new ArrayList<>();
 
-        MultiHeaderGutter gutter = scrollPane.getGutter();
+        IconRowHeader gutter = scrollPane.getBreakpointHeader();
         if (gutter != null) {
-            GutterIconInfo[] bookmarks = gutter.getBookmarks(HEADER_BREAK_PT);
+            GutterIconInfo[] bookmarks = gutter.getBookmarks();
             for (GutterIconInfo info : bookmarks) {
                 try {
                     int line = editorPane.getLineOfOffset(info.getMarkedOffset());
@@ -705,12 +639,36 @@ public class FileEditor implements SearchListener {
     }
 
     /**
-     * Toggles whether the current line has a bookmark.
+     * Moves the caret to the next (or previous) breakpoint.
      */
-    public static class MultiHeaderToggleBreakPointAction extends RecordableTextAction {
+    public static class NextBreakpointAction extends RecordableTextAction {
+        private final FileEditor fileEditor;
+        private final boolean forward;
+
+        public NextBreakpointAction(String name, FileEditor fileEditor, boolean forward) {
+            super(name);
+            this.fileEditor = fileEditor;
+            this.forward = forward;
+        }
+
+        @Override
+        public void actionPerformedImpl(ActionEvent e, RTextArea textArea) {
+            fileEditor.gotoNextBreakpoint(forward);
+        }
+
+        @Override
+        public final String getMacroID() {
+            return getName();
+        }
+    }
+
+    /**
+     * Toggles whether the current line has a breakpoint.
+     */
+    public static class ToggleBreakpointAction extends RecordableTextAction {
         private final FileEditor fileEditor;
 
-        public MultiHeaderToggleBreakPointAction(String name, FileEditor fileEditor) {
+        public ToggleBreakpointAction(String name, FileEditor fileEditor) {
             super(name);
             this.fileEditor = fileEditor;
         }

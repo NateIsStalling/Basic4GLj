@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 import javax.swing.SwingUtilities;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -413,7 +412,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         }
 
         vmWorker = new VmWorker(this);
-        
+
         callbackMessage.setMessage(new CallbackMessage(), null);
         pendingDisassemblyRequests.clear();
         disassemblyPages.clear();
