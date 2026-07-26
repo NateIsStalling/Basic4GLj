@@ -10,6 +10,7 @@ import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
+import com.basic4gl.desktop.language.NonRetriggeringAutoCompletion;
 import com.basic4gl.desktop.language.SymbolCompletionCellRenderer;
 import com.basic4gl.desktop.language.SymbolCompletionProvider;
 import com.basic4gl.desktop.language.SymbolIndexer;
@@ -1205,7 +1206,7 @@ public class MainWindow
         // Install code completion driven by the shared symbol-backed provider. Ctrl+Space (or the
         // platform equivalent) triggers the popup; the provider content is refreshed by the
         // SymbolIndexer callback as the user types.
-        AutoCompletion autoCompletion = new AutoCompletion(completionProvider);
+        AutoCompletion autoCompletion = new NonRetriggeringAutoCompletion(completionProvider);
         autoCompletion.setAutoCompleteEnabled(true);
         autoCompletion.setAutoActivationEnabled(true);
         autoCompletion.setAutoActivationDelay(500);
