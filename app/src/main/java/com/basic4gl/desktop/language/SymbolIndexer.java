@@ -112,14 +112,20 @@ public class SymbolIndexer {
 
     private void runAndDeliver(long revision) {
         String source = getSourceSnapshotOnEdt();
-        List<IndexedSymbol> result = languageSupport.extractSymbols(source);
+        List<IndexedSymbol> result;
+        try {
+            result = languageSupport.extractSymbols(source);
+        } catch (RuntimeException e) {
+            result = List.of();
+        }
+        List<IndexedSymbol> indexedResult = result;
         SwingUtilities.invokeLater(() -> {
             synchronized (SymbolIndexer.this) {
                 if (revision != requestedRevision) {
                     return;
                 }
             }
-            callback.onIndexed(result);
+            callback.onIndexed(indexedResult);
         });
     }
 
