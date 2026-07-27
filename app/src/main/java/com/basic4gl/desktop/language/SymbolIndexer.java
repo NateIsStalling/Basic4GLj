@@ -15,8 +15,8 @@ import javax.swing.SwingUtilities;
  * Lightweight debounced symbol indexer.
  *
  * <p>Listens for source-text changes and, after a short debounce delay, delegates symbol
- * extraction to a {@link com.basic4gl.desktop.spi.LanguageService} instance. Results are delivered via a {@link Callback}
- * on the Swing EDT.
+ * extraction to the supplied {@link LanguageSupport} instance. Results are delivered via a
+ * {@link Callback} on the Swing EDT.
  *
  * <p>The indexer itself contains <strong>no language-specific logic</strong>; all parsing is
  * performed by the supplied {@code LanguageSupport}. Swapping languages is a constructor change.
