@@ -22,7 +22,6 @@ import org.fife.ui.rsyntaxtextarea.TokenMap;
 public class BasicTokenMaker extends LanguageSupportTokenMaker {
 
     private static final String INCLUDE = "include ";
-    // TODO "#plugin " should be added to the antlr config
     private static final String PLUGIN = "#plugin ";
     private static final char CHAR_COMMENT = '\'';
 
