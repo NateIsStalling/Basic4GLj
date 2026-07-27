@@ -5,6 +5,8 @@ import com.basic4gl.desktop.spi.Builder;
 import com.basic4gl.desktop.spi.Configuration;
 import com.basic4gl.desktop.spi.ProjectSettingsPage;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -18,6 +20,7 @@ public class ProjectSettingsDialog
 
     private static final String BUILD_SETTINGS_CARD = "Build Settings";
     private static final String PROGRAM_ARGUMENTS_CARD = "Program Arguments";
+    private static final String EDITOR_CARD = "Editor";
 
     private final JDialog dialog;
     private final JDialog libraryInfoDialog;
@@ -26,8 +29,11 @@ public class ProjectSettingsDialog
     private final JTextPane infoTextPane;
     private com.basic4gl.desktop.spi.ConfigurationFormPanel configPane;
     private final IConfigurableAppSettings appSettings;
+    private final EditorSettings editorSettings;
     private final List<ProjectSettingsPage> contributedPages;
     private final Runnable onSettingsApplied;
+    private JCheckBox autoCompleteCheckBox;
+    private JCheckBox showFunctionSignaturesCheckBox;
 
     private List<Builder> builders;
     private int currentBuilder;
@@ -35,9 +41,11 @@ public class ProjectSettingsDialog
     public ProjectSettingsDialog(
             Frame parent,
             IConfigurableAppSettings appSettings,
+            EditorSettings editorSettings,
             List<ProjectSettingsPage> contributedProjectSettingsPages,
             Runnable onSettingsApplied) {
         this.appSettings = appSettings;
+        this.editorSettings = editorSettings;
         this.onSettingsApplied = onSettingsApplied;
         this.contributedPages = new ArrayList<>(contributedProjectSettingsPages);
         this.contributedPages.sort(Comparator.comparingInt(ProjectSettingsPage::getSortOrder)
@@ -82,6 +90,7 @@ public class ProjectSettingsDialog
         DefaultListModel<SectionItem> sections = new DefaultListModel<>();
         sections.addElement(new SectionItem("Build Settings", BUILD_SETTINGS_CARD));
         sections.addElement(new SectionItem("Program Arguments", PROGRAM_ARGUMENTS_CARD));
+        sections.addElement(new SectionItem("Editor", EDITOR_CARD));
         for (ProjectSettingsPage page : this.contributedPages) {
             sections.addElement(new SectionItem(page.getPageTitle(), cardIdForPage(page)));
         }
@@ -98,6 +107,7 @@ public class ProjectSettingsDialog
 
         cardsPane.add(buildSettingsCard, BUILD_SETTINGS_CARD);
         cardsPane.add(programArgumentsCard, PROGRAM_ARGUMENTS_CARD);
+        cardsPane.add(createEditorSettingsCard(), EDITOR_CARD);
 
         for (ProjectSettingsPage page : this.contributedPages) {
             cardsPane.add(createContributedCard(page), cardIdForPage(page));
@@ -123,6 +133,8 @@ public class ProjectSettingsDialog
                 return;
             }
             ((CardLayout) cardsPane.getLayout()).show(cardsPane, selectedSection.cardId);
+            cardsPane.revalidate();
+            cardsPane.repaint();
         });
         sectionsList.setSelectedIndex(0);
 
@@ -226,6 +238,73 @@ public class ProjectSettingsDialog
         return programArgumentsCard;
     }
 
+    private JPanel createEditorSettingsCard() {
+        JPanel editorCard = new JPanel(new BorderLayout());
+        editorCard.setBorder(new EmptyBorder(12, 12, 12, 12));
+
+        autoCompleteCheckBox = new JCheckBox("Auto-complete function names", editorSettings.autoCompleteEnabled);
+        showFunctionSignaturesCheckBox =
+                new JCheckBox("Show function signatures", editorSettings.showFunctionSignatures);
+
+        showFunctionSignaturesCheckBox.setEnabled(autoCompleteCheckBox.isSelected());
+        autoCompleteCheckBox.addActionListener(
+                e -> showFunctionSignaturesCheckBox.setEnabled(autoCompleteCheckBox.isSelected()));
+
+        VerticalScrollablePanel optionsPanel = new VerticalScrollablePanel();
+        optionsPanel.add(createSectionHeader("Editor", "Configure code-completion behavior in the source editor."));
+        optionsPanel.add(Box.createVerticalStrut(16));
+        optionsPanel.add(createCheckBoxRow(
+                autoCompleteCheckBox,
+                "Suggests matching functions, keywords, and symbols as you type, or via Ctrl+Space."));
+        optionsPanel.add(Box.createVerticalStrut(12));
+        optionsPanel.add(createCheckBoxRow(
+                showFunctionSignaturesCheckBox,
+                "Shows an interactive parameter hint as you type a function call's arguments."));
+
+        JScrollPane scrollPane = new JScrollPane(
+                optionsPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setBorder(null);
+        configureSmoothScrolling(scrollPane);
+
+        // JTextArea wrapping is height-for-width. Revalidate only this list when the viewport
+        // width changes so each description recalculates its wrapped height.
+        scrollPane.getViewport().addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                optionsPanel.invalidate();
+                optionsPanel.revalidate();
+            }
+        });
+
+        editorCard.add(scrollPane, BorderLayout.CENTER);
+        return editorCard;
+    }
+
+    private JPanel createCheckBoxRow(JCheckBox checkBox, String description) {
+        JPanel row = new JPanel(new BorderLayout(0, 4));
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row.add(checkBox, BorderLayout.NORTH);
+
+        JTextArea descriptionLabel = createWrappingLabel(description);
+        descriptionLabel.setBorder(new EmptyBorder(0, 24, 0, 0));
+        row.add(descriptionLabel, BorderLayout.CENTER);
+
+        return row;
+    }
+
+    private JTextArea createWrappingLabel(String text) {
+        JTextArea label = new JTextArea(text);
+        label.setEditable(false);
+        label.setFocusable(false);
+        label.setOpaque(false);
+        label.setLineWrap(true);
+        label.setWrapStyleWord(true);
+        label.setBorder(null);
+        label.setFont(UIManager.getFont("Label.font"));
+        label.setForeground(UIManager.getColor("Label.disabledForeground"));
+        return label;
+    }
+
     private JPanel createContributedCard(ProjectSettingsPage page) {
         JPanel card = new JPanel(new BorderLayout(0, 12));
         card.setBorder(new EmptyBorder(12, 12, 12, 12));
@@ -243,13 +322,15 @@ public class ProjectSettingsDialog
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
 
         JLabel titleLabel = new JLabel(title);
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         Font baseFont = titleLabel.getFont();
         titleLabel.setFont(baseFont.deriveFont(Font.BOLD, baseFont.getSize() + 3f));
         titleLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
 
-        JLabel descriptionLabel = new JLabel(Objects.requireNonNullElse(description, ""));
-        descriptionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+        JTextArea descriptionLabel = createWrappingLabel(Objects.requireNonNullElse(description, ""));
+        descriptionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        header.setAlignmentX(Component.LEFT_ALIGNMENT);
         header.add(titleLabel);
         header.add(descriptionLabel);
         return header;
@@ -297,6 +378,9 @@ public class ProjectSettingsDialog
         }
 
         appSettings.setProgramArguments(parseProgramArguments(argumentsTextArea.getText()));
+
+        editorSettings.autoCompleteEnabled = autoCompleteCheckBox.isSelected();
+        editorSettings.showFunctionSignatures = showFunctionSignaturesCheckBox.isSelected();
 
         try {
             for (ProjectSettingsPage page : contributedPages) {
@@ -398,6 +482,39 @@ public class ProjectSettingsDialog
 
         Builder builder = builders.get(currentBuilder);
         builder.setConfiguration(configuration);
+    }
+
+    private static final class VerticalScrollablePanel extends JPanel implements Scrollable {
+        private static final long serialVersionUID = 1L;
+
+        private VerticalScrollablePanel() {
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        }
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return Math.max(16, visibleRect.height - 16);
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return true;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return false;
+        }
     }
 
     private static class SectionItem {

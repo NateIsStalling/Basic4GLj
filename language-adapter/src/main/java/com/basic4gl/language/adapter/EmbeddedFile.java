@@ -1,9 +1,6 @@
 package com.basic4gl.language.adapter;
 
 import com.basic4gl.language.core.internal.Assert;
-
-import static com.basic4gl.language.core.internal.Assert.assertTrue;
-
 import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;

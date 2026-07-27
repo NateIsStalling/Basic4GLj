@@ -570,26 +570,17 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
                 continue;
             }
 
+            // Basic4GL string literals have no escape sequences: the first '"' always
+            // ends the literal, and backslash is an ordinary character (see STRING_LIT
+            // in Basic4GL.g4).
             StringBuilder literal = new StringBuilder();
             index++;
-            boolean escaped = false;
             boolean terminated = false;
             while (index < length) {
                 char current = text.charAt(index++);
-                if (escaped) {
-                    if (current == '"' || current == '\\') {
-                        literal.append(current);
-                    } else {
-                        // Preserve non-quote escape sequences exactly as typed.
-                        literal.append('\\').append(current);
-                    }
-                    escaped = false;
-                    continue;
-                }
 
-                if (current == '\\') {
-                    escaped = true;
-                    continue;
+                if (current == '\n' || current == '\r') {
+                    break;
                 }
 
                 if (current == '"') {

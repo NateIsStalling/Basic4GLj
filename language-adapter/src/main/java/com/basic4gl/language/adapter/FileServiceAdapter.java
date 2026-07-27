@@ -22,9 +22,11 @@ public class FileServiceAdapter implements ISourceFileServer {
 
     static class SourceFile implements ISourceFile {
         private final com.basic4gl.desktop.spi.ISourceFile sourceFile;
+
         public SourceFile(com.basic4gl.desktop.spi.ISourceFile sourceFile) {
             this.sourceFile = sourceFile;
         }
+
         @Override
         public String getNextLine() {
             return sourceFile.getNextLine();

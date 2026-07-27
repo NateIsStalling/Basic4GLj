@@ -14,14 +14,11 @@ import java.util.regex.Pattern;
  */
 public class FileOpener extends HasErrorState {
     private static final String DEFAULT_APP_DATA_FOLDER_NAME = "Basic4GL";
-    private static final Pattern SAFE_APP_DATA_FOLDER_NAME =
-            Pattern.compile("[A-Za-z0-9 _.-]+");
+    private static final Pattern SAFE_APP_DATA_FOLDER_NAME = Pattern.compile("[A-Za-z0-9 _.-]+");
 
     private static final Set<String> WINDOWS_RESERVED_NAMES = Set.of(
-            "CON", "PRN", "AUX", "NUL",
-            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
-    );
+            "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1",
+            "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9");
     public static final String ERROR_DIRECTORY_ALREADY_EXISTS = "Directory already exists";
 
     private String parentDirectory;

@@ -24,10 +24,7 @@ public class ConfigurationMapper {
         Configuration mapped = new Configuration();
         for (int i = 0; i < config.getSettingCount(); i++) {
             mapped.addSetting(
-                    config.getField(i).clone(),
-                    config.getParamType(i),
-                    config.getValue(i),
-                    config.getFieldInfoText(i));
+                    config.getField(i).clone(), config.getParamType(i), config.getValue(i), config.getFieldInfoText(i));
         }
         return mapped;
     }
@@ -39,19 +36,32 @@ public class ConfigurationMapper {
 
         Configuration settings = new Configuration();
         settings.addSetting(new String[] {"Editor"}, Configuration.PARAM_HEADING, "");
-        settings.addSetting(new String[] {"Sandbox Mode"}, Configuration.PARAM_BOOL, Boolean.toString(config.isSandboxModeEnabled()));
+        settings.addSetting(
+                new String[] {"Sandbox Mode"},
+                Configuration.PARAM_BOOL,
+                Boolean.toString(config.isSandboxModeEnabled()));
         settings.addSetting(new String[] {"Syntax"}, Configuration.PARAM_INT, Integer.toString(config.getSyntax()));
         settings.addSetting(
-                new String[] {"Program Arguments"}, Configuration.PARAM_STRING, serializeArguments(config.getProgramArguments()));
-        settings.addSetting(new String[] {"JVM Arguments"}, Configuration.PARAM_STRING, serializeArguments(config.getJvmArguments()));
+                new String[] {"Program Arguments"},
+                Configuration.PARAM_STRING,
+                serializeArguments(config.getProgramArguments()));
         settings.addSetting(
-                new String[] {"Enable JVM Debugger"}, Configuration.PARAM_BOOL, Boolean.toString(config.isJvmDebuggingEnabled()));
+                new String[] {"JVM Arguments"},
+                Configuration.PARAM_STRING,
+                serializeArguments(config.getJvmArguments()));
+        settings.addSetting(
+                new String[] {"Enable JVM Debugger"},
+                Configuration.PARAM_BOOL,
+                Boolean.toString(config.isJvmDebuggingEnabled()));
         settings.addSetting(
                 new String[] {"Suspend Until Attach"},
                 Configuration.PARAM_BOOL,
                 Boolean.toString(config.isJvmDebugSuspendUntilAttach()));
         Integer debugPort = config.getJvmDebugPortOverride();
-        settings.addSetting(new String[] {"Debug Port Override"}, Configuration.PARAM_STRING, debugPort == null ? "" : debugPort.toString());
+        settings.addSetting(
+                new String[] {"Debug Port Override"},
+                Configuration.PARAM_STRING,
+                debugPort == null ? "" : debugPort.toString());
         settings.addSetting(
                 new String[] {"Plugin Directories"},
                 Configuration.PARAM_STRING,
@@ -64,13 +74,11 @@ public class ConfigurationMapper {
             return null;
         }
 
-        com.basic4gl.language.core.runtime.Configuration mapped = new com.basic4gl.language.core.runtime.Configuration();
+        com.basic4gl.language.core.runtime.Configuration mapped =
+                new com.basic4gl.language.core.runtime.Configuration();
         for (int i = 0; i < config.getSettingCount(); i++) {
             mapped.addSetting(
-                    config.getField(i).clone(),
-                    config.getParamType(i),
-                    config.getValue(i),
-                    config.getFieldInfoText(i));
+                    config.getField(i).clone(), config.getParamType(i), config.getValue(i), config.getFieldInfoText(i));
         }
         return mapped;
     }
@@ -81,14 +89,15 @@ public class ConfigurationMapper {
             return settings;
         }
 
-        settings.setSandboxModeEnabled(config.getBooleanValueOrDefault(APP_SETTING_SANDBOX_MODE, settings.isSandboxModeEnabled()));
+        settings.setSandboxModeEnabled(
+                config.getBooleanValueOrDefault(APP_SETTING_SANDBOX_MODE, settings.isSandboxModeEnabled()));
         settings.setSyntax(config.getIntValueOrDefault(APP_SETTING_SYNTAX, settings.getSyntax()));
         settings.setProgramArguments(parseArguments(getValueOrNull(config, APP_SETTING_PROGRAM_ARGUMENTS)));
         settings.setJvmArguments(parseArguments(getValueOrNull(config, APP_SETTING_JVM_ARGUMENTS)));
         settings.setJvmDebuggingEnabled(
                 config.getBooleanValueOrDefault(APP_SETTING_JVM_DEBUG_ENABLED, settings.isJvmDebuggingEnabled()));
-        settings.setJvmDebugSuspendUntilAttach(
-                config.getBooleanValueOrDefault(APP_SETTING_JVM_DEBUG_SUSPEND, settings.isJvmDebugSuspendUntilAttach()));
+        settings.setJvmDebugSuspendUntilAttach(config.getBooleanValueOrDefault(
+                APP_SETTING_JVM_DEBUG_SUSPEND, settings.isJvmDebugSuspendUntilAttach()));
 
         String debugPortValue = getValueOrNull(config, APP_SETTING_JVM_DEBUG_PORT);
         if (debugPortValue != null && !debugPortValue.trim().isEmpty()) {

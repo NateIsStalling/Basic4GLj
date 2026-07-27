@@ -12,10 +12,9 @@ public class Basic4GLPreprocessorService implements com.basic4gl.desktop.spi.Pre
         this.compiler = compiler;
         this.preprocessor = preprocessor;
     }
-    @Override
-    public void onLoad(com.basic4gl.desktop.spi.PluginContext context) {
 
-    }
+    @Override
+    public void onLoad(com.basic4gl.desktop.spi.PluginContext context) {}
 
     @Override
     public boolean hasError() {

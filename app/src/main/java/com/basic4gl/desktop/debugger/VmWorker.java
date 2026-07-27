@@ -16,9 +16,11 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
 
     private com.basic4gl.language.core.runtime.DebuggerTaskCallback debuggerTaskCallback;
     private CountDownLatch completionLatch;
+    private volatile boolean started;
 
     public VmWorker(IFileProvider fileOpener) {
         files = fileOpener;
+        completionLatch = new CountDownLatch(1);
     }
 
     public void setCompletionLatch(CountDownLatch latch) {
@@ -47,6 +49,7 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
 
     @Override
     protected Object doInBackground() throws Exception {
+        started = true;
         //        IVMDriver driver = this.builder.getVMDriver();
         boolean noError;
         DebugClientAdapter adapter = null;
@@ -111,11 +114,29 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
             debuggerTaskCallback.onDebuggerDisconnected();
             //            driver.onFinally();
             // Confirm this thread has completed before a new one can be executed
-            if (completionLatch != null) {
-                completionLatch.countDown();
-            }
+            countDownCompletionLatch();
         }
         return null;
+    }
+
+    /**
+     * SwingWorker#cancel is final, so callers use this wrapper to ensure the completion
+     * latch is released even when the worker is canceled before doInBackground() runs.
+     * @param mayInterruptIfRunning
+     * @return cancel result
+     */
+    public boolean cancelWorker(boolean mayInterruptIfRunning) {
+        boolean canceled = cancel(mayInterruptIfRunning);
+        if (!started && canceled) {
+            countDownCompletionLatch();
+        }
+        return canceled;
+    }
+
+    private void countDownCompletionLatch() {
+        if (completionLatch != null) {
+            completionLatch.countDown();
+        }
     }
 
     public void onDebugCallbackReceived(com.basic4gl.debug.protocol.callbacks.DebuggerCallbackMessage callback) {

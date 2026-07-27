@@ -16,7 +16,8 @@ class ConfigurationMapperTest {
 
     @Test
     void toEditorConfiguration_runtimeConfigCopiesAllSettings() {
-        com.basic4gl.language.core.runtime.Configuration runtime = new com.basic4gl.language.core.runtime.Configuration();
+        com.basic4gl.language.core.runtime.Configuration runtime =
+                new com.basic4gl.language.core.runtime.Configuration();
         runtime.addSetting(new String[] {"Header"}, com.basic4gl.language.core.runtime.Configuration.PARAM_HEADING, "");
         runtime.addSetting(
                 new String[] {"Toggle"},

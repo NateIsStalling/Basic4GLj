@@ -2,13 +2,8 @@ package com.basic4gl.language.adapter;
 
 import com.basic4gl.language.core.runtime.HasErrorState;
 import com.basic4gl.language.core.runtime.IFileOpener;
-import com.basic4gl.library.desktopgl.content.FileOpener;
-
 import java.io.*;
-import java.net.URL;
 import java.nio.IntBuffer;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Created by Nate on 11/1/2015.
@@ -65,7 +60,6 @@ public class FileOpenerAdapter extends HasErrorState implements IFileOpener {
     public FileOutputStream openWrite(String filename, boolean filesFolder) {
         return parent.openWrite(filename, filesFolder);
     }
-
 
     // The following function returns a filename that can be opened in read mode.
     // If the input filename corresponds to an embedded file, the embedded file
