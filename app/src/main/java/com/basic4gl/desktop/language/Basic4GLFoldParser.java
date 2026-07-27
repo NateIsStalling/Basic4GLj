@@ -93,9 +93,18 @@ public class Basic4GLFoldParser implements FoldParser {
             if (type == Basic4GL.IDENTIFIER) {
                 Token next = peekNextNonWs(tokens, tokenIndex + 1);
                 if (next != null && next.getType() == Basic4GL.COLON) {
-                    // Labels fall through, so each new label opens a nested region.
-                    openScope(scopes, folds, textArea, ScopeKind.LABEL, "label", tokenOffset);
-                    continue;
+                    int prevIndex = tokenIndex - 1;
+                    while (prevIndex >= 0 && tokens.get(prevIndex).getType() == Basic4GL.WS) {
+                        prevIndex--;
+                    }
+                    boolean atStatementStart = prevIndex < 0
+                            || tokens.get(prevIndex).getType() == Basic4GL.NEWLINE
+                            || tokens.get(prevIndex).getType() == Basic4GL.COLON;
+                    if (atStatementStart) {
+                        // Labels fall through, so each new label opens a nested region.
+                        openScope(scopes, folds, textArea, ScopeKind.LABEL, "label", tokenOffset);
+                        continue;
+                    }
                 }
             }
 
