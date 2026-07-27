@@ -251,23 +251,18 @@ public class ProjectSettingsDialog
                 e -> showFunctionSignaturesCheckBox.setEnabled(autoCompleteCheckBox.isSelected()));
 
         VerticalScrollablePanel optionsPanel = new VerticalScrollablePanel();
-        optionsPanel.add(createSectionHeader(
-                "Editor", "Configure code-completion behavior in the source editor."));
+        optionsPanel.add(createSectionHeader("Editor", "Configure code-completion behavior in the source editor."));
         optionsPanel.add(Box.createVerticalStrut(16));
-        optionsPanel.add(
-                createCheckBoxRow(
-                        autoCompleteCheckBox,
-                        "Suggests matching functions, keywords, and symbols as you type, or via Ctrl+Space."));
+        optionsPanel.add(createCheckBoxRow(
+                autoCompleteCheckBox,
+                "Suggests matching functions, keywords, and symbols as you type, or via Ctrl+Space."));
         optionsPanel.add(Box.createVerticalStrut(12));
-        optionsPanel.add(
-                createCheckBoxRow(
-                        showFunctionSignaturesCheckBox,
-                        "Shows an interactive parameter hint as you type a function call's arguments."));
+        optionsPanel.add(createCheckBoxRow(
+                showFunctionSignaturesCheckBox,
+                "Shows an interactive parameter hint as you type a function call's arguments."));
 
         JScrollPane scrollPane = new JScrollPane(
-                optionsPanel,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                optionsPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(null);
         configureSmoothScrolling(scrollPane);
 
