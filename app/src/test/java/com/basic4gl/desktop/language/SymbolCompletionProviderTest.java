@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.FunctionCompletion;
@@ -22,68 +23,84 @@ import org.junit.Test;
  * Exercises the Swing-integration piece of contextual completion: that {@link
  * SymbolCompletionProvider} actually narrows its offered completions using a caret-position context
  * resolver, on top of the framework's own prefix matching.
+ *
+ * <p>{@code setBaseCompletions}/{@code setSymbols}/{@code setKindIcons} apply synchronously only
+ * when called from the EDT; off the EDT (e.g. a plain JUnit test thread) they marshal the rebuild
+ * via {@code invokeLater} and return immediately. Every test therefore runs its setup and
+ * assertions inside a single {@link SwingUtilities#invokeAndWait} so the rebuild is guaranteed to
+ * have happened before {@code getCompletions} is called - without it, these tests are racy and fail
+ * intermittently depending on when the EDT happens to process the queued rebuild.
  */
 public class SymbolCompletionProviderTest {
 
     @Test
-    public void gosub_offersOnlyIndexedLabels() {
-        SymbolCompletionProvider provider = new SymbolCompletionProvider();
-        provider.setBaseCompletions(
-                List.of(new CompletionProposal("keyword", "gosub"), new CompletionProposal("keyword", "goto")));
-        provider.setSymbols(List.of(
-                new IndexedSymbol("label", "Foo", "Foo:"), new IndexedSymbol("variable", "Bar", "Bar as integer")));
-        provider.setContextResolver(
-                text -> text.endsWith("gosub ") ? CompletionContext.of("label") : CompletionContext.ANY);
+    public void gosub_offersOnlyIndexedLabels() throws Exception {
+        onEdt(() -> {
+            SymbolCompletionProvider provider = new SymbolCompletionProvider();
+            provider.setBaseCompletions(List.of(
+                    new CompletionProposal("keyword", "gosub"), new CompletionProposal("keyword", "goto")));
+            provider.setSymbols(List.of(
+                    new IndexedSymbol("label", "Foo", "Foo:"),
+                    new IndexedSymbol("variable", "Bar", "Bar as integer")));
+            provider.setContextResolver(
+                    text -> text.endsWith("gosub ") ? CompletionContext.of("label") : CompletionContext.ANY);
 
-        List<Completion> completions = provider.getCompletions(textAreaWithCaretAtEnd("gosub "));
+            List<Completion> completions = provider.getCompletions(textAreaWithCaretAtEnd("gosub "));
 
-        assertEquals(1, completions.size());
-        assertEquals("Foo", completions.get(0).getInputText());
+            assertEquals(1, completions.size());
+            assertEquals("Foo", completions.get(0).getInputText());
+        });
     }
 
     @Test
-    public void unrestrictedContext_stillOffersKeywordsAndSymbols() {
-        SymbolCompletionProvider provider = new SymbolCompletionProvider();
-        provider.setBaseCompletions(List.of(new CompletionProposal("keyword", "gosub")));
-        provider.setSymbols(List.of(new IndexedSymbol("label", "Foo", "Foo:")));
-        provider.setContextResolver(text -> CompletionContext.ANY);
+    public void unrestrictedContext_stillOffersKeywordsAndSymbols() throws Exception {
+        onEdt(() -> {
+            SymbolCompletionProvider provider = new SymbolCompletionProvider();
+            provider.setBaseCompletions(List.of(new CompletionProposal("keyword", "gosub")));
+            provider.setSymbols(List.of(new IndexedSymbol("label", "Foo", "Foo:")));
+            provider.setContextResolver(text -> CompletionContext.ANY);
 
-        List<Completion> completions = provider.getCompletions(textAreaWithCaretAtEnd(""));
+            List<Completion> completions = provider.getCompletions(textAreaWithCaretAtEnd(""));
 
-        assertTrue(completions.stream().anyMatch(c -> "gosub".equals(c.getInputText())));
-        assertTrue(completions.stream().anyMatch(c -> "Foo".equals(c.getInputText())));
+            assertTrue(completions.stream().anyMatch(c -> "gosub".equals(c.getInputText())));
+            assertTrue(completions.stream().anyMatch(c -> "Foo".equals(c.getInputText())));
+        });
     }
 
     @Test
-    public void restrictedContext_withNoMatchingSymbols_offersNothing() {
-        SymbolCompletionProvider provider = new SymbolCompletionProvider();
-        provider.setBaseCompletions(List.of(new CompletionProposal("keyword", "gosub")));
-        provider.setSymbols(List.of(new IndexedSymbol("variable", "Bar", "Bar as integer")));
-        provider.setContextResolver(text -> CompletionContext.of("label"));
+    public void restrictedContext_withNoMatchingSymbols_offersNothing() throws Exception {
+        onEdt(() -> {
+            SymbolCompletionProvider provider = new SymbolCompletionProvider();
+            provider.setBaseCompletions(List.of(new CompletionProposal("keyword", "gosub")));
+            provider.setSymbols(List.of(new IndexedSymbol("variable", "Bar", "Bar as integer")));
+            provider.setContextResolver(text -> CompletionContext.of("label"));
 
-        List<Completion> completions = provider.getCompletions(textAreaWithCaretAtEnd(""));
+            List<Completion> completions = provider.getCompletions(textAreaWithCaretAtEnd(""));
 
-        assertFalse(completions.stream().anyMatch(c -> "gosub".equals(c.getInputText())));
-        assertFalse(completions.stream().anyMatch(c -> "Bar".equals(c.getInputText())));
+            assertFalse(completions.stream().anyMatch(c -> "gosub".equals(c.getInputText())));
+            assertFalse(completions.stream().anyMatch(c -> "Bar".equals(c.getInputText())));
+        });
     }
 
     @Test
-    public void kindIcons_areAppliedToMatchingCompletions() {
+    public void kindIcons_areAppliedToMatchingCompletions() throws Exception {
         Icon labelIcon = noopIcon();
         Icon variableIcon = noopIcon();
 
-        SymbolCompletionProvider provider = new SymbolCompletionProvider();
-        provider.setKindIcons(Map.of("label", labelIcon, "variable", variableIcon));
-        provider.setSymbols(List.of(
-                new IndexedSymbol("label", "Foo", "Foo:"),
-                new IndexedSymbol("variable", "Bar", "Bar as integer"),
-                new IndexedSymbol("struc", "Baz", "struc Baz")));
+        onEdt(() -> {
+            SymbolCompletionProvider provider = new SymbolCompletionProvider();
+            provider.setKindIcons(Map.of("label", labelIcon, "variable", variableIcon));
+            provider.setSymbols(List.of(
+                    new IndexedSymbol("label", "Foo", "Foo:"),
+                    new IndexedSymbol("variable", "Bar", "Bar as integer"),
+                    new IndexedSymbol("struc", "Baz", "struc Baz")));
 
-        List<Completion> completions = provider.getCompletions(textAreaWithCaretAtEnd(""));
+            List<Completion> completions = provider.getCompletions(textAreaWithCaretAtEnd(""));
 
-        assertEquals(labelIcon, completionNamed(completions, "Foo").getIcon());
-        assertEquals(variableIcon, completionNamed(completions, "Bar").getIcon());
-        assertEquals(null, completionNamed(completions, "Baz").getIcon());
+            assertEquals(labelIcon, completionNamed(completions, "Foo").getIcon());
+            assertEquals(variableIcon, completionNamed(completions, "Bar").getIcon());
+            assertEquals(null, completionNamed(completions, "Baz").getIcon());
+        });
     }
 
     /**
@@ -92,28 +109,32 @@ public class SymbolCompletionProviderTest {
      * even when the "Show function signatures" setting was enabled.
      */
     @Test
-    public void builtinFunctionProposal_populatesRealParameters() {
-        SymbolCompletionProvider provider = new SymbolCompletionProvider();
-        provider.setBaseCompletions(
-                List.of(new CompletionProposal("userfunc", "Sin", "real Sin(real arg1)", List.of("real arg1"))));
+    public void builtinFunctionProposal_populatesRealParameters() throws Exception {
+        onEdt(() -> {
+            SymbolCompletionProvider provider = new SymbolCompletionProvider();
+            provider.setBaseCompletions(List.of(
+                    new CompletionProposal("userfunc", "Sin", "real Sin(real arg1)", List.of("real arg1"))));
 
-        Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "Sin");
+            Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "Sin");
 
-        assertTrue(completion instanceof FunctionCompletion);
-        FunctionCompletion function = (FunctionCompletion) completion;
-        assertEquals(1, function.getParamCount());
-        assertEquals("real", function.getParam(0).getType());
-        assertEquals("arg1", function.getParam(0).getName());
+            assertTrue(completion instanceof FunctionCompletion);
+            FunctionCompletion function = (FunctionCompletion) completion;
+            assertEquals(1, function.getParamCount());
+            assertEquals("real", function.getParam(0).getType());
+            assertEquals("arg1", function.getParam(0).getName());
+        });
     }
 
     @Test
-    public void builtinFunctionProposal_withNoParameters_hasEmptyParamList() {
-        SymbolCompletionProvider provider = new SymbolCompletionProvider();
-        provider.setBaseCompletions(List.of(new CompletionProposal("userfunc", "Beep", "Beep", List.of())));
+    public void builtinFunctionProposal_withNoParameters_hasEmptyParamList() throws Exception {
+        onEdt(() -> {
+            SymbolCompletionProvider provider = new SymbolCompletionProvider();
+            provider.setBaseCompletions(List.of(new CompletionProposal("userfunc", "Beep", "Beep", List.of())));
 
-        Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "Beep");
+            Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "Beep");
 
-        assertEquals(0, ((FunctionCompletion) completion).getParamCount());
+            assertEquals(0, ((FunctionCompletion) completion).getParamCount());
+        });
     }
 
     /**
@@ -138,19 +159,21 @@ public class SymbolCompletionProviderTest {
      * through correctly, since the flattened signature has no "as Type" clause to parse for them.
      */
     @Test
-    public void userDefinedFunction_prefersStructuredParametersOverParsingSignature() {
-        SymbolCompletionProvider provider = new SymbolCompletionProvider();
-        provider.setSymbols(
-                List.of(new IndexedSymbol("userfunc", "Foo", "Foo(x$, y%)", List.of("string x$", "integer y%"))));
+    public void userDefinedFunction_prefersStructuredParametersOverParsingSignature() throws Exception {
+        onEdt(() -> {
+            SymbolCompletionProvider provider = new SymbolCompletionProvider();
+            provider.setSymbols(List.of(
+                    new IndexedSymbol("userfunc", "Foo", "Foo(x$, y%)", List.of("string x$", "integer y%"))));
 
-        Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "Foo");
+            Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "Foo");
 
-        FunctionCompletion function = (FunctionCompletion) completion;
-        assertEquals(2, function.getParamCount());
-        assertEquals("string", function.getParam(0).getType());
-        assertEquals("x$", function.getParam(0).getName());
-        assertEquals("integer", function.getParam(1).getType());
-        assertEquals("y%", function.getParam(1).getName());
+            FunctionCompletion function = (FunctionCompletion) completion;
+            assertEquals(2, function.getParamCount());
+            assertEquals("string", function.getParam(0).getType());
+            assertEquals("x$", function.getParam(0).getName());
+            assertEquals("integer", function.getParam(1).getType());
+            assertEquals("y%", function.getParam(1).getName());
+        });
     }
 
     /**
@@ -161,38 +184,54 @@ public class SymbolCompletionProviderTest {
      * parsing the flattened signature string instead of offering no parameters at all.
      */
     @Test
-    public void userDefinedFunction_parsesParametersFromFlattenedSignature() {
-        SymbolCompletionProvider provider = new SymbolCompletionProvider();
-        provider.setSymbols(List.of(new IndexedSymbol("userfunc", "MyFunc", "MyFunc(x as integer, y as string)")));
+    public void userDefinedFunction_parsesParametersFromFlattenedSignature() throws Exception {
+        onEdt(() -> {
+            SymbolCompletionProvider provider = new SymbolCompletionProvider();
+            provider.setSymbols(
+                    List.of(new IndexedSymbol("userfunc", "MyFunc", "MyFunc(x as integer, y as string)")));
 
-        Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "MyFunc");
+            Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "MyFunc");
 
-        FunctionCompletion function = (FunctionCompletion) completion;
-        assertEquals(2, function.getParamCount());
-        assertEquals("integer", function.getParam(0).getType());
-        assertEquals("x", function.getParam(0).getName());
-        assertEquals("string", function.getParam(1).getType());
-        assertEquals("y", function.getParam(1).getName());
+            FunctionCompletion function = (FunctionCompletion) completion;
+            assertEquals(2, function.getParamCount());
+            assertEquals("integer", function.getParam(0).getType());
+            assertEquals("x", function.getParam(0).getName());
+            assertEquals("string", function.getParam(1).getType());
+            assertEquals("y", function.getParam(1).getName());
+        });
     }
 
     @Test
-    public void userDefinedFunction_withNoParameters_hasEmptyParamList() {
-        SymbolCompletionProvider provider = new SymbolCompletionProvider();
-        provider.setSymbols(List.of(new IndexedSymbol("userfunc", "DoThing", "DoThing()")));
+    public void userDefinedFunction_withNoParameters_hasEmptyParamList() throws Exception {
+        onEdt(() -> {
+            SymbolCompletionProvider provider = new SymbolCompletionProvider();
+            provider.setSymbols(List.of(new IndexedSymbol("userfunc", "DoThing", "DoThing()")));
 
-        Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "DoThing");
+            Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "DoThing");
 
-        assertEquals(0, ((FunctionCompletion) completion).getParamCount());
+            assertEquals(0, ((FunctionCompletion) completion).getParamCount());
+        });
     }
 
     @Test
-    public void userDefinedFunction_withMalformedSignature_doesNotThrowAndHasNoParams() {
-        SymbolCompletionProvider provider = new SymbolCompletionProvider();
-        provider.setSymbols(List.of(new IndexedSymbol("userfunc", "Weird", "not a real signature")));
+    public void userDefinedFunction_withMalformedSignature_doesNotThrowAndHasNoParams() throws Exception {
+        onEdt(() -> {
+            SymbolCompletionProvider provider = new SymbolCompletionProvider();
+            provider.setSymbols(List.of(new IndexedSymbol("userfunc", "Weird", "not a real signature")));
 
-        Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "Weird");
+            Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "Weird");
 
-        assertEquals(0, ((FunctionCompletion) completion).getParamCount());
+            assertEquals(0, ((FunctionCompletion) completion).getParamCount());
+        });
+    }
+
+    /** Runs {@code body} synchronously on the EDT, regardless of the calling thread. */
+    private static void onEdt(Runnable body) throws Exception {
+        if (SwingUtilities.isEventDispatchThread()) {
+            body.run();
+        } else {
+            SwingUtilities.invokeAndWait(body);
+        }
     }
 
     private static Completion completionNamed(List<Completion> completions, String inputText) {
