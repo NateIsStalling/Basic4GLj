@@ -9,6 +9,8 @@ public class EditorSettingsFactory {
     public static final String CONFIG_RECENT_FILES = "RECENT_FILES";
     public static final String CONFIG_PLUGIN_DIRECTORY = "PLUGIN_DIRECTORY";
     public static final String CONFIG_RECENT_PLUGIN_DIRECTORIES = "RECENT_PLUGIN_DIRECTORIES";
+    public static final String CONFIG_AUTOCOMPLETE_ENABLED = "AUTOCOMPLETE_ENABLED";
+    public static final String CONFIG_SHOW_FUNCTION_SIGNATURES = "SHOW_FUNCTION_SIGNATURES";
 
     public static final int CONFIG_RECENT_FILES_MAX_COUNT = 10;
     public static final int CONFIG_RECENT_PLUGIN_DIRECTORIES_MAX_COUNT = 10;
@@ -43,6 +45,9 @@ public class EditorSettingsFactory {
                     .distinct()
                     .limit(CONFIG_RECENT_PLUGIN_DIRECTORIES_MAX_COUNT)
                     .toList());
+            settings.autoCompleteEnabled = Boolean.parseBoolean(prop.getProperty(CONFIG_AUTOCOMPLETE_ENABLED, "true"));
+            settings.showFunctionSignatures =
+                    Boolean.parseBoolean(prop.getProperty(CONFIG_SHOW_FUNCTION_SIGNATURES, "true"));
         } else {
             System.out.println("Settings file not found: " + configFile.getAbsolutePath());
         }
@@ -71,6 +76,8 @@ public class EditorSettingsFactory {
                 CONFIG_PLUGIN_DIRECTORY,
                 settings.currentPluginDirectory == null ? "" : settings.currentPluginDirectory.trim());
         prop.setProperty(CONFIG_RECENT_PLUGIN_DIRECTORIES, recentPluginDirectories);
+        prop.setProperty(CONFIG_AUTOCOMPLETE_ENABLED, Boolean.toString(settings.autoCompleteEnabled));
+        prop.setProperty(CONFIG_SHOW_FUNCTION_SIGNATURES, Boolean.toString(settings.showFunctionSignatures));
         prop.store(new FileWriter(configFile), "store properties to file");
     }
 }

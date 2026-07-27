@@ -18,6 +18,10 @@ public class ProjectSettingsDialog
 
     private static final String BUILD_SETTINGS_CARD = "Build Settings";
     private static final String PROGRAM_ARGUMENTS_CARD = "Program Arguments";
+    private static final String EDITOR_CARD = "Editor";
+    // Conservative wrap width for section/checkbox descriptions - safe even at the dialog's
+    // minimum size (setMinimumSize below), where the card area is narrowest.
+    private static final int DESCRIPTION_WRAP_WIDTH = 420;
 
     private final JDialog dialog;
     private final JDialog libraryInfoDialog;
@@ -26,8 +30,11 @@ public class ProjectSettingsDialog
     private final JTextPane infoTextPane;
     private com.basic4gl.desktop.spi.ConfigurationFormPanel configPane;
     private final IConfigurableAppSettings appSettings;
+    private final EditorSettings editorSettings;
     private final List<ProjectSettingsPage> contributedPages;
     private final Runnable onSettingsApplied;
+    private JCheckBox autoCompleteCheckBox;
+    private JCheckBox showFunctionSignaturesCheckBox;
 
     private List<Builder> builders;
     private int currentBuilder;
@@ -35,9 +42,11 @@ public class ProjectSettingsDialog
     public ProjectSettingsDialog(
             Frame parent,
             IConfigurableAppSettings appSettings,
+            EditorSettings editorSettings,
             List<ProjectSettingsPage> contributedProjectSettingsPages,
             Runnable onSettingsApplied) {
         this.appSettings = appSettings;
+        this.editorSettings = editorSettings;
         this.onSettingsApplied = onSettingsApplied;
         this.contributedPages = new ArrayList<>(contributedProjectSettingsPages);
         this.contributedPages.sort(Comparator.comparingInt(ProjectSettingsPage::getSortOrder)
@@ -82,6 +91,7 @@ public class ProjectSettingsDialog
         DefaultListModel<SectionItem> sections = new DefaultListModel<>();
         sections.addElement(new SectionItem("Build Settings", BUILD_SETTINGS_CARD));
         sections.addElement(new SectionItem("Program Arguments", PROGRAM_ARGUMENTS_CARD));
+        sections.addElement(new SectionItem("Editor", EDITOR_CARD));
         for (ProjectSettingsPage page : this.contributedPages) {
             sections.addElement(new SectionItem(page.getPageTitle(), cardIdForPage(page)));
         }
@@ -98,6 +108,7 @@ public class ProjectSettingsDialog
 
         cardsPane.add(buildSettingsCard, BUILD_SETTINGS_CARD);
         cardsPane.add(programArgumentsCard, PROGRAM_ARGUMENTS_CARD);
+        cardsPane.add(createEditorSettingsCard(), EDITOR_CARD);
 
         for (ProjectSettingsPage page : this.contributedPages) {
             cardsPane.add(createContributedCard(page), cardIdForPage(page));
@@ -226,6 +237,65 @@ public class ProjectSettingsDialog
         return programArgumentsCard;
     }
 
+    private JPanel createEditorSettingsCard() {
+        JPanel editorCard = new JPanel(new BorderLayout(0, 12));
+        editorCard.setBorder(new EmptyBorder(12, 12, 12, 12));
+        editorCard.add(
+                createSectionHeader("Editor", "Configure code-completion behavior in the source editor."),
+                BorderLayout.NORTH);
+
+        JPanel body = new JPanel();
+        body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
+
+        autoCompleteCheckBox = new JCheckBox("Auto-complete function names", editorSettings.autoCompleteEnabled);
+        showFunctionSignaturesCheckBox =
+                new JCheckBox("Show function signatures", editorSettings.showFunctionSignatures);
+
+        body.add(createCheckBoxRow(
+                autoCompleteCheckBox,
+                "Suggests matching functions, keywords, and symbols as you type, or via Ctrl+Space."));
+        body.add(Box.createRigidArea(new Dimension(0, 12)));
+        body.add(createCheckBoxRow(
+                showFunctionSignaturesCheckBox,
+                "Shows an interactive parameter hint as you type a function call's arguments. Only"
+                        + " takes effect while auto-complete is enabled above."));
+        body.add(Box.createVerticalGlue());
+
+        editorCard.add(body, BorderLayout.CENTER);
+        return editorCard;
+    }
+
+    private JPanel createCheckBoxRow(JCheckBox checkBox, String description) {
+        JPanel row = new JPanel();
+        row.setLayout(new BoxLayout(row, BoxLayout.Y_AXIS));
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
+        checkBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel descriptionLabel = createWrappingLabel(description);
+        descriptionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+        descriptionLabel.setBorder(new EmptyBorder(0, 24, 0, 0));
+        descriptionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        row.add(checkBox);
+        row.add(descriptionLabel);
+        return row;
+    }
+
+    /**
+     * Creates a label that wraps onto multiple lines instead of being clipped or forcing the
+     * dialog wider. Swing's plain {@link JLabel} never wraps on its own, so this renders the text
+     * as HTML with an explicit wrap width - sized conservatively for the dialog's minimum width
+     * (see {@link #dialog}'s {@code setMinimumSize}) so it wraps correctly even at that size.
+     */
+    private JLabel createWrappingLabel(String text) {
+        return new JLabel(
+                "<html><body style='width:%dpx'>%s</body></html>".formatted(DESCRIPTION_WRAP_WIDTH, htmlEscape(text)));
+    }
+
+    private String htmlEscape(String text) {
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
     private JPanel createContributedCard(ProjectSettingsPage page) {
         JPanel card = new JPanel(new BorderLayout(0, 12));
         card.setBorder(new EmptyBorder(12, 12, 12, 12));
@@ -247,7 +317,7 @@ public class ProjectSettingsDialog
         titleLabel.setFont(baseFont.deriveFont(Font.BOLD, baseFont.getSize() + 3f));
         titleLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
 
-        JLabel descriptionLabel = new JLabel(Objects.requireNonNullElse(description, ""));
+        JLabel descriptionLabel = createWrappingLabel(Objects.requireNonNullElse(description, ""));
         descriptionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 
         header.add(titleLabel);
@@ -297,6 +367,9 @@ public class ProjectSettingsDialog
         }
 
         appSettings.setProgramArguments(parseProgramArguments(argumentsTextArea.getText()));
+
+        editorSettings.autoCompleteEnabled = autoCompleteCheckBox.isSelected();
+        editorSettings.showFunctionSignatures = showFunctionSignaturesCheckBox.isSelected();
 
         try {
             for (ProjectSettingsPage page : contributedPages) {

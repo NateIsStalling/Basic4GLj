@@ -16,6 +16,7 @@ import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.FunctionCompletion;
+import org.fife.ui.autocomplete.ParameterizedCompletion;
 import org.fife.ui.autocomplete.VariableCompletion;
 
 /**
@@ -65,6 +66,10 @@ public class SymbolCompletionProvider extends DefaultCompletionProvider {
         // Auto-activation is gated by the provider: without this the popup never appears while
         // typing letters, regardless of AutoCompletion.setAutoActivationEnabled(true).
         setAutoActivationRules(true, null);
+        // Without this, getParameterListStart() stays 0 (unconfigured) and
+        // AbstractCompletionProvider#getParameterizedCompletions bails out immediately - the
+        // parameter-assistance popup never triggers off a typed '(', no matter how it's populated.
+        setParameterizedCompletionParams('(', ", ", ')');
     }
 
     /**
@@ -198,9 +203,26 @@ public class SymbolCompletionProvider extends DefaultCompletionProvider {
         if (text == null || text.isEmpty()) {
             return null;
         }
-        String summary = proposal.summary() == null || proposal.summary().isEmpty() ? text : proposal.summary();
-        BasicCompletion completion = new BasicCompletion(this, text, summary);
-        completion.setIcon(kindIcons.get(normalizeKind(proposal.kind())));
+        String kind = normalizeKind(proposal.kind());
+        Icon icon = kindIcons.get(kind);
+
+        if ("userfunc".equals(kind)) {
+            // Populated (rather than left empty) so the editor's parameter-assistance popup has
+            // real parameters to show when the user types the function's opening paren.
+            FunctionCompletion completion = new FunctionCompletion(this, text, "");
+            completion.setParams(toParameters(proposal.parameters()));
+            completion.setShortDescription(proposal.summary());
+            completion.setSummary(proposal.summary());
+            completion.setIcon(icon);
+            return completion;
+        }
+        // No fallback to text() as a shortDescription here: a row with nothing distinguishing it
+        // beyond its own name (e.g. a bare keyword or type) should show just the name, not the
+        // name a second time as a "description".
+        BasicCompletion completion = isBlank(proposal.summary())
+                ? new BasicCompletion(this, text)
+                : new BasicCompletion(this, text, proposal.summary());
+        completion.setIcon(icon);
         return completion;
     }
 
@@ -213,12 +235,21 @@ public class SymbolCompletionProvider extends DefaultCompletionProvider {
             return null;
         }
         String kind = normalizeKind(symbol.kind());
-        String signature = symbol.signature() == null || symbol.signature().isEmpty() ? name : symbol.signature();
+        String signature = symbol.signature();
         Icon icon = kindIcons.get(kind);
 
         switch (kind) {
             case "userfunc" -> {
                 FunctionCompletion completion = new FunctionCompletion(this, name, "");
+                // Prefer the language's own structured parameters (correct even for type-suffix
+                // params like x$/x%/x# with no explicit "as Type"). Fall back to best-effort
+                // parsing of the flattened "Name(param as Type, ...)" display string only for a
+                // LanguageSupport that hasn't been updated to populate IndexedSymbol#parameters.
+                List<String> parameterSignatures = symbol.parameters();
+                completion.setParams(
+                        parameterSignatures.isEmpty()
+                                ? parseUserFunctionParameters(signature == null ? "" : signature)
+                                : toParameters(parameterSignatures));
                 completion.setShortDescription(signature);
                 completion.setSummary(signature);
                 completion.setIcon(icon);
@@ -232,12 +263,74 @@ public class SymbolCompletionProvider extends DefaultCompletionProvider {
                 return completion;
             }
             default -> {
-                // struc, label, and any future kinds insert the bare name and surface the
-                // signature as the description.
-                BasicCompletion completion = new BasicCompletion(this, name, signature);
+                // struc, label, and any future kinds: the name plus the kind's icon already
+                // conveys everything useful here (signature() is typically just the name itself,
+                // e.g. "Foo:" or "struc Foo"), so no inline description is shown.
+                BasicCompletion completion = new BasicCompletion(this, name);
                 completion.setIcon(icon);
                 return completion;
             }
         }
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.isEmpty();
+    }
+
+    /**
+     * Converts {@code "type name"}-formatted parameter strings (see {@link
+     * CompletionProposal#parameters()}) into real {@link ParameterizedCompletion.Parameter}s.
+     */
+    private static List<ParameterizedCompletion.Parameter> toParameters(List<String> parameterSignatures) {
+        List<ParameterizedCompletion.Parameter> params = new ArrayList<>(parameterSignatures.size());
+        for (String parameterSignature : parameterSignatures) {
+            params.add(toParameter(parameterSignature));
+        }
+        return params;
+    }
+
+    private static ParameterizedCompletion.Parameter toParameter(String parameterSignature) {
+        String trimmed = parameterSignature.trim();
+        int splitAt = trimmed.lastIndexOf(' ');
+        if (splitAt < 0) {
+            return new ParameterizedCompletion.Parameter(null, trimmed);
+        }
+        String type = trimmed.substring(0, splitAt).trim();
+        String name = trimmed.substring(splitAt + 1).trim();
+        return new ParameterizedCompletion.Parameter(type, name);
+    }
+
+    /**
+     * Best-effort parse of a flattened {@code "Name(param1 as Type1, param2 as Type2)"} display
+     * string back into real parameters. Returns an empty list (rather than throwing) for any
+     * signature that doesn't match the expected shape, so a malformed/unusual signature just means
+     * no parameter assistance rather than a broken completion.
+     */
+    private static List<ParameterizedCompletion.Parameter> parseUserFunctionParameters(String signature) {
+        int open = signature.indexOf('(');
+        int close = signature.lastIndexOf(')');
+        if (open < 0 || close < open) {
+            return List.of();
+        }
+        String inner = signature.substring(open + 1, close).trim();
+        if (inner.isEmpty()) {
+            return List.of();
+        }
+        List<ParameterizedCompletion.Parameter> params = new ArrayList<>();
+        for (String part : inner.split(",")) {
+            String trimmed = part.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            int asIndex = trimmed.toLowerCase().indexOf(" as ");
+            if (asIndex < 0) {
+                params.add(new ParameterizedCompletion.Parameter(null, trimmed));
+            } else {
+                String name = trimmed.substring(0, asIndex).trim();
+                String type = trimmed.substring(asIndex + 4).trim();
+                params.add(new ParameterizedCompletion.Parameter(type, name));
+            }
+        }
+        return params;
     }
 }

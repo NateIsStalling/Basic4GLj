@@ -1404,6 +1404,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         }
     }
 
+    public EditorSettings getSettings() {
+        return settings;
+    }
+
     public void saveSettings() {
         String applicationStoragePath =
                 System.getProperty("user.home") + System.getProperty("file.separator") + BuildInfo.APPLICATION_NAME;

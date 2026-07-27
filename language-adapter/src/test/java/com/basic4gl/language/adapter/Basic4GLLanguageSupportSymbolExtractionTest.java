@@ -33,6 +33,34 @@ public class Basic4GLLanguageSupportSymbolExtractionTest {
         IndexedSymbol doThing = symbolNamed(symbols, "DoThing");
         assertEquals("userfunc", doThing.kind());
         assertEquals("DoThing()", doThing.signature());
+        assertTrue(doThing.parameters().isEmpty());
+    }
+
+    @Test
+    public void function_withExplicitlyTypedParameter_populatesStructuredParameters() {
+        String source = "function MyFunc(x as integer) as integer\nend function\n";
+
+        List<IndexedSymbol> symbols = support.extractSymbols(source);
+
+        assertEquals(List.of("integer x"), symbolNamed(symbols, "MyFunc").parameters());
+    }
+
+    /**
+     * Regression test: parameters using Basic4GL's type-suffix shorthand ({@code $}/{@code %}/
+     * {@code #}, e.g. {@code x$}) have no {@code as Type} clause at all, so the type must be
+     * inferred from the suffix character - the same convention {@code dim} declarations already
+     * use (see {@code inferTypeFromIdentifierSuffix}). Previously this was never done for function
+     * parameters, so completions offered no argument-type information for them.
+     */
+    @Test
+    public void function_withTypeSuffixParameters_infersTypesFromSuffix() {
+        String source = "function Foo(x$, y%, z as integer, w#)\nend function\n";
+
+        List<IndexedSymbol> symbols = support.extractSymbols(source);
+
+        assertEquals(
+                List.of("string x$", "integer y%", "integer z", "real w#"),
+                symbolNamed(symbols, "Foo").parameters());
     }
 
     /**

@@ -9,4 +9,8 @@ public class EditorSettings {
     public List<File> recentFiles = new ArrayList<>();
     public List<File> recentPluginDirectories = new ArrayList<>();
     public String currentPluginDirectory;
+
+    // Autocomplete preferences.
+    public boolean autoCompleteEnabled = true;
+    public boolean showFunctionSignatures = true;
 }

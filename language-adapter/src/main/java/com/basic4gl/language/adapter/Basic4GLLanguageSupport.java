@@ -272,10 +272,12 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
     public List<CompletionProposal> keywordCompletions() {
         List<CompletionProposal> proposals = new ArrayList<>(KEYWORDS.size() + TYPE_NAMES.size());
         for (String keyword : KEYWORDS) {
-            proposals.add(new CompletionProposal("keyword", keyword, "keyword " + keyword));
+            // No summary: the row already shows the keyword itself, and "keyword " + keyword
+            // repeats it verbatim rather than adding any distinguishing information.
+            proposals.add(new CompletionProposal("keyword", keyword));
         }
         for (String type : TYPE_NAMES) {
-            proposals.add(new CompletionProposal("type", type, "type " + type));
+            proposals.add(new CompletionProposal("type", type));
         }
         return proposals;
     }
@@ -382,6 +384,14 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         // count towards parenDepth (otherwise the signature's opening paren is mistaken for a
         // nested one and its matching close is never recognized as the end of the parameter list).
         boolean sigParenSeen = false;
+        // Structured "type name" parameters collected alongside the flattened display signature
+        // (see paramBuf), so completions can offer real parameter assistance instead of re-parsing
+        // the display string. Only tracked at the signature's top level (parenDepth == 0); nested
+        // parens (e.g. an array-size expression) are left to the flattened text only.
+        List<String> paramSignatures = null;
+        String currentParamName = null;
+        String currentParamType = null;
+        boolean awaitingParamType = false;
         String pendingVarName = null;
         String pendingVarType = null;
         // Depth of ( or [ seen while in AFTER_DIM_NAME – used to suppress the
@@ -461,6 +471,10 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                         paramBuf = new StringBuilder(t.getText()).append('(');
                         parenDepth = 0;
                         sigParenSeen = false;
+                        paramSignatures = new ArrayList<>();
+                        currentParamName = null;
+                        currentParamType = null;
+                        awaitingParamType = false;
                         state = COLLECT_PARAMS;
                     } else {
                         state = NONE; // unexpected token – reset
@@ -478,15 +492,19 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     } else if (type == Basic4GL.RPAREN) {
                         if (parenDepth == 0) {
                             // Closing paren of the function signature
+                            finalizeParam(paramSignatures, currentParamName, currentParamType);
+                            currentParamName = null;
+                            currentParamType = null;
                             String sig = paramBuf.toString().trim();
                             // Remove trailing comma if any
                             if (sig.endsWith(","))
                                 sig = sig.substring(0, sig.length() - 1).trim();
-                            addFirstFunction(symbolsByKey, pendingFuncName, sig + ")");
+                            addFirstFunction(symbolsByKey, pendingFuncName, sig + ")", paramSignatures);
                             currentRoutine = pendingFuncName;
                             state = NONE;
                             pendingFuncName = null;
                             paramBuf = null;
+                            paramSignatures = null;
                         } else {
                             parenDepth--;
                             paramBuf.append(t.getText());
@@ -499,6 +517,23 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                             paramBuf.append(' ');
                         }
                         paramBuf.append(t.getText());
+
+                        // Structured per-parameter tracking, top-level only (see paramSignatures).
+                        if (parenDepth == 0) {
+                            if (type == Basic4GL.COMMA) {
+                                finalizeParam(paramSignatures, currentParamName, currentParamType);
+                                currentParamName = null;
+                                currentParamType = null;
+                                awaitingParamType = false;
+                            } else if (type == Basic4GL.AS_KW) {
+                                awaitingParamType = true;
+                            } else if (awaitingParamType) {
+                                currentParamType = t.getText();
+                                awaitingParamType = false;
+                            } else if (currentParamName == null && type == Basic4GL.IDENTIFIER) {
+                                currentParamName = t.getText();
+                            }
+                        }
                     }
                 }
                 case AFTER_DIM_KW -> {
@@ -573,6 +608,23 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         }
 
         return new ArrayList<>(symbolsByKey.values());
+    }
+
+    /**
+     * Appends the parameter currently being scanned (if any) to {@code paramSignatures} as a
+     * {@code "type name"} string, inferring the type from the identifier's suffix ({@code $}/{@code
+     * %}/{@code #}) when no explicit {@code as Type} clause was seen - the same convention {@code
+     * dim} declarations use (see {@link #inferTypeFromIdentifierSuffix}).
+     *
+     * <p>A no-op when {@code name} is {@code null} (e.g. a zero-argument function, or a stray
+     * trailing comma with nothing after it).
+     */
+    private static void finalizeParam(List<String> paramSignatures, String name, String type) {
+        if (name == null || name.isBlank()) {
+            return;
+        }
+        String resolvedType = type != null ? type : inferTypeFromIdentifierSuffix(name);
+        paramSignatures.add(resolvedType != null ? resolvedType + " " + name : name);
     }
 
     @Override

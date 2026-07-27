@@ -150,6 +150,9 @@ public class MainWindow
     private final SymbolCompletionProvider completionProvider = new SymbolCompletionProvider();
     private final SymbolIndexer symbolIndexer =
             new SymbolIndexer(languageSupport, this::getIndexerSourceSnapshot, completionProvider::setSymbols);
+    // One AutoCompletion per open tab, tracked so editor-settings changes (see
+    // applyCompletionSettings) can be re-applied to already-open tabs without reopening them.
+    private final Map<FileEditor, AutoCompletion> tabAutoCompletions = new IdentityHashMap<>();
 
     // Debugging
     private boolean isDebugMode = false;
@@ -807,10 +810,32 @@ public class MainWindow
         List<CompletionProposal> proposals = new ArrayList<>(languageSupport.keywordCompletions());
         for (FunctionDefinition function : basicEditor.getLanguageService().getFunctionDefinitions()) {
             if (!"Program".equals(function.packageName())) {
-                proposals.add(new CompletionProposal("userfunc", function.name(), function.signature()));
+                List<String> parameters = Arrays.stream(function.parameters())
+                        .map(param -> param.signature() + " " + param.name())
+                        .toList();
+                proposals.add(new CompletionProposal("userfunc", function.name(), function.signature(), parameters));
             }
         }
         completionProvider.setBaseCompletions(proposals);
+    }
+
+    /**
+     * Re-applies the user's editor/autocomplete preferences ({@link EditorSettings#autoCompleteEnabled},
+     * {@link EditorSettings#showFunctionSignatures}) to every currently open tab's {@link
+     * AutoCompletion} instance, so changes made in the Editor settings page take effect immediately
+     * without reopening files.
+     */
+    private void applyCompletionSettings() {
+        for (AutoCompletion autoCompletion : tabAutoCompletions.values()) {
+            applyCompletionSettingsTo(autoCompletion);
+        }
+    }
+
+    private void applyCompletionSettingsTo(AutoCompletion autoCompletion) {
+        EditorSettings settings = basicEditor.getSettings();
+        autoCompletion.setAutoCompleteEnabled(settings.autoCompleteEnabled);
+        autoCompletion.setAutoActivationEnabled(settings.autoCompleteEnabled);
+        autoCompletion.setParameterAssistanceEnabled(settings.showFunctionSignatures);
     }
 
     private void showAboutDialog() {
@@ -823,8 +848,13 @@ public class MainWindow
         ProjectSettingsDialog dialog = new ProjectSettingsDialog(
                 frame,
                 basicEditor.getBasic4gl().getConfigurableAppSettings(),
+                basicEditor.getSettings(),
                 contributedPages,
-                basicEditor::refreshSyntaxHighlighting);
+                () -> {
+                    basicEditor.refreshSyntaxHighlighting();
+                    applyCompletionSettings();
+                    basicEditor.saveSettings();
+                });
         dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
@@ -1149,7 +1179,8 @@ public class MainWindow
 
     public void closeTab(int index) {
         tabControl.remove(index);
-        fileManager.getFileEditors().remove(index);
+        FileEditor closed = fileManager.getFileEditors().remove(index);
+        tabAutoCompletions.remove(closed);
         // Re-index so completions drop symbols that only existed in the closed file.
         symbolIndexer.indexNow();
     }
@@ -1207,10 +1238,7 @@ public class MainWindow
         // platform equivalent) triggers the popup; the provider content is refreshed by the
         // SymbolIndexer callback as the user types.
         AutoCompletion autoCompletion = new NonRetriggeringAutoCompletion(completionProvider);
-        autoCompletion.setAutoCompleteEnabled(true);
-        autoCompletion.setAutoActivationEnabled(true);
         autoCompletion.setAutoActivationDelay(500);
-        autoCompletion.setParameterAssistanceEnabled(true);
         // Contextual filtering (e.g. gosub/goto -> labels) often narrows the popup down to a single
         // candidate; without this, that candidate would be inserted silently with no visible hint.
         autoCompletion.setAutoCompleteSingleChoices(false);
@@ -1219,6 +1247,8 @@ public class MainWindow
         // component rather than pairing it with the library's non-themable description window.
         autoCompletion.setListCellRenderer(new SymbolCompletionCellRenderer());
         autoCompletion.setShowDescWindow(false);
+        tabAutoCompletions.put(editor, autoCompletion);
+        applyCompletionSettingsTo(autoCompletion);
         autoCompletion.install(editor.getEditorPane());
 
         // Allow user to see cursor position

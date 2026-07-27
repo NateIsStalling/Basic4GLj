@@ -1,5 +1,7 @@
 package com.basic4gl.desktop.spi.language;
 
+import java.util.List;
+
 /**
  * A portable code-completion proposal produced by a {@link LanguageSupport}.
  *
@@ -14,10 +16,18 @@ package com.basic4gl.desktop.spi.language;
  * @param text The text inserted when the proposal is accepted.
  * @param summary Human-readable description shown alongside the proposal; may be {@code null} or
  *     empty, in which case the adapter substitutes {@link #text()}.
+ * @param parameters For {@code "userfunc"} proposals, each parameter formatted as {@code "type
+ *     name"} (e.g. {@code "integer arg1"}); empty for a zero-argument function or any other kind.
+ *     Lets the adapter populate a real parameter list so the editor's function-signature/parameter
+ *     assistance has something to show, instead of only a flattened description string.
  */
-public record CompletionProposal(String kind, String text, String summary) {
+public record CompletionProposal(String kind, String text, String summary, List<String> parameters) {
+
+    public CompletionProposal(String kind, String text, String summary) {
+        this(kind, text, summary, List.of());
+    }
 
     public CompletionProposal(String kind, String text) {
-        this(kind, text, null);
+        this(kind, text, null, List.of());
     }
 }

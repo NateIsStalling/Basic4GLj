@@ -1,8 +1,10 @@
 package com.basic4gl.desktop.language;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import javax.swing.JList;
+import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.FunctionCompletion;
@@ -41,5 +43,23 @@ public class SymbolCompletionCellRendererTest {
 
         assertTrue(renderer.getText().contains("Bar"));
         assertTrue(renderer.getText().contains("Bar as integer"));
+    }
+
+    /**
+     * A completion with no short description at all (e.g. a keyword/type/label/struc, which {@link
+     * SymbolCompletionProvider} deliberately never attaches a redundant description to - see its
+     * {@code toCompletion} methods) should render as just its bare name, not "name - name" or
+     * "name -" with an empty tail. This goes through the base class's unmodified {@code
+     * prepareForOtherCompletion}, so it's really confirming the data layer's contract holds up
+     * rather than any special rendering logic of our own.
+     */
+    @Test
+    public void completionWithNoDescription_rendersBareName() {
+        BasicCompletion keyword = new BasicCompletion(provider, "goto");
+
+        renderer.getListCellRendererComponent(list, keyword, 0, false, false);
+
+        assertTrue(renderer.getText().contains("goto"));
+        assertFalse(renderer.getText().contains(" - "));
     }
 }

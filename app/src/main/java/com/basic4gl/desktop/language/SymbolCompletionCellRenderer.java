@@ -19,6 +19,11 @@ import org.fife.ui.autocomplete.VariableCompletion;
  * <p>Per-kind icons are not handled here: {@link SymbolCompletionProvider} sets each {@code
  * Completion}'s icon directly at construction time (see {@link SymbolCompletionProvider#setKindIcons}),
  * and the base class already renders whatever icon is present.
+ *
+ * <p>There is no toggle to hide this detail text: {@link SymbolCompletionProvider} only ever
+ * attaches a description when it carries real information (a function's parameters, a variable's
+ * type) and omits it entirely otherwise (keywords, types, labels, structs), so there is nothing to
+ * hide - the name plus the row's icon already says everything for those kinds.
  */
 public class SymbolCompletionCellRenderer extends CompletionCellRenderer {
 

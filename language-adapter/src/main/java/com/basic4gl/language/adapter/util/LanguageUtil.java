@@ -107,12 +107,13 @@ public final class LanguageUtil {
         out.putIfAbsent(key, new IndexedSymbol("label", name, name + ":"));
     }
 
-    public static void addFirstFunction(Map<String, IndexedSymbol> out, String name, String signature) {
+    public static void addFirstFunction(
+            Map<String, IndexedSymbol> out, String name, String signature, List<String> parameters) {
         if (name == null || name.isBlank()) {
             return;
         }
         String key = symbolKey("userfunc", name, null);
-        out.putIfAbsent(key, new IndexedSymbol("userfunc", name, signature));
+        out.putIfAbsent(key, new IndexedSymbol("userfunc", name, signature, parameters));
     }
 
     public static void addFirstStruct(Map<String, IndexedSymbol> out, String name) {
