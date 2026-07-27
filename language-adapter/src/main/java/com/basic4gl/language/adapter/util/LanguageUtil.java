@@ -78,13 +78,25 @@ public final class LanguageUtil {
 
     /** Returns the first non-whitespace token at or after position {@code from}, or null. */
     public static Token peekNonWs(List<Token> tokens, int from) {
+        int index = indexOfNextNonWs(tokens, from);
+        return index < 0 ? null : tokens.get(index);
+    }
+
+    /**
+     * Returns the index of the first non-whitespace token at or after position {@code from}, or
+     * -1. Unlike {@link #peekNonWs}, this lets a caller advance its own scan position past the
+     * returned token so it isn't reprocessed as if freshly encountered (e.g. the {@code function}/
+     * {@code sub} keyword closing an {@code end function}/{@code end sub} must not be mistaken for
+     * the start of a new declaration when the scan reaches it on its next iteration).
+     */
+    public static int indexOfNextNonWs(List<Token> tokens, int from) {
         for (int i = from; i < tokens.size(); i++) {
             int type = tokens.get(i).getType();
             if (type != Basic4GL.WS && type != Token.EOF) {
-                return tokens.get(i);
+                return i;
             }
         }
-        return null;
+        return -1;
     }
 
     public static void addFirstLabel(Map<String, IndexedSymbol> out, String name) {
@@ -95,12 +107,13 @@ public final class LanguageUtil {
         out.putIfAbsent(key, new IndexedSymbol("label", name, name + ":"));
     }
 
-    public static void addFirstFunction(Map<String, IndexedSymbol> out, String name, String signature) {
+    public static void addFirstFunction(
+            Map<String, IndexedSymbol> out, String name, String signature, List<String> parameters) {
         if (name == null || name.isBlank()) {
             return;
         }
         String key = symbolKey("userfunc", name, null);
-        out.putIfAbsent(key, new IndexedSymbol("userfunc", name, signature));
+        out.putIfAbsent(key, new IndexedSymbol("userfunc", name, signature, parameters));
     }
 
     public static void addFirstStruct(Map<String, IndexedSymbol> out, String name) {

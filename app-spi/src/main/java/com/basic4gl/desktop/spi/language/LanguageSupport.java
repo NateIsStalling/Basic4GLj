@@ -93,4 +93,42 @@ public interface LanguageSupport {
     default List<SymbolDeclaration> extractDeclarations(String source, String fileId) {
         return List.of();
     }
+
+    // -------------------------------------------------------------------------
+    // Static completions
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns the language's fixed completion proposals — keywords, reserved words, built-in type
+     * names, and any other suggestions that do not depend on the current source text.
+     *
+     * <p>These are combined with the dynamic, source-derived symbol completions (functions,
+     * variables, labels, etc.) by the IDE so code-completion works even in an empty program.
+     *
+     * <p>Default implementation returns an empty list so existing language plugins remain binary
+     * compatible until they opt into keyword completion.
+     *
+     * @return keyword/built-in completion proposals; never {@code null}
+     */
+    default List<CompletionProposal> keywordCompletions() {
+        return List.of();
+    }
+
+    /**
+     * Determines which kinds of completion are relevant given the source text preceding the caret.
+     *
+     * <p>Lets the IDE narrow the offered completions in context — for example returning
+     * {@link CompletionContext#of(String...) of("label")} right after a {@code gosub}/{@code goto}
+     * so only labels are suggested.
+     *
+     * <p>Default implementation returns {@link CompletionContext#ANY} so existing language plugins
+     * remain binary compatible and unfiltered until they opt into context-aware completion.
+     *
+     * @param textBeforeCaret all source text from the start of the document up to (but excluding)
+     *     the caret position
+     * @return the applicable completion context; never {@code null}
+     */
+    default CompletionContext completionContext(String textBeforeCaret) {
+        return CompletionContext.ANY;
+    }
 }

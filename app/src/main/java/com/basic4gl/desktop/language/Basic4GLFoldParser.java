@@ -93,13 +93,26 @@ public class Basic4GLFoldParser implements FoldParser {
             if (type == Basic4GL.IDENTIFIER) {
                 Token next = peekNextNonWs(tokens, tokenIndex + 1);
                 if (next != null && next.getType() == Basic4GL.COLON) {
-                    // Labels fall through, so each new label opens a nested region.
-                    openScope(scopes, folds, textArea, ScopeKind.LABEL, "label", tokenOffset);
-                    continue;
+                    int prevIndex = tokenIndex - 1;
+                    while (prevIndex >= 0 && tokens.get(prevIndex).getType() == Basic4GL.WS) {
+                        prevIndex--;
+                    }
+                    boolean atStatementStart = prevIndex < 0
+                            || tokens.get(prevIndex).getType() == Basic4GL.NEWLINE
+                            || tokens.get(prevIndex).getType() == Basic4GL.COLON;
+                    if (atStatementStart) {
+                        // Labels fall through, so each new label opens a nested region.
+                        openScope(scopes, folds, textArea, ScopeKind.LABEL, "label", tokenOffset);
+                        continue;
+                    }
                 }
             }
 
-            if (type == Basic4GL.FUNCTION_KW || type == Basic4GL.SUB_KW) {
+            if (type == Basic4GL.ENDFUNCTION_KW) {
+                closeToBlock(scopes, folds, "function", tokenOffset);
+            } else if (type == Basic4GL.ENDSUB_KW) {
+                closeToBlock(scopes, folds, "sub", tokenOffset);
+            } else if (type == Basic4GL.FUNCTION_KW || type == Basic4GL.SUB_KW) {
                 openScope(scopes, folds, textArea, ScopeKind.BLOCK, toLower(token.getText()), tokenOffset);
             } else if (type == Basic4GL.IF_KW) {
                 openScope(scopes, folds, textArea, ScopeKind.BLOCK, "if", tokenOffset);
@@ -110,30 +123,32 @@ public class Basic4GLFoldParser implements FoldParser {
             } else if (type == Basic4GL.STRUC_KW || type == Basic4GL.TYPE_KW) {
                 openScope(scopes, folds, textArea, ScopeKind.BLOCK, toLower(token.getText()), tokenOffset);
             } else if (type == Basic4GL.ENDIF_KW) {
-                closeToBlock(scopes, "if", tokenOffset);
+                closeToBlock(scopes, folds, "if", tokenOffset);
             } else if (type == Basic4GL.NEXT_KW) {
-                closeToBlock(scopes, "for", tokenOffset);
+                closeToBlock(scopes, folds, "for", tokenOffset);
             } else if (type == Basic4GL.WEND_KW) {
-                closeToBlock(scopes, "while", tokenOffset);
+                closeToBlock(scopes, folds, "while", tokenOffset);
             } else if (type == Basic4GL.ENDSTRUC_KW) {
-                closeToBlock(scopes, "struc", tokenOffset);
+                closeToBlock(scopes, folds, "struc", tokenOffset);
             } else if (type == Basic4GL.END_KW) {
-                Token nextToken = peekNextNonWs(tokens, tokenIndex + 1);
-                if (nextToken != null) {
-                    String endType = toLower(nextToken.getText());
-                    if ("function".equals(endType) || "sub".equals(endType) || "type".equals(endType)) {
-                        closeToBlock(scopes, endType, tokenOffset);
+                int nextIndex = findNextNonWsIndex(tokens, tokenIndex + 1);
+                if (nextIndex > -1) {
+                    Token nextToken = tokens.get(nextIndex);
+                    String endType = endBlockType(nextToken);
+                    if (endType != null) {
+                        closeToBlock(scopes, folds, endType, tokenOffset);
+                        tokenIndex = nextIndex;
                     }
                 }
             } else if (type == Basic4GL.RETURN_KW) {
                 // Returning from a gosub/function closes fall-through label scopes.
-                closeWhile(scopes, ScopeKind.LABEL, tokenOffset);
+                closeWhile(scopes, folds, ScopeKind.LABEL, tokenOffset);
             }
         }
 
         if (lastContentEndOffset > -1) {
             while (!scopes.isEmpty()) {
-                closeOne(scopes, lastContentEndOffset);
+                closeOne(scopes, folds, lastContentEndOffset);
             }
         }
 
@@ -144,11 +159,30 @@ public class Basic4GLFoldParser implements FoldParser {
      * Peek at the next non-whitespace/non-newline token at the given index.
      */
     private Token peekNextNonWs(List<Token> tokens, int fromIndex) {
+        int index = findNextNonWsIndex(tokens, fromIndex);
+        return index > -1 ? tokens.get(index) : null;
+    }
+
+    private static int findNextNonWsIndex(List<Token> tokens, int fromIndex) {
         for (int i = fromIndex; i < tokens.size(); i++) {
             Token t = tokens.get(i);
             if (t.getType() != Basic4GL.WS && t.getType() != Basic4GL.NEWLINE && t.getType() != Token.EOF) {
-                return t;
+                return i;
             }
+        }
+        return -1;
+    }
+
+    private static String endBlockType(Token token) {
+        int type = token.getType();
+        if (type == Basic4GL.FUNCTION_KW) {
+            return "function";
+        } else if (type == Basic4GL.SUB_KW) {
+            return "sub";
+        } else if (type == Basic4GL.TYPE_KW) {
+            return "type";
+        } else if (type == Basic4GL.IF_KW) {
+            return "if";
         }
         return null;
     }
@@ -179,7 +213,7 @@ public class Basic4GLFoldParser implements FoldParser {
         }
     }
 
-    private static void closeOne(Deque<Scope> scopes, int endOffset) {
+    private static void closeOne(Deque<Scope> scopes, List<Fold> roots, int endOffset) {
         if (scopes.isEmpty()) {
             return;
         }
@@ -188,7 +222,7 @@ public class Basic4GLFoldParser implements FoldParser {
             scope.fold.setEndOffset(Math.max(scope.fold.getStartOffset(), endOffset));
             if (scope.fold.isOnSingleLine()) {
                 if (!scope.fold.removeFromParent()) {
-                    // Top-level single-line folds should be discarded from the root list by caller.
+                    roots.remove(scope.fold);
                 }
             }
         } catch (BadLocationException ignored) {
@@ -196,19 +230,19 @@ public class Basic4GLFoldParser implements FoldParser {
         }
     }
 
-    private static void closeToBlock(Deque<Scope> scopes, String blockType, int endOffset) {
+    private static void closeToBlock(Deque<Scope> scopes, List<Fold> roots, String blockType, int endOffset) {
         while (!scopes.isEmpty()) {
             Scope top = scopes.peek();
-            closeOne(scopes, endOffset);
+            closeOne(scopes, roots, endOffset);
             if (top.kind == ScopeKind.BLOCK && blockType.equals(top.blockType)) {
                 break;
             }
         }
     }
 
-    private static void closeWhile(Deque<Scope> scopes, ScopeKind kind, int endOffset) {
+    private static void closeWhile(Deque<Scope> scopes, List<Fold> roots, ScopeKind kind, int endOffset) {
         while (!scopes.isEmpty() && scopes.peek().kind == kind) {
-            closeOne(scopes, endOffset);
+            closeOne(scopes, roots, endOffset);
         }
     }
 }

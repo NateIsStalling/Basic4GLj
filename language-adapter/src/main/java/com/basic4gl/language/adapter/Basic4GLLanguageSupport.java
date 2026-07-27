@@ -2,6 +2,8 @@ package com.basic4gl.language.adapter;
 
 import static com.basic4gl.language.adapter.util.LanguageUtil.*;
 
+import com.basic4gl.desktop.spi.language.CompletionContext;
+import com.basic4gl.desktop.spi.language.CompletionProposal;
 import com.basic4gl.desktop.spi.language.HighlightKind;
 import com.basic4gl.desktop.spi.language.IndexedSymbol;
 import com.basic4gl.desktop.spi.language.LangToken;
@@ -35,6 +37,65 @@ import org.antlr.v4.runtime.Token;
 public class Basic4GLLanguageSupport implements LanguageSupport {
 
     private static final String SYNTAX_STYLE = "text/basic4gl";
+
+    // Reserved words and word operators, mirroring the KEYWORD group in classify() (print, printr,
+    // and arraymax are deliberately excluded - see the FUNCTION case there). Kept lowercase to
+    // match the conventional Basic4GL source style seen throughout the samples.
+    private static final List<String> KEYWORDS = List.of(
+            "dim",
+            "goto",
+            "if",
+            "then",
+            "elseif",
+            "else",
+            "endif",
+            "end",
+            "gosub",
+            "return",
+            "for",
+            "to",
+            "step",
+            "next",
+            "while",
+            "wend",
+            "run",
+            "struc",
+            "endstruc",
+            "const",
+            "alloc",
+            "null",
+            "data",
+            "read",
+            "reset",
+            "type",
+            "as",
+            "language",
+            "traditional",
+            "basic4gl",
+            "traditional_print",
+            "traditional_suffix",
+            "input",
+            "do",
+            "loop",
+            "until",
+            "function",
+            "sub",
+            "endfunction",
+            "endsub",
+            "declare",
+            "runtime",
+            "bindcode",
+            "exec",
+            "include",
+            "begincodeblock",
+            "endcodeblock",
+            "and",
+            "or",
+            "not",
+            "xor");
+
+    // Built-in type names, mirroring the KEYWORD_2 group in classify().
+    private static final List<String> TYPE_NAMES = List.of("integer", "single", "double", "string");
 
     // -------------------------------------------------------------------------
     // LanguageSupport – identity
@@ -70,25 +131,29 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
     @Override
     public HighlightKind classify(LangToken token) {
         return switch (token.type()) {
-                // Preprocessor
-            case Basic4GL.INCLUDE_DIR -> HighlightKind.PREPROCESSOR;
+                // Preprocessor directives.
+                // 'include' has no leading '#'; '#plugin' does. They are separate
+                // token types because they have separate syntaxes.
+            case Basic4GL.INCLUDE_DIR, Basic4GL.PLUGIN_DIR -> HighlightKind.PREPROCESSOR;
 
-                // Comments
-            case Basic4GL.COMMENT, Basic4GL.REM_COMMENT -> HighlightKind.COMMENT;
+                // Directive arguments: an unquoted include path, and a plugin name
+                // that may or may not be quoted.
+            case Basic4GL.INCLUDE_PATH, Basic4GL.PLUGIN_VALUE, Basic4GL.PLUGIN_VALUE_STRING -> HighlightKind.STRING;
 
-                // Primary keywords
-            case Basic4GL.FUNCTION_KW,
-                    Basic4GL.SUB_KW,
-                    Basic4GL.DIM_KW,
-                    Basic4GL.AS_KW,
+                // Comments. There is no 'rem' form.
+            case Basic4GL.COMMENT -> HighlightKind.COMMENT;
+
+                // Reserved words - TomBasicCompiler.reservedWords, less the four
+                // type names, which are KEYWORD_2 below.
+            case Basic4GL.DIM_KW,
                     Basic4GL.GOTO_KW,
-                    Basic4GL.GOSUB_KW,
                     Basic4GL.IF_KW,
                     Basic4GL.THEN_KW,
-                    Basic4GL.ELSE_KW,
                     Basic4GL.ELSEIF_KW,
+                    Basic4GL.ELSE_KW,
                     Basic4GL.ENDIF_KW,
                     Basic4GL.END_KW,
+                    Basic4GL.GOSUB_KW,
                     Basic4GL.RETURN_KW,
                     Basic4GL.FOR_KW,
                     Basic4GL.TO_KW,
@@ -106,38 +171,65 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     Basic4GL.READ_KW,
                     Basic4GL.RESET_KW,
                     Basic4GL.TYPE_KW,
-                    Basic4GL.AND_KW,
-                    Basic4GL.OR_KW,
-                    Basic4GL.NOT_KW,
-                    Basic4GL.XOR_KW,
-                    Basic4GL.MOD_KW -> HighlightKind.KEYWORD;
+                    Basic4GL.AS_KW,
+                    Basic4GL.LANGUAGE_KW,
+                    Basic4GL.TRADITIONAL_KW,
+                    Basic4GL.BASIC4GL_KW,
+                    Basic4GL.TRADITIONAL_PRINT_KW,
+                    Basic4GL.TRADITIONAL_SUFFIX_KW,
+                    Basic4GL.INPUT_KW,
+                    Basic4GL.DO_KW,
+                    Basic4GL.LOOP_KW,
+                    Basic4GL.UNTIL_KW,
+                    Basic4GL.FUNCTION_KW,
+                    Basic4GL.SUB_KW,
+                    Basic4GL.ENDFUNCTION_KW,
+                    Basic4GL.ENDSUB_KW,
+                    Basic4GL.DECLARE_KW,
+                    Basic4GL.RUNTIME_KW,
+                    Basic4GL.BINDCODE_KW,
+                    Basic4GL.EXEC_KW,
+                    Basic4GL.INCLUDE_KW,
+                    Basic4GL.BEGINCODEBLOCK_KW,
+                    Basic4GL.ENDCODEBLOCK_KW,
 
-                // Secondary keywords – type names and boolean literals
-            case Basic4GL.INTEGER_T,
-                    Basic4GL.INT_T,
-                    Basic4GL.SINGLE_T,
-                    Basic4GL.DOUBLE_T,
-                    Basic4GL.STRING_T,
-                    Basic4GL.TRUE_KW,
-                    Basic4GL.FALSE_KW -> HighlightKind.KEYWORD_2;
+                    // Word operators. Styled as keywords to match the usual BASIC
+                    // convention and the previous behaviour of this adapter; move
+                    // them to OPERATOR if you would rather they matched '+' and '='.
+                    Basic4GL.AND_OP,
+                    Basic4GL.OR_OP,
+                    Basic4GL.NOT_OP,
+                    Basic4GL.XOR_OP,
+                    Basic4GL.LOR_OP,
+                    Basic4GL.LAND_OP -> HighlightKind.KEYWORD;
 
-                // Literals
-            case Basic4GL.STRING_LIT -> HighlightKind.STRING;
+                // Special reserved function names. These are lexer keywords (not IDENTIFIER
+                // tokens), so they never go through the wordsToHighlight re-classification that
+                // ordinary library function calls use - they need their own explicit mapping to
+                // read as functions rather than keywords.
+            case Basic4GL.PRINT_KW, Basic4GL.PRINTR_KW, Basic4GL.ARRAYMAX_KW -> HighlightKind.FUNCTION;
+
+                // Type names. The complete set - there is no 'int'.
+                // 'true' and 'false' are library constants, not tokens; the IDE
+                // adapter re-classifies them via wordsToHighlight.
+            case Basic4GL.INTEGER_T, Basic4GL.SINGLE_T, Basic4GL.DOUBLE_T, Basic4GL.STRING_T -> HighlightKind.KEYWORD_2;
+
+                // Literals. An unquoted element inside a DATA statement is a string
+                // constant, not an identifier.
+            case Basic4GL.STRING_LIT, Basic4GL.DATA_ELEMENT -> HighlightKind.STRING;
             case Basic4GL.INT_LIT, Basic4GL.FLOAT_LIT, Basic4GL.HEX_LIT -> HighlightKind.NUMBER;
 
-                // Identifiers – the IDE adapter re-classifies these via wordsToHighlight
+                // Identifiers - the IDE adapter re-classifies these via wordsToHighlight
             case Basic4GL.IDENTIFIER -> HighlightKind.IDENTIFIER;
 
                 // Whitespace
             case Basic4GL.WS -> HighlightKind.WHITESPACE;
             case Basic4GL.NEWLINE -> HighlightKind.NEWLINE;
 
-                // Operators and punctuation
+                // Operators and punctuation. Basic4GL has no '[' ']', no '\\', no '^'.
             case Basic4GL.COLON,
                     Basic4GL.LPAREN,
                     Basic4GL.RPAREN,
-                    Basic4GL.LBRACKET,
-                    Basic4GL.RBRACKET,
                     Basic4GL.COMMA,
                     Basic4GL.DOT,
                     Basic4GL.SEMICOLON,
@@ -151,18 +243,98 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     Basic4GL.MINUS,
                     Basic4GL.STAR,
                     Basic4GL.SLASH,
-                    Basic4GL.BACKSLASH,
-                    Basic4GL.CARET,
-                    Basic4GL.AT,
-                    Basic4GL.BANG,
-                    Basic4GL.TILDE,
                     Basic4GL.PERCENT,
-                    Basic4GL.PIPE,
-                    Basic4GL.HASH,
                     Basic4GL.AMPERSAND -> HighlightKind.OPERATOR;
 
-                // Unknown / unrecognised
+                // Lexically well-formed but always rejected by the compiler.
+                // These are the three token types to move to an error style if
+                // HighlightKind gains one; for now they take the nearest visual
+                // match so the line still reads sensibly.
+            case Basic4GL.UNTERMINATED_STRING -> HighlightKind.STRING;
+            case Basic4GL.INVALID_COMPARISON -> HighlightKind.OPERATOR;
+            case Basic4GL.INVALID_SYMBOL -> HighlightKind.OTHER;
+
             default -> HighlightKind.OTHER;
+        };
+    }
+
+    // -------------------------------------------------------------------------
+    // LanguageSupport – static completions
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns completion proposals for every reserved word, word operator and built-in type name.
+     *
+     * <p>These are source-independent, so the IDE offers them even in an empty program and merges
+     * them with the dynamic symbol completions produced by {@link #extractSymbols}.
+     */
+    @Override
+    public List<CompletionProposal> keywordCompletions() {
+        List<CompletionProposal> proposals = new ArrayList<>(KEYWORDS.size() + TYPE_NAMES.size());
+        for (String keyword : KEYWORDS) {
+            // No summary: the row already shows the keyword itself, and "keyword " + keyword
+            // repeats it verbatim rather than adding any distinguishing information.
+            proposals.add(new CompletionProposal("keyword", keyword));
+        }
+        for (String type : TYPE_NAMES) {
+            proposals.add(new CompletionProposal("type", type));
+        }
+        return proposals;
+    }
+
+    /**
+     * Restricts completions based on the statement keyword governing the caret position.
+     *
+     * <p>Basic4GL statements are line-oriented, so only the current logical line is examined:
+     *
+     * <ul>
+     *   <li>after {@code goto} / {@code gosub} → only labels
+     *   <li>after {@code as} (a {@code dim ... as} type clause) → only built-in types and structs
+     * </ul>
+     *
+     * Any other position is unrestricted.
+     */
+    @Override
+    public CompletionContext completionContext(String textBeforeCaret) {
+        if (textBeforeCaret == null || textBeforeCaret.isEmpty()) {
+            return CompletionContext.ANY;
+        }
+
+        // Line-oriented language: only the text on the current line controls context.
+        int lineStart = Math.max(textBeforeCaret.lastIndexOf('\n'), textBeforeCaret.lastIndexOf('\r')) + 1;
+        String line = textBeforeCaret.substring(lineStart);
+        if (line.isBlank()) {
+            return CompletionContext.ANY;
+        }
+
+        Basic4GL lexer = createLexer(line);
+        CommonTokenStream stream = new CommonTokenStream(lexer);
+        stream.fill();
+        List<Token> tokens = new ArrayList<>();
+        for (Token token : stream.getTokens()) {
+            int type = token.getType();
+            if (type != Token.EOF && type != Basic4GL.WS && type != Basic4GL.NEWLINE) {
+                tokens.add(token);
+            }
+        }
+        if (tokens.isEmpty()) {
+            return CompletionContext.ANY;
+        }
+
+        // If the caret sits immediately after a word (no trailing separator), the final token is the
+        // partial word being typed; the token that governs context is the one before it.
+        boolean typingWord = !Character.isWhitespace(line.charAt(line.length() - 1));
+        Token last = tokens.get(tokens.size() - 1);
+        boolean lastIsWord = last.getType() == Basic4GL.IDENTIFIER;
+        int controllingIndex = (typingWord && lastIsWord) ? tokens.size() - 2 : tokens.size() - 1;
+        if (controllingIndex < 0) {
+            return CompletionContext.ANY;
+        }
+
+        return switch (tokens.get(controllingIndex).getType()) {
+            case Basic4GL.GOTO_KW, Basic4GL.GOSUB_KW -> CompletionContext.of("label");
+            case Basic4GL.AS_KW -> CompletionContext.of("type", "struc");
+            default -> CompletionContext.ANY;
         };
     }
 
@@ -208,6 +380,18 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         String pendingFuncName = null;
         StringBuilder paramBuf = null;
         int parenDepth = 0;
+        // Whether the signature's own opening paren has been consumed; only parens seen after it
+        // count towards parenDepth (otherwise the signature's opening paren is mistaken for a
+        // nested one and its matching close is never recognized as the end of the parameter list).
+        boolean sigParenSeen = false;
+        // Structured "type name" parameters collected alongside the flattened display signature
+        // (see paramBuf), so completions can offer real parameter assistance instead of re-parsing
+        // the display string. Only tracked at the signature's top level (parenDepth == 0); nested
+        // parens (e.g. an array-size expression) are left to the flattened text only.
+        List<String> paramSignatures = null;
+        String currentParamName = null;
+        String currentParamType = null;
+        boolean awaitingParamType = false;
         String pendingVarName = null;
         String pendingVarType = null;
         // Depth of ( or [ seen while in AFTER_DIM_NAME – used to suppress the
@@ -243,14 +427,19 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     if (type == Basic4GL.FUNCTION_KW || type == Basic4GL.SUB_KW) {
                         state = AFTER_FUNC_KW;
                     } else if (type == Basic4GL.END_KW) {
-                        Token next = peekNonWs(tokens, i + 1);
+                        int nextIdx = indexOfNextNonWs(tokens, i + 1);
+                        Token next = nextIdx < 0 ? null : tokens.get(nextIdx);
                         if (next != null
                                 && (next.getType() == Basic4GL.FUNCTION_KW || next.getType() == Basic4GL.SUB_KW)) {
                             currentRoutine = null;
+                            // Consume the closing function/sub keyword so it isn't reprocessed as
+                            // the start of a new declaration on the loop's next iteration.
+                            i = nextIdx;
                         } else if (next != null && next.getType() == Basic4GL.TYPE_KW) {
                             // "end type" – same as endstruc
                             inStruc = false;
                             currentStrucName = null;
+                            i = nextIdx; // consume the closing "type" keyword
                         }
                     } else if (type == Basic4GL.STRUC_KW || type == Basic4GL.TYPE_KW) {
                         // Entering a struc/type block – capture the struct name from the next identifier
@@ -281,6 +470,11 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                         pendingFuncName = t.getText();
                         paramBuf = new StringBuilder(t.getText()).append('(');
                         parenDepth = 0;
+                        sigParenSeen = false;
+                        paramSignatures = new ArrayList<>();
+                        currentParamName = null;
+                        currentParamType = null;
+                        awaitingParamType = false;
                         state = COLLECT_PARAMS;
                     } else {
                         state = NONE; // unexpected token – reset
@@ -288,20 +482,29 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                 }
                 case COLLECT_PARAMS -> {
                     if (type == Basic4GL.LPAREN) {
-                        parenDepth++;
-                        // don't append – we already opened the sig paren
+                        if (sigParenSeen) {
+                            parenDepth++;
+                            paramBuf.append(t.getText());
+                        } else {
+                            // The signature's own opening paren; already reflected in paramBuf.
+                            sigParenSeen = true;
+                        }
                     } else if (type == Basic4GL.RPAREN) {
                         if (parenDepth == 0) {
                             // Closing paren of the function signature
+                            finalizeParam(paramSignatures, currentParamName, currentParamType);
+                            currentParamName = null;
+                            currentParamType = null;
                             String sig = paramBuf.toString().trim();
                             // Remove trailing comma if any
                             if (sig.endsWith(","))
                                 sig = sig.substring(0, sig.length() - 1).trim();
-                            addFirstFunction(symbolsByKey, pendingFuncName, sig + ")");
+                            addFirstFunction(symbolsByKey, pendingFuncName, sig + ")", paramSignatures);
                             currentRoutine = pendingFuncName;
                             state = NONE;
                             pendingFuncName = null;
                             paramBuf = null;
+                            paramSignatures = null;
                         } else {
                             parenDepth--;
                             paramBuf.append(t.getText());
@@ -314,12 +517,29 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                             paramBuf.append(' ');
                         }
                         paramBuf.append(t.getText());
+
+                        // Structured per-parameter tracking, top-level only (see paramSignatures).
+                        if (parenDepth == 0) {
+                            if (type == Basic4GL.COMMA) {
+                                finalizeParam(paramSignatures, currentParamName, currentParamType);
+                                currentParamName = null;
+                                currentParamType = null;
+                                awaitingParamType = false;
+                            } else if (type == Basic4GL.AS_KW) {
+                                awaitingParamType = true;
+                            } else if (awaitingParamType) {
+                                currentParamType = t.getText();
+                                awaitingParamType = false;
+                            } else if (currentParamName == null && type == Basic4GL.IDENTIFIER) {
+                                currentParamName = t.getText();
+                            }
+                        }
                     }
                 }
                 case AFTER_DIM_KW -> {
                     if (type == Basic4GL.IDENTIFIER) {
                         pendingVarName = t.getText();
-                        // Infer type from identifier suffix (#, !, $, %)
+                        // Infer type from identifier suffix ($, %, #)
                         pendingVarType = inferTypeFromIdentifierSuffix(t.getText());
                         state = AFTER_DIM_NAME;
                     } else {
@@ -332,9 +552,9 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     if (type == Basic4GL.AS_KW && dimArrayDepth == 0) {
                         dimArrayDepth = 0;
                         state = AFTER_AS_KW;
-                    } else if (type == Basic4GL.LPAREN || type == Basic4GL.LBRACKET) {
+                    } else if (type == Basic4GL.LPAREN) {
                         dimArrayDepth++;
-                    } else if (type == Basic4GL.RPAREN || type == Basic4GL.RBRACKET) {
+                    } else if (type == Basic4GL.RPAREN) {
                         if (dimArrayDepth > 0) dimArrayDepth--;
                     } else if (type == Basic4GL.IDENTIFIER && dimArrayDepth == 0) {
                         // "dim Type VarName" – the first IDENTIFIER was the type name,
@@ -365,7 +585,6 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                             inStruc ? "struc:" + (currentStrucName != null ? currentStrucName : "") : currentRoutine;
                     if (type == Basic4GL.IDENTIFIER
                             || type == Basic4GL.INTEGER_T
-                            || type == Basic4GL.INT_T
                             || type == Basic4GL.SINGLE_T
                             || type == Basic4GL.DOUBLE_T
                             || type == Basic4GL.STRING_T) {
@@ -389,6 +608,23 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         }
 
         return new ArrayList<>(symbolsByKey.values());
+    }
+
+    /**
+     * Appends the parameter currently being scanned (if any) to {@code paramSignatures} as a
+     * {@code "type name"} string, inferring the type from the identifier's suffix ({@code $}/{@code
+     * %}/{@code #}) when no explicit {@code as Type} clause was seen - the same convention {@code
+     * dim} declarations use (see {@link #inferTypeFromIdentifierSuffix}).
+     *
+     * <p>A no-op when {@code name} is {@code null} (e.g. a zero-argument function, or a stray
+     * trailing comma with nothing after it).
+     */
+    private static void finalizeParam(List<String> paramSignatures, String name, String type) {
+        if (name == null || name.isBlank()) {
+            return;
+        }
+        String resolvedType = type != null ? type : inferTypeFromIdentifierSuffix(name);
+        paramSignatures.add(resolvedType != null ? resolvedType + " " + name : name);
     }
 
     @Override
@@ -416,6 +652,10 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
         Token pendingFuncNameToken = null;
         StringBuilder paramBuf = null;
         int parenDepth = 0;
+        // Whether the signature's own opening paren has been consumed; only parens seen after it
+        // count towards parenDepth (otherwise the signature's opening paren is mistaken for a
+        // nested one and its matching close is never recognized as the end of the parameter list).
+        boolean sigParenSeen = false;
         Token pendingVarNameToken = null;
         String pendingVarType = null;
         // Depth of ( or [ seen while in AFTER_DIM_NAME – used to suppress the
@@ -455,14 +695,19 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     if (type == Basic4GL.FUNCTION_KW || type == Basic4GL.SUB_KW) {
                         state = AFTER_FUNC_KW;
                     } else if (type == Basic4GL.END_KW) {
-                        Token next = peekNonWs(tokens, i + 1);
+                        int nextIdx = indexOfNextNonWs(tokens, i + 1);
+                        Token next = nextIdx < 0 ? null : tokens.get(nextIdx);
                         if (next != null
                                 && (next.getType() == Basic4GL.FUNCTION_KW || next.getType() == Basic4GL.SUB_KW)) {
                             currentRoutine = null;
+                            // Consume the closing function/sub keyword so it isn't reprocessed as
+                            // the start of a new declaration on the loop's next iteration.
+                            i = nextIdx;
                         } else if (next != null && next.getType() == Basic4GL.TYPE_KW) {
                             // "end type" – same as endstruc
                             inStruc = false;
                             currentStrucName = null;
+                            i = nextIdx; // consume the closing "type" keyword
                         }
                     } else if (type == Basic4GL.STRUC_KW || type == Basic4GL.TYPE_KW) {
                         // Entering a struc/type block – capture the struct name from the next identifier
@@ -508,6 +753,7 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                         pendingFuncNameToken = t;
                         paramBuf = new StringBuilder(t.getText()).append('(');
                         parenDepth = 0;
+                        sigParenSeen = false;
                         state = COLLECT_PARAMS;
                     } else {
                         state = NONE;
@@ -515,7 +761,15 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                 }
                 case COLLECT_PARAMS -> {
                     if (type == Basic4GL.LPAREN) {
-                        parenDepth++;
+                        if (sigParenSeen) {
+                            parenDepth++;
+                            if (paramBuf != null) {
+                                paramBuf.append(t.getText());
+                            }
+                        } else {
+                            // The signature's own opening paren; already reflected in paramBuf.
+                            sigParenSeen = true;
+                        }
                     } else if (type == Basic4GL.RPAREN) {
                         if (parenDepth == 0 && pendingFuncNameToken != null) {
                             String sig = paramBuf.toString().trim();
@@ -556,7 +810,7 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                 case AFTER_DIM_KW -> {
                     if (type == Basic4GL.IDENTIFIER) {
                         pendingVarNameToken = t;
-                        // Infer type from identifier suffix (#, !, $, %)
+                        // Infer type from identifier suffix ($, %, #)
                         pendingVarType = inferTypeFromIdentifierSuffix(t.getText());
                         state = AFTER_DIM_NAME;
                     } else {
@@ -569,9 +823,9 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                     if (type == Basic4GL.AS_KW && dimArrayDepth == 0) {
                         dimArrayDepth = 0;
                         state = AFTER_AS_KW;
-                    } else if (type == Basic4GL.LPAREN || type == Basic4GL.LBRACKET) {
+                    } else if (type == Basic4GL.LPAREN) {
                         dimArrayDepth++;
-                    } else if (type == Basic4GL.RPAREN || type == Basic4GL.RBRACKET) {
+                    } else if (type == Basic4GL.RPAREN) {
                         if (dimArrayDepth > 0) dimArrayDepth--;
                     } else if (type == Basic4GL.IDENTIFIER && dimArrayDepth == 0) {
                         // "dim Type VarName" – the first IDENTIFIER was the type name,
@@ -607,7 +861,6 @@ public class Basic4GLLanguageSupport implements LanguageSupport {
                             inStruc ? "struc:" + (currentStrucName != null ? currentStrucName : "") : currentRoutine;
                     if (type == Basic4GL.IDENTIFIER
                             || type == Basic4GL.INTEGER_T
-                            || type == Basic4GL.INT_T
                             || type == Basic4GL.SINGLE_T
                             || type == Basic4GL.DOUBLE_T
                             || type == Basic4GL.STRING_T) {

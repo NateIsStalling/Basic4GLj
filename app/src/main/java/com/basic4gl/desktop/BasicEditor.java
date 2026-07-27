@@ -10,7 +10,6 @@ import com.basic4gl.debug.protocol.types.DisassembledInstruction;
 import com.basic4gl.debug.protocol.types.Variable;
 import com.basic4gl.desktop.content.ContentDocumentViewer;
 import com.basic4gl.desktop.content.ContentMaterializer;
-import com.basic4gl.desktop.content.FileEditor;
 import com.basic4gl.desktop.content.FileManager;
 import com.basic4gl.desktop.content.TemplateInstantiator;
 import com.basic4gl.desktop.content.catalog.ContentCatalog;
@@ -20,6 +19,7 @@ import com.basic4gl.desktop.content.catalog.TemplateCatalogEntry;
 import com.basic4gl.desktop.debugger.*;
 import com.basic4gl.desktop.editor.ApMode;
 import com.basic4gl.desktop.editor.BasicTokenMaker;
+import com.basic4gl.desktop.content.FileEditor;
 import com.basic4gl.desktop.editor.IEditorPresenter;
 import com.basic4gl.desktop.spi.*;
 import com.basic4gl.desktop.spi.content.ContentDocument;
@@ -35,7 +35,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 import javax.swing.SwingUtilities;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -116,6 +115,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         this.contentService = new DefaultContentService(contentCatalog, basic4gl.getId(), basic4gl.getName());
         this.basic4gl.setOnPluginStateChanged(this::refreshSyntaxHighlighting);
         this.basic4gl.setOnPluginDirectoryHistoryChanged(this::syncPluginDirectorySettings);
+        this.vmWorker = new VmWorker(this);
     }
 
     public void initLibraries() {
@@ -158,7 +158,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
                     handler.launchRemote(); // 12/2020 testing new continue()
             activeRunHandler = basic4gl.getDebug().hasLaunchedProcess() ? handler : null;
             if (activeRunHandler == null && vmWorker != null) {
-                vmWorker.cancel(true);
+                vmWorker.cancelWorker(true);
             }
             updateWaitingForDebuggerStatus(launchInfo);
 
@@ -189,7 +189,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
                         handler.launchRemote(); // 12/2020 testing new continue()
                 activeRunHandler = basic4gl.getDebug().hasLaunchedProcess() ? handler : null;
                 if (activeRunHandler == null && vmWorker != null) {
-                    vmWorker.cancel(true);
+                    vmWorker.cancelWorker(true);
                 }
                 updateWaitingForDebuggerStatus(launchInfo);
 
@@ -427,7 +427,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            vmWorker.cancel(true);
+            vmWorker.cancelWorker(true);
             // TODO confirm there is no overlap with this thread stopping and starting a new one to avoid
             // GL errors
             try {
@@ -438,8 +438,6 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         }
 
         vmWorker = new VmWorker(this);
-
-        vmWorker.setCompletionLatch(new CountDownLatch(1));
 
         callbackMessage.setMessage(new CallbackMessage(), null);
         pendingDisassemblyRequests.clear();
@@ -1053,7 +1051,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
         }
 
         if (vmWorker != null) {
-            vmWorker.cancel(true);
+            vmWorker.cancelWorker(true);
         }
 
         clearAttachWaitFailureWatch();
@@ -1098,7 +1096,7 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
                 activeRunHandler = null;
             }
             if (vmWorker != null) {
-                vmWorker.cancel(true);
+                vmWorker.cancelWorker(true);
             }
         }
 
@@ -1482,6 +1480,10 @@ public class BasicEditor implements MainEditor, IApplicationHost, IFileProvider,
             this.countBytes = countBytes;
             this.rootRequestId = rootRequestId;
         }
+    }
+
+    public EditorSettings getSettings() {
+        return settings;
     }
 
     public void saveSettings() {

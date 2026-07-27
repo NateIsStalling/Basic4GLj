@@ -1,31 +1,14 @@
-package com.basic4gl.language.adapter;
+package com.basic4gl.desktop;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import com.basic4gl.compiler.Preprocessor;
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.desktop.spi.LanguageService;
-import com.basic4gl.language.spi.PluginManager;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.Test;
 
-@ExtendWith(MockitoExtension.class)
-public class LanguageServiceTest {
-
-    @Mock
-    TomBasicCompiler compiler;
-
-    @Mock
-    Preprocessor preprocessor;
-
-    @Mock
-    PluginManager pluginManager;
+public class ExportDialogTest {
 
     @Test
     public void extractStringLiterals_preservesBackslashesLiterally() {
@@ -33,9 +16,7 @@ public class LanguageServiceTest {
         // ordinary characters and must be returned exactly as written.
         String source = "print \"assets\\\\image.png\"\nprint \"line\\nfeed\"";
 
-        LanguageService languageService = new Basic4GLLanguageService(compiler, preprocessor, pluginManager);
-
-        List<String> literals = languageService.extractStringLiterals(source);
+        List<String> literals = ExportDialog.extractStringLiterals(source);
 
         assertEquals(Arrays.asList("assets\\\\image.png", "line\\nfeed"), literals);
     }
@@ -47,9 +28,7 @@ public class LanguageServiceTest {
         // literal containing an escaped quote.
         String source = "print \"He said: \\\"ok\\\"\"";
 
-        LanguageService languageService = new Basic4GLLanguageService(compiler, preprocessor, pluginManager);
-
-        List<String> literals = languageService.extractStringLiterals(source);
+        List<String> literals = ExportDialog.extractStringLiterals(source);
 
         assertEquals(Arrays.asList("He said: \\", ""), literals);
     }
@@ -58,9 +37,7 @@ public class LanguageServiceTest {
     public void extractStringLiterals_ignoresUnterminatedLiteral() {
         String source = "print \"complete\"\nprint \"unterminated";
 
-        LanguageService languageService = new Basic4GLLanguageService(compiler, preprocessor, pluginManager);
-
-        List<String> literals = languageService.extractStringLiterals(source);
+        List<String> literals = ExportDialog.extractStringLiterals(source);
 
         assertEquals(Collections.singletonList("complete"), literals);
     }
@@ -75,9 +52,7 @@ public class LanguageServiceTest {
         source.append("asset.dat");
         source.append('"');
 
-        LanguageService languageService = new Basic4GLLanguageService(compiler, preprocessor, pluginManager);
-
-        List<String> literals = languageService.extractStringLiterals(source.toString());
+        List<String> literals = ExportDialog.extractStringLiterals(source.toString());
 
         assertEquals(1, literals.size());
         assertTrue(literals.get(0).endsWith("asset.dat"));

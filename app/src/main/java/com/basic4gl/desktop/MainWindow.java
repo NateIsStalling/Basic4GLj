@@ -19,8 +19,19 @@ import com.basic4gl.desktop.panels.*;
 import com.basic4gl.desktop.spi.*;
 import com.basic4gl.desktop.util.BasicDialogService;
 import com.basic4gl.desktop.util.RoundedCardPanel;
+import com.basic4gl.desktop.language.NonRetriggeringAutoCompletion;
+import com.basic4gl.desktop.language.SymbolCompletionCellRenderer;
+import com.basic4gl.desktop.language.SymbolCompletionProvider;
+import com.basic4gl.desktop.language.SymbolIndexer;
+import com.basic4gl.desktop.spi.FileLineNumber;
+import com.basic4gl.desktop.spi.MenuService;
+import com.basic4gl.desktop.spi.ProjectExportPage;
+import com.basic4gl.desktop.spi.ProjectSettingsPage;
+import com.basic4gl.desktop.spi.language.CompletionProposal;
+import com.basic4gl.desktop.spi.language.FunctionDefinition;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
+import com.basic4gl.language.adapter.Basic4GLLanguageSupport;
 import com.basic4gl.language.core.internal.Mutable;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
@@ -38,6 +49,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
+import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.SearchContext;
 
@@ -196,6 +208,15 @@ public class MainWindow
 
     private SearchContext searchContext;
 
+    // Code completion: a shared provider kept in sync with the SymbolIndexer output.
+    private final Basic4GLLanguageSupport languageSupport = new Basic4GLLanguageSupport();
+    private final SymbolCompletionProvider completionProvider = new SymbolCompletionProvider();
+    private final SymbolIndexer symbolIndexer =
+            new SymbolIndexer(languageSupport, this::getIndexerSourceSnapshot, completionProvider::setSymbols);
+    // One AutoCompletion per open tab, tracked so editor-settings changes (see
+    // applyCompletionSettings) can be re-applied to already-open tabs without reopening them.
+    private final Map<FileEditor, AutoCompletion> tabAutoCompletions = new IdentityHashMap<>();
+
     // Debugging
     private VirtualMachineViewDialog virtualMachineViewDialog;
     private IDebugPresenter debugPresenter;
@@ -296,6 +317,20 @@ public class MainWindow
         //        replaceDialog.setSearchContext(context);
 
         searchContext = new SearchContext();
+
+        // Seed code-completion with the language's keywords/built-ins so suggestions appear even
+        // before any user symbols are declared. Symbol completions are layered on top as the user
+        // types (see SymbolIndexer wiring in addTab).
+        completionProvider.setBaseCompletions(languageSupport.keywordCompletions());
+        // Let the language restrict completions by caret context (e.g. labels after gosub/goto).
+        completionProvider.setContextResolver(languageSupport::completionContext);
+        // Give each completion kind a distinct icon in the popup list (rendered by
+        // SymbolCompletionCellRenderer, which also folds the description window's content inline).
+        completionProvider.setKindIcons(Map.of(
+                "userfunc", createImageIcon(ICON_FUNCTION),
+                "variable", createImageIcon(ICON_VARIABLE),
+                "label", createImageIcon(ICON_LABEL),
+                "struc", createImageIcon(ICON_STRUCT)));
 
         // Create and set up the window.
         frame.setIconImage(createImageIcon(BuildInfo.ICON_LOGO_SMALL).getImage());
@@ -877,6 +912,54 @@ public class MainWindow
         for (FileEditor editor : fileManager.getFileEditors()) {
             editor.refreshSyntaxHighlighting();
         }
+        refreshBaseCompletions();
+    }
+
+    /**
+     * Rebuilds the completion popup's base (non-symbol) completions: the language's static
+     * keywords/types, plus every function the currently loaded libraries/plugins register with the
+     * compiler (e.g. {@code print}, {@code gl_...}). This runs whenever {@link
+     * #refreshSyntaxHighlighting()} does (initial library load, and again whenever the user's
+     * loaded plugins change), since that's this codebase's existing signal for "the set of available
+     * functions may have changed."
+     *
+     * <p>User-defined ("Program"-scoped) functions are deliberately excluded here: those are already
+     * kept live by {@link SymbolIndexer}/{@link #symbolIndexer} from the raw source text as the user
+     * types, without needing a successful compile first.
+     */
+    private void refreshBaseCompletions() {
+        if (basicEditor == null) {
+            return;
+        }
+        List<CompletionProposal> proposals = new ArrayList<>(languageSupport.keywordCompletions());
+        for (FunctionDefinition function : basicEditor.getLanguageService().getFunctionDefinitions()) {
+            if (!"Program".equals(function.packageName())) {
+                List<String> parameters = Arrays.stream(function.parameters())
+                        .map(param -> param.signature() + " " + param.name())
+                        .toList();
+                proposals.add(new CompletionProposal("userfunc", function.name(), function.signature(), parameters));
+            }
+        }
+        completionProvider.setBaseCompletions(proposals);
+    }
+
+    /**
+     * Re-applies the user's editor/autocomplete preferences ({@link EditorSettings#autoCompleteEnabled},
+     * {@link EditorSettings#showFunctionSignatures}) to every currently open tab's {@link
+     * AutoCompletion} instance, so changes made in the Editor settings page take effect immediately
+     * without reopening files.
+     */
+    private void applyCompletionSettings() {
+        for (AutoCompletion autoCompletion : tabAutoCompletions.values()) {
+            applyCompletionSettingsTo(autoCompletion);
+        }
+    }
+
+    private void applyCompletionSettingsTo(AutoCompletion autoCompletion) {
+        EditorSettings settings = basicEditor.getSettings();
+        autoCompletion.setAutoCompleteEnabled(settings.autoCompleteEnabled);
+        autoCompletion.setAutoActivationEnabled(settings.autoCompleteEnabled);
+        autoCompletion.setParameterAssistanceEnabled(settings.showFunctionSignatures);
     }
 
     private void showAboutDialog() {
@@ -889,8 +972,13 @@ public class MainWindow
         ProjectSettingsDialog dialog = new ProjectSettingsDialog(
                 frame,
                 basicEditor.getBasic4gl().getConfigurableAppSettings(),
+                basicEditor.getSettings(),
                 contributedPages,
-                basicEditor::refreshSyntaxHighlighting);
+                () -> {
+                    basicEditor.refreshSyntaxHighlighting();
+                    applyCompletionSettings();
+                    basicEditor.saveSettings();
+                });
         dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
@@ -922,6 +1010,7 @@ public class MainWindow
         for (IEditorPanelProvider panel : panels) {
             panel.dispose();
         }
+        symbolIndexer.shutdown();
         System.exit(0);
     }
 
@@ -1509,12 +1598,16 @@ public class MainWindow
     public void closeTab(int index) {
         tabControl.remove(index);
         if (index >= 0 && index < fileManager.getFileEditors().size()) {
-            fileManager.getFileEditors().remove(index);
+            FileEditor closed = fileManager.getFileEditors().remove(index);
+            tabAutoCompletions.remove(closed);
         }
         refreshFileViewModeButtons();
         fileManager.ensureRunnableFileValid();
         refreshRunnableFileControls();
         refreshSidebarContent();
+
+        // Re-index so completions drop symbols that only existed in the closed file.
+        symbolIndexer.indexNow();
     }
 
     public void addTab() {
@@ -1570,6 +1663,8 @@ public class MainWindow
                     for (IEditorPanelProvider panel : panels) {
                         panel.onFileModified(edit.getFilePath());
                     }
+
+                    symbolIndexer.schedule();
                 }
 
                 @Override
@@ -1581,19 +1676,35 @@ public class MainWindow
                     for (IEditorPanelProvider panel : panels) {
                         panel.onFileModified(edit.getFilePath());
                     }
+
+                    symbolIndexer.schedule();
                 }
 
                 @Override
                 public void changedUpdate(DocumentEvent e) {
-                    if (e.getLength() == 0) {
-                        // ignore empty changes - eg: syntax highlighting refreshed
-                        return;
-                    }
+                    // RSyntaxDocument fires a 0..length CHANGE when the token maker is swapped.
+                    // Plain-text model: no characters moved. Ignore changes for modification flag.
                     int index = getTabIndex(edit.getFilePath());
-                    edit.setModified();
                     tabControl.setTitleAt(index, edit.getTitle());
                 }
             });
+
+            // Install code completion driven by the shared symbol-backed provider. Ctrl+Space (or the
+            // platform equivalent) triggers the popup; the provider content is refreshed by the
+            // SymbolIndexer callback as the user types.
+            AutoCompletion autoCompletion = new NonRetriggeringAutoCompletion(completionProvider);
+            autoCompletion.setAutoActivationDelay(500);
+            // Contextual filtering (e.g. gosub/goto -> labels) often narrows the popup down to a single
+            // candidate; without this, that candidate would be inserted silently with no visible hint.
+            autoCompletion.setAutoCompleteSingleChoices(false);
+            // Render signature/description inline in the popup list (see SymbolCompletionCellRenderer)
+            // instead of a separate description window, so the whole popup stays one FlatLaf-styled
+            // component rather than pairing it with the library's non-themable description window.
+            autoCompletion.setListCellRenderer(new SymbolCompletionCellRenderer());
+            autoCompletion.setShowDescWindow(false);
+            tabAutoCompletions.put(edit, autoCompletion);
+            applyCompletionSettingsTo(autoCompletion);
+            autoCompletion.install(edit.getEditorPane());
 
             // Allow user to see cursor position
             editorPane.addCaretListener(TrackCaretPosition);
@@ -1612,6 +1723,8 @@ public class MainWindow
         fileManager.ensureRunnableFileValid();
         refreshRunnableFileControls();
         refreshSidebarContent();
+        // Populate completions for the newly opened source without waiting for the first edit.
+        symbolIndexer.indexNow();
     }
 
     public void openDocumentationPreview(ContentDocumentViewer viewer) {
@@ -1631,6 +1744,24 @@ public class MainWindow
             }
         }
         return -1;
+    }
+
+    /**
+     * Concatenates the text of every open editor into a single source snapshot for the
+     * {@link SymbolIndexer}. Concatenation lets symbol extraction (and therefore code completion)
+     * span all open files. Invoked on the EDT by the indexer.
+     */
+    private String getIndexerSourceSnapshot() {
+        if (fileManager == null) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            if (editor.getEditorPane() != null) {
+                builder.append(editor.getEditorPane().getText()).append('\n');
+            }
+        }
+        return builder.toString();
     }
 
     @Override
