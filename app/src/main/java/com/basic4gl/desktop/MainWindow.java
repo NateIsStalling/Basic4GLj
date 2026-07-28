@@ -85,6 +85,10 @@ public class MainWindow
         }
     };
 
+    // Feature flags
+    // TODO remove once the redesigned left sidebar/rail is ready for release.
+    private static final boolean LEFT_SIDEBAR_ENABLED = false;
+
     // Window
     private final JFrame frame = new JFrame(BuildInfo.APPLICATION_NAME);
     private final JSplitPane mainPane;
@@ -709,16 +713,18 @@ public class MainWindow
         hideSplitPaneHandle(contentPane);
         contentPaneDividerSize = contentPane.getDividerSize();
 
-        workspacePane.setLeftComponent(leftSidebarContent);
-        workspacePane.setRightComponent(contentPane);
-        workspacePane.setResizeWeight(0.18);
-        workspacePane.setDividerLocation(expandedLeftSidebarWidth);
-        hideSplitPaneHandle(workspacePane);
-        workspacePaneDividerSize = workspacePane.getDividerSize();
+        if (LEFT_SIDEBAR_ENABLED) {
+            workspacePane.setLeftComponent(leftSidebarContent);
+            workspacePane.setRightComponent(contentPane);
+            workspacePane.setResizeWeight(0.18);
+            workspacePane.setDividerLocation(expandedLeftSidebarWidth);
+            hideSplitPaneHandle(workspacePane);
+            workspacePaneDividerSize = workspacePane.getDividerSize();
+        }
 
         contentPane.setDividerLocation(Math.max(200, frame.getPreferredSize().width - expandedRightDocsWidth));
 
-        topPaneHost.add(workspacePane, BorderLayout.CENTER);
+        topPaneHost.add(LEFT_SIDEBAR_ENABLED ? workspacePane : contentPane, BorderLayout.CENTER);
 
         mainPane.setTopComponent(topPaneHost);
         mainPane.setBottomComponent(bottomBarContainer);
@@ -727,7 +733,9 @@ public class MainWindow
         mainPaneDividerSize = mainPane.getDividerSize();
 
         leftRailsHost.setLayout(new BoxLayout(leftRailsHost, BoxLayout.Y_AXIS));
-        leftRailsHost.add(leftSidebarRail);
+        if (LEFT_SIDEBAR_ENABLED) {
+            leftRailsHost.add(leftSidebarRail);
+        }
         leftRailsHost.add(Box.createVerticalGlue());
         leftRailsHost.add(bottomBarRail);
 
@@ -2347,16 +2355,18 @@ public class MainWindow
         bottomBarRail.setFloatable(false);
         bottomBarRail.setRollover(true);
 
-        Arrays.stream(panels)
-                .filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
-                .forEach(x -> {
-                    leftSidebarContent.add(x.build(this.basicEditor), x.id());
-                    addLeftSidebarButton(
-                            x.id(),
-                            createImageIcon(x.getActiveIconPath(), x.getActiveIconTint()),
-                            createImageIcon(x.getInactiveIconPath()),
-                            x.getTitle());
-                });
+        if (LEFT_SIDEBAR_ENABLED) {
+            Arrays.stream(panels)
+                    .filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
+                    .forEach(x -> {
+                        leftSidebarContent.add(x.build(this.basicEditor), x.id());
+                        addLeftSidebarButton(
+                                x.id(),
+                                createImageIcon(x.getActiveIconPath(), x.getActiveIconTint()),
+                                createImageIcon(x.getInactiveIconPath()),
+                                x.getTitle());
+                    });
+        }
 
         Arrays.stream(panels)
                 .filter(x -> x.getLayoutConstraints() == EditorLayout.SOUTH)
@@ -2371,13 +2381,15 @@ public class MainWindow
 
         bottomBarContainer.add(bottomBarContent, BorderLayout.CENTER);
 
-        // Select first panel if available
-        Arrays.stream(panels)
-                .filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
-                .findFirst()
-                .ifPresent(x -> {
-                    selectLeftSidebarSection(x.id(), true);
-                });
+        if (LEFT_SIDEBAR_ENABLED) {
+            // Select first panel if available
+            Arrays.stream(panels)
+                    .filter(x -> x.getLayoutConstraints() == EditorLayout.WEST)
+                    .findFirst()
+                    .ifPresent(x -> {
+                        selectLeftSidebarSection(x.id(), true);
+                    });
+        }
     }
 
     private void configureRightSidebar() {
