@@ -35,7 +35,7 @@ Check out the [docs](./docs) or [wiki](https://github.com/NateIsStalling/Basic4G
 A `/samples` folder with example programs is included with each release that can be run by opening the `.gb` file in the Basic4GL editor and clicking the Play button.
 
 Sample programs can also be found here in the repo:
-https://github.com/NateIsStalling/Basic4GLj/tree/main/app/src/main/dist/samples/Programs
+https://github.com/NateIsStalling/Basic4GLj/tree/main/samples/Programs
 
 
 ## Building the Editor
@@ -79,7 +79,7 @@ Basic4GLj depends on a fork of Paulscode-SoundSystem to support sound codecs for
 
 https://github.com/NateIsStalling/Paulscode-SoundSystem/tree/lwjgl3
 
-Licenses for Paulscode-SoundSystem and related sound Codecs can be found in Basic4GLj's app module `dist` directory or in release packages under `/LICENSES/sound system` 
+Licenses for Paulscode-SoundSystem and related sound Codecs can be found in the `LICENSES` folder under `/LICENSES/sound system`
 
 ## Compatibility Notes
 

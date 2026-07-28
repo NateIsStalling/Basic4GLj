@@ -60,6 +60,10 @@ processResources {
         into "basic4gl-content/samples"
         exclude "**/.DS_Store", "**/.*"
     }
+    from("${rootProject.projectDir}/LICENSES") {
+        into "basic4gl-content/LICENSES"
+        exclude "**/.DS_Store", "**/.*"
+    }
     doLast {
         writeResourceIndex(
                 file("${rootProject.projectDir}/docs/basic4gl"),

@@ -151,7 +151,7 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder, IP
         zipEntry.setTime(System.currentTimeMillis());
         output.putNextEntry(zipEntry);
         output.write(String.format(
-                        "# Run %1$s; requires Java be installed and in your system path\n"
+                        "# Run %1$s; requires Java JDK 17 be installed and in your system path\n"
                                 + "# -XstartOnFirstThread is required by LWJGL for window to display on Mac"
                                 + " OS\n"
                                 + "java -XstartOnFirstThread -jar \"%1$s\"\n",
@@ -163,7 +163,9 @@ public class BuilderDesktopGL extends Builder implements IAssetExportBuilder, IP
         zipEntry.setTime(System.currentTimeMillis());
         output.putNextEntry(zipEntry);
         output.write(String.format(
-                        "Execute launcher.bat to run %1$s on Windows.\n"
+                        "Requires Java JDK 17 be installed and in your system path.\n"
+                                + "OpenJDK JDK 17 is available here: https://adoptium.net/temurin/releases?version=17&os=any&arch=any\n\n"
+                                + "Execute launcher.bat to run %1$s on Windows.\n"
                                 + "To run %1$s on Mac OS, execute launcher-macos.sh or run the jar with the"
                                 + " following additional Java option from the terminal: \n"
                                 + "-XstartOnFirstThread",
