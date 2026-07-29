@@ -3,8 +3,11 @@ package com.basic4gl.desktop.language;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
@@ -28,16 +31,28 @@ public class NonRetriggeringAutoCompletionTest {
         JTextArea textArea = new JTextArea("i");
         textArea.setCaretPosition(1);
         autoCompletion.install(textArea);
+        AtomicBoolean observedSuppressedInsert = new AtomicBoolean(false);
+        textArea.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                assertFalse(autoCompletion.isAutoActivationEnabled());
+                observedSuppressedInsert.set(true);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {}
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {}
+        });
 
         BasicCompletion completion = new BasicCompletion(provider, "i");
 
         SwingUtilities.invokeAndWait(() -> autoCompletion.insertCompletion(completion, false));
 
-        // Right after the synchronous insert, auto-activation is still suppressed - the
-        // re-enable was only *scheduled* via invokeLater, not yet run.
-        assertFalse(autoCompletion.isAutoActivationEnabled());
+        assertTrue(observedSuppressedInsert.get());
 
-        // Pump the EDT once more so the scheduled invokeLater actually runs.
+        // Pump the EDT so the scheduled invokeLater restore runs.
         SwingUtilities.invokeAndWait(() -> {});
 
         assertTrue(autoCompletion.isAutoActivationEnabled());
