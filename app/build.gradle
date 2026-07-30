@@ -57,6 +57,10 @@ distributions {
                 into "samples"
                 exclude "**/.DS_Store", "**/.*"
             }
+            from("${rootProject.projectDir}/LICENSES") {
+                into "LICENSES"
+                exclude "**/.DS_Store", "**/.*"
+            }
         }
     }
 }

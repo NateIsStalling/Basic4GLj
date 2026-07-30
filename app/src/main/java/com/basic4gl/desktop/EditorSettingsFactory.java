@@ -21,11 +21,10 @@ public class EditorSettingsFactory {
         EditorSettings settings = new EditorSettings();
 
         if (configFile.exists()) {
-            FileInputStream propsInput = null;
-            propsInput = new FileInputStream(configFile);
-
             Properties prop = new Properties();
-            prop.load(propsInput);
+            try (FileInputStream propsInput = new FileInputStream(configFile)) {
+                prop.load(propsInput);
+            }
 
             String recentFiles = prop.getProperty(CONFIG_RECENT_FILES, "");
             settings.recentFiles.addAll(Arrays.stream(recentFiles.split(","))
@@ -78,6 +77,8 @@ public class EditorSettingsFactory {
         prop.setProperty(CONFIG_RECENT_PLUGIN_DIRECTORIES, recentPluginDirectories);
         prop.setProperty(CONFIG_AUTOCOMPLETE_ENABLED, Boolean.toString(settings.autoCompleteEnabled));
         prop.setProperty(CONFIG_SHOW_FUNCTION_SIGNATURES, Boolean.toString(settings.showFunctionSignatures));
-        prop.store(new FileWriter(configFile), "store properties to file");
+        try (FileWriter writer = new FileWriter(configFile)) {
+            prop.store(writer, "store properties to file");
+        }
     }
 }

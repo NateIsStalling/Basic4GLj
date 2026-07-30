@@ -3,9 +3,12 @@ package com.basic4gl.desktop.language;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import org.fife.ui.autocomplete.BasicCompletion;
+import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.junit.Test;
@@ -22,7 +25,7 @@ public class NonRetriggeringAutoCompletionTest {
     @Test
     public void insertCompletion_disablesAutoActivationDuringInsertThenRestoresItAfterward() throws Exception {
         CompletionProvider provider = new DefaultCompletionProvider();
-        NonRetriggeringAutoCompletion autoCompletion = new NonRetriggeringAutoCompletion(provider);
+        ObservingAutoCompletion autoCompletion = new ObservingAutoCompletion(provider);
         autoCompletion.setAutoActivationEnabled(true);
 
         JTextArea textArea = new JTextArea("i");
@@ -33,11 +36,9 @@ public class NonRetriggeringAutoCompletionTest {
 
         SwingUtilities.invokeAndWait(() -> autoCompletion.insertCompletion(completion, false));
 
-        // Right after the synchronous insert, auto-activation is still suppressed - the
-        // re-enable was only *scheduled* via invokeLater, not yet run.
-        assertFalse(autoCompletion.isAutoActivationEnabled());
+        assertTrue(autoCompletion.observedSuppressedInsertion());
 
-        // Pump the EDT once more so the scheduled invokeLater actually runs.
+        // Pump the EDT so the scheduled invokeLater restore runs.
         SwingUtilities.invokeAndWait(() -> {});
 
         assertTrue(autoCompletion.isAutoActivationEnabled());
@@ -59,5 +60,23 @@ public class NonRetriggeringAutoCompletionTest {
         SwingUtilities.invokeAndWait(() -> {});
 
         assertFalse(autoCompletion.isAutoActivationEnabled());
+    }
+
+    private static class ObservingAutoCompletion extends NonRetriggeringAutoCompletion {
+        private final AtomicBoolean observedSuppressedInsertion = new AtomicBoolean(false);
+
+        ObservingAutoCompletion(CompletionProvider provider) {
+            super(provider);
+        }
+
+        @Override
+        protected String getReplacementText(Completion c, Document doc, int start, int len) {
+            observedSuppressedInsertion.set(!isAutoActivationEnabled());
+            return super.getReplacementText(c, doc, start, len);
+        }
+
+        private boolean observedSuppressedInsertion() {
+            return observedSuppressedInsertion.get();
+        }
     }
 }

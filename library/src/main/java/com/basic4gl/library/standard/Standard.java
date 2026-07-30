@@ -342,7 +342,6 @@ public class Standard implements FunctionLibrary {
                     dif = lastTickCount - getPerformanceCounter();
                 }
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -931,7 +930,6 @@ public class Standard implements FunctionLibrary {
 
     @Override
     public List<String> getDependencies() {
-        // TODO Auto-generated method stub
         return null;
     }
 

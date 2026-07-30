@@ -119,7 +119,6 @@ public class OpenGLBasicLib implements FunctionLibrary {
                 displayLists.clear();
             });
             // Register interfaces
-            // TODO need to add any missing registerInterface calls for other libraries
             comp.getPlugins()
                     .registerInterfaceInternal(
                             IB4GLOpenGLWindow.class,

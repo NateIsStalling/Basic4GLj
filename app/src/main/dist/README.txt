@@ -1,11 +1,11 @@
-	Basic4GLj 0.7.0 alpha
-	Build Date: June 2026
+	Basic4GLj 1.0.0 beta 1
+	Build Date: July 2026
 ================================================
 	Basic4GLj	by Nathaniel Nielsen	(c) 2026
 	Basic4GL 	by Tom Mulgrew			(c) 2016
 	License:	New BSD; see LICENSES folder
 	Requires:	Java 17
-	
+
 	Site:		https://github.com/NateIsStalling/Basic4GLj
 	Bluesky:    @nateisstalling.bsky.social
 
@@ -18,15 +18,26 @@
 	The bin folder contains scripts to launch Basic4GLj on Windows and MacOS/Linux systems.
 
 	Sample programs are included from the original Basic4GL - please report any issues running these programs at https://github.com/NateIsStalling/Basic4GLj/issues.
-	
+
 	Exporting applications generates a zip file containing: a JAR file with your program, .bat and .sh scripts for launching the program, and any embedded resources.
 
 	Exported applications require Java 17 to be installed and in the system path to run.
-	
+
 
 ================================================
 	Change Log
 ================================================
+
+[v1.0.0-beta.1] July 28, 2026
+The beta release!!!
+    - Added Plugin SDK for Basic4GL language extensions; see https://github.com/NateIsStalling/Basic4GLj/packages
+    - Added Standalone App Settings for exported programs runtime behavior and AppSettings folder location
+    - Added docs to repo; moved samples to project root for easier access
+    - Added auto-complete and code folding
+    - Fixed issues with LoadImageStrip, LoadMipmapImageStrip, and ImageStripFrames
+    - Fixed issues with file IO functions
+    - Fixed issue exporting programs for Windows and Linux
+    - New logo :)
 
 [v0.7.0-alpha] June 6, 2026
 The compiler and debugger update:

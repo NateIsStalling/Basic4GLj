@@ -41,7 +41,7 @@ Basic4GLj depends on a fork of Paulscode-SoundSystem to support sound codecs for
 
 https://github.com/NateIsStalling/Paulscode-SoundSystem/tree/lwjgl3
 
-Licenses for Paulscode-SoundSystem and related sound Codecs can be found in Basic4GLj's app module `dist` directory or in release packages under `/LICENSES/sound system`
+Licenses for Paulscode-SoundSystem and related sound Codecs can be found in the `LICENSES` folder under `/LICENSES/sound system`
 
 ## Sharing Standalone Programs
 
