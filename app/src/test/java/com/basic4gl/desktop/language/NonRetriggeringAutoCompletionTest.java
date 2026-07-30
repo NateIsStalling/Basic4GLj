@@ -6,9 +6,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import org.fife.ui.autocomplete.BasicCompletion;
+import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.junit.Test;
@@ -25,32 +25,18 @@ public class NonRetriggeringAutoCompletionTest {
     @Test
     public void insertCompletion_disablesAutoActivationDuringInsertThenRestoresItAfterward() throws Exception {
         CompletionProvider provider = new DefaultCompletionProvider();
-        NonRetriggeringAutoCompletion autoCompletion = new NonRetriggeringAutoCompletion(provider);
+        ObservingAutoCompletion autoCompletion = new ObservingAutoCompletion(provider);
         autoCompletion.setAutoActivationEnabled(true);
 
         JTextArea textArea = new JTextArea("i");
         textArea.setCaretPosition(1);
         autoCompletion.install(textArea);
-        AtomicBoolean observedSuppressedInsert = new AtomicBoolean(false);
-        textArea.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                assertFalse(autoCompletion.isAutoActivationEnabled());
-                observedSuppressedInsert.set(true);
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {}
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {}
-        });
 
         BasicCompletion completion = new BasicCompletion(provider, "i");
 
         SwingUtilities.invokeAndWait(() -> autoCompletion.insertCompletion(completion, false));
 
-        assertTrue(observedSuppressedInsert.get());
+        assertTrue(autoCompletion.observedSuppressedInsertion());
 
         // Pump the EDT so the scheduled invokeLater restore runs.
         SwingUtilities.invokeAndWait(() -> {});
@@ -74,5 +60,23 @@ public class NonRetriggeringAutoCompletionTest {
         SwingUtilities.invokeAndWait(() -> {});
 
         assertFalse(autoCompletion.isAutoActivationEnabled());
+    }
+
+    private static class ObservingAutoCompletion extends NonRetriggeringAutoCompletion {
+        private final AtomicBoolean observedSuppressedInsertion = new AtomicBoolean(false);
+
+        ObservingAutoCompletion(CompletionProvider provider) {
+            super(provider);
+        }
+
+        @Override
+        protected String getReplacementText(Completion c, Document doc, int start, int len) {
+            observedSuppressedInsertion.set(!isAutoActivationEnabled());
+            return super.getReplacementText(c, doc, start, len);
+        }
+
+        private boolean observedSuppressedInsertion() {
+            return observedSuppressedInsertion.get();
+        }
     }
 }
