@@ -174,7 +174,7 @@ jobs:
         name: Build distribution
         run: |
           brew install coreutils
-          sh build-mac-release.sh
+          sh build-mac-release.sh --entitlements-profile adhoc
           sh build-mac-notarize.sh
 
       # SAVE INSTALLER
@@ -253,7 +253,7 @@ jobs:
         name: Build distribution
         run: |
           brew install coreutils
-          sh build-mac-release.sh
+          sh build-mac-release.sh --entitlements-profile adhoc
           sh build-mac-notarize.sh
 
       # SAVE INSTALLER

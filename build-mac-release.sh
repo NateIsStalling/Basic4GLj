@@ -2,7 +2,40 @@
 
 set -e # die on error
 
+# Usage: build-mac-release.sh [--entitlements-profile adhoc|app-store]
+#
+# adhoc (default)  - non-sandboxed entitlements for adhoc/notarized Developer ID distribution
+#                     (adhoc.plist / adhoc-embedded-tool.plist)
+# app-store        - sandboxed entitlements matching the (currently unused) Mac App Store path
+#                     (sandbox.plist / embedded-tool.plist), kept for parity with
+#                     build-mac-app-store-release.sh should that distribution channel return
+
 ENV_FILE_PATH='./.env'
+ENTITLEMENTS_PROFILE='adhoc'
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --entitlements-profile) ENTITLEMENTS_PROFILE="$2"; shift ;;
+    *) echo "Unknown parameter: $1"; exit 1 ;;
+  esac
+  shift
+done
+
+case "$ENTITLEMENTS_PROFILE" in
+  adhoc)
+    ENTITLEMENTS_FILE='adhoc.plist'
+    INHERITED_ENTITLEMENTS_FILE='adhoc-embedded-tool.plist'
+    ;;
+  app-store)
+    ENTITLEMENTS_FILE='sandbox.plist'
+    INHERITED_ENTITLEMENTS_FILE='embedded-tool.plist'
+    ;;
+  *)
+    echo "Unknown --entitlements-profile '$ENTITLEMENTS_PROFILE' (expected 'adhoc' or 'app-store')"
+    exit 1
+    ;;
+esac
+echo "Using entitlements profile '$ENTITLEMENTS_PROFILE' ($ENTITLEMENTS_FILE / $INHERITED_ENTITLEMENTS_FILE)"
 
 MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH='embedded.provisionprofile'
 MAC_SIGNING_KEY_USER_NAME='Configure CI/CD Variable'
@@ -29,6 +62,7 @@ jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-app-image-mac.cfg" \
   --app-version "$APP_RELEASE_VERSION" \
   --icon "icons/icon.icns" \
+  --mac-entitlements "$ENTITLEMENTS_FILE" \
   --verbose
 
 echo "Sign app-image"
@@ -37,8 +71,8 @@ if [[  -z "$MAC_SIGNING_KEYCHAIN_PATH" ]]; then
   sh ./build-mac-sign.sh --app-location "./build/distributions/Basic4GLj.app" \
      --signing-identity "$MAC_SIGNING_KEY_USER_NAME" \
      --identifier-prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" \
-     --entitlements "sandbox.plist" \
-     --inherited-entitlements "embedded-tool.plist" \
+     --entitlements "$ENTITLEMENTS_FILE" \
+     --inherited-entitlements "$INHERITED_ENTITLEMENTS_FILE" \
      --mac-bundle-identifier "com.basic4glj.desktop" \
      --app-name "Basic4GLj"
  else
@@ -46,8 +80,8 @@ if [[  -z "$MAC_SIGNING_KEYCHAIN_PATH" ]]; then
      --signing-identity "$MAC_SIGNING_KEY_USER_NAME" \
      --signing-keychain "$MAC_SIGNING_KEYCHAIN_PATH" \
      --identifier-prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" \
-     --entitlements "sandbox.plist" \
-     --inherited-entitlements "embedded-tool.plist" \
+     --entitlements "$ENTITLEMENTS_FILE" \
+     --inherited-entitlements "$INHERITED_ENTITLEMENTS_FILE" \
      --mac-bundle-identifier "com.basic4glj.desktop" \
      --app-name "Basic4GLj"
 fi
@@ -63,13 +97,13 @@ if [[  -z "$MAC_SIGNING_KEYCHAIN_PATH" ]]; then
   /usr/bin/codesign --force --timestamp \
       --options runtime \
       --sign "$MAC_SIGNING_KEY_USER_NAME" \
-      --entitlements "sandbox.plist" \
+      --entitlements "$ENTITLEMENTS_FILE" \
       --prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" "./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.dmg"
 else
   /usr/bin/codesign --force --timestamp \
       --options runtime \
       --sign "$MAC_SIGNING_KEY_USER_NAME" \
       --keychain "$MAC_SIGNING_KEYCHAIN_PATH" \
-      --entitlements "sandbox.plist" \
+      --entitlements "$ENTITLEMENTS_FILE" \
       --prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" "./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.dmg"
 fi
