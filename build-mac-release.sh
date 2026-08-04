@@ -90,7 +90,7 @@ fi
 echo "Sign app-image"
 cp "$MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH" ./build/distributions/Basic4GLj.app/Contents/embedded.provisionprofile
 if [[  -z "$MAC_SIGNING_KEYCHAIN_PATH" ]]; then
-  sh ./build-mac-sign.sh --app-location "./build/distributions/Basic4GLj.app" \
+  bash ./build-mac-sign.sh --app-location "./build/distributions/Basic4GLj.app" \
      --signing-identity "$MAC_SIGNING_KEY_USER_NAME" \
      --identifier-prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" \
      --entitlements "$ENTITLEMENTS_FILE" \
@@ -98,7 +98,7 @@ if [[  -z "$MAC_SIGNING_KEYCHAIN_PATH" ]]; then
      --mac-bundle-identifier "com.basic4glj.desktop" \
      --app-name "Basic4GLj"
  else
-  sh ./build-mac-sign.sh --app-location "./build/distributions/Basic4GLj.app" \
+  bash ./build-mac-sign.sh --app-location "./build/distributions/Basic4GLj.app" \
      --signing-identity "$MAC_SIGNING_KEY_USER_NAME" \
      --signing-keychain "$MAC_SIGNING_KEYCHAIN_PATH" \
      --identifier-prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" \
