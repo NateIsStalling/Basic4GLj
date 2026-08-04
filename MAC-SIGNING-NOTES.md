@@ -18,6 +18,18 @@
   - :crossedfingers:
 - **Evaluate replacing jpackage mac-sign usage with sh script for MacOS signing build steps**
 
+### Entitlements profiles
+
+`build-mac-release.sh` accepts `--entitlements-profile adhoc|app-store` (default `adhoc`) to pick which
+entitlements plist pair to sign with:
+
+- `adhoc` (current distribution channel) uses `adhoc.plist` / `adhoc-embedded-tool.plist` — no
+  `com.apple.security.app-sandbox`/`com.apple.security.inherit`, since adhoc/Developer-ID-notarized builds
+  aren't sandboxed and those sandbox-scoped keys (including the read/write asset entitlements below) don't
+  apply outside the App Sandbox.
+- `app-store` uses `sandbox.plist` / `embedded-tool.plist` (below), kept in case Mac App Store distribution
+  (`build-mac-app-store-release.sh`, which always uses these) is revisited.
+
 ### Application Entitlements PLIST
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
