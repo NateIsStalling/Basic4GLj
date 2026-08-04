@@ -20,8 +20,6 @@ jobs:
       - id: checkout-code
         name: Checkout code
         uses: actions/checkout@v7
-        with:
-          ref: main
       - id: setup-jdk
         name: Setup JDK
         uses: actions/setup-java@v5
@@ -60,8 +58,6 @@ jobs:
       - id: checkout-code
         name: Checkout code
         uses: actions/checkout@v7
-        with:
-          ref: main
       - id: setup-jdk
         name: Setup JDK 25 for jpackage
         uses: actions/setup-java@v5
