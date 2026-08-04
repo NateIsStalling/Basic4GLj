@@ -108,6 +108,9 @@ if [[  -z "$MAC_SIGNING_KEYCHAIN_PATH" ]]; then
      --app-name "Basic4GLj"
 fi
 
+echo "Verify app-image signature"
+/usr/bin/codesign --verify --deep --strict --verbose=4 ./build/distributions/Basic4GLj.app
+
 
 echo "Create native installer"
 jpackage "@jpackage/jpackage.cfg" \

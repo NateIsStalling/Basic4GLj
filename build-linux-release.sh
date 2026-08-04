@@ -56,7 +56,8 @@ jpackage "@jpackage/jpackage.cfg" \
   --app-version "$APP_RELEASE_VERSION" \
   --verbose
 
-INSTALLER_PATH="./build/distributions/basic4glj_${APP_RELEASE_VERSION}-1_amd64.deb"
+INSTALLER_PATH="./build/distributions/basic4glj_${APP_RELEASE_VERSION}_amd64.deb"
+
 if [ ! -f "$INSTALLER_PATH" ]; then
   echo "Expected Linux installer not found: $INSTALLER_PATH"
   exit 1

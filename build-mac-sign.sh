@@ -45,7 +45,7 @@ sign_jar_dylib() {
     local jar_file=$1
     local dir=$2
 
-    cd $dir
+    cd "$dir"
     find "." -type f \( -perm -u+x -o -name "*.dylib" -o -name "*.jar" \) ! -path "*/dylib.dSYM/Contents/*" ! -path "$APP_LOCATION/$APP_EXECUTABLE" | while read -r file; do
       if [[ -L "$file" ]]; then
           echo "Ignoring symlink: $file"
@@ -87,6 +87,8 @@ sign_directory() {
         /usr/bin/codesign --force \
             -vvvv \
             --timestamp \
+            --options runtime \
+            --deep \
             --sign "$SIGNING_IDENTITY" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
@@ -95,12 +97,42 @@ sign_directory() {
         /usr/bin/codesign --force \
             -vvvv \
             --timestamp \
+            --options runtime \
+            --deep \
             --sign "$SIGNING_IDENTITY" \
             --keychain "$SIGNING_KEYCHAIN" \
             --entitlements "$INHERITED_ENTITLEMENTS" \
             --prefix "$IDENTIFIER_PREFIX" \
             "$dir"
       fi
+    fi
+}
+
+verify_macho_timestamps() {
+    local missing_timestamp=0
+
+    echo "Verify secure timestamps for signed Mach-O files"
+    while IFS= read -r file; do
+        if [[ -L "$file" ]]; then
+            continue
+        fi
+
+        if ! /usr/bin/file "$file" | grep -q "Mach-O"; then
+            continue
+        fi
+
+        local signature_info
+        signature_info="$(/usr/bin/codesign --display --verbose=4 "$file" 2>&1)"
+        if ! grep -q "^Timestamp=" <<< "$signature_info" || grep -q "^Timestamp=none" <<< "$signature_info"; then
+            echo "Missing secure timestamp: $file"
+            echo "$signature_info"
+            missing_timestamp=1
+        fi
+    done < <(find "$APP_LOCATION" -type f \( -perm -u+x -o -name "*.dylib" \) ! -path "*/dylib.dSYM/Contents/*")
+
+    if [[ "$missing_timestamp" -ne 0 ]]; then
+        echo "One or more signed Mach-O files are missing secure timestamps"
+        exit 1
     fi
 }
 
@@ -194,3 +226,5 @@ else
       --prefix "$IDENTIFIER_PREFIX" \
       "$APP_LOCATION"
 fi
+
+verify_macho_timestamps

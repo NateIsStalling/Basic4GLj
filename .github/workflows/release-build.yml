@@ -88,7 +88,7 @@ jobs:
         name: Upload installer
         uses: actions/upload-artifact@v7
         with:
-          path: ./build/distributions/basic4glj_${{ vars.APP_RELEASE_VERSION }}-1_amd64.deb
+          path: ./build/distributions/basic4glj_${{ vars.APP_RELEASE_VERSION }}_amd64.deb
           name: linux-installer
           retention-days: 1
 
@@ -384,7 +384,7 @@ jobs:
           # rename artifacts to match release tag for pre-release builds < 1.0 for now - for consistency with macOS builds
           mv app.zip basic4glj_${{ vars.BUILD_RELEASE_TAG }}.zip
           mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.msi Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}.msi
-          mv basic4glj_${{ vars.APP_RELEASE_VERSION }}-1_amd64.deb basic4glj_${{ vars.BUILD_RELEASE_TAG }}.deb
+          mv basic4glj_${{ vars.APP_RELEASE_VERSION }}_amd64.deb basic4glj_${{ vars.BUILD_RELEASE_TAG }}.deb
           ls -alR
 
       # CREATE GITHUB RELEASE AND ADD ASSETS
