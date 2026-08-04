@@ -57,11 +57,16 @@ if [[ "$SKIP_BUILD" == false ]]; then
   ./gradlew -v
   ./gradlew clean build copyJarsForJPackage
 else
-  echo "Skipping Gradle build; using existing jpackage input in ./build/libs"
+  echo "Package-only mode enabled; skipping Gradle build and using existing jpackage input in ./build/libs"
 fi
 
 if [ ! -d ./build/libs ]; then
   echo "jpackage input directory './build/libs' not found"
+  exit 1
+fi
+
+if [ -z "$APP_RELEASE_VERSION" ]; then
+  echo "APP_RELEASE_VERSION is required"
   exit 1
 fi
 
@@ -76,6 +81,11 @@ jpackage "@jpackage/jpackage.cfg" \
   --icon "icons/icon.icns" \
   --mac-entitlements "$ENTITLEMENTS_FILE" \
   --verbose
+
+if [ ! -d ./build/distributions/Basic4GLj.app ]; then
+  echo "Expected macOS app image not found: ./build/distributions/Basic4GLj.app"
+  exit 1
+fi
 
 echo "Sign app-image"
 cp "$MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH" ./build/distributions/Basic4GLj.app/Contents/embedded.provisionprofile
@@ -105,6 +115,12 @@ jpackage "@jpackage/jpackage.cfg" \
   --app-version "$APP_RELEASE_VERSION" \
   --verbose
 
+INSTALLER_PATH="./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.dmg"
+if [ ! -f "$INSTALLER_PATH" ]; then
+  echo "Expected macOS installer not found: $INSTALLER_PATH"
+  exit 1
+fi
+
 if [[  -z "$MAC_SIGNING_KEYCHAIN_PATH" ]]; then
   /usr/bin/codesign --force --timestamp \
       --options runtime \
@@ -119,3 +135,4 @@ else
       --entitlements "$ENTITLEMENTS_FILE" \
       --prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" "./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.dmg"
 fi
+echo "Created macOS installer: $INSTALLER_PATH"

@@ -43,11 +43,16 @@ if [[ "$SKIP_BUILD" == false ]]; then
   ./gradlew -v
   ./gradlew clean build copyJarsForJPackage
 else
-  echo "Skipping Gradle build; using existing jpackage input in ./build/libs"
+  echo "Package-only mode enabled; skipping Gradle build and using existing jpackage input in ./build/libs"
 fi
 
 if [ ! -d ./build/libs ]; then
   echo "jpackage input directory './build/libs' not found"
+  exit 1
+fi
+
+if [ -z "$APP_RELEASE_VERSION" ]; then
+  echo "APP_RELEASE_VERSION is required"
   exit 1
 fi
 

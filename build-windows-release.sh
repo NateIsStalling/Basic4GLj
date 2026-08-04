@@ -27,11 +27,16 @@ if [[ "$SKIP_BUILD" == false ]]; then
   ./gradlew -v
   ./gradlew clean build copyJarsForJPackage
 else
-  echo "Skipping Gradle build; using existing jpackage input in ./build/libs"
+  echo "Package-only mode enabled; skipping Gradle build and using existing jpackage input in ./build/libs"
 fi
 
 if [ ! -d ./build/libs ]; then
   echo "jpackage input directory './build/libs' not found"
+  exit 1
+fi
+
+if [ -z "$APP_RELEASE_VERSION" ]; then
+  echo "APP_RELEASE_VERSION is required"
   exit 1
 fi
 
@@ -51,3 +56,10 @@ jpackage "@jpackage/jpackage.cfg" \
   --app-version "$APP_RELEASE_VERSION" \
   --win-upgrade-uuid "$WIN_UPGRADE_UUID" \
   --verbose
+
+INSTALLER_PATH="./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.msi"
+if [ ! -f "$INSTALLER_PATH" ]; then
+  echo "Expected Windows installer not found: $INSTALLER_PATH"
+  exit 1
+fi
+echo "Created Windows installer: $INSTALLER_PATH"

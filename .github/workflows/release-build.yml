@@ -74,10 +74,16 @@ jobs:
         with:
           name: jpackage-inputs
           path: ./build/libs
+      - id: inspect-jpackage-inputs
+        name: Inspect jpackage inputs
+        shell: bash
+        run: |
+          find ./build/libs -maxdepth 2 -type f | sort
 
       # PACKAGE INSTALLER
       - id: package
         name: Package installer
+        shell: bash
         run: |
           bash build-linux-release.sh --package-only
 
@@ -113,10 +119,16 @@ jobs:
         with:
           name: jpackage-inputs
           path: ./build/libs
+      - id: inspect-jpackage-inputs
+        name: Inspect jpackage inputs
+        shell: bash
+        run: |
+          find ./build/libs -maxdepth 2 -type f | sort
 
       # PACKAGE INSTALLER
       - id: package
         name: Package installer
+        shell: bash
         run: |
           bash build-windows-release.sh --package-only
 
@@ -150,6 +162,11 @@ jobs:
         with:
           name: jpackage-inputs
           path: ./build/libs
+      - id: inspect-jpackage-inputs
+        name: Inspect jpackage inputs
+        shell: bash
+        run: |
+          find ./build/libs -maxdepth 2 -type f | sort
       - id: set-up-homebrew
         name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@main
@@ -201,6 +218,7 @@ jobs:
       # PACKAGE INSTALLER
       - id: package
         name: Package installer
+        shell: bash
         run: |
           brew install coreutils
           bash build-mac-release.sh --entitlements-profile adhoc --package-only
@@ -236,6 +254,11 @@ jobs:
         with:
           name: jpackage-inputs
           path: ./build/libs
+      - id: inspect-jpackage-inputs
+        name: Inspect jpackage inputs
+        shell: bash
+        run: |
+          find ./build/libs -maxdepth 2 -type f | sort
       - id: set-up-homebrew
         name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@main
@@ -287,6 +310,7 @@ jobs:
       # PACKAGE INSTALLER
       - id: package
         name: Package installer
+        shell: bash
         run: |
           brew install coreutils
           bash build-mac-release.sh --entitlements-profile adhoc --package-only
