@@ -3,6 +3,15 @@
 set -e # die on error
 
 ENV_FILE_PATH='./.env'
+SKIP_BUILD=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --skip-build|--package-only) SKIP_BUILD=true ;;
+    *) echo "Unknown parameter: $1"; exit 1 ;;
+  esac
+  shift
+done
 
 MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH='embedded.provisionprofile'
 MAC_SIGNING_KEY_USER_NAME='Configure CI/CD Variable'
@@ -30,8 +39,20 @@ if [ ! -e "$MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH" ]; then
   exit 1
 fi
 
-./gradlew -v
-./gradlew clean build copyJarsForJPackage
+if [[ "$SKIP_BUILD" == false ]]; then
+  ./gradlew -v
+  ./gradlew clean build copyJarsForJPackage
+else
+  echo "Skipping Gradle build; using existing jpackage input in ./build/libs"
+fi
+
+if [ ! -d ./build/libs ]; then
+  echo "jpackage input directory './build/libs' not found"
+  exit 1
+fi
+
+echo "jpackage JDK"
+java --version
 
 # TODO having trouble with signing..
 echo "Create app-image"

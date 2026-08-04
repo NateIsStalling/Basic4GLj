@@ -12,10 +12,12 @@ set -e # die on error
 
 ENV_FILE_PATH='./.env'
 ENTITLEMENTS_PROFILE='adhoc'
+SKIP_BUILD=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --entitlements-profile) ENTITLEMENTS_PROFILE="$2"; shift ;;
+    --skip-build|--package-only) SKIP_BUILD=true ;;
     *) echo "Unknown parameter: $1"; exit 1 ;;
   esac
   shift
@@ -41,8 +43,6 @@ MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH='embedded.provisionprofile'
 MAC_SIGNING_KEY_USER_NAME='Configure CI/CD Variable'
 MAC_SIGNING_PACKAGE_SIGNING_PREFIX='com.basic4glj.desktop.'
 
-java --version
-
 # Load variables from local
 if [ -e "$ENV_FILE_PATH" ]; then
   echo 'Using local .env file'
@@ -53,8 +53,20 @@ else
   echo 'Local .env file not found'
 fi
 
-./gradlew -v
-./gradlew clean build copyJarsForJPackage
+if [[ "$SKIP_BUILD" == false ]]; then
+  ./gradlew -v
+  ./gradlew clean build copyJarsForJPackage
+else
+  echo "Skipping Gradle build; using existing jpackage input in ./build/libs"
+fi
+
+if [ ! -d ./build/libs ]; then
+  echo "jpackage input directory './build/libs' not found"
+  exit 1
+fi
+
+echo "jpackage JDK"
+java --version
 
 # TODO having trouble with signing..
 echo "Create app-image Version '$APP_RELEASE_VERSION'"

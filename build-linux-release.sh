@@ -3,6 +3,15 @@
 set -e # die on error
 
 ENV_FILE_PATH='./.env'
+SKIP_BUILD=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --skip-build|--package-only) SKIP_BUILD=true ;;
+    *) echo "Unknown parameter: $1"; exit 1 ;;
+  esac
+  shift
+done
 
 # Load variables from local
 if [ -e "$ENV_FILE_PATH" ]; then
@@ -14,8 +23,20 @@ else
   echo 'Local .env file not found'
 fi
 
-./gradlew -v
-./gradlew clean build copyJarsForJPackage
+if [[ "$SKIP_BUILD" == false ]]; then
+  ./gradlew -v
+  ./gradlew clean build copyJarsForJPackage
+else
+  echo "Skipping Gradle build; using existing jpackage input in ./build/libs"
+fi
+
+if [ ! -d ./build/libs ]; then
+  echo "jpackage input directory './build/libs' not found"
+  exit 1
+fi
+
+echo "jpackage JDK"
+java --version
 
 echo "Create app-image Version '$APP_RELEASE_VERSION'"
 jpackage "@jpackage/jpackage.cfg" \
