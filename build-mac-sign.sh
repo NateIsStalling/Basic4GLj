@@ -39,6 +39,8 @@ fi
 
 # Paths
 APP_EXECUTABLE="Contents/MacOS/$APP_NAME"
+ENTITLEMENTS="$(grealpath "$ENTITLEMENTS")"
+INHERITED_ENTITLEMENTS="$(grealpath "$INHERITED_ENTITLEMENTS")"
 
 sign_file() {
     local file=$1
