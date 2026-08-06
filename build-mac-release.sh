@@ -130,14 +130,34 @@ echo "Create native installer"
 # applied (missing secure timestamps / wrong identity on embedded runtime
 # dylibs). Build the dmg ourselves from the already-verified .app instead, so
 # nothing re-signs it after this point.
+DMG_VOLNAME="Basic4GLj"
 DMG_STAGING_DIR="$(mktemp -d)"
 cp -R "./build/distributions/Basic4GLj.app" "$DMG_STAGING_DIR/"
 ln -s /Applications "$DMG_STAGING_DIR/Applications"
 
 INSTALLER_PATH="./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.dmg"
+DMG_WORKDIR="$(mktemp -d)"
+PROTO_DMG="$DMG_WORKDIR/proto.dmg"
+
+# Build as UDRW first so the volume icon can be set on the mounted image,
+# then convert to the compressed UDZO format for the final artifact -
+# mirrors what jpackage's own (now-bypassed) dmg builder did.
+hdiutil create -volname "$DMG_VOLNAME" -srcfolder "$DMG_STAGING_DIR" -ov -fs HFS+ -format UDRW "$PROTO_DMG"
+
+DMG_MOUNT_POINT="$(mktemp -d)"
+hdiutil attach "$PROTO_DMG" -mountpoint "$DMG_MOUNT_POINT" -nobrowse -quiet -owners on
+
+cp "icons/icon.icns" "$DMG_MOUNT_POINT/.VolumeIcon.icns"
+SetFile -c icnC "$DMG_MOUNT_POINT/.VolumeIcon.icns"
+SetFile -a V "$DMG_MOUNT_POINT/.VolumeIcon.icns"
+SetFile -a C "$DMG_MOUNT_POINT"
+
+hdiutil detach "$DMG_MOUNT_POINT" -quiet
+rmdir "$DMG_MOUNT_POINT"
+
 rm -f "$INSTALLER_PATH"
-hdiutil create -volname "Basic4GLj" -srcfolder "$DMG_STAGING_DIR" -ov -format UDZO "$INSTALLER_PATH"
-rm -rf "$DMG_STAGING_DIR"
+hdiutil convert "$PROTO_DMG" -format UDZO -o "$INSTALLER_PATH"
+rm -rf "$DMG_WORKDIR" "$DMG_STAGING_DIR"
 
 if [ ! -f "$INSTALLER_PATH" ]; then
   echo "Expected macOS installer not found: $INSTALLER_PATH"
