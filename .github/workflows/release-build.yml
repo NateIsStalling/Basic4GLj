@@ -63,14 +63,14 @@ jobs:
         run: |
           ./gradlew clean build copyJarsForJPackage
 
-      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_X64
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 26; JAVA_HOME_17_X64
       # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
-      - id: setup-jdk-25
-        name: Setup JDK 25 for jpackage
+      - id: setup-jdk-26
+        name: Setup JDK 26 for jpackage
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: 25
+          java-version: 26
       - id: inspect-jpackage-inputs
         name: Inspect jpackage inputs
         shell: bash
@@ -117,14 +117,14 @@ jobs:
         run: |
           ./gradlew clean build copyJarsForJPackage
 
-      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_X64
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 26; JAVA_HOME_17_X64
       # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
-      - id: setup-jdk-25
-        name: Setup JDK 25 for jpackage
+      - id: setup-jdk-26
+        name: Setup JDK 26 for jpackage
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: 25
+          java-version: 26
       - id: inspect-jpackage-inputs
         name: Inspect jpackage inputs
         shell: bash
@@ -168,14 +168,14 @@ jobs:
         run: |
           ./gradlew clean build copyJarsForJPackage
 
-      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_ARM64
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 26; JAVA_HOME_17_ARM64
       # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
-      - id: setup-jdk-25
-        name: Setup JDK 25 for jpackage
+      - id: setup-jdk-26
+        name: Setup JDK 26 for jpackage
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: 25
+          java-version: 26
       - id: inspect-jpackage-inputs
         name: Inspect jpackage inputs
         shell: bash
@@ -268,14 +268,14 @@ jobs:
         run: |
           ./gradlew clean build copyJarsForJPackage
 
-      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_X64
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 26; JAVA_HOME_17_X64
       # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
-      - id: setup-jdk-25
-        name: Setup JDK 25 for jpackage
+      - id: setup-jdk-26
+        name: Setup JDK 26 for jpackage
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: 25
+          java-version: 26
       - id: inspect-jpackage-inputs
         name: Inspect jpackage inputs
         shell: bash
