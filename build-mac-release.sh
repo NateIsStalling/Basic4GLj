@@ -123,14 +123,36 @@ echo "Verify app-image signature"
 
 
 echo "Create native installer"
-jpackage "@jpackage/jpackage.cfg" \
-  "@jpackage/jpackage-mac.cfg" \
-  --app-version "$APP_RELEASE_VERSION" \
-  --verbose
+# jpackage's --type dmg builder copies --app-image into its own temp working
+# directory and re-signs it there before sealing the dmg, regardless of
+# whether --mac-sign is given and regardless of JDK 25 vs 26 - that re-sign
+# has repeatedly clobbered the correct signature build-mac-sign.sh just
+# applied (missing secure timestamps / wrong identity on embedded runtime
+# dylibs). Build the dmg ourselves from the already-verified .app instead, so
+# nothing re-signs it after this point.
+DMG_STAGING_DIR="$(mktemp -d)"
+cp -R "./build/distributions/Basic4GLj.app" "$DMG_STAGING_DIR/"
+ln -s /Applications "$DMG_STAGING_DIR/Applications"
 
 INSTALLER_PATH="./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.dmg"
+rm -f "$INSTALLER_PATH"
+hdiutil create -volname "Basic4GLj" -srcfolder "$DMG_STAGING_DIR" -ov -format UDZO "$INSTALLER_PATH"
+rm -rf "$DMG_STAGING_DIR"
+
 if [ ! -f "$INSTALLER_PATH" ]; then
   echo "Expected macOS installer not found: $INSTALLER_PATH"
+  exit 1
+fi
+
+echo "Verify signature of app bundle sealed inside the dmg"
+DMG_MOUNT_POINT="$(mktemp -d)"
+hdiutil attach "$INSTALLER_PATH" -mountpoint "$DMG_MOUNT_POINT" -nobrowse -quiet
+/usr/bin/codesign --verify --deep --strict --verbose=4 "$DMG_MOUNT_POINT/Basic4GLj.app"
+DMG_APP_VERIFY_STATUS=$?
+hdiutil detach "$DMG_MOUNT_POINT" -quiet
+rmdir "$DMG_MOUNT_POINT"
+if [ "$DMG_APP_VERIFY_STATUS" -ne 0 ]; then
+  echo "App bundle sealed inside $INSTALLER_PATH failed signature verification"
   exit 1
 fi
 
