@@ -12,8 +12,8 @@ env:
   BUILD_RELEASE_TAG: ${{ vars.BUILD_RELEASE_TAG }}
 
 jobs:
-  build-release-artifacts:
-    name: Build Release Artifacts on Linux
+  build-jar-release:
+    name: Build JAR Package on Linux
     runs-on: ubuntu-latest
     steps:
       # SETUP BUILD ENVIRONMENT
@@ -27,15 +27,15 @@ jobs:
           distribution: "temurin"
           java-version: 17
 
-      # BUILD RELEASE ARTIFACTS
+      # BUILD FOR DISTRIBUTION
       - id: build
-        name: Build release artifacts
+        name: Build distribution
         run: |
-          ./gradlew clean build copyJarsForJPackage
+          sh build-jar-release.sh
 
-      # SAVE RELEASE ARTIFACTS
-      - id: upload-jar-release
-        name: Upload JAR release
+      # SAVE INSTALLER
+      - id: upload-installer
+        name: Upload installer
         uses: actions/upload-artifact@v7
         with:
           path: ./app/build/distributions/app.zip
@@ -354,7 +354,7 @@ jobs:
     permissions:
       contents: write
       deployments: write
-    needs: [build-release-artifacts, build-linux-installer, build-windows-installer, build-macos-arm64-installer, build-macos-intel-installer]
+    needs: [build-jar-release, build-linux-installer, build-windows-installer, build-macos-arm64-installer, build-macos-intel-installer]
     steps:
 
       # DOWNLOAD INSTALLERS
