@@ -123,24 +123,10 @@ echo "Verify app-image signature"
 
 
 echo "Create native installer"
-if [[  -z "$MAC_SIGNING_KEYCHAIN_PATH" ]]; then
-  jpackage "@jpackage/jpackage.cfg" \
-    "@jpackage/jpackage-mac.cfg" \
-    --app-version "$APP_RELEASE_VERSION" \
-    --mac-sign \
-    --mac-signing-key-user-name "$MAC_SIGNING_KEY_USER_NAME" \
-    --mac-entitlements "$ENTITLEMENTS_FILE" \
-    --verbose
-else
-  jpackage "@jpackage/jpackage.cfg" \
-    "@jpackage/jpackage-mac.cfg" \
-    --app-version "$APP_RELEASE_VERSION" \
-    --mac-sign \
-    --mac-signing-key-user-name "$MAC_SIGNING_KEY_USER_NAME" \
-    --mac-signing-keychain "$MAC_SIGNING_KEYCHAIN_PATH" \
-    --mac-entitlements "$ENTITLEMENTS_FILE" \
-    --verbose
-fi
+jpackage "@jpackage/jpackage.cfg" \
+  "@jpackage/jpackage-mac.cfg" \
+  --app-version "$APP_RELEASE_VERSION" \
+  --verbose
 
 INSTALLER_PATH="./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.dmg"
 if [ ! -f "$INSTALLER_PATH" ]; then
