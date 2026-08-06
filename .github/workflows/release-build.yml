@@ -41,35 +41,36 @@ jobs:
           path: ./app/build/distributions/app.zip
           name: jar-release
           retention-days: 1
-      - id: upload-jpackage-inputs
-        name: Upload jpackage inputs
-        uses: actions/upload-artifact@v7
-        with:
-          path: ./build/libs
-          name: jpackage-inputs
-          retention-days: 1
 
   build-linux-installer:
     name: Build Installer on Linux
     runs-on: ubuntu-latest
-    needs: [build-release-artifacts]
     steps:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
         uses: actions/checkout@v7
-      - id: setup-jdk
+      - id: setup-jdk-17
+        name: Setup JDK 17 for Gradle build
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      # BUILD JPACKAGE INPUTS
+      - id: build
+        name: Build jpackage inputs (JDK 17)
+        run: |
+          ./gradlew clean build copyJarsForJPackage
+
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_X64
+      # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
+      - id: setup-jdk-25
         name: Setup JDK 25 for jpackage
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 25
-      - id: download-jpackage-inputs
-        name: Download jpackage inputs
-        uses: actions/download-artifact@v8
-        with:
-          name: jpackage-inputs
-          path: ./build/libs
       - id: inspect-jpackage-inputs
         name: Inspect jpackage inputs
         shell: bash
@@ -81,7 +82,7 @@ jobs:
         name: Package installer
         shell: bash
         run: |
-          bash build-linux-release.sh --package-only
+          bash build-linux-release.sh --package-only --runtime-image "$JAVA_HOME_17_X64"
 
       # SAVE INSTALLER
       - id: upload-installer
@@ -95,7 +96,6 @@ jobs:
   build-windows-installer:
     name: Build Installer on Windows
     runs-on: windows-latest
-    needs: [build-release-artifacts]
     env:
       WIN_UPGRADE_UUID: ${{ vars.WIN_UPGRADE_UUID }}
     steps:
@@ -103,18 +103,28 @@ jobs:
       - id: checkout-code
         name: Checkout code
         uses: actions/checkout@v7
-      - id: setup-jdk
+      - id: setup-jdk-17
+        name: Setup JDK 17 for Gradle build
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      # BUILD JPACKAGE INPUTS
+      - id: build
+        name: Build jpackage inputs (JDK 17)
+        shell: bash
+        run: |
+          ./gradlew clean build copyJarsForJPackage
+
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_X64
+      # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
+      - id: setup-jdk-25
         name: Setup JDK 25 for jpackage
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 25
-      - id: download-jpackage-inputs
-        name: Download jpackage inputs
-        uses: actions/download-artifact@v8
-        with:
-          name: jpackage-inputs
-          path: ./build/libs
       - id: inspect-jpackage-inputs
         name: Inspect jpackage inputs
         shell: bash
@@ -126,7 +136,7 @@ jobs:
         name: Package installer
         shell: bash
         run: |
-          bash build-windows-release.sh --package-only
+          bash build-windows-release.sh --package-only --runtime-image "$JAVA_HOME_17_X64"
 
       # SAVE INSTALLER
       - id: upload-installer
@@ -140,24 +150,32 @@ jobs:
   build-macos-arm64-installer:
     name: Build Installer on MacOS (arm64)
     runs-on: macos-latest
-    needs: [build-release-artifacts]
     steps:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
         uses: actions/checkout@v7
-      - id: setup-jdk
+      - id: setup-jdk-17
+        name: Setup JDK 17 for Gradle build
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      # BUILD JPACKAGE INPUTS
+      - id: build
+        name: Build jpackage inputs (JDK 17)
+        run: |
+          ./gradlew clean build copyJarsForJPackage
+
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_ARM64
+      # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
+      - id: setup-jdk-25
         name: Setup JDK 25 for jpackage
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 25
-      - id: download-jpackage-inputs
-        name: Download jpackage inputs
-        uses: actions/download-artifact@v8
-        with:
-          name: jpackage-inputs
-          path: ./build/libs
       - id: inspect-jpackage-inputs
         name: Inspect jpackage inputs
         shell: bash
@@ -179,7 +197,7 @@ jobs:
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/embedded.provisionprofile
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          
+
           # import certificate and provisioning profile from secrets
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
@@ -192,8 +210,8 @@ jobs:
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH          
-          
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
           # apply provisioning profile
           echo "PP_PATH=$PP_PATH" >> $GITHUB_OUTPUT
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_OUTPUT
@@ -217,7 +235,7 @@ jobs:
         shell: bash
         run: |
           brew install coreutils
-          bash build-mac-release.sh --entitlements-profile adhoc --package-only
+          bash build-mac-release.sh --entitlements-profile adhoc --package-only --runtime-image "$JAVA_HOME_17_ARM64"
           sh build-mac-notarize.sh
 
       # SAVE INSTALLER
@@ -232,24 +250,32 @@ jobs:
   build-macos-intel-installer:
     name: Build Installer on MacOS (Intel)
     runs-on: macos-15-intel
-    needs: [build-release-artifacts]
     steps:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
         uses: actions/checkout@v7
-      - id: setup-jdk
+      - id: setup-jdk-17
+        name: Setup JDK 17 for Gradle build
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      # BUILD JPACKAGE INPUTS
+      - id: build
+        name: Build jpackage inputs (JDK 17)
+        run: |
+          ./gradlew clean build copyJarsForJPackage
+
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_X64
+      # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
+      - id: setup-jdk-25
         name: Setup JDK 25 for jpackage
         uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 25
-      - id: download-jpackage-inputs
-        name: Download jpackage inputs
-        uses: actions/download-artifact@v8
-        with:
-          name: jpackage-inputs
-          path: ./build/libs
       - id: inspect-jpackage-inputs
         name: Inspect jpackage inputs
         shell: bash
@@ -271,7 +297,7 @@ jobs:
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/embedded.provisionprofile
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain
-          
+
           # import certificate and provisioning profile from secrets
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
@@ -285,7 +311,7 @@ jobs:
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
-          
+
           # apply provisioning profile
           echo "PP_PATH=$PP_PATH" >> $GITHUB_OUTPUT
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_OUTPUT
@@ -309,7 +335,7 @@ jobs:
         shell: bash
         run: |
           brew install coreutils
-          bash build-mac-release.sh --entitlements-profile adhoc --package-only
+          bash build-mac-release.sh --entitlements-profile adhoc --package-only --runtime-image "$JAVA_HOME_17_X64"
           sh build-mac-notarize.sh
 
       # SAVE INSTALLER

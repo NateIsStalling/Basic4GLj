@@ -13,11 +13,13 @@ set -e # die on error
 ENV_FILE_PATH='./.env'
 ENTITLEMENTS_PROFILE='adhoc'
 SKIP_BUILD=false
+RUNTIME_IMAGE=''
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --entitlements-profile) ENTITLEMENTS_PROFILE="$2"; shift ;;
     --skip-build|--package-only) SKIP_BUILD=true ;;
+    --runtime-image) RUNTIME_IMAGE="$2"; shift ;;
     *) echo "Unknown parameter: $1"; exit 1 ;;
   esac
   shift
@@ -73,13 +75,21 @@ fi
 echo "jpackage JDK"
 java --version
 
-# TODO having trouble with signing..
+if [ -n "$RUNTIME_IMAGE" ]; then
+  echo "Bundling runtime image: $RUNTIME_IMAGE"
+  if [ ! -d "$RUNTIME_IMAGE" ]; then
+    echo "Runtime image directory not found: $RUNTIME_IMAGE"
+    exit 1
+  fi
+fi
+
 echo "Create app-image Version '$APP_RELEASE_VERSION'"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-app-image-mac.cfg" \
   --app-version "$APP_RELEASE_VERSION" \
   --icon "icons/icon.icns" \
   --mac-entitlements "$ENTITLEMENTS_FILE" \
+  ${RUNTIME_IMAGE:+--runtime-image "$RUNTIME_IMAGE"} \
   --verbose
 
 if [ ! -d ./build/distributions/Basic4GLj.app ]; then

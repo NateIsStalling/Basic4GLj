@@ -4,10 +4,12 @@ set -e # die on error
 
 ENV_FILE_PATH='./.env'
 SKIP_BUILD=false
+RUNTIME_IMAGE=''
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --skip-build|--package-only) SKIP_BUILD=true ;;
+    --runtime-image) RUNTIME_IMAGE="$2"; shift ;;
     *) echo "Unknown parameter: $1"; exit 1 ;;
   esac
   shift
@@ -43,11 +45,20 @@ fi
 echo "jpackage JDK"
 java --version
 
+if [ -n "$RUNTIME_IMAGE" ]; then
+  echo "Bundling runtime image: $RUNTIME_IMAGE"
+  if [ ! -d "$RUNTIME_IMAGE" ]; then
+    echo "Runtime image directory not found: $RUNTIME_IMAGE"
+    exit 1
+  fi
+fi
+
 echo "Create app-image Version '$APP_RELEASE_VERSION'"
 jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-app-image.cfg" \
   --app-version "$APP_RELEASE_VERSION" \
   --icon "icons/icon.png" \
+  ${RUNTIME_IMAGE:+--runtime-image "$RUNTIME_IMAGE"} \
   --verbose
 
 echo "Create native installer"
