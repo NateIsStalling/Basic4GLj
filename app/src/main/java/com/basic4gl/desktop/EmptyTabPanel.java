@@ -18,7 +18,9 @@ public class EmptyTabPanel extends JPanel {
             IEmptyTabPanelListener listener,
             KeyStroke newFileKeyStroke,
             KeyStroke openFileKeyStroke,
-            List<File> recentFiles) {
+            KeyStroke openFolderKeyStroke,
+            List<File> recentFiles,
+            List<File> recentWorkspaces) {
         super();
         setLayout(new BorderLayout());
 
@@ -29,17 +31,24 @@ public class EmptyTabPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(contents);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        contents.add(buildGetStartedPanel(listener, newFileKeyStroke, openFileKeyStroke));
+        contents.add(buildGetStartedPanel(listener, newFileKeyStroke, openFileKeyStroke, openFolderKeyStroke));
 
         contents.add(new Box.Filler(new Dimension(16, 16), new Dimension(16, 16), new Dimension(16, 16)));
 
         contents.add(buildRecentFilesPanel(listener, recentFiles));
 
+        contents.add(new Box.Filler(new Dimension(16, 16), new Dimension(16, 16), new Dimension(16, 16)));
+
+        contents.add(buildRecentWorkspacesPanel(listener, recentWorkspaces));
+
         add(scrollPane);
     }
 
     private JPanel buildGetStartedPanel(
-            IEmptyTabPanelListener listener, KeyStroke newFileKeyStroke, KeyStroke openFileKeyStroke) {
+            IEmptyTabPanelListener listener,
+            KeyStroke newFileKeyStroke,
+            KeyStroke openFileKeyStroke,
+            KeyStroke openFolderKeyStroke) {
         JPanel getStartedPanel = new JPanel();
         getStartedPanel.setLayout(new BoxLayout(getStartedPanel, BoxLayout.Y_AXIS));
         getStartedPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -93,6 +102,22 @@ public class EmptyTabPanel extends JPanel {
         addShortCutLabel(wrapper, openFileKeyStroke);
         getStartedPanel.add(wrapper);
 
+        wrapper = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        wrapper.setMaximumSize(new Dimension(400, 50));
+        FlatButton openFolderButton = new FlatButton();
+        openFolderButton.setText("Open Folder...");
+        openFolderButton.setIcon(createImageIcon(ICON_MENU_FOLDER));
+        openFolderButton.setBackground(null);
+        openFolderButton.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+        openFolderButton.setPreferredSize(new Dimension(160, 30));
+        openFolderButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        openFolderButton.setHorizontalAlignment(SwingConstants.LEFT);
+        openFolderButton.addActionListener((x) -> listener.onOpenFolderClick());
+
+        wrapper.add(openFolderButton);
+        addShortCutLabel(wrapper, openFolderKeyStroke);
+        getStartedPanel.add(wrapper);
+
         return getStartedPanel;
     }
 
@@ -136,6 +161,43 @@ public class EmptyTabPanel extends JPanel {
         return recentFilePanel;
     }
 
+    private JPanel buildRecentWorkspacesPanel(IEmptyTabPanelListener listener, List<File> recentWorkspaces) {
+        JPanel recentWorkspacePanel = new JPanel();
+        recentWorkspacePanel.setLayout(new BoxLayout(recentWorkspacePanel, BoxLayout.Y_AXIS));
+        recentWorkspacePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel wrapper = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        wrapper.setMaximumSize(new Dimension(400, 50));
+        wrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel recentLabel = new JLabel("Recent Workspaces");
+        Font font = recentLabel.getFont();
+        recentLabel.setFont(new Font(font.getName(), Font.BOLD, font.getSize() + 2));
+        recentLabel.setForeground(new Color(66, 66, 66));
+        recentLabel.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+
+        wrapper.add(recentLabel);
+        recentWorkspacePanel.add(wrapper);
+
+        for (File folder : recentWorkspaces.stream().limit(5).toList()) {
+            JPanel recentItem = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            recentItem.setAlignmentX(Component.LEFT_ALIGNMENT);
+            recentItem.setMaximumSize(new Dimension(500, 30));
+            recentItem.setBorder(null);
+
+            JButton recentItemButton = new FlatButton();
+            recentItemButton.setBackground(null);
+            recentItemButton.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+            recentItemButton.setText(folder.getName().isBlank() ? folder.getAbsolutePath() : folder.getName());
+            recentItemButton.setToolTipText(folder.getAbsolutePath());
+            recentItemButton.addActionListener((x) -> listener.onOpenWorkspaceClick(folder));
+
+            recentItem.add(recentItemButton);
+            recentWorkspacePanel.add(recentItem);
+        }
+
+        return recentWorkspacePanel;
+    }
+
     private void addShortCutLabel(JPanel parent, KeyStroke keyStroke) {
         for (String s : KeyStrokeUtil.getShortcutString(keyStroke).split(" ")) {
             JLabel l = new JLabel(s);
@@ -159,5 +221,9 @@ public class EmptyTabPanel extends JPanel {
         void onOpenClick();
 
         void onOpenClick(File file);
+
+        void onOpenFolderClick();
+
+        void onOpenWorkspaceClick(File folder);
     }
 }

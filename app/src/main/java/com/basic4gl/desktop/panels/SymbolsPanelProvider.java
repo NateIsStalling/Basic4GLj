@@ -1,0 +1,914 @@
+package com.basic4gl.desktop.panels;
+
+import static com.basic4gl.desktop.Theme.*;
+import static com.basic4gl.desktop.Theme.ICON_MENU_FUNCTIONS;
+import static com.basic4gl.desktop.Theme.ICON_STRUCT;
+import static com.basic4gl.desktop.util.HtmlUtil.escapeHtml;
+import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.basic4gl.desktop.util.SwingIconUtil.createScaledIcon;
+import static com.basic4gl.desktop.util.SwingUtil.createLighterPanelBackground;
+import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
+
+import com.basic4gl.desktop.language.SymbolIndexer;
+import com.basic4gl.desktop.spi.EditorPlugin;
+import com.basic4gl.desktop.spi.LanguageService;
+import com.basic4gl.desktop.spi.PluginContext;
+import com.basic4gl.desktop.spi.language.FunctionDefinition;
+import com.basic4gl.desktop.spi.language.IndexedSymbol;
+import com.basic4gl.desktop.spi.language.LabelDefinition;
+import com.basic4gl.desktop.spi.language.VariableDefinition;
+import com.basic4gl.desktop.util.RoundedCardPanel;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.*;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+public class SymbolsPanelProvider implements IEditorPanelProvider {
+
+    private static final String REFERENCE_NO_MATCHES_HTML =
+            "<html><body style='font-family:sans-serif;padding:6px;'>No matches.</body></html>";
+    private static final String REFERENCE_SELECT_PROMPT_HTML =
+            "<html><body style='font-family:sans-serif;padding:6px;'>Select an entry.</body></html>";
+    private String referenceDetailsHtml = REFERENCE_SELECT_PROMPT_HTML;
+    private final JComboBox<String> referenceLibraryFilter = new JComboBox<>(new String[] {"All libraries"});
+    private final JButton referenceFiltersButton = new JButton("All");
+    private final JPopupMenu referenceFiltersPopup = new JPopupMenu();
+    private final JLabel referenceSelectionNameLabel = new JLabel("Select an entry.");
+    private String referenceSelectionName = "Select an entry.";
+    private final JTextPane referenceDetailsPane = new JTextPane();
+    private final JButton referenceCopyButton = new JButton("Copy");
+    private final JButton referenceInsertButton = new JButton("Insert");
+    private final javax.swing.Timer referenceFilterDebounceTimer =
+            new javax.swing.Timer(120, e -> filterReferenceItems());
+    private final JPanel referenceResultsHost = new JPanel(new CardLayout());
+    private static final String REFERENCE_RESULTS_LIST_CARD = "list";
+    private static final String REFERENCE_RESULTS_EMPTY_CARD = "empty";
+
+    private SymbolIndexer symbolIndexer;
+    private final java.util.List<ReferenceItem> allReferenceItems = new ArrayList<>();
+    private final DefaultListModel<ReferenceItem> referenceListModel = new DefaultListModel<>();
+    private final JList<ReferenceItem> referenceList = new JList<>(referenceListModel);
+    private final JTextField referenceSearchField = new JTextField();
+    private final JComboBox<String> referenceKindFilter =
+            new JComboBox<>(new String[] {"All", "Functions", "Constants", "Labels", "Variables", "Structs"});
+    private final JComboBox<String> referenceSourceFilter =
+            new JComboBox<>(new String[] {"All Sources", "Builtin", "Libraries", "Program"});
+    private static final Dimension HEADER_ICON_BUTTON_SIZE = new Dimension(30, 30);
+    private static final int CARD_ARC = 14;
+    private static final double RESULTS_SPLIT_WEIGHT = 0.65;
+    private static final double DETAILS_HEIGHT_RATIO = 0.35;
+
+    private int lastProgramSymbolsFingerprint = Integer.MIN_VALUE;
+    private boolean updatingReferenceFilters = false;
+    private JSplitPane referenceSplitPane;
+    private JComponent referenceDetailsComponent;
+    private int referenceDetailsDividerSize;
+    private boolean referenceDetailsCollapsed;
+    private boolean rebuildingReferenceList;
+
+    private PluginContext context;
+
+    private static final class ReferenceItem {
+        final String kind;
+        final String name;
+        final String signature;
+        final String library;
+        final String details;
+        final String insertText;
+        final int caretOffset;
+
+        ReferenceItem(
+                String kind,
+                String name,
+                String signature,
+                String library,
+                String details,
+                String insertText,
+                int caretOffset) {
+            this.kind = kind;
+            this.name = name;
+            this.signature = signature;
+            this.library = library;
+            this.details = details;
+            this.insertText = insertText;
+            this.caretOffset = caretOffset;
+        }
+
+        @Override
+        public String toString() {
+            return signature;
+        }
+    }
+
+    @Override
+    public String id() {
+        return "symbols";
+    }
+
+    @Override
+    public String getTitle() {
+        return "Code Reference";
+    }
+
+    @Override
+    public String getActiveIconPath() {
+        return ICON_MENU_FUNCTIONS;
+    }
+
+    @Override
+    public String getInactiveIconPath() {
+        return ICON_MENU_FUNCTIONS;
+    }
+
+    @Override
+    public Color getActiveIconTint() {
+        return null;
+    }
+
+    @Override
+    public EditorLayout getLayoutConstraints() {
+        return EditorLayout.EAST;
+    }
+
+    public JPanel build(PluginContext context) {
+        this.context = context;
+
+        symbolIndexer = new SymbolIndexer(
+                context.currentEditor().getLanguageSupport(),
+                context.commands()::collectAllSourceText,
+                this::updateProgramSymbols);
+        JPanel panelCardHost = new JPanel(new CardLayout());
+        JPanel lookupPanel = new JPanel(new BorderLayout(6, 6));
+        Color panelBackground = createLighterPanelBackground();
+        lookupPanel.setBackground(panelBackground);
+        JPanel lookupHeader = new JPanel();
+        lookupHeader.setBackground(panelBackground);
+        lookupHeader.setLayout(new BoxLayout(lookupHeader, BoxLayout.X_AXIS));
+
+        referenceFiltersButton.setFocusable(false);
+        referenceFiltersButton.setIcon(createScaledIcon(ICON_CHEVRON_DOWN, 18));
+        referenceFiltersButton.setHorizontalTextPosition(SwingConstants.LEFT);
+        referenceFiltersButton.setIconTextGap(6);
+        referenceFiltersButton.putClientProperty("JButton.buttonType", "toolBarButton");
+        referenceFiltersButton.setOpaque(false);
+        referenceFiltersButton.setMargin(new Insets(5, 8, 5, 8));
+        Font baseFont = referenceFiltersButton.getFont();
+        referenceFiltersButton.setFont(new Font(baseFont.getName(), Font.BOLD, baseFont.getSize() + 2));
+        referenceFiltersButton.setForeground(new Color(0x5B717F));
+        referenceFiltersButton.setToolTipText("Open reference filters");
+        lookupHeader.add(referenceFiltersButton);
+        lookupHeader.add(Box.createHorizontalGlue());
+        JToggleButton searchToggle = createHeaderSearchToggleButton();
+        lookupHeader.add(searchToggle);
+
+        referenceCopyButton.setFocusable(false);
+        referenceCopyButton.setMargin(new Insets(4, 4, 4, 4));
+        Font actionButtonFont = referenceCopyButton.getFont();
+        //        referenceCopyButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD,
+        // actionButtonFont.getSize()));
+        referenceCopyButton.setForeground(new Color(0x5B717F));
+        referenceCopyButton.setEnabled(false);
+        referenceInsertButton.setFocusable(false);
+        referenceInsertButton.setMargin(new Insets(4, 4, 4, 4));
+        //        referenceInsertButton.setFont(new Font(actionButtonFont.getName(), Font.BOLD,
+        // actionButtonFont.getSize()));
+        referenceInsertButton.setForeground(new Color(0x5B717F));
+        referenceInsertButton.setEnabled(false);
+
+        referenceSearchField.setToolTipText("Search by name, signature, or library");
+        referenceKindFilter.setToolTipText("Filter by kind");
+        referenceSourceFilter.setToolTipText("Filter by builtin, libraries, or program symbols");
+        referenceLibraryFilter.setToolTipText("Filter by library name");
+        referenceKindFilter.setPrototypeDisplayValue("Functions");
+        rebuildReferenceFiltersPopup();
+
+        referenceFilterDebounceTimer.setRepeats(false);
+
+        referenceList.setBackground(panelBackground);
+        referenceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        referenceList.setFixedCellHeight(20);
+        referenceList.setPrototypeCellValue(new SymbolsPanelProvider.ReferenceItem(
+                "function", "prototype", "prototype(symbol, arg)", "Builtin", "", "", 0));
+        referenceList.setCellRenderer(new DefaultListCellRenderer() {
+            private final ImageIcon functionIcon = createImageIcon(ICON_FUNCTION);
+            private final ImageIcon variableIcon = createImageIcon(ICON_VARIABLE);
+            private final ImageIcon labelIcon = createImageIcon(ICON_LABEL);
+            private final ImageIcon structIcon = createImageIcon(ICON_STRUCT);
+
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label =
+                        (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof SymbolsPanelProvider.ReferenceItem item) {
+                    label.setText(item.signature);
+                    if ("function".equals(item.kind) || "userfunc".equals(item.kind)) {
+                        label.setIcon(functionIcon);
+                    } else if ("label".equals(item.kind)) {
+                        label.setIcon(labelIcon);
+                    } else if ("struc".equals(item.kind)) {
+                        label.setIcon(structIcon);
+                    } else {
+                        label.setIcon(variableIcon);
+                    }
+                    label.setToolTipText(null);
+                }
+                return label;
+            }
+        });
+
+        referenceDetailsPane.setEditable(false);
+        referenceDetailsPane.setContentType("text/html");
+        referenceDetailsPane.setBorder(null);
+        referenceDetailsPane.setBackground(panelBackground);
+        setReferenceDetailsHtml(REFERENCE_SELECT_PROMPT_HTML);
+        Font nameFont = referenceSelectionNameLabel.getFont();
+        referenceSelectionNameLabel.setFont(new Font(nameFont.getName(), Font.BOLD, nameFont.getSize()));
+        int titleHeight = referenceSelectionNameLabel.getPreferredSize().height;
+        referenceSelectionNameLabel.setMinimumSize(new Dimension(0, titleHeight));
+        referenceSelectionNameLabel.setPreferredSize(new Dimension(0, titleHeight));
+        setReferenceSelectionName("Select an entry.");
+
+        referenceSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        referenceSplitPane.setResizeWeight(RESULTS_SPLIT_WEIGHT);
+        hideSplitPaneHandle(referenceSplitPane);
+        referenceSplitPane.putClientProperty("JComponent.style", "showGrip: false; gripColor: #00000000;");
+        referenceSplitPane.putClientProperty("JSplitPane.style", "plain");
+        JScrollPane listScrollPane = new JScrollPane(referenceList);
+        listScrollPane.setBorder(null);
+        JPanel noResultsPanel = new JPanel(new GridBagLayout());
+        noResultsPanel.setBackground(panelBackground);
+        JPanel noResultsContent = new JPanel();
+        noResultsContent.setOpaque(false);
+        noResultsContent.setLayout(new BoxLayout(noResultsContent, BoxLayout.Y_AXIS));
+        Color disabledIconColor = UIManager.getColor("Label.disabledForeground");
+        if (disabledIconColor == null) {
+            disabledIconColor = new Color(0xC8C8C8);
+        }
+        JLabel noResultsIcon = new JLabel(createScaledIcon(ICON_SEARCH, 40, disabledIconColor));
+        noResultsIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel noResultsLabel = new JLabel("No Results");
+        Font noResultsFont = noResultsLabel.getFont();
+        noResultsLabel.setFont(new Font(noResultsFont.getName(), Font.BOLD, noResultsFont.getSize() + 2));
+        noResultsLabel.setForeground(new Color(0x5B717F));
+        noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JButton resetFiltersButton = new JButton("Reset Filters");
+        resetFiltersButton.setFocusable(false);
+        resetFiltersButton.setMargin(new Insets(4, 4, 4, 4));
+        resetFiltersButton.setForeground(new Color(0x5B717F));
+        resetFiltersButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        resetFiltersButton.addActionListener(e -> resetReferenceFiltersAndSearch());
+        noResultsContent.add(noResultsIcon);
+        noResultsContent.add(Box.createVerticalStrut(8));
+        noResultsContent.add(noResultsLabel);
+        noResultsContent.add(Box.createVerticalStrut(8));
+        noResultsContent.add(resetFiltersButton);
+        noResultsPanel.add(noResultsContent);
+        referenceResultsHost.setOpaque(false);
+        referenceResultsHost.add(listScrollPane, REFERENCE_RESULTS_LIST_CARD);
+        referenceResultsHost.add(noResultsPanel, REFERENCE_RESULTS_EMPTY_CARD);
+        JPanel detailsPanel = new JPanel(new BorderLayout(0, 0));
+        JPanel detailsHeader = new JPanel(new BorderLayout(8, 0));
+        detailsHeader.setBackground(panelBackground);
+        detailsHeader.setOpaque(true);
+        detailsHeader.setBorder(new EmptyBorder(6, 8, 4, 8));
+        detailsHeader.add(referenceSelectionNameLabel, BorderLayout.CENTER);
+        JPanel detailsActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        detailsActions.setOpaque(false);
+        detailsActions.add(referenceCopyButton);
+        detailsActions.add(referenceInsertButton);
+        detailsHeader.add(detailsActions, BorderLayout.EAST);
+        detailsPanel.add(detailsHeader, BorderLayout.NORTH);
+        detailsPanel.add(referenceDetailsPane, BorderLayout.CENTER);
+        JScrollPane detailsScrollPane = new JScrollPane(detailsPanel);
+        detailsScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        detailsScrollPane.setBorder(null);
+        referenceDetailsComponent = createRoundedCardHost(detailsScrollPane, panelBackground, "symbols-details");
+        referenceSplitPane.setBottomComponent(referenceDetailsComponent);
+
+        JPanel searchBar = new JPanel(new BorderLayout(6, 0));
+        searchBar.setBackground(panelBackground);
+        searchBar.setBorder(new EmptyBorder(0, 8, 0, 8));
+        searchBar.add(referenceSearchField, BorderLayout.CENTER);
+        searchBar.setVisible(false);
+        searchToggle.addActionListener(e -> {
+            boolean visible = searchToggle.isSelected();
+            searchBar.setVisible(visible);
+            if (visible) {
+                referenceSearchField.requestFocusInWindow();
+            }
+            lookupPanel.revalidate();
+            lookupPanel.repaint();
+        });
+        JPanel symbolsListPanel = new JPanel(new BorderLayout(0, 6));
+        symbolsListPanel.setBackground(panelBackground);
+        JPanel symbolsListHeader = new JPanel(new BorderLayout(0, 6));
+        symbolsListHeader.setOpaque(false);
+        symbolsListHeader.add(lookupHeader, BorderLayout.NORTH);
+        symbolsListHeader.add(searchBar, BorderLayout.SOUTH);
+        symbolsListPanel.add(symbolsListHeader, BorderLayout.NORTH);
+        symbolsListPanel.add(referenceResultsHost, BorderLayout.CENTER);
+        referenceSplitPane.setTopComponent(createRoundedCardHost(symbolsListPanel, panelBackground, "symbols-list"));
+        referenceDetailsDividerSize = referenceSplitPane.getDividerSize();
+
+        lookupPanel.add(referenceSplitPane, BorderLayout.CENTER);
+
+        referenceSearchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                requestFilterReferenceItems();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                requestFilterReferenceItems();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                requestFilterReferenceItems();
+            }
+        });
+        referenceList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && !rebuildingReferenceList) {
+                updateReferenceSelectionDetails();
+            }
+        });
+        referenceKindFilter.addActionListener(e -> {
+            if (!updatingReferenceFilters) {
+                updateReferenceFiltersButtonTooltip();
+                filterReferenceItems();
+            }
+        });
+        referenceSourceFilter.addActionListener(e -> {
+            if (!updatingReferenceFilters) {
+                updateReferenceFiltersButtonTooltip();
+                filterReferenceItems();
+            }
+        });
+        referenceLibraryFilter.addActionListener(e -> {
+            if (!updatingReferenceFilters) {
+                updateReferenceFiltersButtonTooltip();
+                filterReferenceItems();
+            }
+        });
+        referenceFiltersButton.addActionListener(e -> {
+            rebuildReferenceFiltersPopup();
+            referenceFiltersPopup.show(referenceFiltersButton, 0, referenceFiltersButton.getHeight());
+        });
+        referenceList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    insertSelectedReference();
+                }
+            }
+        });
+        referenceInsertButton.addActionListener(e -> insertSelectedReference());
+        referenceCopyButton.addActionListener(e -> copySelectedSymbolName());
+        updateReferenceFiltersButtonTooltip();
+        setReferenceDetailsVisible(false);
+
+        panelCardHost.add(lookupPanel, "main");
+        ((CardLayout) panelCardHost.getLayout()).show(panelCardHost, "main");
+        return panelCardHost;
+    }
+
+    private JToggleButton createHeaderSearchToggleButton() {
+        JToggleButton button = new JToggleButton(createScaledIcon(ICON_SEARCH, 18));
+        button.setToolTipText("Show search");
+        button.setFocusable(false);
+        button.putClientProperty("JButton.buttonType", "toolBarButton");
+        button.setOpaque(false);
+        button.setMargin(new Insets(6, 6, 6, 6));
+        button.setPreferredSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMinimumSize(HEADER_ICON_BUTTON_SIZE);
+        button.setMaximumSize(HEADER_ICON_BUTTON_SIZE);
+        return button;
+    }
+
+    private JComponent createRoundedCardHost(JComponent content, Color panelBackground, String key) {
+        Color cardBackground = createLighterPanelBackground();
+        //                new Color(
+        //                Math.min(255, panelBackground.getRed() + 10),
+        //                Math.min(255, panelBackground.getGreen() + 10),
+        //                Math.min(255, panelBackground.getBlue() + 10));
+        JPanel card = new RoundedCardPanel();
+        card.setLayout(new BorderLayout());
+        card.setBackground(cardBackground);
+        card.setBorder(new EmptyBorder(4, 4, 4, 4));
+        card.add(content, BorderLayout.CENTER);
+
+        JPanel host = new JPanel(new CardLayout());
+        host.setOpaque(false);
+        host.add(card, key);
+        ((CardLayout) host.getLayout()).show(host, key);
+        return host;
+    }
+
+    @Override
+    public void refresh(EditorPlugin languageProvider) {
+        if (context == null) {
+            return;
+        }
+        populateDocsFromCompiler();
+        symbolIndexer.schedule();
+    }
+
+    @Override
+    public void onFileModified(String filePath) {
+        symbolIndexer.schedule();
+    }
+
+    @Override
+    public void dispose() {
+        symbolIndexer.shutdown();
+    }
+
+    @Override
+    public void onCompileSucceeded() {
+
+        populateDocsFromCompiler();
+        // Also sync the indexer immediately so the debounced background pass
+        // reflects the compiled state right away.
+        symbolIndexer.indexNow();
+    }
+
+    /**
+     * Called on the EDT by the {@link SymbolIndexer} callback after each debounce cycle.
+     * Replaces all "Program" (user-defined) reference items with the freshly scanned symbols and
+     * refreshes the reference panel.
+     */
+    private void updateProgramSymbols(List<IndexedSymbol> symbols) {
+        int fingerprint = 1;
+        for (IndexedSymbol symbol : symbols) {
+            fingerprint = 31 * fingerprint + Objects.hash(symbol.kind(), symbol.name(), symbol.signature());
+        }
+        if (fingerprint == lastProgramSymbolsFingerprint) {
+            return;
+        }
+        lastProgramSymbolsFingerprint = fingerprint;
+
+        // Remove all existing Program-sourced items
+        allReferenceItems.removeIf(item -> "Program".equals(item.library));
+
+        // Add newly scanned symbols
+        for (IndexedSymbol sym : symbols) {
+            String details;
+            String insertText;
+            int caretOffset;
+            switch (sym.kind()) {
+                case "userfunc" -> {
+                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> User Function"
+                            + "<br/><b>Source:</b> Program</p>"
+                            + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
+                            + "</body></html>";
+                    insertText = sym.name() + "()";
+                    caretOffset = sym.name().length() + 1;
+                }
+                case "label" -> {
+                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> Label"
+                            + "<br/><b>Usage:</b> <code>gosub " + escapeHtml(sym.name()) + "</code>"
+                            + " / <code>goto " + escapeHtml(sym.name()) + "</code></p>"
+                            + "</body></html>";
+                    insertText = sym.name();
+                    caretOffset = sym.name().length();
+                }
+                case "struc" -> {
+                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> Struct"
+                            + "<br/><b>Source:</b> Program</p>"
+                            + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
+                            + "</body></html>";
+                    insertText = sym.name();
+                    caretOffset = sym.name().length();
+                }
+                default -> { // "variable"
+                    details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                            + "<p style='margin:0 0 4px 0;'><b>Type:</b> Variable"
+                            + "<br/><b>Source:</b> Program</p>"
+                            + "<p style='margin:0;'>" + escapeHtml(sym.signature()) + "</p>"
+                            + "</body></html>";
+                    insertText = sym.name();
+                    caretOffset = sym.name().length();
+                }
+            }
+            allReferenceItems.add(new ReferenceItem(
+                    sym.kind(), sym.name(), sym.signature(), "Program", details, insertText, caretOffset));
+        }
+
+        allReferenceItems.sort(Comparator.comparing((ReferenceItem item) -> item.name, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(item -> item.kind));
+        rebuildLibraryFilterOptions();
+        filterReferenceItems();
+
+        // TODO handle this or not: refreshAssetsLibrary();
+    }
+
+    private void populateDocsFromCompiler() {
+
+        if (context.currentEditor() == null || context.currentEditor().getLanguage() == null) {
+            return;
+        }
+        allReferenceItems.clear();
+        allReferenceItems.addAll(
+                buildFunctionReferenceItems(context.currentEditor().getLanguage()));
+        allReferenceItems.addAll(
+                buildConstantReferenceItems(context.currentEditor().getLanguage()));
+        allReferenceItems.addAll(
+                buildLabelReferenceItems(context.currentEditor().getLanguage()));
+        allReferenceItems.addAll(
+                buildVariableReferenceItems(context.currentEditor().getLanguage()));
+        allReferenceItems.sort(Comparator.comparing((ReferenceItem item) -> item.name, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(item -> item.kind));
+        rebuildLibraryFilterOptions();
+        filterReferenceItems();
+    }
+
+    private java.util.List<ReferenceItem> buildFunctionReferenceItems(LanguageService comp) {
+        java.util.List<ReferenceItem> items = new ArrayList<>();
+        for (FunctionDefinition item : comp.getFunctionDefinitions()) {
+            if (item == null) {
+                continue;
+            }
+            StringBuilder argsOnly = new StringBuilder();
+            if (item.parameters() != null) {
+                for (VariableDefinition arg : item.parameters()) {
+                    if (argsOnly.length() > 0) {
+                        argsOnly.append(", ");
+                    }
+                    argsOnly.append(arg.signature());
+                }
+            }
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<p style='margin:0 0 4px 0;'><b>Type:</b> Function<br/><b>Library:</b> "
+                    + escapeHtml(item.packageName())
+                    + "</p><p style='margin:0;'>"
+                    + escapeHtml(item.signature())
+                    + "</p></body></html>";
+            String insertText = item.hasBrackets() ? item.name() + "()" : item.name() + " ";
+            int caretOffset = item.hasBrackets() ? item.name().length() + 1 : insertText.length();
+            if (item.hasBrackets() && argsOnly.length() > 0) {
+                insertText = item.name() + "(" + argsOnly + ")";
+                caretOffset = item.name().length() + 1;
+            }
+            items.add(new ReferenceItem(
+                    "function", item.name(), item.signature(), item.packageName(), details, insertText, caretOffset));
+        }
+        return items;
+    }
+
+    private java.util.List<ReferenceItem> buildConstantReferenceItems(LanguageService comp) {
+        java.util.List<ReferenceItem> items = new ArrayList<>();
+        for (VariableDefinition item : comp.getConstantDefinitions()) {
+            if (item == null) {
+                continue;
+            }
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<p style='margin:0 0 4px 0;'><b>Type:</b> Constant<br/><b>Library:</b> "
+                    + escapeHtml(item.packageName())
+                    + "</p><p style='margin:0;'>"
+                    + escapeHtml(item.signature())
+                    + "</p></body></html>";
+            items.add(new ReferenceItem(
+                    "constant",
+                    item.name(),
+                    item.signature(),
+                    item.packageName(),
+                    details,
+                    item.name(),
+                    item.name().length()));
+        }
+
+        return items;
+    }
+
+    private java.util.List<ReferenceItem> buildLabelReferenceItems(LanguageService comp) {
+        java.util.List<ReferenceItem> items = new ArrayList<>();
+        for (LabelDefinition label : comp.getLabelDefinitions()) {
+            if (label == null) {
+                continue;
+            }
+            String signature = label.signature();
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<p style='margin:0 0 4px 0;'><b>Type:</b> Label<br/><b>Usage:</b> "
+                    + "<code>" + escapeHtml(label.usage()) + "</code>"
+                    + "</p></body></html>";
+            items.add(new ReferenceItem(
+                    "label",
+                    label.name(),
+                    signature,
+                    "Program",
+                    details,
+                    label.name(),
+                    label.name().length()));
+        }
+        return items;
+    }
+
+    private java.util.List<ReferenceItem> buildVariableReferenceItems(LanguageService comp) {
+        java.util.List<ReferenceItem> items = new ArrayList<>();
+        for (VariableDefinition variable : comp.getVariableDefinitions()) {
+            if (variable == null || variable.name() == null || variable.name().isEmpty()) {
+                continue;
+            }
+            String typeStr = variable.type().name();
+            String signature = variable.signature();
+            String details = "<html><body style='font-family:sans-serif;padding:6px;'>"
+                    + "<p style='margin:0 0 4px 0;'><b>Type:</b> Variable<br/><b>Data type:</b> "
+                    + escapeHtml(typeStr) + "<br/><b>Source:</b> Program</p></body></html>";
+            items.add(new ReferenceItem(
+                    "variable",
+                    variable.name(),
+                    signature,
+                    "Program",
+                    details,
+                    variable.name(),
+                    variable.name().length()));
+        }
+        return items;
+    }
+
+    private void rebuildLibraryFilterOptions() {
+        String selected = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All Libraries");
+        Set<String> libraries = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (ReferenceItem item : allReferenceItems) {
+            if (item.library != null) {
+                libraries.add(item.library);
+            }
+        }
+
+        updatingReferenceFilters = true;
+        try {
+            referenceLibraryFilter.removeAllItems();
+            referenceLibraryFilter.addItem("All Libraries");
+            for (String library : libraries) {
+                referenceLibraryFilter.addItem(library);
+            }
+            referenceLibraryFilter.setSelectedItem(libraries.contains(selected) ? selected : "All Libraries");
+        } finally {
+            updatingReferenceFilters = false;
+        }
+        rebuildReferenceFiltersPopup();
+        updateReferenceFiltersButtonTooltip();
+    }
+
+    private void rebuildReferenceFiltersPopup() {
+        referenceFiltersPopup.removeAll();
+
+        JMenu typeMenu = new JMenu("Type");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "All", "All");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "Functions", "Functions");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "Constants", "Constants");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "Labels", "Labels");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "Variables", "Variables");
+        addReferenceRadioItems(typeMenu, referenceKindFilter, "Structs", "Structs");
+
+        JMenu sourceMenu = new JMenu("Source");
+        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "All Sources", "All Sources");
+        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Builtin", "Builtin");
+        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Libraries", "Libraries");
+        addReferenceRadioItems(sourceMenu, referenceSourceFilter, "Program", "Program");
+
+        JMenu libraryMenu = new JMenu("Library");
+        for (int i = 0; i < referenceLibraryFilter.getItemCount(); i++) {
+            String item = referenceLibraryFilter.getItemAt(i);
+            if (item != null) {
+                addReferenceRadioItems(libraryMenu, referenceLibraryFilter, item, item);
+            }
+        }
+
+        JMenuItem resetItem = new JMenuItem("Reset filters");
+        resetItem.addActionListener(e -> resetReferenceFiltersAndSearch());
+
+        referenceFiltersPopup.add(typeMenu);
+        referenceFiltersPopup.add(sourceMenu);
+        referenceFiltersPopup.add(libraryMenu);
+        referenceFiltersPopup.addSeparator();
+        referenceFiltersPopup.add(resetItem);
+    }
+
+    private void addReferenceRadioItems(JMenu menu, JComboBox<String> combo, String label, String value) {
+        JRadioButtonMenuItem item = new JRadioButtonMenuItem(label, Objects.equals(combo.getSelectedItem(), value));
+        item.addActionListener(e -> combo.setSelectedItem(value));
+        menu.add(item);
+    }
+
+    private void setReferenceDetailsHtml(String html) {
+        String next = html == null ? REFERENCE_SELECT_PROMPT_HTML : html;
+        if (Objects.equals(referenceDetailsHtml, next)) {
+            return;
+        }
+        referenceDetailsHtml = next;
+        referenceDetailsPane.setText(next);
+        referenceDetailsPane.setCaretPosition(0);
+    }
+
+    private void updateReferenceFiltersButtonTooltip() {
+        String type = Objects.toString(referenceKindFilter.getSelectedItem(), "All");
+        String source = Objects.toString(referenceSourceFilter.getSelectedItem(), "All Sources");
+        String library = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All Libraries");
+        referenceFiltersButton.setText("All".equals(type) ? "Code Reference" : type);
+        referenceFiltersButton.setToolTipText("Type: " + type + " | Source: " + source + " | Library: " + library);
+    }
+
+    private void requestFilterReferenceItems() {
+        referenceFilterDebounceTimer.restart();
+    }
+
+    private void resetReferenceFiltersAndSearch() {
+        updatingReferenceFilters = true;
+        try {
+            referenceSearchField.setText("");
+            referenceKindFilter.setSelectedItem("All");
+            referenceSourceFilter.setSelectedItem("All Sources");
+            referenceLibraryFilter.setSelectedItem("All Libraries");
+        } finally {
+            updatingReferenceFilters = false;
+        }
+        updateReferenceFiltersButtonTooltip();
+        filterReferenceItems();
+    }
+
+    private void filterReferenceItems() {
+        String query = referenceSearchField.getText();
+        String needle = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+        String selectedKind = Objects.toString(referenceKindFilter.getSelectedItem(), "All");
+        String selectedSource = Objects.toString(referenceSourceFilter.getSelectedItem(), "All Sources");
+        String selectedLibrary = Objects.toString(referenceLibraryFilter.getSelectedItem(), "All libraries");
+
+        ReferenceItem previousSelection = referenceList.getSelectedValue();
+        java.util.List<ReferenceItem> matches = new ArrayList<>();
+        for (ReferenceItem item : allReferenceItems) {
+            boolean kindMatches = "All".equals(selectedKind)
+                    || ("Functions".equals(selectedKind)
+                    && ("function".equals(item.kind) || "userfunc".equals(item.kind)))
+                    || ("Constants".equals(selectedKind) && "constant".equals(item.kind))
+                    || ("Labels".equals(selectedKind) && "label".equals(item.kind))
+                    || ("Variables".equals(selectedKind) && "variable".equals(item.kind))
+                    || ("Structs".equals(selectedKind) && "struc".equals(item.kind));
+            boolean sourceMatches = "All Sources".equals(selectedSource)
+                    || ("Builtin".equals(selectedSource)
+                    && item.library != null
+                    && "Builtin".equalsIgnoreCase(item.library))
+                    || ("Libraries".equals(selectedSource)
+                    && item.library != null
+                    && !"Builtin".equalsIgnoreCase(item.library)
+                    && !"Program".equalsIgnoreCase(item.library))
+                    || ("Program".equals(selectedSource)
+                    && item.library != null
+                    && "Program".equalsIgnoreCase(item.library));
+            boolean libraryMatches = "All Libraries".equals(selectedLibrary)
+                    || (item.library != null && selectedLibrary.equals(item.library));
+            if (needle.isEmpty()
+                    || item.name.toLowerCase(Locale.ROOT).contains(needle)
+                    || item.signature.toLowerCase(Locale.ROOT).contains(needle)
+                    || item.kind.toLowerCase(Locale.ROOT).contains(needle)
+                    || (item.library != null
+                    && item.library.toLowerCase(Locale.ROOT).contains(needle))) {
+                if (kindMatches && sourceMatches && libraryMatches) {
+                    matches.add(item);
+                }
+            }
+        }
+
+        rebuildingReferenceList = true;
+        try {
+            referenceListModel.clear();
+            for (ReferenceItem match : matches) {
+                referenceListModel.addElement(match);
+            }
+
+            if (!referenceListModel.isEmpty()) {
+                if (previousSelection != null && matches.contains(previousSelection)) {
+                    referenceList.setSelectedValue(previousSelection, true);
+                } else {
+                    referenceList.setSelectedIndex(0);
+                }
+            }
+        } finally {
+            rebuildingReferenceList = false;
+        }
+
+        if (!referenceListModel.isEmpty()) {
+            showReferenceResultsList(true);
+            updateReferenceSelectionDetails();
+        } else {
+            showReferenceResultsList(false);
+            setReferenceDetailsVisible(false);
+            setReferenceSelectionName("No selection");
+            setReferenceDetailsHtml(REFERENCE_NO_MATCHES_HTML);
+            referenceCopyButton.setEnabled(false);
+            referenceInsertButton.setEnabled(false);
+        }
+    }
+
+    private void showReferenceResultsList(boolean hasResults) {
+        CardLayout layout = (CardLayout) referenceResultsHost.getLayout();
+        layout.show(referenceResultsHost, hasResults ? REFERENCE_RESULTS_LIST_CARD : REFERENCE_RESULTS_EMPTY_CARD);
+    }
+
+    private void updateReferenceSelectionDetails() {
+        ReferenceItem item = referenceList.getSelectedValue();
+        if (item == null) {
+            setReferenceDetailsVisible(false);
+            setReferenceSelectionName("Select an entry.");
+            setReferenceDetailsHtml(REFERENCE_SELECT_PROMPT_HTML);
+            referenceCopyButton.setEnabled(false);
+            referenceInsertButton.setEnabled(false);
+            return;
+        }
+        setReferenceDetailsVisible(true);
+        setReferenceSelectionName(item.name);
+        setReferenceDetailsHtml(item.details);
+        referenceCopyButton.setEnabled(true);
+        referenceInsertButton.setEnabled(true);
+    }
+
+    private void setReferenceDetailsVisible(boolean visible) {
+        if (referenceSplitPane == null || referenceDetailsComponent == null) {
+            return;
+        }
+
+        if (visible) {
+            if (referenceDetailsCollapsed
+                    || referenceSplitPane.getBottomComponent() != referenceDetailsComponent) {
+                expandReferenceDetailsPane();
+            }
+        } else if (!referenceDetailsCollapsed
+                || referenceSplitPane.getBottomComponent() == referenceDetailsComponent) {
+            collapseReferenceDetailsPane();
+        }
+    }
+
+    private void collapseReferenceDetailsPane() {
+        referenceDetailsCollapsed = true;
+        referenceSplitPane.setResizeWeight(1.0);
+        referenceSplitPane.setDividerSize(0);
+        referenceSplitPane.setBottomComponent(null);
+        referenceSplitPane.revalidate();
+        referenceSplitPane.repaint();
+    }
+
+    private void expandReferenceDetailsPane() {
+        referenceDetailsCollapsed = false;
+        if (referenceSplitPane.getBottomComponent() != referenceDetailsComponent) {
+            referenceSplitPane.setBottomComponent(referenceDetailsComponent);
+        }
+        referenceSplitPane.setDividerSize(referenceDetailsDividerSize);
+        referenceSplitPane.setResizeWeight(RESULTS_SPLIT_WEIGHT);
+        referenceSplitPane.revalidate();
+
+        SwingUtilities.invokeLater(() -> {
+            if (referenceDetailsCollapsed
+                    || referenceSplitPane.getBottomComponent() != referenceDetailsComponent) {
+                return;
+            }
+
+            int splitPaneHeight = referenceSplitPane.getHeight();
+            if (splitPaneHeight <= 0) {
+                return;
+            }
+
+            int availableHeight = Math.max(0, splitPaneHeight - referenceSplitPane.getDividerSize());
+            int minimumTopHeight = Math.min(80, availableHeight);
+            int maximumDetailsHeight = Math.max(0, availableHeight - minimumTopHeight);
+            int targetDetailsHeight = Math.max(140,
+                    (int) Math.round(availableHeight * DETAILS_HEIGHT_RATIO));
+            targetDetailsHeight = Math.min(targetDetailsHeight, maximumDetailsHeight);
+
+            referenceSplitPane.setDividerLocation(availableHeight - targetDetailsHeight);
+        });
+    }
+
+    private void insertSelectedReference() {
+        ReferenceItem item = referenceList.getSelectedValue();
+        if (item == null) {
+            return;
+        }
+        context.commands().insertText(item.insertText, item.caretOffset);
+    }
+
+    private void copySelectedSymbolName() {
+        ReferenceItem item = referenceList.getSelectedValue();
+        if (item == null || item.name == null || item.name.isBlank()) {
+            return;
+        }
+        StringSelection selection = new StringSelection(item.name);
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+    }
+
+    private void setReferenceSelectionName(String name) {
+        referenceSelectionName = (name == null || name.isBlank()) ? "Select an entry." : name;
+        referenceSelectionNameLabel.setText(referenceSelectionName);
+        referenceSelectionNameLabel.setToolTipText(referenceSelectionName.isBlank() ? null : referenceSelectionName);
+    }
+}

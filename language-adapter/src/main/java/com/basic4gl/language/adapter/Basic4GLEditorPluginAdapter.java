@@ -5,6 +5,9 @@ import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
 import com.basic4gl.compiler.Preprocessor;
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.desktop.spi.*;
+import com.basic4gl.desktop.spi.content.ClasspathContentSource;
+import com.basic4gl.desktop.spi.content.DirectoryDocumentProvider;
+import com.basic4gl.desktop.spi.content.DirectoryTemplateProvider;
 import com.basic4gl.desktop.spi.language.LanguageSupport;
 import com.basic4gl.language.adapter.menu.ReferenceWindow;
 import com.basic4gl.library.plugin.PluginJAR;
@@ -13,6 +16,7 @@ import com.basic4gl.library.plugin.PluginJARFile;
 import com.basic4gl.library.plugin.PluginJARManager;
 import com.basic4gl.runtime.Debugger;
 import com.basic4gl.runtime.TomVM;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -158,9 +162,36 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
             window.populate(compiler);
             window.setVisible(true);
         });
+        registerBuiltInContent(context);
         plugins.setCurrentDirectory(getDefaultPluginDirectory());
         applyPluginSettingsToManager();
         attemptLoadPluginsFromCurrentDirectory();
+    }
+
+    private void registerBuiltInContent(PluginContext context) {
+        ClassLoader classLoader = getClass().getClassLoader();
+        try {
+            context.content()
+                    .registerDocumentProvider(new DirectoryDocumentProvider(
+                            "basic4gl-docs",
+                            getVersion(),
+                            new ClasspathContentSource(
+                                    classLoader,
+                                    "basic4gl-content/docs/basic4gl",
+                                    "basic4gl-content/docs/basic4gl.index"),
+                            List.of("Basic4GL")));
+            context.content()
+                    .registerTemplateProvider(new DirectoryTemplateProvider(
+                            "basic4gl-samples",
+                            getVersion(),
+                            new ClasspathContentSource(
+                                    classLoader,
+                                    "basic4gl-content/samples/Programs",
+                                    "basic4gl-content/samples/Programs.index"),
+                            List.of("Samples")));
+        } catch (IOException | RuntimeException ex) {
+            System.err.println("Unable to register built-in Basic4GL content: " + ex.getMessage());
+        }
     }
 
     @Override

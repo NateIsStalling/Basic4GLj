@@ -1,6 +1,8 @@
 package com.basic4gl.desktop.util;
 
+import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import javax.swing.*;
 
 public final class KeyStrokeUtil {
@@ -13,13 +15,23 @@ public final class KeyStrokeUtil {
         int modifiers = keyStroke.getModifiers();
         int keyCode = keyStroke.getKeyCode();
 
-        String modifierSymbol;
-        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-            modifierSymbol = "⌘"; // Command symbol for macOS
-        } else {
-            modifierSymbol = "Ctrl"; // Control for Windows/Linux
+        ArrayList<String> modifierSymbol = new ArrayList<>();
+
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+
+        if ((modifiers & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+            modifierSymbol.add("Shift");
         }
 
-        return modifierSymbol + " " + KeyEvent.getKeyText(keyCode);
+        if ((modifiers & toolkit.getMenuShortcutKeyMask()) != 0
+                || (modifiers & toolkit.getMenuShortcutKeyMaskEx()) == 0) {
+            if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+                modifierSymbol.add("⌘"); // Command symbol for macOS
+            } else {
+                modifierSymbol.add("Ctrl"); // Control for Windows/Linux
+            }
+        }
+
+        return String.join(" + ", modifierSymbol) + " " + KeyEvent.getKeyText(keyCode);
     }
 }

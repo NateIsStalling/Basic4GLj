@@ -1,13 +1,16 @@
-package com.basic4gl.desktop;
+package com.basic4gl.desktop.editor;
 
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
+import com.basic4gl.desktop.content.ContentDocumentViewer;
 import java.io.File;
 import java.util.List;
 
-interface IEditorPresenter {
+public interface IEditorPresenter {
     void onModeChanged(ApMode mode, String statusMsg);
+
+    void onCompileSucceeded();
 
     void refreshDebugDisplays(ApMode mode);
 
@@ -40,4 +43,6 @@ interface IEditorPresenter {
     void setRecentItems(List<File> files);
 
     void refreshSyntaxHighlighting();
+
+    void openDocumentationPreview(ContentDocumentViewer viewer);
 }
