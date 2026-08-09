@@ -121,7 +121,7 @@ For example, `Right$("ABCDEFG", 3)` returns `"EFG"`
 
 > [!IMPORTANT]
 >
-> The Basic4GL for Java port uses `RND_MAX = 32767` for random behavior compatibility with previous versions of Basic4GL.
+> Basi4GLj uses `RND_MAX = 32767` for random behavior compatibility with previous versions of Basic4GL.
 
 To return a random number between `0` and `x-1` (inclusive), use:
 ```
