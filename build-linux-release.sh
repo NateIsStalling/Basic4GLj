@@ -51,25 +51,6 @@ if [ -n "$RUNTIME_IMAGE" ]; then
     echo "Runtime image directory not found: $RUNTIME_IMAGE"
     exit 1
   fi
-
-  # jpackage's --type deb packager force-chmods everything in the built
-  # app-image, including the runtime folder, when creating the installer from
-  # --app-image. If any part of that runtime tree is still a symlink back into
-  # the original --runtime-image path (e.g. the GitHub Actions hostedtoolcache
-  # JDK install), that chmod reaches outside what the runner owns and fails
-  # with "Operation not permitted". Stage a private, fully-owned copy first so
-  # nothing downstream ever points back at the shared source.
-  #
-  # The staging copy is made under the workspace's own ./build directory
-  # rather than system /tmp: on current GitHub-hosted Linux runners, /tmp
-  # doesn't allow chmod even on files this same script just created there,
-  # which broke this workaround at the first chmod. ./build is the ordinary
-  # checkout filesystem the rest of the Gradle build already writes to, so it
-  # doesn't hit that restriction.
-  RUNTIME_IMAGE_STAGING_DIR="$(mktemp -d -p ./build)/runtime-image"
-  cp -R "$RUNTIME_IMAGE" "$RUNTIME_IMAGE_STAGING_DIR"
-  chmod -R u+rwX "$RUNTIME_IMAGE_STAGING_DIR"
-  RUNTIME_IMAGE="$RUNTIME_IMAGE_STAGING_DIR"
 fi
 
 echo "Create app-image Version '$APP_RELEASE_VERSION'"
