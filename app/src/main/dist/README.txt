@@ -2,8 +2,8 @@
 	Build Date: July 2026
 ================================================
 	Basic4GLj	by Nathaniel Nielsen	(c) 2026
-	Basic4GL 	by Tom Mulgrew			(c) 2016
-	License:	New BSD; see LICENSES folder
+	Basic4GL 	by Tom Mulgrew			(c) 2005-2020
+	License:	BSD 3-Clause; see LICENSES folder
 	Requires:	Java 17
 
 	Site:		https://github.com/NateIsStalling/Basic4GLj

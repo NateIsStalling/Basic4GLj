@@ -1,5 +1,3 @@
-Welcome to the Basic4GLj wiki!
-
 ## Getting Started:
 * [Get the Latest Release](https://github.com/NateIsStalling/Basic4GLj/releases)
 * [Language Syntax Guide](./language-syntax-guide.md)
