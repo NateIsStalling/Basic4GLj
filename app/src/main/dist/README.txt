@@ -1,5 +1,5 @@
-	Basic4GLj 1.0.0 beta 1
-	Build Date: July 2026
+	Basic4GLj 1.0.0 beta 2
+	Build Date: August 2026
 ================================================
 	Basic4GLj	by Nathaniel Nielsen	(c) 2026
 	Basic4GL 	by Tom Mulgrew			(c) 2005-2020
@@ -15,7 +15,7 @@
 
 	Java 17 must be installed and in your system path. If you are using the installer distribution of Basic4GLj, Java 17 is embedded and does not need to be installed separately.
 
-	The bin folder contains scripts to launch Basic4GLj on Windows and MacOS/Linux systems.
+	The bin folder contains scripts to launch Basic4GLj on Windows and macOS/Linux systems.
 
 	Sample programs are included from the original Basic4GL - please report any issues running these programs at https://github.com/NateIsStalling/Basic4GLj/issues.
 
@@ -27,6 +27,10 @@
 ================================================
 	Change Log
 ================================================
+[v1.0.0-beta.2] August 9, 2026
+Installation fixes and improvements:
+    - Installer improvements for Windows and Linux
+    - Fixed macOS file permissions
 
 [v1.0.0-beta.1] July 28, 2026
 The beta release!!!
@@ -87,9 +91,9 @@ LWJGL update and bug fixes:
     - Misc bug fixes
 
 [v0.4.0-alpha] March 13, 2023
-Mac OS support and open source update:
+macOS support and open source update:
     - Revived project (Hooray!)
-    - Added Mac OS support
+    - Added macOS support
     - Java 8 now required
     - Made Basic4GLj open source
 
