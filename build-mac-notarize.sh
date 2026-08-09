@@ -20,10 +20,16 @@ else
   echo 'Local .env file not found'
 fi
 
-xcrun notarytool submit "./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.dmg" \
+INSTALLER_PATH="./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.dmg"
+if [ ! -f "$INSTALLER_PATH" ]; then
+  echo "Expected macOS installer not found for notarization: $INSTALLER_PATH"
+  exit 1
+fi
+
+xcrun notarytool submit "$INSTALLER_PATH" \
  --apple-id "$MAC_SIGNING_NOTARIZATION_USER_NAME" \
  --team-id "$MAC_SIGNING_TEAM_ID" \
  --password "$MAC_SIGNING_NOTARIZATION_PASSWORD" \
  --wait
 
-xcrun stapler staple "./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.dmg"
+xcrun stapler staple "$INSTALLER_PATH"

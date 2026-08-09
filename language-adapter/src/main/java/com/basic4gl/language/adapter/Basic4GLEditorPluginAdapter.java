@@ -65,7 +65,7 @@ public class Basic4GLEditorPluginAdapter extends EditorPlugin {
 
     @Override
     public String getDescription() {
-        return "Basic4GL for Java support";
+        return "Basic4GL development tools for the JVM support";
     }
 
     @Override

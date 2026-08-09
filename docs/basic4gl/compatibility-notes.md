@@ -7,7 +7,7 @@ Additionally, recent work on Basic4GLj (as of 2022!) has been done on a Mac with
 
 Please report any compatibility or stability issues to the Issues page of this project.
 
-### Sample Program Compatibility
+## Sample Program Compatibility
 
 Sample programs located in the `/samples` folder are copied from the Windows version of Basic4GL and are not guaranteed to work due to the in-progress nature of Basic4GLj and some Basic4GL features being otherwise unsupported.
 
@@ -15,7 +15,7 @@ Network functions are currently unsupported are not currently supported.
 
 Some sample programs may require `glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND)` to be added their original source inorder to display output; this is considered a bug since it inverts texture colors and will hopefully become unecessary in future versions of the Basic4GLj IDE - the applications will function normally with or without the added `glTexEnvi` in earlier versions of the Windows Basic4GL.
 
-### Keyboard Input Compatibility
+## Keyboard Input Compatibility
 
 The following virtualkey constants available in the Windows version of Basic4GL are not currently supported:
 
@@ -30,6 +30,8 @@ see: http://www.glfw.org/docs/latest/group__keys.html_
 `VK_RETURN` has not been mapped to a GLFW constant because GLFW has separate constants for the enter key and the keypad/numpad enter key, where `VK_RETURN` would recognize either.
 `GLFW_KEY_ENTER` and `GLFW_KEY_KP_ENTER` are available for usage in place of `VK_RETURN`.
 
+## OpenGL Compatibility
+
 ### OpenGL GLU Compatibility
 
 OpenGL GLU constants are unavailable, they are unsupported by the current version of LWJGL that is used by Basic4GLj. GLU functions available in previous versions of Basic4GL are available with modifications.
@@ -38,6 +40,34 @@ OpenGL GLU constants are unavailable, they are unsupported by the current versio
 - `gluLookAt` will currently throw an `UnsupportedOperationException` if called
 
 
-### Misc.
+### Misc. OpenGL Notes
 
 - `glColor3ub` and `glColor4ub` are mapped to `glColor3ubv` and `glColor4ubv` to resolve crash on macOS
+
+## Sound System
+
+The [Sound Guide](./sound-guide.md) tutorial is available in the project's docs and wiki.
+
+### Playing Sound Effects
+
+The following file formats are currently supported for playing sound effects using the `loadsound` and `playsound` functions:
+
+| File Extension | Codec | 
+|----------------| ------- |
+| wav            | CodecWav |
+| ogg            | CodecJOrbis |
+| xm             | CodecIBXM |
+| s3m            | CodecIBXM |
+| mod            | CodecIBXM |
+
+### Playing Music
+
+Ogg Vorbis files are supported for playing music continuously using the `playmusic` function.
+
+### Sound System Licenses
+
+Basic4GLj depends on a fork of Paulscode-SoundSystem to support sound codecs for LWJGL 3 which can be found here:
+
+https://github.com/NateIsStalling/Paulscode-SoundSystem/tree/lwjgl3
+
+Licenses for Paulscode-SoundSystem and related sound Codecs can be found in the `LICENSES` folder under `/LICENSES/sound system`

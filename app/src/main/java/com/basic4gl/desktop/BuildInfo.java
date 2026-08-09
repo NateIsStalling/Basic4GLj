@@ -6,7 +6,7 @@ public class BuildInfo {
     public static final String APPLICATION_BUILD_DATE_RESOURCE = "applicationBuildDate";
     public static final String APPLICATION_NAME = "Basic4GLj";
     public static final String APPLICATION_COPYRIGHT = "(c) 2026, Nathaniel Nielsen";
-    public static final String APPLICATION_DESCRIPTION = "Basic4GL for Java";
+    public static final String APPLICATION_DESCRIPTION = "Basic4GL development tools for the JVM.";
     public static final String APPLICATION_WEBSITE = "https://github.com/NateIsStalling/Basic4GLj";
     public static final String APPLICATION_CONTACT = "https://github.com/NateIsStalling/Basic4GLj/issues";
 
