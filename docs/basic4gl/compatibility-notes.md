@@ -46,7 +46,7 @@ OpenGL GLU constants are unavailable, they are unsupported by the current versio
 
 ## Sound System
 
-[Sound Guide](./docs/basic4gl/sound-guide.md) tutorial is available in the project's docs and wiki.
+The [Sound Guide](./sound-guide.md) tutorial is available in the project's docs and wiki.
 
 ### Playing Sound Effects
 
