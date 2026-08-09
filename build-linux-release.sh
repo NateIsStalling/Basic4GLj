@@ -59,7 +59,14 @@ if [ -n "$RUNTIME_IMAGE" ]; then
   # JDK install), that chmod reaches outside what the runner owns and fails
   # with "Operation not permitted". Stage a private, fully-owned copy first so
   # nothing downstream ever points back at the shared source.
-  RUNTIME_IMAGE_STAGING_DIR="$(mktemp -d)/runtime-image"
+  #
+  # The staging copy is made under the workspace's own ./build directory
+  # rather than system /tmp: on current GitHub-hosted Linux runners, /tmp
+  # doesn't allow chmod even on files this same script just created there,
+  # which broke this workaround at the first chmod. ./build is the ordinary
+  # checkout filesystem the rest of the Gradle build already writes to, so it
+  # doesn't hit that restriction.
+  RUNTIME_IMAGE_STAGING_DIR="$(mktemp -d -p ./build)/runtime-image"
   cp -R "$RUNTIME_IMAGE" "$RUNTIME_IMAGE_STAGING_DIR"
   chmod -R u+rwX "$RUNTIME_IMAGE_STAGING_DIR"
   RUNTIME_IMAGE="$RUNTIME_IMAGE_STAGING_DIR"
