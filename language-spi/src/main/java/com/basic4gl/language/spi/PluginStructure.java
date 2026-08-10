@@ -3,15 +3,15 @@ package com.basic4gl.language.spi;
 import com.basic4gl.language.core.internal.Assert;
 import com.basic4gl.language.core.types.TypeLibrary;
 import com.basic4gl.language.core.types.ValType;
+import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Vector;
 
 public class PluginStructure {
 
     // Structure definition
     private final String name;
     private final int versionMajor, versionMinor;
-    private final Vector<PluginStructureField> fields = new Vector<>();
+    private final ArrayList<PluginStructureField> fields = new ArrayList<>();
 
     // Index of corresponding Basic4GL structure type in compiler/virtual machine.
     // Note: This is valid only while compiling, or while the program is running,

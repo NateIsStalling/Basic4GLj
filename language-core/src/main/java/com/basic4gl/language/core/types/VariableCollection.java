@@ -2,6 +2,7 @@ package com.basic4gl.language.core.types;
 
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
+import com.basic4gl.language.core.internal.CollectionUtil;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.language.core.streaming.Streamable;
 import com.basic4gl.language.core.streaming.Streaming;
@@ -93,7 +94,7 @@ public class VariableCollection implements Streamable {
         }
     }
 
-    private final Vector<Variable> variables;
+    private final ArrayList<Variable> variables;
     private final Data data;
     private final TypeLibrary types;
 
@@ -101,13 +102,13 @@ public class VariableCollection implements Streamable {
         this.data = data;
         this.types = types;
 
-        variables = new Vector<>();
+        variables = new ArrayList<>();
     }
 
     /**
      * Variables
      */
-    public Vector<Variable> getVariables() {
+    public ArrayList<Variable> getVariables() {
         return variables;
     }
 
@@ -208,7 +209,7 @@ public class VariableCollection implements Streamable {
 
         // Stream in variables
         long count = Streaming.readLong(stream);
-        variables.setSize((int) count);
+        CollectionUtil.resize(variables, (int) count);
         for (int i = 0; i < count; i++) {
             variables.set(i, new Variable());
             variables.get(i).streamIn(stream);

@@ -6,14 +6,15 @@ import com.basic4gl.language.core.types.Constant;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
+import java.util.List;
 
 public abstract class PluginManager implements Basic4GLInterfaceRegistry {
 
     protected record SharedInterfaceKey(Class<?> serviceType, int majorVersion, int minorVersion) {}
 
-    protected Vector<PluginLibrary> plugins = new Vector<>();
+    protected ArrayList<PluginLibrary> plugins = new ArrayList<>();
     protected String error;
     protected HashMap<SharedInterfaceKey, PluginSharedInterface> sharedInterfaces = new HashMap<>();
     protected boolean isStandaloneExe;
@@ -71,7 +72,7 @@ public abstract class PluginManager implements Basic4GLInterfaceRegistry {
      * Loaded libraries
      * @return PluginLibrary collection of loaded libraries.
      */
-    public Vector<PluginLibrary> getLoadedLibraries() {
+    public List<PluginLibrary> getLoadedLibraries() {
         return plugins;
     }
 

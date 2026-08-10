@@ -227,7 +227,7 @@ public class Basic4GLLanguageService implements LanguageService {
                 signature.append(name);
                 signature.append(spec.hasBrackets() ? "(" : " ");
                 boolean needComma = false;
-                Vector<ValType> params = spec.getParamTypes().getParams();
+                ArrayList<ValType> params = spec.getParamTypes().getParams();
                 StringBuilder argsOnly = new StringBuilder();
                 if (params != null) {
                     for (ValType type : params) {
@@ -370,7 +370,7 @@ public class Basic4GLLanguageService implements LanguageService {
         return items;
     }
 
-    private VariableDefinition[] buildFunctionParameterDefinitions(Vector<ValType> params, String library) {
+    private VariableDefinition[] buildFunctionParameterDefinitions(ArrayList<ValType> params, String library) {
         VariableDefinition[] definitions = new VariableDefinition[params.size()];
         for (int i = 0; i < params.size(); i++) {
             String typeName = LanguageUtil.getTypeString(params.get(i));

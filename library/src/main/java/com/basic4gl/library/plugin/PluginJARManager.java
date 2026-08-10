@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 /**
  * Manages loading and maintaining plugin JARs
@@ -60,8 +59,8 @@ public class PluginJARManager extends PluginManager {
     /**
      * @return Returns a list of currently loaded plugin JARs.
      */
-    public Vector<PluginJAR> loadedJARs() {
-        Vector<PluginJAR> result = new Vector<>();
+    public List<PluginJAR> loadedJARs() {
+        ArrayList<PluginJAR> result = new ArrayList<>();
 
         for (PluginLibrary lib : plugins) {
             if (lib instanceof PluginJAR) {
@@ -76,8 +75,8 @@ public class PluginJARManager extends PluginManager {
      * Find and list JAR files.
      * @return
      */
-    public Vector<PluginJARFile> getJARFiles() {
-        Vector<PluginJARFile> result = new Vector<>();
+    public ArrayList<PluginJARFile> getJARFiles() {
+        ArrayList<PluginJARFile> result = new ArrayList<>();
         error = null;
 
         if (directories.isEmpty()) {

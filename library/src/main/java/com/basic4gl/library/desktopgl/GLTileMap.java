@@ -8,7 +8,7 @@ import com.basic4gl.library.desktopgl.content.GLSpriteEngine;
 import com.basic4gl.library.standard.TrigBasicLib;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.Vector;
+import java.util.ArrayList;
 import org.lwjgl.BufferUtils;
 
 /**
@@ -22,7 +22,7 @@ import org.lwjgl.BufferUtils;
 public class GLTileMap extends GLBasicSprite {
 
     private int xTiles, yTiles;
-    private Vector<Integer> tiles;
+    private ArrayList<Integer> tiles;
 
     public boolean repeatX, repeatY;
 
@@ -37,7 +37,7 @@ public class GLTileMap extends GLBasicSprite {
         setDefaults();
     }
 
-    public GLTileMap(Vector<Integer> tex) {
+    public GLTileMap(ArrayList<Integer> tex) {
         super(tex);
         setDefaults();
     }
@@ -72,11 +72,11 @@ public class GLTileMap extends GLBasicSprite {
         return yTiles;
     }
 
-    public Vector<Integer> getTiles() {
+    public ArrayList<Integer> getTiles() {
         return tiles;
     }
 
-    public void setTiles(int xTiles, int yTiles, Vector<Integer> tiles) {
+    public void setTiles(int xTiles, int yTiles, ArrayList<Integer> tiles) {
         assertTrue(xTiles >= 0);
         assertTrue(yTiles >= 0);
         assertTrue(tiles.size() >= xTiles * yTiles);

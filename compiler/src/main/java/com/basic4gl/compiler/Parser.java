@@ -11,7 +11,7 @@ import java.util.*;
 public class Parser extends HasErrorState implements com.basic4gl.language.core.extensions.Basic4GLParser {
 
     // Text
-    private final Vector<String> sourceCode;
+    private final ArrayList<String> sourceCode;
 
     // Special mode
     private boolean isSpecialMode;
@@ -25,7 +25,7 @@ public class Parser extends HasErrorState implements com.basic4gl.language.core.
     private int column;
 
     public Parser() {
-        sourceCode = new Vector<>();
+        sourceCode = new ArrayList<>();
         specialText = "";
         reset();
     }
@@ -81,7 +81,7 @@ public class Parser extends HasErrorState implements com.basic4gl.language.core.
     }
 
     @Override
-    public Vector<String> getSourceCode() {
+    public List<String> getSourceCode() {
         return sourceCode;
     }
 

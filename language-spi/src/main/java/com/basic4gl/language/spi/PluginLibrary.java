@@ -4,6 +4,7 @@ import com.basic4gl.language.core.extensions.Basic4GLFunction;
 import com.basic4gl.language.core.extensions.Basic4GLObjectStore;
 import com.basic4gl.language.core.extensions.Basic4GLObjectStoreListener;
 import com.basic4gl.language.core.internal.Assert;
+import com.basic4gl.language.core.internal.CollectionUtil;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.types.*;
 import java.util.*;
@@ -297,7 +298,7 @@ public class PluginLibrary implements com.basic4gl.language.core.extensions.Basi
     public void modParamArray(byte dimensions) {
         // Find last added param
         if (currentSpec.getParamTypes().getParams().size() > 0) {
-            ValType param = currentSpec.getParamTypes().getParams().lastElement();
+            ValType param = CollectionUtil.last(currentSpec.getParamTypes().getParams());
 
             // Convert into array
             param.arrayLevel = dimensions;
@@ -307,7 +308,7 @@ public class PluginLibrary implements com.basic4gl.language.core.extensions.Basi
     public void modParamPointer(byte level) {
         // Find last added param
         if (currentSpec.getParamTypes().getParams().size() > 0) {
-            ValType param = currentSpec.getParamTypes().getParams().lastElement();
+            ValType param = CollectionUtil.last(currentSpec.getParamTypes().getParams());
 
             // Convert into pointer
             param.pointerLevel = level;
@@ -317,7 +318,7 @@ public class PluginLibrary implements com.basic4gl.language.core.extensions.Basi
     public void modParamReference() {
         // Find last added param
         if (currentSpec.getParamTypes().getParams().size() > 0) {
-            ValType param = currentSpec.getParamTypes().getParams().lastElement();
+            ValType param = CollectionUtil.last(currentSpec.getParamTypes().getParams());
 
             // Convert into by-reference param
             if (!param.isByRef) {
