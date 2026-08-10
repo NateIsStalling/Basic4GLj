@@ -1307,6 +1307,7 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
                     unwindStack(prevStackTop);
                     data.restoreState(prevStackTop, prevTempDataLock, doFreeTempData);
 
+                    // Remove stack frame
                     userCallStack.remove(top);
                     releaseFrame(stackFrame);
 
@@ -1315,9 +1316,6 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
 
                     // Make previous frame active
                     currentUserFrame = prevCurrentFrame;
-
-                    // Remove stack frame
-                    userCallStack.remove(userCallStack.size() - 1);
 
                     continue step; // Proceed without incrementing instruction
                 }

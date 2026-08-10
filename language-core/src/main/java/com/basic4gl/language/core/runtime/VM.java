@@ -13,8 +13,6 @@ public interface VM {
 
     String getStringParam(int i);
 
-    //    Value getReg();
-
     Data getData();
 
     TypeLibrary getDataTypes();
@@ -44,8 +42,6 @@ public interface VM {
     String getString(int stringIndex);
 
     String getRegString();
-
-    //    Value getReg2();
 
     boolean hasError();
 
