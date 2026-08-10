@@ -1905,7 +1905,6 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
         // restore
         // the program when we've finished.
 
-        System.out.println(debugger.getUserBreakPointCount());
         // User breakpts
         for (int i = 0; i < debugger.getUserBreakPointCount(); i++) {
 
