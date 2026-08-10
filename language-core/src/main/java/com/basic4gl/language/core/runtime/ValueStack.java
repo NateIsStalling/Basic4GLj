@@ -91,11 +91,13 @@ public class ValueStack {
 
         int newCapacity = data.length;
 
-        assertTrue(newCapacity <= limit, "Stack overflow");
+        assertTrue(minCapacity <= limit, "Stack overflow");
 
         while (newCapacity < minCapacity) {
             newCapacity *= 2;
         }
+
+        newCapacity = Math.min(newCapacity, limit);
 
         data = Arrays.copyOf(data, newCapacity);
     }

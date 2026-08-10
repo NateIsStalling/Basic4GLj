@@ -268,7 +268,8 @@ public class IntegrationTest {
     /** Asserts that the BASIC code given is erroneous and should not compile. */
     void assertCodeDoesNotCompile(String source) {
         ISourceFile sf = new StringSourceFile(source);
-        assertFalse(this.compiler.load(sf), "Compiler did not catch the error");
+        assertTrue(this.compiler.load(sf), "Compiler did not catch the error");
+        assertFalse(compiler.compile(), "Compiler did not catch the error");
         this.compiler.compile();
         if (printDisassembly) {
             displayState(source);

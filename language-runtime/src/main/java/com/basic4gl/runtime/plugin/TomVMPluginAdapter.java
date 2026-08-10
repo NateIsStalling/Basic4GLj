@@ -703,15 +703,13 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
     }
 
     public void setParam(int index, ByteBuffer src) {
-        Mutable<Integer> mutableDataIndex;
-
         // Ensure data type is complete
         FixCurrentType();
         // Simple type
         if (currentType.getArrayLevel() == 0 && currentType.getPointerLevel() == 0 && currentType.getBaseType() < 0) {
-            mutableDataIndex = new Mutable<>(vm.getIntParam(index));
-            BasicValueFromCValue(currentType, mutableDataIndex, src);
-            vm.setIntParam(index, mutableDataIndex.get());
+            Value value = new Value(vm.getIntParam(index));
+            BasicValueFromCValue(currentType, value, src);
+            vm.setIntParam(index, value.getIntVal());
         } else {
 
             // Dereference
@@ -722,9 +720,7 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
             derefType.deref();
 
             // Convert data
-            mutableDataIndex = new Mutable<>(dataIndex);
-            BasicDataFromCData(derefType, mutableDataIndex, src);
-            vm.setIntParam(index, mutableDataIndex.get());
+            BasicDataFromCData(derefType, new Mutable<>(dataIndex), src);
         }
     }
 
