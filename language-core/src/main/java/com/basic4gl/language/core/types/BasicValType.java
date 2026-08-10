@@ -37,4 +37,27 @@ public class BasicValType {
     public static final int VTP_STRING = -3;
     public static final int VTP_NULL = -2;
     public static final int VTP_UNDEFINED = -1;
+
+    public static String getName(int bvt) {
+        switch (bvt) {
+            case VTP_UNTYPED_FUNC_PTR:
+                return "VTP_UNTYPED_FUNC_PTR";
+            case VTP_VOID:
+                return "VTP_VOID";
+            case VTP_FUNC_PTR:
+                return "VTP_FUNC_PTR";
+            case VTP_INT:
+                return "VTP_INT";
+            case VTP_REAL:
+                return "VTP_REAL";
+            case VTP_STRING:
+                return "VTP_STRING";
+            case VTP_NULL:
+                return "VTP_NULL";
+            case VTP_UNDEFINED:
+                return "VTP_UNDEFINED";
+            default:
+                return "???";
+        }
+    }
 }

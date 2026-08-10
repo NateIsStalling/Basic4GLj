@@ -428,7 +428,6 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
      * @param steps
      */
     public void continueVM(int steps) {
-
         clearError();
         paused = false;
         timeshare = false;
@@ -508,6 +507,7 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
                     // Find current stack frame
                     assertTrue(currentUserFrame >= 0);
                     assertTrue(currentUserFrame < userCallStack.size());
+
                     UserFuncStackFrame currentFrame = userCallStack.get(currentUserFrame);
 
                     // Find variable
@@ -703,6 +703,7 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
                     // Find current stack frame
                     assertTrue(currentUserFrame >= 0);
                     assertTrue(currentUserFrame < userCallStack.size());
+
                     UserFuncStackFrame currentFrame = userCallStack.get(currentUserFrame);
 
                     UserFunc userFunc = userFunctions.get(currentFrame.userFuncIndex);
@@ -2898,7 +2899,7 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
 
     // General
     public boolean isDone() {
-        // assertTrue(isIPValid());
+        assertTrue(isIPValid());
         return stopped || codeInstructions.get(ip).opCode == OpCode.OP_END; // Reached end of
         // program?
     }
@@ -2912,14 +2913,14 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
     }
 
     public void getIPInSourceCode(Mutable<Integer> line, Mutable<Integer> col) {
-        // assertTrue(isIPValid());
+        assertTrue(isIPValid());
         line.set(codeInstructions.get(ip).sourceLine);
         col.set(codeInstructions.get(ip).sourceChar);
     }
 
     public InstructionPosition getIPInSourceCode() {
-        // assertTrue(isIPValid());
-        return new InstructionPosition(codeInstructions.get(ip).sourceLine, codeInstructions.get(ip).sourceChar);
+        assertTrue(isIPValid());
+        return new InstructionPosition(0, codeInstructions.get(ip).sourceLine, codeInstructions.get(ip).sourceChar);
     }
 
     public void bindCodeBlock(int index) {

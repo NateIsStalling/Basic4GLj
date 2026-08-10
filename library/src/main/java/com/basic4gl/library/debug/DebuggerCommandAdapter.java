@@ -84,8 +84,6 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
 
     @Override
     public void message(DebuggerCallbackMessage message) {
-        //        if (true)
-        //            return;
         if (message == null) {
             return;
         }
@@ -209,8 +207,8 @@ public class DebuggerCommandAdapter implements DebuggerTaskCallback, IDebugComma
             callbackMessage.setMessage(callback.getStatus(), callback.getText(), vmStatus);
             InstructionPosition instructionPosition = null;
             if (callback.getSourcePosition() != null) {
-                instructionPosition =
-                        new InstructionPosition(callback.getSourcePosition().line, callback.getSourcePosition().column);
+                instructionPosition = new InstructionPosition(
+                        0, callback.getSourcePosition().line, callback.getSourcePosition().column);
             }
             callbackMessage.setInstructionPosition(instructionPosition);
             callbackMessage.notify();

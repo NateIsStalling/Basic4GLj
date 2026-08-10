@@ -2988,8 +2988,8 @@ public class TextBasicLib implements FunctionLibrary {
 
     public final class WrapResizeSpriteArea implements Function {
         public void run(VM vm) {
-            int width = (int) vm.getRealParam(2).intValue(),
-                    height = (int) vm.getRealParam(1).intValue();
+            int width = vm.getRealParam(2).intValue();
+            int height = vm.getRealParam(1).intValue();
             if (width <= 0 || height <= 0) {
                 vm.functionError("Width and height must both be greater than 0");
                 return;

@@ -27,6 +27,7 @@
 ================================================
 	Change Log
 ================================================
+
 [v1.0.0-beta.2] August 9, 2026
 Installation fixes and improvements:
     - Installer improvements for Windows and Linux

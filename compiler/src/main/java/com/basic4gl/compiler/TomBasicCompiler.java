@@ -377,6 +377,18 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         runtimeFunctions.clear();
     }
 
+    /**
+     * Load a source file, preprocessing it and setting the parser to read the entire program.
+     * Used for testing
+     * @param file
+     * @return
+     */
+    public boolean load(ISourceFile file) {
+        clearProgram();
+        Preprocessor pp = new Preprocessor(null, 0);
+        return pp.preprocess(file, this.parser);
+    }
+
     public boolean compile() {
 
         // Clear existing program
@@ -6071,6 +6083,10 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
     public String getUserFunctionName(int index) {
         String name = userFunctionReverseIndex.get(index);
         return name == null ? "???" : name;
+    }
+
+    public Constant getUserDefinedConstant(String name) {
+        return this.programConstants.get(name.toLowerCase());
     }
 
     // State streaming

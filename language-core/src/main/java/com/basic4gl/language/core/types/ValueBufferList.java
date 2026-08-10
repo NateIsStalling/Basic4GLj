@@ -1,8 +1,9 @@
-package com.basic4gl.language.core.runtime;
+package com.basic4gl.language.core.types;
 
 import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Float.intBitsToFloat;
 
+import com.basic4gl.language.core.runtime.Value;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
