@@ -1,59 +1,62 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.lib.util.*;
+import com.basic4gl.app.desktop.config.IConfigurableAppSettings;
+import com.basic4gl.desktop.spi.Builder;
+import com.basic4gl.desktop.spi.Configuration;
+import com.basic4gl.desktop.spi.ProjectSettingsPage;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.Objects;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
-/**
- * Created by Nate on 2/5/2015.
- */
-public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigurationChangeListener {
+public class ProjectSettingsDialog
+        implements com.basic4gl.desktop.spi.ConfigurationFormPanel.IOnConfigurationChangeListener {
 
     private static final String BUILD_SETTINGS_CARD = "Build Settings";
     private static final String PROGRAM_ARGUMENTS_CARD = "Program Arguments";
-    private static final String RUN_DEBUG_ADVANCED_CARD = "JVM Settings";
-    private static final String SAFE_MODE_CARD = "Safe Mode";
+    private static final String EDITOR_CARD = "Editor";
 
     private final JDialog dialog;
     private final JDialog libraryInfoDialog;
-
-    private final JComboBox<String> builderComboBox;
-    private final JButton libraryInfoButton;
-
+    private JComboBox<String> builderComboBox;
+    private JButton libraryInfoButton;
     private final JTextPane infoTextPane;
-
-    // Libraries
-    private java.util.List<Library> libraries;
-    private java.util.List<Integer> builders; // Indexes of libraries that can be launch targets
-    private int currentBuilder; // Index value of target
-
-    private final ConfigurationFormPanel configPane;
-
+    private com.basic4gl.desktop.spi.ConfigurationFormPanel configPane;
     private final IConfigurableAppSettings appSettings;
+    private final EditorSettings editorSettings;
+    private final List<ProjectSettingsPage> contributedPages;
+    private final Runnable onSettingsApplied;
+    private JCheckBox autoCompleteCheckBox;
+    private JCheckBox showFunctionSignaturesCheckBox;
 
-    public ProjectSettingsDialog(Frame parent, IConfigurableAppSettings appSettings) {
+    private List<Builder> builders;
+    private int currentBuilder;
 
+    public ProjectSettingsDialog(
+            Frame parent,
+            IConfigurableAppSettings appSettings,
+            EditorSettings editorSettings,
+            List<ProjectSettingsPage> contributedProjectSettingsPages,
+            Runnable onSettingsApplied) {
         this.appSettings = appSettings;
-
-        Locale locale = new Locale("en", "US");
-        ResourceBundle resources = ResourceBundle.getBundle("labels", locale);
+        this.editorSettings = editorSettings;
+        this.onSettingsApplied = onSettingsApplied;
+        this.contributedPages = new ArrayList<>(contributedProjectSettingsPages);
+        this.contributedPages.sort(Comparator.comparingInt(ProjectSettingsPage::getSortOrder)
+                .thenComparing(ProjectSettingsPage::getPageTitle, String.CASE_INSENSITIVE_ORDER));
 
         dialog = new JDialog(parent);
-
         dialog.setTitle("Project Settings");
         dialog.setResizable(true);
         dialog.setModal(true);
         dialog.setLayout(new BorderLayout());
 
-        // Library info sub-dialog
         libraryInfoDialog = new JDialog(dialog, "Library Info", Dialog.ModalityType.DOCUMENT_MODAL);
         libraryInfoDialog.setResizable(true);
         libraryInfoDialog.setLayout(new BorderLayout());
@@ -84,19 +87,91 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         JPanel contentPane = new JPanel(new BorderLayout());
         dialog.add(contentPane, BorderLayout.CENTER);
 
-        DefaultListModel<String> sections = new DefaultListModel<>();
-        sections.addElement(BUILD_SETTINGS_CARD);
-        sections.addElement(PROGRAM_ARGUMENTS_CARD);
-        sections.addElement(RUN_DEBUG_ADVANCED_CARD);
-        sections.addElement(SAFE_MODE_CARD);
-        JList<String> sectionsList = new JList<>(sections);
+        DefaultListModel<SectionItem> sections = new DefaultListModel<>();
+        sections.addElement(new SectionItem("Build Settings", BUILD_SETTINGS_CARD));
+        sections.addElement(new SectionItem("Program Arguments", PROGRAM_ARGUMENTS_CARD));
+        sections.addElement(new SectionItem("Editor", EDITOR_CARD));
+        for (ProjectSettingsPage page : this.contributedPages) {
+            sections.addElement(new SectionItem(page.getPageTitle(), cardIdForPage(page)));
+        }
+        JList<SectionItem> sectionsList = new JList<>(sections);
         sectionsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         sectionsList.setFixedCellHeight(30);
         sectionsList.setBorder(new EmptyBorder(8, 8, 8, 8));
 
         JPanel cardsPane = new JPanel(new CardLayout());
 
-        // Build settings card
+        JPanel buildSettingsCard = createBuildSettingsCard();
+        JTextArea argumentsTextArea = new JTextArea();
+        JPanel programArgumentsCard = createProgramArgumentsCard(argumentsTextArea);
+
+        cardsPane.add(buildSettingsCard, BUILD_SETTINGS_CARD);
+        cardsPane.add(programArgumentsCard, PROGRAM_ARGUMENTS_CARD);
+        cardsPane.add(createEditorSettingsCard(), EDITOR_CARD);
+
+        for (ProjectSettingsPage page : this.contributedPages) {
+            cardsPane.add(createContributedCard(page), cardIdForPage(page));
+        }
+
+        JScrollPane sectionsScrollPane = new JScrollPane(sectionsList);
+        sectionsScrollPane.setBorder(new MatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground")));
+        sectionsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        configureSmoothScrolling(sectionsScrollPane);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sectionsScrollPane, cardsPane);
+        splitPane.setDividerLocation(160);
+        splitPane.setResizeWeight(0);
+        splitPane.setBorder(null);
+        contentPane.add(splitPane, BorderLayout.CENTER);
+
+        sectionsList.addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            SectionItem selectedSection = sectionsList.getSelectedValue();
+            if (selectedSection == null) {
+                return;
+            }
+            ((CardLayout) cardsPane.getLayout()).show(cardsPane, selectedSection.cardId);
+            cardsPane.revalidate();
+            cardsPane.repaint();
+        });
+        sectionsList.setSelectedIndex(0);
+
+        JPanel buttonPane = new JPanel();
+        dialog.add(buttonPane, BorderLayout.SOUTH);
+        JButton applyButton = new JButton("Apply");
+        JButton okButton = new JButton("OK");
+        JButton cancelButton = new JButton("Cancel");
+
+        buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
+        buttonPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        buttonPane.add(Box.createHorizontalGlue());
+        buttonPane.add(applyButton);
+        buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+        buttonPane.add(okButton);
+        buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+        buttonPane.add(cancelButton);
+
+        applyButton.addActionListener(e -> applyChanges(argumentsTextArea, false));
+        okButton.addActionListener(e -> applyChanges(argumentsTextArea, true));
+        cancelButton.addActionListener(e -> setVisible(false));
+
+        builderComboBox.addActionListener(e -> {
+            JComboBox<?> cb = (JComboBox<?>) e.getSource();
+            if (cb == null) {
+                return;
+            }
+            selectBuilder(cb.getSelectedIndex());
+        });
+
+        dialog.pack();
+        dialog.setMinimumSize(new Dimension(620, 420));
+        dialog.setSize(new Dimension(700, 480));
+        dialog.setLocationRelativeTo(parent);
+    }
+
+    private JPanel createBuildSettingsCard() {
         JPanel buildSettingsCard = new JPanel(new BorderLayout(0, 12));
         buildSettingsCard.setBorder(new EmptyBorder(12, 12, 12, 12));
         buildSettingsCard.add(
@@ -134,7 +209,7 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         targetSelectionPane.add(libraryInfoButton, targetConstraints);
         buildSettingsBody.add(targetSelectionPane, BorderLayout.NORTH);
 
-        configPane = new ConfigurationFormPanel(this);
+        configPane = new com.basic4gl.desktop.spi.ConfigurationFormPanel(this);
         configPane.setBorder(new EmptyBorder(4, 4, 4, 4));
         JScrollPane targetPropertiesScrollPane = new JScrollPane(configPane);
         targetPropertiesScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -142,33 +217,10 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         buildSettingsBody.add(createTitledPanel("Configuration", targetPropertiesScrollPane), BorderLayout.CENTER);
 
         buildSettingsCard.add(buildSettingsBody, BorderLayout.CENTER);
+        return buildSettingsCard;
+    }
 
-        // Safe mode settings card
-        JPanel safeModeSettingsCard = new JPanel(new BorderLayout(0, 12));
-        safeModeSettingsCard.setBorder(new EmptyBorder(12, 12, 12, 12));
-        safeModeSettingsCard.add(
-                createSectionHeader("Safe Mode", "Control filesystem restrictions for programs you run in the editor."),
-                BorderLayout.NORTH);
-
-        JTextPane safeModeDescriptionTextPane = new JTextPane();
-        safeModeDescriptionTextPane.setBorder(new EmptyBorder(10, 10, 10, 10));
-        safeModeDescriptionTextPane.setEditable(false);
-        safeModeDescriptionTextPane.setBackground(UIManager.getColor("Panel.background"));
-        safeModeDescriptionTextPane.setText(resources.getString("safeModeDescription"));
-
-        JScrollPane safeModeSettingsScrollPane = new JScrollPane(safeModeDescriptionTextPane);
-        safeModeSettingsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        configureSmoothScrolling(safeModeSettingsScrollPane);
-        safeModeSettingsCard.add(createTitledPanel("Details", safeModeSettingsScrollPane), BorderLayout.CENTER);
-
-        JCheckBox safeModeCheckbox = new JCheckBox(resources.getString("safeModeCheckbox"));
-        safeModeCheckbox.setSelected(appSettings.isSandboxModeEnabled());
-        safeModeCheckbox.setBorder(new EmptyBorder(8, 8, 8, 8));
-        JPanel safeModeFooter = new JPanel(new BorderLayout());
-        safeModeFooter.add(safeModeCheckbox, BorderLayout.WEST);
-        safeModeSettingsCard.add(safeModeFooter, BorderLayout.SOUTH);
-
-        // Program arguments card
+    private JPanel createProgramArgumentsCard(JTextArea argumentsTextArea) {
         JPanel programArgumentsCard = new JPanel(new BorderLayout(0, 12));
         programArgumentsCard.setBorder(new EmptyBorder(12, 12, 12, 12));
         programArgumentsCard.add(
@@ -176,7 +228,6 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
                         "Program Arguments", "Enter one argument per line to pass to programs run from the IDE."),
                 BorderLayout.NORTH);
 
-        JTextArea argumentsTextArea = new JTextArea();
         argumentsTextArea.setLineWrap(false);
         argumentsTextArea.setTabSize(4);
         argumentsTextArea.setText(String.join(System.lineSeparator(), appSettings.getProgramArguments()));
@@ -184,193 +235,86 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         JScrollPane argumentsScrollPane = new JScrollPane(argumentsTextArea);
         configureSmoothScrolling(argumentsScrollPane);
         programArgumentsCard.add(createTitledPanel("Arguments", argumentsScrollPane), BorderLayout.CENTER);
+        return programArgumentsCard;
+    }
 
-        // Advanced run/debug card
-        JPanel advancedRunDebugCard = new JPanel(new BorderLayout(0, 12));
-        advancedRunDebugCard.setBorder(new EmptyBorder(12, 12, 12, 12));
-        advancedRunDebugCard.add(
-                createSectionHeader("JVM Settings", "Configure JVM launch options for .jar targets."),
-                BorderLayout.NORTH);
+    private JPanel createEditorSettingsCard() {
+        JPanel editorCard = new JPanel(new BorderLayout());
+        editorCard.setBorder(new EmptyBorder(12, 12, 12, 12));
 
-        JPanel advancedBody = new JPanel(new BorderLayout(0, 12));
+        autoCompleteCheckBox = new JCheckBox("Auto-complete function names", editorSettings.autoCompleteEnabled);
+        showFunctionSignaturesCheckBox =
+                new JCheckBox("Show function signatures", editorSettings.showFunctionSignatures);
 
-        JTextArea jvmArgumentsTextArea = new JTextArea();
-        jvmArgumentsTextArea.setLineWrap(false);
-        jvmArgumentsTextArea.setTabSize(4);
-        jvmArgumentsTextArea.setText(String.join(System.lineSeparator(), appSettings.getJvmArguments()));
+        showFunctionSignaturesCheckBox.setEnabled(autoCompleteCheckBox.isSelected());
+        autoCompleteCheckBox.addActionListener(
+                e -> showFunctionSignaturesCheckBox.setEnabled(autoCompleteCheckBox.isSelected()));
 
-        JScrollPane jvmArgumentsScrollPane = new JScrollPane(jvmArgumentsTextArea);
-        configureSmoothScrolling(jvmArgumentsScrollPane);
-        advancedBody.add(createTitledPanel("JVM Exec Options", jvmArgumentsScrollPane), BorderLayout.CENTER);
+        VerticalScrollablePanel optionsPanel = new VerticalScrollablePanel();
+        optionsPanel.add(createSectionHeader("Editor", "Configure code-completion behavior in the source editor."));
+        optionsPanel.add(Box.createVerticalStrut(16));
+        optionsPanel.add(createCheckBoxRow(
+                autoCompleteCheckBox,
+                "Suggests matching functions, keywords, and symbols as you type, or via Ctrl+Space."));
+        optionsPanel.add(Box.createVerticalStrut(12));
+        optionsPanel.add(createCheckBoxRow(
+                showFunctionSignaturesCheckBox,
+                "Shows an interactive parameter hint as you type a function call's arguments."));
 
-        JPanel debugOptionsPanel = new JPanel(new GridBagLayout());
-        debugOptionsPanel.setBorder(new EmptyBorder(6, 8, 6, 8));
-        GridBagConstraints debugOptionsConstraints = new GridBagConstraints();
-        debugOptionsConstraints.gridx = 0;
-        debugOptionsConstraints.gridy = 0;
-        debugOptionsConstraints.gridwidth = 2;
-        debugOptionsConstraints.anchor = GridBagConstraints.WEST;
-        debugOptionsConstraints.insets = new Insets(0, 0, 8, 0);
+        JScrollPane scrollPane = new JScrollPane(
+                optionsPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setBorder(null);
+        configureSmoothScrolling(scrollPane);
 
-        JCheckBox enableJvmDebugCheckbox = new JCheckBox("Enable JDWP debugger");
-        enableJvmDebugCheckbox.setSelected(appSettings.isJvmDebuggingEnabled());
-        debugOptionsPanel.add(enableJvmDebugCheckbox, debugOptionsConstraints);
-
-        debugOptionsConstraints.gridy++;
-        JCheckBox waitForAttachCheckbox = new JCheckBox("Suspend until debugger attaches");
-        waitForAttachCheckbox.setSelected(appSettings.isJvmDebugSuspendUntilAttach());
-        debugOptionsPanel.add(waitForAttachCheckbox, debugOptionsConstraints);
-
-        debugOptionsConstraints.gridy++;
-        debugOptionsConstraints.gridwidth = 1;
-        debugOptionsConstraints.insets = new Insets(0, 0, 0, 10);
-        JLabel debugPortLabel = new JLabel("Debug Port (Optional)");
-        debugOptionsPanel.add(debugPortLabel, debugOptionsConstraints);
-
-        debugOptionsConstraints.gridx = 1;
-        debugOptionsConstraints.weightx = 1.0;
-        debugOptionsConstraints.fill = GridBagConstraints.HORIZONTAL;
-        JTextField debugPortField = new JTextField();
-        Integer jvmDebugPortOverride = appSettings.getJvmDebugPortOverride();
-        debugPortField.setText(jvmDebugPortOverride == null ? "" : Integer.toString(jvmDebugPortOverride));
-        debugPortField.setToolTipText("Leave empty to auto-select a free debug port for each run session.");
-        debugOptionsPanel.add(debugPortField, debugOptionsConstraints);
-
-        debugOptionsConstraints.gridx = 1;
-        debugOptionsConstraints.gridy++;
-        debugOptionsConstraints.weightx = 1.0;
-        debugOptionsConstraints.fill = GridBagConstraints.HORIZONTAL;
-        debugOptionsConstraints.insets = new Insets(4, 0, 0, 0);
-        JLabel debugPortHintLabel = new JLabel("Leave blank to auto-select an available port each run.");
-        debugPortHintLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
-        debugOptionsPanel.add(debugPortHintLabel, debugOptionsConstraints);
-
-        debugOptionsConstraints.gridy++;
-        debugOptionsConstraints.insets = new Insets(6, 0, 0, 0);
-        JLabel debugPortErrorLabel = new JLabel(" ");
-        debugPortErrorLabel.setForeground(new Color(176, 0, 32));
-        debugOptionsPanel.add(debugPortErrorLabel, debugOptionsConstraints);
-
-        debugPortField.getDocument().addDocumentListener(new DocumentListener() {
+        // JTextArea wrapping is height-for-width. Revalidate only this list when the viewport
+        // width changes so each description recalculates its wrapped height.
+        scrollPane.getViewport().addComponentListener(new ComponentAdapter() {
             @Override
-            public void insertUpdate(DocumentEvent e) {
-                clearDebugPortError(debugPortErrorLabel);
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                clearDebugPortError(debugPortErrorLabel);
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                clearDebugPortError(debugPortErrorLabel);
+            public void componentResized(ComponentEvent e) {
+                optionsPanel.invalidate();
+                optionsPanel.revalidate();
             }
         });
 
-        enableJvmDebugCheckbox.addActionListener(e -> {
-            if (!enableJvmDebugCheckbox.isSelected()) {
-                clearDebugPortError(debugPortErrorLabel);
-            }
-            updateJvmDebugControlsEnabled(
-                    enableJvmDebugCheckbox, waitForAttachCheckbox, debugPortLabel, debugPortField, debugPortHintLabel);
-        });
-        updateJvmDebugControlsEnabled(
-                enableJvmDebugCheckbox, waitForAttachCheckbox, debugPortLabel, debugPortField, debugPortHintLabel);
+        editorCard.add(scrollPane, BorderLayout.CENTER);
+        return editorCard;
+    }
 
-        advancedBody.add(createTitledPanel("Debugger", debugOptionsPanel), BorderLayout.SOUTH);
-        advancedRunDebugCard.add(advancedBody, BorderLayout.CENTER);
+    private JPanel createCheckBoxRow(JCheckBox checkBox, String description) {
+        JPanel row = new JPanel(new BorderLayout(0, 4));
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row.add(checkBox, BorderLayout.NORTH);
 
-        JButton resetAdvancedDefaultsButton = new JButton("Reset To Defaults");
-        resetAdvancedDefaultsButton.addActionListener(e -> resetAdvancedDefaults(
-                jvmArgumentsTextArea,
-                enableJvmDebugCheckbox,
-                waitForAttachCheckbox,
-                debugPortLabel,
-                debugPortField,
-                debugPortHintLabel,
-                debugPortErrorLabel));
-        JPanel advancedFooter = new JPanel(new BorderLayout());
-        advancedFooter.add(resetAdvancedDefaultsButton, BorderLayout.WEST);
-        advancedRunDebugCard.add(advancedFooter, BorderLayout.SOUTH);
+        JTextArea descriptionLabel = createWrappingLabel(description);
+        descriptionLabel.setBorder(new EmptyBorder(0, 24, 0, 0));
+        row.add(descriptionLabel, BorderLayout.CENTER);
 
-        cardsPane.add(buildSettingsCard, BUILD_SETTINGS_CARD);
-        cardsPane.add(safeModeSettingsCard, SAFE_MODE_CARD);
-        cardsPane.add(programArgumentsCard, PROGRAM_ARGUMENTS_CARD);
-        cardsPane.add(advancedRunDebugCard, RUN_DEBUG_ADVANCED_CARD);
+        return row;
+    }
 
-        JScrollPane sectionsScrollPane = new JScrollPane(sectionsList);
-        sectionsScrollPane.setBorder(new MatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground")));
-        sectionsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        configureSmoothScrolling(sectionsScrollPane);
+    private JTextArea createWrappingLabel(String text) {
+        JTextArea label = new JTextArea(text);
+        label.setEditable(false);
+        label.setFocusable(false);
+        label.setOpaque(false);
+        label.setLineWrap(true);
+        label.setWrapStyleWord(true);
+        label.setBorder(null);
+        label.setFont(UIManager.getFont("Label.font"));
+        label.setForeground(UIManager.getColor("Label.disabledForeground"));
+        return label;
+    }
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sectionsScrollPane, cardsPane);
-        splitPane.setDividerLocation(160);
-        splitPane.setResizeWeight(0);
-        splitPane.setBorder(null);
-        contentPane.add(splitPane, BorderLayout.CENTER);
+    private JPanel createContributedCard(ProjectSettingsPage page) {
+        JPanel card = new JPanel(new BorderLayout(0, 12));
+        card.setBorder(new EmptyBorder(12, 12, 12, 12));
+        card.add(createSectionHeader(page.getPageTitle(), page.getPageDescription()), BorderLayout.NORTH);
+        card.add(page.createPageComponent(), BorderLayout.CENTER);
+        return card;
+    }
 
-        sectionsList.addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                return;
-            }
-            String selectedSection = sectionsList.getSelectedValue();
-            if (selectedSection == null) {
-                return;
-            }
-            ((CardLayout) cardsPane.getLayout()).show(cardsPane, selectedSection);
-        });
-        sectionsList.setSelectedIndex(0);
-
-        // Buttons
-        JPanel buttonPane = new JPanel();
-        dialog.add(buttonPane, BorderLayout.SOUTH);
-        JButton applyButton = new JButton("Apply");
-        JButton okButton = new JButton("OK");
-        JButton cancelButton = new JButton("Cancel");
-
-        buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
-        buttonPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        buttonPane.add(Box.createHorizontalGlue());
-        buttonPane.add(applyButton);
-        buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
-        buttonPane.add(okButton);
-        buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
-        buttonPane.add(cancelButton);
-
-        // Action listeners
-        applyButton.addActionListener(e -> applyChanges(
-                safeModeCheckbox,
-                argumentsTextArea,
-                jvmArgumentsTextArea,
-                enableJvmDebugCheckbox,
-                waitForAttachCheckbox,
-                debugPortField,
-                debugPortErrorLabel,
-                false));
-        okButton.addActionListener(e -> applyChanges(
-                safeModeCheckbox,
-                argumentsTextArea,
-                jvmArgumentsTextArea,
-                enableJvmDebugCheckbox,
-                waitForAttachCheckbox,
-                debugPortField,
-                debugPortErrorLabel,
-                true));
-        cancelButton.addActionListener(e -> ProjectSettingsDialog.this.setVisible(false));
-
-        builderComboBox.addActionListener(e -> {
-            JComboBox<?> cb = (JComboBox<?>) e.getSource();
-            if (cb == null) {
-                return;
-            }
-            selectBuilder(cb.getSelectedIndex());
-        });
-
-        dialog.pack();
-        dialog.setMinimumSize(new Dimension(620, 420));
-        dialog.setSize(new Dimension(700, 480));
-        dialog.setLocationRelativeTo(parent);
+    private String cardIdForPage(ProjectSettingsPage page) {
+        return "contrib:" + page.getPageId();
     }
 
     private JPanel createSectionHeader(String title, String description) {
@@ -378,13 +322,15 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
 
         JLabel titleLabel = new JLabel(title);
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         Font baseFont = titleLabel.getFont();
         titleLabel.setFont(baseFont.deriveFont(Font.BOLD, baseFont.getSize() + 3f));
         titleLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
 
-        JLabel descriptionLabel = new JLabel(description);
-        descriptionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+        JTextArea descriptionLabel = createWrappingLabel(Objects.requireNonNullElse(description, ""));
+        descriptionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        header.setAlignmentX(Component.LEFT_ALIGNMENT);
         header.add(titleLabel);
         header.add(descriptionLabel);
         return header;
@@ -426,60 +372,32 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         scrollPane.setWheelScrollingEnabled(true);
     }
 
-    private void applyChanges(
-            JCheckBox safeModeCheckbox,
-            JTextArea argumentsTextArea,
-            JTextArea jvmArgumentsTextArea,
-            JCheckBox enableJvmDebugCheckbox,
-            JCheckBox waitForAttachCheckbox,
-            JTextField debugPortField,
-            JLabel debugPortErrorLabel,
-            boolean closeDialog) {
-        Integer parsedDebugPort = appSettings.getJvmDebugPortOverride();
-        if (enableJvmDebugCheckbox.isSelected()) {
-            try {
-                parsedDebugPort = parseOptionalPortOrThrow(debugPortField.getText());
-            } catch (IllegalArgumentException ex) {
-                Integer previousPort = appSettings.getJvmDebugPortOverride();
-                debugPortField.setText(previousPort == null ? "" : Integer.toString(previousPort));
-                showDebugPortError(debugPortErrorLabel, ex.getMessage());
-                debugPortField.requestFocusInWindow();
-                debugPortField.selectAll();
-                return;
-            }
-        }
-        clearDebugPortError(debugPortErrorLabel);
-
+    private void applyChanges(JTextArea argumentsTextArea, boolean closeDialog) {
         if (currentBuilder >= 0) {
             configPane.applyConfig();
         }
 
-        appSettings.setSandboxModeEnabled(safeModeCheckbox.isSelected());
         appSettings.setProgramArguments(parseProgramArguments(argumentsTextArea.getText()));
-        appSettings.setJvmArguments(parseProgramArguments(jvmArgumentsTextArea.getText()));
-        appSettings.setJvmDebuggingEnabled(enableJvmDebugCheckbox.isSelected());
-        appSettings.setJvmDebugSuspendUntilAttach(waitForAttachCheckbox.isSelected());
-        appSettings.setJvmDebugPortOverride(parsedDebugPort);
+
+        editorSettings.autoCompleteEnabled = autoCompleteCheckBox.isSelected();
+        editorSettings.showFunctionSignatures = showFunctionSignaturesCheckBox.isSelected();
+
+        try {
+            for (ProjectSettingsPage page : contributedPages) {
+                page.onApply();
+            }
+            if (onSettingsApplied != null) {
+                onSettingsApplied.run();
+            }
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(
+                    dialog, ex.getMessage(), "Invalid Project Settings", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         if (closeDialog) {
             setVisible(false);
         }
-    }
-
-    private void resetAdvancedDefaults(
-            JTextArea jvmArgumentsTextArea,
-            JCheckBox enableJvmDebugCheckbox,
-            JCheckBox waitForAttachCheckbox,
-            JLabel debugPortLabel,
-            JTextField debugPortField,
-            JLabel debugPortHintLabel,
-            JLabel debugPortErrorLabel) {
-        jvmArgumentsTextArea.setText("");
-        enableJvmDebugCheckbox.setSelected(false);
-        waitForAttachCheckbox.setSelected(false);
-        debugPortField.setText("");
-        clearDebugPortError(debugPortErrorLabel);
-        updateJvmDebugControlsEnabled(
-                enableJvmDebugCheckbox, waitForAttachCheckbox, debugPortLabel, debugPortField, debugPortHintLabel);
     }
 
     private List<String> parseProgramArguments(String text) {
@@ -490,52 +408,12 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
 
         String[] lines = text.split("\\R", -1);
         for (String line : lines) {
-            if (line == null) {
-                continue;
-            }
-            if (line.trim().isEmpty()) {
+            if (line == null || line.trim().isEmpty()) {
                 continue;
             }
             args.add(line.trim());
         }
         return args;
-    }
-
-    private Integer parseOptionalPortOrThrow(String text) {
-        if (text == null || text.trim().isEmpty()) {
-            return null;
-        }
-
-        try {
-            int port = Integer.parseInt(text.trim());
-            if (port < 1 || port > 65535) {
-                throw new IllegalArgumentException("Debug port must be between 1 and 65535, or left blank.");
-            }
-            return port;
-        } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException("Debug port must be a whole number between 1 and 65535, or left blank.");
-        }
-    }
-
-    private void showDebugPortError(JLabel debugPortErrorLabel, String message) {
-        debugPortErrorLabel.setText(message == null || message.trim().isEmpty() ? "Invalid debug port." : message);
-    }
-
-    private void clearDebugPortError(JLabel debugPortErrorLabel) {
-        debugPortErrorLabel.setText(" ");
-    }
-
-    private void updateJvmDebugControlsEnabled(
-            JCheckBox enableJvmDebugCheckbox,
-            JCheckBox waitForAttachCheckbox,
-            JLabel debugPortLabel,
-            JTextField debugPortField,
-            JLabel debugPortHintLabel) {
-        boolean jvmDebuggingEnabled = enableJvmDebugCheckbox.isSelected();
-        waitForAttachCheckbox.setEnabled(jvmDebuggingEnabled);
-        debugPortLabel.setEnabled(jvmDebuggingEnabled);
-        debugPortField.setEnabled(jvmDebuggingEnabled);
-        debugPortHintLabel.setEnabled(jvmDebuggingEnabled);
     }
 
     private void selectBuilder(int builderIndex) {
@@ -550,11 +428,11 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         }
 
         currentBuilder = builderIndex;
-        Library target = libraries.get(builders.get(currentBuilder));
+        Builder target = builders.get(currentBuilder);
 
-        infoTextPane.setText(target.description());
+        infoTextPane.setText(target.getDescription());
         infoTextPane.setCaretPosition(0);
-        configPane.setConfiguration(new Configuration(((Builder) target).getConfiguration()));
+        configPane.setConfiguration(new Configuration(target.getConfiguration()));
         setBuildSettingsEnabled(true);
     }
 
@@ -568,18 +446,12 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
         dialog.setVisible(visible);
     }
 
-    public void setLibraries(java.util.List<Library> libraries, int currentBuilder) {
+    public void setBuilders(List<Builder> builders, int currentBuilder) {
         builderComboBox.removeAllItems();
-        this.libraries = libraries;
-        builders = new ArrayList<>();
+        this.builders = builders;
 
-        int i = 0;
-        for (Library lib : this.libraries) {
-            if (lib instanceof Builder) {
-                builders.add(i);
-                builderComboBox.addItem(this.libraries.get(i).name());
-            }
-            i++;
+        for (Builder builder : this.builders) {
+            builderComboBox.addItem(builder.getName());
         }
 
         if (builders.isEmpty()) {
@@ -608,8 +480,55 @@ public class ProjectSettingsDialog implements ConfigurationFormPanel.IOnConfigur
             return;
         }
 
-        Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
-
+        Builder builder = builders.get(currentBuilder);
         builder.setConfiguration(configuration);
+    }
+
+    private static final class VerticalScrollablePanel extends JPanel implements Scrollable {
+        private static final long serialVersionUID = 1L;
+
+        private VerticalScrollablePanel() {
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        }
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return Math.max(16, visibleRect.height - 16);
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return true;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return false;
+        }
+    }
+
+    private static class SectionItem {
+        private final String label;
+        private final String cardId;
+
+        private SectionItem(String label, String cardId) {
+            this.label = label;
+            this.cardId = cardId;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
     }
 }

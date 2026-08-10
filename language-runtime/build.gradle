@@ -1,0 +1,94 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id("com.diffplug.spotless") version "7.0.2"
+}
+
+group 'com.basic4gl'
+
+def resolveReleaseVersion = {
+    def version = (findProperty('releaseVersion')
+            ?: System.getenv('RELEASE_VERSION')
+            ?: System.getenv('APP_RELEASE_VERSION')
+            ?: System.getenv('BUILD_RELEASE_TAG')
+            ?: System.getenv('GITHUB_REF_NAME'))?.toString()?.trim()
+    if (!version) {
+        return null
+    }
+
+    // Normalize common Git tag shapes to Maven-friendly versions.
+    version = version.replaceFirst('^refs/tags/', '')
+    version = version.replaceFirst('^[vV](?=\\d)', '')
+    version = version.replaceAll('[^0-9A-Za-z._-]', '-')
+    return version
+}
+
+version = resolveReleaseVersion() ?: '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api project(":language-core")
+    api project(":language-spi")
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+spotless {
+    java {
+        // Use the default importOrder configuration
+        importOrder()
+
+        removeUnusedImports()
+        palantirJavaFormat('2.50.0').formatJavadoc(false)
+
+        formatAnnotations()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+build.dependsOn spotlessApply
+
+test {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId = 'runtime'
+            pom {
+                name = 'Basic4GL Runtime'
+                description = 'Virtual Machine implementation for Basic4GL runtime'
+                url = 'https://github.com/NateIsStalling/Basic4GLj'
+                licenses {
+                    license {
+                        name = 'BSD 3-Clause License'
+                        url = 'https://opensource.org/license/bsd-3-clause'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/NateIsStalling/Basic4GLj.git'
+                    developerConnection = 'scm:git:ssh://github.com/NateIsStalling/Basic4GLj.git'
+                    url = 'https://github.com/NateIsStalling/Basic4GLj'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'GitHubPackages'
+            def repository = System.getenv('GITHUB_REPOSITORY') ?: ''
+            url = uri("https://maven.pkg.github.com/${repository}")
+            credentials {
+                username = findProperty('gpr.user') ?: System.getenv('GITHUB_ACTOR')
+                password = findProperty('gpr.key') ?: System.getenv('GITHUB_TOKEN')
+            }
+        }
+    }
+}

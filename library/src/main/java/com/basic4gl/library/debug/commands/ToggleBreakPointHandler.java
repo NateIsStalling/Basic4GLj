@@ -1,14 +1,14 @@
 package com.basic4gl.library.debug.commands;
 
-import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.TomVM;
+import com.basic4gl.language.core.runtime.IVMDebugger;
+import com.basic4gl.language.core.runtime.VM;
 
 public class ToggleBreakPointHandler {
 
-    private final Debugger debugger;
-    private final TomVM vm;
+    private final IVMDebugger debugger;
+    private final VM vm;
 
-    public ToggleBreakPointHandler(Debugger debugger, TomVM vm) {
+    public ToggleBreakPointHandler(IVMDebugger debugger, VM vm) {
         this.debugger = debugger;
         this.vm = vm;
     }

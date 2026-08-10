@@ -1,7 +1,7 @@
 package com.basic4gl.library.standard.net;
 
+import com.basic4gl.language.core.runtime.PointerResourceStore;
 import com.basic4gl.library.netlib4games.NetConL2;
-import com.basic4gl.runtime.util.PointerResourceStore;
 
 /**
  * Stores NetConL2 network connections.

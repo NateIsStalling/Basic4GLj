@@ -1,6 +1,6 @@
 package com.basic4gl.compiler;
 
-import com.basic4gl.runtime.InstructionPosition;
+import com.basic4gl.language.core.runtime.InstructionPosition;
 import java.util.HashMap;
 import java.util.Map;
 

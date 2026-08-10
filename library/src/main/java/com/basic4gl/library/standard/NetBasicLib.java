@@ -1,26 +1,26 @@
 package com.basic4gl.library.standard;
 
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
+import static com.basic4gl.language.core.types.BasicValType.VTP_INT;
+import static com.basic4gl.language.core.types.BasicValType.VTP_STRING;
 import static com.basic4gl.library.netlib4games.NetLogger.initDebugNetLogger;
-import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
-import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.FileStreamResourceStore;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.language.core.runtime.Function;
+import com.basic4gl.language.core.runtime.IServiceCollection;
+import com.basic4gl.language.core.runtime.VM;
+import com.basic4gl.language.core.types.Constant;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ParamTypeList;
+import com.basic4gl.library.desktopgl.content.FileStreamResourceStore;
 import com.basic4gl.library.netlib4games.*;
 import com.basic4gl.library.netlib4games.udp.NetConLowUDP;
 import com.basic4gl.library.netlib4games.udp.NetListenLowUDP;
 import com.basic4gl.library.standard.net.NetConnectionStore;
 import com.basic4gl.library.standard.net.NetMessageStream;
 import com.basic4gl.library.standard.net.NetServerStore;
-import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.types.ParamTypeList;
-import com.basic4gl.runtime.util.Function;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.util.*;
@@ -238,7 +238,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         if (fileStreams == null) {
             fileStreams = services.getService(FileStreamResourceStore.class);
         }
@@ -259,7 +259,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {
         if (fileStreams == null) {
             fileStreams = services.getService(FileStreamResourceStore.class);
         }
@@ -271,9 +271,9 @@ public class NetBasicLib implements FunctionLibrary {
         }
 
         // Register resources
-        comp.getVM().addResources(fileStreams);
-        comp.getVM().addResources(servers);
-        comp.getVM().addResources(connections);
+        comp.getProgram().addResources(fileStreams);
+        comp.getProgram().addResources(servers);
+        comp.getProgram().addResources(connections);
 
         // Hook into validator
         netConReqValidator = new NetConReqValidatorL1();
@@ -315,7 +315,7 @@ public class NetBasicLib implements FunctionLibrary {
     //  Function wrappers
 
     public final class WrapNewServer implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Create listener for socket
             NetListenLowUDP server = new NetListenLowUDP(vm.getIntParam(1));
@@ -333,7 +333,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapDeleteServer implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int index = vm.getIntParam(1);
             if (index > 0 && servers.isIndexValid(index)) {
                 servers.free(index);
@@ -344,7 +344,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapConnectionPending implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find server
             int index = vm.getIntParam(1);
@@ -359,7 +359,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapAcceptConnection implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find server
             int index = vm.getIntParam(1);
@@ -386,7 +386,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapRejectConnection implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find server
             int index = vm.getIntParam(1);
@@ -405,7 +405,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapNewConnection implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Calculate address string
             String addressString = vm.getStringParam(2) + ':' + String.valueOf(vm.getIntParam(1));
@@ -424,7 +424,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapDeleteConnection implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int index = vm.getIntParam(1);
             if (index > 0 && connections.isIndexValid(index)) {
                 connections.free(index);
@@ -435,7 +435,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapConnectionHandShaking implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(1);
@@ -450,7 +450,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapConnectionConnected implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(1);
@@ -465,7 +465,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapMessagePending implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(1);
@@ -482,7 +482,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapReceiveMessage implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(1);
@@ -521,7 +521,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapMessageChannel implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(1);
@@ -540,7 +540,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapMessageReliable implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(1);
@@ -559,7 +559,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapMessageSmoothed implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(1);
@@ -578,7 +578,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSendMessage implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int index = vm.getIntParam(4);
             int channel = vm.getIntParam(3);
             boolean reliable = vm.getIntParam(2) == 1;
@@ -608,7 +608,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapConnectionAddress implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(1);
@@ -623,7 +623,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetConnectionHandshakeTimeout implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(2);
@@ -645,7 +645,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetConnectionTimeout implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(2);
@@ -667,7 +667,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetConnectionKeepAlive implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(2);
@@ -689,7 +689,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetConnectionReliableResend implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(2);
@@ -714,7 +714,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetConnectionDuplicates implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(2);
@@ -739,7 +739,7 @@ public class NetBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetConnectionSmoothingPercentage implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find connection
             int index = vm.getIntParam(2);

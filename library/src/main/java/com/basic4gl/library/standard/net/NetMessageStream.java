@@ -2,7 +2,7 @@ package com.basic4gl.library.standard.net;
 
 import static com.basic4gl.library.netlib4games.NetLayer2.NETL2_MAXCHANNELS;
 
-import com.basic4gl.lib.util.FileStream;
+import com.basic4gl.library.desktopgl.content.FileStream;
 import com.basic4gl.library.netlib4games.NetConL2;
 import java.io.*;
 import java.nio.charset.StandardCharsets;

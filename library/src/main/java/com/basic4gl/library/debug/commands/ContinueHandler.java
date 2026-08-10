@@ -1,15 +1,15 @@
 package com.basic4gl.library.debug.commands;
 
-import com.basic4gl.lib.util.CallbackMessage;
-import com.basic4gl.lib.util.DebuggerCallbackMessage;
-import com.basic4gl.runtime.TomVM;
+import com.basic4gl.language.core.runtime.CallbackMessage;
+import com.basic4gl.language.core.runtime.DebuggerCallbackMessage;
+import com.basic4gl.language.core.runtime.VM;
 
 public class ContinueHandler {
 
     protected final DebuggerCallbackMessage callbackMessage;
-    protected final TomVM vm;
+    protected final VM vm;
 
-    public ContinueHandler(TomVM vm, DebuggerCallbackMessage message) {
+    public ContinueHandler(VM vm, DebuggerCallbackMessage message) {
         callbackMessage = message;
         this.vm = vm;
     }

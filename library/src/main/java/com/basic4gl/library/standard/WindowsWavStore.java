@@ -1,6 +1,6 @@
 package com.basic4gl.library.standard;
 
-import com.basic4gl.runtime.util.ResourceStore;
+import com.basic4gl.language.core.runtime.ResourceStore;
 
 /**
  * Used to track WindowsWavObjects

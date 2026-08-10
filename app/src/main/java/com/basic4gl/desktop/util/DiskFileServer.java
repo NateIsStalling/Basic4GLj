@@ -1,12 +1,12 @@
 package com.basic4gl.desktop.util;
 
-import com.basic4gl.compiler.util.ISourceFile;
-import com.basic4gl.compiler.util.ISourceFileServer;
+import com.basic4gl.desktop.spi.ISourceFile;
+import com.basic4gl.desktop.spi.SourceFileService;
 
 /**
  * Disk file implementation of ISourceFileServer
  */
-public class DiskFileServer implements ISourceFileServer {
+public class DiskFileServer implements SourceFileService {
     // ISourceFileServer methods
     @Override
     public ISourceFile openSourceFile(String filename) {

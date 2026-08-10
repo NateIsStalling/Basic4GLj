@@ -12,7 +12,9 @@ repositories {
 dependencies {
     implementation fileTree(dir: "libs", include: "*.jar")
 
-    implementation project(":runtime")
+    implementation project(":language-core")
+    implementation project(":language-spi")
+    implementation project(":language-runtime")
 }
 
 spotless {

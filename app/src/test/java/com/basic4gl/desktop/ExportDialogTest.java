@@ -11,12 +11,26 @@ import org.junit.Test;
 public class ExportDialogTest {
 
     @Test
-    public void extractStringLiterals_returnsDecodedValues() {
-        String source = "print \"assets\\\\image.png\"\nprint \"He said: \\\"ok\\\"\"\nprint \"line\\nfeed\"";
+    public void extractStringLiterals_preservesBackslashesLiterally() {
+        // Basic4GL string literals have no escape sequences, so backslashes are
+        // ordinary characters and must be returned exactly as written.
+        String source = "print \"assets\\\\image.png\"\nprint \"line\\nfeed\"";
 
         List<String> literals = ExportDialog.extractStringLiterals(source);
 
-        assertEquals(Arrays.asList("assets\\image.png", "He said: \"ok\"", "line\\nfeed"), literals);
+        assertEquals(Arrays.asList("assets\\\\image.png", "line\\nfeed"), literals);
+    }
+
+    @Test
+    public void extractStringLiterals_quoteAlwaysTerminatesEvenAfterBackslash() {
+        // A '"' always ends the literal, even when immediately preceded by a
+        // backslash, so "He said: \"ok\"" is two adjacent literals, not one
+        // literal containing an escaped quote.
+        String source = "print \"He said: \\\"ok\\\"\"";
+
+        List<String> literals = ExportDialog.extractStringLiterals(source);
+
+        assertEquals(Arrays.asList("He said: \\", ""), literals);
     }
 
     @Test

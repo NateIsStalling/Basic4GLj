@@ -2,8 +2,8 @@ package com.basic4gl.library.desktopgl.content;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLText;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.runtime.core.opengl.IB4GLOpenGLText;
 import java.util.ArrayList;
 
 /**

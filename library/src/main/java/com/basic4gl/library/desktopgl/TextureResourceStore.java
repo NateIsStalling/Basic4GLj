@@ -2,7 +2,7 @@ package com.basic4gl.library.desktopgl;
 
 import static org.lwjgl.opengl.GL11.glDeleteTextures;
 
-import com.basic4gl.runtime.util.IntHandleResources;
+import com.basic4gl.language.core.runtime.IntHandleResources;
 import java.nio.ByteBuffer;
 import org.lwjgl.BufferUtils;
 

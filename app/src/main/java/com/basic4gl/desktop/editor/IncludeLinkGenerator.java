@@ -50,7 +50,7 @@ public class IncludeLinkGenerator implements LinkGenerator {
 
                     int index;
 
-                    index = tabProvider.getTabIndex(filename);
+                    index = tabProvider.getFileTabIndex(filename);
 
                     if (index != -1) {
                         tabProvider.setSelectedTabIndex(index);

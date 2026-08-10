@@ -1,0 +1,16 @@
+package com.basic4gl.language.core.extensions.standard;
+
+/**
+ * Used to access files from a plugin.
+ * Plugins can use this object to access files embedded in a standalone application.
+ */
+public interface IB4GLFileAccessor {
+
+    /**
+     * Get filename to open for read.
+     * If the file is an embedded file then it will be extracted into a
+     * temporary file whose filename will be returned.
+     * Otherwise, simply returns the filename.
+     */
+    String getFilenameForRead(String filename);
+}

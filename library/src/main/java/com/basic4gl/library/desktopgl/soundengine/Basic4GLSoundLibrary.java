@@ -1,6 +1,6 @@
 package com.basic4gl.library.desktopgl.soundengine;
 
-import com.basic4gl.runtime.HasErrorState;
+import com.basic4gl.language.core.runtime.HasErrorState;
 
 /**
  * Basic4GL Sound Engine Library

@@ -1,11 +1,11 @@
 package com.basic4gl.library.debug.commands;
 
-import com.basic4gl.runtime.TomVM;
+import com.basic4gl.language.core.runtime.VM;
 
 public class PauseHandler {
-    private final TomVM vm;
+    private final VM vm;
 
-    public PauseHandler(TomVM vm) {
+    public PauseHandler(VM vm) {
         this.vm = vm;
     }
 

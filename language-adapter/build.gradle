@@ -1,0 +1,106 @@
+plugins {
+    id 'java'
+    id("com.diffplug.spotless") version "7.0.2"
+}
+
+apply plugin: "antlr"
+
+group = 'com.basic4gl'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+// Generate ANTLR lexer sources into the correct package directory so that
+// IDEs resolve the generated class immediately after the first build.
+generateGrammarSource {
+    maxHeapSize = "64m"
+    arguments += ["-package", "com.basic4gl.language.adapter.antlr", "-long-messages"]
+    // Keep generated sources alongside other build outputs; Spotless ignores build/
+    outputDirectory =
+            file("${project.buildDir}/generated-src/antlr/main/com/basic4gl/language/adapter/antlr")
+}
+
+dependencies {
+    // ANTLR4: code generator (build-time only) + runtime JAR shipped with the app
+    antlr "org.antlr:antlr4:4.13.2"
+    implementation "org.antlr:antlr4-runtime:4.13.2"
+
+    implementation project(":app-runtime")
+    implementation project(":app-spi")
+    implementation project(":language-core")
+    implementation project(":language-spi")
+    implementation project(":library")
+    implementation project(":compiler")
+    implementation project(":language-runtime")
+
+    implementation 'com.formdev:flatlaf:3.5.4'
+    // for FlatDesktop Java 8 backports
+    implementation 'com.formdev:flatlaf-extras:3.5.4'
+
+    testImplementation platform('org.junit:junit-bom:6.0.0')
+
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.6.0'
+
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+processResources {
+    from("${rootProject.projectDir}/docs/basic4gl") {
+        into "basic4gl-content/docs/basic4gl"
+        exclude "**/.DS_Store", "**/.*"
+    }
+    from("${rootProject.projectDir}/samples") {
+        into "basic4gl-content/samples"
+        exclude "**/.DS_Store", "**/.*"
+    }
+    from("${rootProject.projectDir}/LICENSES") {
+        into "basic4gl-content/LICENSES"
+        exclude "**/.DS_Store", "**/.*"
+    }
+    doLast {
+        writeResourceIndex(
+                file("${rootProject.projectDir}/docs/basic4gl"),
+                file("${destinationDir}/basic4gl-content/docs/basic4gl.index"))
+        writeResourceIndex(
+                file("${rootProject.projectDir}/samples/Programs"),
+                file("${destinationDir}/basic4gl-content/samples/Programs.index"))
+    }
+}
+
+def writeResourceIndex(File sourceDir, File indexFile) {
+    indexFile.parentFile.mkdirs()
+    def basePath = sourceDir.toPath()
+    def entries = fileTree(sourceDir)
+            .matching { exclude "**/.DS_Store", "**/.*" }
+            .files
+            .findAll { it.isFile() }
+            .collect { basePath.relativize(it.toPath()).toString().replace(File.separatorChar, '/' as char) }
+            .sort { a, b -> a.compareToIgnoreCase(b) }
+    indexFile.text = entries.join(System.lineSeparator()) + System.lineSeparator()
+}
+
+spotless {
+    java {
+        // Use the default importOrder configuration
+        importOrder()
+
+        removeUnusedImports()
+        palantirJavaFormat('2.50.0').formatJavadoc(false)
+
+        formatAnnotations()
+        trimTrailingWhitespace()
+        endWithNewline()
+
+        // Exclude ANTLR-generated sources from formatting checks.
+        targetExclude fileTree("${project.buildDir}/generated-src")
+    }
+}
+
+build.dependsOn spotlessApply

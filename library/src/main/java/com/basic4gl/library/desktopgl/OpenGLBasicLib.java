@@ -1,28 +1,30 @@
 package com.basic4gl.library.desktopgl;
 
-import static com.basic4gl.runtime.types.BasicValType.VTP_INT;
-import static com.basic4gl.runtime.types.BasicValType.VTP_STRING;
-import static com.basic4gl.runtime.util.Assert.assertTrue;
+import static com.basic4gl.language.core.internal.Assert.assertTrue;
+import static com.basic4gl.language.core.types.BasicValType.VTP_INT;
+import static com.basic4gl.language.core.types.BasicValType.VTP_STRING;
 import static org.lwjgl.opengl.GL13.*;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLWindow;
+import com.basic4gl.language.core.extensions.opengl.OpenGLExtensionVersions;
+import com.basic4gl.language.core.runtime.Data;
+import com.basic4gl.language.core.runtime.Function;
+import com.basic4gl.language.core.runtime.IServiceCollection;
+import com.basic4gl.language.core.runtime.PointerResourceStore;
+import com.basic4gl.language.core.runtime.VM;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.Constant;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ParamTypeList;
+import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.library.desktopgl.content.Image;
 import com.basic4gl.library.desktopgl.content.LoadImage;
 import com.basic4gl.library.desktopgl.util.Routines;
 import com.basic4gl.library.desktopgl.util.WindowAdapter;
 import com.basic4gl.library.desktopgl.window.OpenGLWindowManager;
-import com.basic4gl.runtime.Data;
-import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.BasicValType;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.types.ParamTypeList;
-import com.basic4gl.runtime.types.ValType;
-import com.basic4gl.runtime.util.Function;
-import com.basic4gl.runtime.util.PointerResourceStore;
 import java.nio.*;
 import java.util.*;
 import org.lwjgl.BufferUtils;
@@ -66,7 +68,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {
 
         // Removed in 2.6.X, as this is now handled by the window manager
         // windowManager.clearKeyBuffers();
@@ -98,7 +100,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {
         if (textures == null) {
             textures = new TextureResourceStore();
         }
@@ -117,9 +119,21 @@ public class OpenGLBasicLib implements FunctionLibrary {
                 displayLists.clear();
             });
             // Register interfaces
-            // TODO need to add any missing registerInterface calls for other libraries
-            comp.getPlugins().registerInterface(new WindowAdapter(windowManager), "IB4GLOpenGLWindow", 1, 0, null);
+            comp.getPlugins()
+                    .registerInterfaceInternal(
+                            IB4GLOpenGLWindow.class,
+                            new WindowAdapter(windowManager),
+                            OpenGLExtensionVersions.B4GL_OPENGL_WINDOW_VERSION_MAJOR,
+                            OpenGLExtensionVersions.B4GL_OPENGL_WINDOW_VERSION_MINOR);
         }
+
+        // Register resources
+        comp.getProgram().addResources(textures);
+        comp.getProgram().addResources(images);
+        comp.getProgram().addResources(displayLists);
+
+        // Register initialisation func
+        comp.getProgram().addInitFunction(new Init());
     }
 
     @Override
@@ -1026,7 +1040,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         return frameSize >= 1 && frameSize <= 1024 && OpenGLBasicLib.isPowerOf2(frameSize);
     }
 
-    static int imageStripFrames(TomVM vm, String filename, int frameWidth, int frameHeight) {
+    static int imageStripFrames(VM vm, String filename, int frameWidth, int frameHeight) {
 
         if (!checkFrameSize(frameWidth)) {
             vm.functionError("Frame width must be a power of 2 from 1-1024");
@@ -1039,7 +1053,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
         Image image = LoadImage.loadImage(filename);
         if (image != null) {
-            IntBuffer result = BufferUtils.createIntBuffer(0);
+            IntBuffer result = BufferUtils.createIntBuffer(1);
             OpenGLBasicLib.calculateImageStripFrames(image, frameWidth, frameHeight, result, null, null);
 
             return result.get(0);
@@ -1047,7 +1061,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         return 0;
     }
 
-    static void loadImageStrip(TomVM vm, String filename, int frameWidth, int frameHeight, boolean mipmap) {
+    static void loadImageStrip(VM vm, String filename, int frameWidth, int frameHeight, boolean mipmap) {
 
         if (!OpenGLBasicLib.checkFrameSize(frameWidth)) {
             vm.functionError("Frame width must be a power of 2 from 1-1024");
@@ -1104,7 +1118,8 @@ public class OpenGLBasicLib implements FunctionLibrary {
                                 bytesPerPixel);
 
                         // Upload texture
-                        glBindTexture(GL_TEXTURE_2D, tex.get(frame));
+                        buffer.rewind();
+                        glBindTexture(GL_TEXTURE_2D, texIntBuffer.get(frame));
                         if (mipmap) {
                             // GLU deprecated
                             /*gluBuild2DMipmaps ( GL_TEXTURE_2D,
@@ -1419,7 +1434,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         return result;
     }
 
-    static void internalWrapglTexImage2D(TomVM vm, ValType elementType, int dimensions, boolean mipmap) {
+    static void internalWrapglTexImage2D(VM vm, ValType elementType, int dimensions, boolean mipmap) {
         // Find array param, and extract dimensions
         int arrayOffset = vm.getIntParam(1);
         int maxSize;
@@ -1528,7 +1543,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         frames.put(0, (width.get(0) / size) * (height.get(0) / size));
     }
 
-    int getOldSquareImageStripFrames(TomVM vm, String filename, IntBuffer frameSize) {
+    int getOldSquareImageStripFrames(VM vm, String filename, IntBuffer frameSize) {
 
         // Image size must be power of 2
         final int size = frameSize.get(0);
@@ -1549,7 +1564,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
         return result.get(0);
     }
 
-    void loadOldSquareImageStrip(TomVM vm, String filename, IntBuffer frameSize, boolean mipmap) {
+    void loadOldSquareImageStrip(VM vm, String filename, IntBuffer frameSize, boolean mipmap) {
 
         // Image size must be power of 2
         int size = frameSize.get(0);
@@ -1660,8 +1675,22 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
     // endregion
 
+    public static final class Init implements Function {
+
+        @Override
+        public void run(VM vm) {
+            textures.clear();
+
+            // Set texture loading state behavior defaults
+            truncateBlankFrames = true;
+            usingTransparentCol = false;
+            doMipmap = true;
+            doLinearFilter = true;
+        }
+    }
+
     public static final class WrapLoadTex implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
             int texture = OpenGLBasicLib.loadTex(vm.getStringParam(1));
             OpenGLBasicLib.textures.addHandle(texture);
@@ -1671,7 +1700,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapLoadTexStrip implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
             ArrayList<Integer> texs = OpenGLBasicLib.loadTexStrip(vm.getStringParam(1));
 
@@ -1693,7 +1722,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapLoadTexStrip2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPushAttrib(GL_ALL_ATTRIB_BITS);
             ArrayList<Integer> texs =
                     OpenGLBasicLib.loadTexStrip(vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1));
@@ -1717,33 +1746,33 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapTexStripFrames implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(OpenGLBasicLib.getTexStripFrames(vm.getStringParam(1)));
         }
     }
 
     public static final class WrapTexStripFrames2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(OpenGLBasicLib.getTexStripFrames(
                             vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
         }
     }
 
     public static final class WrapSetTexIgnoreBlankFrames implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.truncateBlankFrames = vm.getIntParam(1) != 0;
         }
     }
 
     public static final class WrapSetTexTransparentCol implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.transparentCol = vm.getIntParam(1);
             OpenGLBasicLib.usingTransparentCol = true;
         }
     }
 
     public static final class WrapSetTexTransparentCol2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.transparentCol =
                     (vm.getIntParam(3) & 0xff) | ((vm.getIntParam(2) & 0xff) << 8) | ((vm.getIntParam(1) & 0xff) << 16);
             OpenGLBasicLib.usingTransparentCol = true;
@@ -1751,25 +1780,25 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapSetTexNoTransparentCol implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.usingTransparentCol = false;
         }
     }
 
     public static final class WrapSetTexMipmap implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.doMipmap = vm.getIntParam(1) != 0;
         }
     }
 
     public static final class WrapSetTexLinearFilter implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.doLinearFilter = vm.getIntParam(1) != 0;
         }
     }
 
     public static final class WrapglGenTexture implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int texture;
             ByteBuffer buffer = BufferUtils.createByteBuffer(Integer.SIZE / Byte.SIZE);
             glGenTextures(buffer.asIntBuffer());
@@ -1780,13 +1809,13 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglDeleteTexture implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.textures.freeHandle(vm.getIntParam(1));
         }
     }
 
     public static final class WrapLoadTexture implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Load and return non-mipmapped texture
             vm.setRegIntVal(OpenGLBasicLib.loadTexture(vm.getStringParam(1), false));
@@ -1794,7 +1823,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapLoadMipmapTexture implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Load and return mipmapped texture
             vm.setRegIntVal(OpenGLBasicLib.loadTexture(vm.getStringParam(1), true));
@@ -1802,7 +1831,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapLoadImage implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Attempt to load image
             Image image = LoadImage.loadImage(vm.getStringParam(1));
@@ -1813,13 +1842,13 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapDeleteImage implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.images.free(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglTexImage2D implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find image data
             int index = vm.getIntParam(1);
@@ -1842,55 +1871,55 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglTexImage2D_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.internalWrapglTexImage2D(vm, new ValType(VTP_INT), 1, false);
         }
     }
 
     public static final class WrapglTexImage2D_3 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.internalWrapglTexImage2D(vm, new ValType(BasicValType.VTP_REAL), 1, false);
         }
     }
 
     public static final class WrapglTexImage2D_4 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.internalWrapglTexImage2D(vm, new ValType(VTP_INT), 2, false);
         }
     }
 
     public static final class WrapglTexImage2D_5 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.internalWrapglTexImage2D(vm, new ValType(BasicValType.VTP_REAL), 2, false);
         }
     }
 
     public static final class WrapgluBuild2DMipmaps_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.internalWrapglTexImage2D(vm, new ValType(VTP_INT), 1, true);
         }
     }
 
     public static final class WrapgluBuild2DMipmaps_3 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.internalWrapglTexImage2D(vm, new ValType(BasicValType.VTP_REAL), 1, true);
         }
     }
 
     public static final class WrapgluBuild2DMipmaps_4 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.internalWrapglTexImage2D(vm, new ValType(VTP_INT), 2, true);
         }
     }
 
     public static final class WrapgluBuild2DMipmaps_5 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.internalWrapglTexImage2D(vm, new ValType(BasicValType.VTP_REAL), 2, true);
         }
     }
 
     public static final class WrapglTexSubImage2D implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find image data
             int index = vm.getIntParam(1);
@@ -1913,7 +1942,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapImageWidth implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegIntVal(
                             OpenGLBasicLib.images.isIndexStored(index)
@@ -1923,7 +1952,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapImageHeight implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegIntVal(
                             OpenGLBasicLib.images.isIndexStored(index)
@@ -1933,7 +1962,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapImageFormat implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegIntVal(
                             OpenGLBasicLib.images.isIndexStored(index)
@@ -1943,13 +1972,13 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapImageDataType implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(GL_UNSIGNED_BYTE); // Images always stored as unsigned bytes
         }
     }
 
     public static final class WrapgluBuild2DMipmaps implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Find image data
             int index = vm.getIntParam(1);
@@ -1982,37 +2011,37 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglMultiTexCoord2f implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glMultiTexCoord2f(vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglMultiTexCoord2d implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glMultiTexCoord2d(vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglActiveTexture implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glActiveTexture(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglGetString implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegString(glGetString(vm.getIntParam(1)));
         }
     }
 
     public final class WrapExtensionSupported implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(windowManager.isExtensionSupported(vm.getStringParam(1)) ? 1 : 0);
         }
     }
 
     public static final class WrapMaxTextureUnits implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             IntBuffer units = BufferUtils.createIntBuffer(1);
             glGetIntegerv(ARBMultitexture.GL_MAX_TEXTURE_UNITS_ARB, units);
             vm.setRegIntVal(units.get(0));
@@ -2020,19 +2049,19 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapWindowWidth implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(windowManager.getPendingWindowWidth());
         }
     }
 
     public final class WrapWindowHeight implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(windowManager.getPendingWindowHeight());
         }
     }
 
     public static final class WrapglGenTextures implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int count = vm.getIntParam(2);
             if (count > 65536) {
                 vm.functionError("Count must be 0 - 65536 (Basic4GL restriction)");
@@ -2065,7 +2094,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglDeleteTextures implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int count = vm.getIntParam(2);
             if (count > 65536) {
                 vm.functionError("Count must be 0 - 65536 (Basic4GL restriction)");
@@ -2091,7 +2120,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapglLoadMatrixd implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -2115,7 +2144,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapglLoadMatrixf implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -2139,7 +2168,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapglMultMatrixd implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -2163,7 +2192,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapglMultMatrixf implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -2187,7 +2216,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglGetPolygonStipple implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
             glGetPolygonStipple(mask);
             Data.writeArray(
@@ -2196,7 +2225,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglPolygonStipple implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             ByteBuffer mask = ByteBuffer.wrap(new byte[128]).order(ByteOrder.nativeOrder());
             Data.readAndZero(
                     vm.getData(), vm.getIntParam(1), new ValType(VTP_INT, (byte) 1, (byte) 1, true), mask.array(), 128);
@@ -2205,7 +2234,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglGenLists implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Validate params
             int count = vm.getIntParam(1);
@@ -2224,7 +2253,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglDeleteLists implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             // Get params
             int base = vm.getIntParam(2), count = vm.getIntParam(1);
@@ -2241,7 +2270,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglCallLists implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             // VTP_REAL array version
 
             // Get size and type params
@@ -2271,7 +2300,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglCallLists_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             // VTP_INT array version
 
             // Get size and type params
@@ -2301,7 +2330,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglBegin implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             // Dont paint on WM_PAINT messages when between a glBegin() and a glEnd ()
             // OpenGLBasicLib.appWindow.setDontPaint(true);
             // This doesn't affect running code,
@@ -2311,14 +2340,14 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapglEnd implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEnd();
             // OpenGLBasicLib.appWindow.setDontPaint(false);
         }
     }
 
     public final class WrapglGetFloatv_2D implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] data = new float[16];
             Arrays.fill(data, 0);
             floatBuffer16.rewind();
@@ -2337,7 +2366,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapglGetDoublev_2D implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] data = new double[16];
             Arrays.fill(data, 0);
             doubleBuffer16.rewind();
@@ -2356,7 +2385,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapglGetIntegerv_2D implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] data = new int[16];
             Arrays.fill(data, 0);
             intBuffer16.rewind();
@@ -2370,7 +2399,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapglGetBooleanv_2D implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] data = new byte[16];
             Arrays.fill(data, (byte) 0);
             byteBuffer16.rewind();
@@ -2384,68 +2413,68 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public static final class WrapLoadImageStrip implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.loadImageStrip(vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1), false);
         }
     }
 
     public static final class WrapLoadMipmapImageStrip implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             OpenGLBasicLib.loadImageStrip(vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1), true);
         }
     }
 
     public static final class WrapImageStripFrames implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(OpenGLBasicLib.imageStripFrames(
                             vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
         }
     }
 
     public final class OldSquare_WrapLoadImageStrip implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, 1024);
             loadOldSquareImageStrip(vm, vm.getStringParam(1), frameSize, false);
         }
     }
 
     public final class OldSquare_WrapLoadImageStrip_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, vm.getIntParam(1));
             loadOldSquareImageStrip(vm, vm.getStringParam(2), frameSize, false);
         }
     }
 
     public final class OldSquare_WrapLoadMipmapImageStrip implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, 1024);
             loadOldSquareImageStrip(vm, vm.getStringParam(1), frameSize, true);
         }
     }
 
     public final class OldSquare_WrapLoadMipmapImageStrip_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, vm.getIntParam(1));
             loadOldSquareImageStrip(vm, vm.getStringParam(2), frameSize, true);
         }
     }
 
     public final class OldSquare_WrapImageStripFrames implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, 1024);
             vm.setRegIntVal(getOldSquareImageStripFrames(vm, vm.getStringParam(1), frameSize));
         }
     }
 
     public final class OldSquare_WrapImageStripFrames_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             IntBuffer frameSize = BufferUtils.createIntBuffer(1).put(0, vm.getIntParam(1));
             vm.setRegIntVal(getOldSquareImageStripFrames(vm, vm.getStringParam(2), frameSize));
         }
     }
 
     public final class WrapSetWindowWidth implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int value = vm.getIntParam(1);
             if (value >= 1 && value <= 4096) {
                 windowManager.pendingParams.width = value;
@@ -2454,7 +2483,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetWindowHeight implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int value = vm.getIntParam(1);
             if (value >= 1 && value <= 4096) {
                 windowManager.pendingParams.height = value;
@@ -2463,19 +2492,19 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetWindowFullscreen implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             windowManager.pendingParams.isFullscreen = vm.getIntParam(1) != 0;
         }
     }
 
     public final class WrapSetWindowBorder implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             windowManager.pendingParams.isBordered = vm.getIntParam(1) != 0;
         }
     }
 
     public final class WrapSetWindowBpp implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int value = vm.getIntParam(1);
             if (value >= 1 && value <= 32) {
                 windowManager.pendingParams.bpp = value;
@@ -2484,69 +2513,69 @@ public class OpenGLBasicLib implements FunctionLibrary {
     }
 
     public final class WrapSetWindowStencil implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             windowManager.pendingParams.isStencilBufferRequired = vm.getIntParam(1) != 0;
         }
     }
 
     public final class WrapSetWindowTitle implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             windowManager.pendingParams.title = vm.getStringParam(1);
         }
     }
 
     public final class WrapSetWindowResizable implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             windowManager.pendingParams.isResizable = vm.getIntParam(1) != 0;
         }
     }
 
     public final class WrapWindowFullscreen implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(windowManager.pendingParams.isFullscreen ? -1 : 0);
         }
     }
 
     public final class WrapWindowBorder implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(windowManager.pendingParams.isBordered ? -1 : 0);
         }
     }
 
     public final class WrapWindowBpp implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(windowManager.pendingParams.bpp);
         }
     }
 
     public final class WrapWindowStencil implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(windowManager.pendingParams.isStencilBufferRequired ? -1 : 0);
         }
     }
 
     public final class WrapWindowTitle implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegString(windowManager.pendingParams.title);
         }
     }
 
     public final class WrapWindowResizable implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(windowManager.pendingParams.isResizable ? -1 : 0);
         }
     }
 
     /// Apply changes from SetWindowWidth/-Height/Visible etc calls.
     public final class WrapUpdateWindow implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             windowManager.recreateWindow();
             vm.setRegIntVal(windowManager.hasError() ? 0 : -1);
         }
     }
 
     public final class WrapSwapBuffers implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             windowManager.swapBuffers();
         }
     }

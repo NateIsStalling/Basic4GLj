@@ -2,19 +2,19 @@ package com.basic4gl.library.desktopgl;
 
 import static org.lwjgl.opengl.GL11.*;
 
-import com.basic4gl.compiler.TomBasicCompiler;
-import com.basic4gl.lib.util.FunctionLibrary;
-import com.basic4gl.lib.util.IAppSettings;
-import com.basic4gl.lib.util.IServiceCollection;
+import com.basic4gl.language.core.extensions.Basic4GLCompiler;
+import com.basic4gl.language.core.extensions.FunctionLibrary;
+import com.basic4gl.language.core.extensions.IAppSettings;
+import com.basic4gl.language.core.runtime.Data;
+import com.basic4gl.language.core.runtime.Function;
+import com.basic4gl.language.core.runtime.IServiceCollection;
+import com.basic4gl.language.core.runtime.VM;
+import com.basic4gl.language.core.types.BasicValType;
+import com.basic4gl.language.core.types.Constant;
+import com.basic4gl.language.core.types.FunctionSpecification;
+import com.basic4gl.language.core.types.ParamTypeList;
+import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.library.desktopgl.util.Routines;
-import com.basic4gl.runtime.Data;
-import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.types.BasicValType;
-import com.basic4gl.runtime.types.Constant;
-import com.basic4gl.runtime.types.FunctionSpecification;
-import com.basic4gl.runtime.types.ParamTypeList;
-import com.basic4gl.runtime.types.ValType;
-import com.basic4gl.runtime.util.Function;
 import java.nio.*;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +26,9 @@ import org.lwjgl.BufferUtils;
  */
 public class GLBasicLib_gl implements FunctionLibrary {
 
+    // Internal flag for debugging performance
     static final boolean nullGlMode = false;
+
     private ByteBuffer byteBuffer16;
     private ShortBuffer shortBuffer16;
     private IntBuffer intBuffer16;
@@ -45,7 +47,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomVM vm, IServiceCollection services, IAppSettings settings, String[] args) {
+    public void init(VM vm, IServiceCollection services, IAppSettings settings, String[] args) {
         byteBuffer16 = BufferUtils.createByteBuffer(16);
         shortBuffer16 = BufferUtils.createShortBuffer(16);
         intBuffer16 = BufferUtils.createIntBuffer(16);
@@ -55,7 +57,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     @Override
-    public void init(TomBasicCompiler comp, IServiceCollection services) {}
+    public void init(Basic4GLCompiler comp, IServiceCollection services) {}
 
     @Override
     public void cleanup() {
@@ -5531,20 +5533,20 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglAccum implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glAccum(vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglAlphaFunc implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glAlphaFunc(vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglAreTexturesResident implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!Routines.validateSizeParam(vm, 3)) {
                 return;
             }
@@ -5586,21 +5588,21 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglArrayElement implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glArrayElement(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglBindTexture implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glBindTexture(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglBlendFunc implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             glBlendFunc(vm.getIntParam(2), vm.getIntParam(1));
         }
@@ -5608,56 +5610,56 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglCallList implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glCallList(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglClear implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glClear(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglClearAccum implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glClearAccum(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglClearColor implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glClearColor(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglClearDepth implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glClearDepth(vm.getRealParam(1));
         }
     }
 
     public static final class WrapglClearIndex implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glClearIndex(vm.getRealParam(1));
         }
     }
 
     public static final class WrapglClearStencil implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glClearStencil(vm.getIntParam(1));
         }
     }
 
     public final class WrapglClipPlane implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -5682,7 +5684,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglClipPlane_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -5699,17 +5701,17 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor3b implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor3b(
-                    (byte) vm.getIntParam(3),
-                    (byte) vm.getIntParam(2),
-                    (byte) vm.getIntParam(1));
+                    vm.getIntParam(3).byteValue(),
+                    vm.getIntParam(2).byteValue(),
+                    vm.getIntParam(1).byteValue());
         }
     }
 
     public final class WrapglColor3bv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.readAndZero(
                     vm.getData(),
@@ -5734,7 +5736,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor3bv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -5751,14 +5753,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor3d implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor3d(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglColor3dv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -5783,7 +5785,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor3dv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -5800,14 +5802,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor3f implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor3f(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglColor3fv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -5832,7 +5834,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor3fv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -5849,14 +5851,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor3i implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor3i(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglColor3iv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -5881,7 +5883,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor3iv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -5898,17 +5900,17 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor3s implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor3s(
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglColor3sv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -5933,7 +5935,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor3sv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -5950,12 +5952,12 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor3ub implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             // glColor3ub crashes on macOS - remap parameters to glColor3ubv
             byteBuffer16.rewind();
-            byteBuffer16.put((byte) vm.getIntParam(3));
-            byteBuffer16.put((byte) vm.getIntParam(2));
-            byteBuffer16.put((byte) vm.getIntParam(1));
+            byteBuffer16.put(vm.getIntParam(3).byteValue());
+            byteBuffer16.put(vm.getIntParam(2).byteValue());
+            byteBuffer16.put(vm.getIntParam(1).byteValue());
 
             byteBuffer16.rewind();
             glColor3ubv(byteBuffer16);
@@ -5966,7 +5968,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor3ubv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.readAndZero(
                     vm.getData(),
@@ -5991,7 +5993,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor3ubv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6008,14 +6010,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor3ui implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor3ui(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglColor3uiv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6040,7 +6042,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor3uiv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6057,17 +6059,17 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor3us implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor3us(
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglColor3usv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6092,7 +6094,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor3usv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6109,18 +6111,18 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor4b implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor4b(
-                    (byte) vm.getIntParam(4),
-                    (byte) vm.getIntParam(3),
-                    (byte) vm.getIntParam(2),
-                    (byte) vm.getIntParam(1));
+                    vm.getIntParam(4).byteValue(),
+                    vm.getIntParam(3).byteValue(),
+                    vm.getIntParam(2).byteValue(),
+                    vm.getIntParam(1).byteValue());
         }
     }
 
     public final class WrapglColor4bv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6145,7 +6147,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor4bv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6162,14 +6164,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor4d implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor4d(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglColor4dv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6194,7 +6196,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor4dv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6210,18 +6212,18 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglColor4f implements Function {
-
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (nullGlMode) {
                 return;
             }
+            
             glColor4f(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglColor4fv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6246,7 +6248,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor4fv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6263,14 +6265,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor4i implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor4i(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglColor4iv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6295,7 +6297,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor4iv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6312,18 +6314,18 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor4s implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor4s(
-                    (short) vm.getIntParam(4),
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                vm.getIntParam(4).shortValue(),
+                vm.getIntParam(3).shortValue(),
+                vm.getIntParam(2).shortValue(),
+                vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglColor4sv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6348,7 +6350,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor4sv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6365,14 +6367,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor4ub implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             // glColor4ub crashes on macOS - remap parameters to glColor4ubv
             byteBuffer16.rewind();
-            byteBuffer16.put((byte) vm.getIntParam(4));
-            byteBuffer16.put((byte) vm.getIntParam(3));
-            byteBuffer16.put((byte) vm.getIntParam(2));
-            byteBuffer16.put((byte) vm.getIntParam(1));
-
+            byteBuffer16.put(vm.getIntParam(4).byteValue());
+            byteBuffer16.put(vm.getIntParam(3).byteValue());
+            byteBuffer16.put(vm.getIntParam(2).byteValue());
+            byteBuffer16.put(vm.getIntParam(1).byteValue());
             byteBuffer16.rewind();
             glColor4ubv(byteBuffer16);
 
@@ -6382,7 +6383,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor4ubv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6407,7 +6408,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor4ubv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6424,14 +6425,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor4ui implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor4ui(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglColor4uiv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6456,7 +6457,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor4uiv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6473,18 +6474,18 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColor4us implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColor4us(
-                    (short) vm.getIntParam(4),
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglColor4usv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6509,7 +6510,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglColor4usv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6526,28 +6527,28 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglColorMask implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColorMask(vm.getIntParam(4) == 1, vm.getIntParam(3) == 1, vm.getIntParam(2) == 1, vm.getIntParam(1) == 1);
         }
     }
 
     public static final class WrapglColorMaterial implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glColorMaterial(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglCopyPixels implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glCopyPixels(vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglCopyTexImage1D implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glCopyTexImage1D(
                     vm.getIntParam(7),
                     vm.getIntParam(6),
@@ -6561,7 +6562,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglCopyTexImage2D implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glCopyTexImage2D(
                     vm.getIntParam(8),
                     vm.getIntParam(7),
@@ -6576,7 +6577,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglCopyTexSubImage1D implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glCopyTexSubImage1D(
                     vm.getIntParam(6),
                     vm.getIntParam(5),
@@ -6589,7 +6590,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglCopyTexSubImage2D implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glCopyTexSubImage2D(
                     vm.getIntParam(8),
                     vm.getIntParam(7),
@@ -6604,49 +6605,49 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglCullFace implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glCullFace(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglDepthFunc implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glDepthFunc(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglDepthMask implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glDepthMask(vm.getIntParam(1) == 1);
         }
     }
 
     public static final class WrapglDepthRange implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glDepthRange(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglDisable implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glDisable(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglDisableClientState implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glDisableClientState(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglDrawArrays implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!Routines.validateSizeParam(vm, 1)) {
                 return;
             }
@@ -6656,7 +6657,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglDrawBuffer implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
 
             glDrawBuffer(vm.getIntParam(1));
         }
@@ -6664,14 +6665,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglEdgeFlag implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEdgeFlag(vm.getIntParam(1) == 1);
         }
     }
 
     public final class WrapglEdgeFlagv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6696,7 +6697,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglEdgeFlagv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6713,35 +6714,35 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglEnable implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEnable(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglEnableClientState implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEnableClientState(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglEndList implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEndList();
         }
     }
 
     public static final class WrapglEvalCoord1d implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEvalCoord1d(vm.getRealParam(1));
         }
     }
 
     public final class WrapglEvalCoord1dv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6766,7 +6767,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglEvalCoord1dv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6783,14 +6784,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglEvalCoord1f implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEvalCoord1f(vm.getRealParam(1));
         }
     }
 
     public final class WrapglEvalCoord1fv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6815,7 +6816,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglEvalCoord1fv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6832,14 +6833,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglEvalCoord2d implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEvalCoord2d(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglEvalCoord2dv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6864,7 +6865,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglEvalCoord2dv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6881,14 +6882,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglEvalCoord2f implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEvalCoord2f(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglEvalCoord2fv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -6913,7 +6914,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglEvalCoord2fv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -6930,35 +6931,35 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglEvalMesh1 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEvalMesh1(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglEvalMesh2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEvalMesh2(vm.getIntParam(5), vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglEvalPoint1 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEvalPoint1(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglEvalPoint2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glEvalPoint2(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglFeedbackBuffer implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!Routines.validateSizeParam(vm, 3)) {
                 return;
             }
@@ -6986,28 +6987,28 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglFinish implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glFinish();
         }
     }
 
     public static final class WrapglFlush implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glFlush();
         }
     }
 
     public static final class WrapglFogf implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glFogf(vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglFogfv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7032,7 +7033,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglFogfv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7049,14 +7050,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglFogi implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glFogi(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglFogiv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7081,7 +7082,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglFogiv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7098,13 +7099,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglFrontFace implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glFrontFace(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglFrustum implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glFrustum(
                     vm.getRealParam(6),
                     vm.getRealParam(5),
@@ -7116,7 +7117,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetBooleanv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7141,7 +7142,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetBooleanv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7158,7 +7159,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetClipPlane implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7183,7 +7184,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetClipPlane_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7200,7 +7201,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetDoublev implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7225,7 +7226,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetDoublev_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7242,14 +7243,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglGetError implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(glGetError());
         }
     }
 
     public final class WrapglGetFloatv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7273,7 +7274,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetFloatv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7289,7 +7290,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetIntegerv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7313,7 +7314,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetIntegerv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7329,7 +7330,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetLightfv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7353,7 +7354,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetLightfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7369,7 +7370,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetLightiv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7393,7 +7394,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetLightiv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7409,7 +7410,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetMaterialfv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7433,7 +7434,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetMaterialfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7449,7 +7450,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetMaterialiv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7473,7 +7474,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetMaterialiv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7490,7 +7491,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetPixelMapuiv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7514,7 +7515,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetPixelMapuiv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7530,7 +7531,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetTexEnvfv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7554,7 +7555,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetTexEnvfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7571,7 +7572,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetTexEnviv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7596,7 +7597,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetTexEnviv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7613,7 +7614,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetTexGendv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7637,7 +7638,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetTexGendv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7654,7 +7655,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetTexGenfv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7679,7 +7680,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetTexGenfv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7696,7 +7697,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetTexGeniv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7720,7 +7721,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetTexGeniv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7737,7 +7738,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetTexLevelParameterfv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7761,7 +7762,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetTexLevelParameterfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7778,7 +7779,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglGetTexLevelParameteriv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7802,7 +7803,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetTexLevelParameteriv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7818,7 +7819,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetTexParameterfv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7842,7 +7843,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetTexParameterfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7858,7 +7859,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetTexParameteriv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7882,7 +7883,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglGetTexParameteriv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7899,25 +7900,25 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglHint implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glHint(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglIndexMask implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glIndexMask(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglIndexd implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glIndexd(vm.getRealParam(1));
         }
     }
 
     public final class WrapglIndexdv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7941,7 +7942,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglIndexdv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -7957,13 +7958,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglIndexf implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glIndexf(vm.getRealParam(1));
         }
     }
 
     public final class WrapglIndexfv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -7987,7 +7988,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglIndexfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8003,14 +8004,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglIndexi implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glIndexi(vm.getIntParam(1));
         }
     }
 
     public final class WrapglIndexiv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8035,7 +8036,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglIndexiv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8051,13 +8052,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglIndexs implements Function {
-        public void run(TomVM vm) {
-            glIndexs((short) vm.getIntParam(1));
+
+        public void run(VM vm) {
+            glIndexs(vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglIndexsv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8082,7 +8084,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglIndexsv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8098,14 +8100,15 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglIndexub implements Function {
-        public void run(TomVM vm) {
-            glIndexub((byte) vm.getIntParam(1));
+
+        public void run(VM vm) {
+            glIndexub(vm.getIntParam(1).byteValue());
         }
     }
 
     public final class WrapglIndexubv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8130,7 +8133,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglIndexubv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8147,37 +8150,37 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglInitNames implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glInitNames();
         }
     }
 
     public static final class WrapglIsEnabled implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(glIsEnabled(vm.getIntParam(1)) ? 1 : 0);
         }
     }
 
     public static final class WrapglIsList implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(glIsList(vm.getIntParam(1)) ? 1 : 0);
         }
     }
 
     public static final class WrapglIsTexture implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(glIsTexture(vm.getIntParam(1)) ? 1 : 0);
         }
     }
 
     public static final class WrapglLightModelf implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glLightModelf(vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglLightModelfv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8201,7 +8204,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglLightModelfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8217,13 +8220,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglLightModeli implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glLightModeli(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglLightModeliv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8247,7 +8250,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglLightModeliv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8263,13 +8266,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglLightf implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glLightf(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglLightfv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8293,7 +8296,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglLightfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8309,13 +8312,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglLighti implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glLighti(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglLightiv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8340,7 +8343,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglLightiv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8357,60 +8360,60 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglLineStipple implements Function {
 
-        public void run(TomVM vm) {
-            glLineStipple(vm.getIntParam(2), (short) vm.getIntParam(1));
+        public void run(VM vm) {
+            glLineStipple(vm.getIntParam(2), vm.getIntParam(1).shortValue());
         }
     }
 
     public static final class WrapglLineWidth implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glLineWidth(vm.getRealParam(1));
         }
     }
 
     public static final class WrapglListBase implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glListBase(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglLoadIdentity implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glLoadIdentity();
         }
     }
 
     public static final class WrapglLoadName implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glLoadName(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglLogicOp implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glLogicOp(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglMapGrid1d implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glMapGrid1d(vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglMapGrid1f implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glMapGrid1f(vm.getIntParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglMapGrid2d implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glMapGrid2d(
                     vm.getIntParam(6),
                     vm.getRealParam(5),
@@ -8423,7 +8426,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglMapGrid2f implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glMapGrid2f(
                     vm.getIntParam(6),
                     vm.getRealParam(5),
@@ -8436,14 +8439,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglMaterialf implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glMaterialf(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglMaterialfv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8468,7 +8471,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglMaterialfv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8485,14 +8488,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglMateriali implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glMateriali(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglMaterialiv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8516,7 +8519,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglMaterialiv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8532,28 +8535,28 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglMatrixMode implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glMatrixMode(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglNewList implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glNewList(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglNormal3b implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glNormal3b(
-                    (byte) vm.getIntParam(3),
-                    (byte) vm.getIntParam(2),
-                    (byte) vm.getIntParam(1));
+                    vm.getIntParam(3).byteValue(),
+                    vm.getIntParam(2).byteValue(),
+                    vm.getIntParam(1).byteValue());
         }
     }
 
     public final class WrapglNormal3bv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8577,7 +8580,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglNormal3bv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             byte[] a = new byte[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8593,13 +8596,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglNormal3d implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glNormal3d(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglNormal3dv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8623,7 +8626,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglNormal3dv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8639,13 +8642,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglNormal3f implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glNormal3f(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglNormal3fv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8669,7 +8672,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglNormal3fv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8685,13 +8688,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglNormal3i implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glNormal3i(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglNormal3iv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8715,7 +8718,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglNormal3iv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8731,16 +8734,16 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglNormal3s implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glNormal3s(
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglNormal3sv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8765,7 +8768,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglNormal3sv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8781,7 +8784,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglOrtho implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glOrtho(
                     vm.getRealParam(6),
                     vm.getRealParam(5),
@@ -8793,14 +8796,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglPassThrough implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPassThrough(vm.getRealParam(1));
         }
     }
 
     public static final class WrapglPixelStoref implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPixelStoref(vm.getIntParam(2), vm.getIntParam(1));
             // TODO Original source used this line instead
             // glPixelStoref(vm.GetIntParam(2), vm.GetRealParam(1));
@@ -8809,79 +8812,79 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglPixelStorei implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPixelStorei(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglPixelTransferf implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPixelTransferf(vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglPixelTransferi implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPixelTransferi(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglPixelZoom implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPixelZoom(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglPointSize implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPointSize(vm.getRealParam(1));
         }
     }
 
     public static final class WrapglPolygonMode implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPolygonMode(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglPolygonOffset implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPolygonOffset(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglPopAttrib implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPopAttrib();
         }
     }
 
     public static final class WrapglPopClientAttrib implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPopClientAttrib();
         }
     }
 
     public static final class WrapglPopMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPopMatrix();
         }
     }
 
     public static final class WrapglPopName implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPopName();
         }
     }
 
     public static final class WrapglPrioritizeTextures implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!Routines.validateSizeParam(vm, 3)) {
                 return;
             }
@@ -8922,38 +8925,38 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglPushAttrib implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPushAttrib(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglPushClientAttrib implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPushClientAttrib(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglPushMatrix implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPushMatrix();
         }
     }
 
     public static final class WrapglPushName implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glPushName(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglRasterPos2d implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRasterPos2d(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglRasterPos2dv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -8977,7 +8980,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRasterPos2dv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -8994,13 +8997,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglRasterPos2f implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRasterPos2f(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglRasterPos2fv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9024,7 +9027,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRasterPos2fv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -9040,13 +9043,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglRasterPos2i implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRasterPos2i(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglRasterPos2iv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9070,7 +9073,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRasterPos2iv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -9087,14 +9090,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglRasterPos2s implements Function {
 
-        public void run(TomVM vm) {
-            glRasterPos2s((short) vm.getIntParam(2), (short) vm.getIntParam(1));
+        public void run(VM vm) {
+            glRasterPos2s(vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglRasterPos2sv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9119,7 +9122,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglRasterPos2sv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -9136,13 +9139,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglRasterPos3d implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRasterPos3d(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglRasterPos3dv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9166,7 +9169,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRasterPos3dv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -9182,13 +9185,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglRasterPos3f implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRasterPos3f(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglRasterPos3fv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9212,7 +9215,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRasterPos3fv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -9228,13 +9231,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglRasterPos3i implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRasterPos3i(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglRasterPos3iv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9258,7 +9261,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRasterPos3iv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -9274,16 +9277,16 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglRasterPos3s implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRasterPos3s(
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglRasterPos3sv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9307,7 +9310,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRasterPos3sv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -9323,14 +9326,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglRasterPos4d implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRasterPos4d(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglRasterPos4dv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9355,7 +9358,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglRasterPos4dv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -9372,14 +9375,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglRasterPos4f implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRasterPos4f(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglRasterPos4fv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9404,7 +9407,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglRasterPos4fv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -9420,13 +9423,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglRasterPos4i implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRasterPos4i(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglRasterPos4iv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9451,7 +9454,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglRasterPos4iv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -9468,18 +9471,18 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglRasterPos4s implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRasterPos4s(
-                    (short) vm.getIntParam(4),
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglRasterPos4sv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9503,7 +9506,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRasterPos4sv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -9519,21 +9522,21 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglReadBuffer implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glReadBuffer(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglRectd implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRectd(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglRectdv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
             Data.readAndZero(
@@ -9571,7 +9574,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRectdv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(2)) {
@@ -9600,7 +9603,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRectdv_3 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             DoubleBuffer a2 = BufferUtils.createDoubleBuffer(16);
             Data.readAndZero(
@@ -9631,7 +9634,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRectdv_4 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(2)) {
@@ -9655,14 +9658,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglRectf implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRectf(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglRectfv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9698,7 +9701,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRectfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(2)) {
@@ -9728,7 +9731,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRectfv_3 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -9760,7 +9763,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRectfv_4 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(2)) {
@@ -9785,13 +9788,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglRecti implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRecti(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglRectiv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             IntBuffer a2 = BufferUtils.createIntBuffer(16);
 
@@ -9832,7 +9835,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglRectiv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(2)) {
@@ -9864,7 +9867,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglRectiv_3 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             IntBuffer a2 = BufferUtils.createIntBuffer(16);
 
@@ -9898,7 +9901,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglRectiv_4 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(2)) {
@@ -9923,18 +9926,18 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglRects implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRects(
-                    (short) vm.getIntParam(4),
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglRectsv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             ShortBuffer a2 = BufferUtils.createShortBuffer(16);
             Data.readAndZero(
@@ -9973,7 +9976,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglRectsv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(2)) {
@@ -10004,7 +10007,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglRectsv_3 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             ShortBuffer a2 = BufferUtils.createShortBuffer(16);
 
@@ -10036,7 +10039,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglRectsv_4 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(2)) {
@@ -10061,43 +10064,43 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglRenderMode implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             vm.setRegIntVal(glRenderMode(vm.getIntParam(1)));
         }
     }
 
     public static final class WrapglRotated implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRotated(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglRotatef implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glRotatef(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglScaled implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glScaled(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglScalef implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glScalef(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglScissor implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glScissor(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglSelectBuffer implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             if (!Routines.validateSizeParam(vm, 2)) {
                 return;
             }
@@ -10121,38 +10124,38 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglShadeModel implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glShadeModel(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglStencilFunc implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glStencilFunc(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglStencilMask implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glStencilMask(vm.getIntParam(1));
         }
     }
 
     public static final class WrapglStencilOp implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glStencilOp(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public static final class WrapglTexCoord1d implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord1d(vm.getRealParam(1));
         }
     }
 
     public final class WrapglTexCoord1dv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10176,7 +10179,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord1dv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10192,14 +10195,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord1f implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord1f(vm.getRealParam(1));
         }
     }
 
     public final class WrapglTexCoord1fv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10224,7 +10227,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglTexCoord1fv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10241,14 +10244,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglTexCoord1i implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord1i(vm.getIntParam(1));
         }
     }
 
     public final class WrapglTexCoord1iv implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10273,7 +10276,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public final class WrapglTexCoord1iv_2 implements Function {
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10290,13 +10293,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglTexCoord1s implements Function {
 
-        public void run(TomVM vm) {
-            glTexCoord1s((short) vm.getIntParam(1));
+        public void run(VM vm) {
+            glTexCoord1s(vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglTexCoord1sv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10320,7 +10323,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord1sv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10336,13 +10339,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord2d implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord2d(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglTexCoord2dv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10366,7 +10369,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord2dv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10382,7 +10385,8 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord2f implements Function {
-        public void run(TomVM vm) {
+
+        public void run(VM vm) {
             if (nullGlMode) {
                 return;
             }
@@ -10391,7 +10395,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord2fv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10415,7 +10419,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord2fv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10431,13 +10435,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord2i implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord2i(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglTexCoord2iv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10461,7 +10465,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord2iv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10477,13 +10481,14 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord2s implements Function {
-        public void run(TomVM vm) {
-            glTexCoord2s((short) vm.getIntParam(2), (short) vm.getIntParam(1));
+
+        public void run(VM vm) {
+            glTexCoord2s(vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglTexCoord2sv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10507,7 +10512,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord2sv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10523,13 +10528,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord3d implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord3d(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglTexCoord3dv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10553,7 +10558,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord3dv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10569,13 +10574,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord3f implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord3f(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglTexCoord3fv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10599,7 +10604,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord3fv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10615,13 +10620,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord3i implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord3i(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglTexCoord3iv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10645,7 +10650,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord3iv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10661,16 +10666,16 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord3s implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord3s(
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglTexCoord3sv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10694,7 +10699,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord3sv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10710,13 +10715,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord4d implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord4d(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglTexCoord4dv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10740,7 +10745,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord4dv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10756,13 +10761,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord4f implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord4f(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglTexCoord4fv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10786,7 +10791,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord4fv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10802,13 +10807,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord4i implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord4i(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglTexCoord4iv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10832,7 +10837,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord4iv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10848,17 +10853,17 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord4s implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexCoord4s(
-                    (short) vm.getIntParam(4),
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglTexCoord4sv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10882,7 +10887,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexCoord4sv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10893,18 +10898,18 @@ public class GLBasicLib_gl implements FunctionLibrary {
             shortBuffer16.put(a);
             shortBuffer16.rewind();
             glTexCoord4sv(shortBuffer16);
-            vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
+            vm.getRefParam(1).setIntVal(shortBuffer16.get(0));
         }
     }
 
     public static final class WrapglTexEnvf implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexEnvf(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglTexEnvfv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10928,7 +10933,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexEnvfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10944,13 +10949,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexEnvi implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexEnvi(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglTexEnviv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -10974,7 +10979,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexEnviv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -10990,13 +10995,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexGend implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexGend(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglTexGendv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11020,7 +11025,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexGendv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11036,13 +11041,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexGenf implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexGenf(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglTexGenfv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11066,7 +11071,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexGenfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11082,13 +11087,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexGeni implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexGeni(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglTexGeniv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11112,7 +11117,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexGeniv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11128,13 +11133,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexParameterf implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexParameterf(vm.getIntParam(3), vm.getIntParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglTexParameterfv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11158,7 +11163,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexParameterfv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11174,13 +11179,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexParameteri implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTexParameteri(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglTexParameteriv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11204,7 +11209,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglTexParameteriv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11220,25 +11225,25 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTranslated implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTranslated(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglTranslatef implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glTranslatef(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public static final class WrapglVertex2d implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glVertex2d(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglVertex2dv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11262,7 +11267,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex2dv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11278,7 +11283,8 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex2f implements Function {
-        public void run(TomVM vm) {
+
+        public void run(VM vm) {
             if (nullGlMode) {
                 return;
             }
@@ -11287,7 +11293,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex2fv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11311,7 +11317,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex2fv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11327,13 +11333,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex2i implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glVertex2i(vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglVertex2iv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11357,7 +11363,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex2iv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11373,13 +11379,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex2s implements Function {
-        public void run(TomVM vm) {
-            glVertex2s((short) vm.getIntParam(2), (short) vm.getIntParam(1));
+        public void run(VM vm) {
+            glVertex2s(vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglVertex2sv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11403,7 +11409,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex2sv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11419,13 +11425,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex3d implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glVertex3d(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglVertex3dv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11449,7 +11455,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex3dv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11465,13 +11471,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex3f implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glVertex3f(vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglVertex3fv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11496,7 +11502,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex3fv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11513,13 +11519,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex3i implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glVertex3i(vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglVertex3iv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11543,7 +11549,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex3iv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11559,16 +11565,16 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex3s implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glVertex3s(
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglVertex3sv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11592,7 +11598,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex3sv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11608,13 +11614,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex4d implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glVertex4d(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglVertex4dv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11638,7 +11644,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex4dv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             double[] a = new double[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11654,13 +11660,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex4f implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glVertex4f(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
 
     public final class WrapglVertex4fv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11684,7 +11690,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex4fv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             float[] a = new float[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11700,13 +11706,13 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex4i implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glVertex4i(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }
 
     public final class WrapglVertex4iv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11730,7 +11736,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex4iv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             int[] a = new int[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11746,17 +11752,17 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex4s implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glVertex4s(
-                    (short) vm.getIntParam(4),
-                    (short) vm.getIntParam(3),
-                    (short) vm.getIntParam(2),
-                    (short) vm.getIntParam(1));
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 
     public final class WrapglVertex4sv implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.readAndZero(
                     vm.getData(),
@@ -11780,7 +11786,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public final class WrapglVertex4sv_2 implements Function {
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             short[] a = new short[16];
             Data.zeroArray(a, 16);
             if (!vm.checkNullRefParam(1)) {
@@ -11798,7 +11804,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglViewport implements Function {
         public WrapglViewport() {}
 
-        public void run(TomVM vm) {
+        public void run(VM vm) {
             glViewport(vm.getIntParam(4), vm.getIntParam(3), vm.getIntParam(2), vm.getIntParam(1));
         }
     }

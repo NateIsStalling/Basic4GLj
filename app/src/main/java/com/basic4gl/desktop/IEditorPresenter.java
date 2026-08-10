@@ -38,4 +38,6 @@ interface IEditorPresenter {
     void refreshWatchList();
 
     void setRecentItems(List<File> files);
+
+    void refreshSyntaxHighlighting();
 }

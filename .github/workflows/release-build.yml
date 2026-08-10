@@ -19,12 +19,10 @@ jobs:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: main
+        uses: actions/checkout@v7
       - id: setup-jdk
         name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 17
@@ -38,11 +36,12 @@ jobs:
       # SAVE INSTALLER
       - id: upload-installer
         name: Upload installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ./app/build/distributions/app.zip
           name: jar-release
           retention-days: 1
+
   build-linux-installer:
     name: Build Installer on Linux
     runs-on: ubuntu-latest
@@ -50,28 +49,47 @@ jobs:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: main
-      - id: setup-jdk
-        name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/checkout@v7
+      - id: setup-jdk-17
+        name: Setup JDK 17 for Gradle build
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 17
 
-      # BUILD FOR DISTRIBUTION
+      # BUILD JPACKAGE INPUTS
       - id: build
-        name: Build distribution
+        name: Build jpackage inputs (JDK 17)
         run: |
-          sh build-linux-release.sh
+          ./gradlew clean build copyJarsForJPackage
+
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_X64
+      # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
+      - id: setup-jdk-25
+        name: Setup JDK 25 for jpackage
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: 25
+      - id: inspect-jpackage-inputs
+        name: Inspect jpackage inputs
+        shell: bash
+        run: |
+          find ./build/libs -maxdepth 2 -type f | sort
+
+      # PACKAGE INSTALLER
+      - id: package
+        name: Package installer
+        shell: bash
+        run: |
+          bash build-linux-release.sh --package-only --runtime-image "$JAVA_HOME_17_X64"
 
       # SAVE INSTALLER
       - id: upload-installer
         name: Upload installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          path: ./build/distributions/basic4glj_${{ vars.APP_RELEASE_VERSION }}-1_amd64.deb
+          path: ./build/distributions/basic4glj_${{ vars.APP_RELEASE_VERSION }}_amd64.deb
           name: linux-installer
           retention-days: 1
 
@@ -84,24 +102,46 @@ jobs:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
-        uses: actions/checkout@v4
-      - id: setup-jdk
-        name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/checkout@v7
+      - id: setup-jdk-17
+        name: Setup JDK 17 for Gradle build
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 17
 
-      # BUILD FOR DISTRIBUTION
+      # BUILD JPACKAGE INPUTS
       - id: build
-        name: Build distribution
+        name: Build jpackage inputs (JDK 17)
+        shell: bash
         run: |
-          sh build-windows-release.sh
+          ./gradlew clean build copyJarsForJPackage
+
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_X64
+      # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
+      - id: setup-jdk-25
+        name: Setup JDK 25 for jpackage
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: 25
+      - id: inspect-jpackage-inputs
+        name: Inspect jpackage inputs
+        shell: bash
+        run: |
+          find ./build/libs -maxdepth 2 -type f | sort
+
+      # PACKAGE INSTALLER
+      - id: package
+        name: Package installer
+        shell: bash
+        run: |
+          bash build-windows-release.sh --package-only --runtime-image "$JAVA_HOME_17_X64"
 
       # SAVE INSTALLER
       - id: upload-installer
         name: Upload installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.msi
           name: windows-installer
@@ -114,16 +154,36 @@ jobs:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
-        uses: actions/checkout@v4
-      - id: setup-jdk
-        name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/checkout@v7
+      - id: setup-jdk-17
+        name: Setup JDK 17 for Gradle build
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 17
+
+      # BUILD JPACKAGE INPUTS
+      - id: build
+        name: Build jpackage inputs (JDK 17)
+        run: |
+          ./gradlew clean build copyJarsForJPackage
+
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_ARM64
+      # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
+      - id: setup-jdk-25
+        name: Setup JDK 25 for jpackage
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: 25
+      - id: inspect-jpackage-inputs
+        name: Inspect jpackage inputs
+        shell: bash
+        run: |
+          find ./build/libs -maxdepth 2 -type f | sort
       - id: set-up-homebrew
         name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@main
 
       - id: keychain
         name: Install the Apple certificate and provisioning profile
@@ -137,7 +197,7 @@ jobs:
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/embedded.provisionprofile
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          
+
           # import certificate and provisioning profile from secrets
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
@@ -150,8 +210,8 @@ jobs:
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH          
-          
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
           # apply provisioning profile
           echo "PP_PATH=$PP_PATH" >> $GITHUB_OUTPUT
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_OUTPUT
@@ -169,18 +229,19 @@ jobs:
           echo "MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH='${{ steps.keychain.outputs.PP_PATH }}'" >> .env
           echo "MAC_SIGNING_KEYCHAIN_PATH='${{ steps.keychain.outputs.KEYCHAIN_PATH }}'" >> .env
 
-      # BUILD FOR DISTRIBUTION
-      - id: build
-        name: Build distribution
+      # PACKAGE INSTALLER
+      - id: package
+        name: Package installer
+        shell: bash
         run: |
           brew install coreutils
-          sh build-mac-release.sh
+          bash build-mac-release.sh --entitlements-profile adhoc --package-only --runtime-image "$JAVA_HOME_17_ARM64"
           sh build-mac-notarize.sh
 
       # SAVE INSTALLER
       - id: upload-installer
         name: Upload installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg
           name: macos-arm64-installer
@@ -193,16 +254,36 @@ jobs:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
         name: Checkout code
-        uses: actions/checkout@v4
-      - id: setup-jdk
-        name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/checkout@v7
+      - id: setup-jdk-17
+        name: Setup JDK 17 for Gradle build
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 17
+
+      # BUILD JPACKAGE INPUTS
+      - id: build
+        name: Build jpackage inputs (JDK 17)
+        run: |
+          ./gradlew clean build copyJarsForJPackage
+
+      # SETUP JPACKAGE (this switches JAVA_HOME/PATH to JDK 25; JAVA_HOME_17_X64
+      # from the step above stays set so the app can still be shipped with the JDK 17 runtime)
+      - id: setup-jdk-25
+        name: Setup JDK 25 for jpackage
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: 25
+      - id: inspect-jpackage-inputs
+        name: Inspect jpackage inputs
+        shell: bash
+        run: |
+          find ./build/libs -maxdepth 2 -type f | sort
       - id: set-up-homebrew
         name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@main
 
       - id: keychain
         name: Install the Apple certificate and provisioning profile
@@ -216,7 +297,7 @@ jobs:
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/embedded.provisionprofile
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain
-          
+
           # import certificate and provisioning profile from secrets
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
@@ -230,7 +311,7 @@ jobs:
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
-          
+
           # apply provisioning profile
           echo "PP_PATH=$PP_PATH" >> $GITHUB_OUTPUT
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_OUTPUT
@@ -248,18 +329,19 @@ jobs:
           echo "MAC_SIGNING_EMBEDDED_PROVISIONPROFILE_FILE_PATH='${{ steps.keychain.outputs.PP_PATH }}'" >> .env
           echo "MAC_SIGNING_KEYCHAIN_PATH='${{ steps.keychain.outputs.KEYCHAIN_PATH }}'" >> .env
 
-      # BUILD FOR DISTRIBUTION
-      - id: build
-        name: Build distribution
+      # PACKAGE INSTALLER
+      - id: package
+        name: Package installer
+        shell: bash
         run: |
           brew install coreutils
-          sh build-mac-release.sh
+          bash build-mac-release.sh --entitlements-profile adhoc --package-only --runtime-image "$JAVA_HOME_17_X64"
           sh build-mac-notarize.sh
 
       # SAVE INSTALLER
       - id: upload-installer
         name: Upload installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ./build/distributions/Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.dmg
           name: macos-intel-installer
@@ -279,25 +361,25 @@ jobs:
 
       - id: download-jar-release
         name: Download JAR Release
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: jar-release
 
       - id: download-linux-installer
         name: Download Linux installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-installer
 
       - id: download-windows-installer
         name: Download Windows installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-installer
 
       - id: download-macos-arm64-installer
         name: Download Mac installer (arm64)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-arm64-installer
 
@@ -310,7 +392,7 @@ jobs:
 
       - id: download-macos-intel-installer
         name: Download Mac installer (Intel)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-intel-installer
 
@@ -328,7 +410,7 @@ jobs:
           # rename artifacts to match release tag for pre-release builds < 1.0 for now - for consistency with macOS builds
           mv app.zip basic4glj_${{ vars.BUILD_RELEASE_TAG }}.zip
           mv Basic4GLj-${{ vars.APP_RELEASE_VERSION }}.msi Basic4GLj-${{ vars.BUILD_RELEASE_TAG }}.msi
-          mv basic4glj_${{ vars.APP_RELEASE_VERSION }}-1_amd64.deb basic4glj_${{ vars.BUILD_RELEASE_TAG }}.deb
+          mv basic4glj_${{ vars.APP_RELEASE_VERSION }}_amd64.deb basic4glj_${{ vars.BUILD_RELEASE_TAG }}.deb
           ls -alR
 
       # CREATE GITHUB RELEASE AND ADD ASSETS

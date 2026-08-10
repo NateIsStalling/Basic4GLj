@@ -31,8 +31,9 @@ application {
 // Create a pathing Jar to provide classpath file for Windows distribution; requires JDK 9+
 task pathingJar(type: Jar) {
 
-    dependsOn (":debugServer:jar")
-    dependsOn (":library:jar")
+    dependsOn (":debug-server:jar")
+    dependsOn (":app-runtime:jar")
+    dependsOn(configurations.release)
     archiveAppendix = 'pathing'
     doFirst {
         manifest {
@@ -47,6 +48,18 @@ distributions {
         contents {
             from(pathingJar) {
                 into "lib"
+            }
+            from("${rootProject.projectDir}/docs/basic4gl") {
+                into "docs/basic4gl"
+                exclude "**/.DS_Store", "**/.*"
+            }
+            from("${rootProject.projectDir}/samples") {
+                into "samples"
+                exclude "**/.DS_Store", "**/.*"
+            }
+            from("${rootProject.projectDir}/LICENSES") {
+                into "LICENSES"
+                exclude "**/.DS_Store", "**/.*"
             }
         }
     }
@@ -65,16 +78,24 @@ dependencies {
     // TODO figure out a clean way to depend on the JAR output of these projects;
     //  need to launch these projects as separate Java processes at runtime
     runtimeOnly project(':library')
-    runtimeOnly project(':debugServer')
+    runtimeOnly project(':debug-server')
 
     // TODO cleanup project dependencies; would prefer to treat these projects as plugins
-    implementation project(":runtime")
     implementation project(":compiler")
+    implementation project(":debug-protocol")
+    implementation project(":language-adapter")
+    implementation project(":language-core")
     implementation project(":library")
-    implementation project(":debugProtocol")
+    implementation project(":language-runtime")
+
+    implementation project(":app-spi")
+
+    // TODO temporary workaround for project settings dependencies; should be able to remove this once AppSettings is migrated to app-spi interface
+    implementation project(":app-runtime")
 
     implementation 'com.fifesoft:rsyntaxtextarea:3.3.4'
     implementation 'com.fifesoft:rstaui:3.3.1'
+    implementation 'com.fifesoft:autocomplete:3.3.3'
 
     implementation 'com.formdev:flatlaf:3.5.4'
     // for FlatDesktop Java 8 backports
@@ -109,6 +130,7 @@ build.dependsOn spotlessApply
 
 jar {
     dependsOn(pathingJar)
+    dependsOn(configurations.release)
     from { ((Jar)pathingJar).outputs.files.collect { it.isDirectory() ? it : zipTree(it) }  }
     from { configurations.release.collect { it.isDirectory() ? it : zipTree(it) } }
     from sourceSets.test.output
@@ -137,14 +159,14 @@ task copyTask() {
 }
 
 task debugAll {
-    dependsOn (":debugServer:jar")
-    dependsOn (":library:jar") {
+    dependsOn (":debug-server:jar")
+    dependsOn (":app-runtime:jar") {
         println(rootProject.ext.get("libraryJarPath"))
         println(rootProject.ext.get("debugServerJarPath"))
         run {
             args rootProject.ext.get("libraryJarPath"),
                 rootProject.ext.get("debugServerJarPath")
-            // debug = true
+//             debug = true
         }
     }
 }

@@ -4,24 +4,26 @@ import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
 import static com.formdev.flatlaf.FlatClientProperties.*;
 
-import com.basic4gl.compiler.Preprocessor;
-import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
 import com.basic4gl.debug.protocol.callbacks.VariablesCallback;
-import com.basic4gl.debug.protocol.types.StackFrame;
 import com.basic4gl.desktop.debugger.DebugServerConstants;
 import com.basic4gl.desktop.debugger.DebugServerFactory;
 import com.basic4gl.desktop.editor.*;
-import com.basic4gl.desktop.util.*;
+import com.basic4gl.desktop.language.NonRetriggeringAutoCompletion;
+import com.basic4gl.desktop.language.SymbolCompletionCellRenderer;
+import com.basic4gl.desktop.language.SymbolCompletionProvider;
+import com.basic4gl.desktop.language.SymbolIndexer;
+import com.basic4gl.desktop.spi.FileLineNumber;
+import com.basic4gl.desktop.spi.MenuService;
+import com.basic4gl.desktop.spi.ProjectExportPage;
+import com.basic4gl.desktop.spi.ProjectSettingsPage;
+import com.basic4gl.desktop.spi.language.CompletionProposal;
+import com.basic4gl.desktop.spi.language.FunctionDefinition;
 import com.basic4gl.desktop.vmview.DebugControlsListener;
 import com.basic4gl.desktop.vmview.VirtualMachineViewDialog;
-import com.basic4gl.lib.util.EditorAppSettings;
-import com.basic4gl.lib.util.IConfigurableAppSettings;
-import com.basic4gl.library.plugin.PluginJARManager;
-import com.basic4gl.runtime.Debugger;
-import com.basic4gl.runtime.TomVM;
-import com.basic4gl.runtime.util.Mutable;
+import com.basic4gl.language.adapter.Basic4GLLanguageSupport;
+import com.basic4gl.language.core.internal.Mutable;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatDesktop;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
@@ -38,6 +40,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
+import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.SearchContext;
 
@@ -50,7 +53,8 @@ public class MainWindow
                 IToggleBreakpointListener,
                 IFileEditorActionListener,
                 IFileManagerListener,
-                EmptyTabPanel.IEmptyTabPanelListener {
+                EmptyTabPanel.IEmptyTabPanelListener,
+                MenuService {
 
     private final CaretListener TrackCaretPosition = new CaretListener() {
         @Override
@@ -80,6 +84,7 @@ public class MainWindow
 
     private final JMenu bookmarkSubMenu = new JMenu("Bookmarks");
     private final JMenu breakpointSubMenu = new JMenu("Breakpoints");
+    private final JMenu helpMenu = new JMenu("Help");
 
     // Menu Items
     private final JMenuItem newMenuItem = new JMenuItem("New Program");
@@ -133,14 +138,21 @@ public class MainWindow
     private final DefaultListModel<String> gosubListModel = new DefaultListModel<>();
 
     // Editors
-    private final IConfigurableAppSettings appSettings = new EditorAppSettings();
     private BasicEditor basicEditor;
     private FileManager fileManager;
-    private PluginJARManager plugins;
 
     private IncludeLinkGenerator linkGenerator = new IncludeLinkGenerator(this);
 
     private SearchContext searchContext;
+
+    // Code completion: a shared provider kept in sync with the SymbolIndexer output.
+    private final Basic4GLLanguageSupport languageSupport = new Basic4GLLanguageSupport();
+    private final SymbolCompletionProvider completionProvider = new SymbolCompletionProvider();
+    private final SymbolIndexer symbolIndexer =
+            new SymbolIndexer(languageSupport, this::getIndexerSourceSnapshot, completionProvider::setSymbols);
+    // One AutoCompletion per open tab, tracked so editor-settings changes (see
+    // applyCompletionSettings) can be re-applied to already-open tabs without reopening them.
+    private final Map<FileEditor, AutoCompletion> tabAutoCompletions = new IdentityHashMap<>();
 
     // Debugging
     private boolean isDebugMode = false;
@@ -182,22 +194,22 @@ public class MainWindow
             if (appHome != null && !appHome.trim().isEmpty()) {
                 File appDirectory = new File(appHome);
                 File outputBin = new File(appDirectory, "lib/library-1.0-SNAPSHOT.jar");
-                File debugServerBin = new File(appDirectory, "lib/debugServer-1.0-SNAPSHOT.jar");
+                File debugServerBin = new File(appDirectory, "lib/debug-server-1.0-SNAPSHOT.jar");
 
                 if (outputBin.exists()) {
                     outputBinPath = outputBin.getAbsolutePath();
                 } else {
-                    outputBinPath = "lib/library-1.0-SNAPSHOT.jar";
+                    outputBinPath = "lib/app-runtime-1.0-SNAPSHOT.jar";
                 }
 
                 if (debugServerBin.exists()) {
                     debugServerBinPath = debugServerBin.getAbsolutePath();
                 } else {
-                    debugServerBinPath = "lib/debugServer-1.0-SNAPSHOT.jar";
+                    debugServerBinPath = "lib/debug-server-1.0-SNAPSHOT.jar";
                 }
             } else {
-                outputBinPath = "lib/library-1.0-SNAPSHOT.jar";
-                debugServerBinPath = "lib/debugServer-1.0-SNAPSHOT.jar";
+                outputBinPath = "lib/app-runtime-1.0-SNAPSHOT.jar";
+                debugServerBinPath = "lib/debug-server-1.0-SNAPSHOT.jar";
             }
         }
 
@@ -242,6 +254,20 @@ public class MainWindow
 
         searchContext = new SearchContext();
 
+        // Seed code-completion with the language's keywords/built-ins so suggestions appear even
+        // before any user symbols are declared. Symbol completions are layered on top as the user
+        // types (see SymbolIndexer wiring in addTab).
+        completionProvider.setBaseCompletions(languageSupport.keywordCompletions());
+        // Let the language restrict completions by caret context (e.g. labels after gosub/goto).
+        completionProvider.setContextResolver(languageSupport::completionContext);
+        // Give each completion kind a distinct icon in the popup list (rendered by
+        // SymbolCompletionCellRenderer, which also folds the description window's content inline).
+        completionProvider.setKindIcons(Map.of(
+                "userfunc", createImageIcon(ICON_FUNCTION),
+                "variable", createImageIcon(ICON_VARIABLE),
+                "label", createImageIcon(ICON_LABEL),
+                "struc", createImageIcon(ICON_STRUCT)));
+
         // Create and set up the window.
         frame.setIconImage(createImageIcon(BuildInfo.ICON_LOGO_SMALL).getImage());
         frame.setPreferredSize(new Dimension(696, 480));
@@ -258,7 +284,7 @@ public class MainWindow
         menuBar.add(debugMenu);
         JMenu appMenu = new JMenu("Application");
         menuBar.add(appMenu);
-        JMenu helpMenu = new JMenu("Help");
+
         menuBar.add(helpMenu);
 
         fileMenu.add(newMenuItem);
@@ -466,11 +492,6 @@ public class MainWindow
         runMenuItem.addActionListener(e -> basicEditor.actionRun());
         settingsMenuItem.addActionListener(e -> {
             showSettings();
-        });
-        functionListMenuItem.addActionListener(e -> {
-            ReferenceWindow window = new ReferenceWindow(frame);
-            window.populate(basicEditor.compiler);
-            window.setVisible(true);
         });
         aboutMenuItem.addActionListener(e -> showAboutDialog());
 
@@ -681,12 +702,8 @@ public class MainWindow
         atmf.putMapping("text/basic4gl", "com.basic4gl.desktop.editor.BasicTokenMaker");
 
         fileManager = new FileManager(this);
-        plugins = new PluginJARManager(false);
-        Preprocessor preprocessor = new Preprocessor(2, new EditorSourceFileServer(fileManager), new DiskFileServer());
-        Debugger debugger = new Debugger(preprocessor.getLineNumberMap());
-        TomVM vm = new TomVM(plugins, debugger);
-        TomBasicCompiler comp = new TomBasicCompiler(vm, plugins);
-        basicEditor = new BasicEditor(outputBinPath, fileManager, this, appSettings, preprocessor, debugger, comp);
+
+        basicEditor = new BasicEditor(outputBinPath, fileManager, this, this);
 
         // TODO Confirm this doesn't break if app is ever signed
         // getParent
@@ -700,8 +717,7 @@ public class MainWindow
         fileManager.setFileDirectory(fileManager.getRunDirectory());
         fileManager.setCurrentDirectory(fileManager.getFileDirectory());
 
-        // TODO review if this should be a config option instead of the current directory
-        plugins.setDirectory(fileManager.getCurrentDirectory());
+        basicEditor.onCurrentDirectoryChanged(fileManager.getCurrentDirectory());
 
         // TODO this should be done as a callback
         refreshActions(basicEditor.getMode());
@@ -728,19 +744,22 @@ public class MainWindow
         }
 
         // Clear source code from parser
-        basicEditor.compiler.getParser().getSourceCode().clear();
+        basicEditor.getCompiler().clear();
 
         if (!basicEditor.loadProgramIntoCompiler()) {
-            compilerStatusLabel.setText(basicEditor.preprocessor.getError());
+            compilerStatusLabel.setText(basicEditor.getPreprocessor().getError());
             return;
         }
+        List<ProjectExportPage> contributedExportPages =
+                Arrays.asList(basicEditor.getBasic4gl().getProjectExportPages());
         ExportDialog dialog = new ExportDialog(
                 frame,
-                basicEditor.compiler,
-                basicEditor.preprocessor,
+                basicEditor.getCompiler(),
+                basicEditor.getPreprocessor(),
                 fileManager.getFileEditors(),
-                fileManager.getCurrentDirectory());
-        dialog.setLibraries(basicEditor.getLibraries(), basicEditor.currentBuilder);
+                fileManager.getCurrentDirectory(),
+                contributedExportPages);
+        dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
     }
@@ -761,13 +780,82 @@ public class MainWindow
         clearRecentMenuItem.setEnabled(!files.isEmpty());
     }
 
+    @Override
+    public void refreshSyntaxHighlighting() {
+        if (fileManager == null) {
+            return;
+        }
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            editor.refreshSyntaxHighlighting();
+        }
+        refreshBaseCompletions();
+    }
+
+    /**
+     * Rebuilds the completion popup's base (non-symbol) completions: the language's static
+     * keywords/types, plus every function the currently loaded libraries/plugins register with the
+     * compiler (e.g. {@code print}, {@code gl_...}). This runs whenever {@link
+     * #refreshSyntaxHighlighting()} does (initial library load, and again whenever the user's
+     * loaded plugins change), since that's this codebase's existing signal for "the set of available
+     * functions may have changed."
+     *
+     * <p>User-defined ("Program"-scoped) functions are deliberately excluded here: those are already
+     * kept live by {@link SymbolIndexer}/{@link #symbolIndexer} from the raw source text as the user
+     * types, without needing a successful compile first.
+     */
+    private void refreshBaseCompletions() {
+        if (basicEditor == null) {
+            return;
+        }
+        List<CompletionProposal> proposals = new ArrayList<>(languageSupport.keywordCompletions());
+        for (FunctionDefinition function : basicEditor.getLanguageService().getFunctionDefinitions()) {
+            if (!"Program".equals(function.packageName())) {
+                List<String> parameters = Arrays.stream(function.parameters())
+                        .map(param -> param.signature() + " " + param.name())
+                        .toList();
+                proposals.add(new CompletionProposal("userfunc", function.name(), function.signature(), parameters));
+            }
+        }
+        completionProvider.setBaseCompletions(proposals);
+    }
+
+    /**
+     * Re-applies the user's editor/autocomplete preferences ({@link EditorSettings#autoCompleteEnabled},
+     * {@link EditorSettings#showFunctionSignatures}) to every currently open tab's {@link
+     * AutoCompletion} instance, so changes made in the Editor settings page take effect immediately
+     * without reopening files.
+     */
+    private void applyCompletionSettings() {
+        for (AutoCompletion autoCompletion : tabAutoCompletions.values()) {
+            applyCompletionSettingsTo(autoCompletion);
+        }
+    }
+
+    private void applyCompletionSettingsTo(AutoCompletion autoCompletion) {
+        EditorSettings settings = basicEditor.getSettings();
+        autoCompletion.setAutoCompleteEnabled(settings.autoCompleteEnabled);
+        autoCompletion.setAutoActivationEnabled(settings.autoCompleteEnabled);
+        autoCompletion.setParameterAssistanceEnabled(settings.showFunctionSignatures);
+    }
+
     private void showAboutDialog() {
         new AboutDialog(frame);
     }
 
     private void showSettings() {
-        ProjectSettingsDialog dialog = new ProjectSettingsDialog(frame, appSettings);
-        dialog.setLibraries(basicEditor.getLibraries(), basicEditor.currentBuilder);
+        List<ProjectSettingsPage> contributedPages =
+                Arrays.asList(basicEditor.getBasic4gl().getProjectSettingsPages());
+        ProjectSettingsDialog dialog = new ProjectSettingsDialog(
+                frame,
+                basicEditor.getBasic4gl().getConfigurableAppSettings(),
+                basicEditor.getSettings(),
+                contributedPages,
+                () -> {
+                    basicEditor.refreshSyntaxHighlighting();
+                    applyCompletionSettings();
+                    basicEditor.saveSettings();
+                });
+        dialog.setBuilders(basicEditor.getBuilders(), basicEditor.currentBuilder);
         dialog.setVisible(true);
         basicEditor.currentBuilder = dialog.getCurrentBuilder();
     }
@@ -795,6 +883,7 @@ public class MainWindow
         // ShutDownTomWindowsBasicLib();
 
         frame.dispose();
+        symbolIndexer.shutdown();
         System.exit(0);
     }
 
@@ -992,6 +1081,7 @@ public class MainWindow
         }
 
         int index = tabControl.getSelectedIndex();
+        basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
             // TODO Check if index of main file
@@ -1016,6 +1106,7 @@ public class MainWindow
             return false;
         }
 
+        basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         boolean saved = fileManager.getFileEditors().get(index).save(false, fileManager.getCurrentDirectory());
         if (saved) {
             // TODO Check if main file
@@ -1043,6 +1134,7 @@ public class MainWindow
 
         fileManager.setCurrentDirectory(fileManager.getFileDirectory());
 
+        basicEditor.onFileSaving(fileManager.getFileEditors().get(index));
         if (fileManager.getFileEditors().get(index).save(true, fileManager.getCurrentDirectory())) {
             // TODO get current main file
             int main = 0;
@@ -1079,8 +1171,7 @@ public class MainWindow
         fileManager.setRunDirectory(fileManager.getAppDirectory() + "\\Programs");
 
         // Clear plugins, breakpoints, bookmarks etc
-        this.plugins.clear();
-        basicEditor.debugger.clearUserBreakPoints();
+        basicEditor.onCloseAll();
 
         // Refresh UI
         refreshActions(basicEditor.getMode());
@@ -1088,7 +1179,10 @@ public class MainWindow
 
     public void closeTab(int index) {
         tabControl.remove(index);
-        fileManager.getFileEditors().remove(index);
+        FileEditor closed = fileManager.getFileEditors().remove(index);
+        tabAutoCompletions.remove(closed);
+        // Re-index so completions drop symbols that only existed in the closed file.
+        symbolIndexer.indexNow();
     }
 
     public void addTab() {
@@ -1110,6 +1204,7 @@ public class MainWindow
         File file = edit.getFile();
         if (file != null) {
             basicEditor.notifyFileOpened(file);
+            basicEditor.onFileOpened(edit);
         }
 
         edit.getEditorPane().getDocument().addDocumentListener(new DocumentListener() {
@@ -1119,6 +1214,7 @@ public class MainWindow
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
                 //                mTabControl.getTabComponentAt(index).invalidate();
+                symbolIndexer.schedule();
             }
 
             @Override
@@ -1126,15 +1222,34 @@ public class MainWindow
                 int index = getTabIndex(edit.getFilePath());
                 edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
+                symbolIndexer.schedule();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
+                // RSyntaxDocument fires a 0..length CHANGE when the token maker is swapped.
+                // Plain-text model: no characters moved. Ignore changes for modification flag.
                 int index = getTabIndex(edit.getFilePath());
-                edit.setModified();
                 tabControl.setTitleAt(index, edit.getTitle());
             }
         });
+
+        // Install code completion driven by the shared symbol-backed provider. Ctrl+Space (or the
+        // platform equivalent) triggers the popup; the provider content is refreshed by the
+        // SymbolIndexer callback as the user types.
+        AutoCompletion autoCompletion = new NonRetriggeringAutoCompletion(completionProvider);
+        autoCompletion.setAutoActivationDelay(500);
+        // Contextual filtering (e.g. gosub/goto -> labels) often narrows the popup down to a single
+        // candidate; without this, that candidate would be inserted silently with no visible hint.
+        autoCompletion.setAutoCompleteSingleChoices(false);
+        // Render signature/description inline in the popup list (see SymbolCompletionCellRenderer)
+        // instead of a separate description window, so the whole popup stays one FlatLaf-styled
+        // component rather than pairing it with the library's non-themable description window.
+        autoCompletion.setListCellRenderer(new SymbolCompletionCellRenderer());
+        autoCompletion.setShowDescWindow(false);
+        tabAutoCompletions.put(editor, autoCompletion);
+        applyCompletionSettingsTo(autoCompletion);
+        autoCompletion.install(editor.getEditorPane());
 
         // Allow user to see cursor position
         editor.getEditorPane().addCaretListener(TrackCaretPosition);
@@ -1150,6 +1265,27 @@ public class MainWindow
         if (count == 0) {
             basicEditor.setMode(ApMode.AP_STOPPED, null);
         }
+
+        // Populate completions for the newly opened source without waiting for the first edit.
+        symbolIndexer.indexNow();
+    }
+
+    /**
+     * Concatenates the text of every open editor into a single source snapshot for the
+     * {@link SymbolIndexer}. Concatenation lets symbol extraction (and therefore code completion)
+     * span all open files. Invoked on the EDT by the indexer.
+     */
+    private String getIndexerSourceSnapshot() {
+        if (fileManager == null) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (FileEditor editor : fileManager.getFileEditors()) {
+            if (editor.getEditorPane() != null) {
+                builder.append(editor.getEditorPane().getText()).append('\n');
+            }
+        }
+        return builder.toString();
     }
 
     @Override
@@ -1158,13 +1294,9 @@ public class MainWindow
         lastSourceColumn = col;
 
         // Place cursor at position corresponding to row, col in post-processed file.
-        // Find corresponding source position
-        Mutable<String> filename = new Mutable<>("");
-        Mutable<Integer> fileRow = new Mutable<>(0);
-        basicEditor.preprocessor.getLineNumberMap().getSourceFromMain(filename, fileRow, row);
-
-        final String file = filename.get();
-        final int r = fileRow.get();
+        FileLineNumber fileLineNumber = basicEditor.getLanguageService().getFileLineNumberFromMain(row);
+        final String file = fileLineNumber.getFilename();
+        final int r = fileLineNumber.getLineNumber();
         final int c = col;
 
         // Find (and show) corresponding editor frame
@@ -1463,7 +1595,7 @@ public class MainWindow
         // Clear debug controls
         gosubListModel.clear();
 
-        for (String label : buildFriendlyCallStackLabels(stackTraceCallback)) {
+        for (String label : basicEditor.getLanguageService().buildFriendlyCallStackLabels(stackTraceCallback)) {
             gosubListModel.addElement(label);
         }
     }
@@ -1471,53 +1603,9 @@ public class MainWindow
     @Override
     public void updateVmViewCallStack(StackTraceCallback stackTraceCallback) {
         if (virtualMachineViewDialog != null && virtualMachineViewDialog.isDisplayable()) {
-            virtualMachineViewDialog.updateCallStack(toVmViewFriendlyCallStack(stackTraceCallback));
+            virtualMachineViewDialog.updateCallStack(
+                    basicEditor.getLanguageService().toVmViewFriendlyCallStack(stackTraceCallback));
         }
-    }
-
-    private ArrayList<String> buildFriendlyCallStackLabels(StackTraceCallback stackTraceCallback) {
-        ArrayList<String> labels = new ArrayList<>();
-        labels.add("IP");
-
-        if (stackTraceCallback == null || stackTraceCallback.stackFrames == null) {
-            return labels;
-        }
-
-        int totalFrames = stackTraceCallback.stackFrames.size();
-        for (int i2 = 0; i2 < totalFrames; i2++) {
-            StackFrame frame = stackTraceCallback.stackFrames.get(totalFrames - i2 - 1);
-            labels.add(toFriendlyStackFrameLabel(frame));
-        }
-        return labels;
-    }
-
-    private String toFriendlyStackFrameLabel(StackFrame frame) {
-        // User functions have positive indices.
-        Integer userFuncIndex = NumberUtil.parseIntOrNull(frame.name);
-        if (userFuncIndex == null) {
-            return frame.name;
-        }
-
-        if (userFuncIndex >= 0) {
-            return basicEditor.compiler.getUserFunctionName(userFuncIndex) + "()";
-        }
-
-        Integer returnAddr = NumberUtil.parseIntOrNull(frame.instructionPointer);
-        String gosubLabel = returnAddr != null ? basicEditor.compiler.describeStackCall(returnAddr) : "???";
-        return "gosub " + gosubLabel;
-    }
-
-    private StackTraceCallback toVmViewFriendlyCallStack(StackTraceCallback stackTraceCallback) {
-        StackTraceCallback friendly = new StackTraceCallback();
-        for (String label : buildFriendlyCallStackLabels(stackTraceCallback)) {
-            StackFrame frame = new StackFrame();
-            frame.name = label;
-            frame.source = "";
-            frame.line = 0;
-            friendly.stackFrames.add(frame);
-        }
-        friendly.totalFrames = friendly.stackFrames.size();
-        return friendly;
     }
 
     @Override
@@ -1670,10 +1758,13 @@ public class MainWindow
 
     @Override
     public void onCurrentDirectoryChanged(String directory) {
-        if (plugins != null) {
-            // TODO review whether plugins should be notified of current directory changes, or if they should just use a
-            // configured directory for loading/saving plugins
-            plugins.setDirectory(directory);
-        }
+        basicEditor.onCurrentDirectoryChanged(directory);
+    }
+
+    @Override
+    public void addHelp(String label, com.basic4gl.desktop.spi.MenuActionListener listener) {
+        JMenuItem helpMenuItem = new JMenuItem(label);
+        helpMenuItem.addActionListener(e -> listener.actionPerformed(frame, e));
+        helpMenu.add(helpMenuItem);
     }
 }

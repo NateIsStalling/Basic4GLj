@@ -1,11 +1,9 @@
 package com.basic4gl.desktop;
 
-import com.basic4gl.compiler.Preprocessor;
-import com.basic4gl.compiler.TomBasicCompiler;
+import com.basic4gl.compiler.util.IAssetExportBuilder;
 import com.basic4gl.desktop.editor.FileEditor;
+import com.basic4gl.desktop.spi.*;
 import com.basic4gl.desktop.util.EditorSourceFile;
-import com.basic4gl.lib.util.*;
-import com.basic4gl.runtime.TomVM;
 import com.formdev.flatlaf.ui.FlatTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -18,16 +16,13 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.BadLocationException;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 /**
  * Created by Nate on 2/5/2015.
  */
-public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChangeListener {
-    private final TomBasicCompiler compiler;
-    private final Preprocessor preprocessor;
-    private final TomVM vm;
+public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormPanel.IOnConfigurationChangeListener {
+    private final CompilerService compiler;
+    private final PreprocessorService preprocessor;
     private final ArrayList<FileEditor> fileEditors;
 
     private final JDialog dialog;
@@ -40,30 +35,35 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
 
     private final JTextField filePathTextField;
     private final String exportBaseDirectory;
+    private final java.util.List<ProjectExportPage> contributedPages;
 
     private final JTextPane infoTextPane;
-    private final ConfigurationFormPanel configPane;
+    private final com.basic4gl.desktop.spi.ConfigurationFormPanel configPane;
     private final JButton exportButton;
     private final JProgressBar exportProgressBar;
     private File lastExportDestination;
 
     // Libraries
-    private java.util.List<Library> libraries;
-    private java.util.List<Integer> builders; // Indexes of libraries that can be launch targets
+    private java.util.List<Builder> builders;
     private int currentBuilder; // Index value of target in mTargets
 
     public ExportDialog(
             Frame parent,
-            TomBasicCompiler compiler,
-            Preprocessor preprocessor,
+            CompilerService compiler,
+            PreprocessorService preprocessor,
             ArrayList<FileEditor> editors,
-            String exportBaseDirectory) {
+            String exportBaseDirectory,
+            java.util.List<ProjectExportPage> contributedExportPages) {
 
         this.compiler = compiler;
         this.preprocessor = preprocessor;
-        vm = this.compiler.getVM();
+
         fileEditors = editors;
-        this.exportBaseDirectory = FileUtil.separatorsToSystem(exportBaseDirectory);
+        this.exportBaseDirectory = com.basic4gl.language.adapter.FileUtil.separatorsToSystem(exportBaseDirectory);
+        this.contributedPages =
+                new ArrayList<>(contributedExportPages == null ? Collections.emptyList() : contributedExportPages);
+        this.contributedPages.sort(Comparator.comparingInt(ProjectExportPage::getSortOrder)
+                .thenComparing(ProjectExportPage::getPageTitle, String.CASE_INSENSITIVE_ORDER));
 
         dialog = new JDialog(parent);
 
@@ -121,17 +121,27 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         // File tab
         JPanel filePane = new JPanel();
         filePane.setLayout(new BoxLayout(filePane, BoxLayout.LINE_AXIS));
-        tabs.addTab("File", filePane);
 
         // Settings tab
         JPanel targetPane = new JPanel();
         targetPane.setLayout(new BorderLayout());
-        tabs.addTab("Settings", targetPane);
 
         // Assets tab
         JPanel assetsPane = new JPanel(new BorderLayout(0, 10));
         assetsPane.setBorder(new EmptyBorder(10, 10, 10, 10));
-        tabs.addTab("Assets", assetsPane);
+
+        tabs.addTab("File", createExportTab("File", "Choose where to save the exported project.", filePane));
+
+        tabs.addTab("Settings", createExportTab("Settings", "Configure the selected export target.", targetPane));
+
+        tabs.addTab(
+                "Assets", createExportTab("Assets", "Include additional files in the exported package.", assetsPane));
+
+        for (ProjectExportPage page : this.contributedPages) {
+            tabs.addTab(
+                    page.getPageTitle(),
+                    createExportTab(page.getPageTitle(), page.getPageDescription(), page.createPageComponent()));
+        }
 
         // Configure File tab
         filePane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -146,7 +156,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 JFileChooser dialog = new JFileChooser();
                 dialog.setAcceptAllFileFilterUsed(false);
                 for (int i = 0; i < builders.size(); i++) {
-                    Builder builder = (Builder) libraries.get(builders.get(i));
+                    com.basic4gl.desktop.spi.Builder builder = (com.basic4gl.desktop.spi.Builder) builders.get(i);
                     FileNameExtensionFilter filter =
                             new FileNameExtensionFilter(builder.getFileDescription(), builder.getFileExtension());
                     if (i == currentBuilder) {
@@ -244,7 +254,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         propertiesLabel.setBorder(BorderFactory.createEmptyBorder(10, 4, 10, 4));
         propertiesPanel.add(propertiesLabel, BorderLayout.PAGE_START);
 
-        configPane = new ConfigurationFormPanel(this);
+        configPane = new com.basic4gl.desktop.spi.ConfigurationFormPanel(this);
         configPane.setBorder(new EmptyBorder(4, 4, 4, 4));
         JScrollPane targetPropertiesScrollPane = new JScrollPane(configPane);
         targetPropertiesScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -299,8 +309,32 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         });
         // JScrollPane scrollPane = new ScrollPane(textLicenses);
         dialog.pack();
-        dialog.setSize(new Dimension(464, 346));
+        dialog.setMinimumSize(new Dimension(620, 420));
+        dialog.setSize(new Dimension(700, 480));
         dialog.setLocationRelativeTo(parent);
+    }
+
+    private JPanel createExportTab(String title, String description, JComponent content) {
+        JPanel panel = new JPanel(new BorderLayout(0, 12));
+        panel.setBorder(new EmptyBorder(12, 12, 12, 12));
+
+        JPanel header = new JPanel();
+        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+
+        JLabel titleLabel = new JLabel(title);
+        Font baseFont = titleLabel.getFont();
+        titleLabel.setFont(baseFont.deriveFont(Font.BOLD, baseFont.getSize() + 3f));
+        titleLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
+
+        JLabel descriptionLabel = new JLabel(description == null ? "" : description);
+        descriptionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+
+        header.add(titleLabel);
+        header.add(descriptionLabel);
+
+        panel.add(header, BorderLayout.NORTH);
+        panel.add(content, BorderLayout.CENTER);
+        return panel;
     }
 
     private JPanel createLibraryInfoHeader(String description) {
@@ -341,11 +375,14 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         }
 
         currentBuilder = builderIndex;
-        Library target = libraries.get(builders.get(currentBuilder));
+        Builder target = builders.get(currentBuilder);
 
-        infoTextPane.setText(target.description());
+        infoTextPane.setText(target.getDescription());
         infoTextPane.setCaretPosition(0);
-        configPane.setConfiguration(new Configuration(((Builder) target).getConfiguration()));
+        configPane.setConfiguration(new Configuration(target.getConfiguration()));
+        for (ProjectExportPage page : contributedPages) {
+            page.onBuilderSelected(target);
+        }
         setTargetSettingsEnabled(true);
         exportButton.setEnabled(true);
     }
@@ -360,21 +397,17 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         dialog.setVisible(visible);
     }
 
-    public void setLibraries(java.util.List<Library> libraries, int currentBuilder) {
+    public void setBuilders(java.util.List<Builder> builders, int currentBuilder) {
         builderComboBox.removeAllItems();
-        this.libraries = libraries;
-        builders = new ArrayList<>();
-        int i = 0;
-        for (Library lib : this.libraries) {
-            if (lib instanceof FunctionLibrary) {
-                compiler.addConstants(((FunctionLibrary) lib).constants());
-                compiler.addFunctions(lib, ((FunctionLibrary) lib).specs());
-            }
-            if (lib instanceof Builder) {
-                builders.add(i);
-                builderComboBox.addItem(this.libraries.get(i).name());
-            }
-            i++;
+        this.builders = builders;
+        for (Builder builder : this.builders) {
+            // TODO 6/2026 need to review why this cared about FunctionLibrary here - this should be handled elsewhere
+            // already
+            //            if (lib instanceof FunctionLibrary) {
+            //                compiler.addConstants(((FunctionLibrary) lib).constants());
+            //                compiler.addFunctions(lib, ((FunctionLibrary) lib).specs());
+            //            }
+            builderComboBox.addItem(builder.getName());
         }
 
         if (builders.isEmpty()) {
@@ -393,7 +426,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         selectBuilder(selectedBuilder);
 
         embeddedAssetsModel.clear();
-        Builder selected = (Builder) this.libraries.get(builders.get(selectedBuilder));
+        com.basic4gl.desktop.spi.Builder selected = (com.basic4gl.desktop.spi.Builder) builders.get(selectedBuilder);
         if (selected instanceof IAssetExportBuilder) {
             for (String asset : ((IAssetExportBuilder) selected).getExportAssets()) {
                 embeddedAssetsModel.addElement(asset);
@@ -453,7 +486,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         return Paths.get("").toAbsolutePath().normalize();
     }
 
-    private void applySelectedAssets(Builder builder) {
+    private void applySelectedAssets(com.basic4gl.desktop.spi.Builder builder) {
         if (!(builder instanceof IAssetExportBuilder)) {
             return;
         }
@@ -502,7 +535,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                     continue;
                 }
 
-                String normalizedLiteral = FileUtil.separatorsToSystem(literal);
+                String normalizedLiteral = com.basic4gl.language.adapter.FileUtil.separatorsToSystem(literal);
                 File candidate = new File(normalizedLiteral);
                 if (!candidate.isAbsolute()) {
                     File baseCandidate = new File(baseDir, normalizedLiteral);
@@ -537,26 +570,17 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 continue;
             }
 
+            // Basic4GL string literals have no escape sequences: the first '"' always
+            // ends the literal, and backslash is an ordinary character (see STRING_LIT
+            // in Basic4GL.g4).
             StringBuilder literal = new StringBuilder();
             index++;
-            boolean escaped = false;
             boolean terminated = false;
             while (index < length) {
                 char current = text.charAt(index++);
-                if (escaped) {
-                    if (current == '"' || current == '\\') {
-                        literal.append(current);
-                    } else {
-                        // Preserve non-quote escape sequences exactly as typed.
-                        literal.append('\\').append(current);
-                    }
-                    escaped = false;
-                    continue;
-                }
 
-                if (current == '\\') {
-                    escaped = true;
-                    continue;
+                if (current == '\n' || current == '\r') {
+                    break;
                 }
 
                 if (current == '"') {
@@ -587,22 +611,14 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 return;
             }
 
-            Builder builder;
-            Library lib = libraries.get(builders.get(currentBuilder));
-            if (lib instanceof Builder) {
-                builder = (Builder) lib;
-            } else {
-                JOptionPane.showMessageDialog(
-                        dialog,
-                        "Cannot build application. \n" + lib.name() + " is not a valid builder.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            com.basic4gl.desktop.spi.Builder builder = builders.get(currentBuilder);
 
             configPane.applyConfig();
             mergeDetectedAssetsFromSource();
             applySelectedAssets(builder);
+            for (ProjectExportPage page : contributedPages) {
+                page.onExport(builder);
+            }
 
             if (!filePathTextField.getText().isEmpty()) {
                 dest = new File(filePathTextField.getText());
@@ -633,7 +649,7 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
                 exportButton.setEnabled(false);
                 setExportInProgress(true, "Preparing export...");
                 lastExportDestination = dest;
-                ExportWorker export = new ExportWorker(builder, dest, new ExportCallback());
+                ExportWorker export = new ExportWorker(compiler, builder, dest, new ExportCallback());
                 export.execute();
             } else {
                 JOptionPane.showMessageDialog(dialog, "Please enter a filename.");
@@ -724,18 +740,24 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
             return;
         }
 
-        Builder builder = (Builder) libraries.get(builders.get(currentBuilder));
+        com.basic4gl.desktop.spi.Builder builder = builders.get(currentBuilder);
 
         builder.setConfiguration(configuration);
     }
 
     private class ExportWorker extends SwingWorker<Object, CallbackMessage> {
-        private final Builder builder;
+        private final CompilerService compiler;
+        private final com.basic4gl.desktop.spi.Builder builder;
         private final File dest;
         private final ExportCallback exportCallback;
         private CallbackMessage callbackMessage;
 
-        public ExportWorker(Builder builder, File dest, ExportCallback callback) {
+        public ExportWorker(
+                CompilerService compiler,
+                com.basic4gl.desktop.spi.Builder builder,
+                File dest,
+                ExportCallback callback) {
+            this.compiler = compiler;
             this.builder = builder;
             this.dest = dest;
             exportCallback = callback;
@@ -760,6 +782,11 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         protected Object doInBackground() throws Exception {
             callbackMessage = new CallbackMessage(CallbackMessage.WORKING, "");
             publish(new CallbackMessage(CallbackMessage.WORKING, "Compiling source..."));
+
+            if (fileEditors.isEmpty()) {
+                callbackMessage.setMessage(CallbackMessage.FAILED, "No files are open");
+                return false;
+            }
 
             if (!compile()) {
                 callbackMessage.setMessage(CallbackMessage.FAILED, compiler.getError());
@@ -789,13 +816,8 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         // Program control
         private boolean compile() {
 
-            if (fileEditors.isEmpty()) {
-                callbackMessage.setMessage(CallbackMessage.FAILED, "No files are open");
-                return false;
-            }
-
             // Clear source code from parser
-            compiler.getParser().getSourceCode().clear();
+            compiler.clear();
 
             // Load code into preprocessor; may be unnecessary
             if (!loadProgramIntoCompiler()) {
@@ -823,31 +845,8 @@ public class ExportDialog implements ConfigurationFormPanel.IOnConfigurationChan
         // Compilation and execution routines
         private boolean loadProgramIntoCompiler() {
             // TODO Get editor assigned as main file
-            return preprocessor.preprocess(
-                    new EditorSourceFile(
-                            fileEditors.get(0).getEditorPane(),
-                            fileEditors.get(0).getFilePath()),
-                    compiler.getParser());
-        }
-
-        private void loadParser(RSyntaxTextArea editorPane) // Load editor text into parser
-                {
-            int start, stop; // line offsets
-            String line; // line to add
-            // Load editor text into parser (appended to bottom)
-            try {
-                for (int i = 0; i < editorPane.getLineCount(); i++) {
-                    start = editorPane.getLineStartOffset(i);
-                    stop = editorPane.getLineEndOffset(i);
-
-                    line = editorPane.getText(start, stop - start);
-
-                    compiler.getParser().getSourceCode().add(line);
-                }
-            } catch (BadLocationException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            return preprocessor.preprocess(new EditorSourceFile(
+                    fileEditors.get(0).getEditorPane(), fileEditors.get(0).getFilePath()));
         }
     }
 
