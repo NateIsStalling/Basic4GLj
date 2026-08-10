@@ -23,8 +23,7 @@ public class Instruction implements Streamable {
 
     // An extra type annotation. Used in some operations to specify type-specific
     // operations inside the VM.
-    // TODO: Which operations use this? Should it be constrained to the BasicVarType
-    // stuff?
+    // TODO: Which operations use this? Should it be constrained to the BasicVarTypestuff?
     public int basicVarType;
 
     /**

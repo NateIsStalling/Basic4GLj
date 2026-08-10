@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 /**
  * Marks a position within a source file
- * TODO:
  */
 public class InstructionPosition implements Serializable {
     private int sourceLine = 0;
