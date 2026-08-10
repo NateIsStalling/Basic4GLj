@@ -12,11 +12,13 @@ import java.util.Arrays;
 public class ValueStack {
     private int[] data;
     private int size;
+    private final int limit;
     private final Store<String> strings;
 
-    public ValueStack(int size, Store<String> strings) {
+    public ValueStack(int limit, Store<String> strings) {
         this.strings = strings;
-        data = new int[size];
+        this.limit = limit;
+        data = new int[limit];
     }
 
     public boolean isEmpty() {
@@ -24,6 +26,7 @@ public class ValueStack {
     }
 
     public void push(int v) { // Push v as NON string
+        ensureCapacity(size + 1);
         data[size++] = v;
     }
 
@@ -87,6 +90,8 @@ public class ValueStack {
         }
 
         int newCapacity = data.length;
+
+        assertTrue(newCapacity <= limit, "Stack overflow");
 
         while (newCapacity < minCapacity) {
             newCapacity *= 2;

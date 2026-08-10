@@ -1,4 +1,6 @@
-package com.basic4gl.compiler.util;
+package com.basic4gl.language;
+
+import com.basic4gl.compiler.util.ISourceFile;
 
 /**
  * A null object implementation of ISourceFile, used when source file reading is

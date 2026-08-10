@@ -490,7 +490,9 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
                     // Load variable.
                     // Instruction contains index of variable.
                     assertTrue(variables.isIndexValid(instructionValue));
-                    int variableDataIndex = variableDataIndexes[instructionValue];
+                    int variableDataIndex = instructionValue < variableDataIndexes.length
+                        ? variableDataIndexes[instructionValue]
+                        : 0;
                     if (variableDataIndex != 0) {
                         // Load address of variable's data into register
                         regValue = (variableDataIndex);
@@ -3356,8 +3358,9 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
             case OP_DECLARE:
             case OP_LOAD_VAR: {
                 int index = i.value.getIntVal();
-                if (getVariables().isIndexValid(index))
+                if (getVariables().isIndexValid(index)) {
                     return getVariables().getVariables().get(index).name;
+                }
                 else return "???";
             }
             case OP_CALL_FUNC: {

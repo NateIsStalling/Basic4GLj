@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.basic4gl.compiler.TomBasicCompiler;
 import com.basic4gl.compiler.util.ISourceFile;
-import com.basic4gl.compiler.util.StringSourceFile;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.language.core.runtime.IVMDebugger;
 import com.basic4gl.language.core.runtime.Instruction;
