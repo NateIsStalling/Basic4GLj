@@ -1,6 +1,7 @@
 package com.basic4gl.language.core.runtime;
 
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
+import static java.lang.Float.floatToRawIntBits;
 
 import java.util.Arrays;
 
@@ -68,6 +69,16 @@ public class ValueStack {
     public int get(int index) {
         assertTrue(index >= 0 && index < size && index < data.length);
         return data[index];
+    }
+
+    public void set(int index, int value) {
+        assertTrue(index >= 0 && index < size && index < data.length);
+        data[index] = value;
+    }
+
+    public void set(int index, float value) {
+        assertTrue(index >= 0 && index < size && index < data.length);
+        data[index] = floatToRawIntBits(value);
     }
 
     private void ensureCapacity(int minCapacity) {

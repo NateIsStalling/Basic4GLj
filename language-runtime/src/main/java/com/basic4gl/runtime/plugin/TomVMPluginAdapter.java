@@ -703,13 +703,15 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
     }
 
     public void setParam(int index, ByteBuffer src) {
+        Mutable<Integer> mutableDataIndex;
 
         // Ensure data type is complete
         FixCurrentType();
-
         // Simple type
         if (currentType.getArrayLevel() == 0 && currentType.getPointerLevel() == 0 && currentType.getBaseType() < 0) {
-            BasicValueFromCValue(currentType, new Value(vm.getIntParam(index)), src);
+            mutableDataIndex = new Mutable<>(vm.getIntParam(index));
+            BasicValueFromCValue(currentType, mutableDataIndex, src);
+            vm.setIntParam(index, mutableDataIndex.get());
         } else {
 
             // Dereference
@@ -720,7 +722,9 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
             derefType.deref();
 
             // Convert data
-            BasicDataFromCData(derefType, new Mutable<>(dataIndex), src);
+            mutableDataIndex = new Mutable<>(dataIndex);
+            BasicDataFromCData(derefType, mutableDataIndex, src);
+            vm.setIntParam(index, mutableDataIndex.get());
         }
     }
 
@@ -737,7 +741,9 @@ public class TomVMPluginAdapter implements Basic4GLRuntime {
                     == com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_STRING) {
                 vm.setRegString(readCString(src, currentType.getStringSize()));
             } else {
-                BasicValueFromCValue(currentType, new Value(vm.getRegIntVal()), src);
+                Value result = new Value(vm.getRegIntVal());
+                BasicValueFromCValue(currentType, result, src);
+                vm.setRegIntVal(result.getIntVal());
             }
         } else {
 

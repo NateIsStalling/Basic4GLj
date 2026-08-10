@@ -3166,8 +3166,16 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
         return stack.get(stack.size() - index); // getParam(index).getIntVal();
     }
 
+    public void setIntParam(int index, int value) {
+        stack.set(stack.size() - index, value);
+    }
+
     public Float getRealParam(int index) {
         return intBitsToFloat(getIntParam(index)); // getParam(index).getRealVal();
+    }
+
+    public void setRealParam(int index, float value) {
+        stack.set(stack.size() - index, value);
     }
 
     public String getStringParam(int index) {
