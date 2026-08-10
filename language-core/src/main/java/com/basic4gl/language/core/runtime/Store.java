@@ -3,7 +3,6 @@ package com.basic4gl.language.core.runtime;
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Vector;
 
 /**
  * Abstract template class for allocating and referencing a specific type of

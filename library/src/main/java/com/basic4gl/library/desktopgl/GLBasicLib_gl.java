@@ -6216,7 +6216,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             if (nullGlMode) {
                 return;
             }
-            
+
             glColor4f(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
@@ -6316,10 +6316,10 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
         public void run(VM vm) {
             glColor4s(
-                vm.getIntParam(4).shortValue(),
-                vm.getIntParam(3).shortValue(),
-                vm.getIntParam(2).shortValue(),
-                vm.getIntParam(1).shortValue());
+                    vm.getIntParam(4).shortValue(),
+                    vm.getIntParam(3).shortValue(),
+                    vm.getIntParam(2).shortValue(),
+                    vm.getIntParam(1).shortValue());
         }
     }
 

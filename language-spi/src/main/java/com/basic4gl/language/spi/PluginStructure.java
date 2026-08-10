@@ -1,11 +1,10 @@
 package com.basic4gl.language.spi;
 
-import java.util.ArrayList;
 import com.basic4gl.language.core.internal.Assert;
 import com.basic4gl.language.core.types.TypeLibrary;
 import com.basic4gl.language.core.types.ValType;
+import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Vector;
 
 public class PluginStructure {
 

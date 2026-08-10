@@ -3014,27 +3014,27 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprFrame implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            isSprite(TextBasicLib.boundSprite)
-                                    ? getSprite(TextBasicLib.boundSprite).getFrame()
-                                    : 0);
+                    isSprite(TextBasicLib.boundSprite)
+                            ? getSprite(TextBasicLib.boundSprite).getFrame()
+                            : 0);
         }
     }
 
     public final class WrapSprX implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionX
+                            : 0);
         }
     }
 
     public final class WrapSprY implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).positionY
+                            : 0);
         }
     }
 
@@ -3052,92 +3052,92 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprZOrder implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? TextBasicLib.sprites
-                                            .getValueAt(TextBasicLib.boundSprite)
-                                            .getZOrder()
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? TextBasicLib.sprites
+                                    .getValueAt(TextBasicLib.boundSprite)
+                                    .getZOrder()
+                            : 0);
         }
     }
 
     public final class WrapSprXSize implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeX
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeX
+                            : 0);
         }
     }
 
     public final class WrapSprYSize implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeY
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).sizeY
+                            : 0);
         }
     }
 
     public final class WrapSprScale implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).scale
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).scale
+                            : 0);
         }
     }
 
     public final class WrapSprXCentre implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerX
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerX
+                            : 0);
         }
     }
 
     public final class WrapSprYCentre implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerY
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).centerY
+                            : 0);
         }
     }
 
     public final class WrapSprXFlip implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipX ? -1f : 0)
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipX ? -1f : 0)
+                            : 0);
         }
     }
 
     public final class WrapSprYFlip implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipY ? -1f : 0)
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).flipY ? -1f : 0)
+                            : 0);
         }
     }
 
     public final class WrapSprVisible implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).visible ? -1f : 0)
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).visible ? -1f : 0)
+                            : 0);
         }
     }
 
     public final class WrapSprAngle implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).angle
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).angle
+                            : 0);
         }
     }
 
@@ -3156,27 +3156,27 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprAlpha implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[3]
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).color[3]
+                            : 0);
         }
     }
 
     public final class WrapSprParallax implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).parallax ? -1f : 0)
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).parallax ? -1f : 0)
+                            : 0);
         }
     }
 
     public final class WrapSprSolid implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
-                                    ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).solid ? -1f : 0)
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(TextBasicLib.boundSprite)
+                            ? (TextBasicLib.sprites.getValueAt(TextBasicLib.boundSprite).solid ? -1f : 0)
+                            : 0);
         }
     }
 
@@ -3262,18 +3262,16 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprAnimLoop implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            isSprite(TextBasicLib.boundSprite)
-                                    ? (getSprite(TextBasicLib.boundSprite).animLoop ? -1f : 0)
-                                    : 0);
+                    isSprite(TextBasicLib.boundSprite) ? (getSprite(TextBasicLib.boundSprite).animLoop ? -1f : 0) : 0);
         }
     }
 
     public final class WrapSprAnimDone implements Function {
         public void run(VM vm) {
             vm.setRegFloatValue(
-                            isSprite(TextBasicLib.boundSprite)
-                                    ? (getSprite(TextBasicLib.boundSprite).isAnimationDone() ? -1f : 0)
-                                    : 0);
+                    isSprite(TextBasicLib.boundSprite)
+                            ? (getSprite(TextBasicLib.boundSprite).isAnimationDone() ? -1f : 0)
+                            : 0);
         }
     }
 
@@ -3288,9 +3286,7 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? TextBasicLib.sprites.getValueAt(index).positionX
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index) ? TextBasicLib.sprites.getValueAt(index).positionX : 0);
         }
     }
 
@@ -3298,9 +3294,7 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? TextBasicLib.sprites.getValueAt(index).positionY
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index) ? TextBasicLib.sprites.getValueAt(index).positionY : 0);
         }
     }
 
@@ -3320,9 +3314,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? TextBasicLib.sprites.getValueAt(index).getZOrder()
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index)
+                            ? TextBasicLib.sprites.getValueAt(index).getZOrder()
+                            : 0);
         }
     }
 
@@ -3330,9 +3324,7 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? TextBasicLib.sprites.getValueAt(index).sizeX
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index) ? TextBasicLib.sprites.getValueAt(index).sizeX : 0);
         }
     }
 
@@ -3340,9 +3332,7 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? TextBasicLib.sprites.getValueAt(index).sizeY
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index) ? TextBasicLib.sprites.getValueAt(index).sizeY : 0);
         }
     }
 
@@ -3350,9 +3340,7 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? TextBasicLib.sprites.getValueAt(index).scale
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index) ? TextBasicLib.sprites.getValueAt(index).scale : 0);
         }
     }
 
@@ -3360,9 +3348,7 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? TextBasicLib.sprites.getValueAt(index).centerX
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index) ? TextBasicLib.sprites.getValueAt(index).centerX : 0);
         }
     }
 
@@ -3370,9 +3356,7 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? TextBasicLib.sprites.getValueAt(index).centerY
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index) ? TextBasicLib.sprites.getValueAt(index).centerY : 0);
         }
     }
 
@@ -3380,9 +3364,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? (TextBasicLib.sprites.getValueAt(index).flipX ? -1f : 0)
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index)
+                            ? (TextBasicLib.sprites.getValueAt(index).flipX ? -1f : 0)
+                            : 0);
         }
     }
 
@@ -3390,9 +3374,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? (TextBasicLib.sprites.getValueAt(index).flipY ? -1f : 0)
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index)
+                            ? (TextBasicLib.sprites.getValueAt(index).flipY ? -1f : 0)
+                            : 0);
         }
     }
 
@@ -3400,9 +3384,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? (TextBasicLib.sprites.getValueAt(index).visible ? -1f : 0)
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index)
+                            ? (TextBasicLib.sprites.getValueAt(index).visible ? -1f : 0)
+                            : 0);
         }
     }
 
@@ -3410,9 +3394,7 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? TextBasicLib.sprites.getValueAt(index).angle
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index) ? TextBasicLib.sprites.getValueAt(index).angle : 0);
         }
     }
 
@@ -3434,9 +3416,7 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? TextBasicLib.sprites.getValueAt(index).color[3]
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index) ? TextBasicLib.sprites.getValueAt(index).color[3] : 0);
         }
     }
 
@@ -3444,9 +3424,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? (TextBasicLib.sprites.getValueAt(index).parallax ? -1f : 0)
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index)
+                            ? (TextBasicLib.sprites.getValueAt(index).parallax ? -1f : 0)
+                            : 0);
         }
     }
 
@@ -3454,9 +3434,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegFloatValue(
-                            TextBasicLib.sprites.isIndexStored(index)
-                                    ? (TextBasicLib.sprites.getValueAt(index).solid ? -1f : 0)
-                                    : 0);
+                    TextBasicLib.sprites.isIndexStored(index)
+                            ? (TextBasicLib.sprites.getValueAt(index).solid ? -1f : 0)
+                            : 0);
         }
     }
 
@@ -3662,29 +3642,29 @@ public class TextBasicLib implements FunctionLibrary {
     public final class WrapSprType implements Function {
         public void run(VM vm) {
             vm.setRegIntVal(
-                            isBasicSprite(TextBasicLib.boundSprite)
-                                    ? getBasicSprite(TextBasicLib.boundSprite)
-                                            .getGLSpriteType()
-                                            .getType()
-                                    : GLSpriteType.SPR_INVALID.getType());
+                    isBasicSprite(TextBasicLib.boundSprite)
+                            ? getBasicSprite(TextBasicLib.boundSprite)
+                                    .getGLSpriteType()
+                                    .getType()
+                            : GLSpriteType.SPR_INVALID.getType());
         }
     }
 
     public final class WrapSprXTiles implements Function {
         public void run(VM vm) {
             vm.setRegIntVal(
-                            isTileMap(boundSprite)
-                                    ? getTileMap(TextBasicLib.boundSprite).getTilesX()
-                                    : 0);
+                    isTileMap(boundSprite)
+                            ? getTileMap(TextBasicLib.boundSprite).getTilesX()
+                            : 0);
         }
     }
 
     public final class WrapSprYTiles implements Function {
         public void run(VM vm) {
             vm.setRegIntVal(
-                            isTileMap(boundSprite)
-                                    ? getTileMap(TextBasicLib.boundSprite).getTilesY()
-                                    : 0);
+                    isTileMap(boundSprite)
+                            ? getTileMap(TextBasicLib.boundSprite).getTilesY()
+                            : 0);
         }
     }
 
@@ -3692,9 +3672,9 @@ public class TextBasicLib implements FunctionLibrary {
         public void run(VM vm) {
             int index = vm.getIntParam(1);
             vm.setRegIntVal(
-                            isBasicSprite(index)
-                                    ? getBasicSprite(index).getGLSpriteType().getType()
-                                    : GLSpriteType.SPR_INVALID.getType());
+                    isBasicSprite(index)
+                            ? getBasicSprite(index).getGLSpriteType().getType()
+                            : GLSpriteType.SPR_INVALID.getType());
         }
     }
 

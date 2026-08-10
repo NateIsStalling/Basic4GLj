@@ -2,11 +2,11 @@ package com.basic4gl.language.core.stackframe;
 
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
-import com.basic4gl.runtime.util.CollectionUtil;
 import com.basic4gl.language.core.streaming.Streamable;
 import com.basic4gl.language.core.streaming.Streaming;
 import com.basic4gl.language.core.types.BasicValType;
 import com.basic4gl.language.core.types.ValType;
+import com.basic4gl.runtime.util.CollectionUtil;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

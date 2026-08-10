@@ -1021,15 +1021,15 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
 
     public final class WrapOpenAppDataRead implements Function {
         public void run(VM vm) {
-            vm.setRegIntVal(internalOpenAppDataRead(
-                            vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));
+            vm.setRegIntVal(
+                    internalOpenAppDataRead(vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));
         }
     }
 
     public final class WrapOpenAppDataWrite implements Function {
         public void run(VM vm) {
-            vm.setRegIntVal(internalOpenAppDataWrite(
-                            vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));
+            vm.setRegIntVal(
+                    internalOpenAppDataWrite(vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));
         }
     }
 

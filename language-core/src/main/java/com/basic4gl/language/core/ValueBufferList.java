@@ -1,14 +1,12 @@
 package com.basic4gl.language.core.runtime;
 
-import com.basic4gl.language.core.runtime.Value;
+import static java.lang.Float.floatToRawIntBits;
+import static java.lang.Float.intBitsToFloat;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.RandomAccess;
-
-import static java.lang.Float.floatToRawIntBits;
-import static java.lang.Float.intBitsToFloat;
 
 public class ValueBufferList extends AbstractList<Value> implements RandomAccess {
     private int[] values;

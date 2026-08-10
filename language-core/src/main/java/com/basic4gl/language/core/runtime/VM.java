@@ -7,15 +7,13 @@ import com.basic4gl.language.core.streaming.ProgramStreamable;
 import com.basic4gl.language.core.types.TypeLibrary;
 import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.language.core.types.VariableCollection;
-
 import java.util.ArrayList;
-import java.util.Vector;
 
 public interface VM {
 
     String getStringParam(int i);
 
-//    Value getReg();
+    //    Value getReg();
 
     Data getData();
 
@@ -47,7 +45,7 @@ public interface VM {
 
     String getRegString();
 
-//    Value getReg2();
+    //    Value getReg2();
 
     boolean hasError();
 
