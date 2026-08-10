@@ -3,7 +3,6 @@ package com.basic4gl.language.core.runtime;
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Vector;
 
 /**
  * Abstract template class for allocating and referencing a specific type of
@@ -14,8 +13,8 @@ import java.util.Vector;
  */
 public class Store<T> {
 
-    private final Vector<T> array;
-    private final Vector<Boolean> valAllocated;
+    private final ArrayList<T> array;
+    private final ArrayList<Boolean> valAllocated;
 
     /**
      * List of free indices
@@ -33,8 +32,8 @@ public class Store<T> {
     public Store(T blankElement) {
         this.blankElement = blankElement;
 
-        array = new Vector<>();
-        valAllocated = new Vector<>();
+        array = new ArrayList<>();
+        valAllocated = new ArrayList<>();
 
         freeList = new ArrayList<>();
     }
@@ -108,11 +107,11 @@ public class Store<T> {
         return array.size() - freeList.size();
     }
 
-    public Vector<T> getArray() {
+    public ArrayList<T> getArray() {
         return array;
     }
 
-    public Vector<Boolean> getValAllocated() {
+    public ArrayList<Boolean> getValAllocated() {
         return valAllocated;
     }
 

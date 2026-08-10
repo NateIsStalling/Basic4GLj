@@ -5,7 +5,7 @@ import static com.basic4gl.language.core.internal.Assert.assertTrue;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
-import java.util.Vector;
+import java.util.ArrayList;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -259,7 +259,7 @@ public class LoadImage {
     		return dst;
     	}
     */
-    public static Vector<Image> splitImageStrip(Image image, int frameWidth, int frameHeight) {
+    public static ArrayList<Image> splitImageStrip(Image image, int frameWidth, int frameHeight) {
         assertTrue(image != null);
 
         if (frameWidth <= 0 || frameHeight <= 0) {
@@ -281,7 +281,7 @@ public class LoadImage {
         }
 
         // Extract images
-        Vector<Image> images = new Vector<>();
+        ArrayList<Image> images = new ArrayList<>();
         int bpp = image.getBPP();
         if (bpp > 0) {
             for (int y = image.getHeight() - frameHeight; y >= 0; y -= frameHeight) {

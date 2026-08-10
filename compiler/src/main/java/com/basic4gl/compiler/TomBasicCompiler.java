@@ -12,6 +12,7 @@ import com.basic4gl.compiler.util.*;
 import com.basic4gl.language.core.extensions.Basic4GLCompiler;
 import com.basic4gl.language.core.extensions.Basic4GLInterfaceRegistry;
 import com.basic4gl.language.core.extensions.Library;
+import com.basic4gl.language.core.internal.CollectionUtil;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
 import com.basic4gl.language.core.runtime.RuntimeFunctionRollbackPoint;
@@ -94,7 +95,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
 
     // Compiler state
     private ValType regType, reg2Type;
-    private final Vector<ValType> operandStack;
+    private final ArrayList<ValType> operandStack;
     private final ArrayList<StackedOperator> operatorStack;
 
     StackedOperator getOperatorTOS() {
@@ -193,7 +194,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         isCaseSensitive = caseSensitive;
         syntax = LS_BASIC4GL;
 
-        operandStack = new Vector<>(); // TODO migrate to ArrayList or different collection type
+        operandStack = new ArrayList<>(); // TODO migrate to ArrayList or different collection type
         operatorStack = new ArrayList<>();
         jumps = new ArrayList<>();
         resets = new ArrayList<>();
@@ -2846,7 +2847,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         }
 
         // Retrieve pushed value type
-        reg2Type.setType(operandStack.lastElement());
+        reg2Type.setType(CollectionUtil.last(operandStack));
         operandStack.remove(operandStack.size() - 1);
 
         // Generate pop code
@@ -5006,7 +5007,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         plugins.findFunctions(name, extFunctions, countRef, TC_MAXOVERLOADEDFUNCTIONS);
         int count = countRef.get();
         for (int i = 0; i < count; i++) {
-            Vector<ValType> params =
+            ArrayList<ValType> params =
                     extFunctions[i].getSpecification().getParamTypes().getParams();
             if ((params.isEmpty() && !hasParam)
                     || (params.size() == 1
@@ -5026,7 +5027,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         if (l != null) {
             for (Integer i : l) {
                 FunctionSpecification spec = functions.get(i);
-                Vector<ValType> params = spec.getParamTypes().getParams();
+                ArrayList<ValType> params = spec.getParamTypes().getParams();
                 if ((params.isEmpty() && !hasParam)
                         || (params.size() == 1
                                 && hasParam

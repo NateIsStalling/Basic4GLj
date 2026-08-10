@@ -37,11 +37,10 @@ public class SymbolCompletionProviderTest {
     public void gosub_offersOnlyIndexedLabels() throws Exception {
         onEdt(() -> {
             SymbolCompletionProvider provider = new SymbolCompletionProvider();
-            provider.setBaseCompletions(List.of(
-                    new CompletionProposal("keyword", "gosub"), new CompletionProposal("keyword", "goto")));
+            provider.setBaseCompletions(
+                    List.of(new CompletionProposal("keyword", "gosub"), new CompletionProposal("keyword", "goto")));
             provider.setSymbols(List.of(
-                    new IndexedSymbol("label", "Foo", "Foo:"),
-                    new IndexedSymbol("variable", "Bar", "Bar as integer")));
+                    new IndexedSymbol("label", "Foo", "Foo:"), new IndexedSymbol("variable", "Bar", "Bar as integer")));
             provider.setContextResolver(
                     text -> text.endsWith("gosub ") ? CompletionContext.of("label") : CompletionContext.ANY);
 
@@ -112,8 +111,8 @@ public class SymbolCompletionProviderTest {
     public void builtinFunctionProposal_populatesRealParameters() throws Exception {
         onEdt(() -> {
             SymbolCompletionProvider provider = new SymbolCompletionProvider();
-            provider.setBaseCompletions(List.of(
-                    new CompletionProposal("userfunc", "Sin", "real Sin(real arg1)", List.of("real arg1"))));
+            provider.setBaseCompletions(
+                    List.of(new CompletionProposal("userfunc", "Sin", "real Sin(real arg1)", List.of("real arg1"))));
 
             Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "Sin");
 
@@ -162,8 +161,8 @@ public class SymbolCompletionProviderTest {
     public void userDefinedFunction_prefersStructuredParametersOverParsingSignature() throws Exception {
         onEdt(() -> {
             SymbolCompletionProvider provider = new SymbolCompletionProvider();
-            provider.setSymbols(List.of(
-                    new IndexedSymbol("userfunc", "Foo", "Foo(x$, y%)", List.of("string x$", "integer y%"))));
+            provider.setSymbols(
+                    List.of(new IndexedSymbol("userfunc", "Foo", "Foo(x$, y%)", List.of("string x$", "integer y%"))));
 
             Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "Foo");
 
@@ -187,8 +186,7 @@ public class SymbolCompletionProviderTest {
     public void userDefinedFunction_parsesParametersFromFlattenedSignature() throws Exception {
         onEdt(() -> {
             SymbolCompletionProvider provider = new SymbolCompletionProvider();
-            provider.setSymbols(
-                    List.of(new IndexedSymbol("userfunc", "MyFunc", "MyFunc(x as integer, y as string)")));
+            provider.setSymbols(List.of(new IndexedSymbol("userfunc", "MyFunc", "MyFunc(x as integer, y as string)")));
 
             Completion completion = completionNamed(provider.getCompletions(textAreaWithCaretAtEnd("")), "MyFunc");
 

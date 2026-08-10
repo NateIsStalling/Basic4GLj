@@ -2,6 +2,7 @@ package com.basic4gl.language.core.runtime;
 
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
+import com.basic4gl.language.core.internal.CollectionUtil;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.types.*;
 import java.nio.*;
@@ -36,7 +37,7 @@ import java.util.*;
  */
 public class Data {
 
-    private final Vector<Value> data;
+    private final ArrayList<Value> data;
     private int tempData;
     private int stackTop;
     private final int permanent;
@@ -60,7 +61,7 @@ public class Data {
         int top = size();
         int newSize = size() + count;
         if (count > 0) {
-            data.setSize(newSize);
+            CollectionUtil.resize(data, newSize);
             for (int i = top; i < newSize; i++) {
                 data.set(i, new Value());
             }
@@ -83,11 +84,11 @@ public class Data {
         // Initialize data
         this.maxDataSize = maxDataSize;
         permanent = stackSize;
-        data = new Vector<>();
+        data = new ArrayList<>();
         clear();
     }
 
-    public Vector<Value> data() {
+    public ArrayList<Value> data() {
         return data;
     }
 
@@ -117,7 +118,7 @@ public class Data {
 
         // Allocate stack
         int temp = size();
-        data.setSize(permanent);
+        CollectionUtil.resize(data, permanent);
         for (int i = temp; i < permanent; i++) {
             data.set(i, new Value());
         }
@@ -195,7 +196,7 @@ public class Data {
         int top = data.size();
         int newSize = data.size() + count;
         if (count > 0) {
-            data.setSize(newSize);
+            CollectionUtil.resize(data, newSize);
             for (int i = top; i < newSize; i++) {
                 data.set(i, new Value());
             }

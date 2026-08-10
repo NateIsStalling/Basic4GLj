@@ -23,7 +23,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormPanel.IOnConfigurationChangeListener {
     private final CompilerService compiler;
     private final PreprocessorService preprocessor;
-    private final Vector<FileEditor> fileEditors;
+    private final ArrayList<FileEditor> fileEditors;
 
     private final JDialog dialog;
     private final JDialog libraryInfoDialog;
@@ -51,7 +51,7 @@ public class ExportDialog implements com.basic4gl.desktop.spi.ConfigurationFormP
             Frame parent,
             CompilerService compiler,
             PreprocessorService preprocessor,
-            Vector<FileEditor> editors,
+            ArrayList<FileEditor> editors,
             String exportBaseDirectory,
             java.util.List<ProjectExportPage> contributedExportPages) {
 
