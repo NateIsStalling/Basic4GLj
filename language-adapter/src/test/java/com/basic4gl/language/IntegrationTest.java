@@ -233,6 +233,21 @@ public class IntegrationTest {
         assertGlobalVariableEquals("var$", "Hello, world");
     }
 
+    @Test
+    void executesGotoToLinkedLabel() {
+        assertCodeCompiles(
+                """
+                dim result
+                goto target
+                result = 1
+                target:
+                result = 2
+                """);
+
+        assertCodeExecutes();
+        assertGlobalVariableEquals("result", 2);
+    }
+
     // Helper assertions
 
     /** Asserts that the BASIC code given should correctly compile. */

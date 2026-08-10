@@ -73,4 +73,6 @@ public interface ProgramStreamable extends Streamable {
     void getIPInSourceCode(Mutable<Integer> line, Mutable<Integer> col);
 
     void clearError();
+
+    void commitInstructions();
 }

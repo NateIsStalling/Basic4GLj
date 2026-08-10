@@ -1878,8 +1878,6 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
 
             // Patch in breakpoint
             codeInstructions.get(offset).opCode = OpCode.OP_BREAKPT;
-
-            onInstructionsUpdated();
         }
     }
 
@@ -1931,6 +1929,8 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
         }
 
         breakPointsPatched = true;
+
+        commitInstructions();
     }
 
     TempBreakPt makeTempBreakPoint(int offset) {
@@ -3080,11 +3080,13 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
         return codeInstructions.size();
     }
 
+    /**
+     * Add instruction to VM stream; caller should call commitInstructions after adding all instructions
+     * @param i
+     */
     public void addInstruction(Instruction i) {
         patchOut();
         codeInstructions.add(i);
-
-        onInstructionsUpdated();
     }
 
     public void rollbackProgram(int size) {
@@ -3103,6 +3105,11 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
         return codeInstructions.get(index);
     }
 
+    /**
+     * Update instruction at index; caller should call commitInstructions after all changes are made
+     * @param index
+     * @param instruction
+     */
     public void setInstruction(int index, Instruction instruction) {
         assertTrue(index < codeInstructions.size());
         patchOut();
@@ -3320,6 +3327,10 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
 
     public Instruction[] getInstructions() {
         return codeInstructions.toArray(new Instruction[0]);
+    }
+
+    public void commitInstructions() {
+        onInstructionsUpdated();
     }
 
     private void onInstructionsUpdated() {

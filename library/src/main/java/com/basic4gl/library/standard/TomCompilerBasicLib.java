@@ -397,6 +397,8 @@ public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDri
             comp.rollback(rollbackPoint);
         }
 
+        vm.stream().commitInstructions();
+
         // Restore IP
         vm.gotoInstruction((int) saveIP);
 

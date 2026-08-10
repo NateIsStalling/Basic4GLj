@@ -610,6 +610,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
                 return;
             }
         }
+        program.commitInstructions();
     }
 
     boolean needAutoEndif() {
