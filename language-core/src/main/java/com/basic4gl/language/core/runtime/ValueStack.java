@@ -14,9 +14,9 @@ public class ValueStack {
     private int size;
     private final Store<String> strings;
 
-    public ValueStack(Store<String> strings) {
+    public ValueStack(int size, Store<String> strings) {
         this.strings = strings;
-        data = new int[10000000];
+        data = new int[size];
     }
 
     public boolean isEmpty() {

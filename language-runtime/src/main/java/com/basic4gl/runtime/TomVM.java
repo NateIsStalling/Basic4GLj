@@ -214,7 +214,7 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
         resources = new ArrayList<>();
 
         stringStore = new Store<>("");
-        stack = new ValueStack(stringStore);
+        stack = new ValueStack(MAX_STACK, stringStore);
         userCallStack = new ArrayList<>();
         stackDestructors = new ArrayList<>();
         tempDestructors = new ArrayList<>();
