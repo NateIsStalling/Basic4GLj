@@ -59,7 +59,7 @@ public class PluginJARManager extends PluginManager {
     /**
      * @return Returns a list of currently loaded plugin JARs.
      */
-    public ArrayList<PluginJAR> loadedJARs() {
+    public List<PluginJAR> loadedJARs() {
         ArrayList<PluginJAR> result = new ArrayList<>();
 
         for (PluginLibrary lib : plugins) {

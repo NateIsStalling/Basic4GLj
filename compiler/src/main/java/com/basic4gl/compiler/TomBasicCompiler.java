@@ -12,6 +12,7 @@ import com.basic4gl.compiler.util.*;
 import com.basic4gl.language.core.extensions.Basic4GLCompiler;
 import com.basic4gl.language.core.extensions.Basic4GLInterfaceRegistry;
 import com.basic4gl.language.core.extensions.Library;
+import com.basic4gl.language.core.internal.CollectionUtil;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
 import com.basic4gl.language.core.runtime.RuntimeFunctionRollbackPoint;
@@ -25,7 +26,6 @@ import com.basic4gl.language.core.types.Token.TokenType;
 import com.basic4gl.language.spi.ExtendedFunctionSpecification;
 import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.runtime.*;
-import com.basic4gl.runtime.util.CollectionUtil;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -995,7 +995,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         }
 
         // Remove runtime functions
-        com.basic4gl.runtime.util.CollectionUtil.resize(runtimeFunctions, rollbackPoint.getRuntimeFunctionCount());
+        com.basic4gl.language.core.internal.CollectionUtil.resize(
+                runtimeFunctions, rollbackPoint.getRuntimeFunctionCount());
 
         for (Iterator<Map.Entry<String, Integer>> it =
                         runtimeFunctionIndex.entrySet().iterator();

@@ -8,6 +8,7 @@ import static java.lang.Float.intBitsToFloat;
 
 import com.basic4gl.language.core.extensions.Basic4GLLongRunningFunction;
 import com.basic4gl.language.core.extensions.Basic4GLRuntime;
+import com.basic4gl.language.core.internal.CollectionUtil;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.runtime.*;
 import com.basic4gl.language.core.stackframe.*;
@@ -17,7 +18,6 @@ import com.basic4gl.language.core.types.*;
 import com.basic4gl.language.core.types.VariableCollection.Variable;
 import com.basic4gl.language.spi.PluginManager;
 import com.basic4gl.runtime.plugin.TomVMPluginAdapter;
-import com.basic4gl.runtime.util.CollectionUtil;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

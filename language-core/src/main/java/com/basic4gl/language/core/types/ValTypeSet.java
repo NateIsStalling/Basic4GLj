@@ -1,8 +1,8 @@
 package com.basic4gl.language.core.types;
 
+import com.basic4gl.language.core.internal.CollectionUtil;
 import com.basic4gl.language.core.streaming.Streamable;
 import com.basic4gl.language.core.streaming.Streaming;
-import com.basic4gl.runtime.util.CollectionUtil;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

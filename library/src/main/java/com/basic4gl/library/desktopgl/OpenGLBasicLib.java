@@ -10,6 +10,7 @@ import com.basic4gl.language.core.extensions.FunctionLibrary;
 import com.basic4gl.language.core.extensions.IAppSettings;
 import com.basic4gl.language.core.extensions.opengl.IB4GLOpenGLWindow;
 import com.basic4gl.language.core.extensions.opengl.OpenGLExtensionVersions;
+import com.basic4gl.language.core.internal.CollectionUtil;
 import com.basic4gl.language.core.runtime.Data;
 import com.basic4gl.language.core.runtime.Function;
 import com.basic4gl.language.core.runtime.IServiceCollection;
@@ -1308,7 +1309,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
             }
 
             if (truncateBlankFrames) {
-                while (images.size() > 1 && LoadImage.isImageBlank(images.get(images.size() - 1))) {
+                while (images.size() > 1 && LoadImage.isImageBlank(CollectionUtil.last(images))) {
                     images.remove(images.size() - 1);
                 }
             }

@@ -1,6 +1,6 @@
 package com.basic4gl.language.core.stackframe;
 
-import com.basic4gl.runtime.util.CollectionUtil;
+import com.basic4gl.language.core.internal.CollectionUtil;
 import java.util.ArrayList;
 
 /**

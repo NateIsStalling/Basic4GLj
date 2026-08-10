@@ -9,9 +9,9 @@ import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import com.basic4gl.compiler.util.ISourceFile;
 import com.basic4gl.compiler.util.ISourceFileServer;
+import com.basic4gl.language.core.internal.CollectionUtil;
 import com.basic4gl.language.core.runtime.HasErrorState;
 import com.basic4gl.language.spi.PluginManager;
-import com.basic4gl.runtime.util.CollectionUtil;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -127,7 +127,7 @@ public class Preprocessor extends HasErrorState {
                 // removing preprocessor-only directive text from parser input.
                 String pluginDeclaration = extractPluginDirectiveValue(line);
                 if (pluginDeclaration != null) {
-                    lineNumberMap.addLine(openFiles.get(openFiles.size() - 1).getFilename(), lineNo);
+                    lineNumberMap.addLine(CollectionUtil.last(openFiles).getFilename(), lineNo);
                     parser.getSourceCode().add("");
                     if (!ensurePluginLoaded(pluginDeclaration)) {
                         if (getError() == null || getError().isBlank()) {

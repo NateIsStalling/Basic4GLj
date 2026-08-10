@@ -3,6 +3,7 @@ package com.basic4gl.language.core.runtime;
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Abstract template class for allocating and referencing a specific type of
@@ -107,11 +108,11 @@ public class Store<T> {
         return array.size() - freeList.size();
     }
 
-    public ArrayList<T> getArray() {
+    public List<T> getArray() {
         return array;
     }
 
-    public ArrayList<Boolean> getValAllocated() {
+    public List<Boolean> getValAllocated() {
         return valAllocated;
     }
 

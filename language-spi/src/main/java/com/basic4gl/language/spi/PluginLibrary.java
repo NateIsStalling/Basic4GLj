@@ -4,9 +4,9 @@ import com.basic4gl.language.core.extensions.Basic4GLFunction;
 import com.basic4gl.language.core.extensions.Basic4GLObjectStore;
 import com.basic4gl.language.core.extensions.Basic4GLObjectStoreListener;
 import com.basic4gl.language.core.internal.Assert;
+import com.basic4gl.language.core.internal.CollectionUtil;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.types.*;
-import com.basic4gl.runtime.util.CollectionUtil;
 import java.util.*;
 
 /**

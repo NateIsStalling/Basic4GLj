@@ -1,7 +1,7 @@
 package com.basic4gl.language.core.extensions;
 
 import com.basic4gl.language.core.types.Token;
-import java.util.ArrayList;
+import java.util.List;
 
 public interface Basic4GLParser {
     // Reading
@@ -15,7 +15,7 @@ public interface Basic4GLParser {
 
     boolean isComparison(char c);
 
-    ArrayList<String> getSourceCode();
+    List<String> getSourceCode();
 
     void setPos(int line, int col);
 
