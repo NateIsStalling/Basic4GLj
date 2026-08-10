@@ -107,7 +107,12 @@ public class Value implements Streamable {
             return false;
         }
         Value that = (Value) thatObject;
-        return this.rawBits == that.rawBits;
+        return this.getIntVal() == that.getIntVal();
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(getIntVal());
     }
 
     //
