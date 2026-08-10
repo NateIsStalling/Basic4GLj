@@ -69,8 +69,7 @@ public class EditorAppSettings implements IConfigurableAppSettings {
 
     @Override
     public void setProgramArguments(List<String> programArguments) {
-        this.programArguments =
-                programArguments == null ? new ArrayList<>() : new ArrayList<>(programArguments);
+        this.programArguments = programArguments == null ? new ArrayList<>() : new ArrayList<>(programArguments);
     }
 
     @Override

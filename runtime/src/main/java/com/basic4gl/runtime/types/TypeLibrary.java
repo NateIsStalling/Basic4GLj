@@ -115,7 +115,7 @@ public class TypeLibrary implements Streamable {
     }
 
     public boolean isTypeValid(ValType type) {
-        return type.basicType >= BasicValType.VTP_INT
+        return type.basicType >= BasicValType.VTP_MARKER
                 && type.basicType != BasicValType.VTP_UNDEFINED
                 && (type.basicType < 0 || type.basicType < structures.size())
                 && type.arrayLevel < TomVM.ARRAY_MAX_DIMENSIONS;

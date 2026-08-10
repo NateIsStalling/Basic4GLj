@@ -7,38 +7,42 @@ import com.basic4gl.runtime.util.Streaming;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 /**
- * Instruction
+ * A single operation for the virtual machine to perform.
  *
- * Note: Instruction size = 12 bytes.
- * Ordering of member fields is important, as the two 4 byte members
- * are first (and hence aligned to a 4 byte boundary).
- * sourceChar is next, and aligned to a 2 byte boundary.
- * Single byte fields are last, as their alignment is unimportant.
- *
- * porting note: contained directive `#pragma pack (push, 1)`
+ * Consists of an opcode to specify what to do, a small type annotation for
+ * expressing type-specific operations, an optional operand, and the source line
+ * and column of the original source code.
  */
 public class Instruction implements Streamable {
+    // The action to perform.
+    // TODO: this should be an enumeration.
+    public short opCode = OpCode.OP_NOP;
+
+    // An extra type annotation. Used in some operations to specify type-specific
+    // operations inside the VM.
+    // TODO: Which operations use this? Should it be constrained to the BasicVarType
+    // stuff?
+    public int basicVarType;
 
     /**
-     * Instruction value
+     * An optional operand. Jump addresses, variable load indices, and other stuff
+     * like that ends up here.
      */
     public Value value;
 
     /**
      * For debugging
      */
-    public int sourceLine;
+    public int sourceLine = 0;
 
-    public int sourceChar;
-    public short opCode; // (vmOpCode)
-    public int basicVarType; // (vmBasicVarType)
+    public int sourceChar = 0;
 
     public Instruction() {
         opCode = OpCode.OP_NOP;
-        // TODO Original source initializes with 0 instead of -1
-        basicVarType = BasicValType.VTP_UNDEFINED;
+        basicVarType = BasicValType.VTP_INT;
         sourceLine = 0;
         sourceChar = 0;
         value = new Value();
@@ -52,6 +56,17 @@ public class Instruction implements Streamable {
         value = i.value;
     }
 
+    public Instruction(short opCode) {
+        this();
+        this.opCode = opCode;
+    }
+
+    public Instruction(short opCode, int type) {
+        this();
+        this.opCode = opCode;
+        this.basicVarType = type;
+    }
+
     public Instruction(short opCode, int type, Value val) {
         this(opCode, type, val, 0, 0);
     }
@@ -62,6 +77,26 @@ public class Instruction implements Streamable {
         value = val;
         this.sourceLine = sourceLine;
         this.sourceChar = sourceChar;
+    }
+
+    public String toString() {
+        return "<Instruction " + OpCode.vmOpCodeName(this.opCode) + " " + this.value + ">";
+    }
+
+    // Given a list of instructions, construct a string with the disassembled code.
+    public static String disassemble(List<Instruction> instructions) {
+        StringBuilder sb = new StringBuilder();
+        for (int idx = 0; idx < instructions.size(); idx++) {
+            final Instruction i = instructions.get(idx);
+            sb.append(idx + ":");
+            sb.append(OpCode.vmOpCodeName(i.opCode));
+            sb.append(" ");
+            sb.append(BasicValType.getName(i.basicVarType));
+            sb.append(" ");
+            sb.append(i.value);
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
     // Streaming

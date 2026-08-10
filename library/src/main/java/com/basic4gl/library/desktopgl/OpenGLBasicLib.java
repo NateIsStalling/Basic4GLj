@@ -1705,8 +1705,8 @@ public class OpenGLBasicLib implements FunctionLibrary {
                     array[i] = texs.get(i);
                     OpenGLBasicLib.textures.addHandle(texs.get(i));
                 }
-                vm.setRegIntVal(Data.fillTempIntArray(
-                                vm.getData(), vm.getDataTypes(), texs.size(), Arrays.asList(array)));
+                vm.setRegIntVal(
+                        Data.fillTempIntArray(vm.getData(), vm.getDataTypes(), texs.size(), Arrays.asList(array)));
             } else {
                 Integer[] array = new Integer[1];
                 array[0] = 0;
@@ -1724,8 +1724,8 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
     public static final class WrapTexStripFrames2 implements Function {
         public void run(TomVM vm) {
-            vm.setRegIntVal(OpenGLBasicLib.getTexStripFrames(
-                            vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
+            vm.setRegIntVal(
+                    OpenGLBasicLib.getTexStripFrames(vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
         }
     }
 
@@ -1916,9 +1916,9 @@ public class OpenGLBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.setRegIntVal(
-                            OpenGLBasicLib.images.isIndexStored(index)
-                                    ? OpenGLBasicLib.images.getValueAt(index).getWidth()
-                                    : 0);
+                    OpenGLBasicLib.images.isIndexStored(index)
+                            ? OpenGLBasicLib.images.getValueAt(index).getWidth()
+                            : 0);
         }
     }
 
@@ -1926,9 +1926,9 @@ public class OpenGLBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.setRegIntVal(
-                            OpenGLBasicLib.images.isIndexStored(index)
-                                    ? OpenGLBasicLib.images.getValueAt(index).getHeight()
-                                    : 0);
+                    OpenGLBasicLib.images.isIndexStored(index)
+                            ? OpenGLBasicLib.images.getValueAt(index).getHeight()
+                            : 0);
         }
     }
 
@@ -1936,9 +1936,9 @@ public class OpenGLBasicLib implements FunctionLibrary {
         public void run(TomVM vm) {
             int index = vm.getIntParam(1);
             vm.setRegIntVal(
-                            OpenGLBasicLib.images.isIndexStored(index)
-                                    ? LoadImage.getImageFormat(OpenGLBasicLib.images.getValueAt(index))
-                                    : 0);
+                    OpenGLBasicLib.images.isIndexStored(index)
+                            ? LoadImage.getImageFormat(OpenGLBasicLib.images.getValueAt(index))
+                            : 0);
         }
     }
 
@@ -2397,8 +2397,8 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
     public static final class WrapImageStripFrames implements Function {
         public void run(TomVM vm) {
-            vm.setRegIntVal(OpenGLBasicLib.imageStripFrames(
-                            vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
+            vm.setRegIntVal(
+                    OpenGLBasicLib.imageStripFrames(vm, vm.getStringParam(3), vm.getIntParam(2), vm.getIntParam(1)));
         }
     }
 

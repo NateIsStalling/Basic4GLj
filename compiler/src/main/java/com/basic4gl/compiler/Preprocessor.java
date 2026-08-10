@@ -37,6 +37,18 @@ public class Preprocessor extends HasErrorState {
     // Source file <=> Processed file mapping
     private final LineNumberMapping lineNumberMap = new LineNumberMapping();
 
+    public Preprocessor() {}
+
+    /**
+     * Construct the preprocessor. Pass in 0 or more file servers to initialise.
+     */
+    public Preprocessor(int serverCount, ISourceFileServer... server) {
+        // Register source file servers
+        for (int i = 0; i < serverCount; i++) {
+            fileServers.add(server[i]);
+        }
+    }
+
     void closeAll() {
 
         // Close all open files
@@ -58,16 +70,6 @@ public class Preprocessor extends HasErrorState {
 
         // Unable to open file
         return null;
-    }
-
-    /**
-     * Construct the preprocessor. Pass in 0 or more file servers to initialise.
-     */
-    public Preprocessor(int serverCount, ISourceFileServer... server) {
-        // Register source file servers
-        for (int i = 0; i < serverCount; i++) {
-            fileServers.add(server[i]);
-        }
     }
 
     protected void finalize() // virtual ~Preprocessor();
@@ -135,7 +137,6 @@ public class Preprocessor extends HasErrorState {
                         } else {
                             // This becomes the new innermost file
                             openFiles.add(file);
-
                             // Add to visited files list
                             visitedFiles.add(0, filename);
                         }

@@ -31,6 +31,7 @@ import java.util.*;
  */
 public class TomCompilerBasicLib implements FunctionLibrary, IFileAccess, IVMDriverAccess {
     private static final String COMPILE_FILENAME_DEFAULT = "";
+
     @Override
     public Map<String, Constant> constants() {
         return null;

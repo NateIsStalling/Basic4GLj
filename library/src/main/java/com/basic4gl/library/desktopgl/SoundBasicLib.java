@@ -289,8 +289,8 @@ public class SoundBasicLib implements FunctionLibrary, IFileAccess {
             if (checkSoundEngine()) {
                 int handle = vm.getIntParam(3);
                 if (handle > 0 && sounds.isIndexStored(handle)) {
-                    vm.setRegIntVal(library.playSound(
-                                    sounds.getValueAt(handle), vm.getRealParam(2), vm.getIntParam(1) != 0));
+                    vm.setRegIntVal(
+                            library.playSound(sounds.getValueAt(handle), vm.getRealParam(2), vm.getIntParam(1) != 0));
                 } else {
                     vm.setRegIntVal(-1);
                 }

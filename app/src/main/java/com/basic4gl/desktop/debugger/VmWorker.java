@@ -78,10 +78,10 @@ public class VmWorker extends SwingWorker<Object, Object> implements IDebugCallb
 
             // Debugger is attached
             while (!this.isCancelled()
-                // TODO 1/2023 need to keep connection alive while debugee is idle
-                //                    && (mMessage.getStatus() == CallbackMessage.STOPPED
-                //                    || mMessage.getStatus() == CallbackMessage.WORKING
-                //                    || mMessage.getStatus() == CallbackMessage.PAUSED)
+            // TODO 1/2023 need to keep connection alive while debugee is idle
+            //                    && (mMessage.getStatus() == CallbackMessage.STOPPED
+            //                    || mMessage.getStatus() == CallbackMessage.WORKING
+            //                    || mMessage.getStatus() == CallbackMessage.PAUSED)
             ) {
                 // idle thread;
                 Thread.sleep(100);

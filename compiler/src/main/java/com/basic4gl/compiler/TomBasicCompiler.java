@@ -15,8 +15,8 @@ import com.basic4gl.runtime.stackframe.RuntimeFunction;
 import com.basic4gl.runtime.stackframe.UserFunc;
 import com.basic4gl.runtime.stackframe.UserFuncPrototype;
 import com.basic4gl.runtime.types.*;
-import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.CollectionUtil;
+import com.basic4gl.runtime.util.Function;
 import com.basic4gl.runtime.util.Mutable;
 import com.basic4gl.runtime.util.Streamable;
 import com.basic4gl.runtime.util.Streaming;
@@ -708,6 +708,14 @@ public class TomBasicCompiler extends HasErrorState {
 
         initPlugins();
         runtimeFunctions.clear();
+    }
+
+    // Load a source file, preprocessing it and setting the parser to read
+    // the entire program.
+    public boolean load(ISourceFile file) {
+        clearProgram();
+        Preprocessor pp = new Preprocessor();
+        return pp.preprocess(file, this.parser);
     }
 
     public boolean compile() {
@@ -6399,6 +6407,10 @@ public class TomBasicCompiler extends HasErrorState {
     public String getUserFunctionName(int index) {
         String name = userFunctionReverseIndex.get(index);
         return name == null ? "???" : name;
+    }
+
+    public Constant getUserDefinedConstant(String name) {
+        return this.programConstants.get(name.toLowerCase());
     }
 
     // State streaming
