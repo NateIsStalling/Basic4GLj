@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public abstract class PluginManager implements Basic4GLInterfaceRegistry {
 
@@ -71,7 +72,7 @@ public abstract class PluginManager implements Basic4GLInterfaceRegistry {
      * Loaded libraries
      * @return PluginLibrary collection of loaded libraries.
      */
-    public ArrayList<PluginLibrary> getLoadedLibraries() {
+    public List<PluginLibrary> getLoadedLibraries() {
         return plugins;
     }
 

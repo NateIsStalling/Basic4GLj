@@ -194,7 +194,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         isCaseSensitive = caseSensitive;
         syntax = LS_BASIC4GL;
 
-        operandStack = new ArrayList<>(); // TODO migrate to ArrayList or different collection type
+        operandStack = new ArrayList<>();
         operatorStack = new ArrayList<>();
         jumps = new ArrayList<>();
         resets = new ArrayList<>();

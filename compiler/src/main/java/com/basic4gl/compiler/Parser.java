@@ -81,7 +81,7 @@ public class Parser extends HasErrorState implements com.basic4gl.language.core.
     }
 
     @Override
-    public ArrayList<String> getSourceCode() {
+    public List<String> getSourceCode() {
         return sourceCode;
     }
 

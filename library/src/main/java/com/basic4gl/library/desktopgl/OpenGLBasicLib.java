@@ -1310,7 +1310,7 @@ public class OpenGLBasicLib implements FunctionLibrary {
 
             if (truncateBlankFrames) {
                 while (images.size() > 1 && LoadImage.isImageBlank(CollectionUtil.last(images))) {
-                    images.remove(CollectionUtil.last(images));
+                    images.remove(images.size() - 1);
                 }
             }
 
