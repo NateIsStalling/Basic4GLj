@@ -1,20 +1,33 @@
 # Basic4GLj
 
-_Basic4GL development tools for the JVM - a BASIC programming environment for 2D/3D game development_
+_Cross-platform BASIC programming environment for 2D/3D game development - Java implementation of the Basic4GL compiler, runtime, and IDE._
 
-![heightmap-demo](https://github.com/NateIsStalling/Basic4GLj/assets/14190443/a9a0a90b-152d-4395-80f8-3f35690f100d)
+[![Itch.io](https://img.shields.io/badge/itch.io-%23FF0B34.svg?logo=Itch.io&logoColor=white)](https://nateisstalling.itch.io/basic4glj) ![GitHub Release](https://img.shields.io/github/v/release/nateisstalling/basic4glj?link=https%3A%2F%2Fgithub.com%2FNateIsStalling%2FBasic4GLj%2Freleases)
 
 ---
 
-Basic4GLj is a cross-platform JVM implementation of Basic4GL, providing a development environment for writing and running BASIC programs with a built-in 2D sprite engine and OpenGL support for 3D graphics.
+![sample-showcase](screenshots/showcase.png)
 
-Basic4GLj runs on Windows, Linux, and macOS, and uses LWJGL to provide graphics and platform support.
+---
+
+Basic4GLj is a cross-platform Java implementation of Basic4GL, providing a programming environment for writing and running Basic4GL programs on Windows, Linux, and macOS.
+
+## Features
+
+- BASIC programming editor with syntax highlighting, autocomplete, and debugging
+- Windows, Linux, and macOS support
+- Built-in 2D sprite engine, sound, and networking support
+- OpenGL 3D graphics
+- Program export
+- Plugin support for language extensions
+
+![screenshot](screenshots/screenshot.png)
 
 ## Getting Started
 
 ### Download the Latest Build
 
-Check out [Basic4GLj on itch.io](https://nateisstalling.itch.io/basic4glj), or the [Releases Page](https://github.com/NateIsStalling/Basic4GLj/releases) of this repo for the latest build.
+Download [Basic4GLj on itch.io](https://nateisstalling.itch.io/basic4glj), or visit the [GitHub Releases Page](https://github.com/NateIsStalling/Basic4GLj/releases) for the latest build.
 
 ### Sample Programs
 
@@ -40,7 +53,7 @@ This project requires Java 17 and uses Gradle for its builds.
 ./gradlew :app:build
 ```
 
-_build artifacts can be found in `/app/build/distributions`_
+Build artifacts can be found in `/app/build/distributions`.
 
 ### Debugging the Editor
 
@@ -55,10 +68,9 @@ The `:app:debugAll` task builds these dependencies before launching the applicat
 
 ## Compatibility Notes
 
-Basic4GL was originally developed for Windows with OpenGL 1.1, which is considered a legacy version of OpenGL and may not be fully supported by modern systems.
-Recent versions of Basic4GL have been updated to use GLFW for its OpenGL context and window management.
+Basic4GL's graphics functionality was originally built around OpenGL 1.1 and other legacy OpenGL APIs. Recent versions of Basic4GL use GLFW for windowing and OpenGL context management.
 
-Basic4GLj attempts to support all functions provided by GLFW versions of Basic4GL, but some GLU functionality and legacy keyboard constants are unsupported by GLFW and LWJGL.
+Basic4GLj aims to support the functionality provided by GLFW-based versions of Basic4GL. Some GLU functionality and legacy keyboard constants are not available through GLFW and LWJGL.
 
 Please report any compatibility or stability issues to the Issues page of this project.
 
@@ -70,6 +82,5 @@ Basic4GLj is licensed under a **BSD 3-Clause license** - please see the LICENSES
 
 ## Credits
 
-Basic4GLj is based on the source of Basic4GL by Tom Mulgrew. The source of the original C++ implementation can be found here:
-
-https://github.com/basic4gl-guy/basic4gl
+Basic4GLj is based on the source of Basic4GL by Tom Mulgrew. 
+The source of the original C++ implementation can be found in the [Basic4GL GitHub repository](https://github.com/basic4gl-guy/basic4gl).

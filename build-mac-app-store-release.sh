@@ -70,7 +70,7 @@ jpackage "@jpackage/jpackage.cfg" \
   --mac-app-store \
   --mac-package-signing-prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" \
   --mac-signing-key-user-name "$MAC_SIGNING_KEY_USER_NAME" \
-  --mac-entitlements sandbox.plist \
+  --mac-entitlements entitlements/sandbox.plist \
   --verbose
 
 echo "Create native installer"
@@ -81,5 +81,5 @@ jpackage "@jpackage/jpackage.cfg" \
   --mac-app-store \
   --mac-package-signing-prefix "$MAC_SIGNING_PACKAGE_SIGNING_PREFIX" \
   --mac-signing-key-user-name "$MAC_SIGNING_KEY_USER_NAME" \
-  --mac-entitlements sandbox.plist \
+  --mac-entitlements entitlements/sandbox.plist \
   --verbose

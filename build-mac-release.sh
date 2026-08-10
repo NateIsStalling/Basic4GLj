@@ -27,12 +27,12 @@ done
 
 case "$ENTITLEMENTS_PROFILE" in
   adhoc)
-    ENTITLEMENTS_FILE='adhoc.plist'
-    INHERITED_ENTITLEMENTS_FILE='adhoc-embedded-tool.plist'
+    ENTITLEMENTS_FILE='entitlements/adhoc.plist'
+    INHERITED_ENTITLEMENTS_FILE='entitlements/adhoc-embedded-tool.plist'
     ;;
   app-store)
-    ENTITLEMENTS_FILE='sandbox.plist'
-    INHERITED_ENTITLEMENTS_FILE='embedded-tool.plist'
+    ENTITLEMENTS_FILE='entitlements/sandbox.plist'
+    INHERITED_ENTITLEMENTS_FILE='entitlements/embedded-tool.plist'
     ;;
   *)
     echo "Unknown --entitlements-profile '$ENTITLEMENTS_PROFILE' (expected 'adhoc' or 'app-store')"
