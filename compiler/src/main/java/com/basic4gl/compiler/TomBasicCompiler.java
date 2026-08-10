@@ -4958,6 +4958,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         // Add "end program" opcode, so we can safely evaluate it
         addInstruction(OpCode.OP_END, BasicValType.VTP_INT, new Value());
 
+        program.commitInstructions();
+
         Register expressionResult = program.evaluateExpression(expressionStart);
         if (expressionResult == null) {
             return false;
