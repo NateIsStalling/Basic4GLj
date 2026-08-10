@@ -1,5 +1,9 @@
-package com.basic4gl.desktop.editor;
+package com.basic4gl.desktop.content;
 
+import com.basic4gl.desktop.editor.DualGutterScrollPane;
+import com.basic4gl.desktop.editor.HoverIconRowHeader;
+import com.basic4gl.desktop.editor.IFileEditorActionListener;
+import com.basic4gl.desktop.editor.IToggleBreakpointListener;
 import com.basic4gl.desktop.language.Basic4GLFoldParser;
 import com.basic4gl.desktop.util.EditorUtil;
 import com.basic4gl.desktop.util.IFileManager;
@@ -11,6 +15,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.BadLocationException;
@@ -21,8 +29,10 @@ import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 import org.fife.ui.rtextarea.*;
 
 public class FileEditor implements SearchListener {
-    public static final String DEFAULT_NAME = "[Unnamed]";
+    public static final String DEFAULT_NAME = "Untitled";
 
+    private static final int HEADER_BOOKMARK = 0;
+    private static final int HEADER_BREAK_PT = 1;
     private static final String ACTION_NEXT_BOOKMARK = "RTA.NextBookmarkAction";
     private static final String ACTION_PREV_BOOKMARK = "RTA.PrevBookmarkAction";
     private static final String ACTION_TOGGLE_BOOKMARK = "RTA.ToggleBookmarkAction";
@@ -48,17 +58,19 @@ public class FileEditor implements SearchListener {
     private final ReplaceToolBar replaceToolBar;
     private final CollapsibleSectionPanel csp;
     private final DualGutterScrollPane scrollPane;
-    private final RSyntaxTextArea editorPane;
 
     private final JPopupMenu gutterPopup;
     private int gutterPopupLine = -1;
 
+    // Package-protected to allow TextFileViewer access
+    protected final RSyntaxTextArea editorPane;
+    protected String fileName; // Filename without path
+    protected String filePath; // Full path including name
+    protected boolean isModified;
+    protected boolean isSaved; // File exists on system
     // private Map<Integer, Object> lineHighlights; //Highlight lines with breakpoints
 
-    private String fileName; // Filename without path
-    private String filePath; // Full path including name
-    private boolean isModified;
-    private boolean isSaved; // File exists on system
+    public record BookmarkLine(int lineNumber, String lineText) {}
 
     public FileEditor(
             IFileEditorActionListener actionListener,
@@ -335,7 +347,73 @@ public class FileEditor implements SearchListener {
     }
 
     public String getShortFilename() {
-        return !fileName.isEmpty() ? new File(fileName).getName() : DEFAULT_NAME.toLowerCase();
+        return !fileName.isEmpty() ? new File(fileName).getName() : DEFAULT_NAME;
+    }
+
+    private static String getNextDefaultName(IFileManager fileManager) {
+        if (fileManager instanceof FileManager manager) {
+            List<String> existingNames = new ArrayList<>();
+            for (FileEditor editor : manager.getFileEditors()) {
+                if (editor != null) {
+                    existingNames.add(editor.fileName);
+                }
+            }
+            return getNextDefaultName(existingNames);
+        }
+
+        return DEFAULT_NAME;
+    }
+
+    static String getNextDefaultName(Collection<String> existingNames) {
+        Set<Integer> usedIndexes = new HashSet<>();
+        for (String existingName : existingNames) {
+            int index = getDefaultNameIndex(existingName);
+            if (index > 0) {
+                usedIndexes.add(index);
+            }
+        }
+
+        int index = 1;
+        while (usedIndexes.contains(index)) {
+            index++;
+        }
+
+        return formatDefaultName(index);
+    }
+
+    private static boolean isDefaultName(String name) {
+        return getDefaultNameIndex(name) > 0;
+    }
+
+    private static int getDefaultNameIndex(String name) {
+        if (name == null) {
+            return -1;
+        }
+
+        if (DEFAULT_NAME.equalsIgnoreCase(name)) {
+            return 1;
+        }
+
+        String prefix = DEFAULT_NAME + " ";
+        if (!name.regionMatches(true, 0, prefix, 0, prefix.length())) {
+            return -1;
+        }
+
+        String suffix = name.substring(prefix.length());
+        try {
+            int index = Integer.parseInt(suffix);
+            if (index >= 2 && Integer.toString(index).equals(suffix)) {
+                return index;
+            }
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
+
+        return -1;
+    }
+
+    private static String formatDefaultName(int index) {
+        return index == 1 ? DEFAULT_NAME : DEFAULT_NAME + " " + index;
     }
 
     public boolean isModified() {
@@ -538,15 +616,52 @@ public class FileEditor implements SearchListener {
     }
 
     public void toggleBookmark() {
+        int line;
         try {
-            int line = editorPane.getLineOfOffset(editorPane.getCaretPosition());
+            line = editorPane.getLineOfOffset(editorPane.getCaretPosition());
             toggleBookmarkAtLine(line);
         } catch (BadLocationException ex) {
+            line = -1;
             ex.printStackTrace();
             System.out.println(editorPane.getCaretPosition());
         }
+        actionListener.onBookmarksChanged(getFilePath());
     }
 
+    public List<BookmarkLine> getBookmarks() {
+        ArrayList<BookmarkLine> points = new ArrayList<>();
+        HoverIconRowHeader gutter = scrollPane.getBookmarkHeader();
+        if (gutter == null) {
+            return points;
+        }
+        GutterIconInfo[] bookmarks = gutter.getBookmarks();
+        for (GutterIconInfo info : bookmarks) {
+            try {
+                int line = editorPane.getLineOfOffset(info.getMarkedOffset());
+                String lineText = getLineText(line);
+                points.add(new BookmarkLine(line, lineText));
+            } catch (BadLocationException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return points;
+    }
+    public void goToLine(int lineNumber) {
+        int safeLine = Math.max(0, lineNumber);
+        try {
+            int maxLine = Math.max(0, editorPane.getLineCount() - 1);
+            safeLine = Math.min(safeLine, maxLine);
+            int offset = editorPane.getLineStartOffset(safeLine);
+            if (editorPane.isCodeFoldingEnabled()) {
+                editorPane.getFoldManager().ensureOffsetNotInClosedFold(offset);
+            }
+            editorPane.requestFocusInWindow();
+            editorPane.setCaretPosition(offset);
+        } catch (BadLocationException ble) {
+            UIManager.getLookAndFeel().provideErrorFeedback(editorPane);
+            ble.printStackTrace();
+        }
+    }
     /**
      * Toggles whether the given line has a bookmark and keeps the bookmark
      * column's visibility in sync.
@@ -559,6 +674,16 @@ public class FileEditor implements SearchListener {
             refreshBookmarkColumn();
         } catch (BadLocationException ex) {
             ex.printStackTrace();
+        }
+    }
+    private String getLineText(int line) {
+        try {
+            int start = editorPane.getLineStartOffset(line);
+            int end = editorPane.getLineEndOffset(line);
+            String text = editorPane.getText(start, Math.max(0, end - start));
+            return text == null ? "" : text.strip();
+        } catch (BadLocationException ex) {
+            return "";
         }
     }
 

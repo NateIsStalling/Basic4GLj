@@ -7,5 +7,7 @@ public interface DialogService {
     //    JComponent createContent(DialogContext context);
     //    Boolean getResult();
     //    default boolean validate() { return true; }
-    public boolean showDialog(PluginContext context);
+    public void showDialog(String message);
+
+    String showInputDialog(String message, String title, String initialValue);
 }

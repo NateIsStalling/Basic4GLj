@@ -2,6 +2,7 @@ package com.basic4gl.desktop.vmview;
 
 import static com.basic4gl.desktop.Theme.*;
 import static com.basic4gl.desktop.util.SwingIconUtil.createImageIcon;
+import static com.basic4gl.desktop.util.SwingUtil.hideSplitPaneHandle;
 
 import com.basic4gl.debug.protocol.callbacks.DisassembleCallback;
 import com.basic4gl.debug.protocol.callbacks.StackTraceCallback;
@@ -303,6 +304,7 @@ public class VirtualMachineViewDialog extends JFrame implements IVirtualMachineV
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tableScrollPane, detailPanel);
         splitPane.setResizeWeight(0.7);
         splitPane.setOneTouchExpandable(true);
+        hideSplitPaneHandle(splitPane);
 
         panel.add(splitPane, BorderLayout.CENTER);
         panel.add(variablesStatusLabel, BorderLayout.SOUTH);

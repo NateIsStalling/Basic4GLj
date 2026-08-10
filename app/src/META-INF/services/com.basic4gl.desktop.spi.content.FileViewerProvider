@@ -1,0 +1,5 @@
+com.basic4gl.desktop.content.DefaultImageViewerProvider
+com.basic4gl.desktop.content.DefaultAudioViewerProvider
+com.basic4gl.desktop.content.MarkdownViewerProvider
+com.basic4gl.desktop.content.SimpleTextViewerProvider
+
