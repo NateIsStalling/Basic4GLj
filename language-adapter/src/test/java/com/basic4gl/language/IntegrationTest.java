@@ -270,7 +270,6 @@ public class IntegrationTest {
         ISourceFile sf = new StringSourceFile(source);
         assertTrue(this.compiler.load(sf), "Compiler did not catch the error");
         assertFalse(compiler.compile(), "Compiler did not catch the error");
-        this.compiler.compile();
         if (printDisassembly) {
             displayState(source);
         }
