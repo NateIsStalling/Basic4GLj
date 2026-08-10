@@ -20,15 +20,9 @@ public class TomVMPluginAdapterTests {
     void setUp() {
         TestPluginManager pluginManager = new TestPluginManager();
 
-        vm = new TomVM(
-                pluginManager,
-                null,
-                1024,
-                256);
+        vm = new TomVM(pluginManager, null, 1024, 256);
 
-        adapter = new TomVMPluginAdapter(
-                vm,
-                pluginManager.getStructureManager());
+        adapter = new TomVMPluginAdapter(vm, pluginManager.getStructureManager());
     }
 
     @Test

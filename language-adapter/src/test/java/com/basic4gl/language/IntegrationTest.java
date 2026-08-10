@@ -247,6 +247,110 @@ public class IntegrationTest {
         assertGlobalVariableEquals("result", 2);
     }
 
+    @Test
+    void executesGosubToLinkedLabel() {
+        assertCodeCompiles(
+                """
+                dim x
+                x = 1
+                gosub test
+                end
+                test:
+                    x = 2
+                    return
+                """);
+
+        assertCodeExecutes();
+        assertGlobalVariableEquals("x", 2);
+    }
+
+    @Test
+    void rejectsUnimplementedGlobalForwardDeclaredSub() {
+        String program =
+                """
+                declare sub test()
+
+                dim result
+                result = 1
+                """;
+
+        assertCodeDoesNotCompile(program);
+    }
+
+    @Test
+    void rejectsForwardDeclaredSubWithMismatchedImplementation() {
+        String program =
+                """
+                declare sub test(x)
+
+                sub test(x#)
+                end sub
+                """;
+
+        assertCodeDoesNotCompile(program);
+    }
+
+    @Test
+    void rejectsUnimplementedForwardDeclaredGlobalSub() {
+        String program =
+                """
+                declare sub test()
+
+                dim value
+                value = 1
+                """;
+
+        assertCodeDoesNotCompile(program);
+    }
+
+    @Test
+    void executesForwardDeclaredGlobalSub() {
+        String program =
+                """
+                declare sub test()
+
+                dim result
+                result = 1
+
+                test()
+
+                sub test()
+                    result = 2
+                end sub
+                """;
+
+        assertCodeCompiles(program);
+
+        // The forward declaration and implementation must resolve to the
+        // same UserFunc entry.
+        Integer functionIndex = compiler.getGlobalUserFunctionIndex().get("test");
+        assertNotNull(functionIndex, "Forward-declared sub should remain globally indexed");
+
+        assertEquals(
+                1,
+                vm.getUserFunctions().size(),
+                "Forward declaration and implementation should not create separate UserFunc entries");
+
+        var function = vm.getUserFunctions().get(functionIndex);
+
+        assertTrue(function.implemented, "Forward-declared sub should be marked implemented");
+        assertTrue(function.programOffset >= 0, "Forward-declared sub should have a valid implementation offset");
+
+        // The call site must create a frame for that same UserFunc.
+        Instruction createFrame = Arrays.stream(vm.getInstructions())
+                .filter(i -> i.opCode == OpCode.OP_CREATE_USER_FRAME)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Expected OP_CREATE_USER_FRAME"));
+
+        assertEquals(
+                functionIndex.intValue(),
+                createFrame.value.getIntVal(),
+                "Call site should reference the implemented UserFunc");
+
+        assertCodeExecutes();
+        assertGlobalVariableEquals("result", 2);
+    }
+
     // Helper assertions
 
     /** Asserts that the BASIC code given should correctly compile. */

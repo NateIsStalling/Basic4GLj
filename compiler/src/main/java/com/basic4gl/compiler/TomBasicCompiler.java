@@ -346,8 +346,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
 
         // No local user functions defined initially.
         // Visible functions are the global functions.
-        localUserFunctionIndex.clear();
-        visibleUserFunctionIndex = globalUserFunctionIndex;
+        resetUserFunctionScope();
     }
 
     /**
@@ -523,6 +522,10 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
 
         // Allocate a new code block
         currentCodeBlockIndex = program.newCodeBlock();
+
+        // Start with this block's local functions layered over globals.
+        loadCurrentCodeBlockUserFunctionScope();
+
         boolean isMainProgram = currentCodeBlockIndex == 0;
 
         // Clear error state
@@ -698,6 +701,64 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         return runtimeFunctionIndex.containsKey(name.toLowerCase());
     }
 
+    private String normalizeUserFunctionName(String name) {
+        return name.toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * Reset transient user-function lookup state to global visibility only.
+     *
+     * Equivalent to the C++ compiler's:
+     *   m_localUserFunctionIndex.clear();
+     *   m_visibleUserFunctionIndex = m_globalUserFunctionIndex;
+     *
+     * Note that C++ map assignment copies the map, so Java must explicitly copy.
+     */
+    private void resetUserFunctionScope() {
+        localUserFunctionIndex.clear();
+        visibleUserFunctionIndex = new HashMap<>(globalUserFunctionIndex);
+    }
+
+    /**
+     * Restore the local function scope for the currently selected code block.
+     *
+     * CodeBlock.userFunctions is the persistent representation. The local and
+     * visible maps are transient compiler lookup state.
+     */
+    private void loadCurrentCodeBlockUserFunctionScope() {
+        resetUserFunctionScope();
+
+        if (!program.isCodeBlockValid(currentCodeBlockIndex)) {
+            return;
+        }
+
+        for (Map.Entry<String, Integer> entry :
+                getCurrentCodeBlock().userFunctions.entrySet()) {
+
+            String name = normalizeUserFunctionName(entry.getKey());
+
+            localUserFunctionIndex.put(name, entry.getValue());
+            visibleUserFunctionIndex.put(name, entry.getValue());
+        }
+    }
+
+    /**
+     * Register a normal user function in the current compilation scope.
+     *
+     * Local functions override globals in visibleUserFunctionIndex, while the
+     * first definition of a name remains the global fallback.
+     */
+    private void mapUserFunction(String name, int functionIndex) {
+        String functionName = normalizeUserFunctionName(name);
+
+        localUserFunctionIndex.put(functionName, functionIndex);
+        visibleUserFunctionIndex.put(functionName, functionIndex);
+
+        getCurrentCodeBlock().userFunctions.put(functionName, functionIndex);
+
+        globalUserFunctionIndex.putIfAbsent(functionName, functionIndex);
+    }
+
     public ArrayList<Library> getLibraries() {
         return libraries;
     }
@@ -711,13 +772,11 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
     }
 
     public int getUserFunctionIndex(String name) {
-        assertTrue(isUserFunction(name));
-        String functionName = name.toLowerCase();
-        if (isLocalUserFunction(name)) {
-            return getCurrentCodeBlock().userFunctions.get(functionName);
-        } else {
-            return globalUserFunctionIndex.get(functionName);
-        }
+        String functionName = normalizeUserFunctionName(name);
+
+        assertTrue(visibleUserFunctionIndex.containsKey(functionName));
+
+        return visibleUserFunctionIndex.get(functionName);
     }
 
     // Language extension
@@ -941,11 +1000,25 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         for (Iterator<Map.Entry<String, Integer>> it =
                         runtimeFunctionIndex.entrySet().iterator();
                 it.hasNext(); ) {
+
             Map.Entry<String, Integer> entry = it.next();
+
             if (entry.getValue() >= rollbackPoint.getRuntimeFunctionCount()) {
                 it.remove();
             }
         }
+
+        // Remove local user-function mappings that now point past the
+        // rolled-back UserFunc table.
+        int functionCount = rollbackPoint.getVmRollback().functionCount;
+
+        localUserFunctionIndex.entrySet().removeIf(entry -> entry.getValue() >= functionCount);
+
+        // visibleUserFunctionIndex is an independent map now.
+        // Rebuild it from globals, then overlay the surviving locals.
+        visibleUserFunctionIndex = new HashMap<>(globalUserFunctionIndex);
+
+        visibleUserFunctionIndex.putAll(localUserFunctionIndex);
     }
 
     boolean checkUnclosedFlowControl() {
@@ -1007,11 +1080,14 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
     }
 
     boolean checkFwdDeclFunctions() {
-
-        // Look for function that is declared, but not yet implemented
         for (String key : localUserFunctionIndex.keySet()) {
-            if (!program.getUserFunctions().get(localUserFunctionIndex.get(key)).implemented) {
-                setError((String) "Function/sub '" + key + "' was DECLAREd, but not implemented");
+
+            int functionIndex = localUserFunctionIndex.get(key);
+
+            if (!program.getUserFunctions().get(functionIndex).implemented) {
+
+                setError("Function/sub '" + key + "' was DECLAREd, but not implemented");
+
                 return false;
             }
         }
@@ -1452,6 +1528,10 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         currentCodeBlockIndex = program.newCodeBlock();
         getCurrentCodeBlock().setFilename(filename.get());
 
+        // BEGINCODEBLOCK behaves like a separately compiled runtime block:
+        // globals remain visible, but its local function namespace starts fresh.
+        loadCurrentCodeBlockUserFunctionScope();
+
         return true;
     }
 
@@ -1473,6 +1553,12 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
             return false;
         }
 
+        // A forward declaration is local to this code block and must have an
+        // implementation before leaving it.
+        if (!checkFwdDeclFunctions()) {
+            return false;
+        }
+
         // Skip ENDCODEBLOCK
         if (!getToken()) {
             return false;
@@ -1483,10 +1569,14 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
 
         // Set "jump around offset"
         int jumpOpCode = getCurrentCodeBlock().programOffset - 1;
+
         program.getInstruction(jumpOpCode).value = new Value((int) program.getInstructionCount());
 
         // Resume compiling main code block
         currentCodeBlockIndex = 0;
+
+        // Restore the main block's local namespace.
+        loadCurrentCodeBlockUserFunctionScope();
 
         return true;
     }
@@ -5554,31 +5644,30 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         if (funcType == UserFunctionType.UFT_FWDDECLARATION) {
             // Forward declaration.
 
-            // Function name must not already have been used
+            // Function name must not already have been used locally.
             if (isLocalUserFunction(name)) {
                 setError("'" + name + "' has already been used as a function/subroutine name");
                 return false;
             }
 
-            // Function name must not have been used for a runtime function
+            // Function name must not have been used for a runtime function.
             if (isRuntimeFunction(name)) {
-                setError((String) "'" + name + "' has already been used as a runtime function/subroutine name");
+                setError("'" + name + "' has already been used as a runtime function/subroutine name");
                 return false;
             }
 
-            // Allocate new function
+            // Allocate new function.
             prototypes.add(prototype);
             prototype = new UserFuncPrototype();
+
             functions.add(new UserFunc(prototypes.size() - 1, false));
+
             currentFunction = functions.size() - 1;
 
-            // Map name to function
-            getCurrentCodeBlock().userFunctions.put(name, currentFunction);
-            if (!isGlobalUserFunction(name)) {
-                globalUserFunctionIndex.put(name, currentFunction);
-            }
+            // Map into local, visible, persistent CodeBlock and (if new) global scope.
+            mapUserFunction(name, currentFunction);
 
-            // Build reverse index (for debugger)
+            // Build reverse index (for debugger).
             userFunctionReverseIndex.put(currentFunction, name);
         } else if (funcType == UserFunctionType.UFT_RUNTIMEDECLARATION) {
 
@@ -5642,41 +5731,49 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
             } else {
                 if (isLocalUserFunction(name)) {
 
-                    // Function already DECLAREd.
-                    String userFunctionName = name.toLowerCase();
-                    currentFunction = 0;
-                    if (getCurrentCodeBlock().userFunctions.containsKey(userFunctionName)) {
-                        currentFunction = getCurrentCodeBlock().userFunctions.get(userFunctionName);
-                    }
+                    // Function already DECLAREd in this code block.
+                    String functionName = normalizeUserFunctionName(name);
 
-                    // Must not be already implemented
+                    currentFunction = localUserFunctionIndex.get(functionName);
+
+                    // localUserFunctionIndex and CodeBlock.userFunctions represent the
+                    // same local namespace and should always agree.
+                    assertTrue(getCurrentCodeBlock().userFunctions.containsKey(functionName));
+
+                    assertTrue(getCurrentCodeBlock().userFunctions.get(functionName) == currentFunction);
+
+                    // Must not be already implemented.
                     if (functions.get(currentFunction).implemented) {
                         setError("'" + name + "' has already been used as a function/subroutine name");
                         return false;
                     }
 
-                    // Function prototypes must match
+                    // Function prototypes must match.
                     if (!prototype.matches(prototypes.get(functions.get(currentFunction).prototypeIndex))) {
-                        setError((String) "Function/subroutine does not match how it was DECLAREd");
+
+                        setError("Function/subroutine does not match how it was DECLAREd");
                         return false;
                     }
 
-                    // Save updated function spec
-                    // Function starts at next offset
+                    // Complete the existing forward-declared UserFunc.
                     functions.get(currentFunction).implemented = true;
                     functions.get(currentFunction).programOffset = program.getInstructionCount();
+
                 } else {
 
-                    // Completely new function
+                    // Completely new function.
 
-                    // Allocate a new prototype
                     prototypes.add(prototype);
                     prototype = new UserFuncPrototype();
 
-                    // Allocate a new function
                     functions.add(new UserFunc(prototypes.size() - 1, true, program.getInstructionCount()));
+
                     currentFunction = functions.size() - 1;
                 }
+
+                // Whether this was a forward declaration or a new function,
+                // refresh all local/visible mappings to the resolved index.
+                mapUserFunction(name, currentFunction);
 
                 // Map name to function
                 getCurrentCodeBlock().userFunctions.put(name, currentFunction);
@@ -6197,11 +6294,14 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
                 int index = (int) Streaming.readLong(stream);
 
                 // Store function index
-                globalUserFunctionIndex.put(name, index);
+                globalUserFunctionIndex.put(normalizeUserFunctionName(name), index);
 
                 // Next function
                 name = Streaming.readString(stream);
             }
+            // visibleUserFunctionIndex is now an independent map, so rebuild it.
+            resetUserFunctionScope();
+
             // Stream in runtime functions
             // Note that strictly speaking these aren't "names", but because
             // they are
