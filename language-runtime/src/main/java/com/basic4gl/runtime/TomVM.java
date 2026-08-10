@@ -2676,6 +2676,10 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
         // Therefore we won't worry
         // about processing windows messages or checking for pause state etc.
         clearError();
+
+        // ensure cache is valid
+        commitInstructions();
+
         gotoInstruction(expressionStart);
         try {
             do {
