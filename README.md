@@ -17,9 +17,9 @@ Basic4GLj is a cross-platform Java implementation of Basic4GL, providing a progr
 - BASIC programming editor with syntax highlighting, autocomplete, and debugging
 - Windows, Linux, and macOS support
 - Built-in 2D sprite engine, sound, and networking support
-- Plugin support for language extensions
 - OpenGL 3D graphics
 - Program export
+- Plugin support for language extensions
 
 ![screenshot](screenshots/screenshot.png)
 
