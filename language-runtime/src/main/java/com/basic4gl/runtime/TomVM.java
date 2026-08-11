@@ -77,7 +77,7 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
     /**
      * functions are standard functions where the parameters are pushed to the stack.
      */
-    public ArrayList<Function> functions;
+    private final ArrayList<Function> functions;
     /**
      * Initialisation functions
      */
