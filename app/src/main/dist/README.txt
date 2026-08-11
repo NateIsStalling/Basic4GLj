@@ -27,11 +27,11 @@
 ================================================
 	Change Log
 ================================================
-
-[v1.0.0-beta.2] August 9, 2026
+[v1.0.0-beta.2] August 10, 2026
 Installation fixes and improvements:
     - Installer improvements for Windows and Linux
     - Fixed macOS file permissions
+    - VSync is now enabled by default for platform consistency
 
 [v1.0.0-beta.1] July 28, 2026
 The beta release!!!

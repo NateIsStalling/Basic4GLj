@@ -156,7 +156,7 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         // Use GLFW Windows default swap interval for compatibility (1 = vsync on).
         // Older non-GLFW versions presumably had vsync off and perform faster in FPS benchmarks (cubepyramiddemo.gb sample program)
         // TODO: Make vsync/swap interval settings configurable
-        org.lwjgl.glfw.GLFW.glfwSwapInterval(1);
+        glfwSwapInterval(1);
 
         // Initialize OpenGL bindings before any framebuffer-driven GL state updates.
         // This line is critical for LWJGL's interoperation with GLFW's
