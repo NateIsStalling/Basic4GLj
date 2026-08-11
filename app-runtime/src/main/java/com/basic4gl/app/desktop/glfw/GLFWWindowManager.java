@@ -151,6 +151,13 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         // Make OpenGL context current
         glfwMakeContextCurrent(window);
 
+        // Explicitly set default swap interval - default varies by OS.
+        // Basic4GL has historically used the default swap interval on Windows.
+        // Use GLFW Windows default swap interval for compatibility (1 = vsync on).
+        // Older non-GLFW versions presumably had vsync off and perform faster in FPS benchmarks (cubepyramiddemo.gb sample program)
+        // TODO: Make vsync/swap interval settings configurable
+        glfwSwapInterval(1);
+
         // Initialize OpenGL bindings before any framebuffer-driven GL state updates.
         // This line is critical for LWJGL's interoperation with GLFW's
         // OpenGL context, or any context that is managed externally.
