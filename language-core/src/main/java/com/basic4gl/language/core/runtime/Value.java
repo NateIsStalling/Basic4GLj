@@ -127,14 +127,14 @@ public class Value implements Streamable {
         // 1. We are unioning two data types together.
         // 2. We don't know at stream time what data type it is.
         // buffer.order( ByteOrder.LITTLE_ENDIAN);
-        stream.writeInt(rawBits);
+        stream.writeInt(getIntVal());
     }
 
     /**
      * Read a value from the stream.
      */
     public boolean streamIn(DataInputStream stream) throws IOException {
-        rawBits = stream.readInt();
+        setIntVal(stream.readInt());
         return true;
     }
 }
