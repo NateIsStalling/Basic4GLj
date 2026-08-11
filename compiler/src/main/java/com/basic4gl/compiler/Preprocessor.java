@@ -79,8 +79,8 @@ public class Preprocessor extends HasErrorState {
         }
     }
 
-    protected void finalize() // virtual ~Preprocessor();
-            {
+    // virtual ~Preprocessor();
+    protected void finalize() {
 
         // Ensure no source files are still open
         closeAll();
@@ -159,7 +159,6 @@ public class Preprocessor extends HasErrorState {
                         } else {
                             // This becomes the new innermost file
                             openFiles.add(file);
-
                             // Add to visited files list
                             visitedFiles.add(0, filename);
                         }

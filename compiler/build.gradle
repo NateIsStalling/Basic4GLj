@@ -32,3 +32,4 @@ spotless {
 }
 
 build.dependsOn spotlessApply
+

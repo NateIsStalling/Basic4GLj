@@ -2,11 +2,10 @@ package com.basic4gl.language.core.runtime;
 
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
 
-import com.basic4gl.language.core.internal.CollectionUtil;
 import com.basic4gl.language.core.internal.Mutable;
 import com.basic4gl.language.core.types.*;
 import java.nio.*;
-import java.util.*;
+import java.util.List;
 
 /**
  * VM Data
@@ -37,7 +36,7 @@ import java.util.*;
  */
 public class Data {
 
-    private final ArrayList<Value> data;
+    private final ValueBufferList data;
     private int tempData;
     private int stackTop;
     private final int permanent;
@@ -55,20 +54,6 @@ public class Data {
      */
     private int tempDataLock;
 
-    int internalAllocate(int count) {
-
-        // Allocate "count" elements and return iterator pointing to first one
-        int top = size();
-        int newSize = size() + count;
-        if (count > 0) {
-            CollectionUtil.resize(data, newSize);
-            for (int i = top; i < newSize; i++) {
-                data.set(i, new Value());
-            }
-        }
-        return top;
-    }
-
     public Data(int maxDataSize, int stackSize) {
         assertTrue(stackSize > 1);
         assertTrue(maxDataSize > stackSize);
@@ -84,11 +69,11 @@ public class Data {
         // Initialize data
         this.maxDataSize = maxDataSize;
         permanent = stackSize;
-        data = new ArrayList<>();
+        data = new ValueBufferList(stackSize);
         clear();
     }
 
-    public ArrayList<Value> data() {
+    public ValueBufferList data() {
         return data;
     }
 
@@ -117,11 +102,7 @@ public class Data {
         data.clear();
 
         // Allocate stack
-        int temp = size();
-        CollectionUtil.resize(data, permanent);
-        for (int i = temp; i < permanent; i++) {
-            data.set(i, new Value());
-        }
+        data.resize(permanent);
 
         // Clear temp data
         tempData = 1;
@@ -161,9 +142,9 @@ public class Data {
             assertTrue(isIndexValid(i + 1));
 
             // First value = # of elements
-            data.get(i).setIntVal(type.arrayDimensions[type.arrayLevel - 1]);
+            data.setIntValue(i, type.arrayDimensions[type.arrayLevel - 1]);
             // Second value = element size
-            data.get(i + 1).setIntVal(elementSize);
+            data.setIntValue(i + 1, elementSize);
 
             // Initialise elements (if necessary)
             if (typeLib.containsArray(elementType)) {
@@ -196,10 +177,7 @@ public class Data {
         int top = data.size();
         int newSize = data.size() + count;
         if (count > 0) {
-            CollectionUtil.resize(data, newSize);
-            for (int i = top; i < newSize; i++) {
-                data.set(i, new Value());
-            }
+            data.resize(newSize);
         }
         return top;
     }
@@ -222,9 +200,7 @@ public class Data {
         stackTop -= count;
 
         // Initialize data
-        for (int i = 0; i < count; i++) {
-            data.set(stackTop + i, new Value());
-        }
+        data.fillInts(stackTop, count, 0);
 
         // Return index of start of data
         return stackTop;
@@ -250,9 +226,7 @@ public class Data {
 
         // Initialize data
         if (initData) {
-            for (int i = 0; i < count; i++) {
-                data.set(top + i, new Value());
-            }
+            data.fillInts(top, count, 0);
         }
 
         // Return index of start of data
@@ -347,8 +321,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -362,9 +336,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Integer.valueOf(
-                                data.data().get(index + 2 + i).getIntVal())
-                        .byteValue();
+                array[withOffset] =
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).byteValue();
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -373,8 +346,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().get(index + 2 + i).getRealVal())
-                        .byteValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).byteValue();
             }
             return elementCount;
         } else {
@@ -425,8 +398,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -440,9 +413,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Integer.valueOf(
-                                data.data().get(index + 2 + i).getIntVal())
-                        .shortValue();
+                array[withOffset] =
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).shortValue();
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -451,8 +423,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().get(index + 2 + i).getRealVal())
-                        .shortValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).shortValue();
             }
             return elementCount;
         } else {
@@ -503,8 +475,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -518,7 +490,7 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = data.data().get(index + 2 + i).getIntVal();
+                array[withOffset] = data.data().getIntValue(index + 2 + i);
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -527,8 +499,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().get(index + 2 + i).getRealVal())
-                        .intValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).intValue();
             }
             return elementCount;
         } else {
@@ -579,8 +551,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -594,9 +566,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Integer.valueOf(
-                                data.data().get(index + 2 + i).getIntVal())
-                        .longValue();
+                array[withOffset] =
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).longValue();
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -605,8 +576,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().get(index + 2 + i).getRealVal())
-                        .longValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).longValue();
             }
             return elementCount;
         } else {
@@ -657,8 +628,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -672,9 +643,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Integer.valueOf(
-                                data.data().get(index + 2 + i).getIntVal())
-                        .doubleValue();
+                array[withOffset] =
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).doubleValue();
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -683,8 +653,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().get(index + 2 + i).getRealVal())
-                        .doubleValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).doubleValue();
             }
             return elementCount;
         } else {
@@ -735,8 +705,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = offset;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -750,9 +720,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Integer.valueOf(
-                                data.data().get(index + 2 + i).getIntVal())
-                        .floatValue();
+                array[withOffset] =
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).floatValue();
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -761,8 +730,8 @@ public class Data {
             }
             for (int i = 0; i < elementCount; i++) {
                 int withOffset = i + offset;
-                array[withOffset] = Float.valueOf(data.data().get(index + 2 + i).getRealVal())
-                        .floatValue();
+                array[withOffset] =
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).floatValue();
             }
             return elementCount;
         } else {
@@ -802,8 +771,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -817,8 +786,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Integer.valueOf(data.data().get(index + 2 + i).getIntVal())
-                        .byteValue());
+                buffer.put(
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).byteValue());
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -826,8 +795,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Float.valueOf(data.data().get(index + 2 + i).getRealVal())
-                        .byteValue());
+                buffer.put(
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).byteValue());
             }
             return elementCount;
         } else {
@@ -867,8 +836,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -882,8 +851,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Integer.valueOf(data.data().get(index + 2 + i).getIntVal())
-                        .shortValue());
+                buffer.put(
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).shortValue());
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -891,8 +860,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Float.valueOf(data.data().get(index + 2 + i).getRealVal())
-                        .shortValue());
+                buffer.put(
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).shortValue());
             }
             return elementCount;
         } else {
@@ -932,8 +901,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -947,7 +916,7 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Integer.valueOf(data.data().get(index + 2 + i).getIntVal()));
+                buffer.put(Integer.valueOf(data.data().getIntValue(index + 2 + i)));
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -955,8 +924,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Float.valueOf(data.data().get(index + 2 + i).getRealVal())
-                        .intValue());
+                buffer.put(
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).intValue());
             }
             return elementCount;
         } else {
@@ -996,8 +965,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1011,8 +980,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Integer.valueOf(data.data().get(index + 2 + i).getIntVal())
-                        .longValue());
+                buffer.put(
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).longValue());
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -1020,8 +989,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Float.valueOf(data.data().get(index + 2 + i).getRealVal())
-                        .longValue());
+                buffer.put(
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).longValue());
             }
             return elementCount;
         } else {
@@ -1061,8 +1030,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1076,8 +1045,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Integer.valueOf(data.data().get(index + 2 + i).getIntVal())
-                        .doubleValue());
+                buffer.put(
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).doubleValue());
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -1085,8 +1054,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Float.valueOf(data.data().get(index + 2 + i).getRealVal())
-                        .doubleValue());
+                buffer.put(
+                        Float.valueOf(data.data().getFloatValue(index + 2 + i)).doubleValue());
             }
             return elementCount;
         } else {
@@ -1126,8 +1095,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1141,8 +1110,8 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(Integer.valueOf(data.data().get(index + 2 + i).getIntVal())
-                        .floatValue());
+                buffer.put(
+                        Integer.valueOf(data.data().getIntValue(index + 2 + i)).floatValue());
             }
             return elementCount;
         } else if (elementType.matchesType(BasicValType.VTP_REAL)) {
@@ -1150,7 +1119,7 @@ public class Data {
                 elementCount = maxSize;
             }
             for (int i = 0; i < elementCount; i++) {
-                buffer.put(data.data().get(index + 2 + i).getRealVal());
+                buffer.put(data.data().getFloatValue(index + 2 + i));
             }
             return elementCount;
         } else {
@@ -1197,8 +1166,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = offset;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1268,8 +1237,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = offset;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1339,8 +1308,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = offset;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1410,8 +1379,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = offset;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1481,8 +1450,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = offset;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1552,8 +1521,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = offset;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1615,8 +1584,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1679,8 +1648,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1743,8 +1712,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1807,8 +1776,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1871,8 +1840,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -1935,8 +1904,8 @@ public class Data {
         ValType elementType = new ValType(type);
         elementType.arrayLevel--;
 
-        int elementCount = data.data().get(index).getIntVal();
-        int elementSize = data.data().get(index + 1).getIntVal();
+        int elementCount = data.data().getIntValue(index);
+        int elementSize = data.data().getIntValue(index + 1);
         if (elementType.arrayLevel > 0) {
             int arrayOffset = 0;
             for (int i = 0; i < elementCount && arrayOffset < maxSize; i++) {
@@ -2458,7 +2427,7 @@ public class Data {
         // Translate C array into data
         int i = 0;
         for (int x = 0; x < arraySize1; x++) {
-            int offset = dataIndex + x * data.data().get(dataIndex + 1).getIntVal() + 2;
+            int offset = dataIndex + x * data.data().getIntValue(dataIndex + 1) + 2;
             for (int y = 0; y < arraySize2; y++) {
                 data.data().get(offset + y + 2).setIntVal((Integer) array.get(i));
             }
@@ -2478,7 +2447,7 @@ public class Data {
         // Translate C array into data
         int i = 0;
         for (int x = 0; x < arraySize1; x++) {
-            int offset = dataIndex + x * data.data().get(dataIndex + 1).getIntVal() + 2;
+            int offset = dataIndex + x * data.data().getIntValue(dataIndex + 1) + 2;
             for (int y = 0; y < arraySize2; y++) {
                 data.data().get(offset + y + 2).setRealVal((Float) array.get(i++));
             }
@@ -2498,7 +2467,7 @@ public class Data {
         // Translate C array into data
         int i = 0;
         for (int x = 0; x < arraySize1; x++) {
-            int offset = dataIndex + x * data.data().get(dataIndex + 1).getIntVal() + 2;
+            int offset = dataIndex + x * data.data().getIntValue(dataIndex + 1) + 2;
             for (int y = 0; y < arraySize2; y++) {
                 data.data().get(offset + y + 2).setRealVal(array[i++]);
             }
@@ -2513,6 +2482,6 @@ public class Data {
         assertTrue(data.isIndexValid(arrayOffset));
         int index = arrayOffset + dimension * 2;
         assertTrue(data.isIndexValid(index));
-        return data.data().get(index).getIntVal();
+        return data.data().getIntValue(index);
     }
 }

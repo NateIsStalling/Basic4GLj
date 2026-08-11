@@ -436,13 +436,13 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
 
     public final class WrapOpenFileRead implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(internalOpenFileRead(vm.getStringParam(1)));
+            vm.setRegIntVal(internalOpenFileRead(vm.getStringParam(1)));
         }
     }
 
     public final class WrapOpenFileWrite implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(internalOpenFileWrite(vm.getStringParam(1)));
+            vm.setRegIntVal(internalOpenFileWrite(vm.getStringParam(1)));
         }
     }
 
@@ -526,7 +526,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 return;
             }
 
-            byte element = vm.getIntParam(1).byteValue();
+            byte element = (byte) vm.getIntParam(1).intValue();
             Exception exception = null;
             try {
                 stream.out.write(element);
@@ -544,7 +544,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 return;
             }
 
-            short element = vm.getIntParam(1).shortValue();
+            short element = (short) vm.getIntParam(1).intValue();
             Exception exception = null;
             try {
                 stream.out.write(ByteBuffer.allocate(2)
@@ -688,7 +688,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
 
     public final class WrapReadByte implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(0);
+            vm.setRegIntVal(0);
             if (!getInputStream(vm.getIntParam(1))) {
                 return;
             }
@@ -703,14 +703,14 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 exception = e;
             }
             if (updateError("Read", exception)) {
-                vm.getReg().setIntVal((int) element);
+                vm.setRegIntVal((int) element);
             }
         }
     }
 
     public final class WrapReadWord implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(0);
+            vm.setRegIntVal(0);
             if (!getInputStream(vm.getIntParam(1))) {
                 return;
             }
@@ -730,14 +730,14 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 exception = e;
             }
             if (updateError("Read", exception)) {
-                vm.getReg().setIntVal((int) element);
+                vm.setRegIntVal((int) element);
             }
         }
     }
 
     public final class WrapReadInt implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(0);
+            vm.setRegIntVal(0);
             if (!getInputStream(vm.getIntParam(1))) {
                 return;
             }
@@ -757,14 +757,14 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 exception = e;
             }
             if (updateError("Read", exception)) {
-                vm.getReg().setIntVal(element);
+                vm.setRegIntVal(element);
             }
         }
     }
 
     public final class WrapReadFloat implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(0);
+            vm.setRegIntVal(0);
             if (!getInputStream(vm.getIntParam(1))) {
                 return;
             }
@@ -784,14 +784,14 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 exception = e;
             }
             if (updateError("Read", exception)) {
-                vm.getReg().setRealVal(element);
+                vm.setRegFloatValue(element);
             }
         }
     }
 
     public final class WrapReadDouble implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(0);
+            vm.setRegIntVal(0);
             if (!getInputStream(vm.getIntParam(1))) {
                 return;
             }
@@ -811,7 +811,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                 exception = e;
             }
             if (updateError("Read", exception)) {
-                vm.getReg().setRealVal((float) element);
+                vm.setRegFloatValue((float) element);
             }
         }
     }
@@ -986,10 +986,10 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
             String filename = vm.getStringParam(1);
             if (files.delete(filename, isSandboxMode())) {
                 lastError = "";
-                vm.getReg().setIntVal(-1);
+                vm.setRegIntVal(-1);
             } else {
                 lastError = files.getError();
-                vm.getReg().setIntVal(0);
+                vm.setRegIntVal(0);
             }
         }
     }
@@ -1002,7 +1002,7 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
 
     public final class WrapEndOfFile implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(-1);
+            vm.setRegIntVal(-1);
             if (!getStream(vm.getIntParam(1))) {
                 return;
             }
@@ -1011,27 +1011,25 @@ public class FileIOBasicLib implements FunctionLibrary, IFileAccess {
                         || (stream.out != null)) // Todo check if output stream is eof
                 // && (stream.out.available() > 0)))
                 {
-                    vm.getReg().setIntVal(0);
+                    vm.setRegIntVal(0);
                 }
             } catch (Exception e) {
-                vm.getReg().setIntVal(-1);
+                vm.setRegIntVal(-1);
             }
         }
     }
 
     public final class WrapOpenAppDataRead implements Function {
         public void run(VM vm) {
-            vm.getReg()
-                    .setIntVal(internalOpenAppDataRead(
-                            vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));
+            vm.setRegIntVal(
+                    internalOpenAppDataRead(vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));
         }
     }
 
     public final class WrapOpenAppDataWrite implements Function {
         public void run(VM vm) {
-            vm.getReg()
-                    .setIntVal(internalOpenAppDataWrite(
-                            vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));
+            vm.setRegIntVal(
+                    internalOpenAppDataWrite(vm.getStringParam(3), vm.getStringParam(2), vm.getIntParam(1) != 0));
         }
     }
 

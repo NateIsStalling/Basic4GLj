@@ -7,13 +7,11 @@ import com.basic4gl.language.core.streaming.ProgramStreamable;
 import com.basic4gl.language.core.types.TypeLibrary;
 import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.language.core.types.VariableCollection;
-import java.util.Vector;
+import java.util.List;
 
 public interface VM {
 
     String getStringParam(int i);
-
-    Value getReg();
 
     Data getData();
 
@@ -45,8 +43,6 @@ public interface VM {
 
     String getRegString();
 
-    Value getReg2();
-
     boolean hasError();
 
     boolean isDone();
@@ -75,7 +71,7 @@ public interface VM {
 
     String getOpCodeData(Instruction data, IFunctionIndex functions);
 
-    Vector<UserFuncStackFrame> getUserCallStack();
+    List<UserFuncStackFrame> getUserCallStack();
 
     void repatchBreakpoints();
 
@@ -111,4 +107,16 @@ public interface VM {
     String getValueString(VariableCollection.Variable vmVariable);
 
     String getDisplayVariable(ValType valType);
+
+    int getRegIntVal();
+
+    int getReg2IntVal();
+
+    void setRegIntVal(int value);
+
+    void setRegFloatValue(float value);
+
+    float getRegFloatValue();
+
+    float getReg2FloatValue();
 }

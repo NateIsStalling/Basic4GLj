@@ -279,12 +279,12 @@ public class Basic4GLLanguageService implements LanguageService {
         return items;
     }
 
-    private ArrayList<FunctionDefinition> buildUserFunctionReferenceItems() {
+    private List<FunctionDefinition> buildUserFunctionReferenceItems() {
         ArrayList<FunctionDefinition> items = new ArrayList<>();
         Map<String, Integer> funcIndex = compiler.getGlobalUserFunctionIndex();
-        java.util.Vector<com.basic4gl.language.core.stackframe.UserFunc> functions =
+        List<com.basic4gl.language.core.stackframe.UserFunc> functions =
                 compiler.getProgram().getUserFunctions();
-        java.util.Vector<com.basic4gl.language.core.stackframe.UserFuncPrototype> prototypes =
+        List<com.basic4gl.language.core.stackframe.UserFuncPrototype> prototypes =
                 compiler.getProgram().getUserFunctionPrototypes();
         for (Map.Entry<String, Integer> entry : funcIndex.entrySet()) {
             String name = entry.getKey();

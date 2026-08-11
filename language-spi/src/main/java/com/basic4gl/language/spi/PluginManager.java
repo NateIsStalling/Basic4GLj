@@ -56,6 +56,7 @@ public abstract class PluginManager implements Basic4GLInterfaceRegistry {
 
     /**
      * Load plugin and return true if successful. See getError() if failed.
+     *
      * @param filename
      * @return true if plugin loaded successfully, or false if an error
      */
@@ -63,6 +64,7 @@ public abstract class PluginManager implements Basic4GLInterfaceRegistry {
 
     /**
      * Unload plugin. Returns true if plugin unloaded successfully
+     *
      * @param filename
      * @return
      */
@@ -103,6 +105,7 @@ public abstract class PluginManager implements Basic4GLInterfaceRegistry {
 
     /**
      * Return true if a function name matches a Plugin function.
+     *
      * @param name function name
      * @return true if name matches a Plugin function
      */
@@ -120,6 +123,7 @@ public abstract class PluginManager implements Basic4GLInterfaceRegistry {
 
     /**
      * Find constant with a given name within all loaded plugins.
+     *
      * @param name constant name
      * @return Constant object if found, or null if not found.
      */
@@ -138,7 +142,8 @@ public abstract class PluginManager implements Basic4GLInterfaceRegistry {
 
     /**
      * Find functions of a given name within all loaded plugins and append to array.
-     * @param name function name
+     *
+     * @param name      function name
      * @param functions array to append function specifications to.
      * @param count
      * @param max
@@ -175,7 +180,8 @@ public abstract class PluginManager implements Basic4GLInterfaceRegistry {
 
     /**
      *
-     * @return Returns true if all plugins started successfully. Otherwise program should not proceed.
+     * @return Returns true if all plugins started successfully. Otherwise program
+     *         should not proceed.
      */
     public boolean programStart() {
         for (int i = 0; i < plugins.size(); i++) {

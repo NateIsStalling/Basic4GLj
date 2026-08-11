@@ -21,6 +21,8 @@ dim a
 dim i,j 
 dim time  ' Current time
 dim t1,t2 ' Starting and ending time variables
+dim frames, timer, fps
+dim now, elapsed
 
 dim xpos(nops) ' Xposition
 dim ypos(nops) ' Yposition
@@ -57,7 +59,11 @@ glEnable (GL_TEXTURE_2D)
 glBlendFunc(GL_SRC_ALPHA,GL_ONE)
 glEnable(GL_BLEND)
 
-while true    
+resizetext (30, 3)
+textmode (TEXT_OVERLAID)
+timer = TickCount ()
+
+while true
 
 ' Clear screen   
 glClear (GL_COLOR_BUFFER_BIT)   
@@ -115,8 +121,20 @@ next
 
 glEnd ()
 
+frames = frames + 1
+locate 0, 0: print "FPS: " + fps + "   "
+DrawText ()
+
 ' Display output
 SwapBuffers ()
+
+now = TickCount ()
+elapsed = now - timer
+if elapsed >= 250 then
+    fps = Int ((frames * 1000.0) / elapsed)
+    frames = 0
+    timer = now
+endif
 
 time = time + 1
 

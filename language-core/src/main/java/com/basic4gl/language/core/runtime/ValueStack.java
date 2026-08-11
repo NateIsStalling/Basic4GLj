@@ -1,76 +1,118 @@
 package com.basic4gl.language.core.runtime;
 
 import static com.basic4gl.language.core.internal.Assert.assertTrue;
+import static java.lang.Float.floatToRawIntBits;
 
-import java.util.Vector;
+import java.util.Arrays;
 
 /**
  * Used to stack values for reverse-Polish expression evaluation, or as
  * function parameters.
  */
 public class ValueStack {
-    private final Vector<Value> data;
+    private int[] data;
+    private int size;
+    private final int limit;
     private final Store<String> strings;
 
-    public ValueStack(Store<String> strings) {
+    public ValueStack(int limit, Store<String> strings) {
         this.strings = strings;
-        data = new Vector<>();
+        this.limit = limit;
+        data = new int[limit];
     }
 
     public boolean isEmpty() {
-        return data.isEmpty();
+        return size == 0;
     }
 
-    public void push(Value v) { // Push v as NON string
-        data.add(new Value(v));
+    public void push(int v) { // Push v as NON string
+        ensureCapacity(size + 1);
+        data[size++] = v;
     }
 
     public void pushString(String str) {
         int index = strings.alloc(); // Allocate string
         strings.setValue(index, str); // Copy value
-        data.add(new Value(index)); // Create stack index
+        push(index); // Create stack index
     }
 
-    public Value tos() {
+    public int tos() {
         assertTrue(!isEmpty());
-        return data.get(data.size() - 1);
+        return data[size - 1];
     }
 
-    public Value pop() {
-        Value v = tos();
-        data.remove(data.size() - 1);
-
-        return v;
+    public int pop() {
+        assertTrue(!isEmpty());
+        return data[--size];
     }
 
     public String popString() {
         assertTrue(!isEmpty());
         String str;
         // Copy string value from stack
-        int index = tos().getIntVal();
+        int index = tos();
         assertTrue(strings.isIndexValid(index));
         str = strings.getValueAt(index);
         // Deallocate stacked string
         strings.freeAtIndex(index);
 
         // Remove stack element
-        data.remove(data.size() - 1);
+        pop();
         return str;
     }
 
     public void clear() {
-        data.clear();
+        size = 0;
     }
 
     public int size() {
-        return data.size();
+        return size;
     }
 
-    public Value get(int index) {
-        return data.get(index);
+    public int get(int index) {
+        assertTrue(index >= 0 && index < size && index < data.length);
+        return data[index];
+    }
+
+    public void set(int index, int value) {
+        assertTrue(index >= 0 && index < size && index < data.length);
+        data[index] = value;
+    }
+
+    public void set(int index, float value) {
+        assertTrue(index >= 0 && index < size && index < data.length);
+        data[index] = floatToRawIntBits(value);
+    }
+
+    private void ensureCapacity(int minCapacity) {
+        if (minCapacity <= data.length) {
+            return;
+        }
+
+        int newCapacity = data.length;
+
+        assertTrue(minCapacity <= limit, "Stack overflow");
+
+        while (newCapacity < minCapacity) {
+            newCapacity *= 2;
+        }
+
+        newCapacity = Math.min(newCapacity, limit);
+
+        data = Arrays.copyOf(data, newCapacity);
     }
 
     public void resize(int size) {
-        data.setSize(size);
+        int oldSize = this.size;
+
+        if (size > data.length) {
+            ensureCapacity(size);
+        }
+
+        if (size > oldSize) {
+            Arrays.fill(data, oldSize, size, 0);
+        }
+
+        this.size = size;
     }
 }

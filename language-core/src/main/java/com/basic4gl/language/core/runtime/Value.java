@@ -4,7 +4,6 @@ import com.basic4gl.language.core.streaming.Streamable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * Used to store a single value.
@@ -13,90 +12,129 @@ import java.nio.ByteBuffer;
  * Note: When storing a string, the actual value is stored in a separate
  * string array. {@link #getIntVal()} then stores the index of the string in
  * this array.
- * porting note: had directive `#pragma pack (push, 1)`
  */
 public class Value implements Streamable {
-    private boolean isInt;
-    private Integer intVal;
-    private Float realVal;
+    /**
+     * The value, stored as a 32-bit integer.
+     *
+     * These are interpreted as 32-bit floats, indexes into a separate string store,
+     * references to structure types, etc.
+     */
+    private int rawBits;
 
-    public Value() { // Default constructor
-        isInt = true;
-        intVal = 0;
-        realVal = 0f;
+    //
+    // Constructors and conversion from Java values.
+    //
+
+    public Value() {
+        rawBits = 0;
     }
 
-    public Value(final Value v) { // Copy constructor
-        isInt = v.isInt;
-        intVal = v.intVal;
-        realVal = v.realVal;
+    public Value(final Value v) {
+        rawBits = v.getIntVal();
     }
 
-    public Value(Integer intVal) {
+    // Note: we use the unboxed versions here,
+
+    public Value(int intVal) {
         setIntVal(intVal);
     }
 
-    public Value(Float realVal) {
+    public Value(float realVal) {
         setRealVal(realVal);
     }
 
-    public int getIntVal() {
-        return intVal.intValue();
-    }
+    //
+    // Accessors that interpret the bits stored.
+    //
 
-    public float getRealVal() {
-        return realVal.floatValue();
+    // A regular old `int` is stored directly.
+
+    public int getIntVal() {
+        return rawBits;
     }
 
     public void setIntVal(Integer val) {
-        isInt = true;
-        intVal = val;
-        realVal = val.floatValue();
+        setIntVal(val.intValue());
+    }
+
+    public void setIntVal(int val) {
+        rawBits = val;
+    }
+
+    // `float` must be cast to and from the bit representation.
+
+    public float getRealVal() {
+        return Float.intBitsToFloat(rawBits);
     }
 
     public void setRealVal(Float val) {
-        isInt = false;
-        intVal = val.intValue();
-        realVal = val;
+        setRealVal(val.floatValue());
     }
 
-    public void setVal(Integer val) {
-        isInt = true;
+    public void setRealVal(float val) {
+        rawBits = Float.floatToRawIntBits(val);
+    }
+
+    // General `set` operation.
+
+    public void setVal(Value val) {
+        rawBits = val.getIntVal();
+    }
+
+    public void setVal(int val) {
         setIntVal(val);
     }
 
-    public void setVal(Float val) {
-        isInt = false;
+    public void setVal(float val) {
         setRealVal(val);
     }
 
-    public void setVal(Value val) {
-        isInt = val.isInt;
-        intVal = val.intVal;
-        realVal = val.realVal;
+    //
+    // Overrides for Object methods
+    //
+
+    /** Convert the value to a string, for easy displaying to users. */
+    @Override
+    public String toString() {
+        return "Value(int: " + this.getIntVal() + ", real:" + this.getRealVal() + ")";
     }
 
-    // Streaming
-    public void streamOut(DataOutputStream stream) throws IOException {
+    /** Return true if this Value is equal to that Value. */
+    @Override
+    public boolean equals(Object thatObject) {
+        if (!(thatObject instanceof Value)) {
+            return false;
+        }
+        Value that = (Value) thatObject;
+        return this.getIntVal() == that.getIntVal();
+    }
 
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(getIntVal());
+    }
+
+    //
+    // Streamable implementation.
+    //
+
+    /**
+     * Write this value to the stream given.
+     */
+    public void streamOut(DataOutputStream stream) throws IOException {
         // There may be some potential cross-platform streaming issues because:
         // 1. We are unioning two data types together.
         // 2. We don't know at stream time what data type it is.
         // buffer.order( ByteOrder.LITTLE_ENDIAN);
-        if (isInt) {
-            stream.writeInt(intVal);
-        } else
-        // stream.write(ByteBuffer.allocate(4).putFloat(realVal).array());
-        {
-            stream.writeFloat(realVal);
-        }
+        stream.writeInt(getIntVal());
     }
 
+    /**
+     * Read a value from the stream.
+     */
     public boolean streamIn(DataInputStream stream) throws IOException {
-        byte[] b = new byte[Float.SIZE / Byte.SIZE];
-        stream.read(b);
-        intVal = ByteBuffer.wrap(b).getInt();
-        realVal = ByteBuffer.wrap(b).getFloat();
+        setIntVal(stream.readInt());
         return true;
     }
 }

@@ -45,6 +45,14 @@ dependencies {
     testImplementation 'org.mockito:mockito-junit-jupiter:5.6.0'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    testImplementation project(":app-runtime")
+    testImplementation project(":app-spi")
+    testImplementation project(":language-core")
+    testImplementation project(":language-spi")
+    testImplementation project(":library")
+    testImplementation project(":compiler")
+    testImplementation project(":language-runtime")
 }
 
 test {

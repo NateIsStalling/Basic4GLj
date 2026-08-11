@@ -26,6 +26,9 @@ import org.lwjgl.BufferUtils;
  */
 public class GLBasicLib_gl implements FunctionLibrary {
 
+    // Internal flag for debugging performance
+    static final boolean nullGlMode = false;
+
     private ByteBuffer byteBuffer16;
     private ShortBuffer shortBuffer16;
     private IntBuffer intBuffer16;
@@ -5567,7 +5570,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             IntBuffer b1 = a1.asIntBuffer();
             b1.limit(vm.getIntParam(3));
 
-            vm.getReg().setIntVal(glAreTexturesResident(b1, a2) ? 1 : 0);
+            vm.setRegIntVal(glAreTexturesResident(b1, a2) ? 1 : 0);
             Data.writeArray(
                     vm.getData(),
                     vm.getIntParam(2),
@@ -6209,8 +6212,11 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglColor4f implements Function {
-
         public void run(VM vm) {
+            if (nullGlMode) {
+                return;
+            }
+
             glColor4f(vm.getRealParam(4), vm.getRealParam(3), vm.getRealParam(2), vm.getRealParam(1));
         }
     }
@@ -6368,7 +6374,6 @@ public class GLBasicLib_gl implements FunctionLibrary {
             byteBuffer16.put(vm.getIntParam(3).byteValue());
             byteBuffer16.put(vm.getIntParam(2).byteValue());
             byteBuffer16.put(vm.getIntParam(1).byteValue());
-
             byteBuffer16.rewind();
             glColor4ubv(byteBuffer16);
 
@@ -7239,7 +7244,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     public static final class WrapglGetError implements Function {
 
         public void run(VM vm) {
-            vm.getReg().setIntVal(glGetError());
+            vm.setRegIntVal(glGetError());
         }
     }
 
@@ -8047,6 +8052,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglIndexs implements Function {
+
         public void run(VM vm) {
             glIndexs(vm.getIntParam(1).shortValue());
         }
@@ -8094,6 +8100,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglIndexub implements Function {
+
         public void run(VM vm) {
             glIndexub(vm.getIntParam(1).byteValue());
         }
@@ -8150,19 +8157,19 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglIsEnabled implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(glIsEnabled(vm.getIntParam(1)) ? 1 : 0);
+            vm.setRegIntVal(glIsEnabled(vm.getIntParam(1)) ? 1 : 0);
         }
     }
 
     public static final class WrapglIsList implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(glIsList(vm.getIntParam(1)) ? 1 : 0);
+            vm.setRegIntVal(glIsList(vm.getIntParam(1)) ? 1 : 0);
         }
     }
 
     public static final class WrapglIsTexture implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(glIsTexture(vm.getIntParam(1)) ? 1 : 0);
+            vm.setRegIntVal(glIsTexture(vm.getIntParam(1)) ? 1 : 0);
         }
     }
 
@@ -10058,7 +10065,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
 
     public static final class WrapglRenderMode implements Function {
         public void run(VM vm) {
-            vm.getReg().setIntVal(glRenderMode(vm.getIntParam(1)));
+            vm.setRegIntVal(glRenderMode(vm.getIntParam(1)));
         }
     }
 
@@ -10378,7 +10385,11 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord2f implements Function {
+
         public void run(VM vm) {
+            if (nullGlMode) {
+                return;
+            }
             glTexCoord2f(vm.getRealParam(2), vm.getRealParam(1));
         }
     }
@@ -10470,6 +10481,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglTexCoord2s implements Function {
+
         public void run(VM vm) {
             glTexCoord2s(vm.getIntParam(2).shortValue(), vm.getIntParam(1).shortValue());
         }
@@ -10886,7 +10898,7 @@ public class GLBasicLib_gl implements FunctionLibrary {
             shortBuffer16.put(a);
             shortBuffer16.rewind();
             glTexCoord4sv(shortBuffer16);
-            vm.getRefParam(1).setIntVal((int) shortBuffer16.get(0));
+            vm.getRefParam(1).setIntVal(shortBuffer16.get(0));
         }
     }
 
@@ -11271,7 +11283,11 @@ public class GLBasicLib_gl implements FunctionLibrary {
     }
 
     public static final class WrapglVertex2f implements Function {
+
         public void run(VM vm) {
+            if (nullGlMode) {
+                return;
+            }
             glVertex2f(vm.getRealParam(2), vm.getRealParam(1));
         }
     }

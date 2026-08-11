@@ -96,7 +96,7 @@ class FlowControl {
         controlType = type;
         this.jumpOut = jumpOut;
         this.jumpLoop = jumpLoop;
-        sourcePos = new InstructionPosition(line, col);
+        sourcePos = new InstructionPosition(0, line, col);
         this.impliedEndif = impliedEndif;
         this.data = data;
         this.blockIf = blockIf;
