@@ -2,6 +2,7 @@ package com.basic4gl.runtime.plugin;
 
 import static com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_FLOAT;
 import static com.basic4gl.language.core.extensions.Basic4GLExtendedTypeCode.PLUGIN_BASIC4GL_EXT_INT;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.basic4gl.language.spi.PluginManager;
@@ -134,6 +135,76 @@ public class TomVMPluginAdapterTests {
 
         assertEquals(123, buffer.getInt());
         assertEquals(dataIndex, vm.getIntParam(1));
+    }
+
+    @Test
+    void directIntAccessRoundTripsVmMemory() {
+        int dataIndex = vm.getData().allocate(1);
+        vm.getData().data().setIntValue(dataIndex, 17);
+
+        assertEquals(17, adapter.directGetInt(dataIndex));
+
+        adapter.directSetInt(dataIndex, 42);
+
+        assertEquals(42, vm.getData().data().getIntValue(dataIndex));
+    }
+
+    @Test
+    void directFloatAccessRoundTripsVmMemory() {
+        int dataIndex = vm.getData().allocate(1);
+        vm.getData().data().setFloatValue(dataIndex, 1.25f);
+
+        assertEquals(1.25f, adapter.directGetFloat(dataIndex), 0.00001f);
+
+        adapter.directSetFloat(dataIndex, 3.5f);
+
+        assertEquals(Float.floatToRawIntBits(3.5f), vm.getData().data().getIntValue(dataIndex));
+    }
+
+    @Test
+    void directStringAccessRoundTripsVmMemory() {
+        int dataIndex = vm.getData().allocate(1);
+
+        adapter.directSetString(dataIndex, "hello");
+
+        char[] buffer = new char[16];
+        adapter.directGetString(dataIndex, buffer, buffer.length);
+
+        assertEquals("hello", new String(buffer, 0, 5));
+        assertEquals('\0', buffer[5]);
+
+        int stringHandle = vm.getData().data().getIntValue(dataIndex);
+        assertEquals("hello", vm.getString(stringHandle));
+    }
+
+    @Test
+    void intArrayRoundTripsThroughVmMemory() {
+        int[] source = {10, 20, 30, 40};
+
+        adapter.setIntArrayResult(source, 1, source.length);
+
+        int dataIndex = vm.getRegIntVal();
+        vm.getStack().push(dataIndex);
+
+        int[] result = new int[source.length];
+        adapter.getIntArrayParam(1, result, 1, result.length);
+
+        assertArrayEquals(source, result);
+    }
+
+    @Test
+    void floatArrayRoundTripsThroughVmMemory() {
+        float[] source = {1.25f, 2.5f, -3.75f, 4.0f};
+
+        adapter.setFloatArrayResult(source, 1, source.length);
+
+        int dataIndex = vm.getRegIntVal();
+        vm.getStack().push(dataIndex);
+
+        float[] result = new float[source.length];
+        adapter.getFloatArrayParam(1, result, 1, result.length);
+
+        assertArrayEquals(source, result, 0.00001f);
     }
 
     private static ByteBuffer intBuffer(int value) {

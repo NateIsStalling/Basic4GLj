@@ -351,6 +351,97 @@ public class IntegrationTest {
         assertGlobalVariableEquals("result", 2);
     }
 
+    @Test
+    void nestedUserFunctionCallsPreserveCallerLocals() {
+        assertCodeCompiles(
+                """
+                function inner(x)
+                    return x + 1
+                endfunction
+
+                function outer(x)
+                    dim before
+                    before = x
+                    return before + inner(10) + before
+                endfunction
+
+                dim result
+                result = outer(5)
+                """);
+
+        assertCodeExecutes();
+
+        assertGlobalVariableEquals("result", 21);
+    }
+
+    @Test
+    void recursiveUserFunctionCallsPreserveFrameState() {
+        assertCodeCompiles(
+                """
+                function countdown(n)
+                    if n <= 0 then
+                        return 0
+                    endif
+
+                    return n + countdown(n - 1)
+                endfunction
+
+                dim result
+                result = countdown(5)
+                """);
+
+        assertCodeExecutes();
+
+        assertGlobalVariableEquals("result", 15);
+    }
+
+    @Test
+    void reusedUserFunctionFrameDoesNotRetainLocalValues() {
+        assertCodeCompiles(
+                """
+                function choose(x)
+                    dim local
+
+                    if x = 1 then
+                        local = 7
+                    endif
+
+                    return local
+                endfunction
+
+                dim first, second
+                first = choose(1)
+                second = choose(0)
+                """);
+
+        assertCodeExecutes();
+
+        assertGlobalVariableEquals("first", 7);
+        assertGlobalVariableEquals("second", 0);
+    }
+
+    @Test
+    void repeatedUserFunctionCallsDoNotCorruptReturnValues() {
+        assertCodeCompiles(
+                """
+                function addOne(x)
+                    return x + 1
+                endfunction
+
+                dim first, second, third
+
+                first = addOne(10)
+                second = addOne(20)
+                third = addOne(30)
+                """);
+
+        assertCodeExecutes();
+
+        assertGlobalVariableEquals("first", 11);
+        assertGlobalVariableEquals("second", 21);
+        assertGlobalVariableEquals("third", 31);
+    }
+
     // Helper assertions
 
     /** Asserts that the BASIC code given should correctly compile. */
