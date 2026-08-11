@@ -7,7 +7,7 @@ import com.basic4gl.language.core.streaming.ProgramStreamable;
 import com.basic4gl.language.core.types.TypeLibrary;
 import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.language.core.types.VariableCollection;
-import java.util.ArrayList;
+import java.util.List;
 
 public interface VM {
 
@@ -71,7 +71,7 @@ public interface VM {
 
     String getOpCodeData(Instruction data, IFunctionIndex functions);
 
-    ArrayList<UserFuncStackFrame> getUserCallStack();
+    List<UserFuncStackFrame> getUserCallStack();
 
     void repatchBreakpoints();
 

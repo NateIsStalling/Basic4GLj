@@ -7,7 +7,7 @@ import com.basic4gl.language.core.stackframe.UserFuncPrototype;
 import com.basic4gl.language.core.types.TypeLibrary;
 import com.basic4gl.language.core.types.ValType;
 import com.basic4gl.language.core.types.VariableCollection;
-import java.util.ArrayList;
+import java.util.List;
 
 public interface ProgramStreamable extends Streamable {
     void clearProgram();
@@ -22,11 +22,11 @@ public interface ProgramStreamable extends Streamable {
 
     Instruction getInstruction(int jumpInstruction);
 
-    ArrayList<UserFunc> getUserFunctions();
+    List<UserFunc> getUserFunctions();
 
-    ArrayList<UserFuncPrototype> getUserFunctionPrototypes();
+    List<UserFuncPrototype> getUserFunctionPrototypes();
 
-    ArrayList<ProgramDataElement> getProgramData();
+    List<ProgramDataElement> getProgramData();
 
     int getStoreTypeIndex(ValType type);
 

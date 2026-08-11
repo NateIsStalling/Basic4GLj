@@ -4968,7 +4968,7 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         // TODO: Optimise with hash lookup?
 
         // Look for existing matching prototype
-        ArrayList<UserFuncPrototype> prototypes = program.getUserFunctionPrototypes();
+        List<UserFuncPrototype> prototypes = program.getUserFunctionPrototypes();
         for (int i = 0; i < prototypes.size(); i++) {
             if (prototypes.get(i).isCompatibleWith(prototype)) {
                 return i;
@@ -5639,8 +5639,8 @@ public class TomBasicCompiler extends com.basic4gl.language.core.runtime.HasErro
         }
 
         // Store function, and get its index (in currentFunction)
-        ArrayList<UserFunc> functions = program.getUserFunctions();
-        ArrayList<UserFuncPrototype> prototypes = program.getUserFunctionPrototypes();
+        List<UserFunc> functions = program.getUserFunctions();
+        List<UserFuncPrototype> prototypes = program.getUserFunctionPrototypes();
 
         if (funcType == UserFunctionType.UFT_FWDDECLARATION) {
             // Forward declaration.

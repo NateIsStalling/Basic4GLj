@@ -154,7 +154,8 @@ public class GLFWWindowManager extends OpenGLWindowManager {
         // Explicitly set default swap interval - default varies by OS.
         // Basic4GL has historically used the default swap interval on Windows.
         // Use GLFW Windows default swap interval for compatibility (1 = vsync on).
-        // Older non-GLFW versions presumably had vsync off and perform faster in FPS benchmarks (cubepyramiddemo.gb sample program)
+        // Older non-GLFW versions presumably had vsync off and perform faster in FPS benchmarks
+        // (see:cubepyramiddemo.gb sample program for FPS counter)
         // TODO: Make vsync/swap interval settings configurable
         glfwSwapInterval(1);
 

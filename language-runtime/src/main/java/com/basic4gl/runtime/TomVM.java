@@ -3006,21 +3006,21 @@ public class TomVM extends HasErrorState implements VM, ProgramStreamable {
         return variables;
     }
 
-    public ArrayList<ProgramDataElement> getProgramData() {
+    public List<ProgramDataElement> getProgramData() {
         return programData;
     }
 
     // User functions
-    public ArrayList<UserFuncPrototype> getUserFunctionPrototypes() {
+    public List<UserFuncPrototype> getUserFunctionPrototypes() {
         return userFunctionPrototypes;
     }
 
-    public ArrayList<UserFunc> getUserFunctions() {
+    public List<UserFunc> getUserFunctions() {
         return userFunctions;
     }
 
     @Override
-    public ArrayList<UserFuncStackFrame> getUserCallStack() {
+    public List<UserFuncStackFrame> getUserCallStack() {
         return userCallStack;
     }
 
