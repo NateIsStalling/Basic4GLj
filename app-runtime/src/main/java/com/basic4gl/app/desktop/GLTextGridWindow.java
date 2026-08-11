@@ -35,7 +35,6 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 public class GLTextGridWindow extends HasErrorState
@@ -737,9 +736,6 @@ public class GLTextGridWindow extends HasErrorState
         lib.init(vm, services, appSettings, programArgs);
     }
 
-    double lastPollTime = 0.0;
-    double pollInterval = 1.0 / 60.0;
-
     public boolean handleEvents() {
 
         // Notify debugger process is still alive
@@ -748,12 +744,7 @@ public class GLTextGridWindow extends HasErrorState
         }
 
         // Keep window responsive during loops
-        double currentTime = GLFW.glfwGetTime();
-
-        if (currentTime - lastPollTime >= pollInterval) {
-            GLFW.glfwPollEvents();
-            lastPollTime = currentTime;
-        }
+        glfwPollEvents();
         return true; // all went well
     }
 
