@@ -40,6 +40,12 @@ OpenGL GLU constants are unavailable, they are unsupported by the current versio
 - `gluLookAt` will currently throw an `UnsupportedOperationException` if called
 
 
+### VSync
+
+Basic4GLj enables VSync by default for all platforms, which synchronizes the frame rate of the application with the refresh rate of the monitor to prevent screen tearing. 
+
+This behavior is consistent with the default swap interval used by GLFW on Windows (1 = VSync on).
+
 ### Misc. OpenGL Notes
 
 - `glColor3ub` and `glColor4ub` are mapped to `glColor3ubv` and `glColor4ubv` to resolve crash on macOS
