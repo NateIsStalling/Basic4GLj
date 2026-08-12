@@ -63,8 +63,10 @@ jpackage "@jpackage/jpackage.cfg" \
 
 echo "Create native installer"
 jpackage "@jpackage/jpackage.cfg" \
+  "@jpackage/jpackage-app-launchers.cfg" \
   "@jpackage/jpackage-linux.cfg" \
   --app-version "$APP_RELEASE_VERSION" \
+  ${RUNTIME_IMAGE:+--runtime-image "$RUNTIME_IMAGE"} \
   --verbose
 
 INSTALLER_PATH="./build/distributions/basic4glj_${APP_RELEASE_VERSION}_amd64.deb"

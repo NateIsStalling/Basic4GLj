@@ -63,8 +63,10 @@ jpackage "@jpackage/jpackage.cfg" \
 
 echo "Create native installer"
 jpackage "@jpackage/jpackage.cfg" \
+  "@jpackage/jpackage-app-launchers.cfg" \
   "@jpackage/jpackage-windows.cfg" \
   --app-version "$APP_RELEASE_VERSION" \
+  ${RUNTIME_IMAGE:+--runtime-image "$RUNTIME_IMAGE"} \
   --win-upgrade-uuid "$WIN_UPGRADE_UUID" \
   --verbose
 
