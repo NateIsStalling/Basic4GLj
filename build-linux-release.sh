@@ -51,6 +51,19 @@ if [ -n "$RUNTIME_IMAGE" ]; then
     echo "Runtime image directory not found: $RUNTIME_IMAGE"
     exit 1
   fi
+
+  # GitHub-hosted JDK installs can contain symlinks back into the toolcache.
+  # Materialize a private copy so the .deb never ships links to build-machine paths.
+  RUNTIME_IMAGE_STAGING_DIR="$(mktemp -d -p ./build)/runtime-image"
+  mkdir -p "$RUNTIME_IMAGE_STAGING_DIR"
+  cp -aL "$RUNTIME_IMAGE/." "$RUNTIME_IMAGE_STAGING_DIR/"
+  chmod -R u+rwX "$RUNTIME_IMAGE_STAGING_DIR"
+  RUNTIME_IMAGE="$RUNTIME_IMAGE_STAGING_DIR"
+fi
+
+JPACKAGE_RUNTIME_ARGS=()
+if [ -n "$RUNTIME_IMAGE" ]; then
+  JPACKAGE_RUNTIME_ARGS=(--runtime-image "$RUNTIME_IMAGE")
 fi
 
 echo "Create app-image Version '$APP_RELEASE_VERSION'"
@@ -58,8 +71,29 @@ jpackage "@jpackage/jpackage.cfg" \
   "@jpackage/jpackage-app-image.cfg" \
   --app-version "$APP_RELEASE_VERSION" \
   --icon "icons/icon.png" \
-  ${RUNTIME_IMAGE:+--runtime-image "$RUNTIME_IMAGE"} \
+  "${JPACKAGE_RUNTIME_ARGS[@]}" \
   --verbose
+
+APP_IMAGE_PATH="./build/distributions/Basic4GLj"
+APP_RUNTIME_PATH="$APP_IMAGE_PATH/lib/runtime"
+
+if [ ! -x "$APP_IMAGE_PATH/bin/Basic4GLj" ]; then
+  echo "Expected app launcher not found or not executable: $APP_IMAGE_PATH/bin/Basic4GLj"
+  exit 1
+fi
+if [ ! -x "$APP_IMAGE_PATH/bin/Basic4GLjDebugServer" ]; then
+  echo "Expected debug server launcher not found or not executable: $APP_IMAGE_PATH/bin/Basic4GLjDebugServer"
+  exit 1
+fi
+if [ ! -x "$APP_RUNTIME_PATH/bin/java" ]; then
+  echo "Expected bundled runtime java not found or not executable: $APP_RUNTIME_PATH/bin/java"
+  exit 1
+fi
+if find "$APP_RUNTIME_PATH" -type l -print -quit | grep -q .; then
+  echo "Bundled runtime image contains symlinks; refusing to build a non-self-contained .deb"
+  find "$APP_RUNTIME_PATH" -type l -print
+  exit 1
+fi
 
 echo "Create native installer"
 jpackage "@jpackage/jpackage.cfg" \
