@@ -144,16 +144,16 @@ ln -s /Applications "$DMG_STAGING_DIR/Applications"
 # it at the volume root *before* the image is created - no Finder required.
 # Best-effort: if the generator's deps can't be installed the dmg is still a
 # functional drag-installer, just without the custom icon positions.
-DMG_ICON_SIZE=128
+DMG_ICON_SIZE=160
 if python3 -m pip install --quiet ds_store mac_alias \
    || python3 -m pip install --quiet --user ds_store mac_alias \
    || python3 -m pip install --quiet --break-system-packages ds_store mac_alias; then
   if python3 jpackage/make-dmg-ds-store.py \
        --output "$DMG_STAGING_DIR/.DS_Store" \
-       --window-width 600 --window-height 400 \
+       --window-width 660 --window-height 420 \
        --icon-size "$DMG_ICON_SIZE" \
-       --position "$DMG_APP_NAME=160,205" \
-       --position "Applications=440,205"; then
+       --position "$DMG_APP_NAME=175,215" \
+       --position "Applications=485,215"; then
     echo "Generated dmg Finder layout (.DS_Store)"
   else
     echo "warning: failed to generate dmg .DS_Store (non-fatal); dmg will use default presentation"
