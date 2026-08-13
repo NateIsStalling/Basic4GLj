@@ -33,6 +33,12 @@ def build(output, volume_width, volume_height, icon_size, positions):
         # Window-level (the container directory, keyed as ".") records.
         d["."]["vSrn"] = ("long", 1)
 
+        # Force the window into icon view. Without this "view style" record
+        # Finder opens the volume in whatever its default view is (list/generic
+        # folder presentation) and ignores the icon-view options + Iloc icon
+        # positions below, so the big app icons never show. 'icnv' == icon view.
+        d["."]["vstl"] = ("type", b"icnv")
+
         d["."]["bwsp"] = {
             "WindowBounds": window_bounds,
             "ShowStatusBar": False,
