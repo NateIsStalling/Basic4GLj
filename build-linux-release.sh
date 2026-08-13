@@ -45,20 +45,46 @@ fi
 echo "jpackage JDK"
 java --version
 
+# Platform modules required by the app + its runtime plugins (LWJGL, Jetty
+# websocket client/server, Gson, FlatLaf, RSyntaxTextArea). Verified with a
+# class-load smoke test across app.jar, app-runtime and debug-server.
+JLINK_MODULES="java.base,java.desktop,java.datatransfer,java.logging,java.management,java.naming,java.sql,java.xml,java.prefs,java.scripting,java.security.jgss,java.net.http,jdk.unsupported,jdk.crypto.ec"
+
 if [ -n "$RUNTIME_IMAGE" ]; then
-  echo "Bundling runtime image: $RUNTIME_IMAGE"
   if [ ! -d "$RUNTIME_IMAGE" ]; then
     echo "Runtime image directory not found: $RUNTIME_IMAGE"
     exit 1
   fi
 
-  # GitHub-hosted JDK installs can contain symlinks back into the toolcache.
-  # Materialize a private copy so the .deb never ships links to build-machine paths.
-  RUNTIME_IMAGE_STAGING_DIR="$(mktemp -d -p ./build)/runtime-image"
-  mkdir -p "$RUNTIME_IMAGE_STAGING_DIR"
-  cp -aL "$RUNTIME_IMAGE/." "$RUNTIME_IMAGE_STAGING_DIR/"
-  chmod -R u+rwX "$RUNTIME_IMAGE_STAGING_DIR"
-  RUNTIME_IMAGE="$RUNTIME_IMAGE_STAGING_DIR"
+  if [ -d "$RUNTIME_IMAGE/jmods" ] && [ -x "$RUNTIME_IMAGE/bin/jlink" ]; then
+    # A full JDK was supplied (e.g. $JAVA_HOME_17_X64). Build a slim, target-JDK
+    # runtime with *that JDK's own* jlink so the app ships a JDK 17 runtime even
+    # though jpackage itself runs on JDK 25. jpackage only copies the image given
+    # to --runtime-image; it never re-runs jlink on it, so the runtime stays 17.
+    echo "Linking slim runtime from JDK: $RUNTIME_IMAGE"
+    RUNTIME_IMAGE_DIR="./build/jpackage-runtime"
+    rm -rf "$RUNTIME_IMAGE_DIR"
+    "$RUNTIME_IMAGE/bin/jlink" \
+      --add-modules "$JLINK_MODULES" \
+      --strip-debug \
+      --no-man-pages \
+      --no-header-files \
+      --output "$RUNTIME_IMAGE_DIR"
+    RUNTIME_IMAGE="$RUNTIME_IMAGE_DIR"
+  else
+    echo "Using prebuilt runtime image: $RUNTIME_IMAGE"
+  fi
+
+  # A jlink image is self-contained; any absolute symlink would point back at a
+  # build-machine path and break on the user's system. Fail fast if present.
+  if find "$RUNTIME_IMAGE" -type l -lname '/*' -print -quit | grep -q .; then
+    echo "Runtime image contains absolute symlinks; refusing to build a non-portable .deb"
+    find "$RUNTIME_IMAGE" -type l -lname '/*' -print
+    exit 1
+  fi
+
+  echo "Runtime image ready: $RUNTIME_IMAGE ($(du -sh "$RUNTIME_IMAGE" | cut -f1))"
+  "$RUNTIME_IMAGE/bin/java" -version || true
 fi
 
 JPACKAGE_RUNTIME_ARGS=()
@@ -85,13 +111,13 @@ if [ ! -x "$APP_IMAGE_PATH/bin/Basic4GLjDebugServer" ]; then
   echo "Expected debug server launcher not found or not executable: $APP_IMAGE_PATH/bin/Basic4GLjDebugServer"
   exit 1
 fi
-if [ ! -x "$APP_RUNTIME_PATH/bin/java" ]; then
-  echo "Expected bundled runtime java not found or not executable: $APP_RUNTIME_PATH/bin/java"
+if [ ! -d "$APP_RUNTIME_PATH/lib" ]; then
+  echo "Bundled runtime image missing from app image: $APP_RUNTIME_PATH"
   exit 1
 fi
-if find "$APP_RUNTIME_PATH" -type l -print -quit | grep -q .; then
-  echo "Bundled runtime image contains symlinks; refusing to build a non-self-contained .deb"
-  find "$APP_RUNTIME_PATH" -type l -print
+if find "$APP_RUNTIME_PATH" -type l -lname '/*' -print -quit | grep -q .; then
+  echo "Bundled runtime contains absolute symlinks; refusing to build a non-portable .deb"
+  find "$APP_RUNTIME_PATH" -type l -lname '/*' -print
   exit 1
 fi
 
