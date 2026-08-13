@@ -131,9 +131,37 @@ echo "Create native installer"
 # dylibs). Build the dmg ourselves from the already-verified .app instead, so
 # nothing re-signs it after this point.
 DMG_VOLNAME="Basic4GLj"
+DMG_APP_NAME="Basic4GLj.app"
 DMG_STAGING_DIR="$(mktemp -d)"
 cp -R "./build/distributions/Basic4GLj.app" "$DMG_STAGING_DIR/"
 ln -s /Applications "$DMG_STAGING_DIR/Applications"
+
+# Lay out the Finder window ("drag the app onto Applications") the way jpackage's
+# DMGSetup.scpt used to. That AppleScript drove Finder, which needs a live
+# WindowServer session the headless GitHub-hosted macOS runners don't reliably
+# provide, so no .DS_Store was written and the dmg opened with the default
+# alphabetical arrangement. Instead we generate the .DS_Store directly and stage
+# it at the volume root *before* the image is created - no Finder required.
+# Best-effort: if the generator's deps can't be installed the dmg is still a
+# functional drag-installer, just without the custom icon positions.
+DMG_ICON_SIZE=128
+if python3 -m pip install --quiet ds_store mac_alias \
+   || python3 -m pip install --quiet --user ds_store mac_alias \
+   || python3 -m pip install --quiet --break-system-packages ds_store mac_alias; then
+  if python3 jpackage/make-dmg-ds-store.py \
+       --output "$DMG_STAGING_DIR/.DS_Store" \
+       --window-width 600 --window-height 400 \
+       --icon-size "$DMG_ICON_SIZE" \
+       --position "$DMG_APP_NAME=160,205" \
+       --position "Applications=440,205"; then
+    echo "Generated dmg Finder layout (.DS_Store)"
+  else
+    echo "warning: failed to generate dmg .DS_Store (non-fatal); dmg will use default presentation"
+    rm -f "$DMG_STAGING_DIR/.DS_Store"
+  fi
+else
+  echo "warning: could not install ds_store/mac_alias (non-fatal); dmg will use default presentation"
+fi
 
 INSTALLER_PATH="./build/distributions/Basic4GLj-${APP_RELEASE_VERSION}.dmg"
 DMG_WORKDIR="$(mktemp -d)"
@@ -145,46 +173,16 @@ PROTO_DMG="$DMG_WORKDIR/proto.dmg"
 hdiutil create -volname "$DMG_VOLNAME" -srcfolder "$DMG_STAGING_DIR" -ov -fs HFS+ -format UDRW "$PROTO_DMG"
 
 DMG_MOUNT_POINT="$(mktemp -d)"
-hdiutil attach "$PROTO_DMG" -mountpoint "$DMG_MOUNT_POINT" -nobrowse -quiet -owners on
+# -noautoopen keeps Finder from opening (and potentially rewriting the staged
+# .DS_Store on) the volume while we set the volume icon below.
+hdiutil attach "$PROTO_DMG" -mountpoint "$DMG_MOUNT_POINT" -nobrowse -noautoopen -quiet -owners on
 
+# Volume icon - all CLI tools, no Finder session needed, so headless-safe.
 cp "icons/icon.icns" "$DMG_MOUNT_POINT/.VolumeIcon.icns"
 SetFile -c icnC "$DMG_MOUNT_POINT/.VolumeIcon.icns"
 SetFile -a V "$DMG_MOUNT_POINT/.VolumeIcon.icns"
 SetFile -a C "$DMG_MOUNT_POINT"
 
-# Configure the Finder presentation of the mounted volume so opening the dmg
-# shows the standard "drag the app onto Applications" layout that jpackage's
-# DMGSetup.scpt used to provide: a sized icon-view window with the app on the
-# left and the Applications symlink on the right. Finder persists this into the
-# volume's .DS_Store, which is then baked into the read-only image on convert.
-# Best-effort: a headless / Finder-less environment must not fail the build,
-# the dmg is still a functional drag-installer without the decoration.
-DMG_APP_NAME="Basic4GLj.app"
-if ! osascript <<EOF
-tell application "Finder"
-  tell disk "$DMG_VOLNAME"
-    open
-    set current view of container window to icon view
-    set toolbar visible of container window to false
-    set statusbar visible of container window to false
-    set the bounds of container window to {200, 120, 800, 520}
-    set theViewOptions to the icon view options of container window
-    set arrangement of theViewOptions to not arranged
-    set icon size of theViewOptions to 128
-    set text size of theViewOptions to 12
-    set position of item "$DMG_APP_NAME" of container window to {160, 205}
-    set position of item "Applications" of container window to {440, 205}
-    update without registering applications
-    delay 1
-    close
-  end tell
-end tell
-EOF
-then
-  echo "warning: could not apply dmg Finder layout (non-fatal); dmg will use default presentation"
-fi
-
-# Ensure Finder has flushed .DS_Store to the image before it is unmounted.
 sync
 
 hdiutil detach "$DMG_MOUNT_POINT" -quiet
