@@ -44,7 +44,7 @@ jobs:
 
   build-linux-installer:
     name: Build Installer on Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       # SETUP BUILD ENVIRONMENT
       - id: checkout-code
