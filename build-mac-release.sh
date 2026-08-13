@@ -152,6 +152,41 @@ SetFile -c icnC "$DMG_MOUNT_POINT/.VolumeIcon.icns"
 SetFile -a V "$DMG_MOUNT_POINT/.VolumeIcon.icns"
 SetFile -a C "$DMG_MOUNT_POINT"
 
+# Configure the Finder presentation of the mounted volume so opening the dmg
+# shows the standard "drag the app onto Applications" layout that jpackage's
+# DMGSetup.scpt used to provide: a sized icon-view window with the app on the
+# left and the Applications symlink on the right. Finder persists this into the
+# volume's .DS_Store, which is then baked into the read-only image on convert.
+# Best-effort: a headless / Finder-less environment must not fail the build,
+# the dmg is still a functional drag-installer without the decoration.
+DMG_APP_NAME="Basic4GLj.app"
+if ! osascript <<EOF
+tell application "Finder"
+  tell disk "$DMG_VOLNAME"
+    open
+    set current view of container window to icon view
+    set toolbar visible of container window to false
+    set statusbar visible of container window to false
+    set the bounds of container window to {200, 120, 800, 520}
+    set theViewOptions to the icon view options of container window
+    set arrangement of theViewOptions to not arranged
+    set icon size of theViewOptions to 128
+    set text size of theViewOptions to 12
+    set position of item "$DMG_APP_NAME" of container window to {160, 205}
+    set position of item "Applications" of container window to {440, 205}
+    update without registering applications
+    delay 1
+    close
+  end tell
+end tell
+EOF
+then
+  echo "warning: could not apply dmg Finder layout (non-fatal); dmg will use default presentation"
+fi
+
+# Ensure Finder has flushed .DS_Store to the image before it is unmounted.
+sync
+
 hdiutil detach "$DMG_MOUNT_POINT" -quiet
 rmdir "$DMG_MOUNT_POINT"
 
