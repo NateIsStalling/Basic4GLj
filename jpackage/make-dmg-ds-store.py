@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
 """Generate a .DS_Store describing the DMG Finder window layout.
 
-jpackage used to run an AppleScript (DMGSetup.scpt) against Finder to lay the
-mounted volume out as the familiar "drag the app onto Applications" window.
-That approach needs a live Finder / WindowServer session, which the headless
-GitHub-hosted macOS runners (macos-latest, macos-15-intel) don't reliably
-provide, so no .DS_Store was ever written and the dmg opened with the default
-alphabetical icon arrangement.
+This creates the Finder metadata needed for the conventional macOS
+"drag the app onto Applications" DMG presentation without requiring Finder
+or a WindowServer session.
 
-Finder persists a window's view mode, size and per-icon positions in a
-`.DS_Store` file at the volume root. We can build that file directly - no
-Finder required - and drop it into the dmg staging folder before the image is
-created, giving a deterministic layout on any runner.
+The .DS_Store is written directly into the DMG staging directory before the
+disk image is created, making the layout deterministic on headless CI runners.
 
-Depends on the `ds_store` and `mac_alias` packages (pure-python, authored by
-the same person as Apple's reference `dmgbuild`).
+Depends on:
+    ds_store
 """
 
 import argparse
@@ -24,71 +19,127 @@ import sys
 def build(output, volume_width, volume_height, icon_size, positions):
     from ds_store import DSStore
 
-    # WindowBounds is "{{left, top}, {width, height}}" in Finder's string form.
-    # Anchor near the top-left of the screen; the size is what actually matters.
+    # Finder stores the window bounds as:
+    # "{{left, top}, {width, height}}"
+    #
+    # The screen-relative origin is not particularly important for a DMG;
+    # the window dimensions are what matter most.
     left, top = 200, 120
-    window_bounds = "{{%d, %d}, {%d, %d}}" % (left, top, volume_width, volume_height)
+    window_bounds = "{{%d, %d}, {%d, %d}}" % (
+        left,
+        top,
+        volume_width,
+        volume_height,
+    )
+
+    # Finder window settings.
+    bwsp = {
+        "WindowBounds": window_bounds,
+        "ShowStatusBar": False,
+        "ShowToolbar": False,
+        "ShowTabView": False,
+        "ShowPathbar": False,
+        "ShowSidebar": False,
+        "ContainerShowSidebar": False,
+        "PreviewPaneVisibility": False,
+        "SidebarWidth": 180,
+    }
+
+    # Finder icon-view settings.
+    #
+    # Keep this close to the structure written by dmgbuild. In particular,
+    # iconSize is a folder-level icon-view setting rather than a per-item
+    # property like Iloc.
+    icvp = {
+        "viewOptionsVersion": 1,
+        "backgroundType": 0,
+        "backgroundColorRed": 1.0,
+        "backgroundColorGreen": 1.0,
+        "backgroundColorBlue": 1.0,
+        "gridOffsetX": 0.0,
+        "gridOffsetY": 0.0,
+        "gridSpacing": 80.0,
+        "arrangeBy": "none",
+        "showIconPreview": False,
+        "showItemInfo": False,
+        "labelOnBottom": True,
+        "textSize": 12.0,
+        "iconSize": float(icon_size),
+        "scrollPositionX": 0.0,
+        "scrollPositionY": 0.0,
+    }
 
     with DSStore.open(output, "w+") as d:
-        # Window-level (the container directory, keyed as ".") records.
+        # Folder/window metadata.
         d["."]["vSrn"] = ("long", 1)
+        d["."]["bwsp"] = bwsp
+        d["."]["icvp"] = icvp
 
-        # Force the window into icon view. Without this "view style" record
-        # Finder opens the volume in whatever its default view is (list/generic
-        # folder presentation) and ignores the icon-view options + Iloc icon
-        # positions below, so the big app icons never show. 'icnv' == icon view.
-        d["."]["vstl"] = ("type", b"icnv")
-
-        d["."]["bwsp"] = {
-            "WindowBounds": window_bounds,
-            "ShowStatusBar": False,
-            "ShowToolbar": False,
-            "ShowTabView": False,
-            "ShowPathbar": False,
-            "ShowSidebar": False,
-        }
-
-        d["."]["icvp"] = {
-            "viewOptionsVersion": 1,
-            "backgroundType": 0,
-            "iconSize": float(icon_size),
-            "gridSpacing": 100.0,
-            "gridOffsetX": 0.0,
-            "gridOffsetY": 0.0,
-            "arrangeBy": "none",
-            "showIconPreview": True,
-            "showItemInfo": False,
-            "labelOnBottom": True,
-            "textSize": 12.0,
-        }
+        # Tell Finder that this directory should open in icon view.
+        #
+        # dmgbuild uses the "icvl" record here. This is preferable to the
+        # previous "vstl" record for the DMG's default Finder presentation.
+        d["."]["icvl"] = (b"type", b"icnv")
 
         # Per-item icon positions.
+        #
+        # Finder stores these separately from the folder-level icon size,
+        # which is why positioning can work even when icon-view settings
+        # are not being applied correctly.
         for name, (x, y) in positions.items():
             d[name]["Iloc"] = (int(x), int(y))
 
 
 def parse_position(raw):
-    # Format: "Name=X,Y" - Name may contain spaces but not '='.
-    name, _, coords = raw.partition("=")
-    if not name or not coords:
+    """Parse NAME=X,Y into (NAME, (X, Y))."""
+
+    name, separator, coords = raw.partition("=")
+
+    if not separator or not name or not coords:
         raise argparse.ArgumentTypeError(
             "position must be 'Name=X,Y' (got %r)" % raw
         )
+
     try:
-        xs, ys = coords.split(",")
+        xs, ys = coords.split(",", 1)
         return name, (int(xs), int(ys))
     except ValueError:
         raise argparse.ArgumentTypeError(
-            "position must be 'Name=X,Y' with integer coords (got %r)" % raw
+            "position must be 'Name=X,Y' with integer coordinates "
+            "(got %r)" % raw
         )
 
 
 def main(argv):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", required=True, help="path to write .DS_Store")
-    parser.add_argument("--window-width", type=int, default=600)
-    parser.add_argument("--window-height", type=int, default=400)
-    parser.add_argument("--icon-size", type=int, default=128)
+
+    parser.add_argument(
+        "--output",
+        required=True,
+        help="path to write .DS_Store",
+    )
+
+    parser.add_argument(
+        "--window-width",
+        type=int,
+        default=600,
+        help="Finder window width (default: 600)",
+    )
+
+    parser.add_argument(
+        "--window-height",
+        type=int,
+        default=400,
+        help="Finder window height (default: 400)",
+    )
+
+    parser.add_argument(
+        "--icon-size",
+        type=int,
+        default=128,
+        help="Finder icon size in points (default: 128)",
+    )
+
     parser.add_argument(
         "--position",
         action="append",
@@ -97,9 +148,20 @@ def main(argv):
         metavar="NAME=X,Y",
         help="icon position for an item; repeatable",
     )
+
     args = parser.parse_args(argv)
 
+    if args.window_width <= 0:
+        parser.error("--window-width must be greater than zero")
+
+    if args.window_height <= 0:
+        parser.error("--window-height must be greater than zero")
+
+    if args.icon_size <= 0:
+        parser.error("--icon-size must be greater than zero")
+
     positions = dict(args.position)
+
     if not positions:
         parser.error("at least one --position is required")
 
@@ -110,6 +172,7 @@ def main(argv):
         args.icon_size,
         positions,
     )
+
     return 0
 
 
